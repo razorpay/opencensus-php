@@ -6,7 +6,6 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
-use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -31,6 +30,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
@@ -1514,22 +1514,27 @@ class Core extends Base\Core
     }
 
     /**
-     * updates category and category2 of merchant
+     * fetches subcategory metadata from subcategory and updates
+     * merchant category and cateogry2
      * @param Entity $merchant
      * @param string  $subCategory
      */
-    public function updateSubCategoryMetaData(Entity $merchant, string $subCategory)
+    public function autoUpdateCategoryDetails(Entity $merchant, string $subCategory)
     {
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($subCategory);
 
         $this->trace->info(
-            TraceCode::MERCHANT_AUTO_TAG_MCC_CATEGORY2,
+            TraceCode::MERCHANT_AUTO_UPDATE_METADATA,
             [
-                'prev_category2'    => $merchant->getCategory2(),
-                'prev_category'     => $merchant->getCategory(),
-                'updated_category2' => $subCategoryMetaData[Entity::CATEGORY2],
-                'updated_category'  => $subCategoryMetaData[Entity::CATEGORY],
-                'merchant_id'       => $merchant->getId(),
+                'merchant_id' => $merchant->getId(),
+                'old_data'    => [
+                    'category2' => $merchant->getCategory2(),
+                    'category'  => $merchant->getCategory(),
+                ],
+                'new_data'    => [
+                    'category2' => $subCategoryMetaData[Entity::CATEGORY2],
+                    'category'  => $subCategoryMetaData[Entity::CATEGORY],
+                ]
             ]);
 
         $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
@@ -1537,5 +1542,4 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
     }
-
 }

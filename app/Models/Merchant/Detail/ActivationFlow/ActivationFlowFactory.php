@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
 class ActivationFlowFactory
 {
-    const ACTIVATION_FLOW_TO_CLASS_MAPPING = [
+    const ACTIVATION_FLOW_IMPLEMENTATION_MAPPING = [
         ActivationFlow::WHITELIST => 'WhitelistActivationFlow',
         ActivationFlow::BLACKLIST => 'BlacklistActivationFlow',
         ActivationFlow::GREYLIST  => 'GreylistActivationFlow',
@@ -27,13 +27,13 @@ class ActivationFlowFactory
     {
         $activationFlow = $merchantDetails->getActivationFlow();
 
-        if (isset(self::ACTIVATION_FLOW_TO_CLASS_MAPPING[$activationFlow]) === true)
+        if (isset(self::ACTIVATION_FLOW_IMPLEMENTATION_MAPPING[$activationFlow]) === true)
         {
-            $class = self::ACTIVATION_FLOW_TO_CLASS_MAPPING[$activationFlow];
+            $class = self::ACTIVATION_FLOW_IMPLEMENTATION_MAPPING[$activationFlow];
 
             return new $class();
         }
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW);
-    }
 
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW . $activationFlow);
+    }
 }

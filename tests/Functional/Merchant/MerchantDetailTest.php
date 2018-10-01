@@ -6,16 +6,16 @@ use DB;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant\Detail\BusinessCategory;
-use RZP\Models\Merchant\Detail\BusinessSubcategory;
-use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 /**
  * @group dns-sensitive
@@ -555,7 +555,7 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
 
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory(BusinessSubcategory::MUTUAL_FUND);
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::MUTUAL_FUND);
 
         $liveMerchant        = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
         $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
@@ -583,7 +583,7 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
 
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory(BusinessSubcategory::LENDING);
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::LENDING);
 
         $liveMerchant        = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
         $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
