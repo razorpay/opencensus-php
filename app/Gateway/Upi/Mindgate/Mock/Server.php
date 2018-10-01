@@ -387,7 +387,7 @@ class Server extends Base\Mock\Server
             $input[1],
             $response['amount'],
             $response['auth_time'],
-            $input[1] === 'paysucc123' ? Status::SUCCESS : Status::FAILED,
+            $input[1] === 'payfail123' ? Status::FAILED : Status::SUCCESS,
             $response['message'],
             $response['resp_code'],
             $response['approval_num'],
