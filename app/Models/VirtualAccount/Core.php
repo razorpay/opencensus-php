@@ -88,11 +88,9 @@ class Core extends Base\Core
         {
             $virtualAccount->build($input);
 
-            $this->validateDescriptor($virtualAccount);
-
             $virtualAccount->customer()->associate($customer);
 
-            $virtualAccount->associateOrder($order);
+            $virtualAccount->entity()->associate($order);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
@@ -220,47 +218,9 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function validateDescriptor(Entity $virtualAccount)
-    {
-        if ($virtualAccount->getDescriptor() === null)
-        {
-            return;
-        }
-
-        if ($virtualAccount->merchant->getHandle() === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
-        }
-
-        // Removing the below check for crypto merchants so that they can
-        // create new VAs with the same descriptor, using a different provider.
-        // Default provider for crypto merchants has already been changed.
-        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
-        {
-            return;
-        }
-
-        $existingVirtualAccounts = $this->repo->virtual_account
-                                        ->findActiveByDescriptorAndMerchant(
-                                            $virtualAccount->getDescriptor(),
-                                            $virtualAccount->merchant);
-
-        if ($existingVirtualAccounts->count() > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
-                'descriptor',
-                [
-                    'existing_ids' => $existingVirtualAccounts->getIds(),
-                    'descriptor'   => $virtualAccount->getDescriptor(),
-                ]);
-        }
-    }
-
     protected function verifyBankTransferEnabled(Merchant $merchant)
     {
-        $merchantMethods = $this->getMethodsForMerchant($merchant);
+        $merchantMethods = $merchant->getMethods();
 
         if (($merchantMethods === null) or
             ($merchantMethods->isBankTransferEnabled() === false))
@@ -280,16 +240,6 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
         }
 
-    }
-
-    protected function getMethodsForMerchant(Merchant $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     public function eventVirtualAccountCredited(Payment $payment)

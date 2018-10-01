@@ -112,6 +112,7 @@ class ErrorCodes
         'N:9993'          => 'Cardholder not return from Rupay',
         'N:tmout'         => 'Gateway timed out',
         '?:waiting RUPAY' => 'Waiting for Rupay',
+        'N:-30084'        => 'Cannot return chargeback transaction',
 
         // Refund related
         'N:-5995'         => 'order too old to be referenced',
@@ -226,6 +227,9 @@ class ErrorCodes
 
         // Refund Related
         'N:-5995'         => ErrorCode::BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS,
+
+        //Chargeback Related
+        'N:-30084'        => ErrorCode::GATEWAY_CHARGEBACK_REFUND_FAILURE,
     ];
 
     protected static $specialCases = [

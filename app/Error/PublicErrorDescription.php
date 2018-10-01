@@ -243,7 +243,6 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR                      = 'An active virtual account with the same descriptor already exists for your account.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
-    const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
 
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
@@ -670,4 +669,5 @@ class PublicErrorDescription
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                 = 'Verification of older refunds is disabled';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'Refund is marked unprocessed manually';
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
+    const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 }

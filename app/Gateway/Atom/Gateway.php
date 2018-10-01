@@ -400,6 +400,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
+        $gatewayPayment['date'] = $gatewayPayment['date'] ?: $input['payment']['created_at'];
+        
         $content = [
             RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
             RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),

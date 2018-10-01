@@ -164,7 +164,7 @@ class BeamJob extends Job
                 return;
             }
 
-            $this->sendEmail();
+            $this->notify();
 
             $this->delete();
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Helpers;
 
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Customer;
 use RZP\Models\Batch\Header;
@@ -27,7 +28,7 @@ class VirtualBankAccount
                     VirtualAccount\Receiver::BANK_ACCOUNT,
                 ],
                 VirtualAccount\Entity::BANK_ACCOUNT => [
-                    VirtualAccount\Receiver::NUMERIC => true,
+                    Generator::NUMERIC => true,
                 ],
             ],
             VirtualAccount\Entity::NOTES        => json_decode($entry[Header::VA_NOTES], true) ?? [],
@@ -37,7 +38,7 @@ class VirtualBankAccount
         {
             $requestArray[VirtualAccount\Entity::RECEIVERS]
                 [VirtualAccount\Entity::BANK_ACCOUNT]
-                [VirtualAccount\Receiver::DESCRIPTOR] = $entry[Header::VA_DESCRIPTOR];
+                [Generator::DESCRIPTOR] = $entry[Header::VA_DESCRIPTOR];
         }
 
         return $requestArray;
