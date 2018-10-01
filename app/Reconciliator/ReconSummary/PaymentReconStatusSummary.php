@@ -10,9 +10,7 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
                                ->transaction
                                ->fetchPaymentReconStatusSummary(
                                    $from,
-                                   $to,
-                                   Constants::GATEWAYS
-                               );
+                                   $to);
 
         $formattedSummary = Helpers::getFormattedSummary($paymentSummary);
 
@@ -28,7 +26,7 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
                          ->fetchUnreconciledEntitiesBetweenDates(
                              $from,
                              $to,
-                             Constants::GATEWAYS,
+                             config('gateway.available'),
                              Constants::LIMIT,
                              Constants::PAYMENT_PARAMS
                          );
