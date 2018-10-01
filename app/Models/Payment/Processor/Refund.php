@@ -800,6 +800,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
@@ -890,6 +892,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);

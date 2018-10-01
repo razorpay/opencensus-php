@@ -323,6 +323,23 @@ return [
     'upi_hulk' => [
         'test_terminal_password'    => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
         'gateway_terminal_password' => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+        'cert_dir_name'             => env('UPI_HULK_GATEWAY_CERT_DIR'),
+        'mindgate'                  => [
+            'mid'              => env('UPI_MINDGATE_CASHBACK_LIVE_MID'),
+            'key_id'           => env('UPI_MINDGATE_CASHBACK_LIVE_KEY_ID'),
+            'public_key'       => env('UPI_MINDGATE_CASHBACK_LIVE_HDFC_PUBLIC_KEY'),
+            'private_key'      => env('UPI_MINDGATE_CASHBACK_LIVE_PGP_PRIVATE_KEY'),
+            'passphrase'       => env('UPI_MINDGATE_CASHBACK_LIVE_PGP_PASSPHRASE'),
+            'client_id'        => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_ID'),
+            'client_secret'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_SECRET'),
+            'username'         => env('UPI_MINDGATE_CASHBACK_LIVE_MID'),
+            'password'         => env('UPI_MINDGATE_CASHBACK_LIVE_PASSWORD'),
+            'account_id'       => env('UPI_MINDGATE_CASHBACK_LIVE_HDFC_ACC_ID'),
+            'vpa'              => env('UPI_MINDGATE_CASHBACK_LIVE_VPA'),
+            'mobile'           => env('UPI_MINDGATE_CASHBACK_LIVE_MOBILE'),
+            'live_client_cert' => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT'),
+            'live_cert_key'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT_KEY'),
+        ]
     ],
 
     'upi_sbi' => [

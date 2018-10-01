@@ -30,6 +30,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE        = 'PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE                 = 'PAYMENT_VERIFY_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_EXCEPTION               = 'PAYMENT_VERIFY_REFUND_EXCEPTION';
+    const REFUND_VERIFY_REQUEST                         = 'REFUND_VERIFY_REQUEST';
+    const REFUND_VERIFY_RESPONSE                        = 'REFUND_VERIFY_RESPONSE';
     const PAYMENT_TOPUP_REQUEST                         = 'PAYMENT_TOPUP_REQUEST';
     const PAYMENT_TOPUP_RESPONSE                        = 'PAYMENT_TOPUP_RESPONSE';
     const PAYMENT_TOPUP_FAILURE                         = 'PAYMENT_TOPUP_FAILURE';
