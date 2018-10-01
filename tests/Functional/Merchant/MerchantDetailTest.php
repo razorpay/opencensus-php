@@ -295,10 +295,13 @@ class MerchantDetailTest extends TestCase
     public function testMerchantDetailsPatch()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
 
-        $merchantId = $merchantDetail['merchant_id'];
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
 
-        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+        $this->ba->adminProxyAuth($merchant->getId());
 
         $this->startTest();
     }

@@ -315,12 +315,14 @@ return [
     ],
 
     'testMerchantDetailsPatch' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'business_operation_address' => 'Test address',
                 'business_operation_state'   => 'Karnataka',
                 'business_operation_city'    => 'Bengaluru',
-                'business_operation_pin'     => '560030'
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'financial_services',
+                'business_subcategory'       => 'lending',
             ],
             'url'     => '/merchants/details',
             'method'  => 'PATCH',
@@ -330,7 +332,9 @@ return [
                 'business_operation_address' => 'Test address',
                 'business_operation_state'   => 'Karnataka',
                 'business_operation_city'    => 'Bengaluru',
-                'business_operation_pin'     => '560030'
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'financial_services',
+                'business_subcategory'       => 'lending',
             ],
         ],
     ],
