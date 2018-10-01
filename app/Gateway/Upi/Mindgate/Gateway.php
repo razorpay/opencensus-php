@@ -684,7 +684,7 @@ class Gateway extends Base\Gateway
         $data = [
             $this->getMerchantId(),
             $this->getRefundId($refund),
-            $input['payment']['id'],
+            $gatewayPayment[Entity::MERCHANT_REFERENCE] ?: $gatewayPayment[Entity::PAYMENT_ID],
             $gatewayPayment->getGatewayPaymentId(),
             $gatewayPayment->getNpciReferenceId(),
             $this->getRefundRemark($input),
