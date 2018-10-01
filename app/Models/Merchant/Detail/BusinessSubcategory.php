@@ -40,6 +40,7 @@ class BusinessSubcategory
     const CRYPTOCURRENCY                  = 'cryptocurrency';
     const CRYPTO_MACHINERY                = 'crypto_machinery ';
 
+    const DAY_CARE                        = 'day_care';
     const DEVELOPER                       = 'developer';
     const DIETICIAN                       = 'dietician';
     const DISTANCE_LEARNING               = 'distance_learning';
@@ -183,6 +184,7 @@ class BusinessSubcategory
         self::CROWDFUNDING                    => 'Crowdfunding Platform',
         self::CRYPTOCURRENCY                  => 'Cryptocurrency',
         self::CRYPTO_MACHINERY                => 'Crypto Machinery',
+        self::DAY_CARE                        => 'Pre-School/Day Care',
         self::DEVELOPER                       => 'Developer',
         self::DIETICIAN                       => 'Dietician/Diet Services',
         self::DISTANCE_LEARNING               => 'Distance Learning',

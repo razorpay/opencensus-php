@@ -79,6 +79,7 @@ class BusinessCategory
             Sub::UNIVERSITY,
             Sub::PROFESSIONAL_COURSES,
             Sub::DISTANCE_LEARNING,
+            Sub::DAY_CARE,
             Sub::COACHING,
             Sub::ELEARNING,
         ],
