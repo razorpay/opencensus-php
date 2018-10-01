@@ -45,17 +45,116 @@
       left: 0
       position: relative
 
-.Modal--small .rzp-early-stl-modal
+.Modal .modal-body.rzp-early-stl-modal
   color: #58666E
+  padding: 0
 
   .modal-header
     padding: 15px 0
+  
+  .modal-title
+    font-size: 24px
+    font-weight: bold
+    line-height: 32px
 
   .help-block
     color: #58666E
 
-  .submit-btn, .close-btn
+  .modal-subtitle
+    display: inline-block
+    margin: 15px 0 10px 0
+    font-size: 18px
+    font-weight: bold
+    line-height: 22px
+
+  .content-left, .content-right
+    display: inline-block
+    width: 50%
+    height: 100%
+    vertical-align: top
+    padding: 20px
+
+  .content-left
+    border-radius: 2px 0 0 2px
+    background-color: #FAFAFA
+    padding: 35px
+    border-right: 1px solid #E0E0E0
+  
+  .content-right
+    background-color: #fff
+    padding-top: 35px
+    position: relative
+
+    button.close
+      margin-top: -25px
+      margin-right: -10px
+
+    .radio-label
+      .title
+        font-size: 16px
+        font-weight: bold
+        line-height: 19px
+      .description
+        color: #7B8199
+
+    .form-action
+      position: absolute
+      bottom: 0
+      left: 0
+      width: 100%
+      text-align: right 
+      border-top: 1px solid #E0E0E0
+      background-color: #F6F6F6
+      padding: 20px
+
+  .features-list 
+    color: #58666E
+    margin-top: 20px
+    .feature-item
+      margin: 20px 0
+    .feature-icon
+      width: 45px
+      display: inline-block
+      vertical-align: top
+      padding: 5px
+      img 
+        width: 40px
+    .feature-title
+      font-weight: bold
+    .feature-text
+      color: #7B8199
+    .feature-content
+      display: inline-block
+      width: 85%
+      padding-left: 20px
+
+.success-modal
+  min-height: 400px
+  text-align: center
+
+  .success-banner-cnt
+    background-image: url('assets/early_settlements/es-banner-1.png')
+    height: 100%
     width: 100%
+    padding: 45px
+    background-size: 104% 107%
+    background-position: -15px -12px
+    background-repeat: no-repeat
+  
+    img
+      width: 450px
+      margin: 30px 0 20px 0
+
+    .modal-title
+      margin: 20px 0
+      display: inline-block
+
+    .help-block
+      width: 75%
+      margin: 0 auto
+
+    .close-btn
+      margin-top: 15px 
 
 .Announcement_Banner.with-tour
   margin-top: 20px
@@ -103,4 +202,4 @@
   display: none
 
 .Announcement_Banner.margin-bottom
-  margin-bottom: 20px;
+  margin-bottom: 20px
