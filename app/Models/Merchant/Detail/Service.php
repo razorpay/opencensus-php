@@ -89,11 +89,23 @@ class Service extends Base\Service
      */
     public function patchMerchantDetails(array $input): array
     {
-        $merchantDetails = $this->merchant->merchantDetail;
+        $data = [];
 
-        $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchantDetails = $this->merchant->merchantDetail;
 
-        return $merchantDetails->toArrayPublic();
+            $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
+
+            $data = $merchantDetails->toArrayPublic();
+        }
+
+        return $data;
     }
 
     /**
