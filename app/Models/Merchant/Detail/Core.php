@@ -76,7 +76,7 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $oldMerchantDetails, $merchant);
+            $this->autoUpdateMerchantCategoryDetails($input, $oldMerchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -117,11 +117,15 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->edit($input, 'instant_activation');
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant)
         {
             $this->repo->saveOrFail($merchantDetails);
+
+            $this->autoUpdateMerchantCategoryDetails($input, $oldMerchantDetails, $merchant);
 
             $response = $this->createResponse($merchantDetails);
 
@@ -137,6 +141,26 @@ class Core extends Base\Core
     }
 
     /**
+     * @param array           $input
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    public function autoUpdateMerchantActivationFLow(array $input, Entity $merchantDetails)
+    {
+        if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
+        {
+            return;
+        }
+
+        $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
+
+        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
+        {
+
+        }
+    }
+
+    /**
      * updates merchant category and category2 data if
      * there is change in business subcategory or
      * category and category2 are not set
@@ -145,7 +169,7 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function updateMerchantSubCategoryMetaDataIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantCategoryDetails(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
         {

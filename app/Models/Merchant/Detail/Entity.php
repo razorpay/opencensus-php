@@ -721,4 +721,9 @@ class Entity extends Base\PublicEntity
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
+
+    public function isChangeInSubCategory(s)
+    {
+
+    }
 }
