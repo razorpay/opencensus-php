@@ -17,17 +17,13 @@ class DailyReconStatusSummary extends Mailable
 
     protected $params;
 
-    protected $gateways;
-
     const RECIPIENT_EMAILS_MAP = ['pgrecon.reports@razorpay.com'];
 
-    public function __construct(array $emails, array $gateways, array $params, array $data)
+    public function __construct(array $emails, array $params, array $data)
     {
         parent::__construct();
 
         $this->emails = (empty($emails) === false) ? $emails : self::RECIPIENT_EMAILS_MAP;
-
-        $this->gateways = $gateways;
 
         $this->params = $params;
 
