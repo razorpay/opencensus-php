@@ -189,7 +189,7 @@ class Validator extends Base\Validator
      *
      * @return string
      */
-    public function getHeaderRule()
+    public function getHeaderRule(): string
     {
         $rules = $this->getRuleNames();
 

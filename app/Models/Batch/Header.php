@@ -507,7 +507,9 @@ class Header
                 self::HDFC_EM_DEBIT_STATUS,
                 self::HDFC_EM_DEBIT_REJECTION_REMARKS,
                 self::HDFC_EM_DEBIT_NARRATION,
-                self::ERROR_CODE
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -541,7 +543,9 @@ class Header
                 self::AXIS_EM_DEBIT_HEADING_STATUS,
                 self::AXIS_EM_DEBIT_HEADING_REMARK,
                 self::AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER,
-                self::ERROR_CODE
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -580,7 +584,8 @@ class Header
                 self::ENACH_DEBIT_REASON_CODE,
                 self::ENACH_DEBIT_REASON_DESCRIPTION,
                 self::STATUS,
-                self::ERROR_CODE
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -669,8 +674,9 @@ class Header
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
                 self::HDFC_EM_REGISTER_STATUS,
                 self::HDFC_EM_REGISTER_REMARKS,
+                self::STATUS,
                 self::ERROR_CODE,
-                self::ERROR_DESCRIPTION
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -728,7 +734,7 @@ class Header
                 self::ENACH_ACK_SOLE_ID,
                 self::STATUS,
                 self::ERROR_CODE,
-                self::ERROR_DESCRIPTION
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -800,7 +806,7 @@ class Header
                 self::ENACH_REGISTER_CODE_DESC,
                 self::STATUS,
                 self::ERROR_CODE,
-                self::ERROR_DESCRIPTION
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
