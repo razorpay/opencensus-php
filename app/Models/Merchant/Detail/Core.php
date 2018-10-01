@@ -126,9 +126,9 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->autoUpdateMerchantCategoryDetails($input, $oldMerchantDetails, $merchant);
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($input, $oldMerchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFLow($merchantDetails);
+            $this->autoUpdateMerchantActivationFlow($merchantDetails);
 
             $activationFlowImpl = ActivationFlowFactory::getActivationFlowImpl($merchantDetails);
 
@@ -152,7 +152,7 @@ class Core extends Base\Core
      *
      * @param Entity          $merchantDetails
      */
-    public function autoUpdateMerchantActivationFLow(Entity $merchantDetails)
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
     {
         $subCategory = $merchantDetails->getBusinessSubcategory();
 
