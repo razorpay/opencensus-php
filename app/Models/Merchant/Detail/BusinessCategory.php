@@ -227,6 +227,9 @@ class BusinessCategory
             Sub::MESSAGING,
             Sub::PROFESSIONAL_NETWORK,
             Sub::NEIGHBOURHOOD_NETWORK,
-        ]
+        ],
+
+        self::OTHERS => [
+        ],
     ];
 }
