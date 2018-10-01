@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Models\Merchant\Detail\ActivationFlow\ActivationFlowFactory;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
@@ -127,6 +128,12 @@ class Core extends Base\Core
 
             $this->autoUpdateMerchantCategoryDetails($input, $oldMerchantDetails, $merchant);
 
+            $this->autoUpdateMerchantActivationFLow($merchantDetails);
+
+            $activationFlowImpl = ActivationFlowFactory::getActivationFlowImpl($merchantDetails);
+
+            $activationFlowImpl->process();
+
             $response = $this->createResponse($merchantDetails);
 
             // Todo: confirm with product
@@ -141,29 +148,22 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array           $input
+     * on change of subcategory , updates merchant activation flow
+     *
      * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
      */
-    public function autoUpdateMerchantActivationFLow(array $input, Entity $merchantDetails)
+    public function autoUpdateMerchantActivationFLow(Entity $merchantDetails)
     {
-        if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
-        {
-            return;
-        }
+        $subCategory = $merchantDetails->getBusinessSubcategory();
 
-        $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($subCategory);
 
-        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
-        {
-
-        }
+        $merchantDetails->setActivationFlow($subCategoryMetaData[Entity::ACTIVATION_FLOW]);
     }
 
     /**
      * updates merchant category and category2 data if
-     * there is change in business subcategory or
-     * category and category2 are not set
+     * there is change in business subcategory
      *
      * @param array           $input
      * @param Entity          $merchantDetails
@@ -178,9 +178,7 @@ class Core extends Base\Core
 
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
-        if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
-            (($merchant->getCategory() === 0) and
-             ($merchant->getCategory2() === null)))
+        if ($merchantDetails->isSubCategoryChanged($subCategory))
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
         }

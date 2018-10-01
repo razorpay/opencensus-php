@@ -544,7 +544,10 @@ class MerchantDetailTest extends TestCase
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
     }
 
-    public function testMCCAndCategory2SetOnSubCategoryChange()
+    /**
+     * checks that category and category2 details should be set on business subcategory change
+     */
+    public function testCategoryDetailsSetOnSubCategoryChange()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
@@ -557,67 +560,12 @@ class MerchantDetailTest extends TestCase
 
         $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::MUTUAL_FUND);
 
-        $liveMerchant        = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $liveMerchant->getCategory2());
-
-        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $testMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $testMerchant->getCategory2());
-    }
-
-    public function testMCCAndCategory2TaggingWhenBothAreNotSet()
-    {
-        $merchant = $this->fixtures->create('merchant', [
-            Merchant::CATEGORY  => null,
-            Merchant::CATEGORY2 => null,
-        ]);
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
-            Merchant::MERCHANT_ID                 => $merchant[Merchant::ID],
-            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
-            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
-        ]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-
-        $this->startTest();
-
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::LENDING);
-
-        $liveMerchant        = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $liveMerchant->getCategory2());
-
-        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $testMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $testMerchant->getCategory2());
-    }
-
-    public function testDontSetMCCAndCategory2IfOneOfTheFieldIsSet()
-    {
-        $merchant = $this->fixtures->create('merchant', [
-            Merchant::CATEGORY  => 123,
-            Merchant::CATEGORY2 => null,
-        ]);
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
-            Merchant::MERCHANT_ID                 => $merchant[Merchant::ID],
-            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
-            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
-        ]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-
-        $this->startTest();
-
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(123, $liveMerchant->getCategory());
-        $this->assertSame(null, $liveMerchant->getCategory2());
+        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
+        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(123, $testMerchant->getCategory());
-        $this->assertSame(null, $testMerchant->getCategory2());
+        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $testMerchant->getCategory());
+        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $testMerchant->getCategory2());
     }
-
 }

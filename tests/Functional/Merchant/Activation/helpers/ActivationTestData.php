@@ -949,4 +949,50 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testPopulateActivationFlow' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'promoter_pan_name'    => "John Doe",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testPopulateCategoryDetails' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'promoter_pan_name'    => "John Doe",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

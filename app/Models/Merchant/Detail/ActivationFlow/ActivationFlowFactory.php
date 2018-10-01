@@ -10,9 +10,9 @@ use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 class ActivationFlowFactory
 {
     const ACTIVATION_FLOW_IMPLEMENTATION_MAPPING = [
-        ActivationFlow::WHITELIST => 'WhitelistActivationFlow',
-        ActivationFlow::BLACKLIST => 'BlacklistActivationFlow',
-        ActivationFlow::GREYLIST  => 'GreylistActivationFlow',
+        ActivationFlow::WHITELIST => WhitelistActivationFlow::class,
+        ActivationFlow::BLACKLIST => BlacklistActivationFlow::class,
+        ActivationFlow::GREYLIST  => GreylistActivationFlow::class,
     ];
 
     /**
@@ -23,7 +23,7 @@ class ActivationFlowFactory
      * @return ActivationFlowInterface
      * @throws InvalidArgumentException
      */
-    public function _construct(Entity $merchantDetails): ActivationFlowInterface
+    public static function  getActivationFlowImpl(Entity $merchantDetails): ActivationFlowInterface
     {
         $activationFlow = $merchantDetails->getActivationFlow();
 
@@ -34,6 +34,11 @@ class ActivationFlowFactory
             return new $class();
         }
 
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW . $activationFlow);
+        $errorDetails = [
+            Entity::ACTIVATION_FLOW => $activationFlow,
+            Entity::MERCHANT_ID     => $merchantDetails->getMerchantId(),
+        ];
+
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW , $errorDetails);
     }
 }
