@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Constants\Mode;
 
 use RZP\Exception;
 use RZP\Error;
@@ -669,6 +670,24 @@ class Service extends Base\Service
         }
 
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
+    }
+
+    public function unexpectedCallback(array $input, string $referenceId, string $gateway)
+    {
+        $isProduction = ($this->app->environment('production') === true);
+
+        // set mode for unexpectecd payments
+        $mode = $isProduction ? Mode::LIVE : Mode::TEST;
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        // use demo accounts for unexpected payments
+        $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        return $this->getNewProcessor($merchant)
+                    ->authorizePush($input, $referenceId, $gateway);
     }
 
     public function fetchMultiple(array $input)
@@ -1426,66 +1445,6 @@ class Service extends Base\Service
 
             return true;
         });
-    }
-
-    public function createPaymentFromS2SCallback($callbackData, $gateway, $paymentAndMerchantDetails)
-    {
-        list($paymentInput, $gatewayMerchantId, $masterTransactionId) = $paymentAndMerchantDetails;
-
-        $success = $this->app['api.mutex']->acquireAndRelease(
-            $masterTransactionId,
-            function() use ($gateway, $gatewayMerchantId, $paymentInput, $callbackData)
-        {
-            $success = false;
-
-            $mode = $this->app['basicauth']->getMode();
-
-            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-
-            $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
-
-            $merchantAccount = ($this->app->environment('production') === true) ?
-                Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
-
-            $merchant = $this->repo->merchant->findOrFail($merchantAccount);
-
-            $paymentProcessor = $this->getNewProcessor($merchant);
-
-            $gatewayInput = [
-                'terminal_id'       => $terminal->getId(),
-                'skip_gateway_call' => true,
-            ];
-
-            $paymentProcessor->process($paymentInput, $gatewayInput);
-
-            try
-            {
-                $this->repo->transaction(function() use ($paymentProcessor, $gateway, $callbackData, $mode, $terminal)
-                {
-                    $payment = $paymentProcessor->getPayment();
-
-                    $input = [$payment->getId(), $callbackData];
-
-                    $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
-
-                    $paymentProcessor->processAuth($payment);
-                });
-
-                $success = true;
-            }
-            catch (\Throwable $e)
-            {
-                $payment->setStatus(Payment\Status::FAILED);
-
-                $this->repo->saveOrFail($payment);
-
-                throw $e;
-            }
-
-            return $success;
-        });
-
-        return ["success" => $success];
     }
 
     private function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)

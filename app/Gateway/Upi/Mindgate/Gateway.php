@@ -601,6 +601,9 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        // update input using the merchant_reference in the gateway payment
+        $input['gateway']['merchant_reference'] = $verify->payment['merchant_reference'];
+
         $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -730,24 +733,11 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
-        $merchantReference = NULL;
-
-        if (isset($input['payment']['merchant_reference']) === false)
-        {
-            // TODO: fix .. avoid duplicate load call as already retrived in getPaymentToVerify
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], Action::AUTHORIZE);
-
-            $merchantReference = $gatewayPayment['merchant_reference'];
-        }
-        else
-        {
-            $merchantReference = $input['payment']['merchant_reference'];
-        }
+        $reference = $input['gateway']['merchant_reference'] ?: $input['payment']['id'];
 
         $data = [
             $this->getMerchantId(),
-            $merchantReference ?: $input['payment']['id'],
+            $reference,
             '',
             // This is the Reference ID field
             // which is supposed to be empty for now
@@ -900,16 +890,14 @@ class Gateway extends Base\Gateway
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {
-        $npciReferenceId = $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
-
         $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
 
         $gatewayPayment = $this->repo->fetchByMerchantReference($merchantReference);
 
-        if(is_null($gatewayPayment) === false)
+        if ($gatewayPayment !== null)
         {
             throw new Exception\LogicException(
-                'Duplicate Payment found',
+                'Duplicate Gateway payment found',
                 null,
                 [
                     'callbackData' => $callbackData
@@ -927,10 +915,9 @@ class Gateway extends Base\Gateway
         $paymentId = $callbackData[ResponseFields::PAYMENT_ID];
 
         $input = [
-            "payment" => [
-                "id"                 => $paymentId, // dummy entry
-                "merchant_reference" => $paymentId,
-            ],
+            'gateway' => [
+                'merchant_reference' => $paymentId,
+            ]
         ];
 
         $this->action = Action::VERIFY;
@@ -946,9 +933,9 @@ class Gateway extends Base\Gateway
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
     }
 
-    public function getPaymentAndMerchantDetailsFromCallback($callbackData)
+    public function getParsedDataFromUnexptectedCallback($callbackData)
     {
-        $paymentDetails = [
+        $payment = [
             "method"   => 'upi',
             "amount"   => (int)($callbackData[ResponseFields::AMOUNT] * 100),
             "currency" => "INR",
@@ -957,11 +944,14 @@ class Gateway extends Base\Gateway
             "email"    => "void@razorpay.com",
         ];
 
-        $gatewayMerchantId = $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID];
+        $terminal = [
+            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID]
+        ];
 
-        $masterTransactionId = $this->gateway . $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
-
-        return [$paymentDetails, $gatewayMerchantId, $masterTransactionId];
+        return [
+            'payment'  => $payment,
+            'terminal' => $terminal
+        ];
     }
 
     public function validatePush($input)
