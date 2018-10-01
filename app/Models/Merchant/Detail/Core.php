@@ -125,7 +125,7 @@ class Core extends Base\Core
             (($merchant->getCategory() === 0) and
              ($merchant->getCategory2() === null)))
         {
-            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
         }
     }
 
