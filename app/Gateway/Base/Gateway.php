@@ -1318,7 +1318,7 @@ class Gateway
             'Unexpected Payment is not supported');
     }
 
-    public function getPaymentAndMerchantDetailsFromCallback($callbackData)
+    public function getParsedDataFromUnexptectedCallback($callbackData)
     {
         throw new Exception\LogicException(
             'Extraction of payment and merchant details from callback data is not supported');

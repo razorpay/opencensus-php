@@ -34,48 +34,29 @@ class GatewayController extends Controller
         // Some gateways may need some pre-processing on the input
         // to be able to call the next few methods.
         //
-        // Eg: gateway request needs to be decrypted
+        // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
+        // TODO: change this to utilize callGatewayFunction
         $input = $gateway->preProcessServerCallback($input);
 
+        // TODO: this should also utilize callGatewayFunction, although we should have
+        // used preProcessServerCallback itself to return it in some way
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
+        // This is hackish, we find mode based on searchin in both DB's
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
         if ($mode === null)
         {
-            try
-            {
-                $mode = ($this->app->environment('production') === true) ? Mode::LIVE : Mode::TEST;
-
-                $this->app['basicauth']->setModeAndDbConnection($mode);
-
-                $paymentAndMerchantDetails = $gateway->getPaymentAndMerchantDetailsFromCallback($input);
-
-                return (new Payment\Service)->createPaymentFromS2SCallback($input, $gatewayDriver, $paymentAndMerchantDetails);
-            }
-            catch (\Throwable $ex)
-            {
-                $trace = $this->app['trace'];
-
-                $trace->traceException(
-                    $ex,
-                    Trace::CRITICAL,
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'gateway'    => $gatewayDriver,
-                        'payment_id' => $paymentId
-                    ]
-                );
-
-                return ['success' => false];
-            }
+            return (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
         }
+        else
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
 
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+            $paymentId = Payment\Entity::getSignedId($paymentId);
 
-        $paymentId = Payment\Entity::getSignedId($paymentId);
-
-        return (new Payment\Service)->s2sCallback($paymentId, $input);
+            return (new Payment\Service)->s2sCallback($paymentId, $input);
+        }
     }
 
     protected function handleServerCallback($input, $gatewayDriver)

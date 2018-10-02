@@ -50,6 +50,7 @@ class Processor
     use Reversal;
     use Transfer;
     use Vpa;
+    use AuthorizePush;
 
     /**
      * Callback urls can be hit multiple times by customers.
