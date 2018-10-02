@@ -6,16 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Gateway\Base;
 use RZP\Constants\Mode;
-use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-
-use RZP\Gateway\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Bank\Name as BankName;
 use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
@@ -290,7 +287,6 @@ class Gateway extends Base\Gateway
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
             RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
-            RequestFields::INSTRUCTED_AGENT_NAME      => BankName::getName($destinationBankIfsc),
             RequestFields::OCCURANCE_SEQUENCE_TYPE    => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
             RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
             RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
