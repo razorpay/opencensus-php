@@ -671,7 +671,7 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
-    public function unexptectedCallback(array $input, string $referenceId, string $gateway)
+    public function unexpectedCallback(array $input, string $referenceId, string $gateway)
     {
         $isProduction = ($this->app->environment('production') === true);
 
