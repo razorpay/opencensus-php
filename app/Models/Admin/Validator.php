@@ -47,4 +47,9 @@ class Validator extends Base\Validator
     protected static $scorecardRules = [
         'count'             => 'required|integer|max:100'
     ];
+
+    protected static $setEsPricingKeyRules = [
+        'on_demand' => 'sometimes|integer',
+        'scheduled' => 'sometimes|integer',
+    ];
 }
