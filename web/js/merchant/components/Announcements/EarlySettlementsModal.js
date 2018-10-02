@@ -211,9 +211,7 @@ export default class RequestEarlyAccessForm extends Component {
           </div>
           <div class="form-action">
             <Button.Primary class="submit-btn" disabled={this.state.fetching}>
-              {this.state.fetching
-                ? 'Fetching details... '
-                : 'Request Early Access'}
+              {this.state.fetching ? 'Fetching details ' : 'Request'}
             </Button.Primary>
           </div>
         </form>
@@ -249,7 +247,7 @@ export default class RequestEarlyAccessForm extends Component {
             onClick={this.handleAcceptPricing}
             disabled={this.state.saving}
           >
-            {this.state.saving ? 'Requesting...' : 'Confirm Request'}
+            {this.state.saving ? 'Requesting' : 'Confirm Request'}
           </Button.Primary>
         </div>
       </React.Fragment>
