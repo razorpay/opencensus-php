@@ -27,11 +27,16 @@ export default class RequestEarlyAccessForm extends Component {
       pricing: 0.2,
       errors: [],
       modalTitle: '',
+      showFeatures: true,
+      showOptions: true,
     };
+
+    if (window.innerWidth < 764) {
+      this.state.showOptions = false;
+    }
     this.onSubmit = this.onSubmit.bind(this);
     this.closeForm = this.closeForm.bind(this);
     this.closePricing = this.closePricing.bind(this);
-    this.handleBack = this.handleBack.bind(this);
   }
 
   onSubmit(body) {
@@ -148,12 +153,19 @@ export default class RequestEarlyAccessForm extends Component {
     this.props.closeModal();
   }
 
-  handleBack() {
+  handleBack = () => {
     this.handleCancelPricing();
     this.setState({
       activeScreenIndex: Math.max(this.state.activeScreenIndex - 1, 0),
     });
-  }
+  };
+
+  handleNext = () => {
+    this.setState({
+      showFeatures: false,
+      showOptions: true,
+    });
+  };
 
   componentDidMount() {
     let container = document.getElementById('es-modal-cnt');
@@ -278,7 +290,10 @@ export default class RequestEarlyAccessForm extends Component {
     } else {
       mainScreen = (
         <div id="es-modal-cnt" class="modal-body rzp-early-stl-modal">
-          <div class="content-left">
+          <div class={`content-left ${!this.state.showFeatures && 'hide'}`}>
+            <button class="close" onClick={this.props.closeModal}>
+              <i class="i i-close" />
+            </button>
             <div class="modal-header">
               <h3 class="modal-title">Early Settlements</h3>
             </div>
@@ -332,8 +347,11 @@ export default class RequestEarlyAccessForm extends Component {
                 </div>
               </div>
             </div>
+            <div class="form-action">
+              <Button.Primary onClick={this.handleNext}>Next</Button.Primary>
+            </div>
           </div>
-          <div class="content-right">
+          <div class={`content-right ${!this.state.showOptions && 'hide'}`}>
             {screens[this.state.activeScreenIndex]}
           </div>
         </div>

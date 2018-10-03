@@ -74,18 +74,21 @@
     vertical-align: top
     padding: 35px
 
+    button.close
+      margin: -30px -30px 0 0
+
   .content-left
     border-radius: 2px 0 0 2px
     background-color: #FAFAFA
     border-right: 1px solid #E0E0E0
+
+    .form-action, button.close
+      display: none
   
   .content-right
     background-color: #fff
     position: relative
     padding-left: 33px
-
-    button.close
-      margin: -30px -30px 0 0
 
     .radio-label
       .title
@@ -95,18 +98,18 @@
       .description
         color: #7B8199
 
-    .form-action
-      position: absolute
-      bottom: 0
-      left: 0
-      width: 100%
-      text-align: right 
-      border-top: 1px solid #E0E0E0
-      background-color: #F6F6F6
-      padding: 20px
+  .form-action
+    position: absolute
+    bottom: 0
+    left: 0
+    width: 100%
+    text-align: right 
+    border-top: 1px solid #E0E0E0
+    background-color: #F6F6F6
+    padding: 20px
 
-      .Button--primary
-        margin: 0
+    .Button--primary
+      margin: 0
 
   .features-list 
     color: #58666E
@@ -143,7 +146,7 @@
     background-repeat: no-repeat
   
     img
-      width: 450px
+      width: 80%
       margin: 30px 0 20px 0
 
     .modal-title
@@ -156,6 +159,26 @@
 
     .close-btn
       margin-top: 15px 
+
+@media only screen and (max-width: 764px)
+  .Modal .modal-body.rzp-early-stl-modal
+    .content-left, .content-right
+      width: 100%
+      
+    .content-left
+      min-height: 600px
+
+      .form-action
+        display: block
+
+    .features-list 
+      .feature-content
+        width: 80%
+
+  .success-modal
+    .success-banner-cnt
+      background-size: 107% 107%
+      background-position: -15px -15px
 
 .Announcement_Banner.with-tour
   margin-top: 20px
