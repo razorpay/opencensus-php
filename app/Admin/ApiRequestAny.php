@@ -8,12 +8,12 @@ use Route;
 use Trace;
 use Config;
 use Request;
-
-use App\Http\ApiUrl;
-use App\Trace\TraceCode;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
+
+use App\Http\ApiUrl;
+use App\Trace\TraceCode;
 use App\Merchant\Service as MerchantService;
 
 class ApiRequestAny

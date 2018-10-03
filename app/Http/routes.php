@@ -60,6 +60,8 @@ Route::group(['middleware' => ['web']], function () {
             ->where(['path' => '.*'])
             ->name('merchant');
 
+        Route::put('/{mode}/users/{id}/detach', 'MerchantController@removeUser')->name('remove_user');
+
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
