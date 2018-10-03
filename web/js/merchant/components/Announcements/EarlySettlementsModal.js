@@ -283,19 +283,19 @@ export default class RequestEarlyAccessForm extends Component {
           id="es-modal-cnt"
           class="modal-body rzp-early-stl-modal success-modal"
         >
-          <button class="close" onClick={this.props.closeModal}>
-            <i class="i i-close" />
-          </button>
           <div class="success-banner-cnt">
             <img
               class="banner-header"
               src="img/early_settlements/es-banner-1-header.png"
             />
+            <button class="close" onClick={this.props.closeModal}>
+              <i class="i i-close" />
+            </button>
             <img class="banner" src="img/early_settlements/es-banner-2.png" />
             <h3 class="modal-title">Early Settlements Requested</h3>
             <div class="help-block">
               You shall be activated soon for Early Settlements. A confirmation
-              email will be sent regarding the same on your registered Email ID.
+              email will be sent to your registered Email ID.
             </div>
             <div>
               <Button.Primary class="close-btn" onClick={this.props.closeModal}>
