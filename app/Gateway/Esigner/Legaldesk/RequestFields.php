@@ -14,6 +14,7 @@ class RequestFields
     const DEBTOR_ACCOUNT_TYPE        = 'debtor_account_type';
     const DEBTOR_ACCOUNT_ID          = 'debtor_account_id';
     const INSTRUCTED_AGENT_ID_TYPE   = 'instructed_agent_id_type';
+    const INSTRUCTED_AGENT_ID        = 'instructed_agent_id';
     const INSTRUCTED_AGENT_ID_CODE   = 'instructed_agent_id_code';
     const INSTRUCTED_AGENT_NAME      = 'instructed_agent_name';
     const OCCURANCE_SEQUENCE_TYPE    = 'occurance_sequence_type';
