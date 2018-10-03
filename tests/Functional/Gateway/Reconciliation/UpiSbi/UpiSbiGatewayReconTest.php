@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbiGatewayReconTest;
+namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbi;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
