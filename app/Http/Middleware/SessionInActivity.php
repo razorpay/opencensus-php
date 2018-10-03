@@ -54,12 +54,10 @@ class SessionInActivity
 
         $currentTime = time();
 
-        if ((empty($user) === false) and (empty($lastUsed) === false) and (
+        if ((empty($user->user()) === false) and (empty($lastUsed) === false) and (
             ($currentTime - $lastUsed) > $inActivityTime))
         {
             $userEmail = $user->user()->email ?? '';
-
-            $request->session()->invalidate();
 
             $user->logout();
 
