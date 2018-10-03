@@ -721,9 +721,4 @@ class Entity extends Base\PublicEntity
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
-
-    public function isSubCategoryChanged(string $subcategory)
-    {
-        return (($this->getBusinessSubcategory() !== $subcategory) ? true : false);
-    }
 }

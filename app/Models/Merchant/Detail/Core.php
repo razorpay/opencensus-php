@@ -132,7 +132,7 @@ class Core extends Base\Core
 
             $activationFlowImpl = ActivationFlowFactory::getActivationFlowImpl($merchantDetails);
 
-            $activationFlowImpl->process();
+            $activationFlowImpl->process($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
 
