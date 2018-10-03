@@ -208,27 +208,37 @@ trait SettlementTrait
 
             $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
 
-            if (($now < $tenAm) or
-                ($now > $threePm))
+            //This condition used when dsp transactions misses the settlement window of 10am - 3pm
+            // but needs to be settled immediately on the next cron run, same day
+            if (($now > $threePm) and ($txn->getSettledAt() <= $threePm))
             {
-                $this->trace->count(
-                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
-                    [
-                        Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                    ],
-                    1);
-
-                $this->trace->info(
-                    TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant_id'       => $txn->getMerchantId(),
-                        'transaction_id'    => $txn->getId(),
-                        'source_id'         => $txn->getEntityId(),
-                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                    ]);
-
-                return true;
+                return false;
             }
+
+            if (($now >= $tenAm) and
+                ($now <= $threePm))
+            {
+                return false;
+            }
+
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                ],
+                1);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                ]);
+
+            return true;
+
         }
 
         return false;
