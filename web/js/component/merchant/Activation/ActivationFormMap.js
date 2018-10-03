@@ -603,7 +603,7 @@ const uploadFields = [
     description: (
       <span>
         Upload<b> both sides </b>of the government issued photo ID (Passport /
-        Aadhaar / Driving License / Election Card). You can use{' '}
+        Driving License / Election Card). You can use{' '}
         <a
           href="http://www.pdfjoiner.com"
           target="_blank"
