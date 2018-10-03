@@ -110,6 +110,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function setEarlySettlementPricingKeys()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setEarlySettlementPricingKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getConfigKeys()
     {
         $data = $this->service()->getConfigKeys();

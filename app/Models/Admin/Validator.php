@@ -80,4 +80,9 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    protected static $setEsPricingKeyRules = [
+        'on_demand' => 'sometimes|integer',
+        'scheduled' => 'sometimes|integer',
+    ];
 }

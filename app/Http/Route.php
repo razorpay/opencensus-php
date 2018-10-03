@@ -401,6 +401,8 @@ final class Route
         'update_config_key'                        => ['patch',    'config/key',                                     'AdminController@updateConfigKey'                                   ],
         'get_config_keys'                          => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'get_cache_counts'                         => ['get',      'cache/counts',                                   'AdminController@getQueryCacheCounts'                               ],
+        'set_es_pricing_keys'                      => ['post',     'cache/es_pricing',                               'AdminController@setEarlySettlementPricingKeys'                     ],
+        'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'                => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
@@ -1238,6 +1240,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'get_es_pricing_merchant',
         'merchant_dashboard_access_la',
         'merchant_fetch_users',
         'transaction_monthly_report',
@@ -1572,6 +1575,7 @@ final class Route
         'gateway_update_rule',
         'get_cache_counts',
         'get_config_keys',
+        'set_es_pricing_keys',
         'gratis_postpaid_transactions',
         'mark_transactions_postpaid',
         'iin_edit',
@@ -1921,6 +1925,7 @@ final class Route
         'gateway_update_priorities'                => '*',
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
+        'set_es_pricing_keys'                      => '*',
         'gratis_postpaid_transactions'             => '*',
         'mark_transactions_postpaid'               => '*',
         'iin_fetch_by_iin'                         => '*',
