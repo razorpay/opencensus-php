@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
+import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
 import { batchIdLink, totalCount, batchName, status } from 'rzp/ui/item/pair';
@@ -34,7 +35,7 @@ const batchStatus = {
     ...NotificationsActions,
   }
 )
-export default class BatchList extends Component {
+export default class BatchList extends ListContainer {
   handleDownloadClick = id => {
     let windowRef = window.open('', '_blank');
     this.props.gaEvents.trackDownloadProcessedBatchReport();
@@ -64,17 +65,7 @@ export default class BatchList extends Component {
   }
 
   render() {
-    let {
-      mode,
-      docUrl,
-      count,
-      skip,
-      paginate,
-      onSubmit,
-      uploadUrl,
-      sampleUrl,
-      sendAll,
-    } = this.props;
+    let { docUrl, uploadUrl, sampleUrl } = this.props;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -107,8 +98,6 @@ export default class BatchList extends Component {
 
         <BatchListFilter
           form="batchListFilter"
-          count={count}
-          onSubmit={onSubmit}
           onSearchAnalytics={this.props.gaEvents.trackSearchFilters}
         />
         <DataTable
@@ -120,9 +109,10 @@ export default class BatchList extends Component {
             batchStatus,
             batchActions(this.handleDownloadClick, this.props.batchActions),
           ]}
-          count={count}
-          skip={skip}
-          paginate={paginate}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.paginate}
+          onSubmit={this.search}
           EmptyComponent={EmptyComponent(uploadUrl, this.openUploadModal)}
           {...this.props}
         />
