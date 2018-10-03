@@ -7,13 +7,13 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -83,29 +83,30 @@ class Service extends Base\Service
 
     /**
      * This function is used to patch merchant details fields
+     *
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function patchMerchantDetails(array $input): array
     {
-        $data = [];
-
         /**
          * Merchant needs to be set using X-Razorpay-account header.
          * Setting Merchant in header validates admin access to
          * that merchant in admin access middleware.
          */
-        if (empty($this->merchant) === false)
+        if (empty($this->merchant) === true)
         {
-            $merchantDetails = $this->merchant->merchantDetail;
-
-            $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
-
-            $data = $merchantDetails->toArrayPublic();
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
-        return $data;
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = $this->core()->patchMerchantDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
     }
 
     /**
