@@ -356,8 +356,23 @@ class Validator extends Base\Validator
 
         $validSubcategories = $subcategoryMap[$category];
 
+        $isError            = false;
+
+        // If category is `others` and subcategory is not `null`
+        if (($category === BusinessCategory::OTHERS) and
+            (isset($subcategory) === true))
+        {
+            $isError = true;
+        }
+
         // If category is not `others` and subcategory is not valid
-        if (in_array($subcategory, $validSubcategories, true) === false)
+        if (($category !== BusinessCategory::OTHERS) and
+            (in_array($subcategory, $validSubcategories, true) === false))
+        {
+            $isError = true;
+        }
+
+        if ($isError === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY . ': ' . $category,
