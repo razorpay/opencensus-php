@@ -1514,20 +1514,21 @@ class Core extends Base\Core
     }
 
     /**
-     * fetches subcategory metadata from subcategory and updates
-     * merchant category and cateogry2
+     * fetches subcategory metadata from business subcategory and business category
+     * and updates merchant category and cateogry2
      *
      * @param \RZP\Models\Merchant\Entity $merchant
-     * @param string                      $subCategory
+     * @param string                      $category
+     * @param                             $subCategory
      *
      * @return \RZP\Models\Merchant\Entity
      */
-    public function autoUpdateCategoryDetails(Entity $merchant, string $subCategory): Entity
+    public function autoUpdateCategoryDetails(Entity $merchant, string $category , $subCategory): Entity
     {
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($subCategory);
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category , $subCategory);
 
         $this->trace->info(
-            TraceCode::MERCHANT_AUTO_UPDATE_METADATA,
+            TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
             [
                 Detail\Entity::MERCHANT_ID => $merchant->getId(),
                 'old_data'                 => [

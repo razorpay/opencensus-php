@@ -13,6 +13,7 @@ class BusinessSubCategoryMetaData
     const DESCRIPTION        = 'description';
     const NORMAL_AUTH_FIELDS = [self::DESCRIPTION];
 
+    // @TODO add metadata for others and day care
     const SUB_CATEGORY_METADATA = [
         Sub::ACCOMMODATION                 => [
             Merchant::CATEGORY      => 7011,
@@ -205,6 +206,10 @@ class BusinessSubCategoryMetaData
             self::DESCRIPTION       => Sub::DESCRIPTIONS[Sub::CRYPTO_MACHINERY],
             Merchant::CATEGORY2     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,
+        ],
+        Sub::DAY_CARE                      => [
+            self::DESCRIPTION       => Sub::DESCRIPTIONS[Sub::DAY_CARE],
+            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY      => 6513,
@@ -760,17 +765,36 @@ class BusinessSubCategoryMetaData
         ],
     ];
 
-    /**
-     * returns metadata for given subcategory
-     * throws InvalidArgumentException if metadata is not defined for subcategory
-     *
-     * @param string $subcategory
+    /** returns metadata for others category
+     * others business category does not have any subcategory associated with it
      *
      * @return array
-     * @throws InvalidArgumentException
      */
-    public static function getSubCategoryMetaData(string $subcategory): array
+    private static function getMetaDataForOthersCategory(): array
     {
+        return [
+            Merchant::CATEGORY      => 5399,
+            Merchant::CATEGORY2     => Category::OTHERS,
+            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
+        ];
+    }
+
+    /**
+     * returns metadata for given category , subcategory
+     * throws InvalidArgumentException if metadata is not defined for subcategory
+     *
+     * @param string $category
+     * @param $subcategory
+     *
+     * @return array
+     */
+    public static function getSubCategoryMetaData(string $category , $subcategory): array
+    {
+        if ($category === BusinessCategory::OTHERS)
+        {
+            return self::getMetaDataForOthersCategory();
+        }
+
         if (isset(self::SUB_CATEGORY_METADATA[$subcategory]) === true)
         {
             return self::SUB_CATEGORY_METADATA[$subcategory];

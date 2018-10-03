@@ -162,13 +162,13 @@ class AtomGatewayTest extends TestCase
 
         $order = $this->startTest();
 
-        $this->payment['bank'] = 'CBIN';
+        $this->payment['bank'] = 'SBIN';
         $this->payment['order_id'] = $order['id'];
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['bank_txn'] = '99999999';
-            $content['bank_name'] = 'CBIN';
+            $content['bank_name'] = 'SBIN';
         });
 
         $this->doAuthPayment($this->payment);
