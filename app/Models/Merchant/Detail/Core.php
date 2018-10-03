@@ -125,6 +125,8 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
     {
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
+
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
         $this->repo->saveOrFail($merchantDetails);
