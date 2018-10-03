@@ -177,7 +177,7 @@ class Core extends Base\Core
 
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
-        if ($merchantDetails->isSubCategoryChanged($subCategory))
+        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
         }

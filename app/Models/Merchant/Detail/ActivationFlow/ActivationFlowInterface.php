@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
+use RZP\Models\Merchant\Detail\Entity;
+
 /**
  * Interface ActivationFlowInterface
  *
@@ -11,5 +13,5 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
  */
 interface ActivationFlowInterface
 {
-    public function process();
+    public function process(Entity $merchantDetails);
 }

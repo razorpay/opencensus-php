@@ -23,7 +23,7 @@ class ActivationFlowFactory
      * @return ActivationFlowInterface
      * @throws InvalidArgumentException
      */
-    public static function  getActivationFlowImpl(Entity $merchantDetails): ActivationFlowInterface
+    public static function getActivationFlowImpl(Entity $merchantDetails): ActivationFlowInterface
     {
         $activationFlow = $merchantDetails->getActivationFlow();
 
@@ -39,6 +39,6 @@ class ActivationFlowFactory
             Entity::MERCHANT_ID     => $merchantDetails->getMerchantId(),
         ];
 
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW , $errorDetails);
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW, $errorDetails);
     }
 }

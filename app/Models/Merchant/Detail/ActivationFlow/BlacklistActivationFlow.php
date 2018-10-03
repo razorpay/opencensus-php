@@ -1,6 +1,9 @@
 <?php
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
+
+use RZP\Models\Merchant\Detail\Entity;
+
 /**
  * Class BlacklistActivationFlow
  *
@@ -13,7 +16,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
  */
 class BlacklistActivationFlow implements ActivationFlowInterface
 {
-    public function process()
+    public function process(Entity $merchantDetails)
     {
         // TODO: Implement process() method.
     }

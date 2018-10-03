@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
+use RZP\Models\Merchant\Detail\Entity;
+
 /**
  * Class WhitelistActivationFlow
  *
@@ -14,7 +16,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
  */
 class WhitelistActivationFlow implements ActivationFlowInterface
 {
-    public function process()
+    public function process(Entity $merchantDetails)
     {
         // TODO: Implement process() method.
     }

@@ -625,7 +625,7 @@ return [
                 'business_category'    => 'financial_services',
             ],
             'url'     => '/merchant/activation',
-            'method'  => 'POST'
+            'method'  => 'POST',
         ],
         'response' => [
             'content' => [
