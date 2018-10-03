@@ -113,6 +113,9 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
+        // validates if the business subcategory belongs to the business category
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
+
         $merchantDetails->edit($input, 'instant_activation');
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
