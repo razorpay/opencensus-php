@@ -42,18 +42,7 @@ return array(
     | to be allowed to remain idle before it asks user to login again.
     |
     */
-    'in_activity_time' => 15,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Inactivity Time day
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the number of minutes that you wish the session to be allowed to login directly.
-    | Assuming the user has closed the tab.
-    |
-    */
-    'in_activity_time_day' => 60,
+    'inactivity_time' => 20,
 
     'expire_on_close' => false,
 

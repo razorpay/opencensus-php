@@ -50,15 +50,15 @@ class SessionInActivity
 
         $sessionConfig = $this->app['config']['session'];
 
-        $inActivityTime = $sessionConfig['in_activity_time'] * 60;
-
-        $dayInactiveTime = $sessionConfig['in_activity_time_day'] * 60;
+        $inActivityTime = $sessionConfig['inactivity_time'] * 60;
 
         $currentTime = time();
 
         if ((empty($user) === false) and (empty($lastUsed) === false) and (
-            ($currentTime - $lastUsed) > $inActivityTime) and (($currentTime - $lastUsed) < $dayInactiveTime))
+            ($currentTime - $lastUsed) > $inActivityTime))
         {
+            $userEmail = $user->user()->email ?? '';
+
             $request->session()->invalidate();
 
             $user->logout();
@@ -69,7 +69,15 @@ class SessionInActivity
             }
             else
             {
-                return redirect()->guest('/');
+                $path = '/#/access/signin';
+
+                if (empty($userEmail) === false)
+                {
+                    $path .= '?email=' . $userEmail;
+                }
+
+                // Need to redirect to home page with email as a param.
+                return redirect()->guest($path);
             }
         }
 
