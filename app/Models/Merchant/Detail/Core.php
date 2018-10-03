@@ -105,8 +105,7 @@ class Core extends Base\Core
     }
 
     /**
-     * updates merchant category and category2 data if
-     * there is change in business subcategory
+     * on business category change updates merchant category and category2 data
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
