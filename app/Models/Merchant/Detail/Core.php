@@ -156,7 +156,9 @@ class Core extends Base\Core
     {
         $subCategory = $merchantDetails->getBusinessSubcategory();
 
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($subCategory);
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subCategory);
 
         $merchantDetails->setActivationFlow($subCategoryMetaData[Entity::ACTIVATION_FLOW]);
     }
