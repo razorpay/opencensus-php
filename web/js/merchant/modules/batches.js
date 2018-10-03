@@ -225,14 +225,6 @@ export const fetchPaymentLinkBatchesDetails = params => {
 export const createPaymentLinkBatch = createBatch('payment_link');
 export const validatePaymentLinkBatch = validateBatch('payment_link');
 
-/* actions for recurring charge batch */
-export const createRecurringChargeBatch = createBatch('recurring_charge');
-export const validateRecurringChargeBatch = validateBatch('recurring_charge');
-export const fetchRecurringChargeBatches = fetchBatches('recurring_charge');
-export const fetchRecurringChargeBatchDetails = fetchBatchDetails(
-  'recurring_charge'
-);
-
 /* direct debit batches */
 export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');
