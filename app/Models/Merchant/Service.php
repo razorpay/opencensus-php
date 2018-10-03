@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use DB;
 use Mail;
+use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
@@ -1265,6 +1266,19 @@ class Service extends Base\Service
     public function getMerchantFeatures()
     {
         return (new Feature\Service)->getFeaturesForEntity($this->merchant);
+    }
+
+    public function getEarlySettlementPricingForMerchant(): array
+    {
+        $mid = $this->merchant->getId();
+
+        $key1 = $mid . '_on_demand_es_pricing';
+        $key2 = $mid . '_scheduled_es_pricing';
+
+        return [
+            $key1 => Cache::get($key1) ?? 0.3,
+            $key2 => Cache::get($key2) ?? 0.3
+        ];
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
