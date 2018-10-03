@@ -7,7 +7,7 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
-class ActivationFlowFactory
+class Factory
 {
     const ACTIVATION_FLOW_IMPLEMENTATION_MAPPING = [
         ActivationFlow::WHITELIST => WhitelistActivationFlow::class,

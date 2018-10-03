@@ -4324,5 +4324,5 @@ ALTER TABLE upi
 
 # Query to add activation_flow in merchant_details table for instant activations
 ALTER TABLE merchant_details
-    ADD COLUMN activation_flow VARCHAR (50) AFTER activation_status;
+    ADD COLUMN activation_flow VARCHAR (255) AFTER activation_status;
 

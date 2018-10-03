@@ -45,12 +45,12 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
-        $oldMerchantDetails = clone $merchantDetails;
-
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -75,8 +75,6 @@ class Core extends Base\Core
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
-
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($input, $oldMerchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -106,25 +104,17 @@ class Core extends Base\Core
 
     /**
      * on business category or subcategory change updates merchant category and category2 data
-     * @param array           $input
+     *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function autoUpdateMerchantCategoryDetailsIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(Entity $merchantDetails,
+                                                                  Merchant\Entity $merchant)
     {
-        if ((isset($input[Entity::BUSINESS_SUBCATEGORY]) === false) and
-            (isset($input[Entity::BUSINESS_CATEGORY]) === false))
-        {
-            return;
-        }
+        $category    = $merchantDetails->getBusinessCategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
 
-        $category = $input[Entity::BUSINESS_CATEGORY];
-
-        $subcategory = empty($input[Entity::BUSINESS_SUBCATEGORY]) === false ?
-            $input[Entity::BUSINESS_SUBCATEGORY] : null;
-
-        if (($merchantDetails->getBusinessCategory() !== $category) or
-            ($merchantDetails->getBusinessSubcategory() !== $subcategory))
+        if (($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
         }
