@@ -49,6 +49,13 @@ class AmazonpayReconTest extends TestCase
      {
          $payments = $this->makeAmazonPaymentSince();
 
+         $this->fixtures->edit('payment', $payments[0],
+                               [
+                                   'amount' => 149000,
+                                   'base_amount' => 149000,
+                                   'amount_authorized' => 149000,
+                               ]);
+
          $this->ba->appAuth();
 
          $fileContents = $this->generateReconFile();
