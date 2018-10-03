@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Constants\Mode;
 
 use RZP\Exception;
 use RZP\Error;
@@ -683,9 +684,10 @@ class Service extends Base\Service
         // use demo accounts for unexpected payments
         $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
-        $merchant = $this->repo->merchant->findOrFail($merchantAccount);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        return $this->getNewProcessor($merchant)->authorizePush($input, $referenceId, $gateway);
+        return $this->getNewProcessor($merchant)
+                    ->authorizePush($input, $referenceId, $gateway);
     }
 
     public function fetchMultiple(array $input)

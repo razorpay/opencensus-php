@@ -6,7 +6,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Trace\TraceCode;
+use RZP\Trace\TraceCode as TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait AuthorizePush
 {
@@ -26,7 +27,7 @@ trait AuthorizePush
 
             $mutexResource = 'unexpected_' . $gateway . '_' . $referenceId;
 
-            $this->app['api.mutex']->acquireAndRelease(
+            return $this->app['api.mutex']->acquireAndRelease(
                 $mutexResource,
                 function() use ($gateway, $callbackData, $terminal, $paymentInput)
                 {
@@ -108,13 +109,13 @@ trait AuthorizePush
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e);
+
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
             $ex = new Exception\BadRequestException($errorCode);
 
             $this->updatePaymentFailed($ex, TraceCode::PAYMENT_AUTH_FAILURE);
-
-            throw $e;
         }
 
         return $success;
