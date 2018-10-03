@@ -154,13 +154,13 @@ class Core extends Base\Core
      */
     public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
     {
-        $subCategory = $merchantDetails->getBusinessSubcategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
 
         $category = $merchantDetails->getBusinessCategory();
 
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subCategory);
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        $merchantDetails->setActivationFlow($subCategoryMetaData[Entity::ACTIVATION_FLOW]);
+        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
     }
 
     /**
@@ -179,13 +179,13 @@ class Core extends Base\Core
 
         $category = $input[Entity::BUSINESS_CATEGORY];
 
-        $subCategory = empty($input[Entity::BUSINESS_SUBCATEGORY]) === false ?
+        $subcategory = empty($input[Entity::BUSINESS_SUBCATEGORY]) === false ?
             $input[Entity::BUSINESS_SUBCATEGORY] : null;
 
         if (($merchantDetails->getBusinessCategory() !== $category) or
-            ($merchantDetails->getBusinessSubcategory() !== $subCategory))
+            ($merchantDetails->getBusinessSubcategory() !== $subcategory))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subCategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
         }
     }
 

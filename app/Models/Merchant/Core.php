@@ -1519,13 +1519,13 @@ class Core extends Base\Core
      *
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param string                      $category
-     * @param                             $subCategory
+     * @param                             $subcategory
      *
      * @return \RZP\Models\Merchant\Entity
      */
-    public function autoUpdateCategoryDetails(Entity $merchant, string $category , $subCategory): Entity
+    public function autoUpdateCategoryDetails(Entity $merchant, string $category , $subcategory): Entity
     {
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category , $subCategory);
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category , $subcategory);
 
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
@@ -1536,13 +1536,13 @@ class Core extends Base\Core
                     Entity::CATEGORY  => $merchant->getCategory(),
                 ],
                 'new_data'                 => [
-                    Entity::CATEGORY2 => $subCategoryMetaData[Entity::CATEGORY2],
-                    Entity::CATEGORY  => $subCategoryMetaData[Entity::CATEGORY],
+                    Entity::CATEGORY2 => $subcategoryMetaData[Entity::CATEGORY2],
+                    Entity::CATEGORY  => $subcategoryMetaData[Entity::CATEGORY],
                 ],
             ]);
 
-        $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
-        $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
+        $merchant->setCategory2($subcategoryMetaData[Entity::CATEGORY2]);
+        $merchant->setCategory($subcategoryMetaData[Entity::CATEGORY]);
 
         $this->repo->saveOrFail($merchant);
 
