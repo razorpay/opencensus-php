@@ -306,6 +306,40 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Asserts the API response when invalid business category - subcategory combination is provided
+     */
+    public function testMerchantDetailsPatchInvalidBusinessSubcategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the API response when qthe business category and the subcategory are not updated.
+     */
+    public function testMerchantDetailsPatchNoBusinessCategorySubcategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateWebsiteDetails()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
