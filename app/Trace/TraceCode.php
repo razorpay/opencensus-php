@@ -30,6 +30,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE        = 'PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE                 = 'PAYMENT_VERIFY_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_EXCEPTION               = 'PAYMENT_VERIFY_REFUND_EXCEPTION';
+    const REFUND_VERIFY_REQUEST                         = 'REFUND_VERIFY_REQUEST';
+    const REFUND_VERIFY_RESPONSE                        = 'REFUND_VERIFY_RESPONSE';
     const PAYMENT_TOPUP_REQUEST                         = 'PAYMENT_TOPUP_REQUEST';
     const PAYMENT_TOPUP_RESPONSE                        = 'PAYMENT_TOPUP_RESPONSE';
     const PAYMENT_TOPUP_FAILURE                         = 'PAYMENT_TOPUP_FAILURE';
@@ -825,6 +827,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
+    const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR           = 'PRICING_RULE_CONFIG_FETCH_ERROR';
 

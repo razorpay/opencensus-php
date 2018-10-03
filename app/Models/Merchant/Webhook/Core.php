@@ -79,10 +79,10 @@ class Core extends Base\Core
     }
 
     protected function prepareData(
-        Array $payload,
+        array $payload,
         Merchant\Entity $merchant,
         String $event,
-        Webhook\Entity $webhook) : Array
+        Webhook\Entity $webhook) : array
     {
         $attributes = [
             Models\Event\Entity::EVENT      => $event,

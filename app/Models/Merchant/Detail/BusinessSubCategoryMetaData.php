@@ -13,6 +13,7 @@ class BusinessSubCategoryMetaData
     const DESCRIPTION        = 'description';
     const NORMAL_AUTH_FIELDS = [self::DESCRIPTION];
 
+    // @TODO add metadata for others and day care
     const SUB_CATEGORY_METADATA = [
         Sub::ACCOMMODATION                 => [
             Merchant::CATEGORY      => 7011,
@@ -205,6 +206,10 @@ class BusinessSubCategoryMetaData
             self::DESCRIPTION       => Sub::DESCRIPTIONS[Sub::CRYPTO_MACHINERY],
             Merchant::CATEGORY2     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,
+        ],
+        Sub::DAY_CARE                      => [
+            self::DESCRIPTION       => Sub::DESCRIPTIONS[Sub::DAY_CARE],
+            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY      => 6513,

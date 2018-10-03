@@ -8,4 +8,7 @@ class Status
     const INITIATED     = 'initiated';
     const COMPLETED     = 'completed';
     const FAILED        = 'failed';
+
+    const MG_SUCCESS    = 'S';
+    const MG_FAILURE    = 'F';
 }

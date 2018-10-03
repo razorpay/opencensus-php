@@ -40,4 +40,8 @@ class Fields
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
+
+    const RESPONSE_CODE         = 'responseCode';
+    const BANK_RRN              = 'bank_rrn';
+    const TRANSACTION_STATUS    = 'transaction_status';
 }
