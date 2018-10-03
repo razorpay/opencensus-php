@@ -111,7 +111,7 @@ export default class RequestEarlyAccessForm extends Component {
         merchant_id: this.props.user.current,
         merchant_name: this.props.user.name,
         role: this.props.user.role,
-        activation_status: this.props.user.activation_status,
+        activation_status: '',
         interested_in: formData.interested_in,
         pricing: pricing,
       },
@@ -121,7 +121,7 @@ export default class RequestEarlyAccessForm extends Component {
     })
       .then(response => {
         if (response.status == 200) {
-          if (this.props.closeBanner) {
+          if (this.props.closeBanner && nextScreen == 2) {
             this.props.closeBanner();
           }
           this.setState({
