@@ -564,4 +564,28 @@ class MerchantDetailTest extends TestCase
         $this->assertSame(6211, $testMerchant->getCategory());
         $this->assertSame('mutual_funds', $testMerchant->getCategory2());
     }
+
+    /**
+     * checks that category and category2 details should be set on business category changed to others
+     * this is a special case as business subcategory field will be null
+     */
+    public function testCategoryDetailsSetForOthersCategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('others', $liveMerchant->getCategory2());
+
+        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
+        $this->assertSame(5399, $testMerchant->getCategory());
+        $this->assertSame('others', $testMerchant->getCategory2());
+    }
 }

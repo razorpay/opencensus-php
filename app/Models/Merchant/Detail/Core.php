@@ -105,23 +105,28 @@ class Core extends Base\Core
     }
 
     /**
-     * on business category change updates merchant category and category2 data
+     * on business category or subcategory change updates merchant category and category2 data
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
     public function autoUpdateMerchantCategoryDetailsIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
+        if ((isset($input[Entity::BUSINESS_SUBCATEGORY]) === false) and
+            (isset($input[Entity::BUSINESS_CATEGORY]) === false))
         {
             return;
         }
 
-        $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
+        $category = $input[Entity::BUSINESS_CATEGORY];
 
-        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
+        $subCategory = empty($input[Entity::BUSINESS_SUBCATEGORY]) === false ?
+            $input[Entity::BUSINESS_SUBCATEGORY] : null;
+
+        if (($merchantDetails->getBusinessCategory() !== $category) or
+            ($merchantDetails->getBusinessSubcategory() !== $subCategory))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subCategory);
         }
     }
 
