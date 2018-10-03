@@ -3,14 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
-use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class ActivationTest extends TestCase
 {
@@ -56,40 +53,33 @@ class ActivationTest extends TestCase
 
     public function testPopulateActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
-        ]);
+        $merchantDetail = $this->fixtures->create('merchant_detail', []);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::MUTUAL_FUND);
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame($subCategoryMetaData[MerchantDetails::ACTIVATION_FLOW], $liveMerchant->merchantdetail->getActivationFlow());
+        $this->assertSame('greylist', $liveMerchant->merchantdetail->getActivationFlow());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame($subCategoryMetaData[MerchantDetails::ACTIVATION_FLOW], $testMerchant->merchantdetail->getActivationFlow());
+        $this->assertSame('greylist', $testMerchant->merchantdetail->getActivationFlow());
     }
 
     public function testPopulateCategoryDetails()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
-        ]);
+        $merchantDetail = $this->fixtures->create('merchant_detail', []);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
         $this->startTest();
 
-        $this->startTest();
-
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData(BusinessSubcategory::MUTUAL_FUND);
-
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $liveMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $liveMerchant->getCategory2());
+        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY], $testMerchant->getCategory());
-        $this->assertSame($subCategoryMetaData[Merchant::CATEGORY2], $testMerchant->getCategory2());
+        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('mutual_funds', $testMerchant->getCategory2());
     }
 }
