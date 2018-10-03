@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
@@ -459,6 +460,31 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function blockInstantActivationCriticalFields(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $criticalInputAttributes = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
+
+        if (($merchant->isActivated() === true) and (empty($criticalInputAttributes) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
+                null,
+                [
+                    'critical_attributes' => $criticalInputAttributes,
+                    Entity::MERCHANT_ID   => $merchant->getId(),
+                ]);
         }
     }
 }

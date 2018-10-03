@@ -45,6 +45,8 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
+        $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
+
         $merchantDetails->edit($input);
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
