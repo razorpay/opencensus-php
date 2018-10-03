@@ -585,4 +585,37 @@ class MerchantDetailTest extends TestCase
         $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
     }
+
+    /**
+     * The merchant tries to update the fields critical to instant activations after he has been activated.
+     */
+    public function testUpdateCriticalFieldsPostActivation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
+
+    /**
+     * The merchant tries to update the fields not critical to instant activations after he has been activated.
+     * An activated merchant will submit the other details using this API to complete the KYC.
+     */
+    public function testUpdateNonCriticalFieldsPostActivation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
 }
