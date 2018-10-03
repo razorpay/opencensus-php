@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
@@ -336,6 +337,34 @@ return [
                 'business_category'          => 'financial_services',
                 'business_subcategory'       => 'lending',
             ],
+        ],
+    ],
+
+    'testMerchantDetailsPatchMerchantContextNotSet' => [
+        'request'  => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'financial_services',
+                'business_subcategory'       => 'lending',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

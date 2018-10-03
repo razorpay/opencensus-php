@@ -307,6 +307,16 @@ class MerchantDetailTest extends TestCase
     }
 
     /**
+     * Asserts the API response when the merchant context (X-Razorpay-Account header) is not set in the request
+     */
+    public function testMerchantDetailsPatchMerchantContextNotSet()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
      * Asserts the API response when invalid business category - subcategory combination is provided
      */
     public function testMerchantDetailsPatchInvalidBusinessSubcategory()
