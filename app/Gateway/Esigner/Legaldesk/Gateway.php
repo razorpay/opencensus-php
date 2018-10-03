@@ -286,7 +286,7 @@ class Gateway extends Base\Gateway
             RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
-            RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
+            RequestFields::INSTRUCTED_AGENT_ID_CODE   => $destinationBankIfsc,
             RequestFields::OCCURANCE_SEQUENCE_TYPE    => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
             RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
             RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
