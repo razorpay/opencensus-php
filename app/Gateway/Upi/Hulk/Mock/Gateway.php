@@ -18,4 +18,9 @@ class Gateway extends Hulk\Gateway
     {
         return parent::getUrl($type);
     }
+
+    protected function sendMgGatewayRequest($request)
+    {
+        return $this->sendGatewayRequest($request);
+    }
 }

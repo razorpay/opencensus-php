@@ -656,6 +656,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEarlySettlementPricingForMerchant()
+    {
+        $data = $this->service()->getEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
