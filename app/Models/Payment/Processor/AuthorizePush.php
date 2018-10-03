@@ -27,7 +27,7 @@ trait AuthorizePush
 
             $mutexResource = 'unexpected_' . $gateway . '_' . $referenceId;
 
-            return $this->app['api.mutex']->acquireAndRelease(
+            $success = $this->app['api.mutex']->acquireAndRelease(
                 $mutexResource,
                 function() use ($gateway, $callbackData, $terminal, $paymentInput)
                 {
@@ -37,6 +37,8 @@ trait AuthorizePush
 
                     return $this->authorizePushPayment($this->payment, $callbackData);
                 });
+
+            return ['success' => $success];
         }
         catch (\Throwable $ex)
         {
@@ -45,8 +47,8 @@ trait AuthorizePush
                 Trace::CRITICAL,
                 TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
                 [
-                    'gateway'    => $gatewayDriver,
-                    'payment_id' => $paymentId
+                    'gateway'    => $gateway,
+                    'payment_id' => $referenceId
                 ]
             );
 
@@ -87,22 +89,15 @@ trait AuthorizePush
 
         try
         {
-            $this->repo->transaction(function() use ($payment, $gateway, $callbackData)
+            $this->repo->transaction(function() use ($payment, $callbackData)
             {
                 // authorize on gateway
-                $gateway = $payment->getGateway();
-
-                $mode = $this->app['basicauth']->getMode();
-
-                $terminal = $payment->terminal;
-
                 $input = [$payment->getId(), $callbackData];
 
-                $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
+                $this->callGatewayFunction(Payment\Action::AUTHORIZE_PUSH, $input);
 
                 // authorize on api
                 $this->processAuth($payment);
-
             });
 
             $success = true;
