@@ -98,6 +98,9 @@
       .description
         color: #7B8199
 
+    .options-back-btn
+      display: none
+
   .form-action
     position: absolute
     bottom: 0
@@ -108,7 +111,10 @@
     background-color: #F6F6F6
     padding: 20px
 
-    .Button--primary
+    .Button:first-child
+      margin-right: 20px
+
+    .Button.Button--primary:last-child
       margin: 0
 
   .features-list 
@@ -133,32 +139,39 @@
       padding-left: 20px
 
 .success-modal
-  min-height: 400px
   text-align: center
 
   .success-banner-cnt
-    background-image: url('assets/early_settlements/es-banner-1.png')
     height: 100%
     width: 100%
-    padding: 45px
-    background-size: 104% 107%
-    background-position: -15px -12px
-    background-repeat: no-repeat
-  
-    img
-      width: 80%
-      margin: 30px 0 20px 0
+    position: relative
+
+    .banner-header
+      width: 100%
+      position: absolute
+      left: 0
+      top: 0
+
+    .banner
+      width: 70%
+      margin: 90px auto 20px auto
 
     .modal-title
       margin: 20px 0
       display: inline-block
 
     .help-block
-      width: 75%
+      width: 70%
       margin: 0 auto
 
     .close-btn
       margin-top: 15px 
+    
+    .banner-footer
+      width: 100%
+      position: absolute
+      left: 0
+      bottom: 0
 
 @media only screen and (max-width: 764px)
   .Modal .modal-body.rzp-early-stl-modal
@@ -168,17 +181,21 @@
     .content-left
       min-height: 600px
 
-      .form-action
+      .form-action, button.close, .options-back-btn
         display: block
 
+    .content-right
+      .options-back-btn
+        display: inline-block
+      
     .features-list 
       .feature-content
         width: 80%
 
   .success-modal
     .success-banner-cnt
-      background-size: 107% 107%
-      background-position: -15px -15px
+      .help-block
+        width: 90%
 
 .Announcement_Banner.with-tour
   margin-top: 20px

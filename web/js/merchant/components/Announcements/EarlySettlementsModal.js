@@ -164,6 +164,15 @@ export default class RequestEarlyAccessForm extends Component {
     this.setState({
       showFeatures: false,
       showOptions: true,
+      activeScreenIndex: 0,
+    });
+  };
+
+  handleOptionsBack = () => {
+    this.setState({
+      showFeatures: true,
+      showOptions: false,
+      activeScreenIndex: 0,
     });
   };
 
@@ -222,6 +231,9 @@ export default class RequestEarlyAccessForm extends Component {
             />
           </div>
           <div class="form-action">
+            <Button class="options-back-btn" onClick={this.handleOptionsBack}>
+              Back
+            </Button>
             <Button.Primary class="submit-btn" disabled={this.state.fetching}>
               {this.state.fetching ? 'Fetching details ' : 'Request'}
             </Button.Primary>
@@ -275,15 +287,25 @@ export default class RequestEarlyAccessForm extends Component {
             <i class="i i-close" />
           </button>
           <div class="success-banner-cnt">
-            <img src="img/early_settlements/es-banner-2.png" />
+            <img
+              class="banner-header"
+              src="img/early_settlements/es-banner-1-header.png"
+            />
+            <img class="banner" src="img/early_settlements/es-banner-2.png" />
             <h3 class="modal-title">Early Settlements Requested</h3>
             <div class="help-block">
               You shall be activated soon for Early Settlements. A confirmation
               email will be sent regarding the same on your registered Email ID.
             </div>
-            <Button.Primary class="close-btn" onClick={this.props.closeModal}>
-              Got it
-            </Button.Primary>
+            <div>
+              <Button.Primary class="close-btn" onClick={this.props.closeModal}>
+                Got it
+              </Button.Primary>
+            </div>
+            <img
+              class="banner-footer"
+              src="img/early_settlements/es-banner-1-footer.png"
+            />
           </div>
         </div>
       );
