@@ -108,7 +108,7 @@ export class EarlySettlementAnnouncement extends Component {
     );
 
     return (
-      <ShowWhen myRole="owner manager admin">
+      <ShowWhen additionalCondition={user => user.isAllowedView('settlements')}>
         <Announcement
           class={className}
           hidden={this.state.isHidden}

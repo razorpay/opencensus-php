@@ -598,7 +598,7 @@ export default class SubscriptionDetailsContainer extends Component {
           mode={this.props.mode}
           subscription={entity}
           plan={plan}
-          customer={customer}
+          customer={entity && entity.customer_id ? customer : {}}
           invoices={invoicesList}
           isLoading={isLoading}
           statusMsg={makeErrorStatus(errors)}

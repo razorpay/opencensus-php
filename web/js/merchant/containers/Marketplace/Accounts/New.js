@@ -140,7 +140,9 @@ export default class AddAccount extends Component {
             </div>
 
             {!accountData && (
-              <ShowWhen myRole="owner admin manager">
+              <ShowWhen
+                additionalCondition={user => user.isAllowedEdit('accounts')}
+              >
                 <div class="form-group">
                   <EnableDashboardField isDisabled={noLAEmail}>
                     <div class="rzpCheckbox">

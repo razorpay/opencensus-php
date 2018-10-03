@@ -35,8 +35,10 @@ export default class CreditsListContainer extends Component {
     return (
       <CreditsDetails
         currentUser={this.props.user.current}
-        onManageAlert={this.handleManageAlert}
         trackToggleHistory={trackToggleHistory}
+        onManageAlert={
+          this.props.user.isAllowedEdit('credits') && this.handleManageAlert
+        }
         {...this.props.credits}
       />
     );

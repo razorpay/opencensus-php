@@ -22,6 +22,17 @@ const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
+const BASE_ROUTES = {
+  transactions: '/payments',
+  account: '/profile',
+  settings: '/config',
+  invoices: '/invoices',
+  marketplace: '/route/payments',
+  paymentlinks: '/paymentlinks',
+  paymentpages: '/paymentpages',
+  subscriptions: '/subscriptions',
+};
+
 @withRouter
 @connect(
   state => ({
@@ -45,16 +56,7 @@ export default class Sidebar extends Component {
 
   // currently active routes in tabbed containers
   // populated with initial values
-  routes = {
-    transactions: '/payments',
-    account: '/profile',
-    settings: '/config',
-    invoices: '/invoices',
-    marketplace: '/route/payments',
-    paymentlinks: '/paymentlinks',
-    paymentpages: '/paymentpages',
-    subscriptions: '/subscriptions',
-  };
+  routes = { ...BASE_ROUTES };
 
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
@@ -72,20 +74,31 @@ export default class Sidebar extends Component {
     let pathname = location.pathname;
     let routes = this.routes;
 
+    if (location.state && location.state.was404) {
+      routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
+    }
+
     if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
       routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
+      this.prevRoute = 'transactions';
     } else if (ACCOUNTS_ROUTES_REGEX.test(pathname)) {
       routes.account = pathname.match(ACCOUNTS_ROUTES_REGEX)[0];
+      this.prevRoute = 'account';
     } else if (SETTINGS_ROUTES_REGEX.test(pathname)) {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
+      this.prevRoute = 'settings';
     } else if (INVOICES_ROUTES_REGEX.test(pathname)) {
       routes.invoices = pathname.match(INVOICES_ROUTES_REGEX)[0];
+      this.prevRoute = 'invoices';
     } else if (MARKETPLACE_ROUTES_REGEX.test(pathname)) {
       routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
+      this.prevRoute = 'marketplace';
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
+      this.prevRoute = 'paymentlinks';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
       routes.subscriptions = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
+      this.prevRoute = 'subscriptions';
     }
   }
 
@@ -138,57 +151,57 @@ export default class Sidebar extends Component {
 
                 <div class="nav">
                   <ShowWhen
-                    myRole="owner manager admin"
-                    additionalCondition={user => !user.isPartner()}
+                    additionalCondition={user =>
+                      user.isAllowedEdit('activation') &&
+                      !user.isPartner() &&
+                      (!user.isSubmitted || !config.hasPersonalised)
+                    }
                   >
-                    {(!user.isSubmitted || !config.hasPersonalised) && (
-                      <Link
-                        className="activation-status-link"
-                        to={!user.isSubmitted ? '/activation' : '/config'}
-                        onClick={this.onSidebarBannerClick}
+                    <Link
+                      className="activation-status-link"
+                      to={!user.isSubmitted ? '/activation' : '/config'}
+                      onClick={this.onSidebarBannerClick}
+                    >
+                      <div
+                        className={classList(
+                          'activation-status',
+                          user.isSubmitted && !config.hasPersonalised
+                            ? 'not-personalised'
+                            : ''
+                        )}
                       >
-                        <div
-                          className={classList(
-                            'activation-status',
-                            user.isSubmitted && !config.hasPersonalised
-                              ? 'not-personalised'
-                              : ''
-                          )}
-                        >
-                          <div className="clearfix">
-                            <div className="pull-left">{actionCopy}</div>
-                            <div className="pull-right">
-                              <i className="i i-chevron-right" />
+                        <div className="clearfix">
+                          <div className="pull-left">{actionCopy}</div>
+                          <div className="pull-right">
+                            <i className="i i-chevron-right" />
+                          </div>
+                        </div>
+                        {!user.isSubmitted ? (
+                          <div className="activation-bar-content activation-status-secondary">
+                            <div className="activation-bar-text">
+                              {user.activation_progress}% Complete
+                            </div>
+                            <div className="activation-bar">
+                              <ProgressBar
+                                type="success"
+                                max={100}
+                                value={user.activation_progress}
+                              />
                             </div>
                           </div>
-                          {!user.isSubmitted ? (
-                            <div className="activation-bar-content activation-status-secondary">
-                              <div className="activation-bar-text">
-                                {user.activation_progress}% Complete
-                              </div>
-                              <div className="activation-bar">
-                                <ProgressBar
-                                  type="success"
-                                  max={100}
-                                  value={user.activation_progress}
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="activation-status-secondary">
-                              Personalise your Account
-                            </div>
-                          )}
-                        </div>
-                      </Link>
-                    )}
+                        ) : (
+                          <div className="activation-status-secondary">
+                            Personalise your Account
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   </ShowWhen>
 
                   <MainNavLink
                     label="Partner Dashboard"
                     icon="i i-partner text-success"
                     to="/submerchants"
-                    notMyRole="sellerapp"
                     additionalCondition={user => user.isPartner()}
                     exact
                   />
@@ -200,19 +213,23 @@ export default class Sidebar extends Component {
                     icon="i i-chart text-info"
                     to="/dashboard"
                     exact
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user => user.isAllowedView('home')}
                   />
                   <MainNavLink
                     label="Transactions"
                     icon="i i-repeat text-primary"
                     to={routes.transactions}
-                    notMyRole="sellerapp agent"
+                    additionalCondition={user =>
+                      user.isAllowedMultiple('payments orders refunds')
+                    }
                   />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user =>
+                      user.isAllowedView('settlements')
+                    }
                   />
 
                   <div class="divider" />
@@ -221,45 +238,57 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="i i-notes text-warning"
                     to={routes.invoices}
-                    notMyRole="sellerapp agent"
+                    additionalCondition={user => user.isAllowedView('invoices')}
                     isNew
                   />
                   <MainNavLink
                     label="Payment Links"
                     icon="i i-link text-primary"
                     to={routes.paymentlinks}
+                    additionalCondition={user =>
+                      user.isAllowedView('payment_links')
+                    }
                   />
                   <MainNavLink
                     label="Payment Pages"
                     icon="i i-payment-pages text-warm temp-icon-style"
                     to={routes.paymentpages}
                     featureEnabled="paymentpages"
+                    additionalCondition={user =>
+                      user.isAllowedView('payment_pages')
+                    }
                     isNew
                   />
                   <MainNavLink
                     label="Route"
                     icon="i i-store text-success"
                     to={routes.marketplace}
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user => user.isAllowedView('home')}
                   />
                   <MainNavLink
                     label="Subscriptions"
                     icon="i i-refresh text-info"
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user =>
+                      user.isAllowedView('subscriptions')
+                    }
                     to={routes.subscriptions}
                   />
                   <MainNavLink
                     label="Smart Collect"
                     icon="i i-account-balance text-danger"
                     to="/virtualaccounts"
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user =>
+                      user.isAllowedView('virtual_accounts')
+                    }
                   />
 
                   <MainNavLink
                     label="Customers"
                     icon="i i-people text-warning"
                     to="/customers"
-                    notMyRole="sellerapp agent"
+                    additionalCondition={user =>
+                      user.isAllowedView('customers')
+                    }
                   />
 
                   <div class="divider" />
@@ -268,19 +297,28 @@ export default class Sidebar extends Component {
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    notMyRole="sellerapp agent support"
+                    additionalCondition={user => user.isAllowedView('reports')}
                     isPending={isReportsPending}
                   />
                   <MainNavLink
                     label="My Account"
                     icon="i i-account text-primary"
+                    additionalCondition={user =>
+                      user.isAllowedMultiple(
+                        'profile credits add_funds team referrals'
+                      )
+                    }
                     to={routes.account}
                   />
                   <MainNavLink
                     label="Settings"
                     icon="i i-settings text-warning"
                     to={routes.settings}
-                    myRole="owner manager admin"
+                    additionalCondition={user =>
+                      user.isAllowedMultiple(
+                        'webhooks applications configuration api_keys'
+                      )
+                    }
                   />
                 </div>;
               }

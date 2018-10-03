@@ -136,7 +136,7 @@ class Service extends Base\Service
 
         $currentSessionId = Session::getId();
 
-        (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->id, $currentSessionId);
+        (new SessionTable\Entity)->deleteSessionsForUser($user->id, $currentSessionId);
 
         return [$error, $data];
     }

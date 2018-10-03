@@ -69,7 +69,9 @@ export default class PaymentLinksContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedEdit('payment_links')}
+          >
             <div class="btn-toolbar pull-right">
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />

@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'rzp/ui/ModalHeader';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { activationDuration } from 'common/data';
 
 export default ({ onCloseClick, user }) => {
@@ -7,14 +8,16 @@ export default ({ onCloseClick, user }) => {
     <div>
       You can only use Razorpay in test mode until your account is activated.{' '}
       <br />
-      Please fill and submit the activation form to access live mode.
-      <div class="Modal__actions text-right">
-        <NavLink to="/activation" onClick={onCloseClick}>
-          <button class="btn btn-primary btn-block">
-            Fill Activation Form
-          </button>
-        </NavLink>
-      </div>
+      <ShowWhen additionalCondition={user => user.isAllowedEdit('activation')}>
+        Please fill and submit the activation form to access live mode.
+        <div class="Modal__actions text-right">
+          <NavLink to="/activation" onClick={onCloseClick}>
+            <button class="btn btn-primary btn-block">
+              Fill Activation Form
+            </button>
+          </NavLink>
+        </div>
+      </ShowWhen>
     </div>
   );
 

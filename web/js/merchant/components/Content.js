@@ -7,7 +7,7 @@ import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
 import PartnerDashboard from 'merchant/containers/PartnerDashboard';
 import Transactions from 'merchant/containers/Transactions';
@@ -23,12 +23,6 @@ import Reports from 'merchant/containers/Reports';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
-import ActivationContainer from 'merchant/containers/Activation/new';
-
-// Below will be removed with old navigation removal
-import RefundsList from 'merchant/containers/Refunds/List';
-import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
-import BatchUploads from 'merchant/containers/Refunds/BatchList';
 
 import ErrorBoundary from 'common/ErrorBoundary';
 
@@ -39,6 +33,8 @@ import {
 } from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
+import store from 'merchant/store';
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -48,40 +44,6 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
       </header>
       <content>
         <Route path={path || to} component={component} />
-      </content>
-    </tabbed-container>
-  );
-};
-
-// Can be removed with old navigation removal
-const RefundsTabbedContainer = () => {
-  return (
-    <tabbed-container>
-      <header id="transactions-header">
-        <NavLink to="/refunds" exact>
-          Refunds
-        </NavLink>
-        <ShowWhen
-          featureEnabled="Batchrefunds"
-          myRole="owner manager operations admin finance"
-        >
-          <NavLink
-            to="/refunds/batchuploads"
-            isActive={(match, { pathname }) =>
-              pathname === '/refunds/batchupload' ||
-              pathname === '/refunds/batchuploads'
-            }
-          >
-            Batch Refunds
-          </NavLink>
-        </ShowWhen>
-      </header>
-      <content>
-        <Switch>
-          <Route path="/refunds/batchupload" component={BatchUpload} />
-          <Route path="/refunds/batchuploads" component={BatchUploads} />
-          <Route path="/refunds" component={RefundsList} />
-        </Switch>
       </content>
     </tabbed-container>
   );
@@ -184,22 +146,62 @@ export default class Content extends Component {
             additionalCondition={user => user.isPartner()}
           />
 
-          <Route path="/payments" component={Transactions} />
-          <Route path="/refunds" component={Transactions} />
-          <Route path="/orders" component={Transactions} />
+          <ShowWhenRoute
+            path="/payments"
+            component={Transactions}
+            additionalCondition={user => user.isAllowedView('payments')}
+          />
+          <ShowWhenRoute
+            path="/refunds"
+            component={Transactions}
+            additionalCondition={user => user.isAllowedView('refunds')}
+          />
+          <ShowWhenRoute
+            path="/orders"
+            component={Transactions}
+            additionalCondition={user => user.isAllowedView('orders')}
+          />
           <Route path="/disputes" component={Transactions} />
 
-          <Route path="/settlements" component={Settlements} />
+          <ShowWhenRoute
+            path="/settlements"
+            component={Settlements}
+            additionalCondition={user => user.isAllowedView('settlements')}
+          />
 
-          <Route path="/invoices" exact component={InvoicingContainer} />
-          <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
-          <Route path="/invoices/new" component={InvoicesNew} />
-          <Route path="/items" component={InvoicingContainer} />
-          <Route path="/paymentlinks" component={PaymentLinks} />
+          <ShowWhenRoute
+            path="/invoices"
+            exact
+            component={InvoicingContainer}
+            additionalCondition={user => user.isAllowedView('invoices')}
+          />
+          <ShowWhenRoute
+            path="/invoices/:id(inv_.+)"
+            component={InvoicesNew}
+            additionalCondition={user => user.isAllowedView('invoices')}
+          />
+          <ShowWhenRoute
+            path="/invoices/new"
+            component={InvoicesNew}
+            additionalCondition={user => user.isAllowedEdit('invoices')}
+          />
+          <ShowWhenRoute
+            path="/items"
+            component={InvoicingContainer}
+            additionalCondition={user => user.isAllowedView('invoices')}
+          />
+
+          <ShowWhenRoute
+            path="/paymentlinks"
+            component={PaymentLinks}
+            additionalCondition={user => user.isAllowedView('payment_links')}
+          />
+
           <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
             featureEnabled="paymentpages"
+            additionalCondition={user => user.isAllowedView('payment_pages')}
           />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
@@ -219,19 +221,58 @@ export default class Content extends Component {
           <Route path="/route" component={Marketplace} />
           <Route path="/virtualaccounts" component={VirtualAccounts} />
 
-          <Route path="/reports" component={Reports} />
+          <ShowWhenRoute
+            path="/reports"
+            component={Reports}
+            additionalCondition={user => user.isAllowedView('reports')}
+          />
 
-          <Route path="/profile" component={MyAccount} />
-          <Route path="/activation" component={ActivationContainer} />
-          <Route path="/addfunds" component={MyAccount} />
-          <Route path="/credits" component={MyAccount} />
-          <Route path="/referrals" component={MyAccount} />
-          <Route path="/team" component={MyAccount} />
+          <ShowWhenRoute
+            path="/profile"
+            component={MyAccount}
+            additionalCondition={user => user.isAllowedView('profile')}
+          />
+          <ShowWhenRoute
+            path="/addfunds"
+            component={MyAccount}
+            additionalCondition={user => user.isAllowedView('add_funds')}
+          />
+          <ShowWhenRoute
+            path="/credits"
+            component={MyAccount}
+            additionalCondition={user => user.isAllowedView('credits')}
+          />
+          <ShowWhenRoute
+            path="/referrals"
+            component={MyAccount}
+            additionalCondition={user => user.isAllowedView('referrals')}
+          />
+          <ShowWhenRoute
+            path="/team"
+            component={MyAccount}
+            additionalCondition={user => user.isAllowedView('team')}
+          />
 
-          <Route path="/config" component={Settings} />
-          <Route path="/keys" component={Settings} />
-          <Route path="/webhooks" component={Settings} />
-          <Route path="/applications" component={Settings} />
+          <ShowWhenRoute
+            path="/config"
+            component={Settings}
+            additionalCondition={user => user.isAllowedView('configuration')}
+          />
+          <ShowWhenRoute
+            path="/keys"
+            component={Settings}
+            additionalCondition={user => user.isAllowedView('api_keys')}
+          />
+          <ShowWhenRoute
+            path="/webhooks"
+            component={Settings}
+            additionalCondition={user => user.isAllowedView('webhooks')}
+          />
+          <ShowWhenRoute
+            path="/applications"
+            component={Settings}
+            additionalCondition={user => user.isAllowedView('applications')}
+          />
 
           <Redirect to="/dashboard" />
         </Switch>
@@ -315,21 +356,3 @@ export default class Content extends Component {
     );
   }
 }
-
-export const ShowWhenRoute = ({ component: Component, ...rest }) => (
-  <Route
-    {...rest}
-    render={props =>
-      showWhenUtil(rest) ? (
-        <Component {...rest} />
-      ) : (
-        <Redirect
-          to={{
-            pathname: '/dashboard',
-            state: { from: rest.location },
-          }}
-        />
-      )
-    }
-  />
-);

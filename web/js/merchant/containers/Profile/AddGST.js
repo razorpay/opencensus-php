@@ -14,6 +14,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import { required, validateGSTIN } from 'rzp/utils/validators';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const selector = formValueSelector('newGST');
 @connect(
@@ -54,7 +55,11 @@ export default class AddGST extends Component {
 
   save = ({ gst_type, ...otherProps }) => {
     let fieldProps = {};
+
     fieldProps[gst_type] = otherProps[gst_type];
+
+    const isNew =
+      !this.props.merchant_gst.p_gstin && !this.props.merchant_gst.gstin;
 
     return this.props
       .saveGST(fieldProps)
@@ -66,19 +71,19 @@ export default class AddGST extends Component {
         this.props.updateSession({
           user,
         });
+
+        this.setState({
+          saved: true,
+        });
+
+        this.props.showNotification({
+          type: 'success',
+          message: `Your GST details are added. ${this.gst_success_msg}`,
+          closeTimeout: 7000,
+        });
         if (this.props.reloadAfterSave) {
-          window.location.reload();
-        } else if (this.props.openedFromTopbar) {
-          this.setState({
-            saved: true,
-          });
+          setTimeout(window.location.reload, 2500);
         } else {
-          this.props.showNotification({
-            type: 'success',
-            message: `Your GST details have been updated. Note: ${
-              this.gst_success_msg
-            }`,
-          });
           this.props.closeModal();
         }
       })
@@ -90,26 +95,22 @@ export default class AddGST extends Component {
   };
 
   render() {
-    const {
-      handleSubmit,
-      merchant_gst,
-      rzp_gst,
-      selectedGSTType,
-      openedFromTopbar,
-    } = this.props;
-    let isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
+    const { handleSubmit, merchant_gst, rzp_gst, selectedGSTType } = this.props;
+    const isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
+    const isEditable =
+      isNew && this.props.session.user.isAllowedEdit('profile_gst');
 
     return (
       <div>
-        {!openedFromTopbar ? (
+        {isNew ? (
           <ModalHeader
-            title={isNew ? 'Add your GST Details' : 'Edit GST Details'}
+            title="Add your GST Details"
             onCloseClick={this.props.closeModal}
           />
         ) : null}
 
         <div class="modal-body rzp-gst-content">
-          {openedFromTopbar ? (
+          {!isNew ? (
             <div class="rzp-gst">
               <button
                 type="button"
@@ -133,8 +134,6 @@ export default class AddGST extends Component {
               </div>
 
               <hr />
-
-              <label>Add your GST number</label>
             </div>
           ) : null}
 
@@ -167,10 +166,12 @@ export default class AddGST extends Component {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(this.save)}>
-              <div class="help-block">
-                Entered GSTIN will appear on invoices that we send to you
-              </div>
+            <form onSubmit={isEditable ? handleSubmit(this.save) : undefined}>
+              {!isNew && (
+                <div class="help-block">
+                  Entered GSTIN will appear on invoices that we send to you.
+                </div>
+              )}
 
               <div class="form-group">
                 <label class="label-required">GSTIN</label>
@@ -182,32 +183,37 @@ export default class AddGST extends Component {
                     autoFocus={true}
                     placeholder="19AAAAAA1234YYY"
                     validate={[required(), validateGSTIN]}
+                    disabled={!isEditable}
                   />
                 </div>
-                <div className="gst-update-note">
-                  <Banner>
-                    <b>Note:</b> {this.gst_success_msg}
-                  </Banner>
-                </div>
+                {isNew && (
+                  <div className="gst-update-note">
+                    <Banner>
+                      <b>Note:</b> {this.gst_success_msg}
+                    </Banner>
+                  </div>
+                )}
               </div>
 
               <div class="help-block">
                 <span>
-                  Final GSTIN once submitted cannot be updated via dashboard. To
+                  GSTIN once submitted cannot be updated via dashboard. To
                   update it, write to us at{' '}
                   <a href="mailto:support@razorpay.com">support@razorpay.com</a>
                 </span>
               </div>
 
-              <div class="Modal__actions">
-                <AsyncButton
-                  type="submit"
-                  class="btn btn-primary btn-block"
-                  text="Save my GST Details"
-                  pendingText="Saving..."
-                  onClick={handleSubmit(this.save)}
-                />
-              </div>
+              {isEditable && (
+                <div class="Modal__actions">
+                  <AsyncButton
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                    text="Save my GST Details"
+                    pendingText="Saving..."
+                    onClick={handleSubmit(this.save)}
+                  />
+                </div>
+              )}
             </form>
           )}
         </div>

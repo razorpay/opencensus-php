@@ -11,6 +11,7 @@ import { switchMerchant } from 'merchant/modules/session';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'rzp/ui/item';
@@ -53,7 +54,15 @@ const addedOn = {
 const activationStatus = {
   title: (
     <Fragment>
-      Activation Status <i class="i-info-circle" />
+      Activation Status&nbsp;
+      <span>
+        <i class="i i-info-circle" />
+        <Popover align="top" theme="dark">
+          <PopoverBody>
+            Current status of merchant's activation request
+          </PopoverBody>
+        </Popover>
+      </span>
     </Fragment>
   ),
   value: submerchant =>

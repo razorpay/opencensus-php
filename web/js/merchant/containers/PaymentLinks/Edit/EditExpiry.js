@@ -53,6 +53,7 @@ export default class EditExpiry extends React.Component {
   };
 
   render() {
+    const { isRoleAllowedEdit } = this.props;
     let content = (
       <React.Fragment>
         {this.props.value ? (
@@ -61,13 +62,15 @@ export default class EditExpiry extends React.Component {
           'No Expiry'
         )}
 
-        <Button.Transparent
-          onClick={this.makeEditable}
-          class="Button--Link"
-          style={{ marginLeft: 12 }}
-        >
-          Change
-        </Button.Transparent>
+        {isRoleAllowedEdit && (
+          <Button.Transparent
+            onClick={this.makeEditable}
+            class="Button--Link"
+            style={{ marginLeft: 12 }}
+          >
+            Change
+          </Button.Transparent>
+        )}
       </React.Fragment>
     );
 

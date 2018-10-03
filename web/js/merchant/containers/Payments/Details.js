@@ -314,9 +314,13 @@ export default class PaymentDetailsContainer extends Component {
           goToLink={this.goToLink}
           openRefundModal={this.openRefundModal}
           onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
+          isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
         />
 
-        <ShowWhen apiFeatureEnabled="Marketplace">
+        <ShowWhen
+          apiFeatureEnabled="Marketplace"
+          additionalCondition={user => user.isAllowedView('payments')}
+        >
           {this.state.secView === 'new_transfer' && (
             <PaymentTransferNew
               paymentId={payment && payment.id}

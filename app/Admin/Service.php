@@ -419,7 +419,7 @@ class Service extends Base\Service
 
         foreach ($merchantUsers as $merchantUser)
         {
-            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($merchantUser['id']);
+            (new SessionTable\Entity)->deleteSessionsForUser($merchantUser['id']);
         }
     }
 

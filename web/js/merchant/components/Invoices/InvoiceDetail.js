@@ -7,7 +7,6 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
@@ -103,7 +102,13 @@ const getPaymentDetail = invoice => (
 );
 
 export default props => {
-  let { invoice, isLoading, statusMsg, editPaymentLink } = props;
+  let {
+    invoice,
+    isLoading,
+    statusMsg,
+    editPaymentLink,
+    isRoleAllowedEdit,
+  } = props;
 
   let status = invoice.status;
   const isDraft = status === 'draft';
@@ -127,19 +132,18 @@ export default props => {
           <div class="panel-heading">
             <i class="i i-link text-primary icon--formal" />{' '}
             <strong>{invoice.id}</strong>
-            <ShowWhen notMyRole="support finance">
-              <div class="btn-toolbar pull-right">
-                {invoice.customer_id &&
-                  (isDraft || isIssued || isPartiallyPaid) && (
-                    <button
-                      class="btn btn-primary btn-sm"
-                      onClick={props.onIssue}
-                    >
-                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
-                    </button>
-                  )}
-              </div>
-            </ShowWhen>
+            <div class="btn-toolbar pull-right">
+              {isRoleAllowedEdit &&
+                invoice.customer_id &&
+                (isDraft || isIssued || isPartiallyPaid) && (
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onClick={props.onIssue}
+                  >
+                    {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                  </button>
+                )}
+            </div>
           </div>
 
           <div class="SliderPanel__Body">
@@ -164,8 +168,8 @@ export default props => {
                   value={() => (
                     <div>
                       <InvoiceStatusLabel status={invoice.status} />
-                      <ShowWhen notMyRole="support finance">
-                        {isIssued && (
+                      {isRoleAllowedEdit &&
+                        isIssued && (
                           <Button.Transparent
                             class="Button--Link"
                             style={{ marginLeft: 12 }}
@@ -174,7 +178,6 @@ export default props => {
                             Cancel Link
                           </Button.Transparent>
                         )}
-                      </ShowWhen>
                     </div>
                   )}
                 />
@@ -188,29 +191,30 @@ export default props => {
                       value={() => (
                         <div>
                           {isPartialPayment ? 'Enabled' : 'Disabled'}
-                          {isIssued && (
-                            <AsyncBtn.Transparent
-                              onClick={() => {
-                                const toEnablePartialPayment = +!isPartialPayment;
-                                editPaymentLink({
-                                  partial_payment: toEnablePartialPayment,
-                                });
+                          {isRoleAllowedEdit &&
+                            isIssued && (
+                              <AsyncBtn.Transparent
+                                onClick={() => {
+                                  const toEnablePartialPayment = +!isPartialPayment;
+                                  editPaymentLink({
+                                    partial_payment: toEnablePartialPayment,
+                                  });
 
-                                trackTogglePartialPayment(
-                                  invoice.id,
-                                  'Toggle Partial Payment',
-                                  toEnablePartialPayment
-                                );
-                              }}
-                              class="Button--Link"
-                              style={{ marginLeft: 12 }}
-                              pendingState={
-                                isPartialPayment ? 'Disabling' : 'Enabling'
-                              }
-                            >
-                              {isPartialPayment ? 'Disable' : 'Enable'}
-                            </AsyncBtn.Transparent>
-                          )}
+                                  trackTogglePartialPayment(
+                                    invoice.id,
+                                    'Toggle Partial Payment',
+                                    toEnablePartialPayment
+                                  );
+                                }}
+                                class="Button--Link"
+                                style={{ marginLeft: 12 }}
+                                pendingState={
+                                  isPartialPayment ? 'Disabling' : 'Enabling'
+                                }
+                              >
+                                {isPartialPayment ? 'Disable' : 'Enable'}
+                              </AsyncBtn.Transparent>
+                            )}
                         </div>
                       )}
                     />;
@@ -261,6 +265,7 @@ export default props => {
                             entityId={invoice.id}
                             editFn={editPaymentLink}
                             trackerFn={trackDetailViewEdits}
+                            isRoleAllowedEdit={isRoleAllowedEdit}
                           />
                         )
                       : invoice.receipt || '--'
@@ -292,6 +297,7 @@ export default props => {
                             editFn={editPaymentLink}
                             entityId={invoice.id}
                             trackerFn={trackDetailViewEdits}
+                            isRoleAllowedEdit={isRoleAllowedEdit}
                           />
                         )
                       : () =>
@@ -312,6 +318,7 @@ export default props => {
                     <EditNotes
                       value={invoice.notes}
                       editFn={editPaymentLink}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                       entityId={invoice.id}
                       trackerFn={trackDetailViewEdits}
                     />

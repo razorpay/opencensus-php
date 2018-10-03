@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
-import { connect } from 'react-redux';
-
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { getURLQueryParams } from 'rzp/utils/rzp-utils';
-import LocalStorageService from 'rzp/utils/localStorage';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -24,7 +22,9 @@ export default function TransactionsContainer(props) {
         </NavLink>
         <ShowWhen
           featureEnabled="direct_debit"
-          myRole="owner manager operations admin finance"
+          additionalCondition={user =>
+            user.isAllowedView('payments_batch_uploads')
+          }
         >
           <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
         </ShowWhen>
@@ -33,7 +33,9 @@ export default function TransactionsContainer(props) {
         </NavLink>
         <ShowWhen
           featureEnabled="Batchrefunds"
-          myRole="owner manager operations admin finance"
+          additionalCondition={user =>
+            user.isAllowedView('refunds_batch_uploads')
+          }
         >
           <NavLink
             to="/refunds/batchuploads"
@@ -45,7 +47,10 @@ export default function TransactionsContainer(props) {
             Batch Refunds
           </NavLink>
         </ShowWhen>
-        <NavLink to="/orders">Orders</NavLink>
+        <ShowWhen additionalCondition={user => user.isAllowedView('orders')}>
+          <NavLink to="/orders">Orders</NavLink>
+        </ShowWhen>
+
         <NavLink to="/disputes">Disputes</NavLink>
       </header>
       <TestModeBanner />
@@ -54,7 +59,11 @@ export default function TransactionsContainer(props) {
           <Route path="/refunds/batchupload" component={BatchUpload} />
           <Route path="/refunds/batchuploads" component={BatchUploads} />
           <Route path="/refunds" component={RefundsList} />
-          <Route path="/orders" component={OrdersList} />
+          <ShowWhenRoute
+            path="/orders"
+            component={OrdersList}
+            additionalCondition={user => user.isAllowedView('orders')}
+          />
           <Route
             path="/payments/batchuploads/:mode"
             component={PaymentsBatchList}

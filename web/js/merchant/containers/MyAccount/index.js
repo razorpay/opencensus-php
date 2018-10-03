@@ -15,27 +15,31 @@ export default function MyAccount() {
 
       <tabbed-container>
         <header id="myaccount-header">
-          <NavLink to="/profile">Profile</NavLink>
+          <ShowWhen additionalCondition={user => user.isAllowedView('profile')}>
+            <NavLink to="/profile">Profile</NavLink>
+          </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp agent support">
+          <ShowWhen additionalCondition={user => user.isAllowedView('credits')}>
             <NavLink to="/credits">Credits</NavLink>
           </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp agent">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('add_funds')}
+          >
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
 
           <ShowWhen
-            notMyRole="sellerapp agent"
             featureEnabled="Referral"
             additionalCondition={user =>
-              !user.isPartner() || user.isPartner('pure_platform')
+              user.isAllowedView('referrals') &&
+              (!user.isPartner() || user.isPartner('pure_platform'))
             }
           >
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
-          <ShowWhen myRole="owner">
+          <ShowWhen additionalCondition={user => user.isAllowedView('team')}>
             <NavLink to="/team">Manage Team</NavLink>
           </ShowWhen>
         </header>

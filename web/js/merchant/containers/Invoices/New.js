@@ -2012,7 +2012,9 @@ export default class InvoicesNewContainer extends Component {
                   </div>
                 </div>
 
-                <ShowWhen notMyRole="support finance">
+                <ShowWhen
+                  additionalCondition={user => user.isAllowedEdit('invoices')}
+                >
                   <div
                     class="col-md-4 col-sm-4 invoices--side"
                     style={{ marginTop: '48px' }}

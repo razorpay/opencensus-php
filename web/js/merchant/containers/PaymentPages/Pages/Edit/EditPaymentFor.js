@@ -40,6 +40,8 @@ export default class EditDescription extends React.Component {
   }
 
   render() {
+    const { isRoleAllowedEdit } = this.props;
+
     let content = (
       <React.Fragment>
         <div>
@@ -50,9 +52,11 @@ export default class EditDescription extends React.Component {
             </div>
           )}
         </div>
-        <Button.Transparent onClick={this.makeEditable} class="Button--Link">
-          Change
-        </Button.Transparent>
+        {isRoleAllowedEdit && (
+          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
+            Change
+          </Button.Transparent>
+        )}
       </React.Fragment>
     );
 

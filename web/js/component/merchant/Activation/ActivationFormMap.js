@@ -144,10 +144,14 @@ const businessModel = [
           const subCategories = categories[userSelection].subcategories;
 
           this.options = ['--Select--'].concat(
-            Object.keys(subCategories).map(c => ({
-              name: c,
-              label: subCategories[c],
-            }))
+            Object.keys(subCategories).map(c => {
+              const label = subCategories[c];
+
+              return {
+                name: c,
+                label: typeof label === 'string' ? label : label.description,
+              };
+            })
           );
         }
 

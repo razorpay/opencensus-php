@@ -56,7 +56,11 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen myRole="owner finance">
+        <ShowWhen
+          additionalCondition={user =>
+            !!showGSTModal && user.isAllowedView('profile_gst')
+          }
+        >
           <li>
             <a onClick={showGSTModal}>GST Details</a>
           </li>
