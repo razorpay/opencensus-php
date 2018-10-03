@@ -103,10 +103,15 @@ class Entity extends Base\Entity
     }
 
     /**
+     * The currentSessionId is optional so if it is not passed
+     * all sessions will be deleted. One use of this case is when
+     * the user is removed from a merchant's team and we delete
+     * all his active sessions.
+     *
      * @param        $userId
      * @param string $currentSessionId
      */
-    public function deleteAllOtherSessionsForUser($userId, $currentSessionId = null)
+    public function deleteSessionsForUser($userId, $currentSessionId = null)
     {
         $setKey = $this->getUserSessionKey($userId);
 
@@ -114,7 +119,7 @@ class Entity extends Base\Entity
 
         foreach ($sessionIds as $sessionId)
         {
-            if (empty($currentSessionId) === false and ($sessionId === $currentSessionId))
+            if ((empty($currentSessionId) === false) and ($sessionId === $currentSessionId))
             {
                 continue;
             }
