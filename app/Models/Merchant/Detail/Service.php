@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -87,19 +88,19 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
      */
     public function patchMerchantDetails(array $input): array
     {
-        /**
-         * Merchant needs to be set using X-Razorpay-account header.
-         * Setting Merchant in header validates admin access to
-         * that merchant in admin access middleware.
-         */
+        //
+        // Merchant needs to be set using X-Razorpay-account header.
+        // Setting Merchant in header validates admin access to
+        // that merchant in admin access middleware.
+        //
         if (empty($this->merchant) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
         $merchantDetails = $this->merchant->merchantDetail;
