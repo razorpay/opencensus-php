@@ -106,6 +106,7 @@ class ViewSerializer extends Base\Core
         $this->addDerivedAttributesForPaymentLink($serialized);
         $this->addFormattedAmountAttributesForPaymentLink($serialized);
         $this->addFormattedEpochAttributesForPaymentLink($serialized);
+        $this->addSettingsOfPaymentLink($serialized);
 
         return $serialized;
     }
@@ -137,6 +138,11 @@ class ViewSerializer extends Base\Core
 
             $serialized[$key . '_formatted'] = $formatted;
         }
+    }
+
+    protected function addSettingsOfPaymentLink(array & $serialized)
+    {
+        $serialized[Entity::SETTINGS] = $this->paymentLink->getSettings()->toArray();
     }
 
     /**

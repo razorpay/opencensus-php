@@ -15,6 +15,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
+
 class Core extends Base\Core
 {
     /**
@@ -60,7 +61,12 @@ class Core extends Base\Core
 
         $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
-        $this->repo->saveOrFail($paymentLink);
+        $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $this->upsertSettings($paymentLink, $input);
+
+            $this->repo->saveOrFail($paymentLink);
+        });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
@@ -91,6 +97,8 @@ class Core extends Base\Core
             $paymentLink->edit($input);
 
             $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+
+            $this->upsertSettings($paymentLink, $input);
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -213,19 +221,13 @@ class Core extends Base\Core
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
         // 2. Validates Payment notes (UDF values), if applicable
-        $udfJsonschemaId = $paymentLink->getUdfJsonschemaId();
+        $udfSchema = new UdfSchema($paymentLink);
 
-        if ($udfJsonschemaId !== null)
+        if ($udfSchema->exists() === true)
         {
-            $udfSchema = new Template\UdfSchema($udfJsonschemaId);
-            $schema    = $udfSchema->getSchemaDecoded();
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            if ($schema !== null)
-            {
-                $paymentNotes = $payment->getNotes()->toArray();
-
-                $udfSchema->validate($paymentNotes);
-            }
+            $udfSchema->validate($paymentNotes);
         }
 
         // 3. Validates payment link is active and has payment slots available
@@ -403,7 +405,8 @@ class Core extends Base\Core
             return true;
         }
 
-        $succeedingPaymentsCount = $this->repo->payment_link->getSucceedingPaymentsCount($paymentLink);
+        $succeedingPayments      = $this->repo->payment_link->getSucceedingPayments($paymentLink);
+        $succeedingPaymentsCount = $succeedingPayments->sum(function ($p) { return (int) ($p->getNotes()[Entity::UNITS] ?? 1); });
 
         $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentsCount;
 
@@ -520,10 +523,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns an array of the payload to be consumed by the
-     * Payment link view template
+     * Returns an array of the payload to be consumed by the view template.
      *
-     * @param Entity $paymentLink
+     * @param  Entity $paymentLink
      *
      * @return array
      */
@@ -533,7 +535,7 @@ class Core extends Base\Core
         $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
 
         // Append UDF Schema as a JSON string, if defined
-        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
+        $payload[Entity::UDF_SCHEMA] = (new UdfSchema($paymentLink))->getSchema();
 
         return $payload;
     }
@@ -572,25 +574,6 @@ class Core extends Base\Core
 
         // else fallback to the default hosted view
         return $defaultView;
-    }
-
-    /**
-     * @param Entity $paymentLink
-     *
-     * @return null|string
-     */
-    protected function getUdfSchemaIfDefined(Entity $paymentLink)
-    {
-        $jsonSchemaId = $paymentLink->getUdfJsonschemaId();
-
-        if ($jsonSchemaId === null)
-        {
-            return null;
-        }
-
-        $schemaAccessor = new UdfSchema($jsonSchemaId);
-
-        return $schemaAccessor->getSchema();
     }
 
     /**
@@ -678,5 +661,21 @@ class Core extends Base\Core
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_HANDLED, $tracePayload);
+    }
+
+    /**
+     * Every payment link could have set of setting associated. Ref: Model\Settings.
+     * This method upserts given input setting for the payment link.
+     * @param  Entity $paymentLink
+     * @param  array  $input
+     */
+    protected function upsertSettings(Entity $paymentLink, array $input)
+    {
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        if (empty($settings) === false)
+        {
+            $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+        }
     }
 }

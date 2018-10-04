@@ -22,28 +22,47 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
-        Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
-        Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'required|filled|string|max:40',
-        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes',
-        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
+        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
+        Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
+        Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
+        Entity::RECEIPT         => 'sometimes|string|min:1|max:40|nullable',
+        Entity::TITLE           => 'required|filled|string|max:40',
+        Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
+        Entity::SUPPORT_CONTACT => 'filled|contact_syntax',
+        Entity::SUPPORT_EMAIL   => 'filled|email',
+        Entity::TERMS           => 'filled|string|min:5|max:2048',
+        Entity::SETTINGS        => 'filled|array|custom',
+
+        Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
+        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
+        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
-        Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
-        Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
-        Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
-        Entity::TITLE         => 'filled|string|max:40',
-        Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
-        Entity::NOTES         => 'sometimes|notes',
-        // Todo: Discuss with product on should making slug null be allowed in patch requests?
-        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
+        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
+        Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
+        Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
+        Entity::RECEIPT         => 'sometimes|string|min:1|max:40|nullable',
+        Entity::TITLE           => 'filled|string|max:40',
+        Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
+        Entity::SUPPORT_CONTACT => 'filled|contact_syntax',
+        Entity::SUPPORT_EMAIL   => 'filled|email',
+        Entity::TERMS           => 'filled|string|min:5|max:2048',
+        Entity::SETTINGS        => 'filled|array|custom',
+
+        Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
+        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
+        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
 
     protected static $sendNotificationRules = [
@@ -117,6 +136,17 @@ class Validator extends Base\Validator
                     Entity::AMOUNT                      => $amount,
                     Merchant\Entity::MAX_PAYMENT_AMOUNT => $maxAmountAllowed,
                 ]);
+        }
+    }
+
+    public function validateSettings(string $attribute, array $value)
+    {
+        $extraSettingsKeys = array_values(array_diff(array_keys($value), Entity::SETTINGS_KEYS));
+
+        if (empty($extraSettingsKeys) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Extra settings keys must not be sent - ' . implode(', ', $extraSettingsKeys) . '.');
         }
     }
 
@@ -201,26 +231,50 @@ class Validator extends Base\Validator
     }
 
     /**
-     * If amount is set for payment link, validates that amount of new payment request is same as expected
-     *
      * @param  Payment\Entity $payment
      *
      * @throws BadRequestException
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount     = $payment->getAdjustedAmountWrtCustFeeBearer();
-        $paymentLinkAmount = $this->entity->getAmount();
+        $errorMsg                = null;
+        $paymentLink             = $this->entity;
+        $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
+        $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
+        $paymentLinkAmount       = $paymentLink->getAmount();
+        $allowMultipleUnits      = (bool) $paymentLink->getSettings(Entity::ALLOW_MULTIPLE_UNITS);
 
-        if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))
+        if ($paymentLinkAmount === null)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH,
-                Payment\Entity::AMOUNT,
-                [
-                    'expected' => $paymentLinkAmount,
-                    'actual'   => $paymentAmount,
-                ]);
+            return;
+        }
+
+        if (($allowMultipleUnits === false) and ($paymentLinkAmount !== $paymentAmount))
+        {
+            $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
+        }
+        // If payment for multiple amounts is allowed:
+        // 1. Payment's notes must contain number(>= 1) units attribute, and
+        // 2. Payment's amount(without fee) must be equal to multiple of sent units and payment link's amount.
+        else if ($allowMultipleUnits === true)
+        {
+            $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 0);
+            if ($paymentUnits < 1)
+            {
+                $errorMsg = 'Payment notes must contain numeric units parameter greater than equal to 1.';
+            }
+            else if ($paymentAmountWithoutFee !== ($paymentUnits * $paymentLinkAmount))
+            {
+                $errorMsg = 'Payment amount should be integer multiple of payment link amount.';
+            }
+        }
+
+        if ($errorMsg != null)
+        {
+            throw new BadRequestValidationFailureException(
+                $errorMsg,
+                Entity::AMOUNT,
+                compact('paymentAmount', 'paymentLinkAmount', 'allowMultipleUnits'));
         }
     }
 }

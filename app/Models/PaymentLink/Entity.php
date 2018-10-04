@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -32,6 +33,9 @@ class Entity extends Base\PublicEntity
     const TITLE              = 'title';
     const DESCRIPTION        = 'description';
     const NOTES              = 'notes';
+    const SUPPORT_CONTACT    = 'support_contact';
+    const SUPPORT_EMAIL      = 'support_email';
+    const TERMS              = 'terms';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined
@@ -64,10 +68,26 @@ class Entity extends Base\PublicEntity
     const ERROR              = 'error';
     const REQUEST_PARAMS     = 'request_params';
 
+    // List of keys stored against entity's settings.
+    const SETTINGS                     = 'settings';
+    const UDF_SCHEMA                   = 'udf_schema';
+    const UNITS                        = 'units';
+    const ALLOW_MULTIPLE_UNITS         = 'allow_multiple_units';
+    const ALLOW_SOCIAL_SHARE           = 'allow_social_share';
+    const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
+    const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
+    const SETTINGS_KEYS                = [
+        self::UDF_SCHEMA,
+        self::ALLOW_MULTIPLE_UNITS,
+        self::ALLOW_SOCIAL_SHARE,
+        self::PAYMENT_SUCCESS_REDIRECT_URL,
+        self::PAYMENT_SUCCESS_MESSAGE,
+    ];
+
     /**
      * expire_by has to be atleast 15 minutes from current timestamp
      */
-    const MIN_EXPIRY_SECS    = 900;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $sign        = 'pl';
 
@@ -84,6 +104,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
     ];
 
     protected $visible = [
@@ -103,6 +126,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -125,6 +151,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -139,6 +168,9 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
     ];
 
     protected $casts = [
@@ -168,6 +200,9 @@ class Entity extends Base\PublicEntity
         self::NOTES              => [],
         self::HOSTED_TEMPLATE_ID => null,
         self::UDF_JSONSCHEMA_ID  => null,
+        self::SUPPORT_CONTACT    => null,
+        self::SUPPORT_EMAIL      => null,
+        self::TERMS              => null,
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -312,6 +347,27 @@ class Entity extends Base\PublicEntity
     public function getHostedViewUrl(string $plHostedBaseUrl, string $slug = null): string
     {
         return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
+    }
+
+    /**
+     * Enhancement: Have a trait HasSettings which has nice and optimal(i.e. no
+     * multiple queries on subsequent calls) interface.
+     *
+     * Get settings associated with payment link entity.
+     *
+     * @param  string|null $key
+     * @return \Razorpay\Spine\DataTypes\Dictionary|string
+     */
+    public function getSettings(string $key = null)
+    {
+        $accessor = $this->getSettingsAccessor();
+
+        return $key ? $accessor->get($key) : $accessor->all();
+    }
+
+    public function getSettingsAccessor(): Settings\Accessor
+    {
+        return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK);
     }
 
     // -------------------------------------- End Getters -----------------------------

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\PaymentLink\Template;
 
-class FileAccess
+class FileAccess implements StorageAccess
 {
     const DEFAULT_FILENAME = 'default';
 
@@ -47,18 +47,16 @@ class FileAccess
         $this->name      = $name ?: self::DEFAULT_FILENAME;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function exists(): bool
     {
         return (file_exists($this->getFilePath()) === true);
     }
 
     /**
-     * Gets file contents
-     *
-     * null, if file does not exist
-     * false, on failure
-     *
-     * @return bool|null|string
+     * {@inheritDoc}
      */
     public function get()
     {
@@ -67,7 +65,9 @@ class FileAccess
             return null;
         }
 
-        return file_get_contents($this->getFilePath());
+        $resp = file_get_contents($this->getFilePath());
+
+        return $resp ?: null;
     }
 
     /**

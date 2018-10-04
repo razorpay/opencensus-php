@@ -29,13 +29,13 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns counts of payment which are succeeding (i.e. either created, authorized) for given payment link.
+     * Returns payments which are succeeding (i.e. either created, authorized) for given payment link.
      * This method gets used in determining if enough slots are available to initiate a payment.
      *
      * @param  Entity $paymentLink
-     * @return int
+     * @return Base\PublicCollection
      */
-    public function getSucceedingPaymentsCount(Entity $paymentLink): int
+    public function getSucceedingPayments(Entity $paymentLink): Base\PublicCollection
     {
         return $paymentLink->payments()
                            ->whereIn(
@@ -44,6 +44,6 @@ class Repository extends Base\Repository
                                    Payment\Status::CREATED,
                                    Payment\Status::AUTHORIZED,
                                ])
-                           ->count();
+                           ->get();
     }
 }

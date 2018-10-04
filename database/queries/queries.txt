@@ -4430,3 +4430,8 @@ ALTER TABLE hitachi
 # Drops foreign key on production on newly created table beneficiaries, leaving them on stage and local environment.
 ALTER TABLE beneficiaries
     DROP FOREIGN KEY beneficiaries_merchant_id_foreign;
+
+ALTER TABLE payment_links
+    ADD COLUMN support_contact VARCHAR(20) DEFAULT NULL AFTER udf_jsonschema_id,
+    ADD COLUMN support_email VARCHAR(255) DEFAULT NULL AFTER support_contact,
+    ADD COLUMN terms TEXT AFTER support_email;
