@@ -395,6 +395,20 @@ export default class TerminalForm extends Component {
             }
           />
           <CheckField
+            label="Numeric Account"
+            name="type[numeric_account]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('numeric_account') >= 0
+            }
+          />
+          <CheckField
+            label="Alpha Numeric Account"
+            name="type[alpha_numeric_account]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('alpha_numeric_account') >= 0
+            }
+          />
+          <CheckField
             label="No 2FA"
             name="type[no_2fa]"
             defaultChecked={
