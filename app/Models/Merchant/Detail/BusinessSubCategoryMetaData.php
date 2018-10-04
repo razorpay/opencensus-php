@@ -783,13 +783,13 @@ class BusinessSubCategoryMetaData
      * returns metadata for given category , subcategory
      * throws BadRequestException if metadata is not defined for subcategory
      *
-     * @param string $category
-     * @param        $subcategory
+     * @param string      $category
+     * @param null|string $subcategory
      *
      * @return array
      * @throws \RZP\Exception\BadRequestException
      */
-    public static function getSubCategoryMetaData(string $category, $subcategory): array
+    public static function getSubCategoryMetaData(string $category, ?string $subcategory): array
     {
         if ($category === BusinessCategory::OTHERS)
         {

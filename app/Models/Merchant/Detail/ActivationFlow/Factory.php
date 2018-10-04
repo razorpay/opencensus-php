@@ -34,11 +34,8 @@ class Factory
             return new $class();
         }
 
-        $errorDetails = [
+        throw new InvalidArgumentException(ErrorCode::INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW, [
             Entity::ACTIVATION_FLOW => $activationFlow,
-            Entity::MERCHANT_ID     => $merchantDetails->getMerchantId(),
-        ];
-
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW, $errorDetails);
+        ]);
     }
 }
