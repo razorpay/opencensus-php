@@ -88,8 +88,15 @@ export default class BusinessDetails extends Component {
     const businessCategories = this.state.businessCategories;
 
     if (businessCategories) {
-      return businessCategories[merchantDetails.business_category]
-        .subcategories[merchantDetails.business_subcategory];
+      const businessCategory =
+        businessCategories[merchantDetails.business_category];
+
+      const subCategory =
+        businessCategory.subcategories[merchantDetails.business_subcategory];
+
+      return typeof subCategory === 'string'
+        ? subCategory
+        : subCategory.description;
     } else {
       return 'Loading...';
     }

@@ -28,7 +28,7 @@ const gatewayMapping = {
   wallet_freecharge: 'Freecharge',
   wallet_jiomoney: 'Jiomoney',
   wallet_sbibuddy: 'SBI Buddy',
-  mobikwik: 'Mobikwik<',
+  mobikwik: 'Mobikwik',
   billdesk: 'Billdesk',
   ebs: 'EBS',
   first_data: 'FirstData',
@@ -51,6 +51,9 @@ const gatewayMapping = {
   wallet_openwallet: 'RZP Open Wallet',
   card_fss: 'Card FSS',
   enach_rbl: 'eNach RBL',
+  bt_yesbank: 'Bank Transfer - Yes Bank',
+  bt_kotak: 'Bank Transfer - Kotak',
+  bt_dashboard: 'Bank Transfer - Dashboard (Test)',
 };
 
 const gatewayAcquirerMapping = {
@@ -262,6 +265,16 @@ export default class TerminalForm extends Component {
           </SelectField>
 
           <SelectField name="emandate" label="Emandate Allowed" defaultValue="">
+            <option value="" />
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </SelectField>
+
+          <SelectField
+              name="bank_transfer"
+              label="Bank Transfer"
+              defaultValue={isEditMode && (entity.bank_transfer !== null) ? (entity.bank_transfer | 0): ''}
+          >
             <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>

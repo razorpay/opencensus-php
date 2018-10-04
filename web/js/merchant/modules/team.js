@@ -1,5 +1,5 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
-import { merchantFetch } from 'merchant/utils/ajax';
+import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
 
 export const TEAM_FETCH = 'TEAM_FETCH';
 export const INVITATION_SEND = 'INVITATION_SEND';
@@ -95,9 +95,8 @@ export const updateUser = (userId, data) => {
 export const removeUser = userId => {
   return {
     type: USER_REMOVE,
-    payload: merchantFetch({
+    payload: defaultAjax(`users/${userId}/detach`, {
       method: 'put',
-      url: `users/${userId}/detach`,
     }),
   };
 };
