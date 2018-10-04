@@ -20,4 +20,14 @@ class WhitelistActivationFlow implements ActivationFlowInterface
     {
         // TODO: Implement process() method.
     }
+
+    /**
+     * validation specific to whitelist activation flow
+     *
+     * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails)
+    {
+        return;
+    }
 }

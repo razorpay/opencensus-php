@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
@@ -457,6 +458,24 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+    
+    /**
+     * contains validation for full activation form
+     *
+     * @throws \RZP\Exception\InvalidArgumentException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function validateFullActivationForm()
+    {
+        $this->validateIsNotLocked();
+        
+        if ($this->entity->getActivationFlow() !== null)
+        {
+            $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
+            
+            $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }
 }

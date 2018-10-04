@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateIsNotLocked();
+        $merchantDetails->getValidator()->validateFullActivationForm();
 
         $merchantDetails->edit($input);
 
@@ -146,7 +146,9 @@ class Core extends Base\Core
     /**
      * on change of subcategory , updates merchant activation flow
      *
-     * @param Entity          $merchantDetails
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
     {
@@ -163,6 +165,8 @@ class Core extends Base\Core
      *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function autoUpdateMerchantCategoryDetailsIfApplicable(
         Entity $merchantDetails,

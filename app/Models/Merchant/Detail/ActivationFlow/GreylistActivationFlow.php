@@ -20,4 +20,14 @@ class GreylistActivationFlow implements ActivationFlowInterface
     {
         // TODO: Implement process() method.
     }
+
+    /**
+     * validation specific to greylist activation flow
+     *
+     * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails)
+    {
+        return;
+    }
 }
