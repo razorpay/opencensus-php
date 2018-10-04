@@ -359,11 +359,25 @@ class HulkGatewayTest extends TestCase
                 'terminal_id' => $this->sharedTerminal->getId(),
             ]);
 
-        $this->refundPayment($payment->getPublicId());
+        $this->fixtures->create('upi',
+            [
+                'action'            => 'authorize',
+                'payment_id'        => $payment->getId(),
+                'npci_reference_id' => '123123123123',
+
+            ]);
+
+        $this->refundPayment($payment->getPublicId(), 5000);
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('processed', $refund['status']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_' . $upi['refund_id']);
+        $this->assertEquals(5000, $upi['amount']);
+        $this->assertEquals('00', $upi['status_code']);
     }
 
     public function testVerifyPayment()

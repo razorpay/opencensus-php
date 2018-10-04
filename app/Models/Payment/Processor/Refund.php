@@ -800,6 +800,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
@@ -890,6 +892,8 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REFUND_FAILURE);
+
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
@@ -1659,9 +1663,11 @@ trait Refund
 
             $ifscCode = Bank\BankCodes::getIfscForBankCode($order->getBank());
 
+            $beneficiaryName = $order->getPayerName();
+
             $input[BankAccount\Entity::IFSC_CODE]          = $ifscCode;
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
-            $input[BankAccount\Entity::BENEFICIARY_NAME]   = '';
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = ($beneficiaryName === null) ? '' : $beneficiaryName;
         }
 
         if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)

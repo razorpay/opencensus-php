@@ -79,6 +79,7 @@ class BusinessCategory
             Sub::UNIVERSITY,
             Sub::PROFESSIONAL_COURSES,
             Sub::DISTANCE_LEARNING,
+            Sub::DAY_CARE,
             Sub::COACHING,
             Sub::ELEARNING,
         ],
@@ -227,6 +228,9 @@ class BusinessCategory
             Sub::MESSAGING,
             Sub::PROFESSIONAL_NETWORK,
             Sub::NEIGHBOURHOOD_NETWORK,
-        ]
+        ],
+
+        self::OTHERS => [
+        ],
     ];
 }

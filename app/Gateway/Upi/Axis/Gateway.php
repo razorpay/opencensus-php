@@ -51,7 +51,8 @@ class Gateway extends Base\Gateway
         Fields::RRN                     => Entity::NPCI_REFERENCE_ID,
         Fields::GATEWAY_TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
         Fields::CODE                    => Entity::STATUS_CODE,
-        Fields::GATEWAY_RESPONSE_CODE   => Entity::STATUS_CODE
+        Fields::GATEWAY_RESPONSE_CODE   => Entity::STATUS_CODE,
+        Fields::W_COLLECT_TXN_ID        => Entity::NPCI_TXN_ID,
     ];
 
     /**
@@ -589,7 +590,7 @@ class Gateway extends Base\Gateway
         {
             $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-            $actualAmount = number_format($content[Fields::DATA][Fields::TXN_AMOUNT], 2, '.', '');
+            $actualAmount = number_format($content[Fields::DATA][0][Fields::TXN_AMOUNT], 2, '.', '');
 
             $verify->amountMismatch = ($paymentAmount !== $actualAmount);
         }
@@ -606,7 +607,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         // Gateway sends result in different positions based on the kind of error hence handling both
-        $result = $content[Fields::DATA][Fields::RESULT] ?? $content[Fields::RESULT];
+        $result = $content[Fields::DATA][0][Fields::RESULT] ?? $content[Fields::RESULT];
 
         $verify->gatewaySuccess = ($result === Status::VERIFY_SUCCESS);
     }

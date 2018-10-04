@@ -577,7 +577,7 @@ class Gateway extends Base\Gateway
 
             default:
                 $response['result']         = 'Refund Failed';
-                $response['status_code']    = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED;
+                $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
         }
 
         return $response;

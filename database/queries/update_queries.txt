@@ -2102,3 +2102,8 @@ INNER JOIN customers ON customers.id=subscriptions.customer_id
 SET customer_email=customers.email
 WHERE customers.email IS NOT NULL
   AND customer_email IS NOT NULL;
+
+# drop unique index on beneficiary code and add on both beneficiary_code and channel in table nodal_beneficiaries
+ALTER TABLE nodal_beneficiaries
+    DROP INDEX nodal_beneficiaries_beneficiary_code_unique,
+    ADD UNIQUE INDEX  nodal_beneficiaries_beneficiary_code_channel_unique(beneficiary_code, channel);
