@@ -257,9 +257,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $driver = 'esigner_' . $esigner;
-
-        $server = $this->gateway->server($driver);
+        $server = $this->gateway->server($esigner);
 
         return $server->sign($input);
     }
