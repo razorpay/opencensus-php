@@ -19,10 +19,13 @@ import {
   trackHowSettlementsWorkClicks,
 } from './ga';
 
-@connect(state => ({ user: state.session.user, ...state.settlements }), {
-  fetchAll,
-  ...ModalActions,
-})
+@connect(
+  state => ({ user: state.session.user, ...state.settlements }),
+  {
+    fetchAll,
+    ...ModalActions,
+  }
+)
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -81,7 +84,7 @@ export default class SettlementsListContainer extends ListContainer {
     trackEarlySettlementRequests();
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
-      size: 'small',
+      size: 'large',
     });
   };
 
