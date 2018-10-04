@@ -62,7 +62,6 @@ class CreateTransactions extends Migration
             $table->char(Transaction::CURRENCY, 3);
 
             $table->bigInteger(Transaction::BALANCE)
-                  ->unsigned()
                   ->nullable();
 
             $table->integer(Transaction::GATEWAY_AMOUNT)
