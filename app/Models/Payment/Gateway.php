@@ -29,6 +29,7 @@ class Gateway
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
+    const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -802,6 +803,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
         Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
     ];
 
@@ -855,9 +857,10 @@ class Gateway
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        // Esigner Digio is added here just for test cases
+        // Esigner Digio and Legaldesk is added here just for test cases
         AuthType::AADHAAR => [
             Gateway::ESIGNER_DIGIO,
+            Gateway::ESIGNER_LEGALDESK,
             Gateway::ENACH_RBL,
         ],
     ];
@@ -924,15 +927,18 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+        Gateway::NETBANKING_ICICI  => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS   => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC   => [IFSC::HDFC],
+        Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
-        Gateway::ESIGNER_DIGIO      => [
+        Gateway::ESIGNER_DIGIO     => [
             IFSC::UTIB,
         ],
-        Gateway::ENACH_RBL          => self::EMANDATE_AADHAAR_BANKS,
+        Gateway::ESIGNER_LEGALDESK => [
+            IFSC::UTIB,
+        ],
     ];
 
     /**
@@ -1129,6 +1135,7 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::ENACH_RBL,
     ];
 
     public static $subscriptionOverOneYearGateways = [
