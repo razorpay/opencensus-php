@@ -105,8 +105,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
             [
-                'input'       => $input,
-                'merchant_id' => $merchant->getId(),
+                'input' => $input,
             ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
@@ -124,7 +123,7 @@ class Core extends Base\Core
 
             $response = $this->createResponse($merchantDetails);
 
-            // Todo: confirm with product
+            // used to show the progress of the activation form on the dashboard
             $activationProgress = $response['verification']['activation_progress'];
 
             $merchantDetails->setActivationProgress($activationProgress);
@@ -787,8 +786,8 @@ class Core extends Base\Core
             //
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                 (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) === false) and
-                    (empty($merchantDetailsArr[$key]) === true)))
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                 (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }
