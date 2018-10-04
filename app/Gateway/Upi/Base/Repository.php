@@ -69,4 +69,11 @@ class Repository extends Base\Repository
                     ->orderBy($upiId)
                     ->get();
     }
+
+    public function fetchByMerchantReference(string $merchantReference)
+    {
+        return $this->newQuery()
+                    ->where('merchant_reference', '=', $merchantReference)
+                    ->first();
+    }
 }
