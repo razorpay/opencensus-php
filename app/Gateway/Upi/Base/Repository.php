@@ -18,6 +18,7 @@ class Repository extends Base\Repository
         Entity::NPCI_REFERENCE_ID       => 'sometimes|string|max:20',
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
         Entity::REFUND_ID               => 'sometimes|string|min:14|max:18',
+        Entity::MERCHANT_REFERENCE      => 'sometimes|string|max:50',
     );
 
     public function fetchGatewayPaymentIdByPaymentId($paymentId)
