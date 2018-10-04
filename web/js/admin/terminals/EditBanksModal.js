@@ -14,6 +14,7 @@ export default class EditBanksModal extends Component {
       enabledBanksList: [],
       disabledBanksList: [],
       loading: true,
+      fetchingBanks: true,
     };
     this.fetchTermialBanks = this.fetchTermialBanks.bind(this);
     this.updateBanks = this.updateBanks.bind(this);
@@ -23,17 +24,17 @@ export default class EditBanksModal extends Component {
   }
 
   componentWillMount() {
-    this.fetchTermialBanks();
+    this.fetchTermialBanks().then(data => {
+      if (data) {
+        this.parseData(data);
+      } else {
+        this.setState({ fetchingBanks: false });
+      }
+    });
   }
 
   fetchTermialBanks() {
-    adminFetch(`${this.props.mode}/terminals/${this.props.id}/banks`).then(
-      data => {
-        if (data) {
-          this.parseData(data);
-        }
-      }
-    );
+    return adminFetch(`${this.props.mode}/terminals/${this.props.id}/banks`);
   }
 
   parseData(data) {
@@ -67,6 +68,7 @@ export default class EditBanksModal extends Component {
       enabledBanksList,
       disabledBanksList,
       loading: false,
+      fetchingBanks: false,
     });
   }
 
@@ -137,7 +139,7 @@ export default class EditBanksModal extends Component {
 
     return (
       <ModalContent header="Edit Banks" class="edit-terminal-banks-modal">
-        {Object.keys(this.state.terminalBanksMapping).length == 0 ? (
+        {this.state.fetchingBanks ? (
           <div class="spinner center" />
         ) : (
           <div class="row">
@@ -170,6 +172,9 @@ export default class EditBanksModal extends Component {
               <AsyncButton
                 text="Save"
                 class="btn"
+                disabled={
+                  Object.keys(this.state.terminalBanksMapping).length == 0
+                }
                 pendingClass="small spinner"
                 onSubmit={this.updateBanks}
               />
