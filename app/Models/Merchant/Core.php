@@ -1519,16 +1519,25 @@ class Core extends Base\Core
      *
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param string                      $category
-     * @param                             $subcategory
+     * @param null|string                 $subcategory
      *
      * @return \RZP\Models\Merchant\Entity
+     * @throws \RZP\Exception\BadRequestException
      */
-    public function autoUpdateCategoryDetails(Entity $merchant, string $category, $subcategory): Entity
+    public function autoUpdateCategoryDetails(
+        Entity $merchant,
+        string $category,
+        ?string $subcategory): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        $category            = $subcategoryMetaData[Entity::CATEGORY];
-        $category2           = $subcategoryMetaData[Entity::CATEGORY2];
+        $category  = $subcategoryMetaData[Entity::CATEGORY];
+        $category2 = $subcategoryMetaData[Entity::CATEGORY2];
+
+        $merchant->setCategory2($category2);
+        $merchant->setCategory($category);
+
+        $this->repo->saveOrFail($merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
@@ -1542,11 +1551,6 @@ class Core extends Base\Core
                     Entity::CATEGORY  => $category,
                 ],
             ]);
-
-        $merchant->setCategory2($category2);
-        $merchant->setCategory($category);
-
-        $this->repo->saveOrFail($merchant);
 
         return $merchant;
     }

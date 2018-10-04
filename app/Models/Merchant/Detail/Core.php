@@ -108,13 +108,14 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function autoUpdateMerchantCategoryDetailsIfApplicable(Entity $merchantDetails,
-                                                                  Merchant\Entity $merchant)
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(
+        Entity $merchantDetails,
+        Merchant\Entity $merchant)
     {
         $category    = $merchantDetails->getBusinessCategory();
         $subcategory = $merchantDetails->getBusinessSubcategory();
 
-        if (($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
         }
