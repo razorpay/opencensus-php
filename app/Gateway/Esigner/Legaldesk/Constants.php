@@ -13,4 +13,8 @@ class Constants
     const OCCURANCE_FREQUENCY_TYPE_ADHOC = 'Adho';
 
     const COLLECTION_AMOUNT_TYPE_MAXIMUM = 'MAXIMUM';
+
+    const ESIGN_TYPE_OTP = 'otp';
+
+    const ESIGN_TYPE_BIOMETRIC = 'biometric';
 }

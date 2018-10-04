@@ -32,6 +32,7 @@ class RequestFields
     const OTHER_REFERENCE            = 'other_reference';
     const TIME_STAMP                 = 'time_stamp';
     const MANDATE_TYPE_CATEGORY_CODE = 'mandate_type_category_code';
+    const ESIGN_TYPE                 = 'esign_type';
     const CALLBACK_URL               = 'callback_url';
 
     const EMANDATE_ID = 'emandate_id';

@@ -296,6 +296,7 @@ class Gateway extends Base\Gateway
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
+            RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
             RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
 
