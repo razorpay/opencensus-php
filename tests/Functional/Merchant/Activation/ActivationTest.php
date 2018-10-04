@@ -11,7 +11,7 @@ class ActivationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
-    const DEFAULT_MERCHANT_ID_1 = '10000000000000';
+    const DEFAULT_MERCHANT_ID = '10000000000000';
 
     public function setUp()
     {
@@ -55,7 +55,7 @@ class ActivationTest extends TestCase
      */
     public function testPostInstantActivationByActivatedMerchant()
     {
-        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID_1);
+        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID);
 
         $this->ba->proxyAuth();
 

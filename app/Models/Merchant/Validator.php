@@ -880,9 +880,7 @@ class Validator extends Base\Validator
      */
     public function validateIsNotActivated(Entity $merchant)
     {
-        $isActivated = $merchant->isActivated();
-
-        if ($isActivated === true)
+        if ($merchant->isActivated() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
