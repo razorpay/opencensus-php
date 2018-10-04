@@ -3252,6 +3252,10 @@ class MerchantTest extends TestCase
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
     }
 
     public function testFailedBeneficiaryRegistrationWithYesbank()
@@ -3262,7 +3266,7 @@ class MerchantTest extends TestCase
             [
                 'bank_account_id'     => $ba->getId(),
                 'merchant_id'         => $ba->merchant->getId(),
-                'registration_status' => 'registered'
+                'registration_status' => 'failed'
             ]
         );
 
@@ -3272,7 +3276,8 @@ class MerchantTest extends TestCase
             'url'       => '/merchants/beneficiary/api/yesbank',
             'method'    => 'post',
             'content'   => [
-                'duration' => 120
+                'duration'        => 120,
+                'failed_response' => 1
             ]
         ];
 
