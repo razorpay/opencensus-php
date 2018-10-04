@@ -274,8 +274,6 @@ class Gateway extends Base\Gateway
     {
         $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d');
 
-        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)->format('Y-m-d');
-
         $destinationBankIfsc = $input['token']->getIfsc();
 
         $mcc = $this->input['terminal']['category'];
@@ -292,13 +290,19 @@ class Gateway extends Base\Gateway
             RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
             RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
             RequestFields::FIRST_COLLECTION_DATE      => $nextWorkingDt,
-            RequestFields::FINAL_COLLECTION_DATE      => $finalCollection,
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
             RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
+
+        if ($input['token']->getExpiredAt() !== null)
+        {
+            $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+
+            $content[RequestFields::FINAL_COLLECTION_DATE] = $finalCollection->format('Y-m-d');
+        }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
     }
