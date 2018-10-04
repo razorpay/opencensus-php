@@ -717,4 +717,62 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertFalse($response['success']);
     }
+
+    public function testUnexpectedPaymentVerify()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $data = $this->testData['testUnexpectedPaymentSuccess'];
+
+        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
+
+        $response = $this->makeS2SCallbackAndGetContent($data);
+
+        $this->assertTrue($response['success']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('authorize', $upiEntity['action']);
+
+        $this->assertEquals('pay', $upiEntity['type']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+
+        $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
+
+        $this->verifyPayment($paymentEntity['id']);
+    }
+
+    public function testUnexpectedPaymentRefund()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $data = $this->testData['testUnexpectedPaymentSuccess'];
+
+        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
+
+        $response = $this->makeS2SCallbackAndGetContent($data);
+
+        $this->assertTrue($response['success']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('authorize', $upiEntity['action']);
+
+        $this->assertEquals('pay', $upiEntity['type']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+
+        $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
+    }
 }

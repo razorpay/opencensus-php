@@ -247,6 +247,23 @@ class Server extends Base\Mock\Server
 
         $payment = $app['repo']->payment->find($paymentId);
 
+        if ($payment === null)
+        {
+            /*
+                if payment_id is not found, then
+                    - load gateway payment by merchant_reference
+                    - extract payment_id from gateway payment
+                    - load payment by gateway.payment_id
+            */
+
+            $gatewayPayment = $app['repo']->upi->fetchByMerchantReference($paymentId);
+
+            if ($gatewayPayment !== null)
+            {
+                $payment = $app['repo']->payment->find($gatewayPayment['payment_id']);
+            }
+        }
+
         $response = $this->getDefaultVerifyResponse($input, $payment);
 
         $this->content($response,'verify');
