@@ -7,7 +7,7 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
-class ActivationFlowFactory
+class Factory
 {
     const ACTIVATION_FLOW_IMPLEMENTATION_MAPPING = [
         ActivationFlow::WHITELIST => WhitelistActivationFlow::class,
@@ -34,11 +34,8 @@ class ActivationFlowFactory
             return new $class();
         }
 
-        $errorDetails = [
+        throw new InvalidArgumentException(ErrorCode::INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW, [
             Entity::ACTIVATION_FLOW => $activationFlow,
-            Entity::MERCHANT_ID     => $merchantDetails->getMerchantId(),
-        ];
-
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW, $errorDetails);
+        ]);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\Amazonpay;
+
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -46,6 +48,13 @@ class AmazonpayReconTest extends TestCase
      public function testPaymentReconciliation()
      {
          $payments = $this->makeAmazonPaymentSince();
+
+         $this->fixtures->edit('payment', $payments[0],
+                               [
+                                   'amount' => 149000,
+                                   'base_amount' => 149000,
+                                   'amount_authorized' => 149000,
+                               ]);
 
          $this->ba->appAuth();
 

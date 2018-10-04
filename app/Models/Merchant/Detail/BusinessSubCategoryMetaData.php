@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Error\ErrorCode;
-use InvalidArgumentException;
 use RZP\Models\Terminal\Category;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 
@@ -781,14 +781,15 @@ class BusinessSubCategoryMetaData
 
     /**
      * returns metadata for given category , subcategory
-     * throws InvalidArgumentException if metadata is not defined for subcategory
+     * throws BadRequestException if metadata is not defined for subcategory
      *
-     * @param string $category
-     * @param $subcategory
+     * @param string      $category
+     * @param null|string $subcategory
      *
      * @return array
+     * @throws \RZP\Exception\BadRequestException
      */
-    public static function getSubCategoryMetaData(string $category , $subcategory): array
+    public static function getSubCategoryMetaData(string $category, ?string $subcategory): array
     {
         if ($category === BusinessCategory::OTHERS)
         {
@@ -800,10 +801,8 @@ class BusinessSubCategoryMetaData
             return self::SUB_CATEGORY_METADATA[$subcategory];
         }
 
-        $errorDetails = [
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY, [
             Entity::BUSINESS_SUBCATEGORY => $subcategory,
-        ];
-
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY, $errorDetails);
+        ]);
     }
 }
