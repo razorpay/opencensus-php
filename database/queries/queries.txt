@@ -4329,7 +4329,7 @@ Alter table orders
     
 ALTER TABLE enach
     ADD COLUMN authentication_gateway VARCHAR(255) DEFAULT NULL AFTER refund_id;
-
+    
 ALTER TABLE transaction
     MODIFY COLUMN balance BIGINT NULL AFTER currency;
 
@@ -4343,3 +4343,6 @@ ALTER TABLE payments
     MODIFY COLUMN amount_paidout BIGINT NULL DEFAULT 0 AFTER amount_transferred,
     ADD INDEX payments_verify_at_gateway_index (verify_at, gateway),
     ADD INDEX payments_refund_at_index (refund_at);
+
+ALTER TABLE axis
+    ADD INDEX axis_refund_id_index (refund_id);
