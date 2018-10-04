@@ -1294,7 +1294,6 @@ final class Route
         'subscription_manual_retry',
         'subscription_test_charge',
         'subscription_fetch_due_addons',
-        'merchant_details_patch',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -1703,6 +1702,8 @@ final class Route
         'nodal_beneficiary_update',
         'terminal_get_banks',
         'terminal_set_banks',
+
+        'merchant_details_patch',
     ];
 
     public static $routePermission = [
@@ -2053,6 +2054,7 @@ final class Route
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
+        'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
     ];
 
     public static $direct = [
