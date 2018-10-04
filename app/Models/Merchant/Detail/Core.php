@@ -19,13 +19,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
-use RZP\Models\Merchant\Detail\ActivationFlow\ActivationFlowFactory;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
@@ -116,19 +116,17 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
-        $oldMerchantDetails = clone $merchantDetails;
-
         $merchantDetails->edit($input, 'instant_activation');
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
-            $this->repo->saveOrFail($merchantDetails);
-
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($input, $oldMerchantDetails, $merchant);
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->autoUpdateMerchantActivationFlow($merchantDetails);
 
-            $activationFlowImpl = ActivationFlowFactory::getActivationFlowImpl($merchantDetails);
+            $this->repo->saveOrFail($merchantDetails);
+
+            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
 
             $activationFlowImpl->process($merchantDetails);
 
@@ -153,8 +151,7 @@ class Core extends Base\Core
     public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
     {
         $subcategory = $merchantDetails->getBusinessSubcategory();
-
-        $category = $merchantDetails->getBusinessCategory();
+        $category    = $merchantDetails->getBusinessCategory();
 
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
