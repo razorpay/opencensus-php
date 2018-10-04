@@ -4322,6 +4322,11 @@ ALTER TABLE upi
     ADD INDEX upi_gateway_reconciled_at_index (gateway, reconciled_at),
     ADD INDEX upi_npci_txn_id_index (npci_txn_id);
 
+
+Alter table orders
+    CHANGE reference9 payer_name VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+    
 ALTER TABLE enach
     ADD COLUMN authentication_gateway VARCHAR(255) DEFAULT NULL AFTER refund_id;
 
