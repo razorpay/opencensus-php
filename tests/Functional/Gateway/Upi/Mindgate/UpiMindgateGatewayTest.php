@@ -44,6 +44,8 @@ class UpiMindgateGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
     }
 
     /**
@@ -676,59 +678,22 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals($expectedStatus, $status);
     }
 
+    protected function createUnexpectedPayment($data)
+    {
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
+
+        $response = $this->makeS2SCallbackAndGetContent($data);
+
+        return $response;
+    }
+
     public function testUnexpectedPaymentSuccess()
     {
-        $this->fixtures->merchant->createAccount('100DemoAccount');
-
-        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
-
         $data = $this->testData[__FUNCTION__];
 
-        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
-
-        $response = $this->makeS2SCallbackAndGetContent($data);
-
-        $this->assertTrue($response['success']);
-
-        $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals('authorize', $upiEntity['action']);
-
-        $this->assertEquals('pay', $upiEntity['type']);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('authorized', $paymentEntity['status']);
-
-        $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
-    }
-
-    public function testUnexpectedPaymentFail()
-    {
-        $this->fixtures->merchant->createAccount('100DemoAccount');
-
-        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
-
-        $response = $this->makeS2SCallbackAndGetContent($data);
-
-        $this->assertFalse($response['success']);
-    }
-
-    public function testUnexpectedPaymentVerify()
-    {
-        $this->fixtures->merchant->createAccount('100DemoAccount');
-
-        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
-
-        $data = $this->testData['testUnexpectedPaymentSuccess'];
-
-        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
-
-        $response = $this->makeS2SCallbackAndGetContent($data);
+        $response = $this->createUnexpectedPayment($data);
 
         $this->assertTrue($response['success']);
 
@@ -745,34 +710,29 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
 
         $this->verifyPayment($paymentEntity['id']);
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
     }
 
-    public function testUnexpectedPaymentRefund()
+    public function testUnexpectedPaymentFail()
     {
-        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $data = $this->testData[__FUNCTION__];
 
-        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+        $response = $this->createUnexpectedPayment($data);
 
+        $this->assertFalse($response['success']);
+    }
+
+    public function testDuplicateUnexpectedPayment()
+    {
         $data = $this->testData['testUnexpectedPaymentSuccess'];
 
-        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
-
-        $response = $this->makeS2SCallbackAndGetContent($data);
+        $response = $this->createUnexpectedPayment($data);
 
         $this->assertTrue($response['success']);
 
-        $upiEntity = $this->getLastEntity('upi', true);
+        $response = $this->createUnexpectedPayment($data);
 
-        $this->assertEquals('authorize', $upiEntity['action']);
-
-        $this->assertEquals('pay', $upiEntity['type']);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('authorized', $paymentEntity['status']);
-
-        $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
-
-        $this->refundAuthorizedPayment($paymentEntity['id']);
+        $this->assertFalse($response['success']);
     }
 }
