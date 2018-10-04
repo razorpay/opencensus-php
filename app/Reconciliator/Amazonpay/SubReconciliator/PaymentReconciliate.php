@@ -48,7 +48,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if (($this->payment->getBaseAmount() === $this->getReconPaymentAmount($row)) === false)
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -97,7 +97,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $dbGatewayTransactionId = trim($gatewayPayment->getGatewayPaymentId());
 
         if ((empty($dbGatewayTransactionId) === false) and
-            (($dbGatewayTransactionId === $gatewayPaymentId) === false))
+            ($dbGatewayTransactionId !== $gatewayPaymentId))
         {
             $this->messenger->raiseReconAlert(
                 [
