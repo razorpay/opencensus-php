@@ -697,21 +697,65 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertTrue($response['success']);
 
-        $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals('authorize', $upiEntity['action']);
-
-        $this->assertEquals('pay', $upiEntity['type']);
-
         $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('authorized', $paymentEntity['status']);
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
 
-        $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertNull($paymentEntity['verified']);
 
         $this->verifyPayment($paymentEntity['id']);
 
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['verified'], 1);
+
         $this->refundAuthorizedPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $refundUpiEntity = $this->getLastEntity('upi', true);
+
+        $refundTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'refunded'                            => $paymentEntity['status'],
+            $paymentEntity['id']                  => 'pay_' . $refundUpiEntity['payment_id'],
+            'refund'                              => $refundUpiEntity['action'],
+            'collect'                             => $refundUpiEntity['type'],
+            $paymentEntity['amount']              => $refundUpiEntity['amount'],
+            $refundEntity['id']                   => 'rfnd_' . $refundUpiEntity['refund_id'],
+            $paymentEntity['amount']              => $refundEntity['amount'],
+            'processed'                           => $refundEntity['status'],
+            $refundTransactionEntity['id']        => 'txn_' . $refundEntity['transaction_id'],
+            $refundTransactionEntity['entity_id'] => $refundEntity['id'],
+            $refundTransactionEntity['type']      => 'refund',
+            $refundTransactionEntity['amount']    => $refundEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
     }
 
     public function testUnexpectedPaymentFail()
@@ -721,6 +765,10 @@ class UpiMindgateGatewayTest extends TestCase
         $response = $this->createUnexpectedPayment($data);
 
         $this->assertFalse($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity);
     }
 
     public function testDuplicateUnexpectedPayment()
@@ -729,10 +777,26 @@ class UpiMindgateGatewayTest extends TestCase
 
         $response = $this->createUnexpectedPayment($data);
 
+        /*
+            Only api success is checked , as the rest of the validation
+            is alreay done in testUnexpectedPaymentSuccess
+        */
         $this->assertTrue($response['success']);
 
         $response = $this->createUnexpectedPayment($data);
 
         $this->assertFalse($response['success']);
+
+        $paymentEntities = $this->getEntities('payment', array(), true);
+
+        $upiEntities = $this->getEntities('upi', array(), true);
+
+        $transactionEntities = $this->getEntities('transaction', array(), true);
+
+        $this->assertEquals(1, $paymentEntities['count']);
+
+        $this->assertEquals(1, $upiEntities['count']);
+
+        $this->assertEquals(1, $transactionEntities['count']);
     }
 }
