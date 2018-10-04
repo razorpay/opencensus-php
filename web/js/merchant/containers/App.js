@@ -27,6 +27,7 @@ import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
+import { classList } from 'common/util';
 
 @withRouter
 @connect(
@@ -380,7 +381,13 @@ export default class App extends Component {
     }
 
     return (
-      <div class={`layout ${this.orgCode}`}>
+      <div
+        class={classList(
+          'layout',
+          this.orgCode,
+          this.renderFPView && 'layout--fp'
+        )}
+      >
         {this.renderFPView ? (
           this.renderFPView
         ) : (

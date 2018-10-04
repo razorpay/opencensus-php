@@ -216,6 +216,7 @@ export default class User {
   }
 
   get isPaymentPagesV2Enabled() {
+    return true;
     return this.findTag('paymentpagesv2');
   }
 }
