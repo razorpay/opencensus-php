@@ -826,6 +826,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const REDIS_KEY_FETCH                           = 'REDIS_KEY_FETCH';
     const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
     const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
