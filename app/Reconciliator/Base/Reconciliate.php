@@ -19,12 +19,13 @@ class Reconciliate extends Base\Core
      * Reconciliation Types
      ***********************/
 
-    const NODAL    = 'nodal';
-    const PAYMENT  = 'payment';
-    const REFUND   = 'refund';
-    const COMBINED = 'combined';
+    const NODAL          = 'nodal';
+    const PAYMENT        = 'payment';
+    const REFUND         = 'refund';
+    const COMBINED       = 'combined';
+    const EMANDATE_DEBIT = 'emandate_debit';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
 
     //
     // Used to define start_row for the MIS files.
@@ -350,9 +351,8 @@ class Reconciliate extends Base\Core
         $parentNamespace = $this->getParentNamespace();
 
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
-
         $subReconciliatorClassName = $parentNamespace . '\\' . 'SubReconciliator' . '\\'
-                                    . ucfirst($reconciliationType)
+                                    . studly_case($reconciliationType)
                                     . 'Reconciliate';
 
         return $subReconciliatorClassName;
