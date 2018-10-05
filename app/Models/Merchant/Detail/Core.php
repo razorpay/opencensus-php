@@ -117,6 +117,14 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'instant_activation');
 
+        $merchantValidator = new Merchant\Validator;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
+
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
             $this->repo->saveOrFail($merchantDetails);
