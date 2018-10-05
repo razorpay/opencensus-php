@@ -13,6 +13,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class EsRepository extends Base\EsRepository
 {
@@ -52,6 +53,11 @@ class EsRepository extends Base\EsRepository
     protected $adminIndexedFields = [
         AdminEntity::ID,
         AdminEntity::NAME,
+    ];
+
+    protected $balanceIndexedFields = [
+        BalanceEntity::ID,
+        BalanceEntity::BALANCE,
     ];
 
     protected $queryFields = [
@@ -100,6 +106,11 @@ class EsRepository extends Base\EsRepository
     public function getAdminIndexedFields()
     {
         return $this->adminIndexedFields;
+    }
+
+    public function getBalanceIndexedFields()
+    {
+        return $this->balanceIndexedFields;
     }
 
     // --------------- Query builders ----------------------
