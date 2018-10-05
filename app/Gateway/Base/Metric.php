@@ -18,6 +18,8 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Metric
 {
+    const DOGSTATSD_DRIVER              = 'GATEWAY_DOGSTATSD_DRIVER';
+
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
 
@@ -298,7 +300,7 @@ class Metric
 
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
-                $gatewayMetrics = app('trace')->metricsDriver('dogstatsd_gateway');
+                $gatewayMetrics = app('trace')->metricsDriver(env(self::DOGSTATSD_DRIVER));
 
                 $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
             }
