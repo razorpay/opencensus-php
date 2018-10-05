@@ -23,7 +23,7 @@ class EnstageGatewayTest extends TestCase
 
         $this->gateway = 'mpi_enstage';
 
-        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
         $this->mockTokenex();
     }

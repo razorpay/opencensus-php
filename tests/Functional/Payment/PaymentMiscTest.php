@@ -54,7 +54,7 @@ class PaymentMiscTest extends TestCase
             'payment_method'      => 'card',
             'payment_method_type' => 'credit',
             'payment_network'     => 'VISA',
-            'issuer'              => 'ICICI',
+            'issuer'              => 'UTIB',
             'international'       => false,
             'iins'                => [],
         ]);
@@ -62,7 +62,7 @@ class PaymentMiscTest extends TestCase
         $iin = $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICICI',
+            'issuer'  => 'UTIB',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -71,7 +71,7 @@ class PaymentMiscTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['otpelf', 'atm_pin_auth']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay']);
 
         $orderData = [
             'content' => [
