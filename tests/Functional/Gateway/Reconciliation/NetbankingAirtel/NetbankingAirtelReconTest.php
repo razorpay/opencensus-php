@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\NetbankingAirtel;
+
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;

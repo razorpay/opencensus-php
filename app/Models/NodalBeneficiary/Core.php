@@ -69,7 +69,8 @@ class Core extends Base\Core
                         $nodalBeneficiary->getRegistrationStatus()
                   );
 
-        if ($input[Entity::REGISTRATION_STATUS] === Status::FAILED)
+        if (($input[Entity::REGISTRATION_STATUS] === Status::FAILED) and
+            ($nodalBeneficiary->getRegistrationStatus() !== Status::FAILED))
         {
             $this->notifyBeneficiaryRegistrationFailure(
                         $nodalBeneficiary->getRegistrationStatus(),

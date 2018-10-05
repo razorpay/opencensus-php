@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiIcici;
+
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 

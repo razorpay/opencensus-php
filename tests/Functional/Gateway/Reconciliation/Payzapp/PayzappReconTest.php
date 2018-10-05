@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\Payzapp;
+
 use Carbon\Carbon;
 
 use RZP\Models\Payment;

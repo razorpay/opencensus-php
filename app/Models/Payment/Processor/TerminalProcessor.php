@@ -49,6 +49,14 @@ class TerminalProcessor extends Base\Core
             return [$this->repo->terminal->find($terminalId)];
         }
 
+        if (($payment->isUpi() === true) and
+            (empty($gatewayData["terminal_id"]) === false))
+        {
+            $terminalId = $gatewayData["terminal_id"];
+
+            return [$this->repo->terminal->find($terminalId)];
+        }
+
         $options = $this->getTerminalSelectionOptions();
 
         $input = [

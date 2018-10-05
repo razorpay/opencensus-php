@@ -57,6 +57,19 @@ class PaymentLinkController extends Controller
     }
 
     /**
+     * Checks for existence of a given slug string in gimli.
+     * @param  string $slug
+     * @return Illuminate\Http\Response
+     */
+    public function slugExists(string $slug)
+    {
+        $gimli  = $this->app['elfin']->driver('gimli');
+        $exists = ($gimli->expand($slug) !== null);
+
+        return ApiResponse::json(compact('exists'));
+    }
+
+    /**
      * Renders the hosted view for Payment link with given id
      *
      * @param string $id

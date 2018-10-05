@@ -826,6 +826,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const REDIS_KEY_FETCH                           = 'REDIS_KEY_FETCH';
     const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
     const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
@@ -1274,6 +1275,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APSPDCL_REQUEST                               = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
+
+    const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
 
     // Instant activation traces
     const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';

@@ -95,6 +95,18 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findByGatewayAndTerminalData(array $terminalData, string $gateway)
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::GATEWAY, '=', $gateway);
+        foreach ($terminalData as $key => $value)
+        {
+            $query->where($key, $value);
+        }
+
+        return $query->withTrashed()->first();
+    }
+
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
         return $this->newQuery()
