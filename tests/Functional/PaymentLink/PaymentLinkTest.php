@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
 
+use RZP\Services\Elfin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
@@ -460,6 +461,32 @@ class PaymentLinkTest extends TestCase
         $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
         $this->callViewUrlAndMakeAssertions(self::TEST_PL_ID, 200, 'Inactive Page');
+    }
+
+    public function testGetSlugExistsApi()
+    {
+        $gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
+                      ->setConstructorArgs([$this->app['config']->get('applications.elfin.gimli')])
+                      ->setMethods(['expand'])
+                      ->getMock();
+
+        $gimli->expects($this->once())
+              ->method('expand')
+              ->willReturn(null);
+
+        $elfin = $this->getMockBuilder(Elfin\Mock\Service::class)
+                      ->setConstructorArgs([$this->app['config'], $this->app['trace']])
+                      ->setMethods(['driver'])
+                      ->getMock();
+
+        $elfin->expects($this->once())
+              ->method('driver')
+              ->with('gimli')
+              ->willReturn($gimli);
+
+        $this->app->instance('elfin', $elfin);
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------
