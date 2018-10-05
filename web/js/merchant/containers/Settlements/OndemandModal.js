@@ -24,6 +24,7 @@ export default class OndemandModal extends Component {
       isSaving: false,
       isSaved: false,
       amount: 0,
+      validAmount: true,
       errors: [],
     };
     if (props.currentBalance) {
@@ -35,56 +36,53 @@ export default class OndemandModal extends Component {
     this.handleCloseModal = this.handleCloseModal.bind(this);
   }
 
+  trackOnSubmit() {
+    let eventLabel = `${this.props.fromWhere} | `;
+    eventLabel +=
+      this.props.currentBalance == this.state.amount ? 'Total' : 'Partial';
+    trackOndemand.trackSettleEarly(eventLabel);
+  }
+
   onSubmit() {
-    let amount = this.state.amount;
-    if (
-      amount &&
-      isInteger(amount) &&
-      amount > 0 &&
-      amount * 100 <= this.props.currentBalance
-    ) {
-      let payload = {
-        amount: amount * 100,
-      };
+    let payload = {
+      amount: this.state.amount * 100,
+      currency: 'INR',
+    };
 
-      let eventLabel = `${this.props.fromWhere} | `;
-      eventLabel +=
-        this.props.currentBalance == this.state.amount ? 'Total' : 'Partial';
-      trackOndemand.trackSettleEarly(eventLabel);
-
-      this.setState({
-        isSaving: true,
-        errors: [],
-      });
-      ajax(
-        {
-          url: '/merchant/payout/demand',
-          method: 'POST',
-          data: payload,
-        },
-        {},
-        '/merchant/api'
-      )
-        .then(response => {
-          this.setState({
-            isSaving: false,
-            isSaved: true,
-          });
-          this.props.fetchCurrentBalance();
-        })
-        .catch(response => {
-          this.setState({
-            isSaving: false,
-            isSaved: false,
-            errors: response.errors,
-          });
+    this.trackOnSubmit();
+    this.setState({
+      isSaving: true,
+      errors: [],
+    });
+    ajax(
+      {
+        url: '/merchant/payout/demand',
+        method: 'POST',
+        data: payload,
+      },
+      {},
+      '/merchant/api'
+    )
+      .then(response => {
+        this.setState({
+          isSaving: false,
+          isSaved: true,
         });
-    }
+        this.props.fetchCurrentBalance();
+      })
+      .catch(response => {
+        this.setState({
+          isSaving: false,
+          isSaved: false,
+          errors: response.errors,
+        });
+      });
   }
 
   handleChange(e) {
     this.setState({
       amount: e.target.value,
+      validAmount: !this.validateAmount(e.target.value),
     });
   }
 
@@ -173,7 +171,7 @@ export default class OndemandModal extends Component {
                 </div>
                 <Button.Primary
                   class="submit-btn"
-                  disabled={this.state.isSaving}
+                  disabled={this.state.isSaving || !this.state.validAmount}
                   onClick={this.onSubmit}
                 >
                   Settle Early

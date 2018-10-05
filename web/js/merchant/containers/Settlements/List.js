@@ -157,7 +157,7 @@ export default class SettlementsListContainer extends ListContainer {
                     <Button.Secondary
                       class="settle-btn"
                       onClick={this.showOndemandSettlementForm}
-                      disabled={!balance}
+                      disabled={current_balance.loading || balance < 100}
                     >
                       Settle Now
                     </Button.Secondary>

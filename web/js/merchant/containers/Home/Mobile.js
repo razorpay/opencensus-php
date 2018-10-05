@@ -116,7 +116,10 @@ class AnalyticsMobile extends Component {
                 <Button.Secondary
                   class="settle-btn"
                   onClick={this.showOndemandSettlementForm}
-                  disabled={!current_balance.data.balance}
+                  disabled={
+                    current_balance.loading ||
+                    current_balance.data.balance < 100
+                  }
                 >
                   Settle Now
                 </Button.Secondary>
