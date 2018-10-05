@@ -1,18 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 
-use App;
 use Auth;
 use Input;
+use Illuminate\Http\Request;
+
 use App\Api;
 use App\Generic;
 use App\Merchant;
-use App\MerchantDetails;
 use App\Http\AppResponse;
-use Illuminate\Http\Request;
-use App\Mailers\ContactFormMailer;
 use App\Mailers\MiscMailer;
 use App\Admin\ApiRequestAny;
+use App\Mailers\ContactFormMailer;
 
 class MerchantController extends Controller
 {
@@ -238,7 +237,7 @@ class MerchantController extends Controller
             $reportingLogUrl = "admin-reporting/logs/$logId";
         }
 
-        $request = new \App\Admin\ApiRequestAny($clientType);
+        $request = new ApiRequestAny($clientType);
 
         list($error, $data) = $request->send($reportingLogUrl, 'GET');
 
@@ -256,7 +255,7 @@ class MerchantController extends Controller
             }
 
             // Re-create to avoid any GC-related bugs
-            $request = new \App\Admin\ApiRequestAny($clientType);
+            $request = new ApiRequestAny($clientType);
 
             list($error, $data) = $request->send($ufhFileUrl, 'GET');
 
@@ -272,5 +271,14 @@ class MerchantController extends Controller
         }
 
         return AppResponse::jsonResponse("Some error occurred.", null);
+    }
+
+    public function removeUser(string $mode, string $userId)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Merchant\Service)->removeUser($mode, $userId);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }

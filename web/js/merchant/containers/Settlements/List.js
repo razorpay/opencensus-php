@@ -95,7 +95,7 @@ export default class SettlementsListContainer extends ListContainer {
     trackEarlySettlementRequests();
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
-      size: 'small',
+      size: 'large',
     });
   };
 

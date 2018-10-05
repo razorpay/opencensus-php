@@ -6,18 +6,16 @@ use Auth;
 use Hash;
 use Queue;
 use Session;
-use Requests;
+use Request;
+use Razorpay\Api\Errors\ErrorCode;
+use Razorpay\Api\Errors\BadRequestError;
+
 use App\Base;
 use App\User;
-use App\Admin;
 use App\Merchant;
-use App\Invitation;
-use App\User\Helper;
 use App\MerchantDetails;
-use App\Mailers\UserMailer;
-use App\RZP\PublicCollection;
-use Razorpay\Api\Errors\BadRequestError;
-use Razorpay\Api\Errors\Error as ApiError;
+use App\Admin\ApiRequestAny;
+use App\Session\Entity as AppSession;
 
 class Service extends Base\Service
 {
@@ -64,7 +62,7 @@ class Service extends Base\Service
             'user_id' => $this->currentUser->id
         ], $input);
 
-        $request = new \App\Admin\ApiRequestAny([
+        $request = new ApiRequestAny([
             'mode'        => $mode,
             'client_type' => 'merchant',
         ]);
@@ -86,15 +84,15 @@ class Service extends Base\Service
 
     public function resendConfirmation()
     {
-        $request = new \App\Admin\ApiRequestAny();
+        $request = new ApiRequestAny();
 
         list($error, $data) = $request->send('users/resend-verification', 'POST');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -158,15 +156,15 @@ class Service extends Base\Service
             'client_type' => 'merchant',
         ];
 
-        $request = new \App\Admin\ApiRequestAny($options);
+        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->send('keys', 'GET');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -181,15 +179,15 @@ class Service extends Base\Service
             'client_type' => 'merchant',
         ];
 
-        $request = new \App\Admin\ApiRequestAny($options);
+        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->send('invoices', 'GET');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -204,15 +202,15 @@ class Service extends Base\Service
             'client_type' => 'merchant',
         ];
 
-        $request = new \App\Admin\ApiRequestAny($options);
+        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->send('keys', 'POST');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -232,7 +230,7 @@ class Service extends Base\Service
         {
             $data = $this->api->invoice->all()->toArray();
         }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        catch(BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -247,15 +245,15 @@ class Service extends Base\Service
             'client_type' => 'merchant',
         ];
 
-        $request = new \App\Admin\ApiRequestAny($options);
+        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send('invoices', 'POST');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -270,15 +268,15 @@ class Service extends Base\Service
             unset($input['bank_account_number_confirmation']);
         }
 
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($input)->send('merchant/activation', 'POST');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -291,9 +289,9 @@ class Service extends Base\Service
         if ((count($input) !== 1) or
             (in_array(key($input), array_keys(self::UPLOAD_KEYS)) === false))
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 'Invalid parameters.',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -303,15 +301,15 @@ class Service extends Base\Service
             'custom_file_keys' => true,
         ];
 
-        $request = new \App\Admin\ApiRequestAny($options);
+        $request = new ApiRequestAny($options);
 
         list($error, $data) = $request->send('merchant/activation/upload', 'POST');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -350,7 +348,7 @@ class Service extends Base\Service
         {
             $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
         }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        catch (BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -360,15 +358,15 @@ class Service extends Base\Service
 
     public function savePreSignupDetails($input)
     {
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($input)->send('pre_signup', 'PUT');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -419,23 +417,23 @@ class Service extends Base\Service
 
         if (empty($adminUser) === false)
         {
-            $request = new \App\Admin\ApiRequestAny([
+            $request = new ApiRequestAny([
                 'client_type' => 'admin',
                 'mode'        => "live_$merchantId"
             ]);
         }
         else
         {
-            $request = new \App\Admin\ApiRequestAny();
+            $request = new ApiRequestAny();
         }
 
         list($error, $data) = $request->send("merchants-users", 'GET');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -449,20 +447,20 @@ class Service extends Base\Service
 
         if (empty($adminUser) === false)
         {
-            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin', 'mode' => "live_$merchantId"]);
+            $request = new ApiRequestAny(['client_type' => 'admin', 'mode' => "live_$merchantId"]);
         }
         else
         {
-            $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+            $request = new ApiRequestAny(['client_type' => 'merchant']);
         }
 
         list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
@@ -476,7 +474,7 @@ class Service extends Base\Service
             'tags' => $tags
         ];
 
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
+        $request = new ApiRequestAny(['client_type' => 'admin']);
 
         list($error, $data) = $request->processInput($body)->send("merchants/$merchantId/tags", 'POST');
     }
@@ -488,13 +486,31 @@ class Service extends Base\Service
         if (empty($currentMerchant) === true)
         {
             // This case will happen only if the user has zero merchants and tried to access the merchant route.
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            throw new BadRequestError(
                 'Merchant not found for the user',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
 
         return $currentMerchant->id;
+    }
+
+    public function removeUser(string $mode, string $userId)
+    {
+        $request = new ApiRequestAny(['mode' => $mode, 'client_type' => 'merchant']);
+
+        $method = Request::method();
+
+        $path = 'users/' . $userId . '/detach';
+
+        list($error, $data) = $request->send($path, $method);
+
+        if (empty($error) === true)
+        {
+            (new AppSession)->deleteSessionsForUser($userId);
+        }
+
+        return [$error, $data];
     }
 }

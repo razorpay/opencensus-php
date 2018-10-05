@@ -164,7 +164,12 @@ export default class User {
   }
 
   get showEarlySettlementAnnouncement() {
-    return this.activated && this.findTag('announcement_early_settlements');
+    return (
+      this.activated &&
+      this.findTag('announcement_early_settlements') &&
+      !this.findTag('es_automatic') &&
+      !this.isFeatureEnabled('es_on_demand')
+    );
   }
 
   get isOndemandSettlementEnabled() {
