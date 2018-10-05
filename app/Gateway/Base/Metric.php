@@ -298,7 +298,9 @@ class Metric
 
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
-                app('trace')->count(Metric::GATEWAY_REQUEST_COUNT, $dimensions);
+                $gatewayMetrics = app('trace')->metricsDriver('dogstatsd_gateway');
+
+                $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
             }
         }
         catch (\Throwable $exc)
