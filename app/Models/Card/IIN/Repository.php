@@ -48,7 +48,7 @@ class Repository extends Base\Repository
     public function findByIinAndIssuer($iin, $issuer)
     {
         $iin = $this->newQuery()
-                    ->find($iin)
+                    ->where(Entity::IIN, $iin)
                     ->where(Entity::ISSUER, $issuer)
                     ->first();
 

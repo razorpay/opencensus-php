@@ -125,4 +125,17 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    public function validateBinIssuerValidation($issuer)
+    {
+        $input[Entity::ISSUER] = $issuer;
+
+        $this->validateIssuer($input);
+
+        if (in_array($issuer, Constants::BIN_VALIDATION_ISSUERS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer Not Enabled for Bin Validaiton ' . $issuer);
+        }
+    }
 }

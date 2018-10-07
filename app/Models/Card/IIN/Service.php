@@ -82,7 +82,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function validateIinIssuer($cardNumber, $issuer)
+    public function validateIinIssuer($cardNumber, $issuer)
     {
         $enabledBinIssuerValidator = $this->merchant->isFeatureEnabled(Feature::BIN_ISSUER_VALIDATOR);
 
@@ -96,6 +96,11 @@ class Service extends Base\Service
         }
         else
         {
+            $issuer = strtoupper($issuer);
+
+            (new Validator)->validateBinIssuerValidation($issuer);
+
+            // Just having the flexibility for frontend to send a request while typing the card number.
             if (strlen($cardNumber) > 6)
             {
                 $iinNumber = intval(substr($cardNumber, 0, 6));
