@@ -110,15 +110,7 @@ class Service extends Base\Service
         {
             $issuer = strtoupper($issuer);
 
-            // Just having the flexibility for frontend to send a request while typing the card number.
-            if (strlen($cardNumber) > 6)
-            {
-                $iinNumber = intval(substr($cardNumber, 0, 6));
-            }
-            else
-            {
-                $iinNumber = intval($cardNumber);
-            }
+            $iinNumber = intval(substr($cardNumber, 0, 6));
 
             $iin = $this->repo->iin->findByIinAndIssuer($iinNumber, $issuer);
 
