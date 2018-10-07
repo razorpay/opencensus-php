@@ -91,7 +91,7 @@ class Service extends Base\Service
      */
     public function validateIinIssuer(array $input): array
     {
-        (new Validator)->validateInput('binIssuerValidation', $input);
+        (new Validator)->validateInput('bin_issuer_validation', $input);
 
         $issuer = $input[Entity::ISSUER];
         $cardNumber = $input[Entity::NUMBER];
@@ -121,7 +121,7 @@ class Service extends Base\Service
             else
             {
                 // This log helps us track any bin validations
-                //which we are unable to serve because of our iin database errors.
+                // which we are unable to serve because of our iin database errors.
                 $this->trace->info(
                     TraceCode::BIN_ISSUER_VALIDATION_FAILED,
                     [
