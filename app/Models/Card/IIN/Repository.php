@@ -44,4 +44,14 @@ class Repository extends Base\Repository
     {
         return false;
     }
+
+    public function findByIinAndIssuer($iin, $issuer)
+    {
+        $iin = $this->newQuery()
+                    ->find($iin)
+                    ->where(Entity::ISSUER, $issuer)
+                    ->first();
+
+        return $iin;
+    }
 }

@@ -111,4 +111,10 @@ class CardController extends Controller
         return ApiResponse::json($fileName);
     }
 
+    public function validateIinIssuer($iin, $issuer)
+    {
+        $response = $this->service(E::IIN)->validateIinIssuer($iin, $issuer);
+
+        return ApiResponse::json($response);
+    }
 }

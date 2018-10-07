@@ -4,6 +4,8 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
 {
@@ -78,5 +80,50 @@ class Service extends Base\Service
         $result = (new Import\IinGenerator)->generate($input);
 
         return $result;
+    }
+
+    protected function validateIinIssuer($cardNumber, $issuer)
+    {
+        $enabledBinIssuerValidator = $this->merchant->isFeatureEnabled(Feature::BIN_ISSUER_VALIDATOR);
+
+        $response = ['result' => false];
+
+        // We will be returning false when the feature flag is not added.
+        // Could have thrown error at feature middleware but that is not expected functionality by frontend.
+        if ($enabledBinIssuerValidator === false)
+        {
+            return $response;
+        }
+        else
+        {
+            if (strlen($cardNumber) > 6)
+            {
+                $iinNumber = intval(substr($cardNumber, 0, 6));
+            }
+            else
+            {
+                $iinNumber = intval($cardNumber);
+            }
+
+            $iin = $this->repo->iin->findByIinAndIssuer($iinNumber, $issuer);
+
+            if (empty($iin) === false)
+            {
+                $response['result'] = true;
+            }
+            else
+            {
+                // This log helps us track any bin validations
+                //which we are unable to serve because of our iin database errors.
+                $this->trace->info(
+                    TraceCode::BIN_ISSUER_VALIDATION_FAILED,
+                    [
+                        'issuer' => $issuer,
+                        'iin'    => $iinNumber
+                    ]);
+            }
+        }
+
+        return $response;
     }
 }
