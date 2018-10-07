@@ -82,8 +82,20 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function validateIinIssuer($cardNumber, $issuer)
+    /**
+     * Validates if a given IIN is issued by the issuer.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function validateIinIssuer(array $input): array
     {
+        (new Validator)->validateInput('binIssuerValidation', $input);
+
+        $issuer = $input[Entity::ISSUER];
+        $cardNumber = $input[Entity::NUMBER];
+
         $enabledBinIssuerValidator = $this->merchant->isFeatureEnabled(Feature::BIN_ISSUER_VALIDATOR);
 
         $response = ['result' => false];
@@ -97,8 +109,6 @@ class Service extends Base\Service
         else
         {
             $issuer = strtoupper($issuer);
-
-            (new Validator)->validateBinIssuerValidation($issuer);
 
             // Just having the flexibility for frontend to send a request while typing the card number.
             if (strlen($cardNumber) > 6)

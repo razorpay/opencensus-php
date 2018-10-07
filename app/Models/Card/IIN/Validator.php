@@ -36,6 +36,11 @@ class Validator extends Base\Validator
         Entity::FLOWS         => 'sometimes|array|filled|custom',
     );
 
+    protected static $binIssuerValidationRules = [
+        Entity::ISSUER       => 'required|string',
+        Entity::NUMBER       => 'required|string',
+    ];
+
     protected static $createValidators = array(
         'create_network',
         Entity::TYPE,
@@ -47,6 +52,10 @@ class Validator extends Base\Validator
         Entity::TYPE,
         Entity::ISSUER,
     );
+
+    protected static $binIssuerValidationValidators = [
+        'bin_issuer_validation',
+    ];
 
     protected function validateCreateNetwork($input)
     {
@@ -126,16 +135,23 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBinIssuerValidation($issuer)
+    /**
+     * Validates if a issuer is valid or not and validates if it belongs to enabled bins or not.
+     *
+     * @param array $input
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateBinIssuerValidation(array $input)
     {
-        $input[Entity::ISSUER] = $issuer;
+        $input[Entity::ISSUER] = strtoupper($input[Entity::ISSUER]);
 
         $this->validateIssuer($input);
 
-        if (in_array($issuer, Constants::BIN_VALIDATION_ISSUERS, true) === false)
+        if (in_array($input[Entity::ISSUER], Constants::BIN_VALIDATION_ISSUERS, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Issuer Not Enabled for Bin Validaiton ' . $issuer);
+                'Issuer Not Enabled for Bin Validaiton ' . $input[Entity::ISSUER]);
         }
     }
 }

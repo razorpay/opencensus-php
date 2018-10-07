@@ -45,7 +45,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function findByIinAndIssuer($iin, $issuer)
+    /**
+     * @param int    $iin
+     * @param string $issuer
+     *
+     * @return mixed
+     */
+    public function findByIinAndIssuer(int $iin, string $issuer)
     {
         $iin = $this->newQuery()
                     ->where(Entity::IIN, $iin)
