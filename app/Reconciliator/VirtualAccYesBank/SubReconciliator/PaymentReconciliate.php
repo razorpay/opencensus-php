@@ -4,22 +4,24 @@ namespace RZP\Reconciliator\VirtualAccYesBank\SubReconciliator;
 
 use Cache;
 use Config;
-use Razorpay\IFSC\IFSC;
 
-use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\BankTransfer;
+use RZP\Models\Payment\Status;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_UTR           = 'transaction_ref_no';
-    const COLUMN_AMOUNT        = 'amount';
-    const COLUMN_PAYER_NAME    = 'rmtr_full_name';
-    const COLUMN_PAYEE_ACCOUNT = 'bene_account_no';
-    const COLUMN_PAYER_IFSC    = 'rmtr_account_ifsc';
+    const COLUMN_UTR                = 'transaction_ref_no';
+    const COLUMN_AMOUNT             = 'amount';
+    const COLUMN_PAYER_NAME         = 'rmtr_full_name';
+    const COLUMN_PAYEE_ACCOUNT      = 'bene_account_no';
+    const COLUMN_PAYER_IFSC         = 'rmtr_account_ifsc';
+    const COLUMN_TRANS_STATUS       = 'trans_status';
 
+    const RECON_STATUS_CREDITED     = 'credited';
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *
@@ -189,5 +191,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        $reconStatus = $row[self::COLUMN_TRANS_STATUS];
+
+        if (strcasecmp($reconStatus, self::RECON_STATUS_CREDITED) !== 0)
+        {
+            return Status::FAILED;
+        }
     }
 }
