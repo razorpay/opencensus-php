@@ -8,6 +8,8 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { authLink as id, amount, receipt, status } from 'rzp/ui/item/pair';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
+import ListFilter from './ListFilter';
+
 const customerDetail = prop => item => item.customer_details[prop] || '--';
 
 const customerEmail = {
@@ -41,6 +43,12 @@ export default class AuthLinksList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
+        <ListFilter
+          form="authLinksListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
+
         <DataTable
           title="Auth Links"
           skip={this.state.skip}
