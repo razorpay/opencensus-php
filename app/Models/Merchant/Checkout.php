@@ -105,7 +105,7 @@ class Checkout
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data, $order);
+        $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
 
     protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
@@ -115,12 +115,13 @@ class Checkout
 
     protected function resetMethodsIfValidBanksPresent(
         array & $data,
-        Order\Entity $order)
+        Order\Entity $order,
+        Merchant\Entity $merchant)
     {
-        if($order->getBank() !== null)
-        {
-            $bankCode = $order->getBank();
+        $bankCode = $order->getBank();
 
+        if ($bankCode !== null)
+        {
             // Order bank should be present in the list of netbanking banks.
             if (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === true)
             {
@@ -130,6 +131,23 @@ class Checkout
                     $bankCode => $bankName,
                 ];
             }
+        }
+
+        if (($merchant->isTPVRequired() === true) and
+            (empty($data['order']['method']) === true))
+        {
+            $methods = [
+                Payment\Method::NETBANKING => $data['methods'][Payment\Method::NETBANKING],
+                Payment\Method::UPI        => $data['methods'][Payment\Method::UPI],
+            ];
+
+            if (($bankCode !== null) and
+                (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === false))
+            {
+                unset($methods[Payment\Method::NETBANKING]);
+            }
+
+            $data['methods'] = $methods;
         }
     }
 
