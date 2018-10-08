@@ -165,6 +165,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+                    ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
+                    ->get();
+    }
+
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
         return $this->newQuery()
