@@ -11,6 +11,8 @@ class ActivationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const DEFAULT_MERCHANT_ID = '10000000000000';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
@@ -21,6 +23,7 @@ class ActivationTest extends TestCase
     public function testMerchantActivationCategoriesResponseForAdminAuth()
     {
         $this->ba->adminAuth();
+
         $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
 
         $this->startTest();
@@ -28,6 +31,32 @@ class ActivationTest extends TestCase
 
     public function testMerchantActivationCategoriesResponseForNonAdminAuth()
     {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostInstantActivationRequiredField()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostInstantActivation()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * The instant activation route should not accept the request if the merchant is already activated
+     */
+    public function testPostInstantActivationByActivatedMerchant()
+    {
+        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
