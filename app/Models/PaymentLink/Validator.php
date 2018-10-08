@@ -269,14 +269,14 @@ class Validator extends Base\Validator
         // 2. Payment's amount(without fee) must be equal to multiple of sent units and payment link's amount.
         else if ($allowMultipleUnits === true)
         {
-            $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 0);
+            $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
             if ($paymentUnits < 1)
             {
                 $errorMsg = 'Payment notes must contain numeric units parameter greater than equal to 1.';
             }
             else if ($paymentAmountWithoutFee !== ($paymentUnits * $paymentLinkAmount))
             {
-                $errorMsg = 'Payment amount should be integer multiple of payment link amount.';
+                $errorMsg = 'Payment amount should be multiple of units and per payment link\'s amount.';
             }
         }
 

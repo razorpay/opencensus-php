@@ -231,7 +231,7 @@ class Core extends Base\Core
 
         // 3. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink) === false))
+            ($this->hasPaymentSlots($paymentLink, $payment) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
@@ -311,7 +311,7 @@ class Core extends Base\Core
         //
         $this->repo->assertTransactionActive();
 
-        $paymentLink->incrementTimesPaid();
+        $paymentLink->incrementTimesPaidBy((int) ($payment->getNotes()[Entity::UNITS] ?? 1));
         $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
         if ($paymentLink->isTimesPayableExhausted() === true)
@@ -390,13 +390,15 @@ class Core extends Base\Core
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
      *
-     * @param  Entity  $paymentLink
+     * @param  Entity         $paymentLink
+     * @param  Payment\Entity $payment
      * @return boolean
      */
-    protected function hasPaymentSlots(Entity $paymentLink): bool
+    protected function hasPaymentSlots(Entity $paymentLink, Payment\Entity $payment): bool
     {
         $timesPaid    = $paymentLink->getTimesPaid();
         $timesPayable = $paymentLink->getTimesPayable();
+        $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
 
         // Just return if there is no limit on number of payments
         if ($timesPayable === null)
@@ -409,7 +411,7 @@ class Core extends Base\Core
 
         $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentsCount;
 
-        return ($slotsAvailable > 0);
+        return ($slotsAvailable >= $paymentUnits);
     }
 
     /**
