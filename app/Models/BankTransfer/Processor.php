@@ -55,7 +55,7 @@ class Processor extends VirtualAccount\Processor
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc, $useWritePdo = true);
 
         if ($duplicateBankTransfer === null)
         {

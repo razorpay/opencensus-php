@@ -56,12 +56,18 @@ class Repository extends Base\Repository
         $query->select($this->getTableName().'.*');
     }
 
-    public function findByUtrAndPayerIfsc(string $utr, string $payerIfsc)
+    public function findByUtrAndPayerIfsc(string $utr, string $payerIfsc, bool $useWritePdo = false)
     {
-        return $this->newQuery()
-                    ->where(Entity::UTR, '=', $utr)
-                    ->where(Entity::PAYER_IFSC, '=', $payerIfsc)
-                    ->first();
+        $query = $this->newQuery()
+                      ->where(Entity::UTR, '=', $utr)
+                      ->where(Entity::PAYER_IFSC, '=', $payerIfsc);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
     }
 
     public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount)
