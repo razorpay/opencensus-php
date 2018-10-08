@@ -7,17 +7,10 @@ import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
-import { activationDuration } from 'common/data';
-
-import {
-  addDropShield,
-  removeDropShield,
-} from 'merchant/components/File/Upload';
 
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
-  INDIVIDUAL,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,

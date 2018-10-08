@@ -13,6 +13,8 @@ import {
 } from 'rzp/utils/pokedex';
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
+import * as ModalActions from 'rzp/modules/modals';
+import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
 import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';
@@ -22,6 +24,7 @@ import {
   API_INVALID_RESP,
   isMobileDevice,
 } from 'merchant/components/Home/data';
+import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 
 import {
   trackError,
@@ -70,6 +73,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
   },
   {
     ...HomeActions,
+    ...ModalActions,
     showNotification,
     fetchPayments,
   }
@@ -530,6 +534,7 @@ export default class HomeContainer extends Component {
       mode,
       current_balance,
       tabsMeta,
+      user,
 
       // following three props will be sent by admin analytics
       // - web/pokedex.js
@@ -577,7 +582,7 @@ export default class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       expandOnboardingBanner,
       payments,
-      showOnboardingBanner,
+      showOnboardingBanner: !user.showInstantActivation && showOnboardingBanner,
       isMobile,
 
       onHideOnboardingBanner,
@@ -596,6 +601,16 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
+        {user.showInstantActivation &&
+          showOnboardingBannerFirstStep && (
+            <ModalMask>
+              <Modal className="welcome-modal" onClose={onFirstStepClose}>
+                <ModalContent>
+                  <WelcomeModal onClose={onFirstStepClose} />
+                </ModalContent>
+              </Modal>
+            </ModalMask>
+          )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );

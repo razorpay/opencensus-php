@@ -182,6 +182,11 @@ export default class User {
     });
   }
 
+  get showInstantActivation() {
+    // TODO: RazorX should be telling us about this
+    return true;
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());

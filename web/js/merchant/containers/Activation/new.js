@@ -41,41 +41,28 @@ const successImg = '/img/activation/submit-success.svg';
   }
 )
 export default class ActivationContainer extends React.Component {
-  state = {
-    data: null,
-    categories: null,
-  };
+  constructor(props) {
+    super(props);
 
-  componentWillMount() {
-    this.fetchActivationDetails(this.props.accountId); // accountId = undefined if not present
-  }
+    const { data } = props;
 
-  fetchActivationDetails(accountId) {
-    Promise.all([
-      merchantFetch({
-        url: 'merchant/activation',
-        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-        mode: !!accountId ? this.props.session.mode : 'live',
-        accountId,
-      }),
-      !accountId && merchantFetch('merchant/activation/business_categories'),
-    ]).then(([data, categories]) => {
-      const someDetailsFilled = isFormTouched(data.data);
+    if (this.props.setOnCloseCb) {
+      this.props.setOnCloseCb(this.saveDirtyState);
+    }
 
-      if (!someDetailsFilled) {
-        this.preloadWelcomeAsset();
-      }
+    const someDetailsFilled = isFormTouched(data);
 
-      if (data.data.can_submit) {
-        this.preloadSuccessAsset();
-      }
+    if (!someDetailsFilled) {
+      this.preloadWelcomeAsset();
+    }
 
-      this.setState({
-        data: data.data,
-        categories: categories.data,
-        isFormTouched: someDetailsFilled,
-      });
-    });
+    if (data.can_submit) {
+      this.preloadSuccessAsset();
+    }
+
+    this.state = {
+      isFormTouched: someDetailsFilled,
+    };
   }
 
   preloadWelcomeAsset() {
@@ -312,30 +299,14 @@ export default class ActivationContainer extends React.Component {
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
   * */
   render() {
-    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    const IS_MODAL = this.props.onClose;
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories } = this.state;
+    let { data, categories } = this.props;
     let content, spinner, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
       modalClass = 'Activation--success';
       content = <SuccessScreen />;
-    } else if (!data) {
-      modalClass = 'spinner transparent';
-
-      content = null;
-      spinner = (
-        <div class="spinner-container">
-          <div
-            class={classList(
-              'spin-btn large page-center visible',
-              IS_MODAL && 'gray'
-            )}
-          />
-        </div>
-      );
     } else if (
       !accountId &&
       !this.state.isFormTouched &&
@@ -355,6 +326,9 @@ export default class ActivationContainer extends React.Component {
         business_category:
           data.business_category || (data.business_model ? 'others' : null),
       };
+
+      this.props.setAdditionalModalClass(modalClass);
+
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
@@ -371,17 +345,7 @@ export default class ActivationContainer extends React.Component {
       );
     }
 
-    return IS_MODAL ? (
-      <Modal
-        class={classList(modalClass, content && 'animate-down')}
-        onClose={this.props.onClose}
-        onCloseCB={this.saveDirtyState}
-      >
-        <ModalContent>{content || spinner}</ModalContent>
-      </Modal>
-    ) : (
-      <div class="ActivationContainer">{content || spinner}</div>
-    );
+    return content;
   }
 }
 

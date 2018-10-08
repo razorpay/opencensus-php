@@ -267,6 +267,46 @@ body.show-hotjar-poll #_hj_poll_container {
       }
     }
   }
+
+  .Modal-container--welcome-modal {
+
+    width: 90%;
+    max-width: 938px;
+    background-image: url('assets/welcome-illustration.png');
+    background-position: top right;
+    background-repeat: no-repeat;
+    background-size: contain;
+    padding: 56px;
+
+    .welcome-modal-content {
+
+      position: relative;
+      min-height: 442px;
+    
+      .welcome-title {
+
+        margin: 0;
+        font-size: 24px;
+
+        &.welcome-subtitle {
+
+          margin-top: 8px;
+        }
+      }
+
+      .welcome-modal-actions {
+
+        position: absolute;
+        left: 0;
+        bottom: 0;
+      } 
+    }
+
+    .Modal-close {
+
+      color: white;
+    }
+  }
 }
 
 .dashboard {

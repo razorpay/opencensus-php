@@ -22,7 +22,7 @@ import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetai
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 
 import PlanNew from 'merchant/containers/Plans/New';
-import ActivationContainer from 'merchant/containers/Activation/new';
+import ActivationContainer from 'merchant/containers/Activation';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
