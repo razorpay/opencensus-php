@@ -305,12 +305,10 @@ class Core extends Base\Core
 
     protected function updatePaymentLinkAfterPaymentCapture(Entity $paymentLink, Payment\Entity $payment)
     {
-        //
-        // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
-        // status which are shared in multiple payment process and entity operation in parallel.
-        //
+        // Multiple payment process attempts to update attributes of link entity.
         $this->repo->assertTransactionActive();
 
+        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
         $paymentLink->incrementTimesPaidBy((int) ($payment->getNotes()[Entity::UNITS] ?? 1));
         $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
@@ -398,6 +396,7 @@ class Core extends Base\Core
     {
         $timesPaid    = $paymentLink->getTimesPaid();
         $timesPayable = $paymentLink->getTimesPayable();
+        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
         $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
 
         // Just return if there is no limit on number of payments

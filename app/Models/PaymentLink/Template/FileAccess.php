@@ -65,9 +65,8 @@ class FileAccess implements StorageAccess
             return null;
         }
 
-        $resp = file_get_contents($this->getFilePath());
-
-        return $resp ?: null;
+        // On failure file_get_contents() returns false.
+        return file_get_contents($this->getFilePath()) ?: null;
     }
 
     /**

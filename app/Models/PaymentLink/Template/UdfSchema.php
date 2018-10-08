@@ -45,8 +45,10 @@ class UdfSchema
 
     /**
      * We keep schema in a variant format of RFC, except for the ones created in the beginning.
-     * For validation purposes(existing libraries against RFC schema), this method does the conversion
-     * and returns the valid schema as array.
+     * Sample variant JSON schema: https://github.com/razorpay/dashboard/blob/f0fe97a7c96ce4501a958a73cbc2065d3bd01e56/web/js/merchant/containers/PaymentPages/Pages/V2/form_schema.js
+     * Sample standard JSON schema: http://json-schema.org/learn/miscellaneous-examples.html
+     *
+     * For validation purposes(existing libraries against RFC schema), this method does the conversion and returns the valid schema as array.
      * @return array
      */
     public function getSchemaInRfcFormatForValidation(): array
@@ -59,7 +61,7 @@ class UdfSchema
             return $schema;
         }
 
-        // Ref: http://json-schema.org/learn/miscellaneous-examples.html
+        // Converts our variant JSON schema to standard JSON schema for validation usage.
         $formatted = [
             'title'      => '',
             'type'       => 'object',

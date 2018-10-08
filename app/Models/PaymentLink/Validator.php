@@ -72,12 +72,17 @@ class Validator extends Base\Validator
         'contacts.*' => 'required|contact_syntax|digits_between:8,11',
     ];
 
+    /**
+     * Rules for settings.udf_schema.
+     * @var array
+     */
     protected static $udfSchemaRules = [
         'udf_schema'         => 'array|max:15',
         'udf_schema.*.name'  => 'required|string|max:255',
         'udf_schema.*.type'  => 'required|string|in:string,number',
         'udf_schema.*.title' => 'required|string|max:255',
-        // Todo: Optional parameters intentionally left for now.
+        // Additional optional parameters are left intentionally, for now at least.
+        // This is because there are keys conditioned to type.
     ];
 
     public function validateExpireBy(string $attribute, int $value)
@@ -147,6 +152,11 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Settings should have defined set of keys and it's udf_schema's value should be a valid JSON schema.
+     * @param  string $attribute
+     * @param  array  $value
+     */
     public function validateSettings(string $attribute, array $value)
     {
         $extraSettingsKeys = array_values(array_diff(array_keys($value), Entity::SETTINGS_KEYS));
@@ -260,13 +270,12 @@ class Validator extends Base\Validator
             return;
         }
 
+        // If payment for multiple units are not allowed, both amount should be same.
         if (($allowMultipleUnits === false) and ($paymentLinkAmount !== $paymentAmount))
         {
             $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
         }
-        // If payment for multiple amounts is allowed:
-        // 1. Payment's notes must contain number(>= 1) units attribute, and
-        // 2. Payment's amount(without fee) must be equal to multiple of sent units and payment link's amount.
+        // If payment for multiple amounts is allowed - Payment's amount in case greater than link's amount, must contain valid units parameter in notes.
         else if ($allowMultipleUnits === true)
         {
             $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);

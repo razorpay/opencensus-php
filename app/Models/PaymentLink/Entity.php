@@ -365,12 +365,17 @@ class Entity extends Base\PublicEntity
         return $key === null ? $accessor->all() : $accessor->get($key);
     }
 
+    /**
+     * Used when expecting either a scalar string value against settings key or null(instead of Dictionary).
+     * In case of 'null', above call returns instance of Dictionary for some reason.
+     *
+     * @param  string $key
+     * @return string|null
+     */
     public function getSettingsScalarElseNull(string $key)
     {
         $resp = $this->getSettings($key);
 
-        // We expect one scalar value against above key.
-        // In case of 'null', above call returns instance of Dictionary for some reason.
         return (is_string($resp) === true) ? $resp : null;
     }
 
