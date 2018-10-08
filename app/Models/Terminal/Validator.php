@@ -577,7 +577,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
 
-    protected static $banktransferYesbankTerminalRules = [
+    protected static $btYesbankTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_yesbank',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
@@ -585,7 +585,7 @@ class Validator extends Base\Validator
         Entity::BANK_TRANSFER               => 'required|boolean|in:1',
     ];
 
-    protected static $banktransferKotakTerminalRules = [
+    protected static $btKotakTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_kotak',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
@@ -593,7 +593,7 @@ class Validator extends Base\Validator
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
     ];
 
-    protected static $banktransferDashboardTerminalRules = [
+    protected static $btDashboardTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_dashboard',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
