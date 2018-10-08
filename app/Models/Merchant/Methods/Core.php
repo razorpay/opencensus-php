@@ -467,12 +467,9 @@ class Core extends Base\Core
         {
             $newBanks = Payment\Gateway::getEmandateBanksForGatewayAndAuthType($availableGateway, $authType);
 
-            if (empty($newBanks) === false)
-            {
-                $availableEmandateBanks = array_merge(
-                    $availableEmandateBanks,
-                    $newBanks);
-            }
+            $availableEmandateBanks = array_merge(
+                                        $availableEmandateBanks,
+                                        $newBanks);
         }
 
         return array_values(array_unique($availableEmandateBanks));
