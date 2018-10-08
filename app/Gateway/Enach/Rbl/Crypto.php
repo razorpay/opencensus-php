@@ -18,9 +18,9 @@ class Crypto
 
     protected $privateKey;
 
-    protected $encryptionCertificatePath;
+    protected $encryptionCertificate;
 
-    protected $signingCertificatePath;
+    protected $signingCertificate;
 
     public function __construct(array $config = null, $mode = Mode::TEST)
     {
@@ -33,17 +33,21 @@ class Crypto
 
         if ($mode === Mode::LIVE)
         {
-            $key = trim(str_replace('\n', "\n", $this->config['live_emandate_private_key']));
+            $key = trim(str_replace('\n', "\n", $this->config['live_npci_emandate_private_key']));
+
             $this->setPrivateKey($key);
-            $this->setEncryptionCertificatePath(__DIR__ . '/keys/live_npci_cert.cer');
-            $this->setSigningCertificatePath(__DIR__ . '/keys/live_sign_cert.pem');
+            $this->setEncryptionCertificate($this->config['live_npci_emandate_encryption_certificate']);
+            $this->setSigningCertificate($this->config['live_npci_emandate_signing_certificate']);
         }
         elseif ($mode === Mode::TEST)
         {
-            $key = trim(str_replace('\n', "\n", $this->config['test_emandate_private_key']));
+            $key  = trim(str_replace('\n', "\n", $this->config['test_emandate_private_key']));
+            $cert = file_get_contents(__DIR__ . '/keys/onmag_cert.cer');
+            $sign = file_get_contents(__DIR__ . '/keys/cert.pem');
+
             $this->setPrivateKey($key);
-            $this->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
-            $this->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
+            $this->setEncryptionCertificate($cert);
+            $this->setSigningCertificate($sign);
         }
     }
 
@@ -54,14 +58,14 @@ class Crypto
         $this->privateKey = $key;
     }
 
-    public function setEncryptionCertificatePath($path)
+    public function setEncryptionCertificate($cert)
     {
-        $this->encryptionCertificatePath = $path;
+        $this->encryptionCertificate = $cert;
     }
 
-    public function setSigningCertificatePath($path)
+    public function setSigningCertificate($cert)
     {
-        $this->signingCertificatePath = $path;
+        $this->signingCertificate = $cert;
     }
 
     public function decrypt($data)
@@ -126,7 +130,7 @@ class Crypto
             ['force_uri' => true]
         );
 
-        $sign->add509Cert($this->getSigningCert(), true, false, ['subjectName' => true ]);
+        $sign->add509Cert($this->signingCertificate, true, false, ['subjectName' => true ]);
 
         $sign->sign($this->getSigningPrivateKey());
 
@@ -165,14 +169,9 @@ class Crypto
         return ($verify === 1);
     }
 
-    protected function getSigningCert()
-    {
-        return (file_get_contents($this->signingCertificatePath));
-    }
-
     public function getSigningPublicKey()
     {
-        $cert = $this->getSigningCert();
+        $cert = $this->signingCertificate;
 
         $publicKeyResource = openssl_pkey_get_public($cert);
 
@@ -183,7 +182,7 @@ class Crypto
 
     public function getEncryptionPublicKey()
     {
-        $cert = (file_get_contents($this->encryptionCertificatePath));
+        $cert = $this->encryptionCertificate;
 
         $publicKeyResource = openssl_pkey_get_public($cert);
 

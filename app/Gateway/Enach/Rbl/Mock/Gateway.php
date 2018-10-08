@@ -54,10 +54,12 @@ class Gateway extends Rbl\Gateway
         }
     }
 
-    protected function setCryptoAttribute()
+    protected function setCrypto()
     {
         $this->crypto = new Rbl\Crypto($this->config, $this->mode);
 
-        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+        $cert = file_get_contents(__DIR__ . '/keys/mock_cert.pem');
+
+        $this->crypto->setEncryptionCertificate($cert);
     }
 }

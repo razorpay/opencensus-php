@@ -249,12 +249,12 @@ class Server extends Base\Mock\Server
     {
         $this->crypto = new Crypto();
 
-        $key = file_get_contents(__DIR__ . '/keys/mock_key.pem');
+        $key  = file_get_contents(__DIR__ . '/keys/mock_key.pem');
+        $cert = file_get_contents(__DIR__ . '/keys/cert.pem');
+        $sign = file_get_contents(__DIR__ . '/keys/mock_cert.pem');
 
         $this->crypto->setPrivateKey($key);
-
-        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/cert.pem');
-
-        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+        $this->crypto->setEncryptionCertificate($cert);
+        $this->crypto->setSigningCertificate($sign);
     }
 }
