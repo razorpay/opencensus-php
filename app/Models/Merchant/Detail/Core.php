@@ -103,50 +103,13 @@ class Core extends Base\Core
         });
     }
 
-    public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
-            [
-                'input'       => $input,
-                'merchant_id' => $merchant->getId(),
-            ]);
-
-        $merchantDetails = $this->getMerchantDetails($merchant, $input);
-
-        $merchantDetails->getValidator()->validateIsNotLocked();
-
-        $merchantDetails->edit($input, 'instant_activation');
-
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
-        {
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
-
-            $this->autoUpdateMerchantActivationFlow($merchantDetails);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
-
-            $activationFlowImpl->process($merchantDetails);
-
-            $response = $this->createResponse($merchantDetails);
-
-            // Todo: confirm with product
-            $activationProgress = $response['verification']['activation_progress'];
-
-            $merchantDetails->setActivationProgress($activationProgress);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            return $response;
-        });
-    }
-
     /**
-     * on change of subcategory , updates merchant activation flow
+     * fetches activation flow from business category and subcategory and
+     * updates merchant activation flow
      *
-     * @param Entity          $merchantDetails
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
     {
@@ -163,6 +126,8 @@ class Core extends Base\Core
      *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function autoUpdateMerchantCategoryDetailsIfApplicable(
         Entity $merchantDetails,
@@ -204,7 +169,15 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+            $this->autoUpdateMerchantActivationFlow($merchantDetails);
+
             $this->repo->saveOrFail($merchantDetails);
+
+            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
+
+            $activationFlowImpl->process($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
 
@@ -871,8 +844,8 @@ class Core extends Base\Core
             //
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                 (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) === false) and
-                    (empty($merchantDetailsArr[$key]) === true)))
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                 (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }

@@ -1397,7 +1397,6 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
-        'merchant_instant_activation_post',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'merchant_instant_activation_post',
