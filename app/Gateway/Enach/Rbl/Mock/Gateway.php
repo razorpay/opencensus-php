@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Enach\Rbl\Mock;
 
+use RZP\Constants\Mode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Enach\Rbl;
 
@@ -55,12 +56,8 @@ class Gateway extends Rbl\Gateway
 
     protected function setCryptoAttribute()
     {
-        $this->crypto = new Rbl\Crypto($this->config);
-
-        $this->crypto->setPrivateKey();
+        $this->crypto = new Rbl\Crypto($this->config, $this->mode);
 
         $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
-
-        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
     }
 }

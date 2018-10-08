@@ -6,6 +6,8 @@ use DOMDocument;
 use phpseclib\Crypt\RSA;
 use RobRichards\XMLSecLibs;
 
+use RZP\Constants\Mode;
+
 class Crypto
 {
     const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
@@ -20,21 +22,34 @@ class Crypto
 
     protected $signingCertificatePath;
 
-    public function __construct(array $config = null)
+    public function __construct(array $config = null, $mode = Mode::TEST)
     {
-        $this->config = $config;
-    }
-
-    public function setPrivateKey($key = null)
-    {
-        if(isset($key) === true)
+        if ($config === null)
         {
-            $key = trim(str_replace('\n', "\n", $key));
+            return;
         }
-        else
+
+        $this->config = $config;
+
+        if ($mode === Mode::LIVE)
+        {
+            $key = trim(str_replace('\n', "\n", $this->config['live_emandate_private_key']));
+            $this->setPrivateKey($key);
+            $this->setEncryptionCertificatePath(__DIR__ . '/keys/live_npci_cert.cer');
+            $this->setSigningCertificatePath(__DIR__ . '/keys/live_sign_cert.pem');
+        }
+        elseif ($mode === Mode::TEST)
         {
             $key = trim(str_replace('\n', "\n", $this->config['test_emandate_private_key']));
+            $this->setPrivateKey($key);
+            $this->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
+            $this->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
         }
+    }
+
+    public function setPrivateKey($key)
+    {
+        $key = trim(str_replace('\n', "\n", $key));
 
         $this->privateKey = $key;
     }

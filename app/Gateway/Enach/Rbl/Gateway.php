@@ -115,7 +115,7 @@ class Gateway extends Base\Gateway
 
     protected function netbankingAuthorize($input)
     {
-        $this->setCryptoAttribute();
+        $this->setCrypto();
 
         $this->createGatewayPaymentEntity([], 'authorize');
 
@@ -126,7 +126,7 @@ class Gateway extends Base\Gateway
 
     protected function netbankingCallback($input)
     {
-        $this->setCryptoAttribute();
+        $this->setCrypto();
 
         $responseXmlString = $input['gateway'][ResponseFields::RESPONSE_XML];
 
@@ -657,16 +657,9 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
-    protected function setCryptoAttribute()
+    protected function setCrypto()
     {
-        $this->crypto = new Crypto($this->config);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $this->crypto->setPrivateKey();
-            $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
-            $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
-        }
+        $this->crypto = new Crypto($this->config, $this->mode);
     }
 
     protected function extractPaymentsProperties($gatewayPayment)
