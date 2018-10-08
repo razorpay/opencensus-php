@@ -362,7 +362,7 @@ class Validator extends Base\Validator
 
         $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
-        $validSubcategories = $subcategoryMap[$category];
+        $validSubcategories = $subcategoryMap[$category] ?? [];
 
         $isError            = false;
 
@@ -474,17 +474,14 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity->merchant;
 
-        $criticalInputAttributes = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
+        $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
 
-        if (($merchant->isActivated() === true) and (empty($criticalInputAttributes) === false))
+        if (($merchant->isActivated() === true) and (empty($criticalInput) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
                 null,
-                [
-                    'critical_attributes' => $criticalInputAttributes,
-                    Entity::MERCHANT_ID   => $merchant->getId(),
-                ]);
+                 $criticalInput);
         }
     }
 }
