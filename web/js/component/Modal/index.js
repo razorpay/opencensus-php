@@ -9,6 +9,24 @@ import ErrorBoundary from 'common/ErrorBoundary';
 export class ModalMask extends React.PureComponent {
   state = {};
 
+  componentWillMount() {
+    this.props.isBlur && this.toggleBlur(true);
+  }
+
+  componentWillUnmount() {
+    this.props.isBlur && this.toggleBlur(false);
+  }
+
+  toggleBlur(toAdd) {
+    const body = document.body;
+    if (toAdd && !body.classList.contains('blur')) {
+      body.classList.add('blur');
+    } else {
+      body.classList.remove('blur');
+      body.classList.remove('noscroll');
+    }
+  }
+
   onMaskClose = e => {
     const modalContent = document.getElementsByClassName('Modal-container')[0];
 
