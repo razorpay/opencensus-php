@@ -121,8 +121,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthRequest($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         return $request;
     }
 
@@ -253,13 +251,15 @@ class Gateway extends Base\Gateway
 
         $xml = $this->getXml($data);
 
+        $signedxml = $this->crypto->addSignature($xml);
+
         $mid = $this->getMerchantId();
 
         $bank = $input['payment']['bank'];
 
         $content = [
             RequestFields::MERCHANT_ID => $mid,
-            RequestFields::REQUEST_XML => $xml,
+            RequestFields::REQUEST_XML => $signedxml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
         ];
@@ -267,6 +267,15 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
 
         $request = $this->addHeadersForNpciRequest($request);
+
+        $dataToTrace = [
+            RequestFields::MERCHANT_ID => $mid,
+            RequestFields::REQUEST_XML => $xml,
+            RequestFields::CHECKSUM    => $encryptedChecksum,
+            RequestFields::BANK_ID     => $bank,
+        ];
+
+        $this->traceGatewayPaymentRequest($dataToTrace, $input);
 
         return $request;
     }
@@ -385,9 +394,7 @@ class Gateway extends Base\Gateway
         $xmlString = str_replace("\r", '', $xmlString); // remove carraige return
         $xmlString = preg_replace('/\s\s+/', '', $xmlString); // remove consecutive spaces
 
-        $signedxml = $this->crypto->addSignature($xmlString);
-
-        return $signedxml;
+        return $xmlString;
     }
 
     protected function getEncryptedData($secureData)
