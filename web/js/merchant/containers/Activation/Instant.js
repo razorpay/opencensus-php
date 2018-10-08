@@ -1,216 +1,134 @@
-import { connect } from 'react-redux';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { withRouter } from 'react-router-dom';
-import { classList } from 'common/util';
-
-import ShowWhen from 'merchant/components/ShowWhen';
-import Alert from 'component/Alert';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
-
-import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinkFormFields from './L1FormMap';
+import { prevent } from 'common/util';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { classList } from 'common/util';
 
-import moment from 'moment';
-import { createPaymentLink } from '../model';
-import { dateCalculator } from 'component/Input/Calendar';
-import { timeCalculator } from 'component/Input/Time';
-
-import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
-
-const FORM_FIELDS = {
-  title: 'Payment Link',
-  desc: 'The link gets expired automatically once its paid.',
-  url: '/paymentlinks/new',
-  content: [...PaymentLinkFormFields],
-  onCreate: createPaymentLink,
-};
+import formFields from './L1FormMap';
 
 function defaultFieldProps(f) {
   const self = this;
 
   if (Array.isArray(f)) {
     return f.forEach(defaultFieldProps.bind(self));
-  } else if (
-    f.hasOwnProperty('inlineFields') &&
-    Array.isArray(f.inlineFields)
-  ) {
-    return f.inlineFields.forEach(defaultFieldProps.bind(self));
   }
-
   if (!f._cmp) {
     f._cmp = Input;
   }
-
-  if (f.name === 'notes') {
-    f.onChange = self.onChangeNotes;
+  if (!f.hasOwnProperty('required')) {
+    f.required = true;
   }
 
-  if (f._name === 'expire_by_date') {
-    f.onChange = self.onDateChange.bind(self);
+  if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
+    f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
   }
-  if (f.name === 'expire_by') {
-    f.onChange = self.onTimeChange.bind(self);
+
+  if (f.hasOwnProperty('onBlur') && typeof f.onBlur === 'function') {
+    f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
+  }
+
+  if (f.hasOwnProperty('info') && typeof f.info === 'function') {
+    f.info = f.info.bind(self); // Show different info based on other fields
+  }
+
+  if (!f.hasOwnProperty('autoComplete')) {
+    f.autoComplete = 'off';
+  }
+
+  if (!f.hasOwnProperty('size')) {
+    f.size = 'small';
   }
 }
 
-function WizardFields(field) {
-  let {
-    _cmp: Component,
-    _name,
-    _when,
-    _featureEnabled,
-    _autoRenderImpure,
-    _disabledWhen,
-    ...rest
-  } = field;
+let FORM_TABS; // Maintains naming of the tabs
+let BUSINESS_CATEGORY_FIELD = 3;
 
-  if (_when && !_when(this)) {
-    return null;
-  }
-
-  let defaultValue, key;
-
-  if (rest.name) {
-    key = rest.name;
-    defaultValue = this.state.dirty[key]; // Form state is stored in dirty
-
-    key === 'expire_by' && defaultValue;
-  } else if (_name) {
-    defaultValue = this.state._name[_name];
-    key = _name;
-  }
-
-  if (rest.description && typeof rest.description === 'function') {
-    rest.description = rest.description(this);
-  }
-
-  let isComponentDisabled;
-  if (this.state.parentFormLock || (_disabledWhen && _disabledWhen(this))) {
-    isComponentDisabled = true;
-  }
-
-  let component = (
-    <Component
-      key={key}
-      data-name={_name}
-      defaultValue={defaultValue}
-      autoRender={_autoRenderImpure}
-      disabled={isComponentDisabled}
-      {...rest}
-    />
-  );
-
-  if (_featureEnabled) {
-    component = (
-      <ShowWhen key={key} featureEnabled={_featureEnabled}>
-        {component}
-      </ShowWhen>
-    );
-  }
-
-  return component;
-}
-
-@withRouter
-@connect(state => state.session, {
-  updatePLInReduxList,
-  showNotification,
-  openModal,
-  closeModal,
-  luminateRow,
-})
-export default class CreateNewContainer extends React.Component {
-  static contextTypes = {
-    confirm: PropTypes.func,
+export default class ActivationWizard extends React.Component {
+  state = {
+    dirty: {},
+    tabs: [],
+    has_url:
+      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
   };
 
   constructor(props) {
     super(props);
-
-    const self = this;
-
-    defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
-
-    this.state = {
-      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
-      _name: {
-        // Object, cuz dirty is also object
-        hasNoExpiry: '1', // 1 => selected
-      },
-    };
-
-    // recording new payments links creation UI form in hotjar
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'payment_links_v2_form_open');
-      window.hj('tagRecording', ['payment_links_v2_form_open']);
-    }
-
-    trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
+    this.prepareTabs(props);
   }
 
-  componentDidMount() {
-    this.toggleDisableState();
-  }
+  prepareTabs(props) {
+    FORM_TABS = [...formFields];
 
-  componentDidUpdate() {
-    this.toggleDisableState();
-  }
-
-  toggleDisableState() {
-    /*
-    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
-    * Hence, relying on is-invalid.
-    * */
-    // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
-    const invalidFields = document.querySelectorAll(
-      '.PaymentLinks--Create-Form .Input.is-invalid'
+    // Business Category in "Business Model" exists in main activation form. Setting value dynamically from props.
+    FORM_TABS[BUSINESS_CATEGORY_FIELD][0].options = ['--Select--'].concat(
+      Object.keys(props.categories).map(c => ({
+        name: c,
+        label: props.categories[c].description,
+      }))
     );
-    const disableSubmit = invalidFields.length;
 
-    if (this.state.disableSubmit !== disableSubmit) {
-      this.setState({ disableSubmit });
-    }
+    defaultFieldProps.call(this, FORM_TABS); // Set the default props for all tab content views
   }
+
+  get isIndividualTypeLock() {
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+
+    return businessType == INDIVIDUAL;
+  }
+
+  submitForm = () => {
+    return this.props.submitForm().then(data => {
+      // Handle response
+    });
+  };
 
   onChange = ({ target }) => {
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     let fieldName = target.name;
 
-    /* Step 0: */
-    if (fieldName.indexOf('notes[') > -1) {
-      return true;
+    let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
+    const { dirty } = this.state;
+    const { data } = this.props;
+
+    if (stateName === 'has_url' && fieldValue === '1') {
+      sideEffectFieldsToUpdate['business_website'] = '';
     }
 
-    let sideEffectFieldsToUpdate = {};
+    /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
+    if (fieldName === 'business_category') {
+      // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
+      sideEffectFieldsToUpdate['business_subcategory'] = '';
+      sideEffectFieldsToUpdate['business_model'] = ''; // Reset Business Model as well.
 
-    const curDirty = this.state.dirty;
+      // Update Business Subcategory in view
+      let el = document.querySelector(
+        `.form-container [name=business_subcategory]`
+      );
+      el && (el.value = '');
 
-    /* Step 1: */
-    if (fieldName === 'contact') {
-      const isChecked = !!fieldValue;
-
-      sideEffectFieldsToUpdate['sms_notify'] = isChecked ? '1' : '0';
-      document.getElementsByName('sms_notify')[0].checked = isChecked;
-    } else if (fieldName === 'email') {
-      const isChecked = !!fieldValue;
-
-      sideEffectFieldsToUpdate['email_notify'] = isChecked ? '1' : '0';
-      document.getElementsByName('email_notify')[0].checked = isChecked;
+      // Update Business Model in view
+      el = document.querySelector(`.form-container [name=business_model]`);
+      el && (el.value = '');
     }
 
-    /* Step Last */
+    if (fieldName === 'business_subcategory') {
+      sideEffectFieldsToUpdate['business_category'] =
+        dirty['business_category'] || data['business_category'];
+    }
+
+    /* Step 6: Business website must have http/https prepended */
+    if (fieldName === 'business_website') {
+      fieldValue = autoPrefixUrls(fieldValue); // Updating in view will happen if he comes to this tab again. Otherwise single backspace on 'http' must be handled as full word not single character.
+    }
+
+    /* Step Last: */
     if (stateName) {
-      const _newName = { ...this.state._name };
-
       this.setState({
-        _name: {
-          ...this.state._name,
-          [stateName]: fieldValue,
-        },
+        [stateName]: fieldValue,
       });
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
@@ -232,323 +150,154 @@ export default class CreateNewContainer extends React.Component {
     }
   };
 
-  /* Handle change of time from time picker */
-  onTimeChange(date) {
-    const curDate = this.state._name.expire_by_date;
+  /* Find if all tabs are valid */
+  isAllTabsValid() {
+    let isValid = true;
 
-    timeCalculator(date, curDate, this.updateDate);
+    for (let i = 0; i < this.state.tabs.length; i++) {
+      if (!this.state.tabs[i]) {
+        isValid = false;
+        break;
+      }
+    }
+
+    if (isValid && this.isIndividualTypeLock) {
+      isValid = false;
+    }
+
+    return isValid;
   }
 
-  /* Handle change of time from time picker */
-  onDateChange(date) {
-    const curExpiryByTime = this.state.dirty.expire_by;
+  render() {
+    const isFormLocked = !!this.props.data.locked;
 
-    dateCalculator(date, curExpiryByTime, this.updateDate);
-  }
-
-  /* Handle change of date from calendar */
-  updateDate = ts => {
-    const newDate = moment(ts);
-
-    this.setState({
-      // Update expire_by
-      dirty: {
-        ...this.state.dirty,
-        expire_by: newDate,
-      },
-      // Update expire_by_date
-      _name: {
-        ...this.state._name,
-        expire_by_date: newDate,
-      },
-    });
-  };
-
-  /* Handle change of notes */
-  onChangeNotes = pairs => {
-    const notes = onChangeNotes(pairs);
-
-    this.setState({
-      dirty: {
-        ...this.state.dirty,
-        notes: notes,
-      },
-    });
-  };
-
-  openRPLShareView = (id, shortUrl, title, description) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <RPLShareView
-          handleClose={this.props.closeModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          showNotification={this.props.showNotification}
-          url={shortUrl}
-          title={title}
-          description={description}
-        />
-      ),
-    });
-  };
-
-  onCreate = () => {
-    const IS_MODAL_VIEW = this.props.onClose;
-
-    this.setState({
-      parentFormLock: true,
-    });
-
-    let notificationMSG = 'Payment link created successfully.',
-      notifyMedium = [];
-
-    if (this.state.dirty.sms_notify) {
-      notifyMedium.push('SMS');
-    }
-
-    if (this.state.dirty.email_notify) {
-      notifyMedium.push('Email');
-    }
-
-    if (notifyMedium.length > 0) {
-      notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
-    }
-
-    const reqPayload = { ...this.state.dirty };
-
-    /* Removing unrequired fields */
-
-    if (this.state._name.hasNoExpiry == '1') {
-      delete reqPayload.expire_by;
-    }
-
-    if (this.state.dirty.notes && !Object.keys(this.state.dirty.notes).length) {
-      delete reqPayload.notes;
-    }
-
-    if (!this.state.dirty.receipt) {
-      delete reqPayload.receipt;
-    }
-
-    return FORM_FIELDS.onCreate(reqPayload)
-      .then(resp => {
-        this.setState({
-          parentFormLock: false,
-        });
-
-        if (resp.data) {
-          this.props.showNotification({
-            type: 'success',
-            message: notificationMSG,
-          });
-
-          const entityId = resp.data.id;
-
-          if (IS_MODAL_VIEW) {
-            this.props.updatePLInReduxList(resp, true);
-            this.props.luminateRow(entityId); // Make it promise based
-
-            setTimeout(this.props.onClose, 50);
-          } else {
-            const redirectUrl = '/paymentlinks/' + entityId;
-
-            this.props.history.push(redirectUrl);
-          }
-        } else {
-          throw new Error(resp.errors);
-        }
-      })
-      .catch(({ errors }) => {
-        let err = errors;
-
-        if (Array.isArray(err)) {
-          err = [];
-
-          errors.length &&
-            errors.forEach(e => {
-              if (e && e.toLowerCase().indexOf('status code') === -1) {
-                err.push(e);
-              }
-            });
-
-          err = err.length ? err : null;
-        }
-
-        if (!err) {
-          err = `Some network error has occured`;
-        }
-
-        this.props.showNotification({
-          type: 'error',
-          message: err,
-        });
-
-        this.setState({
-          parentFormLock: false,
-        });
-      });
-  };
-
-  getFormFields() {
-    const fields = FORM_FIELDS.content;
-
-    return fields.map((f, i) => {
-      if (Array.isArray(f)) {
+    const content = FORM_TABS.map((field, i) => {
+      if (Array.isArray(field)) {
         return (
-          <Input.Group key={i} disabled={this.state.parentFormLock}>
-            {f.map(WizardFields, this)}
-          </Input.Group>
-        );
-      } else if (
-        f.hasOwnProperty('inlineFields') &&
-        Array.isArray(f.inlineFields)
-      ) {
-        return (
-          <Input.Group
-            key={i}
-            class={classList('InputGroup--inline', f.className)}
-            label={f.label}
-            disabled={this.state.parentFormLock}
-          >
-            <div class="Input-content">
-              {f.inlineFields.map(WizardFields, this)}
-            </div>
-          </Input.Group>
+          <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
         );
       }
 
-      return WizardFields.call(this, f);
+      return ActivationField.call(this, field);
     });
+
+    return (
+      <div class="Activation--wizard Wizard">
+        <main class={classList('form-container', isFormLocked && 'main--full')}>
+          <main-title class="main-title">Activate your account</main-title>
+
+          <Form onChange={this.onChange} layout="tabular">
+            {content}
+          </Form>
+        </main>
+      </div>
+    );
   }
 
-  onFormAbruptClose = e => {
-    const curDirty = this.state.dirty;
-    const formTabs = Object.keys(curDirty);
-
-    let formUnsaved = false;
-
-    if (formTabs.length) {
-      formTabs.forEach(tabId => {
-        const tab = this.state.dirty[tabId];
-
-        /*
-        * If >2 fields are touched in any one form, close-confirmation is asked before closing
-        * */
-        if (Object.keys(tab).length > 2) {
-          formUnsaved = true;
-
-          return false;
-        }
-      });
-    }
-
-    if (formUnsaved) {
-      this.context
-        .confirm({
-          header: 'Do you want to close this form?',
-          message: 'Changes that you made will be discarded.',
-          affirmativeLabel: 'Leave',
-          abortLabel: 'Stay',
-          action: () => {
-            this.props.onClose();
-            closePaymentLinkForm('Confirmed');
-          },
-        })
-        .catch(() => {});
-    } else {
-      this.props.onClose();
-    }
-  };
-
-  render() {
-    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    const IS_MODAL_VIEW = this.props.onClose;
-    const formFields = this.getFormFields();
-
-    const content = (
-      <CreateWizard
-        ref={refId => (this.wizardContent = refId)}
-        submitForm={this.submitForm}
-        history={this.props.history}
-        mode={this.props.mode}
-        content={formFields}
-        onChange={this.onChange}
-        onCreate={this.onCreate}
-        isModalView={IS_MODAL_VIEW}
-        onFormAbruptClose={e => {
-          this.onFormAbruptClose(e);
-          closePaymentLinkForm('Cancel');
-        }}
-        disableSubmit={this.state.disableSubmit}
-      />
-    );
-
-    return IS_MODAL_VIEW ? (
-      <Modal
-        class={classList('PaymentLinks', content && 'animate-down')}
-        onClose={e => {
-          this.onFormAbruptClose(e);
-          closePaymentLinkForm('Cross');
-        }}
-      >
-        <ModalContent>{content}</ModalContent>
-      </Modal>
-    ) : (
-      <div class="StandAloneContainer">{content}</div>
+  // returns validity
+  tabValidity(i) {
+    return FORM_TABS[i].every(
+      c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this))
+          : isFieldValid(c, this)
     );
   }
 }
 
-class CreateWizard extends React.Component {
-  closeModal = e => {
-    this.props.onClose();
-  };
+function ActivationField(field) {
+  let {
+    _cmp: Component,
+    _name,
+    _when,
+    _optionsFn,
+    _autoRenderImpure,
+    _disabledWhen,
+    required,
+    ...rest
+  } = field;
 
-  render() {
-    const { disableSubmit, mode } = this.props;
-
-    return (
-      <div class="PaymentLinks--Create Wizard">
-        <main class="form-container">
-          <main-title class="main-title">Create {FORM_FIELDS.title}</main-title>
-
-          {/* ALERTS */}
-          {mode === 'test' && (
-            <Alert.Warning>
-              You are creating the link in <b>Test Mode</b>. So, only test
-              payments can be made for it.
-            </Alert.Warning>
-          )}
-
-          {/* FORM */}
-          <Form
-            class="PaymentLinks--Create-Form"
-            onChange={this.props.onChange}
-            layout="tabular"
-            key={FORM_FIELDS.title}
-          >
-            {this.props.content}
-          </Form>
-        </main>
-
-        {/* FORM FOOTER */}
-        <footer>
-          {/* Action Button 1 */}
-          {this.props.isModalView && (
-            <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
-          )}
-
-          {/* Action Button 2 */}
-          <AsyncBtn.Primary
-            onClick={this.props.onCreate}
-            pendingState={'Creating...'}
-            disabled={disableSubmit}
-          >
-            Create {FORM_FIELDS.title}
-          </AsyncBtn.Primary>
-        </footer>
-      </div>
-    );
+  if (_when && !_when(this)) {
+    return null;
   }
+
+  // Need to update options using rest.options to update in view, otherwise calling JUST _optionsFn changes options but doesnt change view.
+  if (_optionsFn) {
+    if (field.name === 'business_subcategory') {
+      rest.options = field._optionsFn(this, this.props.categories);
+    }
+  }
+
+  let defaultValue, key;
+  if (rest.name) {
+    key = rest.name;
+    /*
+     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
+     * */
+    defaultValue = this.state.dirty[key] || this.props.data[key];
+  } else if (_name) {
+    defaultValue = this.state[_name];
+    key = _name;
+  }
+
+  const isFormLocked = !!this.props.data.locked;
+
+  // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
+  let isComponentDisabled = isFormLocked;
+
+  // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
+  if (_disabledWhen && _disabledWhen(this)) {
+    // Overiride the value if it's disabled
+    isComponentDisabled = true;
+  }
+
+  // Show bank account number if it's activated/locked
+  if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
+    rest.type = 'text';
+  }
+
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
+  }
+
+  return (
+    <Component
+      key={key}
+      data-name={_name}
+      defaultValue={defaultValue}
+      disabled={isComponentDisabled}
+      autoRender={_autoRenderImpure}
+      required={typeof required === 'function' ? required(this) : required}
+      {...rest}
+    />
+  );
+}
+
+function isFieldValid(field, activation) {
+  let data = activation.props.data;
+  if (!field.name) {
+    // what isn't submissible is valid
+    return true;
+  }
+  if (field._when) {
+    // what isn't visible is valid
+    if (!field._when(activation)) {
+      return true;
+    }
+  }
+
+  let value = data[field.name];
+  let isFieldRequired = field.required;
+
+  if (typeof isFieldRequired === 'function') {
+    isFieldRequired = isFieldRequired(activation);
+  }
+
+  if (isFieldRequired && !value) {
+    field.autoFocus = true; // To autofocus first unfilled required field
+
+    // value missing in required field
+    return false;
+  }
+  return true;
 }
