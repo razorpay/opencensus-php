@@ -164,6 +164,7 @@ class Processor extends VirtualAccount\Processor
 
                             $this->repo->saveOrFail($this->virtualAccount);
 
+                            // TODO Remove when VA terminals are used in payment auth
                             $this->setGateway($payment, $bankTransfer->getGateway());
 
                             $this->repo->saveOrFail($payment);
