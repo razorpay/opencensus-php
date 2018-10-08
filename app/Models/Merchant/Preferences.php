@@ -30,6 +30,7 @@ class Preferences
     const MID_ICICI_LOMBARD    = 'AXRuIp5uiz5Jsp';
     const MID_KARVY            = 'AmReTNPu1KFKBn';
     const MID_ANGEL_BROKING    = 'AC4DJNMIX9xXOz';
+    const MID_SHELLHATCH       = 'A7W1rwbYMRmn6M';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -123,6 +124,7 @@ class Preferences
         self::MID_INVEZTA,
         self::MID_KARVY,
         self::MID_ANGEL_BROKING,
+        self::MID_SHELLHATCH,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [
