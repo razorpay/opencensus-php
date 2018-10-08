@@ -41,6 +41,12 @@ app
       $scope.rightLayout = false; // login layout ? right is true : right is false
       $scope.lockme = false; // only turns true for lockme route
 
+      /*
+        $scope.login = {
+          data: {email: $location.search().email || ''}
+        };
+      */
+
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
       organization.fetchCurrentOrg().then(function(data) {
@@ -909,7 +915,6 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
-
         var data = {
           email: $scope.login.data.email,
         };
