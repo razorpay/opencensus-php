@@ -849,16 +849,16 @@ class Terminal extends Base
     {
         $defaultValues = [
             'id'                        => 'BANKACC3DSN3DS',
-            'merchant_id'               => '100000Razorpay',
+            'merchant_id'               => '10000000000000',
             'gateway'                   => Gateway::BT_YESBANK,
             'gateway_merchant_id'       => '222333',
             'gateway_merchant_id2'      => '00',
             'card'                      => 0,
-            'shared'                    => 0,
+            'recurring'                 => 0,
             'gateway_acquirer'          => null,
             'type'                      => [
                 Type::NON_RECURRING        => '1',
-                Type::NUMERIC_ACCOUNT => '1',
+                Type::NUMERIC_ACCOUNT      => '1',
             ],
             'bank_transfer'             => '1',
         ];
@@ -866,6 +866,52 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBankAccountTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'SHRDBANKACC3DS',
+            'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::BT_DASHBOARD,
+            'gateway_merchant_id'       => '111222',
+            'gateway_merchant_id2'      => '00',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING        => '1',
+                Type::NUMERIC_ACCOUNT      => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedBankAccountTerminalAlphaNum(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'SHRDBANKACCALN',
+            'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::BT_DASHBOARD,
+            'gateway_merchant_id'       => 'RZRP',
+            'gateway_merchant_id2'      => 'RPAY',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])

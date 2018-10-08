@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use App;
 
 use RZP\Exception;
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -15,6 +16,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -37,6 +39,7 @@ class TransactionFilter extends Terminal\Filter
         'auth_type',
         'bharat_qr',
         'direct_settlement',
+        'bank_account_type',
     ];
 
     public function methodFilter($terminal)
@@ -70,6 +73,9 @@ class TransactionFilter extends Terminal\Filter
 
             case Method::EMANDATE:
                 return $terminal->isEmandateEnabled();
+
+            case Method::BANK_TRANSFER:
+                return $terminal->isBankTransferEnabled();
 
             default:
                 throw new Exception\LogicException(
@@ -754,5 +760,24 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return false;
+    }
+
+    public function bankAccountTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isBankTransfer() === false)
+        {
+            return true;
+        }
+
+        $input = $payment->getMetadata();
+
+        if ($input[Generator::NUMERIC] === true)
+        {
+            return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
+        }
+
+        return $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT);
     }
 }

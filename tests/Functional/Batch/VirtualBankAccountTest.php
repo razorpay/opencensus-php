@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Batch;
 
 use Illuminate\Support\Facades\Queue;
 
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\Type;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Batch;
 use RZP\Jobs\Batch as BatchJob;
@@ -24,7 +26,17 @@ class VirtualBankAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
-        $this->fixtures->merchant->setHandle('abc');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'ROHI',
+            'gateway_merchant_id2'  => 'TKES',
+            'type'                  => [
+                Type::NON_RECURRING       => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
     }
 
     public function testCreateBatchOfVirtualBankAccountTypeQueued()
@@ -66,9 +78,9 @@ class VirtualBankAccountTest extends TestCase
             [
                 Batch\Header::VA_CUSTOMER_ID      => '',
                 Batch\Header::VA_CUSTOMER_NAME    => 'test',
-                Batch\Header::VA_CUSTOMER_CONTACT => '9999996666',
+                Batch\Header::VA_CUSTOMER_CONTACT => '99999966',
                 Batch\Header::VA_CUSTOMER_EMAIL   => 'test@test.test',
-                Batch\Header::VA_DESCRIPTOR       => '999996666',
+                Batch\Header::VA_DESCRIPTOR       => '99999666',
                 Batch\Header::VA_DESCRIPTION      => 'random description',
                 Batch\Header::VA_NOTES            => '{"a": "b"}',
             ],
@@ -77,7 +89,7 @@ class VirtualBankAccountTest extends TestCase
                 Batch\Header::VA_CUSTOMER_NAME    => 'test 3',
                 Batch\Header::VA_CUSTOMER_CONTACT => '9999997777',
                 Batch\Header::VA_CUSTOMER_EMAIL   => 'test3@test.test',
-                Batch\Header::VA_DESCRIPTOR       => '999997777',
+                Batch\Header::VA_DESCRIPTOR       => '99997777',
                 Batch\Header::VA_DESCRIPTION      => 'random description',
                 Batch\Header::VA_NOTES            => '',
             ],
@@ -86,7 +98,7 @@ class VirtualBankAccountTest extends TestCase
                 Batch\Header::VA_CUSTOMER_NAME    => '',
                 Batch\Header::VA_CUSTOMER_CONTACT => '',
                 Batch\Header::VA_CUSTOMER_EMAIL   => '',
-                Batch\Header::VA_DESCRIPTOR       => '999998888',
+                Batch\Header::VA_DESCRIPTOR       => '99999888',
                 Batch\Header::VA_DESCRIPTION      => null,
                 Batch\Header::VA_NOTES            => null,
             ],
@@ -95,7 +107,7 @@ class VirtualBankAccountTest extends TestCase
                 Batch\Header::VA_CUSTOMER_NAME    => '',
                 Batch\Header::VA_CUSTOMER_CONTACT => '',
                 Batch\Header::VA_CUSTOMER_EMAIL   => '',
-                Batch\Header::VA_DESCRIPTOR       => '999999999',
+                Batch\Header::VA_DESCRIPTOR       => '99999999',
                 Batch\Header::VA_DESCRIPTION      => 'random description',
                 Batch\Header::VA_NOTES            => '{"a": "b", "c": "d"}',
             ],
