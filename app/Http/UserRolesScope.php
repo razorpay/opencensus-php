@@ -108,13 +108,14 @@ class UserRolesScope
             'invoice_issue_by_batch'            => Role::WRITER_ROLES,
 
             // Payment link routes
-            'payment_link_get'        => Role::WRITER_ROLES,
-            'payment_link_list'       => Role::WRITER_ROLES,
-            'payment_link_create'     => Role::WRITER_ROLES,
-            'payment_link_update'     => Role::WRITER_ROLES,
-            'payment_link_notify'     => Role::WRITER_ROLES,
-            'payment_link_deactivate' => Role::WRITER_ROLES,
-            'payment_link_activate'   => Role::WRITER_ROLES,
+            'payment_link_get'         => Role::WRITER_ROLES,
+            'payment_link_list'        => Role::WRITER_ROLES,
+            'payment_link_create'      => Role::WRITER_ROLES,
+            'payment_link_update'      => Role::WRITER_ROLES,
+            'payment_link_notify'      => Role::WRITER_ROLES,
+            'payment_link_deactivate'  => Role::WRITER_ROLES,
+            'payment_link_activate'    => Role::WRITER_ROLES,
+            'payment_link_slug_exists' => Role::WRITER_ROLES,
 
             // customer routes
             'customer_fetch_multiple' => Role::allExceptPaymentLinkRoles(),

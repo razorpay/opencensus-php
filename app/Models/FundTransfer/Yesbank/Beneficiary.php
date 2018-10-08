@@ -12,6 +12,7 @@ use RZP\Models\NodalBeneficiary\Status;
 use RZP\Models\NodalBeneficiary\Entity;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\NodalBeneficiary\Core as NodalCore;
+use RZP\Models\FundTransfer\Yesbank\Request\Constants;
 use RZP\Models\FundTransfer\Base\Beneficiary\ApiProcessor;
 use RZP\Models\FundTransfer\Yesbank\Request\Beneficiary as BeneficiaryRequest;
 
@@ -124,15 +125,24 @@ class Beneficiary extends ApiProcessor
      */
     protected function getBeneficiaryStatus(array $response): string
     {
-        if ((array_key_exists('RequestStatus', $response) === true) and
-            ($response['RequestStatus'] === 'SUCCESS'))
+        if ((array_key_exists(Constants::REQUEST_STATUS, $response) === true) and
+            ($response[Constants::REQUEST_STATUS] === Constants::SUCCESS))
         {
             return Status::REGISTERED;
         }
-        else
+
+        if ((array_key_exists(Constants::REQUEST_STATUS, $response) === true) and
+            ($response[Constants::REQUEST_STATUS] === Constants::FAILURE))
         {
-            return Status::FAILED;
+            $errorMessage = $response[Constants::ERROR];
+
+            if ($errorMessage === BeneficiaryRequest::RECORD_EXIST)
+            {
+                return Status::REGISTERED;
+            }
         }
+
+        return Status::FAILED;
     }
 
     protected function checkBeneficiaryStatusForRegistration(array $input, $nodalBeneficiary): bool

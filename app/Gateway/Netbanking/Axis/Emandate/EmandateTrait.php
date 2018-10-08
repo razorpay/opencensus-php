@@ -400,8 +400,6 @@ trait EmandateTrait
 
         $request = $this->getStandardRequestArray($content);
 
-        $request['options']['verify'] = $this->getCaInfo();
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [

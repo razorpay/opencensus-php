@@ -566,6 +566,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
     const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
+    const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET';
 
     // Features
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
@@ -920,4 +921,5 @@ class ErrorCode
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                     = 'REFUND_MANUALLY_CONFIRMED_UNPROCESSED';
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                            = 'GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED';
+    const GATEWAY_CHARGEBACK_REFUND_FAILURE                                         = 'GATEWAY_CHARGEBACK_REFUND_FAILURE';
 }

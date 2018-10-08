@@ -4,6 +4,7 @@ namespace RZP\Gateway\Enach\Rbl\Mock;
 
 use RZP\Constants\Mode;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Gateway\Enach\Rbl;
 
 class Gateway extends Rbl\Gateway
@@ -25,32 +26,32 @@ class Gateway extends Rbl\Gateway
 
     protected function putMockPaymentGatewayUrl(array & $request, $route)
     {
-        $gateway = $this->gateway;
-
-        if($route === 'mock_emandate_payment')
+        if ($route === 'mock_emandate_payment')
         {
             $url = $this->route->getUrl($route, ['bank' => 'rbl']);
 
             $request['url'] = $url;
         }
-
         else
         {
-            $route = 'mock_esigner_payment';
+            $gateway = Payment\Gateway::ESIGNER_DIGIO;
+          
+            $gateway = $this->input['authenticate']['gateway'] ?? $gateway;
 
-            $url = $this->route->getUrl($route, ['signer' => 'digio']);
+            $url = $this->route->getUrl($route, ['signer' => $gateway]);
 
             if ($request['method'] === 'get')
             {
                 // The key thing now is to replace the url from gateway to our mock one!
                 $parts = parse_url($request['url']);
 
-                $url = $url . '?' .$parts['query'];
+              if (isset($parts['query']) === true)
+              {
+                  $url = $url . '?' .$parts['query'];
+              }
 
-                $request['url'] = $url;
+              $request['url'] = $url;
             }
-
-            $request['url'] = $url;
         }
     }
 

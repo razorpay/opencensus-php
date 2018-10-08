@@ -656,6 +656,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEarlySettlementPricingForMerchant()
+    {
+        $data = $this->service()->getEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
@@ -1102,5 +1109,14 @@ class MerchantController extends Controller
         $data = $this->service()->updateLinkedAccountDashboardAccess($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function saveInstantActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->saveInstantActivationDetails($input);
+
+        return ApiResponse::json($response);
     }
 }

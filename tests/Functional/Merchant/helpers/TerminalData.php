@@ -115,6 +115,35 @@ return [
         ]
     ],
 
+    'testBankAccountTerminalValidationRules' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '00',
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING    => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '0',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected bank transfer is invalid.',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testEditUsedBankAccountTerminal' => [
         'request' => [
             'content' => [
@@ -268,7 +297,7 @@ return [
             'content' => [
                 'gateway'                   => Gateway::BT_YESBANK,
                 'gateway_merchant_id'       => '222333',
-                'gateway_merchant_id2'      => '01',
+                'gateway_merchant_id2'      => '00',
                 'type'                      => [
                     'non_recurring'         => '1',
                     Terminal\Type::NUMERIC_ACCOUNT  => '1',
@@ -279,16 +308,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'gateway'              => Gateway::BT_YESBANK,
-                'gateway_merchant_id'  => '222333',
-                'gateway_merchant_id2' => '01',
-                'merchant_id'          => '100001Razorpay',
-                'type'                 => [
-                    'non_recurring',
-                    Terminal\Type::NUMERIC_ACCOUNT,
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
                 ],
-                'bank_transfer'             => true,
-            ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -1191,20 +1220,15 @@ return [
                 ],
                 'disabled' => [
                     'MAHB' => "Bank of Maharashtra",
-                    'CSBK' => "Catholic Syrian Bank",
-                    'CBIN' => "Central Bank of India",
                     'CIUB' => "City Union Bank",
                     'DCBL' => "DCB Bank",
                     'DEUT' => "Deutsche Bank",
                     'DLXB' => "Dhanlaxmi Bank",
-                    'FDRL' => "Federal Bank",
                     'IBKL' => "IDBI",
                     'IDIB' => "Indian Bank",
-                    'INDB' => "Indusind Bank",
                     'JAKA' => "Jammu and Kashmir Bank",
                     'KVBL' => "Karur Vysya Bank",
                     'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
-                    'ORBC' => "Oriental Bank of Commerce",
                     'SRCB' => "Saraswat Co-operative Bank",
                     'SBIN' => "State Bank of India",
                     'TMBL' => "Tamilnadu Mercantile Bank",

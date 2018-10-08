@@ -98,6 +98,11 @@ class Validator extends Base\Validator
         'payment_ids.*'              => 'required|public_id',
     ];
 
+    protected static $bulkGatewayCaptureRules = [
+        'payment_ids'                => 'sometimes|sequential_array',
+        'payment_ids.*'              => 'required|public_id',
+    ];
+
     protected static $verifyRules = [
         'bucket'                     => 'sometimes|sequential_array',
         'bucket.*'                   => 'sometimes|integer|max:7',

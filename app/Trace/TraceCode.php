@@ -30,6 +30,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE        = 'PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE                 = 'PAYMENT_VERIFY_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_EXCEPTION               = 'PAYMENT_VERIFY_REFUND_EXCEPTION';
+    const REFUND_VERIFY_REQUEST                         = 'REFUND_VERIFY_REQUEST';
+    const REFUND_VERIFY_RESPONSE                        = 'REFUND_VERIFY_RESPONSE';
     const PAYMENT_TOPUP_REQUEST                         = 'PAYMENT_TOPUP_REQUEST';
     const PAYMENT_TOPUP_RESPONSE                        = 'PAYMENT_TOPUP_RESPONSE';
     const PAYMENT_TOPUP_FAILURE                         = 'PAYMENT_TOPUP_FAILURE';
@@ -824,6 +826,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const REDIS_KEY_FETCH                           = 'REDIS_KEY_FETCH';
+    const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
+    const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR           = 'PRICING_RULE_CONFIG_FETCH_ERROR';
 
@@ -1271,6 +1276,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
+    const BIN_ISSUER_VALIDATION_FAILED                  = 'BIN_ISSUER_VALIDATION_FAILED';
+
+    const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
+
+    // Instant activation traces
+    const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -1421,6 +1433,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTIONS_TO_POSTPAID_INPUT            => 'Mark transactions as postpaid request',
         self::TRANSACTIONS_TO_POSTPAID_FAILED           => 'Transaction conversion from to postpaid failed',
         self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
+
+        self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
     ];
 
     /**
