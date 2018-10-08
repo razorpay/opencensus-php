@@ -1608,21 +1608,24 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::PIN] = $iin->isDebitPin();
         }
 
-        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        $headless   = false;
+        $expressPay = false;
+
+        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
         {
-            $enabled = $iin->isHeadLessOtp();
+            $headless = $iin->isHeadLessOtp();
+        }
 
-            if ($enabled === false)
-            {
-                $enabled = $iin->isOtp();
+        if (($this->isAxisExpressPayEnabled() === true) and
+            ($iin->getIssuer() === IFSC::UTIB))
+        {
+            $expressPay = $iin->isOtp();
+        }
 
-                if ($iin->getIssuer() === IFSC::UTIB)
-                {
-                    $enabled = ($this->isAxisExpressPayEnabled() and $enabled);
-                }
-            }
-
-            $data[IIN\Constants::OTP] = $enabled;
+        if (($headless === true) or
+            ($expressPay === true))
+        {
+            $data[IIN\Constants::OTP] = true;
         }
 
         return $data;

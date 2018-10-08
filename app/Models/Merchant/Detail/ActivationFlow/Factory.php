@@ -3,8 +3,8 @@
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Entity;
-use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
 class Factory
@@ -21,7 +21,7 @@ class Factory
      * @param Entity $merchantDetails
      *
      * @return ActivationFlowInterface
-     * @throws InvalidArgumentException
+     * @throws \RZP\Exception\LogicException
      */
     public static function getActivationFlowImpl(Entity $merchantDetails): ActivationFlowInterface
     {
@@ -34,8 +34,8 @@ class Factory
             return new $class();
         }
 
-        throw new InvalidArgumentException(ErrorCode::INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW, [
-            Entity::ACTIVATION_FLOW => $activationFlow,
-        ]);
+        throw new LogicException(
+            ErrorCode::INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW,
+            [Entity::ACTIVATION_FLOW => $activationFlow]);
     }
 }

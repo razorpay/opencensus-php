@@ -513,6 +513,7 @@ return [
                 'method'         => 'netbanking',
                 'bank'           => 'SBIN',
                 'account_number' => '04030403040304',
+                'payer_name'     => 'test',
             ],
             'method'    => 'POST',
             'url'       => '/orders',

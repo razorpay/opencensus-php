@@ -765,7 +765,8 @@ class BusinessSubCategoryMetaData
         ],
     ];
 
-    /** returns metadata for others category
+    /**
+     * returns metadata for others category
      * others business category does not have any subcategory associated with it
      *
      * @return array
@@ -801,8 +802,8 @@ class BusinessSubCategoryMetaData
             return self::SUB_CATEGORY_METADATA[$subcategory];
         }
 
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY, [
-            Entity::BUSINESS_SUBCATEGORY => $subcategory,
-        ]);
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY,
+            [Entity::BUSINESS_SUBCATEGORY => $subcategory]);
     }
 }

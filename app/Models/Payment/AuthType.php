@@ -34,9 +34,9 @@ class AuthType
     ];
 
     public static $featureToAuthMap = [
-        self::PIN  => Feature\Constants::ATM_PIN_AUTH,
-        self::OTP  => Feature\Constants::OTPELF,
-        self::SKIP => Feature\Constants::DIRECT_DEBIT,
+        self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
+        self::OTP  => [Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
+        self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
     public static function isAuthTypeValid($type, $method): bool
@@ -72,7 +72,14 @@ class AuthType
     {
         if (isset(self::$featureToAuthMap[$type]) === true)
         {
-            if ($merchant->isFeatureEnabled(self::$featureToAuthMap[$type]) === false)
+            $enabled = false;
+
+            foreach (self::$featureToAuthMap[$type] as $feature)
+            {
+                $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
+            }
+
+            if ($enabled === false)
             {
                 throw new BadRequestValidationFailureException(
                     'The selected auth_type is invalid',
@@ -88,7 +95,14 @@ class AuthType
     {
         if (isset(self::$featureToAuthMap[$type]) === true)
         {
-            return $merchant->isFeatureEnabled(self::$featureToAuthMap[$type]);
+            $enabled = false;
+
+            foreach (self::$featureToAuthMap[$type] as $feature)
+            {
+                $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
+            }
+
+            return $enabled;
         }
 
         return true;

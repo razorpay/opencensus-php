@@ -1079,7 +1079,7 @@ class RefundTest extends TestCase
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
 
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
-
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
     }
 

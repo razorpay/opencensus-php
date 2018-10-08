@@ -268,7 +268,7 @@ return [
             'content' => [
                 'gateway'                   => Gateway::BT_YESBANK,
                 'gateway_merchant_id'       => '222333',
-                'gateway_merchant_id2'      => '01',
+                'gateway_merchant_id2'      => '00',
                 'type'                      => [
                     'non_recurring'         => '1',
                     Terminal\Type::NUMERIC_ACCOUNT  => '1',
@@ -279,16 +279,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'gateway'              => Gateway::BT_YESBANK,
-                'gateway_merchant_id'  => '222333',
-                'gateway_merchant_id2' => '01',
-                'merchant_id'          => '100001Razorpay',
-                'type'                 => [
-                    'non_recurring',
-                    Terminal\Type::NUMERIC_ACCOUNT,
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
                 ],
-                'bank_transfer'             => true,
-            ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
         ],
     ],
 

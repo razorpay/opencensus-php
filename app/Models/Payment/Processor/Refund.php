@@ -1663,9 +1663,11 @@ trait Refund
 
             $ifscCode = Bank\BankCodes::getIfscForBankCode($order->getBank());
 
+            $beneficiaryName = $order->getPayerName();
+
             $input[BankAccount\Entity::IFSC_CODE]          = $ifscCode;
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
-            $input[BankAccount\Entity::BENEFICIARY_NAME]   = '';
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = ($beneficiaryName === null) ? '' : $beneficiaryName;
         }
 
         if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)

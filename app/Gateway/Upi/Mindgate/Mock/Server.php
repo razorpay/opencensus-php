@@ -21,10 +21,11 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT      => 17,
-        Action::VERIFY       => 14,
-        Action::REFUND       => 20,
-        Action::VALIDATE_VPA => 14,
+        Action::COLLECT       => 17,
+        Action::VERIFY        => 14,
+        Action::REFUND        => 20,
+        Action::VALIDATE_VPA  => 14,
+        Action::VALIDATE_PUSH => 14,
     ];
 
     /**
@@ -32,11 +33,12 @@ class Server extends Base\Mock\Server
      * including the NA padding
      */
     const RESPONSE_FIELD_COUNT = [
-        Action::AUTHORIZE       => 17,
-        Action::VALIDATE_VPA    => 14,
-        Action::VERIFY          => 21,
-        Action::CALLBACK        => 21,
-        Action::REFUND          => 21,
+        Action::AUTHORIZE     => 17,
+        Action::VALIDATE_VPA  => 14,
+        Action::VERIFY        => 21,
+        Action::CALLBACK      => 21,
+        Action::REFUND        => 21,
+        Action::VALIDATE_PUSH => 21,
     ];
 
     public function authorize($input)
@@ -127,7 +129,7 @@ class Server extends Base\Mock\Server
 
         $content = implode('|', $data);
 
-        $content = strtoupper(bin2hex($this->encrypt($content)));
+        $content = $this->encrypt($content);
 
         $response = parent::makeResponse($content);
 
@@ -166,8 +168,10 @@ class Server extends Base\Mock\Server
 
     protected function encrypt($plaintext)
     {
-        return $this->getCipherInstance()
+        $ciphertext = $this->getCipherInstance()
                     ->encrypt($plaintext);
+
+        return strtoupper(bin2hex($ciphertext));
     }
 
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
@@ -181,7 +185,8 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($content);
 
         return [
-            'meRes' => $response->content()
+            'pgMerchantId' => 'HDFC000000000',
+            'meRes'        => $response->content()
         ];
     }
 
@@ -241,6 +246,23 @@ class Server extends Base\Mock\Server
         $paymentId = $input[1];
 
         $payment = $app['repo']->payment->find($paymentId);
+
+        if ($payment === null)
+        {
+            /*
+                if payment_id is not found, then
+                    - load gateway payment by merchant_reference
+                    - extract payment_id from gateway payment
+                    - load payment by gateway.payment_id
+            */
+
+            $gatewayPayment = $app['repo']->upi->fetchByMerchantReference($paymentId);
+
+            if ($gatewayPayment !== null)
+            {
+                $payment = $app['repo']->payment->find($gatewayPayment['payment_id']);
+            }
+        }
 
         $response = $this->getDefaultVerifyResponse($input, $payment);
 
@@ -354,5 +376,50 @@ class Server extends Base\Mock\Server
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
         return hex2bin($key);
+    }
+
+    public function validatePush($input)
+    {
+        parent::validatePush($input);
+
+        $input = $this->parseInput($input, Action::VALIDATE_PUSH);
+
+        $this->validateActionInput($input);
+
+        $app = App::getFacadeRoot();
+
+        // creating dummy payment array
+        $payment = [
+            'vpa'        => 'a@b',
+            'amount'     => 1300,
+            'created_at' => time(),
+        ];
+
+        $response = $this->getDefaultVerifyResponse($input, $payment);
+
+        $this->content($response,'verify');
+
+        $res = [
+            $response['txn_id'],
+            $input[1],
+            $response['amount'],
+            $response['auth_time'],
+            $input[1] === 'payfail123' ? Status::FAILED : Status::SUCCESS,
+            $response['message'],
+            $response['resp_code'],
+            $response['approval_num'],
+            $response['payer_va'],
+            $response['cust_ref_id'],
+            // The Reference Id field always holds NA for now
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            $response['bank_reference'],
+        ];
+
+        return $this->makeResponse($res, Action::VALIDATE_PUSH);
     }
 }

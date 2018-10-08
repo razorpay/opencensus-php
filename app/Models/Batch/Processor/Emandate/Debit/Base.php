@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Models\FileStore;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
@@ -161,9 +160,11 @@ class Base extends BaseProcessor
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    public function getOutputFileHeadings(): array
     {
-        return;
+        $headerRule = $this->batch->getValidator()->getHeaderRule();
+
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $headerRule);
     }
 
     protected function sendProcessedMail()
