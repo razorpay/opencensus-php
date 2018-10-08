@@ -40,6 +40,11 @@ class CreditLogsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCreditsBulk()
+    {
+        $this->startTest();
+    }
+
     public function testPositiveUpdateCredits()
     {
         $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
