@@ -767,7 +767,7 @@ class Entity extends Base\PublicEntity
 
     public function setCategory2($category)
     {
-        return $this->setAttribute(self::CATEGORY2, $category);
+        $this->setAttribute(self::CATEGORY2, $category);
     }
 
     public function getCategory2()
@@ -887,6 +887,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function setCategory(int $category)
+    {
+        $this->setAttribute(self::CATEGORY, $category);
     }
 
     public function getMaxPaymentAmount()
@@ -1604,21 +1609,24 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::PIN] = $iin->isDebitPin();
         }
 
-        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        $headless   = false;
+        $expressPay = false;
+
+        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
         {
-            $enabled = $iin->isHeadLessOtp();
+            $headless = $iin->isHeadLessOtp();
+        }
 
-            if ($enabled === false)
-            {
-                $enabled = $iin->isOtp();
+        if (($this->isAxisExpressPayEnabled() === true) and
+            ($iin->getIssuer() === IFSC::UTIB))
+        {
+            $expressPay = $iin->isOtp();
+        }
 
-                if ($iin->getIssuer() === IFSC::UTIB)
-                {
-                    $enabled = ($this->isAxisExpressPayEnabled() and $enabled);
-                }
-            }
-
-            $data[IIN\Constants::OTP] = $enabled;
+        if (($headless === true) or
+            ($expressPay === true))
+        {
+            $data[IIN\Constants::OTP] = true;
         }
 
         return $data;

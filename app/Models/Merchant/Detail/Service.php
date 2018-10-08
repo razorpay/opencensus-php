@@ -82,6 +82,15 @@ class Service extends Base\Service
         return $this->core()->saveMerchantDetails($input, $this->merchant);
     }
 
+    public function saveInstantActivationDetails(array $input): array
+    {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->core()->setModeAndDefaultConnection($liveMode);
+
+        return $this->core()->saveInstantActivationDetails($input, $this->merchant);
+    }
+
     /**
      * This function is used to patch merchant details fields
      *
