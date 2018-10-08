@@ -36,6 +36,10 @@ const batchStatus = {
   }
 )
 export default class BatchList extends ListContainer {
+  static defaultProps = {
+    extraColumns: [],
+  };
+
   handleDownloadClick = id => {
     let windowRef = window.open('', '_blank');
     this.props.gaEvents.trackDownloadProcessedBatchReport();
@@ -65,7 +69,7 @@ export default class BatchList extends ListContainer {
   }
 
   render() {
-    let { docUrl, uploadUrl, sampleUrl } = this.props;
+    let { docUrl, uploadUrl, sampleUrl, extraColumns } = this.props;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -99,6 +103,7 @@ export default class BatchList extends ListContainer {
         <BatchListFilter
           form="batchListFilter"
           onSearchAnalytics={this.props.gaEvents.trackSearchFilters}
+          ExtraFilterFields={this.props.ExtraFilterFields}
         />
         <DataTable
           title="Batch Uploads"
@@ -106,6 +111,7 @@ export default class BatchList extends ListContainer {
             batchIdLink,
             batchName,
             totalCount,
+            ...extraColumns,
             batchStatus,
             batchActions(this.handleDownloadClick, this.props.batchActions),
           ]}
