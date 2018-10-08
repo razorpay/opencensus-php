@@ -513,11 +513,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
         }
 
-        if ($merchant->isActivated() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
+        $this->validateIsNotActivated($merchant);
 
         if ($merchant->merchantDetail->isArchived() === true)
         {
@@ -874,6 +870,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+                Entity::ACTIVATED);
         }
     }
 }

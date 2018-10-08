@@ -894,6 +894,8 @@ final class Route
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
         'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
 
+        // Instant Activations
+        'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
     ];
 
     public static $public = [
@@ -1397,6 +1399,7 @@ final class Route
         'merchant_fetch_methods',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+        'merchant_instant_activation_post',
     ];
 
     // These will run on internal auth with the assurance

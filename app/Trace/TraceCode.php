@@ -1280,6 +1280,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
 
+    // Instant activation traces
+    const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
