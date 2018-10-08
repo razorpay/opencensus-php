@@ -27,4 +27,32 @@ return [
     ],
 
     'default_label_value' => Metric::LABEL_DEFAULT_VALUE,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configurations per driver
+    |--------------------------------------------------------------------------
+    |
+    */
+    'drivers'    => [
+        'mock'      => [
+            'impl' => \Razorpay\Metrics\Drivers\Mock::class,
+        ],
+
+        'dogstatsd_default' => [
+            'impl' => \Razorpay\Metrics\Drivers\Dogstatsd::class,
+            'client' => [
+                'host' => env('METRICS_DOGSTATSD_HOST'),
+                'port' => env('METRICS_DOGSTATSD_PORT'),
+            ],
+        ],
+
+        'dogstatsd_gateway' => [
+            'impl' => \Razorpay\Metrics\Drivers\Dogstatsd::class,
+            'client' => [
+                'host' => env('GATEWAY_METRICS_DOGSTATSD_HOST'),
+                'port' => env('GATEWAY_METRICS_DOGSTATSD_PORT'),
+            ],
+        ],
+    ],
 ];

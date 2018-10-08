@@ -177,4 +177,52 @@ return [
             ],
         ],
     ],
+
+    'testBinValidationWithFeature' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/cards/validate',
+            'content' => [
+                'issuer' => 'HDFC',
+                'number' => '401200',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'result' => true
+            ],
+        ],
+    ],
+
+    'testBinValidationWithOutFeature' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/cards/validate',
+            'content' => [
+                'issuer' => 'HDFC',
+                'number' => '401200',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'result' => false
+            ],
+        ],
+    ],
+
+    'testBinValidation' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/cards/validate',
+            'content' => [
+                'issuer' => 'HDFC',
+                'number' => '101200122',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'result' => false
+            ],
+        ],
+    ],
 ];

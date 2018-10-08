@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Reconciliation\Payumoney;
+namespace RZP\Tests\Functional\Gateway\Reconciliation\PayuMoney;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;

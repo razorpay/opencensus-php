@@ -13,6 +13,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Preferences;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait as ScheduleTrait;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -23,6 +24,7 @@ class SettlementTest extends TestCase
     use SettlementTrait;
     use PaymentTrait;
     use HeimdallTrait;
+    use ScheduleTrait;
 
     public function setUp()
     {
@@ -473,17 +475,28 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testMerchantSettlementV2DspSpecific()
+    public function testMerchantSettlementV2DspWithinTime()
     {
         $channel = Channel::AXIS;
 
         $this->ba->adminAuth();
 
+        $dt = Carbon::create(2017, 12, 12, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
 
-        $dt = Carbon::create(2017, 12, 12, 16, 0, 0, Timezone::IST)
-                    ->subDays(5);
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
 
+        $this->createAndAssignSettlementSchedule($input,'7thBRSDflu7NHL');
+
+        //assert dsp settlement creation within time range
         $payments = $this->createPaymentEntities(2, '7thBRSDflu7NHL', $dt);
 
         foreach ($payments as $payment)
@@ -494,16 +507,7 @@ class SettlementTest extends TestCase
             $refunds[] = $refund;
         }
 
-        $dt = Carbon::create(2017, 12, 12, 16, 0, 0, Timezone::IST);
-
-        Carbon::setTestNow($dt);
-
-        $setlResponse = $this->initiateSettlements($channel);
-
-        $this->assertNotNull($setlResponse[$channel]);
-        $this->assertEquals(0, $setlResponse[$channel]['count']);
-
-        $dt = Carbon::create(2017, 12, 12, 11, 0, 0, Timezone::IST);
+        $dt = Carbon::create(2017, 12, 12, 11, 1, 0, Timezone::IST);
 
         Carbon::setTestNow($dt);
 
@@ -512,8 +516,6 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse[$channel]);
         $this->assertEquals(1, $setlResponse[$channel]['count']);
         $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
-
-        Carbon::setTestNow();
     }
 
     /**
@@ -1460,4 +1462,117 @@ class SettlementTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
+
+    protected function createAndAssignSettlementSchedule($input, $merchantId)
+    {
+        $schedule = $this->createSchedule($input);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/merchants/'. $merchantId. '/schedules',
+            'content' => [
+                'schedule_id' => $schedule['id']
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        return $schedule;
+    }
+
+    public function testMerchantSettlementV2DspDelayedSettlement()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2017, 12, 12, 14, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
+
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'7thBRSDflu7NHL');
+
+        //assert dsp settlement creation within time range
+        $payments = $this->createPaymentEntities(2, '7thBRSDflu7NHL', $dt);
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $dt = Carbon::create(2017, 12, 12, 15, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, '7thBRSDflu7NHL', $dt);
+
+        $dt = Carbon::create(2017, 12, 13, 10, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(6, $setlResponse[$channel]['txnCount']);
+    }
+
+    public function testMerchantSettlementV2DspInBlockPeriod()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2017, 12, 12, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
+
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'7thBRSDflu7NHL');
+
+        //assert dsp settlement creation within time range
+        $payments = $this->createPaymentEntities(2, '7thBRSDflu7NHL', $dt);
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $dt = Carbon::create(2017, 12, 12, 17, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+        $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
+    }
+
+
 }

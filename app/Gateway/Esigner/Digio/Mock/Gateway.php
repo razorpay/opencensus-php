@@ -18,7 +18,7 @@ class Gateway extends Digio\Gateway
     {
         $route = 'mock_esigner_payment';
 
-        $url = $this->route->getUrl($route, ['signer' => 'digio']);
+        $url = $this->route->getUrl($route, ['signer' => 'esigner_digio']);
 
         // The key thing now is to replace the url from gateway to our mock one!
         $parts = parse_url($request['url']);

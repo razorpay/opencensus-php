@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
+        Entity::PAYER_NAME      => 'sometimes|string|max:100'
     );
 
     protected static $createValidators = [

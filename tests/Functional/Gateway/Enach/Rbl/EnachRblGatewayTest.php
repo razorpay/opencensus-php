@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Enach\Rbl;
 
 use Mail;
 use Excel;
+use Cache;
 use Closure;
 use Mockery;
 use Carbon\Carbon;
@@ -22,6 +23,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use Illuminate\Http\Testing\File as TestingFile;
@@ -56,6 +58,8 @@ class EnachRblGatewayTest extends TestCase
         $this->gateway = 'enach_rbl';
 
         $this->setupMockDns();
+
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_digio"}}', 2);
     }
 
     public function testSuccessfulEsignGeneration()
@@ -68,7 +72,7 @@ class EnachRblGatewayTest extends TestCase
             'account_type'   => 'current',
         ];
 
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -87,18 +91,91 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('current', $token['account_type']);
         $this->assertEquals('initiated', $token['recurring_status']);
         $this->assertNull($token['expired_at']);
+
+        return $enach;
+    }
+
+    public function testSuccessfulEsignGenerationOnLegaldesk()
+    {
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+
+        $enach = $this->testSuccessfulEsignGeneration();
+
+        $this->assertEquals('esigner_legaldesk', $enach['authentication_gateway']);
+    }
+
+    public function testEsignVerifyOnLegaldesk()
+    {
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+
+        $this->testSuccessfulEsignGeneration();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $response = $this->verifyPayment($payment->getPublicId());
+
+        $this->assertEquals(1, $response['payment']['verified']);
+        $this->assertEquals('authorized', $response['payment']['status']);
+
+        $this->assertEquals('status_match', $response['gateway']['status']);
+        $this->assertEquals('esigner_legaldesk', $response['gateway']['gateway']);
+        $this->assertNotEmpty($response['gateway']['gatewayPayment']['signed_xml']);
+    }
+
+    public function testFailedPaymentVerifyOnLegaldesk()
+    {
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'mandate_sign')
+            {
+                throw new GatewayTimeoutException("Timed out");
+            }
+        }, 'esigner_legaldesk');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNull($enach['signed_xml']);
+        $this->assertEquals('created', $payment['status']);
+
+        $testData = $this->testData['legaldeskVerifyFailed'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $response = $this->verifyPayment($payment->getPublicId());
+
+            $this->assertEquals(1, $response['payment']['verified']);
+
+            $this->assertEquals('status_mismatch', $response['gateway']['status']);
+            $this->assertEquals('esigner_legaldesk', $response['gateway']['gateway']);
+
+            $this->assertNotEmpty($response['gateway']['gatewayPayment']['signed_xml']);
+        });
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNotEmpty($enach['signed_xml']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'utib0000123',
-            'name'           => 'Test account',
-        ];
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
 
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
         $payment['order_id'] = $order->getPublicId();
 
         unset($payment['aadhaar']['number']);
@@ -120,11 +197,6 @@ class EnachRblGatewayTest extends TestCase
     public function testSuccessfulEsignGenerationWithNeitherVidNorAadhaar()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'utib0000123',
-            'name'           => 'Test account',
-        ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -395,11 +467,6 @@ class EnachRblGatewayTest extends TestCase
         Carbon::setTestNow($dt);
 
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'utib0000123',
-            'name'           => 'Test account',
-        ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
