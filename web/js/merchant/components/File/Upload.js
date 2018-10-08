@@ -40,6 +40,7 @@ export default class FileUpload extends React.Component {
     super(props);
 
     this.state = {
+      files: [],
       isDocPreUploaded: !!props.defaultValue,
     };
   }
