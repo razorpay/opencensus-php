@@ -754,6 +754,12 @@ final class Route
         'shield_rules_create'                      => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
         'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
+        // Scrooge Routes
+        'scrooge_reports_get_multiple'             => ['get',       'scrooge/reports',                               'ScroogeController@listReports'                                     ],
+        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkUpdate'                                     ],
+        'scrooge_refunds_get_multiple'             => ['get',       'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
+        'scrooge_refunds_get'                      => ['get',       'scrooge/refunds/{id}',                          'ScroogeController@get'                                             ],
+
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1694,6 +1700,12 @@ final class Route
         'merchants_access_map_create',
         'merchants_access_map_delete',
 
+        // Scrooge - ODS Dashboard
+        'scrooge_reports_get_multiple',
+        'scrooge_refunds_update_multiple',
+        'scrooge_refunds_get_multiple',
+        'scrooge_refunds_get',
+
         // Reporting
         'reporting_log_create_admin',
         'reporting_config_get_admin',
@@ -1975,6 +1987,10 @@ final class Route
         'risk_fetch_multiple'                      => '*',
         'risk_get'                                 => '*',
         'risk_update'                              => '*',
+        'scrooge_reports_get_multiple'             => '*',
+        'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
+        'scrooge_refunds_get_multiple'             => '*',
+        'scrooge_refunds_get'                      => '*',
         'schedule_fetch'                           => '*',
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
