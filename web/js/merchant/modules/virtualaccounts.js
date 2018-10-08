@@ -39,6 +39,14 @@ export const saveVirtualAccount = params => {
   };
 };
 
+export const closeVirtualAccount = params => {
+  const virtualAccount = new VirtualAccount(params);
+  return {
+    type: VIRTUAL_ACCOUNT_EDIT,
+    payload: virtualAccount.close(),
+  };
+};
+
 export const createTestPayment = params => {
   const virtualAccount = new VirtualAccount();
   return () => {
