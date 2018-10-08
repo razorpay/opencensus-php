@@ -6,6 +6,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Credits;
 
 class Service extends Base\Service
@@ -57,5 +58,41 @@ class Service extends Base\Service
         $creditsLogs = $this->repo->credits->fetch($input, $this->merchant->getId());
 
         return $creditsLogs->toArrayPublic();
+    }
+
+    public function bulkCreateCredits(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_CREDITS_BULK_REQUEST, $input);
+
+        $failedIds = [];
+
+        foreach ($input as $merchantId => $creditInput)
+        {
+            try
+            {
+                $this->grantCreditsForMerchant($merchantId, $creditInput);
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_CREDITS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($input),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
     }
 }

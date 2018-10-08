@@ -7,6 +7,7 @@ use RZP\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
+use Razorpay\Trace\Logger as Trace;
 
 class Service
 {
@@ -51,7 +52,7 @@ class Service
 
     /**
      * Trace instance used for tracing
-     * @var \RZP\Trace\Trace
+     * @var Trace
      */
     protected $trace;
 
