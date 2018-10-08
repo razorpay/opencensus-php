@@ -262,23 +262,6 @@ export default class App extends Component {
               location.origin + '/admin#/app/merchants/' + data.id + '/detail',
           },
         });
-
-        // disabling chat temporarily
-        const css =
-          '#conversation { height: calc(100% - 150px) } .rzp-msg { color: #787f8c; font-size: 14px; padding: 10px; text-align: center; } .rzp-msg a { text-decoration: none; color: #528ff0; }';
-        const smoochIframe = document.querySelector('#web-messenger-container');
-        const smoochDocument = smoochIframe.contentWindow.document;
-        const style = smoochDocument.createElement('style');
-        style.type = 'text/css';
-        style.appendChild(smoochDocument.createTextNode(css));
-        smoochDocument.head.appendChild(style);
-        smoochDocument.querySelector('#footer').innerHTML = `
-          <span class="rzp-msg">
-            We are temporarily unavailable on chat,
-             kindly visit our website
-              <a href=https://razorpay.com/contact/>razorpay.com/contact</a> to refer our knowledge base or you can raise a request and we will get back to you at the earliest.
-          </span>
-        `;
       });
     }
   }
