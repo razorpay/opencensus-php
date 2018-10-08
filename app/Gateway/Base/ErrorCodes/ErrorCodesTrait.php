@@ -36,7 +36,6 @@ trait ErrorCodesTrait
             }
 
             $errorCode = static::$$internalErrorMap[$gatewayErrorCode];
-            s($errorCode);
 
             if (empty($errorCode) === false)
             {
