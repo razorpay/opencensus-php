@@ -126,7 +126,7 @@ class Core extends Base\Core
             $skip += $count;
 
             $mappings = $mappings->unique(function ($item) {
-                return $item->merchant_id.$item->application_id;
+                return $item->merchant_id.$item->app_id;
             });
 
             $mappings = $mappings->values()->all();
@@ -139,7 +139,7 @@ class Core extends Base\Core
 
             foreach ($mappings as $mapping)
             {
-                $appId      = $mapping->application_id;
+                $appId      = $mapping->app_id;
                 $merchantId = $mapping->merchant_id;
                 $createdAt  = $mapping->created_at;
 

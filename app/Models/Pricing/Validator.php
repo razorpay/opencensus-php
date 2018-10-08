@@ -35,14 +35,14 @@ class Validator extends Base\Validator
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000',
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
     ];
 
     protected static $editPlanRuleRules = [
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000',
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
     ];
 
     protected static $addPlanRuleValidators = [

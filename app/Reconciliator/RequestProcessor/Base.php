@@ -60,6 +60,7 @@ class Base extends Core
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
@@ -85,7 +86,7 @@ class Base extends Core
         self::HDFC                   => ['payoutreport@hdfcbank.com'],
         self::AXIS                   => ['pg.estatements@axisbank.com'],
         self::BILLDESK               => [],
-        self::PAYZAPP                => [],
+        self::PAYZAPP                => ['donotreply@enstage.com'],
         self::MOBIKWIK               => [],
         self::AMAZONPAY              => [],
         self::MPESA                  => [],
@@ -97,14 +98,15 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::NETBANKING_EQUITAS     => [],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
         self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
-        self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_CORPORATION => ['webcenter@corpbank.co.in'],
+        self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],

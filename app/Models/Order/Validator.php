@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
+        Entity::PAYER_NAME      => 'sometimes|string|max:100'
     );
 
     protected static $createValidators = [
@@ -83,12 +84,27 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($input)
     {
+        $currency = $input[Entity::CURRENCY];
+
+        $merchant = $this->entity->merchant;
+
+        // if currency conversion is not enabled allow only INR
+        // if currency conversion is enabled, it should be a valid current
+        if ((($merchant->convertOnApi() === null) and
+            ($currency !== Currency::INR)) or
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        // if method is not defined, dont validate currency
         if (isset($input[Entity::METHOD]) === false)
         {
             return;
         }
 
-        $currency = $input[Entity::CURRENCY];
         $method = $input[Entity::METHOD];
 
         if (($method !== Payment\Method::CARD) and

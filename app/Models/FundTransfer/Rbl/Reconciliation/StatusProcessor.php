@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Rbl\Reconciliation;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Rbl\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
@@ -49,6 +50,8 @@ class StatusProcessor extends BaseRowProcessor
         ];
 
         $this->reconEntityId = $response[self::PAYMENT_REF_NO];
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
     }
 
     protected function updateReconEntity()

@@ -50,6 +50,7 @@ class Processor
     use Reversal;
     use Transfer;
     use Vpa;
+    use AuthorizePush;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -168,7 +169,7 @@ class Processor
         $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $this->getMethodsForMerchant($merchant);
+        $this->methods = $merchant->getMethods();
 
         $this->checkMerchantPermissions();
 
@@ -543,6 +544,8 @@ class Processor
                 // It's not going to be saved in the database.
                 //
                 $payment = $this->buildPaymentEntity($input);
+
+                $payment->setMetadata($input);
 
                 $payment->receiver()->associate($receiver);
 
@@ -1664,7 +1667,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable($payment);
+        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -1848,6 +1851,13 @@ class Processor
         if ($payment->hasPaymentLink() === true)
         {
             return false;
+        }
+
+        if (($payment->isNetbanking() === true) and
+            ($payment->hasTerminal() === true) and
+            ($payment->terminal->isDirectSettlement() === true))
+        {
+            return true;
         }
 
         //
@@ -2229,16 +2239,6 @@ class Processor
 
     }
 
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
-    }
-
     protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
     {
         if ($payment->isBankTransfer() === true)
@@ -2249,8 +2249,14 @@ class Processor
         return true;
     }
 
-    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return false;
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             //
@@ -2397,10 +2403,10 @@ class Processor
         );
     }
 
-    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
+    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment)
     {
         if (($payment->isEmandate() === true) and
-            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
         {
             return true;
         }

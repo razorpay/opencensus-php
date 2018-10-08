@@ -80,6 +80,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
 
+    protected static $recurringChargeCreateRules = [
+        Entity::TYPE            => 'required|in:recurring_charge',
+        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+    ];
+
     protected static $tokenRules = [
         Entity::TOKEN           => 'required|max:255|alpha_num',
     ];
@@ -174,6 +181,19 @@ class Validator extends Base\Validator
                 Entity::STATUS,
                 $this->entity->toArray());
         }
+    }
+
+    /**
+     * Gets the header rule name, will be used to generate output file header
+     * for emandate file entries
+     *
+     * @return string
+     */
+    public function getHeaderRule(): string
+    {
+        $rules = $this->getRuleNames();
+
+        return $rules['header_rule'];
     }
 
     /**

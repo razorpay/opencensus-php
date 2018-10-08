@@ -63,7 +63,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);

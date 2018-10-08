@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -126,10 +127,15 @@ abstract class EntityProcessor extends Base\Core
 
         if ($this->fta->isStatusFailed() === true)
         {
+            $this->trace->info(TraceCode::FTA_STATUS_FAILED, ['fta_id' => $this->fta->getId()]);
+
             $failureBucket = Attempt\Metric::RZP_ERROR;
 
             if ($this->isMerchantLevelError() === true)
             {
+                $this->trace->info(
+                    TraceCode::FTA_STATUS_FAILED_MERCHANT_ERROR, ['fta_id' => $this->fta->getId()]);
+
                 $this->sendFailureEmailToMerchant = true;
 
                 $failureBucket = Attempt\Metric::MERCHANT_ERROR;
@@ -298,7 +304,7 @@ abstract class EntityProcessor extends Base\Core
 
             $data['last4'] = $ba->getRedactedAccountNumber();
 
-            $data['merchant_email'] = $this->source->merchant->getEmail();
+            $data['merchant_email'] = $this->getMerchantEmail($this->source->merchant);
 
             $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
@@ -319,11 +325,6 @@ abstract class EntityProcessor extends Base\Core
 
     protected function isMailEnabled(): bool
     {
-        if ($this->source->merchant->isLinkedAccount() === true)
-        {
-            return false;
-        }
-
         if ($this->app->environment('dev', 'testing') === true)
         {
             return true;
@@ -345,5 +346,15 @@ abstract class EntityProcessor extends Base\Core
     protected function getStatusClass(string $channel)
     {
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+    }
+
+    protected function getMerchantEmail(Merchant\Entity $merchant): string
+    {
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return $merchant->parent->getEmail();
+        }
+
+        return $merchant->getEmail();
     }
 }

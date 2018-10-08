@@ -30,12 +30,11 @@ class Repository extends Base\Repository
                     ->firstorFail();
     }
 
-    public function fetchNonRegisteredBeneficiaryCount(string $bankAccountId, string $channel)
+    public function fetchNonRegisteredBeneficiary(string $bankAccountId, string $channel)
     {
         $result =  $this->newQuery()
                         ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
                         ->where(Entity::CHANNEL, $channel)
-                        ->where(Entity::REGISTRATION_STATUS, '!=', Status::REGISTERED)
                         ->withTrashed()
                         ->first();
 

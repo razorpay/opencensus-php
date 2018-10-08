@@ -7,6 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Reconciliator\Amazonpay\ReconHeaders;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
 {
@@ -26,32 +27,16 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $payment = $data['payment'];
 
         $data['wallet'] = $this->repo
-                            ->wallet
-                            ->findByPaymentIdAndAction($payment['id'], 'authorize')
-                            ->toArray();
+                               ->wallet
+                               ->findByPaymentIdAndAction($payment['id'], 'authorize')
+                               ->toArray();
     }
 
     protected function getReconciliationData(array $input)
     {
         $data = $this->getAdditionalRowsToSkip();
 
-        $keys = [
-            'TransactionPostedDate'     ,
-            'SettlementId'              ,
-            'AmazonTransactionId'       ,
-            'SellerReferenceId'         ,
-            'TransactionType'           ,
-            'AmazonOrderReferenceId'    ,
-            'SellerOrderId'             ,
-            'StoreName'                 ,
-            'CurrencyCode'              ,
-            'TransactionDescription'    ,
-            'TransactionAmount'         ,
-            'TransactionPercentageFee'  ,
-            'TransactionFixedFee'       ,
-            'TotalTransactionFee'       ,
-            'NetTransactionAmount'      ,
-        ];
+        $keys = ReconHeaders::COLUMN_HEADERS;
 
         $data[] = $keys;
 
@@ -63,24 +48,24 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 ->format('y-M-dTH:i:s +0000');
 
             $col = [
-                $date,
-                '55500008822',
-                '',
-                $row['wallet']['gateway_payment_id'],
-                'Capture',
-                $row['wallet']['gateway_payment_id'],
-                $row['payment']['id'],
-                'XYZ Store',
-                $row['payment']['currency'],
-                'XYZ Store',
-                $this->formatAmount($row['payment']['amount'] / 100),
-                '0',
-                '0',
-                '0',
-                $this->formatAmount($row['payment']['amount'] / 100),
+                "\"{$date}\"",
+                '"55500008822"',
+                '""',
+                "\"{$row['wallet']['gateway_payment_id']}\"",
+                '"Capture"',
+                "\"{$row['wallet']['gateway_payment_id']}\"",
+                "\"{$row['payment']['id']}\"",
+                '"XYZ Store"',
+                "\"{$row['payment']['currency']}\"",
+                '"XYZ Store"',
+                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
+                '"0"',
+                '"0"',
+                '"0"',
+                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
             ];
 
-            $col = array_combine($keys, $col);
+            $col = array_combine_pad($keys, $col);
 
             $this->content($col, 'col_payment_amazonpay_recon');
 
@@ -118,6 +103,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     public function formatAmount($amount)
     {
-        return number_format($amount, 2, '.', '');
+        return number_format($amount, 2, '.', ',');
     }
 }

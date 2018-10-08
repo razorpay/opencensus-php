@@ -76,4 +76,51 @@ class Service extends Base\Service
 
         return (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
     }
+
+    public function markTransactionPostpaid($input)
+    {
+        $this->trace->info(
+            TraceCode::TRANSACTIONS_TO_POSTPAID_INPUT,
+            $input);
+
+        $transactionIds = $input['transaction_ids'];
+
+        $successIds = [];
+
+        $failedIds = [];
+
+        $transactions = $this->repo->transaction->fetchMultipleTransactionsFromIds($transactionIds);
+        $transactionCore = (new Transaction\Core);
+
+        foreach ($transactions as $transaction)
+        {
+            try
+            {
+                $transactionCore->markTransactionPostpaid($transaction);
+                $successIds[] = $transaction->getId();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::TRANSACTIONS_TO_POSTPAID_FAILED,
+                    ['transaction_id' => $transaction->getId()]
+                );
+
+                $failedIds[] = $transaction->getId();
+            }
+        }
+
+        $response = [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::TRANSACTIONS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
+    }
 }

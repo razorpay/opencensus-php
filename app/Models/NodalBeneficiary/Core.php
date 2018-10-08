@@ -5,6 +5,7 @@ namespace RZP\Models\NodalBeneficiary;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
@@ -68,7 +69,8 @@ class Core extends Base\Core
                         $nodalBeneficiary->getRegistrationStatus()
                   );
 
-        if ($input[Entity::REGISTRATION_STATUS] === Status::FAILED)
+        if (($input[Entity::REGISTRATION_STATUS] === Status::FAILED) and
+            ($nodalBeneficiary->getRegistrationStatus() !== Status::FAILED))
         {
             $this->notifyBeneficiaryRegistrationFailure(
                         $nodalBeneficiary->getRegistrationStatus(),
@@ -113,17 +115,6 @@ class Core extends Base\Core
                     $bankAccountId . ' on channel ' . $channel .
                     ' changed from '. $currentStatus . ' to ' . $input[Entity::REGISTRATION_STATUS];
 
-        $channel = Config::get('slack.channels.settlements');
-
-        $this->app['slack']->queue(
-            $message,
-            $input,
-            [
-                'color'    => 'bad',
-                'icon'     => ':boom:',
-                'channel'  => $channel,
-                'username' => 'Beneficiary Registration',
-            ]
-        );
+        (new SlackNotification)->send($message, $input, null, 1);
     }
 }

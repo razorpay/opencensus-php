@@ -3,27 +3,33 @@
 namespace RZP\Reconciliator\Jiomoney\SubReconciliator;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Wallet\Jiomoney\Gateway as JiomoneyGateway;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Status;
+use RZP\Models\Base\PublicEntity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID         = 'external_reference_number';
-    const COLUMN_PAYMENT_AMOUNT     = 'transaction_amount';
-    const COLUMN_PAYMENT_DATE       = 'tran_datetime';
-    const COLUMN_GATEWAY_PAYMENT_ID = 'retrieval_ref_number';
+    const COLUMN_PAYMENT_ID             = 'merchant_ref_id';
+    const COLUMN_PAYMENT_AMOUNT         = 'gross_amount';
+    const COLUMN_GATEWAY_PAYMENT_ID     = 'transaction_id';
+    const COLUMN_PAYMENT_STATUS         = 'payment_status';
 
-    const GATEWAY_PAYMENT_DATE_FORMAT = 'm/d/Y H:i:s';
+    const COMMISSION                    = 'tran_com';
+    const IGST                          = 'igst';
+    const UGST                          = 'ugst';
+    const CGST                          = 'cgst';
+    const SGST                          = 'sgst';
+
+    const GATEWAY_PAYMENT_DATE_FORMAT   = 'm/d/Y H:i:s';
+
+    const PROCESSED                     = 'Processed';
+    const SETTLED                       = 'Settled';
 
     protected function getPaymentId(array $row)
     {
@@ -39,38 +45,94 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return intval(number_format($paymentAmount, 2, '.', ''));
     }
 
-    protected function getGatewayPaymentDate($row)
+    protected function getGatewayServiceTax($row)
     {
-        if (empty($row[self::COLUMN_PAYMENT_DATE]) === true)
+        $gatewayServiceTax = 0;
+
+        $gatewayServiceTax += Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::IGST]);
+        $gatewayServiceTax += Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::UGST]);
+        $gatewayServiceTax += Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::CGST]);
+        $gatewayServiceTax += Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::SGST]);
+
+        return $gatewayServiceTax;
+    }
+
+    protected function getGatewayFee($row)
+    {
+        $gatewayFee = 0;
+
+        $gatewayFee += Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COMMISSION]);
+        $gatewayFee += $this->getGatewayServiceTax($row);
+
+        return $gatewayFee;
+    }
+
+    protected function getGatewayTransactionId(array $row)
+    {
+        return $row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null;
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        $status = $row[self::COLUMN_PAYMENT_STATUS];
+
+        $acceptedStatuses = [
+            self::PROCESSED,
+            self::SETTLED,
+        ];
+
+        if (in_array($status, $acceptedStatuses) === true)
         {
-            return null;
+            return Status::AUTHORIZED;
         }
 
-        $gatewayPaymentDate = null;
-
-        try
+        else
         {
-            $gatewayPaymentDate = Carbon::createFromFormat(
-                                    self::GATEWAY_PAYMENT_DATE_FORMAT,
-                                    $row[self::COLUMN_PAYMENT_DATE],
-                                    Timezone::IST);
-
-            $gatewayPaymentDate = $gatewayPaymentDate->format(JiomoneyGateway::DATE_FORMAT);
+            return Status::FAILED;
         }
-        catch (\Exception $ex)
+    }
+
+    protected function getGatewayPayment($paymentId)
+    {
+        return $this->repo
+                    ->wallet_jiomoney
+                    ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+    }
+
+    protected function setGatewayTransactionId(string $gatewayPaymentId, PublicEntity $gatewayPayment)
+    {
+        $dbGatewayTransactionId = trim($gatewayPayment->getGatewayPaymentId());
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayPaymentId))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unable to parse gateway payment date -> ' . $ex->getMessage(),
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayPaymentId,
+                    'gateway'                   => $this->gateway
                 ]);
 
-            $this->app['trace']->traceException($ex);
+            return;
         }
 
-        return $gatewayPaymentDate;
+        $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
+    }
+
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
+    {
+        $this->allowForceAuthorization = true;
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id'    => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
+        ];
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -85,93 +147,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;
         }
 
         return true;
-    }
-
-    protected function getGatewayPayment($paymentId)
-    {
-        return $this->repo
-                    ->wallet_jiomoney
-                    ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
-    }
-
-    protected function forceAuthorizeFailed(array $row)
-    {
-        $paymentId = $this->payment->getPublicId();
-
-        $input = [
-            'gateway_payment_id'   => (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID],
-            'gateway_payment_date' => $this->getGatewayPaymentDate($row)
-        ];
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'Payment status is still failed after verify. Doing force authorize now.',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => get_called_class()
-            ]);
-
-        // If there's any issue during authorize, the function throws an exception.
-        $response = (new Payment\Service)->forceAuthorizeFailed($paymentId, $input);
-
-        $this->app['trace']->info(
-            TraceCode::RECON_INFO,
-            [
-                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
-                'message'   => 'Response received from force authorization',
-                'response'  => $response
-            ]
-        );
-
-        if ((empty($response['status']) === false) and
-            ($response['status'] === PaymentStatus::AUTHORIZED))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
-    {
-        $validDate = $this->validateGatewayPaymentDate($gatewayPayment->getDate());
-
-        if ($validDate === false)
-        {
-            $gatewayPayment->setDate($gatewayPaymentDate);
-        }
-    }
-
-    /**
-     * Validates that the date in gateway entity is not null and in the format
-     * sent by Jiomoney
-     *
-     * @param  string $date gateway payment date
-     * @return bool
-     */
-    protected function validateGatewayPaymentDate($date)
-    {
-        if ($date !== null)
-        {
-            try
-            {
-                $formattedDate = Carbon::createFromFormat(JiomoneyGateway::DATE_FORMAT, $date, Timezone::IST);
-
-                return ($formattedDate !== null) ? true : false;
-            }
-            catch (\Exception $e)
-            {
-                return false;
-            }
-        }
-
-        return false;
     }
 }

@@ -9,12 +9,7 @@ class BaseCodes
 {
     use ErrorCodesTrait;
 
-    public static $map = [];
-
-    public static function getRelevantGatewayErrorCode($errorFieldName, $content)
-    {
-        return $content[$errorFieldName];
-    }
+    public static $errorCodeMap = [];
 
     public static function getInternalErrorCode($content)
     {

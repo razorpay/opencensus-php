@@ -1025,8 +1025,8 @@ class InvoiceTest extends TestCase
                ->method('delete')
                ->with(
                     [
-                        'index' => 'testing_invoice_test',
-                        'type'  => 'testing_invoice_test',
+                        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+                        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
                         'id'    => '1000000invoice',
                     ]);
 

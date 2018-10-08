@@ -611,36 +611,25 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($debitPayment['amount_refunded'], $refund['amount']);
         $this->assertEquals($debitPayment['amount'], $refund['amount']);
 
-        $this->assertEquals(Payment\Status::REFUNDED, $debitPayment['status']);
+        $this->assertEquals('initiated', $refund['status']);
 
-        $endDate = Carbon::now()->getTimestamp();
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
-        // Generate gateway file from yesterday till now.
-        $gatewayFileResponse = $this->generateGatewayFile('hdfc_emandate', 'refund', null, $endDate);
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
-        $this->assertTestResponse($gatewayFileResponse['items'][0]);
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
-        $file = $this->getLastEntity('file_store', true);
+        $bankAccount = $this->getLastEntity('bank_account', true);
 
-        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
-        {
-            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+        $this->assertEquals('HDFC0000186', $bankAccount['ifsc_code']);
 
-            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP['netbanking_hdfc'] . $today;
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
-            $this->assertEquals($expectedSubject, $mail->subject);
+        $this->assertEquals('0123456789', $bankAccount['account_number']);
 
-            $testData = [
-                'body'        => RefundFileMailConstants::BODY_MAP['netbanking_hdfc'],
-                'file_name'   => "HDFC_Emandate_Refunds_test_$today.xlsx",
-            ];
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
 
-            $this->assertArraySelectiveEquals($testData, $mail->viewData);
-
-            $this->assertNotEmpty($mail->attachments);
-
-            return true;
-        });
+        $this->assertEquals('refund', $bankAccount['type']);
     }
 
     protected function doDebitPayment(): array

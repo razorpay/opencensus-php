@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use Config;
 use Conner\Tagging\Taggable;
 
@@ -15,6 +16,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\Workflow\Action;
@@ -147,6 +149,7 @@ class Entity extends Base\PublicEntity
     const USER                      = 'user';
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
+    const APPLICATION               = 'application';
 
     protected $entity = 'merchant';
 
@@ -360,6 +363,7 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
         self::USER,
         self::DASHBOARD_ACCESS,
+        self::APPLICATION,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -657,6 +661,21 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
+    }
+
+     /*
+      * Because we didn't do the data migration for old Merchants.
+      * We are doing that as we try to access the methods.
+      */
+    public function getMethods()
+    {
+        if ($this->hasRelation('methods') === false)
+        {
+            $app = App::getFacadeRoot();
+            return $app['repo']->methods->getMethodsForMerchant($this);
+        }
+
+        return $this->methods;
     }
 
     public function terminals()
@@ -963,11 +982,6 @@ class Entity extends Base\PublicEntity
     public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
     {
         return $this->getBrandColor() ?: $default;
-    }
-
-    public function getHandle()
-    {
-        return $this->getAttribute(self::HANDLE);
     }
 
     public function getChannel()
@@ -1589,10 +1603,24 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::PIN] = $iin->isDebitPin();
         }
 
-        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        $headless   = false;
+        $expressPay = false;
+
+        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
         {
-            $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
-                                         ($iin->isOtp()));
+            $headless = $iin->isHeadLessOtp();
+        }
+
+        if (($this->isAxisExpressPayEnabled() === true) and
+            ($iin->getIssuer() === IFSC::UTIB))
+        {
+            $expressPay = $iin->isOtp();
+        }
+
+        if (($headless === true) or
+            ($expressPay === true))
+        {
+            $data[IIN\Constants::OTP] = true;
         }
 
         return $data;

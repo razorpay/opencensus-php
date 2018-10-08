@@ -5,9 +5,10 @@ namespace RZP\Gateway\Upi\Hulk;
 use Request;
 use Carbon\Carbon;
 use RZP\Exception;
-use ErrorException;
+use Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
@@ -16,10 +17,12 @@ use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Encryption\PGPEncryption;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\BharatQr;
+use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -38,6 +41,8 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'upi_hulk';
 
+    const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
+
     //
     // @todo: Fix the mapping
     //
@@ -45,7 +50,7 @@ class Gateway extends Base\Gateway
         Fields::ID                        => Entity::GATEWAY_PAYMENT_ID,
         Fields::STATUS                    => Entity::STATUS_CODE,
         Fields::RRN                       => Entity::NPCI_REFERENCE_ID,
-
+        Fields::TXN_ID                    => Entity::NPCI_TXN_ID,
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
@@ -54,6 +59,9 @@ class Gateway extends Base\Gateway
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
         Fields::CALLER_IFSC_CODE          => Entity::IFSC,
+        Fields::MERCHANT_REFERENCE_ID     => Entity::MERCHANT_REFERENCE,
+        Fields::RESPONSE_CODE             => Entity::STATUS_CODE,
+        Fields::BANK_RRN                  => Entity::NPCI_REFERENCE_ID,
     ];
 
     protected $forceFillable = [
@@ -71,6 +79,21 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isBharatQrPayment() === true)
+        {
+            $gatewayInput = $input[Fields::CONTENT][Fields::DATA];
+
+            $gatewayInput[Entity::RECEIVED] = true;
+
+            $gatewayInput[Fields::TYPE] = Type::getMappedTyped($gatewayInput[Fields::TYPE]);
+
+            $gatewayInput[Entity::VPA] = $gatewayInput[Fields::SENDER][Fields::ADDRESS];
+
+            $this->createGatewayPaymentEntity($gatewayInput);
+
+            return null;
+        }
 
         // @todo Enable intent
         if ((isset($input['upi']['flow']) === true) and
@@ -216,7 +239,7 @@ class Gateway extends Base\Gateway
 
         $hashed = hash_hmac(self::HASH_ALGO, $content, $password);
 
-        if(hash_equals($hashed, $signature) !== true)
+        if (hash_equals($hashed, $signature) !== true)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
@@ -235,12 +258,22 @@ class Gateway extends Base\Gateway
      * @param $input
      * @return array
      */
-    public function preProcessServerCallback($input): array
+    public function preProcessServerCallback($input, $isBharatQr = false): array
     {
         $input[Fields::SIGNATURE] = array_get($input, 'headers.x-hulk-signature.0');
 
         // To make sure, we do not use it later in code.
         unset($input['headers']);
+
+        if ($isBharatQr === true)
+        {
+            $qrData = $this->getBharatQrData($input);
+
+            return [
+                Fields::QR_DATA       => $qrData,
+                Fields::CALLBACK_DATA => $input,
+            ];
+        }
 
         return $input;
     }
@@ -286,6 +319,100 @@ class Gateway extends Base\Gateway
         return parent::sendGatewayRequest($request);
     }
 
+    protected function sendMgGatewayRequest($request)
+    {
+        $request['options'] = $this->getRequestOptions();
+
+        return parent::sendGatewayRequest($request);
+    }
+
+    protected function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        $options = [
+            'hooks' => $hooks
+        ];
+
+        return $options;
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
+
+        curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
+    }
+
+    protected function getClientCertificate()
+    {
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        $clientCertPath = $gatewayCertPath . '/' .
+                          $this->getClientCertificateName();
+
+        if (file_exists($clientCertPath) === false)
+        {
+            $cert = $this->config['mindgate']['live_client_cert'];
+
+            $cert = str_replace('\n', "\n", $cert);
+
+            file_put_contents($clientCertPath, $cert);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'gateway'        => $this->gateway,
+                    'clientCertPath' => $clientCertPath
+                ]);
+        }
+
+        return $clientCertPath;
+    }
+
+    protected function getClientSslKey()
+    {
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        $clientCertPath = $gatewayCertPath . '/' .
+                          $this->getClientSslKeyName();
+
+        if (file_exists($clientCertPath) === false)
+        {
+            $cert = $this->config['mindgate']['live_cert_key'];
+
+            $cert = str_replace('\n', "\n", $cert);
+
+            file_put_contents($clientCertPath, $cert);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'gateway'        => $this->gateway,
+                    'clientCertPath' => $clientCertPath
+                ]);
+        }
+
+        return $clientCertPath;
+    }
+
+    public function getClientCertificateName()
+    {
+        return 'client_cert_v2.crt';
+    }
+
+    public function getClientSslKeyName()
+    {
+        return 'client_cert_v1.key';
+    }
+
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
+    }
+
     protected function getGatewayUsername(): string
     {
         if ($this->isTestMode() === true)
@@ -298,11 +425,21 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayPassword(): string
     {
+        if ($this->isTestMode() === true)
+        {
+            return $this->config['test_terminal_password'];
+        }
+
         // This is set on all environments, we will be using this regardless of auth
         return $this->config['gateway_terminal_password'];
     }
 
-    /**
+    public function verifyBharatQrNotification($gatewayResponse)
+    {
+        $this->validateCallbackSignature($gatewayResponse[Fields::CALLBACK_DATA]);
+    }
+
+     /**
      * If gateway_access_code is empty, we will still be using proxy auth.
      * This way we can switch between proxy and app auth from terminal itself.
      *
@@ -429,14 +566,7 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentResponse($payment, array $response)
     {
-        // Unsetting as we don't want to override it
-        unset($response[Entity::TYPE]);
-
-        $attr = $this->getMappedAttributes($response);
-
-        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
-        // To mark that we have received a response for this request
-        $attr[Entity::RECEIVED] = 1;
+        $attr = $this->getMappedResponseToUpdate($response);
 
         $payment->fill($attr);
 
@@ -552,9 +682,28 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+        $attr = $this->getMappedResponseToUpdate($content);
+
+        // We have to call this method explicitly as AuthorizeFailed does not
+        $verify->payment->generatePspData($attr);
+
+        $verify->verifyResponseContent = $attr;
 
         return $status;
+    }
+
+    protected function getMappedResponseToUpdate(array $response)
+    {
+        // Unsetting as we don't want to override it
+        unset($response[Entity::TYPE]);
+
+        $attr = $this->getMappedAttributes($response);
+
+        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
+        // To mark that we have received a response for this request
+        $attr[Entity::RECEIVED] = 1;
+
+        return $attr;
     }
 
     public function forceAuthorizeFailed(array $input)
@@ -599,10 +748,60 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        $token = $this->fetchMindgateOAuthToken($input);
+
+        $decryptedContent = [
+            'mobile_number'           => $this->config['mindgate']['mobile'],
+            'order_number'            => $input['refund']['id'],
+        ];
+
+        $content = $this->getMgEncryptedContent($decryptedContent);
+
+        $content = json_encode($content, JSON_UNESCAPED_SLASHES);
+
+        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'mg_verify_refund');
+
+        $traceRequest['decrypted_content'] = $decryptedContent;
+        $traceRequest['headers'] = $request['headers'] = [
+            'Content-Type' => 'application/json'
+        ];
+
+        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::REFUND_VERIFY_REQUEST);
+
+        $request['url'] = $request['url'] . '?access_token=' . $token;
+
+        $response = $this->sendMgGatewayRequest($request);
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::REFUND_VERIFY_RESPONSE);
+
+        if (isset($responseArray['data']) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                $responseArray[Fields::ERROR_CODE],
+                $responseArray['message']);
+        }
+
+        $decryptedResp = $this->getMgDecryptedContent($responseArray['data']);
+
+        $this->traceGatewayPaymentResponse($decryptedResp, $input, TraceCode::REFUND_VERIFY_RESPONSE);
+
+        if ($decryptedResp[Fields::TRANSACTION_STATUS] === 'F')
+        {
+            return false;
+        }
+        else if ($decryptedResp[Fields::TRANSACTION_STATUS] === 'S')
+        {
+            return true;
+        }
+
         throw new Exception\LogicException(
             'Shouldn\'t reach here',
             null,
             [
+                'gateway_status' => $decryptedResp['transaction_status'],
                 'refund_id'      => $input['refund']['id'],
             ]);
     }
@@ -611,8 +810,153 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        throw new Exception\LogicException(
-            'Refund not implemented');
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $rrn = $gatewayPayment[Entity::NPCI_REFERENCE_ID];
+
+        $token = $this->fetchMindgateOAuthToken($input);
+
+        $decryptedContent = [
+            'device_id'               => '551897080946357',
+            'mobile_number'           => $this->config['mindgate']['mobile'],
+            'sim_id'                  => '89918740400029188800',
+            'os'                      => 'Android6.0',
+            'app_name'                => 'org.razorpay',
+            'location'                => 'Bangalore',
+            'ip'                      => '172.21.14.99',
+            'geocode'                 => '19.0911,72.9208',
+            'type'                    => 'TYPE',
+            'account_provider_ref_id' => $this->config['mindgate']['account_id'],
+            'sender_vpa'              => $this->config['mindgate']['vpa'],
+            'receiver_vpa'            => $input['payment']['vpa'],
+            'receiver_name'           => 'Receiver',
+            'txn_note'                => 'Refund for ' . $input['payment']['id'] . ' RRN ' . $rrn,
+            'amount'                  => (string) ($input['refund']['amount'] / 100),
+            'order_number'            => $input['refund']['id'],
+        ];
+
+        $content = $this->getMgEncryptedContent($decryptedContent);
+
+        $content = json_encode($content, JSON_UNESCAPED_SLASHES);
+
+        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'mg_refund');
+
+        $traceRequest['decrypted_content'] = $decryptedContent;
+        $traceRequest['headers'] = $request['headers'] = [
+            'Content-Type' => 'application/json'
+        ];
+
+        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+
+        $request['url'] = $request['url'] . '?access_token=' . $token;
+
+        $response = $this->sendMgGatewayRequest($request);
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        if (isset($responseArray['data']) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                $responseArray[Fields::ERROR_CODE],
+                $responseArray['message']);
+        }
+
+        $decryptedResp = $this->getMgDecryptedContent($responseArray['data']);
+
+        $this->traceGatewayPaymentResponse($decryptedResp, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        if ((isset($decryptedResp[Fields::RESPONSE_CODE]) === false) or
+            ($decryptedResp[Fields::RESPONSE_CODE] !== '00'))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $decryptedResp[Fields::ERROR_CODE] ?? '',
+                $decryptedResp['message'] ?? '');
+        }
+
+        $decryptedResp['received'] = true;
+
+        $this->createGatewayPaymentEntity($decryptedResp, Action::REFUND);
+    }
+
+    // @codingStandardsIgnoreLine
+    protected function fetchMindgateOAuthToken($input)
+    {
+        $content = [
+            'grant_type'    => 'password',
+            'client_id'     => $this->config['mindgate']['client_id'],
+            'client_secret' => $this->config['mindgate']['client_secret'],
+            'username'      => $this->config['mindgate']['username'],
+            'password'      => $this->config['mindgate']['password'],
+        ];
+
+        $this->domainType = $this->mode . '_mindgate';
+
+        $request = $traceRequest = $this->getStandardRequestArray($content, 'get', 'mg_oauth_token');
+
+        unset($traceRequest['content']);
+
+        $this->trace->info(TraceCode::GATEWAY_SUPPORT_REQUEST, $traceRequest);
+
+        $response = $this->sendMgGatewayRequest($request);
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_SUPPORT_RESPONSE,
+                            [
+                                'action'        => 'fetch_mg_outh_token',
+                                'token_type'    => $responseArray['token_type'] ?? ' ',
+                                'expires_in'    => $responseArray['expires_in'] ?? ' ',
+                            ]);
+
+        return $responseArray['access_token'];
+    }
+
+    protected function getMgEncryptedContent($content)
+    {
+        $plainText = json_encode($content);
+
+        $pgp = $this->getPgpInstance();
+
+        $encrypted = $pgp->encryptSign($plainText);
+
+        return [
+            'pgmerchant_Id' => $this->config['mindgate']['mid'],
+            'data'          => $encrypted,
+            'key_id'        => $this->config['mindgate']['key_id'],
+            'seq_number'    => UniqueIdEntity::generateUniqueId(),
+        ];
+    }
+
+    protected function getMgDecryptedContent($encrypted)
+    {
+        $pgp = $this->getPgpInstance();
+
+        $encrypted = trim(str_replace('\n', "\n", $encrypted));
+
+        $plainText = $pgp->decryptVerify($encrypted);
+
+        $decryptedData = $this->jsonToArray($plainText);
+
+        return $decryptedData;
+    }
+
+    public function getPgpInstance()
+    {
+        $pgpConfig = [
+            'public_key'  => trim(str_replace('\n', "\n", $this->config['mindgate']['public_key'])),
+            'private_key' => trim(str_replace('\n', "\n", $this->config['mindgate']['private_key'])),
+            'passphrase'  => $this->config['mindgate']['passphrase'],
+        ];
+
+        $pgp = new PGPEncryption($pgpConfig);
+
+        return $pgp;
     }
 
     protected function checkResponseStatus(array $p2p, string $successStatus)
@@ -637,5 +981,21 @@ class Gateway extends Base\Gateway
     protected function getExternalMockUrl(string $type)
     {
         return env('UPI_HULK_URL') . '/' . $this->getRelativeUrl($type);
+    }
+
+    protected function getBharatQrData(array $bharatQrInput)
+    {
+        $input = $bharatQrInput[Fields::CONTENT][Fields::DATA];
+
+        $attributes = [
+            GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
+            GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::RECEIVER][Fields::ID],
+            GatewayResponseParams::VPA                   => $input[Fields::RECEIVER][Fields::ADDRESS],
+            GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[Fields::MERCHANT_REFERENCE_ID], 3, 17),
+            GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[Fields::TXN_ID],
+        ];
+
+        return $attributes;
     }
 }

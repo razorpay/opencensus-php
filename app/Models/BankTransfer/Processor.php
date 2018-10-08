@@ -13,6 +13,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
+use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -54,7 +55,7 @@ class Processor extends VirtualAccount\Processor
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc, $useWritePdo = true);
 
         if ($duplicateBankTransfer === null)
         {
@@ -80,14 +81,28 @@ class Processor extends VirtualAccount\Processor
             $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
         }
 
-        $this->getPaymentProcessor()->process($paymentInput);
+        /*
+         * This is added temporarily because if gatewayData is passed with
+         * Terminal Id then getTerminalFromPayment returns an empty array.
+         * Will remove this later.
+         */
+        $gatewayData[Constants::RAZORPAY_TERMINAL_ID] = 'SkipTerminalId';
+
+        $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
     }
 
     protected function processBankTransfer(array $input)
     {
         try
         {
-            $this->getPaymentProcessor()->process($input);
+            /*
+             * This is added temporarily because if gatewayData is passed with
+             * Terminal Id then getTerminalFromPayment returns an empty array.
+             * Will remove this later.
+             */
+            $gatewayData[Constants::RAZORPAY_TERMINAL_ID] = 'SkipTerminalId';
+
+            $this->getPaymentProcessor()->process($input, $gatewayData);
         }
         catch (\Exception $e)
         {
@@ -122,14 +137,6 @@ class Processor extends VirtualAccount\Processor
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
         $this->checkIfAccountIsBlocked($bankTransfer);
-
-        if ($bankTransfer->isExpected() === false)
-        {
-            if ($this->checkReservedAccount($bankTransfer) === true)
-            {
-                return null;
-            }
-        }
 
         $paymentProcessor = $this->getPaymentProcessor();
 
@@ -356,32 +363,6 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal transfers.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return bool
-     */
-    protected function checkReservedAccount(Entity $bankTransfer)
-    {
-        $payeeAccount = $bankTransfer->getPayeeAccount();
-
-        // Ignore payments made to reserved accounts, i.e. accounts that use the
-        // reserved roots. We will use this for other cool stuff.
-        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $bankTransfer->getGateway()) === true)
-        {
-            $this->trace->info(
-                TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
-                $bankTransfer->toArray()
-            );
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Find the bank account being paid. We search only amongst
      * the bank accounts that were created by the current provider.
      *
@@ -458,7 +439,7 @@ class Processor extends VirtualAccount\Processor
 
         $bankAccount->merchant()->associate($bankTransfer->merchant);
 
-        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+        $bankAccount->source()->associate($bankTransfer->virtualAccount);
 
         $this->repo->saveOrFail($bankAccount);
 

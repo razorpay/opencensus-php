@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\Amazonpay;
+
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -9,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\Helpers;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Reconciliator\Amazonpay\ReconHeaders;
 use RZP\Reconciliator\RequestProcessor\Base as Recon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -45,6 +48,13 @@ class AmazonpayReconTest extends TestCase
      public function testPaymentReconciliation()
      {
          $payments = $this->makeAmazonPaymentSince();
+
+         $this->fixtures->edit('payment', $payments[0],
+                               [
+                                   'amount' => 149000,
+                                   'base_amount' => 149000,
+                                   'amount_authorized' => 149000,
+                               ]);
 
          $this->ba->appAuth();
 
@@ -92,8 +102,8 @@ class AmazonpayReconTest extends TestCase
                 if ($action === 'col_payment_amazonpay_recon')
                 {
                     // Setting amount to 100 will cause payment amount validation to fail
-                    $content['TransactionAmount']       = '100.00';
-                    $content['NetTransactionAmount']    = '100.00';
+                    $content[ReconHeaders::TRANSACTION_AMOUNT]       = '100.00';
+                    $content[ReconHeaders::NET_TRANSACTION_AMOUNT]   = '100.00';
                 }
             });
 
@@ -135,7 +145,7 @@ class AmazonpayReconTest extends TestCase
             {
                 if ($action === 'col_payment_amazonpay_recon')
                 {
-                    $content['SellerOrderId']       = '';
+                    $content[ReconHeaders::SELLER_ORDER_ID]       = '';
                 }
             });
 
@@ -184,11 +194,11 @@ class AmazonpayReconTest extends TestCase
                     $refund = $this->getDbLastEntityToArray('wallet', 'test');
                     $refundAmount = $this->formatAmount((-1) * $refund['amount'] / 100);
 
-                    $content['TransactionType']         = 'Refund';
-                    $content['TransactionAmount']       = $refundAmount;
-                    $content['NetTransactionAmount']    = $refundAmount;
-                    $content['SellerReferenceId']       = $refund['refund_id'];
-                    $content['AmazonTransactionId']     = $refund['gateway_refund_id'];
+                    $content[ReconHeaders::TRANSACTION_TYPE]         = 'Refund';
+                    $content[ReconHeaders::TRANSACTION_AMOUNT]       = $refundAmount;
+                    $content[ReconHeaders::NET_TRANSACTION_AMOUNT]   = $refundAmount;
+                    $content[ReconHeaders::SELLER_REFERENCE_ID]      = $refund['refund_id'];
+                    $content[ReconHeaders::AMAZON_TRANSACTION_ID]    = $refund['gateway_refund_id'];
                 }
             });
 

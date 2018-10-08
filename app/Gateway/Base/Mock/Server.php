@@ -103,6 +103,13 @@ class Server extends Base\Core
         $this->input = $input;
     }
 
+    protected function validatePush($input)
+    {
+        $this->action = Action::VALIDATE_PUSH;
+
+        $this->input = $input;
+    }
+
     protected function generateHash($content)
     {
         return $this->getGatewayInstance()->generateHash($content);

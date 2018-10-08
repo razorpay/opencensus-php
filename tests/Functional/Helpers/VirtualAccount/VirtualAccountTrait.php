@@ -59,10 +59,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function createVirtualAccountOldFormat(
-        array $input = [],
-        $numeric = true,
-        $descriptor = null)
+    private function createVirtualAccountOldFormat(array $input = [])
     {
         $defaultValues = $this->getOldVirtualAccountRequestArray();
 

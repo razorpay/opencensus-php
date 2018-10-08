@@ -149,7 +149,7 @@ trait ReconTrait
 
         return $excel->string('xlsx');
     }
-
+  
     protected function getNewUpiEntity($merchantId, $gateway)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
@@ -172,5 +172,4 @@ trait ReconTrait
 
         return $gatewayPayment;
     }
-
 }

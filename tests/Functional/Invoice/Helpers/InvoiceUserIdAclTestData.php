@@ -508,8 +508,8 @@ return [
     // Expectations for ES
 
     'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

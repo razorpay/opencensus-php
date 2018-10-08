@@ -310,6 +310,15 @@ class Authorization
         $this->basicAuth(null, null);
     }
 
+    public function scroogeAuth($mode = 'test')
+    {
+        $cronConfig = \Config::get('applications.scrooge');
+
+        $pwd = $cronConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     /**
      * Adds account auth to a request
      *

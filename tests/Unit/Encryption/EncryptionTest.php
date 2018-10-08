@@ -30,6 +30,29 @@ class EncryptionTest extends TestCase
         $this->assertEquals($dataToEncrypt, $decryptedData);
     }
 
+    public function testPgpEncryptionDecryptionWPassphrase()
+    {
+        $dataToEncrypt = 'somerandomdata';
+
+        $publicKey = file_get_contents(__DIR__ . '/pgp_public_test_key_passphrase.asc');
+
+        $privateKey = file_get_contents(__DIR__ . '/pgp_private_test_key_passphrase.asc');
+
+        $encryptionData = [
+            'public_key'  => $publicKey,
+            'private_key' => $privateKey,
+            'passphrase'  => 'razorpay',
+        ];
+
+        $pgpEncryption = new PGPEncryption($encryptionData);
+
+        $encryptedData = $pgpEncryption->encrypt($dataToEncrypt);
+
+        $decryptedData = $pgpEncryption->decrypt($encryptedData);
+
+        $this->assertEquals($dataToEncrypt, $decryptedData);
+    }
+
     public function testAesEncryptionDecryption()
     {
         $dataToEncrypt = 'somerandomdata';

@@ -224,6 +224,18 @@ class SharpGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
 
         $token = $paymentEntity['token_id'];
 
@@ -242,6 +254,8 @@ class SharpGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
     }
 
     public function testRecurringHardDeclinePaymentAuthenticateCard()

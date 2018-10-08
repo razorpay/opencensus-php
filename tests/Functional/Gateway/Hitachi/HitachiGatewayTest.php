@@ -709,7 +709,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthencationGatewayForAxisMaestro()
     {
-        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
         $this->fixtures->iin->create([
             'iin'     => '556763',
@@ -765,7 +765,7 @@ class HitachiGatewayTest extends TestCase
     //Enstage only supports AxisExpressPay
     public function testAuthenticationGatewayForHdfc()
     {
-        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
         //Supports OTP flow for a different gateway
         $this->fixtures->iin->create([
@@ -925,7 +925,7 @@ class HitachiGatewayTest extends TestCase
 
     public function expressPayEnrolled($iin, $network)
     {
-        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
         $this->payment['auth_type'] = 'otp';
 

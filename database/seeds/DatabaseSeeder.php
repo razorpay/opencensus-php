@@ -1127,6 +1127,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
@@ -1538,6 +1539,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingEquitasTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_ESFB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_EQUITAS,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_equitas',
+                'gateway_secure_secret' => Crypt::encrypt('test_equitas_terminal_salt'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1736,10 +1754,9 @@ class DatabaseSeeder extends Seeder
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
-            'gateway_merchant_id'       => 'RAZAORPAY',
-            'gateway_terminal_id'       => '1234',
-            'gateway_merchant_id2'      => 'razaorpay@axis',
-            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_axis_terminal_pass'),
+            'gateway_merchant_id'       => 'TSTMERCHI',
+            'gateway_merchant_id2'      => 'TSTMERCHIAPP',
+            'vpa'                       => 'a@axis',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);

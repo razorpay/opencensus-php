@@ -33,6 +33,7 @@ class Terminal extends Base
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
+        $this->createSharedNetbankingEquitasTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -368,6 +369,29 @@ class Terminal extends Base
             'emandate'                  => 1,
             'type'                      => [
                 Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedLegaldeskTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::LEGALDESK_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'esigner_legaldesk',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS     => '1',
                 Type::RECURRING_NON_3DS => '1',
             ],
             'shared'                    => 1,
@@ -842,6 +866,75 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createBankAccountTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'BANKACC3DSN3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => Gateway::BT_YESBANK,
+            'gateway_merchant_id'       => '222333',
+            'gateway_merchant_id2'      => '00',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING        => '1',
+                Type::NUMERIC_ACCOUNT      => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBankAccountTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'SHRDBANKACC3DS',
+            'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::BT_DASHBOARD,
+            'gateway_merchant_id'       => '111222',
+            'gateway_merchant_id2'      => '00',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING        => '1',
+                Type::NUMERIC_ACCOUNT      => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedBankAccountTerminalAlphaNum(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'SHRDBANKACCALN',
+            'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::BT_DASHBOARD,
+            'gateway_merchant_id'       => 'RZRP',
+            'gateway_merchant_id2'      => 'RPAY',
+            'card'                      => 0,
+            'recurring'                 => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
@@ -1612,6 +1705,24 @@ class Terminal extends Base
         return $this->createSharedNetbankingRblTerminal($attributes);
     }
 
+    public function createSharedNetbankingEquitasTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ESFB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_EQUITAS,
+            'gateway_merchant_id'   => 'netbanking_equitas_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_equitas_merchant_id2',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedAmexTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -1679,10 +1790,9 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_axis',
-            'gateway_merchant_id'       => 'RAZAORPAY',
-            'gateway_terminal_id'       => 'RAZAORPAYAPP',
-            'gateway_merchant_id2'      => 'razaorpay@axis',
-            'gateway_terminal_password' => '1520',
+            'gateway_merchant_id'       => 'TSTMERCHI',
+            'gateway_merchant_id2'      => 'TSTMERCHIAPP',
+            'vpa'                       => 'a@axis',
             'upi'                       => true,
         ];
 

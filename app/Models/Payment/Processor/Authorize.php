@@ -59,7 +59,9 @@ trait Authorize
 
     /**
      * @param Payment\Entity $payment
-     * @param array $input
+     * @param array          $input
+     * @param array          $gatewayInput
+     *
      * @return array
      */
     public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
@@ -87,7 +89,7 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment);
+        return $this->processPaymentFinal($payment, $gatewayInput);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
@@ -100,7 +102,7 @@ trait Authorize
         //
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
 
-        if ($this->shouldHitGatewayForPayment($payment) === false)
+        if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
             $this->repo->saveOrFail($payment);
 
@@ -316,8 +318,14 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment): array
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return $this->processCreated($payment);
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             return $this->processCreated($payment);
@@ -343,12 +351,23 @@ trait Authorize
             'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
-            'wallet'     => $payment->getWallet()
+            'wallet'     => $payment->getWallet(),
+            'merchant'   => $payment->merchant->getName(),
         ];
 
         // This is a hack to return direct method for IVR payments
         if ($payment->isCard() === true)
         {
+            $card = $payment->card;
+
+            $metaData = [
+                'issuer'     => $card->getIssuer(),
+                'network'    => $card->getNetworkCode(),
+                'last4'      => $card->getLast4(),
+            ];
+
+            $response['metadata'] = $metaData;
+
             $templateData = [
                'data' => $response,
                'cdn'  => $this->app['config']->get('url.cdn.production')
@@ -1283,27 +1302,77 @@ trait Authorize
         $this->setGatewayTokenInInput($payment, $gatewayInput);
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @param array $gatewayInput
+     */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if (($payment->isMethodCardOrEmi() === true) and
-            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
+        if (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true)
         {
-            //
-            // Payments where authentication is required
-            //
-            if (($payment->isRecurring() === false) or
-                ($payment->isRecurringTypeInitial() === true))
-            {
-                if ($payment->getGateway() === Payment\Gateway::HITACHI)
-                {
-                    $authGateway = Payment\Gateway::MPI_BLADE;
+            $method = $payment->getMethod();
 
-                    if ($this->canRunAxisExpressPay($payment) === true)
+            switch ($method)
+            {
+                case Payment\Method::EMANDATE:
+                {
+                    //
+                    // Todo: During NPCI eMandate integration, we need to have one more condition
+                    // here to check if the auth method is aadhaar.
+                    //
+
+                    $eSignerGateway = Payment\Gateway::ESIGNER_DIGIO;
+
+                    $key = ConfigKey::MERCHANT_ENACH_CONFIGS;
+
+                    $merchantId = $payment->merchant->getId();
+
+                    $esignerConfigs = null;
+
+                    try
                     {
-                        $authGateway = Payment\Gateway::MPI_ENSTAGE;
+                        $esignerConfigs = Cache::get($key);
+                    }
+                    catch (\Throwable $ex)
+                    {
+                        // If cache fetch fails(say, the cache service is down), do not fail the payment.
+                        // Instead, fallback to the default eSigner gateway.
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::CRITICAL,
+                            TraceCode::REDIS_KEY_FETCH,
+                            ['key' => $key]
+                        );
                     }
 
-                    $gatewayInput['authenticate']['gateway'] = $authGateway;
+                    $esignerConfigs = json_decode($esignerConfigs, true);
+
+                    if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
+                    {
+                        $eSignerGateway = $esignerConfigs['auth_gateway'][$merchantId];
+                    }
+
+                    $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
+                }
+
+                case Payment\Method::CARD:
+                case Payment\Method::EMI:
+                {
+                    if (($payment->isRecurring() === false) or
+                        ($payment->isRecurringTypeInitial() === true))
+                    {
+                        if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                        {
+                            $authGateway = Payment\Gateway::MPI_BLADE;
+
+                            if ($this->canRunAxisExpressPay($payment) === true)
+                            {
+                                $authGateway = Payment\Gateway::MPI_ENSTAGE;
+                            }
+
+                            $gatewayInput['authenticate']['gateway'] = $authGateway;
+                        }
+                    }
                 }
             }
         }
@@ -1884,7 +1953,8 @@ trait Authorize
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
     {
-        if (isset($input[Payment\Entity::RECURRING]) === true)
+        if ((isset($input[Payment\Entity::RECURRING]) === true) and
+            ($input[Payment\Entity::RECURRING]) === '1')
         {
             if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
             {
@@ -3390,6 +3460,12 @@ trait Authorize
         // re-setting the customer later for the subscription.
         //
         $subscription->customer()->associate($paymentCustomer);
+
+        //
+        // Used for subscription fetch via dashboard
+        // Needed to rearchitect subscriptions as a separate service
+        //
+        $subscription->setCustomerEmail($paymentCustomer->getEmail());
     }
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -4517,7 +4593,6 @@ trait Authorize
         }
 
         if (($magicDisabledGlobally === false) and
-            ($this->merchant->isMagicEnabled() === true) and
             ($payment->card->isMagicEnabled() === true))
         {
             return true;
@@ -4528,6 +4603,7 @@ trait Authorize
 
     protected function isPreferredRecurring(array $input)
     {
-        return (empty($input[Payment\Entity::PREFERRED_RECURRING]) === false);
+        return ((empty($input[Payment\Entity::RECURRING]) === false) and
+                ($input[Payment\Entity::RECURRING] === 'preferred'));
     }
 }
