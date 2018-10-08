@@ -47,7 +47,8 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant) {
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        {
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->repo->saveOrFail($merchantDetails);
