@@ -273,14 +273,15 @@ class Gateway extends Base\Gateway
 
     protected function getSecureData($input)
     {
-        $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d+05:30');
+        $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
+                        ->format('Y-m-d+05:30');
 
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
                                                       ->format('Y-m-d+05:30');
 
         return [
             RequestNpciTags::DEBTOR_ACCOUNT        => $input['token']->getAccountNumber(),
-            RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt,
+            RequestNpciTags::FIRST_COLLECTION_DATE => $date,
             RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection,
             RequestNpciTags::COLLECTION_AMOUNT     => '',
             RequestNpciTags::MAX_AMOUNT            => $input['token']->getMaxAmount() / 100,
