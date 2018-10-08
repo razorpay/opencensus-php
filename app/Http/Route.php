@@ -1562,6 +1562,7 @@ final class Route
         'coupon_create',
         'coupon_delete',
         'credits_create',
+        'credits_create_bulk',
         'credits_edit',
         'currency_fetch_rates',
         'dispute_migrate_adjustments',
@@ -1927,6 +1928,7 @@ final class Route
         'coupon_create'                            => '*',
         'coupon_delete'                            => '*',
         'credits_edit'                             => '*',
+        'credits_create_bulk'                      => '*',
         'currency_fetch_rates'                     => '*',
         'dispute_migrate_adjustments'              => '*',
         'dummy_route'                              => '*',
@@ -2085,7 +2087,6 @@ final class Route
     ];
 
     public static $direct = [
-        'credits_create_bulk',
         'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',

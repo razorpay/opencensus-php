@@ -71,8 +71,6 @@ class Service extends Base\Service
             try
             {
                 $this->grantCreditsForMerchant($merchantId, $creditInput);
-
-                $successIds[] = $merchantId;
             }
             catch (\Throwable $t)
             {
@@ -82,7 +80,7 @@ class Service extends Base\Service
                     TraceCode::MERCHANT_CREDITS_BULK_EXCEPTION,
                     [
                         'merchant_id' => $merchantId,
-                        'input'       => $input,
+                        'input'       => $creditInput,
                     ]);
 
                 $failedIds[] = $merchantId;
