@@ -9,6 +9,7 @@ import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
 
 import EditTerminalForm from '../../merchants/entity/entityModals/AssignTerminal';
+import EditBanksModal from '../../terminals/EditBanksModal';
 
 // Terminal Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -53,6 +54,12 @@ export default ({ entity, mode, updateEntity }) => {
         id={entity.merchant_id}
         handleSubmit={updatePrimaryMerchant}
       />
+    );
+  }
+
+  function openEditTerminalBanksForm() {
+    openModal(
+      <EditBanksModal id={entity.id} mode={mode} updateEntity={updateEntity} />
     );
   }
 
@@ -152,6 +159,9 @@ export default ({ entity, mode, updateEntity }) => {
         </button>
         <button class="label-info" onClick={terminalMerchantAssign}>
           Assign Sub Merchants
+        </button>
+        <button class="label-info" onClick={openEditTerminalBanksForm}>
+          Edit Banks
         </button>
       </div>
       <div>
