@@ -94,7 +94,6 @@ class Crypto
 
         switch ($mode)
         {
-
             case 'decrypt':
                 $key = $this->getPrivateKey();
                 $rsa->loadKey($key);

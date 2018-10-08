@@ -78,5 +78,4 @@ class CategoryCode
     {
         return self::$catCodeToDescriptionMapping[$code];
     }
-
 }
