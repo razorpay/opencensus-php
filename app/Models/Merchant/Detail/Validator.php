@@ -462,21 +462,21 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
         }
     }
-    
+
     /**
      * contains validation for full activation form
      *
-     * @throws \RZP\Exception\InvalidArgumentException
      * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
      */
     public function validateFullActivationForm()
     {
         $this->validateIsNotLocked();
-        
+
         if ($this->entity->getActivationFlow() !== null)
         {
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
-            
+
             $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }

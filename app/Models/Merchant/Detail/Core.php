@@ -191,7 +191,7 @@ class Core extends Base\Core
             return $response;
         });
     }
-  
+
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
     {
         $merchantDetails = $merchant->merchantDetail;
