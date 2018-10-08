@@ -28,6 +28,7 @@ const link = {
 @connect(
   state => ({
     ...state.invoices,
+    items: state.invoices.invoices,
   }),
   { fetchInvoices }
 )
@@ -38,12 +39,10 @@ export default class AuthLinksList extends ListContainer {
   }
 
   render() {
-    const { invoices } = this.props;
     return (
       <div class="content-wrapper">
         <DataTable
           title="Auth Links"
-          count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
           columns={[
@@ -55,8 +54,8 @@ export default class AuthLinksList extends ListContainer {
             customerContact,
             status,
           ]}
-          items={invoices}
           {...this.props}
+          count={this.state.count}
         />
       </div>
     );
