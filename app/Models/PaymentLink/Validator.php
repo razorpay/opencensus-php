@@ -37,8 +37,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS        => 'filled|array|custom',
 
         Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
-        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|boolean',
-        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
+        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
@@ -59,8 +59,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS        => 'filled|array|custom',
 
         Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
-        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|boolean',
-        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|boolean',
+        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
+        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
         Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
@@ -70,6 +70,14 @@ class Validator extends Base\Validator
         'emails.*'   => 'required|email|max:255',
         'contacts'   => 'required_without:emails|filled|array|size:1',
         'contacts.*' => 'required|contact_syntax|digits_between:8,11',
+    ];
+
+    protected static $udfSchemaRules = [
+        'udf_schema'         => 'array|max:15',
+        'udf_schema.*.name'  => 'required|string|max:255',
+        'udf_schema.*.type'  => 'required|string|in:string,number',
+        'udf_schema.*.title' => 'required|string|max:255',
+        // Todo: Optional parameters intentionally left for now.
     ];
 
     public function validateExpireBy(string $attribute, int $value)
@@ -142,12 +150,15 @@ class Validator extends Base\Validator
     public function validateSettings(string $attribute, array $value)
     {
         $extraSettingsKeys = array_values(array_diff(array_keys($value), Entity::SETTINGS_KEYS));
-
         if (empty($extraSettingsKeys) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Extra settings keys must not be sent - ' . implode(', ', $extraSettingsKeys) . '.');
         }
+
+        // Additionally, validates udf schema
+        $udfSchema = isset($value[Entity::UDF_SCHEMA]) ? json_decode($value[Entity::UDF_SCHEMA], true) : [];
+        $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
     }
 
     /**

@@ -15,7 +15,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
-
 class Core extends Base\Core
 {
     /**
