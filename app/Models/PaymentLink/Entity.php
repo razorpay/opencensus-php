@@ -362,7 +362,16 @@ class Entity extends Base\PublicEntity
     {
         $accessor = $this->getSettingsAccessor();
 
-        return $key ? $accessor->get($key) : $accessor->all();
+        return $key === null ? $accessor->all() : $accessor->get($key);
+    }
+
+    public function getSettingsScalarElseNull(string $key)
+    {
+        $resp = $this->getSettings($key);
+
+        // We expect one scalar value against above key.
+        // In case of 'null', above call returns instance of Dictionary for some reason.
+        return (is_string($resp) === true) ? $resp : null;
     }
 
     public function getSettingsAccessor(): Settings\Accessor

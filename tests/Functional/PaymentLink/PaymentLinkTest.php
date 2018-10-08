@@ -258,9 +258,9 @@ class PaymentLinkTest extends TestCase
         $payment[Payment\Entity::AMOUNT] = 5000; // Different amount value
         $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
 
-        $this->expectException(BadRequestException::class);
-        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH);
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH);
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        $this->expectExceptionMessage('Payment amount provided does not match amount expected for the payment link.');
 
         $this->doAuthAndGetPayment($payment);
     }

@@ -43,13 +43,8 @@ class SettingsAccess implements StorageAccess
     {
         if ($this->schemaLoaded === false)
         {
-            $resp = $this->entity->getSettings('udf_schema');
-
             $this->schemaLoaded = true;
-
-            // We expect one scalar value against above key.
-            // In case of 'null', above call returns instance of Dictionary for some reason.
-            $this->schema = is_string($resp) ? $resp : null;
+            $this->schema       = $this->entity->getSettingsScalarElseNull('udf_schema');
         }
 
         return $this->schema;

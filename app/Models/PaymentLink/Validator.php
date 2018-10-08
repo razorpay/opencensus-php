@@ -253,7 +253,7 @@ class Validator extends Base\Validator
         $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
         $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
         $paymentLinkAmount       = $paymentLink->getAmount();
-        $allowMultipleUnits      = (bool) $paymentLink->getSettings(Entity::ALLOW_MULTIPLE_UNITS);
+        $allowMultipleUnits      = (bool) $paymentLink->getSettingsScalarElseNull(Entity::ALLOW_MULTIPLE_UNITS);
 
         if ($paymentLinkAmount === null)
         {
