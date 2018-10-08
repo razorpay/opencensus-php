@@ -229,6 +229,17 @@ export const validatePaymentLinkBatch = validateBatch('payment_link');
 export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');
 
+/* batches for emandate */
+export const fetchHostMandateBatches = fetchBatches([
+  'recurring_charge',
+  'auth_link',
+]);
+export const createAuthLinkBatch = createBatch('auth_link');
+export const validateAuthLinkBatch = validateBatch('auth_link');
+export const createRecurringChargeBatch = createBatch('recurring_charge');
+export const validateRecurringChargeBatch = validateBatch('recurring_charge');
+export const fetchHostedMandateBatchDetails = fetchBatchDetails();
+
 /* reducers */
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
