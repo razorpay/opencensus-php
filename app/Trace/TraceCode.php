@@ -1276,6 +1276,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
+    const BIN_ISSUER_VALIDATION_FAILED                  = 'BIN_ISSUER_VALIDATION_FAILED';
+
     const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
 
     // Instant activation traces
@@ -1431,6 +1433,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTIONS_TO_POSTPAID_INPUT            => 'Mark transactions as postpaid request',
         self::TRANSACTIONS_TO_POSTPAID_FAILED           => 'Transaction conversion from to postpaid failed',
         self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
+
+        self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
     ];
 
     /**

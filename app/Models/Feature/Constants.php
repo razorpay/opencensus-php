@@ -89,6 +89,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS                        = 'headless';
+    const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
