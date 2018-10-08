@@ -276,7 +276,7 @@ export default class App extends Component {
           <span class="rzp-msg">
             We are temporarily unavailable on chat,
              kindly visit our website
-              <a href=https://razorpay.com/contact/ target="_blank">razorpay.com/contact</a> to refer our knowledge base or you can raise a request and we will get back to you at the earliest.
+              <a href=https://razorpay.com/contact/>razorpay.com/contact</a> to refer our knowledge base or you can raise a request and we will get back to you at the earliest.
           </span>
         `;
       });
