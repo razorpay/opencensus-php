@@ -304,7 +304,7 @@ class NetbankingErrorCodes
         self::R186 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R187 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R188 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
-        self::R189 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R189 => ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
         self::R190 => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         self::R191 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R192 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
@@ -320,8 +320,8 @@ class NetbankingErrorCodes
         self::R202 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R203 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::R204 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
-        self::R206 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
-        self::R207 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
+        self::R206 => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        self::R207 => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
 
         /* these are error codes recieved by the bank
         self::R251 => 'Bank Request is invalid',
