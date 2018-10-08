@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mukulacharya
- * Date: 24/09/18
- * Time: 6:12 PM
- */
 
 namespace RZP\Gateway\Hitachi\ErrorCodes;
 
