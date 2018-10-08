@@ -43,7 +43,6 @@
         "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0",
         "razorpay/hodor": "dev-master",
-        "razorpay/trace": "~2.1",
         "razorpay/oauth": "dev-master",
         "fideloper/proxy": "~3.0",
         "nojacko/email-validator": "^1.1",
@@ -51,7 +50,8 @@
         "symfony/dom-crawler": "3.*",
         "justinrainbow/json-schema": "^5.2",
         "phpoffice/phpspreadsheet": "^1.4",
-        "mdanter/ecc": "^0.5.0"
+        "mdanter/ecc": "^0.5.0",
+        "razorpay/trace": "~2.2"
     },
     "repositories": [
         {

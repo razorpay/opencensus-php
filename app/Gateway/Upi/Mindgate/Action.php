@@ -9,4 +9,8 @@ class Action extends Base\Action
     const COLLECT       = 'collect';
 
     const VALIDATE_VPA  = 'validate_vpa';
+
+    const VALIDATE_PUSH = 'validate_push';
+
+    const AUTHORIZE_PUSH = 'authorize_push';
 }

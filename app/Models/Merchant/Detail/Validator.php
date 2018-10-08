@@ -204,6 +204,13 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $instantActivationRules = [
+        Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY => 'required|max:255|custom',
+        Entity::PROMOTER_PAN         => 'required|alpha_num|max:15',
+        Entity::PROMOTER_PAN_NAME    => 'required|max:255',
+    ];
+
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
@@ -212,7 +219,9 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_OPERATION_STATE   => 'filled|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY    => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15'
+        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15',
+        Entity::BUSINESS_CATEGORY          => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
     ];
 
     protected static $bulkAssignReviewerRules = [

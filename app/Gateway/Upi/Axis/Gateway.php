@@ -553,12 +553,6 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response->body, $input, Action::VERIFY);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'content'   => $content,
-            ]);
-
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
@@ -590,7 +584,7 @@ class Gateway extends Base\Gateway
         {
             $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-            $actualAmount = number_format($content[Fields::DATA][0][Fields::TXN_AMOUNT], 2, '.', '');
+            $actualAmount = number_format($content[Fields::DATA][0][Fields::AMOUNT], 2, '.', '');
 
             $verify->amountMismatch = ($paymentAmount !== $actualAmount);
         }
