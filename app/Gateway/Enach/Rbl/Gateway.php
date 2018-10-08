@@ -136,9 +136,9 @@ class Gateway extends Base\Gateway
 
         $responseXml = (array) simplexml_load_string(trim($responseXmlString));
 
-        $json = json_encode($responseXml); //TODO : FInd out why this is done
+        $json = json_encode($responseXml);
 
-        $responseArray = json_decode($json,true);
+        $responseArray = json_decode($json, true);
 
         if ($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
         {
@@ -295,7 +295,7 @@ class Gateway extends Base\Gateway
 
         $pid = $input['payment']['id'];
 
-        $mcc = $input['terminal']['category'];  //TODO find what are all the possible values here
+        $mcc = $input['terminal']['category'];
 
         $catCode = CategoryCode::getCategoryCodeFromMcc($mcc);
 
@@ -312,7 +312,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::CATEGORY_CODE         => $catCode,
                 RequestNpciTags::UTILITY_CODE          => $mid,
                 RequestNpciTags::CATEGORY_DESCRIPTION  => CategoryCode::getCategoryDescriptionFromCode($catCode),
-                RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
+                RequestNpciTags::NAME                  => 'Razorpay software pvt ltd',
             ],
 
             RequestNpciTags::MANDATE_ID           => $pid,
