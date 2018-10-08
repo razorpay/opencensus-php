@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         Entity::MC_MPAN                     => 'sometimes|string|size:16',
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
-        Entity::VPA                         => 'sometimes|string|max:20',
+        Entity::VPA                         => 'sometimes|string|max:255',
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
