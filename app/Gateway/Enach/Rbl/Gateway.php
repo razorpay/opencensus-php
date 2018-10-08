@@ -427,7 +427,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = 'NACH00000000013149'; //hardcoding this for UAT
+            $mid = $this->getTestMerchantId();
         }
 
         return $mid;
