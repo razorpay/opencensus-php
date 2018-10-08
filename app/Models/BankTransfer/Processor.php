@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\BharatQr\Constants;
@@ -163,6 +164,10 @@ class Processor extends VirtualAccount\Processor
 
                             $this->repo->saveOrFail($this->virtualAccount);
 
+                            $this->setGateway($payment, $bankTransfer->getGateway());
+
+                            $this->repo->saveOrFail($payment);
+
                             return $payment;
                         });
 
@@ -179,6 +184,13 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $bankTransfer;
+    }
+
+    protected function setGateway(Payment\Entity $payment, string $provider)
+    {
+        $paymentGateway = Gateway::$bankTransferProviderGateway[$provider];
+
+        $payment->setGateway($paymentGateway);
     }
 
     protected function checkIfAccountIsBlocked(Base\PublicEntity $bankTransfer)
