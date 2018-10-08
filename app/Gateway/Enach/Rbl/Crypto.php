@@ -33,7 +33,7 @@ class Crypto
 
         if ($mode === Mode::LIVE)
         {
-            $key = trim(str_replace('\n', "\n", $this->config['live_npci_emandate_private_key']));
+            $key = $this->config['live_npci_emandate_private_key'];
 
             $this->setPrivateKey($key);
             $this->setEncryptionCertificate($this->config['live_npci_emandate_encryption_certificate']);
@@ -41,7 +41,7 @@ class Crypto
         }
         elseif ($mode === Mode::TEST)
         {
-            $key  = trim(str_replace('\n', "\n", $this->config['test_emandate_private_key']));
+            $key  = $this->config['test_emandate_private_key'];
             $cert = file_get_contents(__DIR__ . '/keys/onmag_cert.cer');
             $sign = file_get_contents(__DIR__ . '/keys/cert.pem');
 
@@ -195,8 +195,6 @@ class Crypto
     {
         $key = $this->privateKey;
 
-        $key = trim(str_replace('\n', "\n", $key));
-
         $objKey = new XMLSecLibs\XMLSecurityKey(XMLSecLibs\XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
 
         $objKey->loadKey($key);
@@ -207,8 +205,6 @@ class Crypto
     protected function getPrivateKey()
     {
         $key = $this->privateKey;
-
-        $key = trim(str_replace('\n', "\n", $key));
 
         return $key;
     }
