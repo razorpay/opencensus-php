@@ -108,6 +108,7 @@ class CreateUpi extends Migration
             $table->index(Upi::CREATED_AT);
             $table->index([Upi::GATEWAY, Upi::RECONCILED_AT]);
             $table->index(Upi::NPCI_TXN_ID);
+            $table->index(Upi::MERCHANT_REFERENCE);
         });
     }
 

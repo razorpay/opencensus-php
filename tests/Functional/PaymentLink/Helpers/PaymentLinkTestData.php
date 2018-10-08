@@ -500,4 +500,16 @@ return [
             ],
         ],
     ],
+
+    'testGetSlugExistsApi' => [
+        'request' => [
+            'url'    => '/payment_links/sampleslug/exists',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'exists' => false,
+            ],
+        ],
+    ],
 ];

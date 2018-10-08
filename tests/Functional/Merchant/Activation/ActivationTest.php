@@ -14,6 +14,8 @@ class ActivationTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
+    const DEFAULT_MERCHANT_ID = '10000000000000';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
@@ -81,5 +83,17 @@ class ActivationTest extends TestCase
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
         $this->assertSame(6211, $testMerchant->getCategory());
         $this->assertSame('mutual_funds', $testMerchant->getCategory2());
+    }
+
+    /**
+     * The instant activation route should not accept the request if the merchant is already activated
+     */
+    public function testPostInstantActivationByActivatedMerchant()
+    {
+        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }

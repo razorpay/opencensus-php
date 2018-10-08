@@ -627,7 +627,7 @@ class AuthorizeTest extends TestCase
         });
 
         // Adding otpelf features to ensure that it doesn't break the integration
-        $this->fixtures->merchant->addFeatures(['otpelf', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['otp_auth_default']);
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
         $response = $this->doAuthPayment($payment);

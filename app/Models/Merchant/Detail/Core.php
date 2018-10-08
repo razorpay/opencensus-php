@@ -171,10 +171,52 @@ class Core extends Base\Core
         $category    = $merchantDetails->getBusinessCategory();
         $subcategory = $merchantDetails->getBusinessSubcategory();
 
-        if (($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
         {
             (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
         }
+    }
+
+    public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
+            [
+                'input' => $input,
+            ]);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->getValidator()->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
+
+        $merchantDetails->edit($input, 'instant_activation');
+
+        $merchantValidator = new Merchant\Validator;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        {
+            $this->repo->saveOrFail($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
+
+            // used to show the progress of the activation form on the dashboard
+            $activationProgress = $response['verification']['activation_progress'];
+
+            $merchantDetails->setActivationProgress($activationProgress);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            return $response;
+        });
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
@@ -202,9 +244,9 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
     {
-        $merchantDetails->getValidator()->validateInput('patchMerchantDetails', $input);
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
 
-        $merchantDetails->edit($input);
+        $merchantDetails->edit($input, 'patchMerchantDetails');
 
         $this->repo->saveOrFail($merchantDetails);
 

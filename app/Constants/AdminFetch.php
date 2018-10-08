@@ -1740,6 +1740,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'refund_id' => Fetch::FIELD_REFUND_ID,
+                'merchant_reference' => [
+                    Fetch::LABEL  => 'Merchant Reference',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::USER => [

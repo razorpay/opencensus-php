@@ -137,6 +137,7 @@ final class Route
         'card_fetch_by_id'                         => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                      => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
         'card_update_saved'                        => ['put',      'cards/saved',                                    'CardController@updateSavedCards'                                   ],
+        'card_issuer_validate'                     => ['post',     'cards/validate',                                 'CardController@validateIinIssuer'                                  ],
         'iin_fetch_by_iin'                         => ['get',      'iins/{id}',                                      'CardController@getIin'                                             ],
         'iin_fetch_multiple'                       => ['get',      'iins',                                           'CardController@getIins'                                            ],
         'iin_add'                                  => ['post',     'iins',                                           'CardController@postIin'                                            ],
@@ -357,6 +358,7 @@ final class Route
         'mock_billdesk_payment'                    => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
         'mock_ebs_payment'                         => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
         'mock_esigner_payment'                     => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
+        'mock_esigner_legaldesk_payment'           => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
         'mock_sharp_payment_post'                  => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                   => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                        => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
@@ -397,6 +399,7 @@ final class Route
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
         'set_config_keys'                          => ['put',      'config/keys',                                    'AdminController@setConfigKeys'                                     ],
+        'update_config_key'                        => ['patch',    'config/key',                                     'AdminController@updateConfigKey'                                   ],
         'get_config_keys'                          => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'get_cache_counts'                         => ['get',      'cache/counts',                                   'AdminController@getQueryCacheCounts'                               ],
         'set_es_pricing_keys'                      => ['post',     'cache/es_pricing',                               'AdminController@setEarlySettlementPricingKeys'                     ],
@@ -487,6 +490,7 @@ final class Route
         'payment_link_expire_cron'                 => ['post',     'payment_links/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
+        'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -912,6 +916,7 @@ final class Route
         'payment_callback_post',
         'payment_callback_get',
         'payment_get_flows',
+        'card_issuer_validate',
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
@@ -1294,7 +1299,6 @@ final class Route
         'subscription_manual_retry',
         'subscription_test_charge',
         'subscription_fetch_due_addons',
-        'merchant_details_patch',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -1387,6 +1391,7 @@ final class Route
         'payment_link_notify',
         'payment_link_deactivate',
         'payment_link_activate',
+        'payment_link_slug_exists',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
@@ -1395,6 +1400,7 @@ final class Route
         'merchant_instant_activation_post',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+        'merchant_instant_activation_post',
     ];
 
     // These will run on internal auth with the assurance
@@ -1635,6 +1641,7 @@ final class Route
         'send_newsletter',
         'send_test_newsletter',
         'set_config_keys',
+        'update_config_key',
         'setl_delete_file',
         'setl_edit',
         'setl_file_generate',
@@ -1703,6 +1710,8 @@ final class Route
         'nodal_beneficiary_update',
         'terminal_get_banks',
         'terminal_set_banks',
+
+        'merchant_details_patch',
     ];
 
     public static $routePermission = [
@@ -1972,6 +1981,7 @@ final class Route
         'send_newsletter'                          => '*',
         'send_test_newsletter'                     => '*',
         'set_config_keys'                          => '*',
+        'update_config_key'                        => '*',
         'setl_delete_file'                         => '*',
         'setl_edit'                                => '*',
         'setl_file_generate'                       => '*',
@@ -2052,6 +2062,7 @@ final class Route
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
+        'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
     ];
 
     public static $direct = [
