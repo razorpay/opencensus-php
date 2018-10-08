@@ -101,8 +101,6 @@ class Gateway extends Base\Gateway
             return $this->netbankingCallback($input);
         }
 
-        $authResponse = $this->callAuthenticationGateway($input);
-
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
@@ -193,18 +191,6 @@ class Gateway extends Base\Gateway
         $recurringData = $this->getRecurringDataFromNpciResponse($gatewayPayment);
 
         return $this->getCallbackResponseData($input, $recurringData);
-    }
-
-    public function verify(array $input)
-    {
-        if ($input['payment']['auth_type'] === Payment\AuthType::NETBANKING)
-        {
-            return;
-        }
-
-        parent::verify($input);
-
-        return $this->callAuthenticationGateway($input);
     }
 
     protected function getRecurringData()
@@ -465,6 +451,11 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        if ($input['payment']['auth_type'] === Payment\AuthType::NETBANKING)
+        {
+            return;
+        }
+
         parent::verify($input);
 
         $enach = $this->repo->findByPaymentIdAndAction(
