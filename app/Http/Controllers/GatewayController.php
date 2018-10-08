@@ -13,7 +13,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
-use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;

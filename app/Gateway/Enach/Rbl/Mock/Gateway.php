@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Enach\Rbl\Mock;
 
-use RZP\Constants\Mode;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Gateway\Enach\Rbl;
@@ -35,7 +34,7 @@ class Gateway extends Rbl\Gateway
         else
         {
             $gateway = Payment\Gateway::ESIGNER_DIGIO;
-          
+
             $gateway = $this->input['authenticate']['gateway'] ?? $gateway;
 
             $url = $this->route->getUrl($route, ['signer' => $gateway]);
