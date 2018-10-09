@@ -397,6 +397,13 @@ class Gateway
         Netbanking::PUNB_R,
     ];
 
+    // Esigner Digio is added here just for test cases
+    const EMANDATE_AADHAAR_GATEWAYS = [
+        Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
+        Gateway::ENACH_RBL,
+    ];
+
     /**
      * Need to ensure that only those gateways which have
      * verify implemented, are added in this array.
@@ -853,7 +860,8 @@ class Gateway
         // Please keep this list sorted
         // You can find the latest PDF version
         // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR => self::EMANDATE_AADHAAR_BANKS
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
     ];
 
     public static $bharatQrGateways = [
@@ -865,17 +873,13 @@ class Gateway
     ];
 
     public static $authTypeToEmandateGatewayMap = [
-        AuthType::NETBANKING => [
+        AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        // Esigner Digio and Legaldesk is added here just for test cases
-        AuthType::AADHAAR => [
-            Gateway::ESIGNER_DIGIO,
-            Gateway::ESIGNER_LEGALDESK,
-            Gateway::ENACH_RBL,
-        ],
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
     ];
 
     /**
