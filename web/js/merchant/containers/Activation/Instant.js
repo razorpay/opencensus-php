@@ -187,7 +187,9 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard Wizard">
         <main class={classList('form-container', isFormLocked && 'main--full')}>
           <main-title class="main-title">Activate your account</main-title>
-          <p>Enable live transactions by filling in a few more details</p>
+          <main-subtitle>
+            <p>Enable live transactions by filling in a few more details</p>
+          </main-subtitle>
 
           <Form onChange={this.onChange} layout="tabular">
             {content}

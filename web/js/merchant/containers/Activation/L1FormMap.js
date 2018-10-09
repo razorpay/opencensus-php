@@ -151,15 +151,6 @@ export default [
     validator: validatePANCard,
     _when: excludeFor_Indiv,
   },
-  {
-    fieldLabel: () => <span>Want to accept international card payments</span>,
-    name: 'business_international',
-    _cmp: Input.Check,
-    required: false,
-    description:
-      'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
-    _when: excludeFor_Indiv,
-  },
   [
     {
       label: 'Website/App URL',
@@ -170,16 +161,6 @@ export default [
         'Website/App',
         {
           label: 'We do not have either',
-          description: (
-            <ul class="Input-desc-list">
-              <li>
-                You can accept payments by sending out Payment Links and
-                Invoices from Dashboard.
-              </li>
-              <li>You will not get access to live APIs.</li>
-              <li>You can upgrade anytime later by adding your website/app.</li>
-            </ul>
-          ),
         },
       ],
     },
@@ -193,37 +174,6 @@ export default [
           return 'Please enter a valid url';
         }
       },
-      description: (
-        <React.Fragment>
-          The entered App/Website should contain:
-          <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-              target="_blank"
-            >
-              Privacy Policy
-            </a>
-          </b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-              target="_blank"
-            >
-              Terms & Conditions
-            </a>
-          </b>,{' '}
-          <b class="shallow">
-            <a
-              href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-              target="_blank"
-            >
-              Cancellation/Refund Policy
-            </a>
-          </b>{' '}
-          & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
-        </React.Fragment>
-      ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
       _when: activation => activation.state.has_url === '0',
     },
