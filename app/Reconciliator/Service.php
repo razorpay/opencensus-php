@@ -22,7 +22,6 @@ class Service extends Base\Service
         RequestProcessor\Base::EBS,
         RequestProcessor\Base::PAYTM,
         RequestProcessor\Base::PAYUMONEY,
-        RequestProcessor\Base::PAYZAPP,
     ];
 
     /**

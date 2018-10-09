@@ -596,28 +596,37 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Invoice is only payable if it's not deleted and is in either
-     * issued or partially_paid state.
-     *
-     * @param Payment\Entity $payment
+     * Validates if a invoice is payable against given payment request.
+     * @param  Payment\Entity $payment
      * @return void
      * @throws BadRequestValidationFailureException
      */
-    public function validateInvoicePayable(Payment\Entity $payment)
+    public function validateInvoicePayableForPayment(Payment\Entity $payment)
+    {
+        // Counts total payment attempts
+        $invoice          = $this->entity;
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions       = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, $dimensions);
+
+        $this->validateInvoicePayable();
+    }
+
+    /**
+     * Invoice is only payable if it's not deleted and is in either issued or partially_paid state.
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateInvoicePayable()
     {
         $invoice = $this->entity;
-
-        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
-        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
-        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, $dimensions);
+        $status  = $invoice->getStatus();
 
         if ($invoice->trashed())
         {
             throw new BadRequestValidationFailureException(
                 $invoice->getTypeLabel() . ' is not payable as it is deleted.');
         }
-
-        $status = $invoice->getStatus();
 
         if (in_array($status, [Status::ISSUED, Status::PARTIALLY_PAID], true) === false)
         {

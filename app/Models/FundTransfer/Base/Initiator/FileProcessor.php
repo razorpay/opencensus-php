@@ -64,6 +64,13 @@ abstract class FileProcessor extends NodalAccount
         $this->batchFundTransfer->setTxtFileId($fileDetails['id']);
 
         $this->repo->saveOrFail($this->batchFundTransfer);
+
+        $this->trace->info(
+            TraceCode::BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED,
+            [
+                'batch_fund_tranfer_id' => $this->batchFundTransfer->getId(),
+                'file_url'              => $fileUrl
+            ]);
     }
 
     protected function saveEntitiesToDb(Base\PublicCollection $attempts)
@@ -73,6 +80,8 @@ abstract class FileProcessor extends NodalAccount
             $this->repo->saveOrFail($attempt);
 
             $this->repo->saveOrFail($attempt->source);
+
+            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_UPDATED, ['fta_id' => $attempt->getId()]);
 
             $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
         }

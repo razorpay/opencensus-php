@@ -299,6 +299,31 @@ class CardTest extends TestCase
         $this->fixtures->merchant->enableCreditCard('10000000000000');
     }
 
+    public function testBinValidationWithFeature()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
+
+        parent::startTest();
+    }
+
+    public function testBinValidationWithOutFeature()
+    {
+        $this->ba->publicAuth();
+
+        parent::startTest();
+    }
+
+    public function testBinValidation()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
+
+        parent::startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -14,7 +14,13 @@ class Helpers
 
     public static function addExtraColumns(&$entry)
     {
-        $entry['recon_count_percentage'] = 0;
+        //
+        // Initializing 'recon_count_percentage' to 100 % , bcoz
+        // if total_count is 0, we want the recon_count_percentage
+        // to remain as 100 %. If recon_count > 0 then recon_count_percentage
+        // will be set to actual non zero percentage value.
+        //
+        $entry['recon_count_percentage'] = 100;
 
         if ($entry['total_count'] > 0)
         {
@@ -22,11 +28,9 @@ class Helpers
         }
 
         //
-        // Note: In case of emandate payments, amount can be 0, resulting total amount 0. In this case,
-        // if all reconciled transactions are of 0 amount, recon_count_percentage will be nonzero
-        // but recon_amount_percentage will be 0.
+        // Note: In case of emandate payments, amount can be 0, resulting total amount 0.
         //
-        $entry['recon_amount_percentage'] = 0;
+        $entry['recon_amount_percentage'] = 100;
 
         if ($entry['total_amount'] > 0)
         {
@@ -94,7 +98,19 @@ class Helpers
             {
                 foreach (Constants::AGGREGATE_PARAMS as $param)
                 {
-                    if ($param === Constants::METHOD)
+                    if (($param === Constants::GATEWAY) or ($param === Constants::METHOD))
+                    {
+                        continue;
+                    }
+
+                    //
+                    // Here the columns 'TXN_COUNT_CONTRIBUTION_PERCENTAGE' and
+                    // 'TXN_AMOUNT_CONTRIBUTION_PERCENTAGE' are not yet present
+                    // in the $entry row and these are added later in the code in
+                    // function call addGatewaysContributionColumn(), so we need
+                    // to put 'isset' condition
+                    //
+                    if (isset($entry[$param]) === false)
                     {
                         continue;
                     }
@@ -109,7 +125,41 @@ class Helpers
             $metadataEntry[Constants::GATEWAY] = "All";
             $metadataEntry[Constants::METHOD]  = "All";
 
+            //
+            // Now we have the metadata entry for the date, calculate
+            // the individual gateway's contribution (%).
+            //
+            self::addGatewaysContributionColumn($formattedSummary[$date], $metadataEntry);
+
             $formattedSummary[$date][] =  $metadataEntry;
+        }
+    }
+
+    /**
+     * Adds two columns indicating how much individual gateway
+     * contributed towards total count and total amount for a day.
+     *
+     * @param $dateWiseFormattedSummary
+     * @param $metadataEntry
+     */
+    public static function addGatewaysContributionColumn(& $dateWiseFormattedSummary, & $metadataEntry)
+    {
+        if (($metadataEntry[Constants::TOTAL_COUNT] === 0) or
+            ($metadataEntry[Constants::TOTAL_AMOUNT] === 0))
+        {
+            return;
+        }
+
+        // iterate over each gateway, and calculate values
+        foreach ($dateWiseFormattedSummary as $index => &$entry)
+        {
+            $entry[Constants::TXN_COUNT_CONTRIBUTION_PERCENTAGE] = number_format(
+                             ($entry[Constants::TOTAL_COUNT] / $metadataEntry[Constants::TOTAL_COUNT]) * 100,
+                            2);
+
+            $entry[Constants::TXN_AMOUNT_CONTRIBUTION_PERCENTAGE] = number_format(
+                ($entry[Constants::TOTAL_AMOUNT] / $metadataEntry[Constants::TOTAL_AMOUNT]) * 100,
+                2);
         }
     }
 }

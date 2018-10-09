@@ -7,28 +7,30 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
-    const ID                    = 'id';
-    const PAYMENT_ID            = 'payment_id';
-    const REFUND_ID             = 'refund_id';
-    const ACQUIRER              = 'acquirer';
-    const ACTION                = 'action';
-    const BANK                  = 'bank';
-    const AMOUNT                = 'amount';
-    const STATUS                = 'status';
-    const SIGNED_XML            = 'signed_xml';
-    const UMRN                  = 'umrn';
-    const GATEWAY_REFERENCE_ID  = 'gateway_reference_id';
-    const ACKNOWLEDGE_STATUS    = 'acknowledge_status';
-    const REGISTRATION_STATUS   = 'registration_status';
-    const REGISTRATION_DATE     = 'registration_date';
-    const ERROR_MESSAGE         = 'error_message';
-    const ERROR_CODE            = 'error_code';
+    const ID                     = 'id';
+    const PAYMENT_ID             = 'payment_id';
+    const AUTHENTICATION_GATEWAY = 'authentication_gateway';
+    const REFUND_ID              = 'refund_id';
+    const ACQUIRER               = 'acquirer';
+    const ACTION                 = 'action';
+    const BANK                   = 'bank';
+    const AMOUNT                 = 'amount';
+    const STATUS                 = 'status';
+    const SIGNED_XML             = 'signed_xml';
+    const UMRN                   = 'umrn';
+    const GATEWAY_REFERENCE_ID   = 'gateway_reference_id';
+    const ACKNOWLEDGE_STATUS     = 'acknowledge_status';
+    const REGISTRATION_STATUS    = 'registration_status';
+    const REGISTRATION_DATE      = 'registration_date';
+    const ERROR_MESSAGE          = 'error_message';
+    const ERROR_CODE             = 'error_code';
 
     protected $entity = 'enach';
 
     protected $fields = [
         self::ID,
         self::PAYMENT_ID,
+        self::AUTHENTICATION_GATEWAY,
         self::REFUND_ID,
         self::ACTION,
         self::BANK,
@@ -43,6 +45,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::RECEIVED,
+        self::AUTHENTICATION_GATEWAY,
         self::SIGNED_XML,
         self::UMRN,
         self::STATUS,
@@ -100,6 +103,11 @@ class Entity extends Base\Entity
     public function setBank(string $bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setAuthenticationGateway($gateway)
+    {
+        $this->setAttribute(self::AUTHENTICATION_GATEWAY, $gateway);
     }
 
     public function payment()

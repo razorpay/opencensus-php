@@ -4,13 +4,16 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -27,6 +30,7 @@ class Gateway
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
+    const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -36,6 +40,7 @@ class Gateway
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -82,10 +87,22 @@ class Gateway
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
 
+    const BT_YESBANK         = 'bt_yesbank';
+    const BT_KOTAK           = 'bt_kotak';
+    const BT_DASHBOARD       = 'bt_dashboard';
+
     //
-    // Constant used to store the response of various refund functions
+    // Constant used to store the response of various refund functions, used to prepare response for scrooge/
+    // success and status_code defined the status of refund and also category of refund if it is retriable or not.
     //
+    // Stores boolean value indicating refund was successful or not
     const SUCCESS            = 'success';
+    // Stores error code if refund is failed at gateway side
+    const STATUS_CODE        = 'status_code';
+    // Stores array of gateway related keys such as refund_id, auth_code
+    const GATEWAY_KEYS       = 'gateway_keys';
+    // Stores raw gateway response in string format.
+    const GATEWAY_RESPONSE   = 'gateway_response';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -155,6 +172,7 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
+        self::NETBANKING_EQUITAS,
         self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
@@ -201,6 +219,179 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    const EMANDATE_AADHAAR_BANKS = [
+        IFSC::ABHY,
+        IFSC::ACUX,
+        IFSC::ADCC,
+        IFSC::AGCX,
+        IFSC::AJSX,
+        IFSC::AMAX,
+        IFSC::AMRX,
+        IFSC::ANDB,
+        IFSC::APBL,
+        IFSC::APGB,
+        IFSC::AUCX,
+        IFSC::BACB,
+        IFSC::BACX,
+        IFSC::BCBM,
+        IFSC::BGBX,
+        IFSC::BHSX,
+        IFSC::BKDN,
+        IFSC::BKID,
+        IFSC::BNPA,
+        IFSC::BURX,
+        IFSC::CBIN,
+        IFSC::CHAX,
+        IFSC::CHDX,
+        IFSC::CHSX,
+        IFSC::CITI,
+        IFSC::CIUB,
+        IFSC::CMCX,
+        IFSC::CNRB,
+        IFSC::CORP,
+        IFSC::COSB,
+        IFSC::CSBK,
+        IFSC::CSBX,
+        IFSC::CURX,
+        IFSC::DBSS,
+        IFSC::DCBL,
+        IFSC::DCDX,
+        IFSC::DCKX,
+        IFSC::DDBX,
+        IFSC::DEUT,
+        IFSC::DGBX,
+        IFSC::DICX,
+        IFSC::DSPX,
+        IFSC::ESFB,
+        IFSC::FDRL,
+        IFSC::FGCB,
+        IFSC::GCBX,
+        IFSC::GCUX,
+        IFSC::GDCX,
+        IFSC::GSCB,
+        IFSC::GSSX,
+        IFSC::HDFC,
+        IFSC::HSBC,
+        IFSC::IBKL,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
+        IFSC::ITDX,
+        IFSC::IUCB,
+        IFSC::JASB,
+        IFSC::JHAX,
+        IFSC::JSBP,
+        IFSC::JSCX,
+        IFSC::JUCX,
+        IFSC::KAAX,
+        IFSC::KAIJ,
+        IFSC::KARB,
+        IFSC::KASX,
+        IFSC::KBCX,
+        IFSC::KDCX,
+        IFSC::KDIX,
+        IFSC::KHAX,
+        IFSC::KKBK,
+        IFSC::KNPX,
+        IFSC::KOCX,
+        IFSC::KRDX,
+        IFSC::KSCB,
+        IFSC::KTBX,
+        IFSC::KUNS,
+        IFSC::KVBL,
+        IFSC::KVGB,
+        IFSC::LBMX,
+        IFSC::LCCX,
+        IFSC::LKMX,
+        IFSC::MAHB,
+        IFSC::MBCX,
+        IFSC::MERX,
+        IFSC::MHSX,
+        IFSC::MOGX,
+        IFSC::MSOX,
+        IFSC::NAIX,
+        IFSC::NALX,
+        IFSC::NCCX,
+        IFSC::NDCX,
+        IFSC::NICB,
+        IFSC::NOBX,
+        IFSC::NOIX,
+        IFSC::NSBX,
+        IFSC::NSGX,
+        IFSC::NVSX,
+        IFSC::ORBC,
+        IFSC::PALX,
+        IFSC::PATX,
+        IFSC::PCUX,
+        IFSC::PJSB,
+        IFSC::PLUX,
+        IFSC::PMCB,
+        IFSC::PRTH,
+        IFSC::PSRX,
+        IFSC::RAMX,
+        IFSC::RATN,
+        IFSC::RCUX,
+        IFSC::REBX,
+        IFSC::RGCX,
+        IFSC::RNSX,
+        IFSC::SAGX,
+        IFSC::SCBL,
+        IFSC::SCCX,
+        IFSC::SDBX,
+        IFSC::SDCB,
+        IFSC::SDSX,
+        IFSC::SHUX,
+        IFSC::SIBL,
+        IFSC::SJSX,
+        IFSC::SRCB,
+        IFSC::SSDX,
+        IFSC::SSLX,
+        IFSC::STRX,
+        IFSC::SUTB,
+        IFSC::SVCB,
+        IFSC::SVNX,
+        IFSC::SWMX,
+        IFSC::SYNB,
+        IFSC::TACX,
+        IFSC::TADX,
+        IFSC::TBCX,
+        IFSC::TCUB,
+        IFSC::TDIX,
+        IFSC::TECX,
+        IFSC::TEHX,
+        IFSC::TGMB,
+        IFSC::TKUX,
+        IFSC::TMBL,
+        IFSC::TPDX,
+        IFSC::TSAB,
+        IFSC::TSDX,
+        IFSC::TSIX,
+        IFSC::TUMX,
+        IFSC::TUOX,
+        IFSC::TVDX,
+        IFSC::UBIN,
+        IFSC::UCBA,
+        IFSC::UCBS,
+        IFSC::UCUX,
+        IFSC::UKGX,
+        IFSC::UMSX,
+        IFSC::USFB,
+        IFSC::UTIB,
+        IFSC::UTZX,
+        IFSC::VARA,
+        IFSC::VCCX,
+        IFSC::VEDX,
+        IFSC::VIJX,
+        IFSC::VJSX,
+        IFSC::VUCX,
+        IFSC::XJKG,
+        IFSC::YESB,
+        IFSC::ZSGX,
+        IFSC::ZSHX,
+        Netbanking::BARB_R,
+        Netbanking::PUNB_R,
+    ];
+
     /**
      * Need to ensure that only those gateways which have
      * verify implemented, are added in this array.
@@ -213,6 +404,7 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
+        Payment\Gateway::FIRST_DATA
     ];
 
     /**
@@ -308,6 +500,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
+            self::NETBANKING_EQUITAS,
         ],
 
         //
@@ -374,6 +567,12 @@ class Gateway
         self::ATOM
     ];
 
+    const BANK_TRANSFER_REFUND_GATEWAYS = [
+        self::ENACH_RBL,
+        self::NETBANKING_HDFC,
+        self::NETBANKING_AXIS,
+    ];
+
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
@@ -392,6 +591,12 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
+    ];
+
+    public static $bankTransferProviderGateway = [
+        Provider::YESBANK   => self::BT_YESBANK,
+        Provider::KOTAK     => self::BT_KOTAK,
+        Provider::DASHBOARD => self::BT_DASHBOARD,
     ];
 
     /**
@@ -590,7 +795,6 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
-        self::UPI_HULK,
     ];
 
     /**
@@ -608,6 +812,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
         Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
     ];
 
@@ -644,175 +849,14 @@ class Gateway
         // Please keep this list sorted
         // You can find the latest PDF version
         // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR => [
-            IFSC::ABHY,
-            IFSC::ACUX,
-            IFSC::ADCC,
-            IFSC::AGCX,
-            IFSC::AJSX,
-            IFSC::AMAX,
-            IFSC::AMRX,
-            IFSC::ANDB,
-            IFSC::APBL,
-            IFSC::APGB,
-            IFSC::BACB,
-            IFSC::BACX,
-            IFSC::BCBM,
-            IFSC::BGBX,
-            IFSC::BHSX,
-            IFSC::BKDN,
-            IFSC::BKID,
-            IFSC::BNPA,
-            IFSC::BURX,
-            IFSC::CBIN,
-            IFSC::CHAX,
-            IFSC::CHDX,
-            IFSC::CHSX,
-            IFSC::CITI,
-            IFSC::CMCX,
-            IFSC::CNRB,
-            IFSC::CORP,
-            IFSC::COSB,
-            IFSC::CSBK,
-            IFSC::CSBX,
-            IFSC::CURX,
-            IFSC::DBSS,
-            IFSC::DCBL,
-            IFSC::DCDX,
-            IFSC::DCKX,
-            IFSC::DDBX,
-            IFSC::DEUT,
-            IFSC::DGBX,
-            IFSC::DICX,
-            IFSC::DSPX,
-            IFSC::ESFB,
-            IFSC::FDRL,
-            IFSC::FGCB,
-            IFSC::GCBX,
-            IFSC::GCUX,
-            IFSC::GDCX,
-            IFSC::GSCB,
-            IFSC::GSSX,
-            IFSC::HDFC,
-            IFSC::HSBC,
-            IFSC::IBKL,
-            IFSC::ICIC,
-            IFSC::IDFB,
-            IFSC::INDB,
-            IFSC::ITDX,
-            IFSC::IUCB,
-            IFSC::JANA,
-            IFSC::JASB,
-            IFSC::JHAX,
-            IFSC::JSBP,
-            IFSC::JSCX,
-            IFSC::JUCX,
-            IFSC::KAAX,
-            IFSC::KAIJ,
-            IFSC::KARB,
-            IFSC::KASX,
-            IFSC::KBCX,
-            IFSC::KDCX,
-            IFSC::KHAX,
-            IFSC::KKBK,
-            IFSC::KNPX,
-            IFSC::KOCX,
-            IFSC::KRDX,
-            IFSC::KSCB,
-            IFSC::KTBX,
-            IFSC::KUNS,
-            IFSC::KVBL,
-            IFSC::LBMX,
-            IFSC::LCCX,
-            IFSC::LKMX,
-            IFSC::MAHB,
-            IFSC::MBCX,
-            IFSC::MERX,
-            IFSC::MHSX,
-            IFSC::MOGX,
-            IFSC::MSOX,
-            IFSC::NAIX,
-            IFSC::NALX,
-            IFSC::NCCX,
-            IFSC::NDCX,
-            IFSC::NICB,
-            IFSC::NOBX,
-            IFSC::NOIX,
-            IFSC::NSBX,
-            IFSC::NSGX,
-            IFSC::ORBC,
-            IFSC::PALX,
-            IFSC::PATX,
-            IFSC::PCUX,
-            IFSC::PJSB,
-            IFSC::PLUX,
-            IFSC::PMCB,
-            IFSC::PRTH,
-            IFSC::PSRX,
-            IFSC::RAMX,
-            IFSC::RATN,
-            IFSC::RCUX,
-            IFSC::REBX,
-            IFSC::RGCX,
-            IFSC::RNSX,
-            IFSC::SAGX,
-            IFSC::SCBL,
-            IFSC::SCCX,
-            IFSC::SDBX,
-            IFSC::SDCB,
-            IFSC::SHUX,
-            IFSC::SIBL,
-            IFSC::SJSX,
-            IFSC::SRCB,
-            IFSC::SSDX,
-            IFSC::SSLX,
-            IFSC::STRX,
-            IFSC::SUTB,
-            IFSC::SVCB,
-            IFSC::SVNX,
-            IFSC::SWMX,
-            IFSC::SYNB,
-            IFSC::TACX,
-            IFSC::TADX,
-            IFSC::TBCX,
-            IFSC::TCUB,
-            IFSC::TDIX,
-            IFSC::TECX,
-            IFSC::TEHX,
-            IFSC::TGMB,
-            IFSC::TKUX,
-            IFSC::TMBL,
-            IFSC::TPDX,
-            IFSC::TSAB,
-            IFSC::TSDX,
-            IFSC::TSIX,
-            IFSC::TUOX,
-            IFSC::TVDX,
-            IFSC::UBIN,
-            IFSC::UCBA,
-            IFSC::UCBS,
-            IFSC::UCUX,
-            IFSC::UKGX,
-            IFSC::UTIB,
-            IFSC::UTZX,
-            IFSC::VARA,
-            IFSC::VCCX,
-            IFSC::VEDX,
-            IFSC::VIJX,
-            IFSC::VJSX,
-            IFSC::XJKG,
-            IFSC::YESB,
-            IFSC::ZSGX,
-            IFSC::ZSHX,
-            Netbanking::BARB_R,
-            Netbanking::PUNB_R,
-        ]
+        AuthType::AADHAAR => self::EMANDATE_AADHAAR_BANKS
     ];
 
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
+        self::UPI_HULK,
         self::ISG,
     ];
 
@@ -822,9 +866,10 @@ class Gateway
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        // Esigner Digio is added here just for test cases
+        // Esigner Digio and Legaldesk is added here just for test cases
         AuthType::AADHAAR => [
             Gateway::ESIGNER_DIGIO,
+            Gateway::ESIGNER_LEGALDESK,
             Gateway::ENACH_RBL,
         ],
     ];
@@ -891,60 +936,17 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+        Gateway::NETBANKING_ICICI  => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS   => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC   => [IFSC::HDFC],
+        Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
-        Gateway::ESIGNER_DIGIO      => [
+        Gateway::ESIGNER_DIGIO     => [
             IFSC::UTIB,
         ],
-        Gateway::ENACH_RBL      => [
-            IFSC::ABHY,
-            IFSC::ANDB,
+        Gateway::ESIGNER_LEGALDESK => [
             IFSC::UTIB,
-            IFSC::BKID,
-            IFSC::MAHB,
-            IFSC::BCBM,
-            IFSC::CNRB,
-            IFSC::CBIN,
-            IFSC::CITI,
-            IFSC::DCBL,
-            IFSC::BKDN,
-            IFSC::FDRL,
-            IFSC::HDFC,
-            IFSC::ICIC,
-            IFSC::IBKL,
-            IFSC::IDFB,
-            IFSC::INDB,
-            IFSC::KKBK,
-            IFSC::ORBC,
-            Netbanking::PUNB_R,
-            IFSC::RATN,
-            IFSC::SRCB,
-            IFSC::SCBL,
-            IFSC::SVCB,
-            IFSC::SYNB,
-            IFSC::ADCC,
-            IFSC::COSB,
-            IFSC::HSBC,
-            IFSC::SUTB,
-            IFSC::UCBA,
-            IFSC::UBIN,
-            IFSC::YESB,
-            IFSC::DBSS,
-            IFSC::BGBX,
-            IFSC::CORP,
-            IFSC::VARA,
-            IFSC::KVBL,
-            IFSC::CSBX,
-            IFSC::TMBL,
-            IFSC::KAIJ,
-            Netbanking::BARB_R,
-            IFSC::TACX,
-            IFSC::SIBL,
-            IFSC::ESFB,
-            IFSC::ACUX,
         ],
     ];
 
@@ -1058,6 +1060,7 @@ class Gateway
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1143,6 +1146,7 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::ENACH_RBL,
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -1224,14 +1228,17 @@ class Gateway
     }
 
     /**
+     * This function checks if given gateway is eligible for scrooge call.
+     * Merchant id is not being used currently, but keeping the support of enabling specific merchants only.
+     *
      * @param $gateway
      * @param $merchantId
      * @return bool
+     *
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        return ((in_array($gateway, self::$scroogeGateways, true) === true) and
-                (in_array($merchantId, self::$scroogeMerchants, true) === true));
+        return (in_array($gateway, self::$scroogeGateways, true) === true);
     }
 
     /**

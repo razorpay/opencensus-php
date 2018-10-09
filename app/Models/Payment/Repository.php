@@ -26,8 +26,10 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -160,6 +162,14 @@ class Repository extends Base\Repository
                     ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+                    ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
                     ->get();
     }
 
@@ -1042,28 +1052,37 @@ class Repository extends Base\Repository
      */
     public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
     {
-        $ordersTable = $this->repo->order->getTableName();
-        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
-        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $entityOfferTable = $this->repo->entity_offer->getTableName();
         $paymentStatusCol = $this->dbColumn(Entity::STATUS);
-        $orderOfferIdCol = $this->repo->order->dbColumn(Order\Entity::OFFER_ID);
+        $entityOfferEntityIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
+        $entityOfferEntityTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
+        $entityOfferOfferIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
         $paymentCardIdCol = $this->dbColumn(Entity::CARD_ID);
         $paymentIdCol = $this->dbColumn(Entity::ID);
 
-        // Query executed - select count(payments.id) AS payment_count, orders.offer_id
-        // from `payments` inner join `orders` on `payments`.`order_id` = `orders`.`id`
-        // where `payments`.`status` = ? and `orders`.`offer_id` in (?) and `payments`.`card_id`
-        // in (?) having payment_count >= 1 group by `orders`.`offer_id`
-        return $this->newQuery()
-                    ->select(DB::raw("count($paymentIdCol) AS payment_count, $orderOfferIdCol"))
-                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
-                    ->where($paymentStatusCol, '=', Status::CAPTURED)
-                    ->whereIn($orderOfferIdCol, $offerIds)
-                    ->whereIn($paymentCardIdCol, $cardIds)
-                    ->groupBy($orderOfferIdCol)
-                    ->having('payment_count', '>=', 1)
-                    ->pluck('payment_count', 'offer_id')
-                    ->toArray();
+        //
+        // SELECT count(payments.id) AS payment_count,
+        //        entity_offer.offer_id
+        // FROM `payments`
+        // INNER JOIN `entity_offer` ON `payments`.`id` = `entity_offer`.`entity_id`
+        // WHERE `payments`.`status` = 'captured'
+        //   AND `entity_offer`.`entity_type` = 'payment'
+        //   AND `entity_offer`.`offer_id` IN (?)
+        //   AND `payments`.`card_id` IN (?)
+        // GROUP BY `entity_offer`.`offer_id`
+        // HAVING payment_count >= 1
+        //
+        $query = $this->newQuery()
+                      ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
+                      ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+                      ->where($paymentStatusCol, '=', Status::CAPTURED)
+                      ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+                      ->whereIn($entityOfferOfferIdCol, $offerIds)
+                      ->whereIn($paymentCardIdCol, $cardIds)
+                      ->groupBy($entityOfferOfferIdCol)
+                      ->having('payment_count', '>=', 1);
+
+        return $query->pluck('payment_count', 'offer_id')->toArray();
     }
 
     public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
@@ -1438,7 +1457,8 @@ class Repository extends Base\Repository
      *  - When correction flag is true the adds conition where created in given time frame
      *
      * - Here cut off amount is checked on base_amount to handle multiple currencies
-     *   In payments table base_amount field will hold the amount in INR(paise) regardless of what type of currency been used
+     *   In payments table base_amount field will hold the amount in
+     *   INR(paise) regardless of what type of currency been used
      *
      * @param string $merchantId
      * @param int    $start
@@ -1551,5 +1571,13 @@ class Repository extends Base\Repository
         }
 
         return $query;
+    }
+
+    public function getLastCreatedEmandatePaymentByGateway($gateway)
+    {
+        return $this->newQuery()
+            ->where(Entity::METHOD, Method::EMANDATE)
+            ->where(Entity::GATEWAY, $gateway)
+            ->first();
     }
 }

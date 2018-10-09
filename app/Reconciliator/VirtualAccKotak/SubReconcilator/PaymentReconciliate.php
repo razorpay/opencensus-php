@@ -92,12 +92,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function alertUnexpectedBankTransferIfApplicable(array $row)
     {
-        // No alerts for reserved accounts
-        if ($this->isPaymentToReservedAccount($row) === true)
-        {
-            return;
-        }
-
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer, alert skipped',
             'info_code'     => 'PAYMENT_ABSENT',
@@ -218,27 +212,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return null;
-    }
-
-    /**
-     * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal
-     * transfers. We ignore these payments completely, and raise no alerts.
-     *
-     * @param  array $row
-     * @return bool
-     */
-    protected function isPaymentToReservedAccount(array $row)
-    {
-        $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
-
-        if (Provider::isReservedAccount($payeeAccount, Provider::KOTAK) === true)
-        {
-            $this->trace->info(TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT, $row);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**

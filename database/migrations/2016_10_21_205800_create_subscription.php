@@ -37,6 +37,9 @@ class CreateSubscription extends Migration
 
             $table->tinyInteger(Entity::GLOBAL_CUSTOMER)
                   ->default(1);
+            $table->char(Entity::CUSTOMER_EMAIL, 100)
+                  ->nullable()
+                  ->default(null);
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
                   ->nullable();
 
@@ -119,6 +122,7 @@ class CreateSubscription extends Migration
             $table->index(Entity::FAILED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
+            $table->index(Entity::CUSTOMER_EMAIL);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             $table->foreign(Entity::MERCHANT_ID)

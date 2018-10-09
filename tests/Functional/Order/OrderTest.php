@@ -60,6 +60,17 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidCurrency()
+    {
+        $this->startTest();
+    }
+
+    public function testValidCurrencyForConvertSupport()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+        $this->startTest();
+    }
+
     public function testUniqueReceiptFeatureWithDuplicateReceipt()
     {
         $order = $this->fixtures->create('order', [
@@ -128,6 +139,27 @@ class OrderTest extends TestCase
     }
 
     public function testCreateTPVOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrderEmptyMethod()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrderUpiBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrderInvalidMethod()
     {
         $order = $this->startTest();
 
@@ -425,6 +457,46 @@ class OrderTest extends TestCase
         $this->setUpBillDeskGateway();
 
         $this->testCreateTPVOrder();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPreferencesForTPVMerchantsEmptyMethod()
+    {
+        $this->fixtures->merchant->enableTPV();
+        $this->fixtures->merchant->enableUPI();
+
+        $this->setUpBillDeskGateway();
+
+        $this->testCreateTPVOrderEmptyMethod();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+     public function testPreferencesForTPVMerchantsEmptyMethodInvalidBank()
+    {
+        $this->fixtures->merchant->enableTPV();
+        $this->fixtures->merchant->enableUPI();
+
+        $this->setUpBillDeskGateway();
+
+        $this->testCreateTPVOrderUpiBank();
 
         $order = $this->getLastEntity('order', true);
 
@@ -1132,9 +1204,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithMaxPaymentCountOfferAppliedOnOrderWithNoCardSaving()
     {
-        // TODO: Need to rethink how to check card usage without using offer_id in orders
-        $this->markTestSkipped('pending entity_offer support');
-
         $this->setUpTerminals();
 
         $offer = $this->fixtures->create('offer:card', [
@@ -1159,9 +1228,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithMaxPaymentCountAppliedOnOrderWithGlobalSavedCard()
     {
-        // TODO: Need to rethink how to check card usage without using offer_id in orders
-        $this->markTestSkipped('pending entity_offer support');
-
         $this->setUpTerminals();
         $this->mockSession();
 
@@ -1195,9 +1261,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithMaxPaymentCountAppliedOnOrderWithLocallySavedCard()
     {
-        // TODO: Need to rethink how to check card usage without using offer_id in orders
-        $this->markTestSkipped('pending entity_offer support');
-
         $this->setUpTerminals();
         $this->mockSession();
 
@@ -1233,9 +1296,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithMaxPaymentCountOfferButPaymentsAlreadyMadeOnLinkedOffers()
     {
-        // TODO: Need to rethink how to check card usage without using offer_id in orders
-        $this->markTestSkipped('pending entity_offer support');
-
         $this->setUpTerminals();
 
         $offer1 = $this->fixtures->create('offer:card', [
@@ -1403,7 +1463,9 @@ class OrderTest extends TestCase
 
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])
     {
-        $order = $this->fixtures->order->createWithUndiscountedOffers($offer);
+        $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
+            'force_offer' => true,
+        ]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order->getPublicId();

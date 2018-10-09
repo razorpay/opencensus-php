@@ -3,18 +3,18 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -82,17 +82,39 @@ class Service extends Base\Service
         return $this->core()->saveMerchantDetails($input, $this->merchant);
     }
 
+    public function saveInstantActivationDetails(array $input): array
+    {
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->core()->setModeAndDefaultConnection($liveMode);
+
+        return $this->core()->saveInstantActivationDetails($input, $this->merchant);
+    }
+
     /**
      * This function is used to patch merchant details fields
+     *
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function patchMerchantDetails(array $input): array
     {
+        //
+        // Merchant needs to be set using X-Razorpay-account header.
+        // Setting Merchant in header validates admin access to
+        // that merchant in admin access middleware.
+        //
+        if (empty($this->merchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
+        }
+
         $merchantDetails = $this->merchant->merchantDetail;
 
-        $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
+        $merchantDetails = $this->core()->patchMerchantDetails($merchantDetails, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -428,12 +450,49 @@ class Service extends Base\Service
 
     /**
      * This function is used for getting business categories subcategories list
+     * sub category meta fields will be dependent on auth
      *
      * @return array
      */
     public function getBusinessCategories(): array
     {
-        return BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategories    = [];
+
+        foreach ($businessCategoriesMap as $businessCategory => $subCategories)
+        {
+            $businessCategories[$businessCategory] = [];
+            $subCategoriesMetaData                 = [];
+
+            foreach ($subCategories as $subCategory)
+            {
+                $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
+            }
+            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
+            $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
+        }
+
+        return $businessCategories;
+    }
+
+    /**
+     * returns subcategories meta data as per auth
+     * for admin all meta data fields(description, category, category2, activation category) will be returned
+     * for other then admin description and category2 will be returned
+     *
+     * @param string $subCategory
+     *
+     * @return array
+     */
+    private function getSubCategoryMetaDataFields(string $subCategory): array
+    {
+        if ($this->auth->isAdminAuth() === true)
+        {
+            return BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+        }
+
+        return array_only(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory],
+                          BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
     }
 
     public function getRejectionReasons()

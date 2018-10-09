@@ -2,20 +2,19 @@
 
 namespace RZP\Reconciliator\Jiomoney\SubReconciliator;
 
-use RZP\Exception\ReconciliationException;
+use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Reconciliator\Base;
-use RZP\Trace\TraceCode;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID          = 'external_reference_number';
-    const COLUMN_REFUND_AMOUNT      = 'transaction_amount';
-    const COLUMN_GATEWAY_PAYMENT_ID = 'retrieval_ref_number';
+    const COLUMN_REFUND_ID          = 'merchant_ref_id';
+    const COLUMN_REFUND_AMOUNT      = 'gross_amount';
+    const COLUMN_GATEWAY_PAYMENT_ID = 'transaction_id';
 
     protected function getRefundId(array $row)
     {
@@ -62,7 +61,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
-                    'gateway'           => get_called_class()
+                    'gateway'           => $this->gateway,
                 ]);
 
             return false;

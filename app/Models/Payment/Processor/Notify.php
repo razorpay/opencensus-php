@@ -139,9 +139,11 @@ class Notify
         }
     }
 
+    /**
+     * @Deprecated
+     */
     protected function notifyViaSlack($event)
     {
-        // We don't send out a notification on capture
         $slackMessages = [
             Payment\Event::FAILED_TO_AUTHORIZED       => 'Failed Payment Authorized',
             Payment\Event::AUTHORIZED                 => 'Payment Authorized',
@@ -242,8 +244,6 @@ class Notify
         //
         try
         {
-            $this->notifyViaSlack($event);
-
             $this->notifyViaMail($event);
         }
         catch (\Throwable $e)

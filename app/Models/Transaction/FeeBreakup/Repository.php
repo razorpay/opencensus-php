@@ -78,4 +78,11 @@ class Repository extends Base\Repository
 
         return $feesBreakup;
     }
+
+    public function deleteFeeBreakupForTransactionId(string $transactionId)
+    {
+        $this->newQuery()
+             ->where(Entity::TRANSACTION_ID, $transactionId)
+             ->delete();
+    }
 }

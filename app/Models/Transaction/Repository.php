@@ -749,8 +749,13 @@ class Repository extends Base\Repository
      *  where `payments`.`gateway` in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) and
      *  `transactions`.`created_at` between ? and ? and `transactions`.`amount` > 0
      *  group by `date`, `gateway`, `payments`.`method` order by `date` desc
-    */
-    public function fetchPaymentReconStatusSummary(int $from, int $to, array $gateways): array
+     *
+     * @param int   $from
+     * @param int   $to
+     *
+     * @return array
+     */
+    public function fetchPaymentReconStatusSummary(int $from, int $to): array
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
@@ -764,7 +769,7 @@ class Repository extends Base\Repository
         $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
               ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
 
-        $this->getQueryClausesForReconSummary($query, $from, $to, $gateways);
+        $this->getQueryClausesForReconSummary($query, $from, $to);
 
         $reconciledPaymentsSummary = $query->get()
                                            ->toArray();
@@ -809,9 +814,14 @@ class Repository extends Base\Repository
      *
      *  Note :  Transaction amount should be greater than 0 to exclude e-mandate transactions of 0 amount.
      *          Such transactions are not considered for reconciliation.
+     *
+     * @param int   $from
+     * @param int   $to
+     *
+     * @return array
      */
 
-    public function fetchRefundReconStatusSummary(int $from, int $to, array $gateways): array
+    public function fetchRefundReconStatusSummary(int $from, int $to): array
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
@@ -827,7 +837,7 @@ class Repository extends Base\Repository
         $query->join(Table::PAYMENT, $paymentIdColumn, '=', Refund\Entity::PAYMENT_ID)
               ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
 
-        $this->getQueryClausesForReconSummary($query, $from, $to, $gateways);
+        $this->getQueryClausesForReconSummary($query, $from, $to);
 
         $reconciledRefundsSummary = $query->get()
                                           ->toArray();
@@ -944,6 +954,15 @@ class Repository extends Base\Repository
      * Note : Using case query as requires gateway_acquirer only in case of card gateways.
      *        Transaction amount should be greater than 0 to exclude e-mandate transactions of 0 amount.
      *        Such transactions are not considered for reconciliation.
+     *
+     * @param int   $from
+     * @param int   $to
+     * @param array $gateways
+     * @param int   $limit
+     * @param array $paymentParams
+     * @param array $refundParams
+     *
+     * @return array
      */
     public function fetchUnreconciledEntitiesBetweenDates(
                                         int $from,
@@ -981,7 +1000,7 @@ class Repository extends Base\Repository
 
             $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
 
-            $this->getQueryClausesForUnreconciledEntites($query, $from, $to, $gateway, $limit);
+            $this->getQueryClausesForUnreconciledEntities($query, $from, $to, $gateway, $limit);
 
             $unionQueries[] = $query;
         }
@@ -998,6 +1017,13 @@ class Repository extends Base\Repository
                                            ->toArray();
 
         return $unreconciledEntities;
+    }
+
+    public function fetchMultipleTransactionsFromIds(array $transactionIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $transactionIds)
+                    ->get();
     }
 
     protected function getSelectQueryForUnreconciledEntites(array $paymentParams = [], array $refundParams = [])
@@ -1031,7 +1057,7 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    protected function getQueryClausesForUnreconciledEntites($query, int $from, int $to, string $gateway, int $limit)
+    protected function getQueryClausesForUnreconciledEntities($query, int $from, int $to, string $gateway, int $limit)
     {
         $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
 
@@ -1050,7 +1076,7 @@ class Repository extends Base\Repository
               ->limit($limit);
     }
 
-    protected function getQueryClausesForReconSummary($query, $from, $to, $gateways)
+    protected function getQueryClausesForReconSummary($query, $from, $to)
     {
         $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
 
@@ -1058,14 +1084,11 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
-        $query->whereIn($gatewayColumn, $gateways)
-
-              // To exclude e-mandate transactions
-              ->where($transactionAmountColumn, '>', 0)
-
-              ->betweenTime($from, $to)
-              ->groupBy('date', 'gateway', $paymentMethodColumn)
-              ->orderBy('date', 'desc');
+        // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
+        $query->where($transactionAmountColumn, '>', 0)
+            ->betweenTime($from, $to)
+            ->groupBy('date', 'gateway', $paymentMethodColumn)
+            ->orderBy('date', 'desc');
     }
 
     protected function addRefundJoinForReconSummary($query)

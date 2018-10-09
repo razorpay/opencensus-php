@@ -1521,6 +1521,52 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForCancelledInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in cancelled status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForExpiredInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1726,7 +1772,7 @@ return [
                         'methods' => [
                             'entity'     => 'methods',
                             'wallet' => [
-                                'airtelmoney'
+                                'airtelmoney' => true,
                             ]
                         ],
                         'offers' => [

@@ -5,7 +5,6 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
@@ -34,6 +33,11 @@ abstract class Base extends BaseProcessor
      * @var array Used for mapping the file content to the corresponding gateway entity
      */
     protected $gatewayPaymentMapping = [];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
 
     protected function processEntry(array & $entry)
     {
@@ -211,9 +215,11 @@ abstract class Base extends BaseProcessor
         return false;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    public function getOutputFileHeadings(): array
     {
-        return;
+        $headerRule = $this->batch->getValidator()->getHeaderRule();
+
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $headerRule);
     }
 
     protected function sendProcessedMail()

@@ -400,9 +400,6 @@ trait EmandateTrait
 
         $request = $this->getStandardRequestArray($content);
 
-        // hotfix for disabling ssl cert verify
-        $request['options']['verify'] = false;
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [

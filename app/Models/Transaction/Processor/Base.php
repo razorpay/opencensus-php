@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\Holidays;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\FeeModel;
 use RZP\Models\Transaction as TransactionModel;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base\Entity as BaseEntity;
@@ -153,10 +154,6 @@ abstract class Base extends BaseCore
     abstract function setSourceDefaults();
 
     abstract function calculateFees();
-
-    abstract function setCredit();
-
-    abstract function setDebit();
 
     public function setFeeDefaults()
     {

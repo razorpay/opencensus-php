@@ -20,6 +20,7 @@ return [
         'card_fss',
         'cybersource',
         'esigner_digio',
+        'esigner_legaldesk',
         'enach_rbl',
         'ebs',
         'first_data',
@@ -43,6 +44,7 @@ return [
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
+        'netbanking_equitas',
         'paytm',
         'sharp',
         'upi_axis',
@@ -62,6 +64,8 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'bt_yesbank',
+        'bt_kotak',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -71,6 +75,7 @@ return [
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
+    'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),
     'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
@@ -87,6 +92,7 @@ return [
     'mock_netbanking_federal'     => env('NETBANKING_FEDERAL_MOCK'),
     'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
+    'mock_netbanking_equitas'     => env('NETBANKING_EQUITAS_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
@@ -241,6 +247,13 @@ return [
         'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
     ],
 
+    'esigner_legaldesk' => [
+        'live_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_API_KEY'),
+        'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
+        'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
+        'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
+    ],
+
     'enach_rbl' => [],
 
     'card_fss' => [
@@ -278,12 +291,12 @@ return [
     ],
 
     'upi_axis' => [
-        'merchant_id'           => env('UPI_AXIS_GATEWAY_MERCHANT_ID'),
-        'merchant_channel_id'   => env('UPI_AXIS_GATEWAY_MERCHANT_CHANNEL_ID'),
         'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
         'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
         'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
-        'default_payee_vpa'     => env('UPI_AXIS_GATEWAY_PAYEE_VPA'),
+        'test_merchant_id'      => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'     => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
+        'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
     ],
 
     'aeps_icici' => [
@@ -323,6 +336,23 @@ return [
     'upi_hulk' => [
         'test_terminal_password'    => env('UPI_HULK_GATEWAY_TEST_SECURE_SECRET'),
         'gateway_terminal_password' => env('UPI_HULK_GATEWAY_SECURE_SECRET'),
+        'cert_dir_name'             => env('UPI_HULK_GATEWAY_CERT_DIR'),
+        'mindgate'                  => [
+            'mid'              => env('UPI_MINDGATE_CASHBACK_LIVE_MID'),
+            'key_id'           => env('UPI_MINDGATE_CASHBACK_LIVE_KEY_ID'),
+            'public_key'       => env('UPI_MINDGATE_CASHBACK_LIVE_HDFC_PUBLIC_KEY'),
+            'private_key'      => env('UPI_MINDGATE_CASHBACK_LIVE_PGP_PRIVATE_KEY'),
+            'passphrase'       => env('UPI_MINDGATE_CASHBACK_LIVE_PGP_PASSPHRASE'),
+            'client_id'        => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_ID'),
+            'client_secret'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_SECRET'),
+            'username'         => env('UPI_MINDGATE_CASHBACK_LIVE_MID'),
+            'password'         => env('UPI_MINDGATE_CASHBACK_LIVE_PASSWORD'),
+            'account_id'       => env('UPI_MINDGATE_CASHBACK_LIVE_HDFC_ACC_ID'),
+            'vpa'              => env('UPI_MINDGATE_CASHBACK_LIVE_VPA'),
+            'mobile'           => env('UPI_MINDGATE_CASHBACK_LIVE_MOBILE'),
+            'live_client_cert' => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT'),
+            'live_cert_key'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT_KEY'),
+        ]
     ],
 
     'upi_sbi' => [
@@ -527,6 +557,10 @@ return [
         'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
+    'netbanking_equitas' => [
+        'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
+        'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
+    ],
 
     'sharp' => [
     ],

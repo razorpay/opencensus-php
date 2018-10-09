@@ -7,13 +7,13 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Jobs\BeamJob;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait AttemptTrait
 {
@@ -43,13 +43,23 @@ trait AttemptTrait
     protected function assertInitiateTransferResponseSuccess(string $channel, array $content, int $sourceCount)
     {
         $this->assertArrayHasKey($channel, $content);
+
         $count = $content[$channel]['count'];
+
         $this->assertEquals($sourceCount, $count);
+
         if($count > 0)
         {
-            $this->assertArrayHasKey('file', $content[$channel]);
-            $this->assertNotNull($content[$channel]['file']['local_file_path']);
-
+            if (in_array($channel, Channel::getFileBasedChannels(), true) === true)
+            {
+                $this->assertArrayHasKey('file', $content[$channel]);
+                $this->assertNotNull($content[$channel]['file']['local_file_path']);
+            }
+            else if (in_array($channel, Channel::getApiBasedChannels(), true) === true)
+            {
+                $this->assertEquals($sourceCount, $content[$channel]['success']);
+                $this->assertEquals(0, $content[$channel]['failed']);
+            }
         }
     }
 
@@ -88,7 +98,7 @@ trait AttemptTrait
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $setlCount);
 
-        return $content[$channel]['file']['local_file_path'];
+        return $content;
     }
 
     protected function createDataAndAssertInitiateOnlineTransferResponse(
@@ -109,10 +119,6 @@ trait AttemptTrait
             $channel, $purpose, $setlCount, $sourceType);
 
         $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $setlCount);
-
-        $mailClass = 'RZP\\Mail\\Settlement\\Settlement';
-
-        Mail::assertQueued($mailClass);
 
         return $content;
     }
@@ -139,8 +145,16 @@ trait AttemptTrait
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);
-        $this->assertNotNull($batch['urls']['file']);
-        $this->assertNotNull($batch[Batch\Entity::TXT_FILE_ID]);
+
+        if (in_array($channel, Channel::getFileBasedChannels(), true) === true)
+        {
+            $this->assertNotNull($batch['urls']['file']);
+            $this->assertNotNull($batch[Batch\Entity::TXT_FILE_ID]);
+
+            $mailClass = 'RZP\\Mail\\Settlement\\Settlement';
+
+            Mail::assertQueued($mailClass);
+        }
 
         // Verify settlement entity
         $sourceEntities = $this->getEntities($sourceType, ['count' => $sourceCount], true);
@@ -209,7 +223,7 @@ trait AttemptTrait
             'payout',
             [
                'channel' => $channel,
-                'amount' => 1000,
+                'amount' => 10000000,
             ]);
 
         if ($sourceCount === 1)
@@ -244,30 +258,5 @@ trait AttemptTrait
         $this->createRefundFromPayments($payments);
 
         $this->initiateSettlements($channel);
-    }
-
-    public function uploadFileThroughBeam(string $channel, string $fileType, string $filename)
-    {
-        Queue::fake();
-
-        $content = [
-          'file'     => $filename,
-          'channel'  => $channel,
-          'file_type' => $fileType
-        ];
-
-        $request = [
-            'url'       => '/nodal_file_upload/retry',
-            'method'    => 'POST',
-            'content'   => $content
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 }

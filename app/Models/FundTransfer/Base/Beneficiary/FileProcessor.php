@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Base\Beneficiary;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Base\PublicCollection;
 
@@ -35,11 +36,19 @@ abstract class FileProcessor extends Beneficiary
     {
         $data = $this->getData($bankAccounts);
 
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_DATA_FETCHED);
+
         $file = $this->generateFile($data);
+
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
 
         $merchantCount = count($data);
 
-        return $this->makeResponse($file, $merchantCount);
+        $response = $this->makeResponse($file, $merchantCount);
+
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_RESPONSE, ['response' => $response]);
+
+        return $response;
     }
 
     /**

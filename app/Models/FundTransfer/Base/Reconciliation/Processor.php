@@ -95,6 +95,8 @@ abstract class Processor extends Base\Core
             {
                 foreach ($data as $row)
                 {
+                    $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
+
                     $entity = $this->reconcileEntity($row);
 
                     if ($entity === null)
@@ -110,17 +112,19 @@ abstract class Processor extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new SlackNotification)->failure('reconcile_file', $e);
+                (new SlackNotification)->send('reconcile_file', [], $e);
 
                 throw $e;
             }
 
             $summary = $this->getSummary();
 
+            $this->trace->info(TraceCode::FTA_RECON_SUMMARY, ['summary' => $summary]);
+
             return $summary;
         });
 
-        (new SlackNotification)->success('reconcile_file', $summary);
+        (new SlackNotification)->send('reconcile_file', $summary, null, $summary['unprocessed_count']);
 
         return $summary;
     }
@@ -206,7 +210,7 @@ abstract class Processor extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new SlackNotification)->failure('setl_verify', $e);
+                (new SlackNotification)->send('setl_verify', [], $e);
 
                 throw $e;
             }
@@ -216,7 +220,7 @@ abstract class Processor extends Base\Core
             return $summary;
         });
 
-        (new SlackNotification)->success('setl_verify', $summary);
+        (new SlackNotification)->send('setl_verify', $summary);
 
         return $summary;
     }
