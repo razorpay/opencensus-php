@@ -4,16 +4,10 @@ namespace RZP\Gateway\Upi\Yesbank;
 
 class Url
 {
-    const LIVE_DOMAIN          = 'https://upiswitch2.hdfcbank.com/';
-    const TEST_DOMAIN          = 'https://upitestswitch2.hdfcbank.com/';
+    const LIVE_DOMAIN          = 'https://sky.yesbank.in:444/app/upi/';
+    const TEST_DOMAIN          = 'https://uatsky.yesbank.in:444/app/uat/upi/';
 
-    const AUTHORIZE            = 'v1/p2p/create/direct';
-    const VERIFY               = 'v1/merchants/p2p';
-
-    const LIVE_MINDGATE_DOMAIN = 'https://upiv2.hdfcbank.com';
-    const TEST_MINDGATE_DOMAIN = 'https://upitestv2.hdfcbank.com';
-
-    const MG_OAUTH_TOKEN       = '/oauth/token';
-    const MG_REFUND            = '/upi/meapi/meCashBackPayTranReqWeb';
-    const MG_VERIFY_REFUND     = '/upi/meapi/upi_trn_status';
+    const VALIDATE_VPA         = 'CheckVirtualAddress';
+    const REFUND               = 'mePayServerReqImps';
+    const VERIFY_REFUND        = 'metransactionStatusQuery';
 }

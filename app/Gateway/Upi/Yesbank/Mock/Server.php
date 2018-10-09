@@ -14,91 +14,34 @@ use RZP\Models\Payment\Entity as Payment;
 
 class Server extends Base\Mock\Server
 {
-    public function authorize($input)
-    {
-        parent::authorize($input);
-
-        $this->request($input, 'authorize');
-
-        if ($input[Fields::TYPE] === Yesbank\Type::EXPECTED_PUSH)
-        {
-            $this->validateActionInput($input, 'authorize_intent');
-
-            $override = [
-                Fields::SENDER           => [],
-                Fields::TYPE             => 'push',
-                Fields::STATUS           => 'created',
-
-            ];
-        }
-        else
-        {
-            $this->validateAuthorizeInput($input);
-
-            $override = [
-                Fields::SENDER           => [
-                    Fields::ADDRESS      => 'vishnu@icici',
-                ],
-            ];
-        }
-
-        $content = array_merge(
-            [
-                Fields::ID               => 'p2p_A11zpSL1413XHi',
-                Fields::TXN_ID           => 'HDF2C8B11D1FBDB4FC78F4E37A19AB6413D',
-                Fields::RECEIVER_ID      => 'A11xBDINnz4so1',
-                Fields::RECEIVER_TYPE    => 'vpa',
-                Fields::STATUS           => 'initiated',
-                Fields::AMOUNT           => $input['amount'],
-                Fields::DESCRIPTION      => $input['description'],
-                Fields::TYPE             => $input['type'],
-                Fields::NOTES            => $input['notes'],
-                Fields::CURRENCY         => $input['currency'],
-                Fields::TRANSACTION_TYPE => 'credit',
-                Fields::RRN              => '0810010123456',
-                Fields::RECEIVER         => [
-                    Fields::ADDRESS      => 'testmerchant@razor',
-                ],
-            ],
-            $override);
-
-        $this->content($content, 'authorize');
-
-        return $this->makeJsonResponse($content);
-    }
-
     public function refund($input)
     {
         parent::refund($input);
 
-        if (isset($input['grant_type']) === true)
-        {
-            $content = [
-                'access_token'  => '477131df-a649-47a7-aa64-024d1fdbddfd',
-                'token_type'    => 'bearer',
-                'refresh_token' => '4a669b03-3d47-40a6-ab63-15c0efcbb7db',
-                'expires_in'    => 179,
-            ];
+        $decrypted = $this->decryptContent($input['requestMsg']);
 
-            $this->content($content, 'refund_oauth');
-
-            return $this->makeJsonResponse($content);
-        }
-
-        $data = json_decode($input, true);
-        $decrypted = $this->decryptContent($data['data']);
+        $this->request($decrypted, $this->action);
 
         $content = [
-            'seq_number'         => $data['seq_number'],
-            'pgmerchant_Id'      => $data['pgmerchant_Id'],
-            'error_code'         => '0',
-            'message'            => 'Payment Successful',
-            'bank_rrn'           => '824616262720',
-            'responseCode'       => '00',
-            'transaction_status' => 'S'
-        ];
+            Fields::YBLREFNO    => 'YBL' . str_random(10),
+            Fields::ORDERNO     => $decrypted[Fields::ORDER_ID],
+            Fields::AMOUNT      => $decrypted[Fields::AMOUNT],
+            Fields::DATE        => Carbon::now()->toIso8601String(),
+            Fields::STATUSCODE  => 'S',
+            Fields::STATUSDESC  => 'SUCCESS',
+            Fields::RESPCODE    => '00',
+            Fields::APPROVALNUM => '123321',
+            Fields::PRFVADDR    => 'somevpa@yesb',
+            Fields::TXNID       => 'YESB0000000000000000' . str_random(15),
+            Fields::RRN         => $encrypted[Fields::RRN],
+            Fields::PRACCNO     => '000390100000202',
+            Fields::PRIFSC      => 'YESB0000009',
+            Fields::PRACCNAME   => 'Some',
+            Fields::ERRORCODE   => 'NA',
+            Fields::RESPERRORCODE  => 'NA',
+            Fields::TRANSFERTYPE    => 'UPI',
 
-        $this->content($content, 'refund_decrypted');
+        ];
 
         $encrypted = $this->encryptContent($content);
 
@@ -131,9 +74,9 @@ class Server extends Base\Mock\Server
     {
         $encrypted = str_replace('\n', "\n", $encrypted);
 
-        $pgp = $this->getGatewayInstance()->getPgpInstance();
+        $plainText = $this->getGatewayInstance()->decryptString($encrypted);
 
-        $plainText = $pgp->decryptVerify($encrypted);
+        //$plainText = $pgp->decryptVerify($encrypted);
 
         return $plainText;
     }
@@ -151,22 +94,14 @@ class Server extends Base\Mock\Server
         return $this->makeJsonResponse($content);
     }
 
-    public function getAsyncCallbackRequest(Upi $upi, Payment $payment)
+    public function getAsyncCallbackContent(Upi $upi, Payment $payment)
     {
-        $override = [
-            Fields::MERCHANT_REFERENCE_ID   => $payment->getId(),
-            Fields::ID                      => $upi->getGatewayPaymentId(),
-            // Bank Fields
-            Fields::CALLER_ACCOUNT_NUMBER   => '00100100100',
-            Fields::CALLER_IFSC_CODE        => 'RZP10010011'
-        ];
-
-        $data = $this->getP2pEntity($override);
-
         $content = [
-            'type'      => 'p2p_completed',
-            'data'      => $data,
-            'timestamp' => Carbon::now()->getTimestamp(),
+            'orderno'       => $upi['payment_id'],
+            'amount'        => $upi['amount'],
+            'statuscode'    => 'S',
+            'rrn'           => random_integer(12),
+            'txnid'         => str_random(35),
         ];
 
         $this->content($content, 'callback');
@@ -174,12 +109,11 @@ class Server extends Base\Mock\Server
         $raw = json_encode($content);
 
         $request = [
-            'url'       => '/callback/upi_Yesbank',
+            'url'       => '/callback/upi_yesbank',
             'method'    => 'post',
             'raw'       => $raw,
             'server'   => [
                 'CONTENT_TYPE'          => 'application/json',
-                'HTTP_X-Yesbank-Signature' => $this->getHmac($raw),
             ]
         ];
 

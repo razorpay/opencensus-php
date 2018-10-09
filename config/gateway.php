@@ -353,6 +353,14 @@ return [
         ]
     ],
 
+    'upi_yesbank' => [
+        'test_terminal_password'    => env('UPI_YESBANK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_terminal_password' => env('UPI_YESBANK_GATEWAY_SECURE_SECRET'),
+        'cert_dir_name'             => env('UPI_YESBANK_GATEWAY_CERT_DIR'),
+        'client_cert'               => env('UPI_YESBANK_GATEWAY_CLIENT_CERT'),
+        'cert_key'                  => env('UPI_YESBANK_GATEWAY_CERY_KEY'),
+    ],
+
     'upi_sbi' => [
         'test_merchant_id' => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
         'hash_secret'      => env('UPI_MINDGATE_SBI_HASH_SECRET'),

@@ -4,6 +4,9 @@ namespace RZP\Gateway\Upi\Yesbank;
 
 class Fields
 {
+    const PGMERCHANTID     = 'pgMerchantId';
+    const REQUESTMSG       = 'requestMsg';
+
     const PGMERCHANT_ID    = 'pgmerchant_id';
     const ORDER_ID         = 'order_id';
     const TXN_NOTE         = 'txn_note';
@@ -40,5 +43,27 @@ class Fields
     const ADD8             = 'add8';
     const ADD9             = 'add9';
     const ADD10            = 'add10';
+
+    const YBLREFNO               = 'yblrefno';
+    const ORDERNO                = 'orderno';
+    const DATE                   = 'date';
+    const STATUSCODE             = 'statuscode';
+    const STATUSDESC             = 'statusdesc';
+    const RESPCODE               = 'respcode';
+    const APPROVALNUM            = 'approvalnum';
+    const PRFVADDR               = 'prfvaddr';
+    const TXNID                  = 'txnid';
+    const RRN                    = 'rrn';
+    const PRACCNO                = 'praccno';
+    const PRIFSC                 = 'prifsc';
+    const PRACCNAME              = 'praccname';
+    const ERRORCODE              = 'errorcode';
+    const RESPERRORCODE          = 'resperrorcode';
+    const TRANSFERTYPE           = 'transfertype';
+    const PYFVADDR               = 'pyfvaddr';
+    const PYIFSCCODE             = 'pyifsccode';
+    const PYACCNO                = 'pyaccno';
+    const PUAADHAR               = 'puaadhar';
+    const PYACCNAME              = 'pyaccname';
 
 }
