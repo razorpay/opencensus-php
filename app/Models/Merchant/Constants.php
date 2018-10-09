@@ -39,7 +39,7 @@ final class Constants
         self::PURE_PLATFORM,
     ];
 
-    // instant activation elastic search constant
+    // Used in merchant activation elastic search flows
     const INSTANT_ACTIVATION = 'instant_activation';
 
     /**

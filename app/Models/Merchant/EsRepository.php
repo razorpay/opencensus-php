@@ -299,12 +299,8 @@ class EsRepository extends Base\EsRepository
         $this->addQueryForAcl($query, $params);
     }
 
-    public function buildQueryForInstantActivation(array & $query, string $value)
+    public function buildQueryForInstantActivation(array & $query, bool $value)
     {
-        //https://github.com/laravel/ideas/issues/514
-        // request will contain "1" or "0" so converting it to boolean
-        $value = $value ? true : false;
-
         $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_FLOW;
 
         if ($value === true)
@@ -364,7 +360,7 @@ class EsRepository extends Base\EsRepository
     private function getSortParameterForSortByBalance(): array
     {
         $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
-        $balanceAttr     = E::MERCHANT_DETAIL . '.' . BalanceEntity::BALANCE;
+        $balanceAttr     = BalanceEntity::BALANCE;
 
         return [
             Es::_SCORE       => [

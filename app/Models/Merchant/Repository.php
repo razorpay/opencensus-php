@@ -54,15 +54,15 @@ class Repository extends Base\Repository
     ];
 
     protected $adminFetchParamRules = [
-        EsRepository::SEARCH_HITS     => 'filled|boolean',
-        EsRepository::QUERY           => 'filled|string|min:2|max:100',
-        Entity::ORG_ID                => 'sometimes|string|size:14',
-        Entity::ACCOUNT_STATUS        => 'filled|custom',
-        Detail\Entity::REVIEWER_ID    => 'sometimes|string|max:14',
-        Entity::SUB_ACCOUNTS          => 'filled|custom',
-        Entity::GROUPS                => 'sometimes|array',
-        Entity::ADMINS                => 'sometimes|array|min:1|max:1',
-        Constants::INSTANT_ACTIVATION => 'sometimes|boolean|in:0,1',
+        EsRepository::SEARCH_HITS       => 'filled|boolean',
+        EsRepository::QUERY             => 'filled|string|min:2|max:100',
+        Entity::ORG_ID                  => 'sometimes|string|size:14',
+        Entity::ACCOUNT_STATUS          => 'filled|custom',
+        Detail\Entity::REVIEWER_ID      => 'sometimes|string|max:14',
+        Entity::SUB_ACCOUNTS            => 'filled|custom',
+        Entity::GROUPS                  => 'sometimes|array',
+        Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
+        Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
     ];
 
     protected function validateAccountStatus($attribute, $value)
@@ -465,9 +465,7 @@ class Repository extends Base\Repository
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
 
-        $serialized[Entity::BALANCE] =
-            $entity->balance ? $entity->balance->pluck(BalanceEntity::BALANCE)->first() : 0;
-
+        $serialized[Entity::BALANCE] = optional($entity->balance)->getBalance() ?: 0;
 
         return $serialized;
     }

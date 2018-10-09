@@ -321,6 +321,9 @@ return [
                 'analyzer'        => 'standard',
                 'search_analyzer' => 'standard',
             ],
+            'balance' => [
+                'type' => 'integer',
+            ]
         ],
     ],
 
