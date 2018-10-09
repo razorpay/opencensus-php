@@ -27,11 +27,21 @@ import {
   }
 )
 export default class SettlementsListContainer extends ListContainer {
+  state = {
+    showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
+  };
+
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlements',
       eventAction: 'Go To - Settlements',
     });
+
+    window.addEventListener(
+      'remove-req-es-button',
+      this.removeRequestESButton,
+      false
+    );
   }
 
   onSearchAnalytics = params => {
@@ -80,6 +90,18 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
+  removeRequestESButton = e => {
+    this.setState({
+      showRequestESButton: false,
+    });
+
+    window.removeEventListener(
+      'remove-req-es-button',
+      this.removeRequestESButton,
+      false
+    );
+  };
+
   showRequestEarySettlementForm = e => {
     trackEarlySettlementRequests();
     this.props.openModal({
@@ -106,7 +128,7 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {this.props.user.showEarlySettlementAnnouncement ? (
+                  {this.state.showRequestESButton ? (
                     <a
                       class="btn btn-link req-es-btn"
                       onClick={this.showRequestEarySettlementForm}
