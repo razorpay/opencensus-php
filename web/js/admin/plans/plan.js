@@ -401,6 +401,7 @@ class Rule extends CollectionItem {
       data = {
         '': 'All',
         aadhaar: 'Aadhaar',
+        aadhaar_fingerprint: 'Aadhaar Fingerprint',
         netbanking: 'Netbanking',
       };
     }

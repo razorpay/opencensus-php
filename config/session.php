@@ -33,6 +33,17 @@ return array(
 
     'lifetime' => 60*60*4,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inactivity Time
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the number of minutes that you wish the session
+    | to be allowed to remain idle before it asks user to login again.
+    |
+    */
+    'inactivity_time' => 20,
+
     'expire_on_close' => false,
 
     /*
