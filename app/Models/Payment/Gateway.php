@@ -1138,6 +1138,12 @@ class Gateway
                 IFSC::IDFB,
             ]
         ],
+
+        Gateway::HDFC => [
+            self::ACQUIRER_HDFC => [
+                IFSC::HDFC,
+            ]
+        ],
     ];
 
     public static $onlyAuthorizationGateway = [
