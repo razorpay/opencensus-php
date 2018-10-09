@@ -4346,6 +4346,8 @@ trait Authorize
 
             $payment->setErrorNull();
 
+            $payment->setNonVerifiable();
+
             $payment->setAmountAuthorized();
 
             $payment->setStatus(Payment\Status::AUTHORIZED);

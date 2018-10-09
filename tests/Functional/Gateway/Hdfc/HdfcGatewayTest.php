@@ -64,7 +64,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['verify_at']);
+        $this->assertNull($payment['verify_at']);
     }
 
     public function testTamperedPayment()
