@@ -103,6 +103,12 @@ class Gateway
     // Stores raw gateway response in string format.
     const GATEWAY_RESPONSE   = 'gateway_response';
 
+    //
+    // If for a merchant, the esigner gateway is not assigned via config,
+    // the below gateway would be used
+    //
+    const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
