@@ -107,6 +107,7 @@ export default class Content extends Component {
     const onModalClose = function() {
       this.props.history.push(location.pathname);
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
+      window.rzpTicketSystem.removeEventListener('modal-select', onModalSelect);
     }.bind(this); //so that this.props is available inside onModalClose
 
     const onModalSelect = function(e) {
