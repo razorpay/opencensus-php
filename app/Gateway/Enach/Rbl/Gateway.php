@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Enach\Rbl;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
