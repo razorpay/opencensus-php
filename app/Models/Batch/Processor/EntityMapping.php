@@ -20,9 +20,9 @@ class EntityMapping extends Base
     {
         $fromEntityType = $this->settingsAccessor->get(Header::ENTITY_FROM_TYPE);
 
-        // Concatinating toEntityTpe with `s` because we have relationship functions ending with `s` like merchants()
+        // Concatenating toEntityTpe with plural because we have relationship functions like merchants()
         // accounts() etc
-        $toEntityType = $this->settingsAccessor->get(Header::ENTITY_TO_TYPE) . 's';
+        $toEntityType = str_plural($this->settingsAccessor->get(Header::ENTITY_TO_TYPE));
 
         $fromEntity = $this->repo->$fromEntityType->findOrFailPublic($entry[Header::ENTITY_FROM_ID]);
 
