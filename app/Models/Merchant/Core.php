@@ -35,6 +35,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
 {
@@ -1510,5 +1511,47 @@ class Core extends Base\Core
             // Sends Account linked communication emails to users.
             (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
         }
+    }
+
+    /**
+     * fetches subcategory metadata from business subcategory and business category
+     * and updates merchant category and category2
+     *
+     * @param \RZP\Models\Merchant\Entity $merchant
+     * @param string                      $category
+     * @param null|string                 $subcategory
+     *
+     * @return \RZP\Models\Merchant\Entity
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateCategoryDetails(
+        Entity $merchant,
+        string $category,
+        ?string $subcategory): Entity
+    {
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $category  = $subcategoryMetaData[Entity::CATEGORY];
+        $category2 = $subcategoryMetaData[Entity::CATEGORY2];
+
+        $merchant->setCategory2($category2);
+        $merchant->setCategory($category);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
+            [
+                'old_data' => [
+                    Entity::CATEGORY2 => $merchant->getCategory2(),
+                    Entity::CATEGORY  => $merchant->getCategory(),
+                ],
+                'new_data' => [
+                    Entity::CATEGORY2 => $category2,
+                    Entity::CATEGORY  => $category,
+                ],
+            ]);
+
+        return $merchant;
     }
 }

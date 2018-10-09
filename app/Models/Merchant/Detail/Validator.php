@@ -367,7 +367,7 @@ class Validator extends Base\Validator
 
         // If category is `others` and subcategory is not `null`
         if (($category === BusinessCategory::OTHERS) and
-            (isset($subcategory) === true))
+            (empty($subcategory) === false))
         {
             $isError = true;
         }
