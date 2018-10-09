@@ -19,12 +19,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Models\Merchant\Detail\ActivationFlow\Whitelist as WhitelistActivationFlow;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
@@ -148,9 +149,19 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
             $this->repo->saveOrFail($merchantDetails);
 
+            (new WhitelistActivationFlow)->process($merchantDetails);
+
             $response = $this->createResponse($merchantDetails);
+
+            $eventAttributes = $merchantDetails->merchant->toArrayEvent();
+
+//            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+//            $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+//            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
             // used to show the progress of the activation form on the dashboard
             $activationProgress = $response['verification']['activation_progress'];
@@ -158,6 +169,18 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
 
             $this->repo->saveOrFail($merchantDetails);
+
+//            if ($this->canSubmit($input, $response) === true)
+//            {
+//                $this->fireActivationTrigger($merchantDetails, $merchant);
+//            }
+
+            $response['auto_activated'] = false;
+
+            $eventAttributes['activation_progress'] = $activationProgress;
+
+            $this->app['eventManager']
+                 ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
@@ -434,7 +457,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
+    public function checkAndMarkHasKeyAccess(Entity $merchantDetails)
     {
         $merchant = $merchantDetails->merchant;
 

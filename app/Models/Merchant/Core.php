@@ -1524,33 +1524,38 @@ class Core extends Base\Core
      * @return \RZP\Models\Merchant\Entity
      * @throws \RZP\Exception\BadRequestException
      */
-    public function autoUpdateCategoryDetails(
-        Entity $merchant,
-        string $category,
-        ?string $subcategory): Entity
+    public function autoUpdateCategoryDetails(Entity $merchant, string $category, ?string $subcategory): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        $category  = $subcategoryMetaData[Entity::CATEGORY];
-        $category2 = $subcategoryMetaData[Entity::CATEGORY2];
+        $merchantDetail = $merchant->merchantDetail;
+
+        $oldData = [
+            Entity::CATEGORY2              => $merchant->getCategory2(),
+            Entity::CATEGORY               => $merchant->getCategory(),
+            Detail\Entity::ACTIVATION_FLOW => $merchantDetail->getActivationFlow(),
+        ];
+
+        $category       = $subcategoryMetaData[Entity::CATEGORY];
+        $category2      = $subcategoryMetaData[Entity::CATEGORY2];
+        $activationFlow = $subcategoryMetaData[Detail\Entity::ACTIVATION_FLOW];
 
         $merchant->setCategory2($category2);
         $merchant->setCategory($category);
+        $merchantDetail->setActivationFlow($activationFlow);
 
         $this->repo->saveOrFail($merchant);
+        $this->repo->saveOrFail($merchantDetail);
+
+        $newData = [
+            Entity::CATEGORY2              => $merchant->getCategory2(),
+            Entity::CATEGORY               => $merchant->getCategory(),
+            Detail\Entity::ACTIVATION_FLOW => $merchantDetail->getActivationFlow(),
+        ];
 
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
-            [
-                'old_data' => [
-                    Entity::CATEGORY2 => $merchant->getCategory2(),
-                    Entity::CATEGORY  => $merchant->getCategory(),
-                ],
-                'new_data' => [
-                    Entity::CATEGORY2 => $category2,
-                    Entity::CATEGORY  => $category,
-                ],
-            ]);
+            compact('oldData', 'newData'));
 
         return $merchant;
     }

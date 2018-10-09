@@ -503,7 +503,18 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBeforeActivate()
+    public function validateIsNotArchived()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->merchantDetail->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+        }
+    }
+
+    public function validateActivationFormSubmitted()
     {
         $merchant = $this->entity;
 
@@ -512,26 +523,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
         }
+    }
 
-        $this->validateIsNotActivated($merchant);
-
-        if ($merchant->merchantDetail->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
-        }
-
-        // Don't validate these rest of the attributes for Marketplace accounts
-        if ($merchant->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        $attributes = [
-            Entity::CATEGORY,
-            Entity::BILLING_LABEL,
-            Entity::TRANSACTION_REPORT_EMAIL
-        ];
+    protected function validateMandatoryAttributes(array $attributes)
+    {
+        $merchant = $this->entity;
 
         $website = $merchant->merchantDetail->getWebsite();
 
@@ -555,6 +551,58 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    public function validateActivationMandatoryAttributes()
+    {
+        $attributes = Constants::ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateInstantActivationMandatoryAttributes()
+    {
+        $attributes = Constants::INSTANT_ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateBeforeActivate()
+    {
+        $merchant = $this->entity;
+
+        $this->validateActivationFormSubmitted();
+
+        $this->validateIsNotActivated($merchant);
+
+        $this->validateIsNotArchived();
+
+        // Don't validate these rest of the attributes for Marketplace accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $this->validateActivationMandatoryAttributes();
+    }
+
+    public function validateBeforeInstantlyActivate()
+    {
+        $merchant = $this->entity;
+
+        $this->validateIsNotActivated($merchant);
+
+        $this->validateIsNotArchived();
+
+        // LA's should directly be activated. They should not go through the instant activations flow
+        if ($merchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED);
+        }
+
+        $this->validateInstantActivationMandatoryAttributes();
+    }
+
 
     public function validateVisibleFeatures(array $input)
     {
