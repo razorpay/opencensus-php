@@ -364,9 +364,13 @@
                 // For PhonePe (txnId starts with YBL), if bleTxId doesn't exist, the user cancelled.
                 (/txnId=YBL/i.test(resp.response) && Object.keys(resp).indexOf('bleTxId') < 0)
             ) {
-              fetchWait(cancel_url);
+              // Cancel if shaadi.com
+              if (key_id === 'rzp_live_5WqsyF9dNRzsmf') {
+                fetchWait(cancel_url);
+              }
               $('cancel-btn').className = '';
               $('retry-btn').className = '';
+              $('message-txt').innerHTML = 'Payment did not complete';
               $('spinner').className = 'hide';
             } else {
               fetchWait(request_url);
