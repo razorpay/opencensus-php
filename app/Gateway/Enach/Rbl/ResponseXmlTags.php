@@ -36,4 +36,7 @@ class ResponseXmlTags
     const MANDATE_REJECT_RESPONSE = 'MndtRejResp';
     const ORIGINIAL_REQUEST_INFO  = 'OrigReqInfo';
     const MANDATE_ERROR_DETAILS   = 'MndtErrorDtls';
+
+    //user defined tag : this is not sent by NPCI. Creating this for readability and used in callback code
+    const REQUEST_DATE_TIME = 'Mandate_Request_Creation_Date_Time';
 }

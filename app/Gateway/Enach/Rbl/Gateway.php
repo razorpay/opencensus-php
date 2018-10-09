@@ -521,7 +521,7 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::ORIGINAL_MSG_INFO]
                                                                  [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
-            'Mandate_Creation_Date_Time'        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+            ResponseXmlTags::REQUEST_DATE_TIME  => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
                                                                  [ResponseXmlTags::ORIGINAL_MSG_INFO]
                                                                  [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
