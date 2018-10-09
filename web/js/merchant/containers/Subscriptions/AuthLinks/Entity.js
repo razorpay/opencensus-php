@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+import { titleCase } from 'rzp/utils/rzp-utils';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
 
 import Spinner from 'rzp/ui/Spinner';
@@ -78,6 +79,13 @@ export default class AuthLinkEntityContainer extends Component {
                     value={invoice.description}
                   />
 
+                  {/* method */}
+                  <EntityDetailRow label="Method">
+                    {invoice.mandate.method && (
+                      <PaymentMethod mandate={invoice.mandate} />
+                    )}
+                  </EntityDetailRow>
+
                   {/* Customer Details */}
                   <EntityDetailRow label="Customer Details">
                     <CustomerDetails customer={invoice.customer_details} />
@@ -108,6 +116,24 @@ function CustomerDetails({ customer }) {
       <Fragment>{customer.email || null}</Fragment>
       <Fragment>{customer.contact || null}</Fragment>
       <Fragment> {customer.id} </Fragment>
+    </Definition>
+  );
+}
+
+function PaymentMethod({ mandate }) {
+  return (
+    <Definition>
+      <span class="text-primary">{titleCase(mandate.method)}</span>
+      {mandate.expiry && (
+        <Fragment>
+          Token Expiry - <Time value={mandate.expiry} />{' '}
+        </Fragment>
+      )}
+      {mandate.max_amount && (
+        <Fragment>
+          Max Amount - <Amount value={mandate.max_amount} />{' '}
+        </Fragment>
+      )}
     </Definition>
   );
 }
