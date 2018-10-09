@@ -304,6 +304,10 @@ class Gateway extends Base\Gateway
 
         $mcc = $input['terminal']['category'];
 
+        $creditorAccount = $this->getCreditorAccount();
+
+        $sponserIfsc = $this->getSponsorIfsc();
+
         $catCode = CategoryCode::getCategoryCodeFromMcc($mcc);
 
         $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
@@ -340,8 +344,8 @@ class Gateway extends Base\Gateway
 
             NpciXmlHeaderTags::CREDITOR            => [
                 RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
-                RequestNpciTags::CREDITOR_ACCOUNT      => 'NACH00000000013149', //TODO find this value
-                RequestNpciTags::IFSC_SPONSOR          => 'RATN0000057', // TODO insert proper value
+                RequestNpciTags::CREDITOR_ACCOUNT      => $creditorAccount,
+                RequestNpciTags::IFSC_SPONSOR          => $sponserIfsc,
             ]
         ];
 
@@ -700,5 +704,33 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function getCreditorAccount()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $credAccount = $this->config['test_emandate_npci_creditor_account'];
+        }
+        else
+        {
+            $credAccount = $this->config['live_emandate_npci_creditor_account'];
+        }
+
+        return $credAccount;
+    }
+
+    protected function getSponsorIfsc()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $sponsor = $this->config['test_emandate_npci_sponser_ifsc'];
+        }
+        else
+        {
+            $sponsor = $this->config['test_emandate_npci_sponser_ifsc'];
+        }
+
+        return $sponsor;
     }
 }
