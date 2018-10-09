@@ -186,9 +186,22 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
 
-        //$this->checkCallbackStatus($attributes, $callbackData);
-
         $recurringData = $this->getRecurringDataFromNpciResponse($gatewayPayment);
+
+        /**
+         * Throwing an exception here for now. This only updates the payment entity to failed
+         * The token related values - recurring status etc will be null
+         **/
+
+        if ($recurringData[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::REJECTED)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
+                null,
+                null,
+                $recurringData
+                );
+        }
 
         return $this->getCallbackResponseData($input, $recurringData);
     }
