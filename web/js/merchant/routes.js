@@ -20,6 +20,7 @@ import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
+import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
@@ -75,6 +76,7 @@ const entityDetailsMap = {
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
+  '/authlinks/:id(inv_.+)': { component: AuthLink },
 
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,
