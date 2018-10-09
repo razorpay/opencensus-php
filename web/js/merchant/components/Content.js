@@ -224,6 +224,7 @@ export default class Content extends Component {
           />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
+          <Route path="/authlinks" component={Subscriptions} />
           {/*<Route path="/addons" component={Subscriptions} />*/}
           <Route
             path="/customers"
