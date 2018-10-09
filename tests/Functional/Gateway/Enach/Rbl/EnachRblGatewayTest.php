@@ -222,13 +222,17 @@ class EnachRblGatewayTest extends TestCase
 
         $this->mockRejectCallbackResponse();
 
-        $this->doAuthPayment($payment);
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(0, $payment['amount']);
 
-        //$this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('failed', $payment['status']);
 
         $this->assertEquals('initial', $payment['recurring_type']);
 
@@ -236,13 +240,11 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('false', $enach['registration_status']);
 
-        //$this->assertNotNull($enach['registration_date']);
-
         $token = $this->getLastEntity('token', true);
 
         $this->assertEquals('netbanking', $token['auth_type']);
 
-        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals(null , $token['recurring_status']);
     }
 
     public function testPaymentNpciErrorResponse()
@@ -259,13 +261,17 @@ class EnachRblGatewayTest extends TestCase
 
         $this->mockFailedCallbackResponse();
 
-        $this->doAuthPayment($payment);
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('failed', $payment['status']);
 
-        //$this->assertEquals('failed', $payment['status']);
+        $this->assertEquals(0, $payment['amount']);
 
         $this->assertEquals('initial', $payment['recurring_type']);
 
@@ -273,13 +279,11 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('false', $enach['registration_status']);
 
-        //$this->assertNotNull($enach['registration_date']);
-
         $token = $this->getLastEntity('token', true);
 
         $this->assertEquals('netbanking', $token['auth_type']);
 
-        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals(null, $token['recurring_status']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()

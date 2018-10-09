@@ -87,6 +87,36 @@ return [
         ],
     ],
 
+    'testPaymentNpciRejectResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
+        ],
+    ],
+
+    'testPaymentNpciErrorResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
+        ],
+    ],
+
     'testDebitFileGeneration' => [
         'request' => [
             'content' => [
