@@ -45,7 +45,13 @@ class ActivationTest extends TestCase
 
     public function testPostInstantActivation()
     {
-        $this->ba->proxyAuth();
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_1cXSLlUU8V9sXl');
 
         $this->startTest();
     }
