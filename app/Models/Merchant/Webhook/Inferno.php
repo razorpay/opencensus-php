@@ -267,9 +267,9 @@ class Inferno
         catch (\Throwable $e)
         {
             $this->trace->count(
-                Metric::WEBHOOK_REQUEST_FAILURE_TOTAL,
+                Metric::WEBHOOK_REQUEST_FAILURES_TOTAL,
                 [
-                    'exception'   => get_class($e),
+                    'exception'   => str_replace('\\', '_', get_class($e)),
                     'status_code' => optional($response)->getStatusCode(),
                 ]);
 
@@ -319,16 +319,12 @@ class Inferno
 
         $statusCode = $response->getStatusCode();
 
-        $metricDimensions = [
-            'status_code' => $statusCode,
-            'event'       => $this->eventName,
-            'attempt'     => $this->job->attempts(),
-        ];
+        $isSuccessStatusCode = $this->isSuccesssfulStatusCode($statusCode);
 
-        if ($this->isSuccesssfulStatusCode($statusCode) === true)
+        $requestDuration = millitime() - $requestStartTime;
+
+        if ($isSuccessStatusCode === true)
         {
-            $requestDuration = millitime() - $requestStartTime;
-
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
@@ -340,21 +336,27 @@ class Inferno
                     'response_time'     => $requestDuration,
                 ]);
 
-            $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $metricDimensions);
-            $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $metricDimensions);
-
             $clientError = false;
         }
         else
         {
-            $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $metricDimensions);
-
             $msgPrefix = '';
 
             $this->traceWebhookResponse($webhook, $msgPrefix, $response);
 
             $clientError = true;
         }
+
+        $metricDimensions = [
+            'status_code'            => $statusCode,
+            'event'                  => $this->eventName,
+            // To check about attempts
+            // 'attempts'               => $this->job->attempts(),
+            'is_successs_tatus_code' => $isSuccessStatusCode,
+        ];
+
+        $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $metricDimensions);
+        $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $metricDimensions);
 
         return $clientError;
     }

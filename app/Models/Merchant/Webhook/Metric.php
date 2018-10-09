@@ -10,7 +10,7 @@ final class Metric
     const WEBHOOK_DEACTIVATED_TOTAL             = 'webhook_deactivated_total';
     const WEBHOOK_VALIDATION_FAILURES_TOTAL     = 'webhook_validation_failures_total';
     const WEBHOOK_REQUEST_COMPLETED_TOTAL       = 'webhook_request_completed_total';
-    const WEBHOOK_REQUEST_FAILURE_TOTAL         = 'webhook_request_failure_total';
+    const WEBHOOK_REQUEST_FAILURES_TOTAL        = 'webhook_request_failures_total';
 
     // Histograms
     const WEBHOOK_REQUEST_DURATION_MILLISECONDS = 'webhook_request_duration_milliseconds.histogram';
