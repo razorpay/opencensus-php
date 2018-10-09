@@ -121,7 +121,8 @@ trait Inquiry
         // enroll_result is null
         $payments = $this->repo->findPaymentsByPaymentIdToVerify($input['payment']['id']);
 
-        if ($input['payment']['auth_type'] === AuthType::PIN)
+        if (($input['payment']['auth_type'] === AuthType::PIN) or
+            ($this->isSecondRecurringPaymentRequest($input) === true))
         {
             $payment = $payments->first();
 
