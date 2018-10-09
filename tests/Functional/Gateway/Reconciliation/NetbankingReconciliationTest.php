@@ -121,6 +121,93 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testEquitasPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_equitas';
+
+        $payment = $this->createPayment('netbanking_equitas');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'S');
+
+        $fileContents = $this->generateFile('equitas', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingEquitas', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntityToArray('batch', 'test');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
+
+    }
+
+    public function testEquitasFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_equitas';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'F');
+
+        $fileContents = $this->generateFile('equitas', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingEquitas', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntityToArray('transaction', 'test');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch', 'test');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+    }
+
+    public function testEquitasAmountMismatchReconciliation()
+    {
+        $this->gateway = 'netbanking_equitas';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'Y');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'equitas_recon')
+                {
+                    $content['TransactionAmount'] = '50.00';
+                }
+            });
+
+        $fileContents = $this->generateFile('equitas', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingEquitas', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+    }
+
     public function testIndusindManualReconciliation()
     {
         $this->gateway = 'netbanking_indusind';

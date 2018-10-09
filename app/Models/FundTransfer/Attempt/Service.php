@@ -8,6 +8,7 @@ use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement\Status as SettlementStatus;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Service extends Base\Service
@@ -62,6 +63,24 @@ class Service extends Base\Service
             $params = $input[$id];
 
             (new Validator)->validateInput('edit', $params);
+
+            //
+            // Temporarily allowing update of channel for Refund attempts.
+            // This is because we don't have a way to change channel in a
+            // clean way at the moment, but we may still want to change the
+            // channel sometimes, and retry it.
+            //
+            if ((isset($params[Entity::CHANNEL]) === true) and
+                ($fundTransferAttempt->isRefund() === false))
+            {
+                $this->trace->error(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                    ['reason' => 'Channel can only be edited for Refund attempts!']);
+
+                $notUpdatedIds[] = $id;
+
+                continue;
+            }
 
             $fundTransferAttempt->fill($params);
 

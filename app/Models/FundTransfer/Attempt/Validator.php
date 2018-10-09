@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::FAILURE_REASON   => 'sometimes|string|max:100',
         Entity::REMARKS          => 'sometimes|string|max:100',
         Entity::BANK_STATUS_CODE => 'sometimes|string|max:30',
+        Entity::CHANNEL          => 'sometimes|string|custom',
     ];
 
     protected static $initiateFundTransferRules = [
@@ -28,9 +29,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryBeamFileUploadRules = [
-        Entity::FILE           =>  'required|filled|string',
-        Entity::CHANNEL        =>  'required|filled|string',
-        Entity::FILE_TYPE      =>  'required|filled|string',
+        'file_id'           =>  'required|filled|string|alpha_num|size:14',
+        Entity::CHANNEL     =>  'required|filled|string',
+        Entity::FILE_TYPE   =>  'required|filled|string',
     ];
 
     protected function validateStatus($attribute, $value)
@@ -51,7 +52,7 @@ class Validator extends Base\Validator
      */
     public function validateChannel(string $attribute, string $value)
     {
-        $channels = [Channel::AXIS, Channel::ICICI];
+        $channels = [Channel::AXIS, Channel::ICICI, Channel::YESBANK];
 
         if (in_array($value, $channels, true) !== true)
         {

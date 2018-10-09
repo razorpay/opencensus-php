@@ -2,21 +2,28 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
-use RZP\Models\FileStore;
+use RZP\Models\Batch;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
     protected $gateway;
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
+
     protected function shouldMarkProcessedOnFailures(): bool
     {
         return false;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    public function getOutputFileHeadings(): array
     {
-        return;
+        $headerRule = $this->batch->getValidator()->getHeaderRule();
+
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $headerRule);
     }
 
     protected function sendProcessedMail()

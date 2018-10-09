@@ -14,6 +14,7 @@ use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
 
 class EnachRbl extends Base
 {
@@ -27,25 +28,36 @@ class EnachRbl extends Base
     protected $gateway = Payment\Gateway::ENACH_RBL;
 
     /**
-     * Overriding parseExcelSheets() because of different startRow.
-     * Ideally, we should store `$startRow` in a variable and then use.
+     * {@override}
      * @param  string $filePath
      * @return array
      */
-    protected function parseExcelSheets($filePath)
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
     {
-        Config::set('excel.import.force_sheets_collection', true);
-        Config::set('excel.import.heading', 'original');
-        Config::set('excel.import.startRow', 2);
+        $fileType = SpreadsheetIOFactory::identify($filePath);
+        $reader = SpreadsheetIOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true);
+        // Override 1: Loads specific named sheet only.
+        $reader->setLoadSheetsOnly('ACKNOWLEDGMENT REPORT');
+        $spreadsheet = $reader->load($filePath);
+        assertTrue($spreadsheet->getSheetCount() === 1);
+        $rows = $spreadsheet->getActiveSheet()->toArray();
+        // Override 2: Shifts through 1 row. 1st row in this particular file is not to be considered.
+        array_shift($rows);
+        // First row is always expected to be header
+        $headers = array_values(array_shift($rows) ?? []);
+        // No rows exists
+        if (empty($headers) === true)
+        {
+            return [];
+        }
+        // Format rows as "heading key => value" kind of associative array
+        foreach ($rows as & $row)
+        {
+            $row = array_combine($headers, array_values($row));
+        }
 
-        $sheets = $this->parseExcelFile($filePath, ['ACKNOWLEDGMENT REPORT']);
-
-        //
-        // Resetting startRow to 1 again
-        //
-        Config::set('excel.import.startRow', 1);
-
-        return $sheets[0];
+        return $rows;
     }
 
     protected function processEntry(array & $entry)

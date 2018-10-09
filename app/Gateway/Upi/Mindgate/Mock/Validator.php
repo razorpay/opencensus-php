@@ -78,4 +78,25 @@ class Validator extends Base\Validator
         'sometimes',
         'sometimes',
     ];
+
+    protected static $validatePushRules = [
+        // Bank side Merchant Id
+        'required|alpha_num',
+        // RZP API Payment Id
+        'required|alpha_num|max:50',
+        // UPI Transaction Reference Id
+        'sometimes',
+        // Reference Id (Optional, empty string as of now)
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+    ];
 }

@@ -174,8 +174,6 @@ class Entity extends Base\PublicEntity
 
     const OFFER_ID              = 'offer_id';
 
-    const PREFERRED_RECURRING   = 'preferred_recurring';
-
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -779,8 +777,11 @@ class Entity extends Base\PublicEntity
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
+     *
+     * TODO: Temporarily made public for VA payments to set gateway externally
+     * This should be removed after VA terminals are used in payment flow as well
      */
-    protected function setGateway($gateway)
+    public function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
@@ -1073,6 +1074,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
 
+    public function setRecurringAttribute($recurring)
+    {
+        $intVal = intval($recurring);
+
+        $this->attributes[self::RECURRING] = boolval($intVal);
+    }
+
     protected function setContactAttribute($contact)
     {
         if ($contact === null)
@@ -1348,6 +1356,11 @@ class Entity extends Base\PublicEntity
     public function hasPaymentLink(): bool
     {
         return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+    }
+
+    public function hasTerminal()
+    {
+        return $this->isAttributeNotNull(self::TERMINAL_ID);
     }
 
     public function getPaymentLinkId()
@@ -2785,7 +2798,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
-    public function getDummyPaymentArray(string $method, string $network = null): array
+    public function getDummyPaymentArray(
+        string $method,
+        Base\PublicEntity $receiver = null,
+        string $network = null,
+        array $metadata = [],
+        Order\Entity $orderEntity = null): array
     {
         $paymentArray =  [
             self::CURRENCY    => Currency\Currency::INR,
@@ -2794,6 +2812,8 @@ class Entity extends Base\PublicEntity
             self::DESCRIPTION => 'Dummy Payment',
             self::CONTACT     => self::DUMMY_PHONE,
             self::EMAIL       => self::DUMMY_EMAIL,
+            self::RECEIVER    => $receiver,
+            '_'               => $metadata,
         ];
 
         switch ($method)
@@ -2805,6 +2825,13 @@ class Entity extends Base\PublicEntity
             case Method::UPI:
                 $paymentArray[self::VPA] = self::DUMMY_VPA;
 
+        }
+
+        if (is_null($orderEntity) === false)
+        {
+            $paymentArray[Payment\Entity::AMOUNT] = $orderEntity->getAmount();
+
+            $paymentArray[Payment\Entity::CURRENCY] = $orderEntity->getCurrency();
         }
 
         return $paymentArray;

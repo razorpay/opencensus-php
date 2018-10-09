@@ -2002,3 +2002,108 @@ WHERE subscriptions.id IN
      FROM subscriptions
      INNER JOIN customers ON subscriptions.customer_id = customers.id
      WHERE customers.global_customer_id IS NULL);
+
+# netbanking_icici normal terminals
+UPDATE terminals SET enabled_banks = '["ICIC"]' WHERE gateway = 'netbanking_icici' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_icici tpv terminals
+UPDATE terminals SET enabled_banks = '["ICIC"]' WHERE gateway = 'netbanking_icici' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_icici corp terminals
+UPDATE terminals SET enabled_banks = '["ICIC_C"]' WHERE gateway = 'netbanking_icici' AND corporate IN (1, 2);
+
+# netbanking_hdfc normal terminals
+UPDATE terminals SET enabled_banks = '["HDFC"]' WHERE gateway = 'netbanking_hdfc' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_hdfc tpv terminals
+UPDATE terminals SET enabled_banks = '["HDFC"]' WHERE gateway = 'netbanking_hdfc' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_corporation normal terminals
+UPDATE terminals SET enabled_banks = '["CORP"]' WHERE gateway = 'netbanking_corporation' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_axis normal terminals
+UPDATE terminals SET enabled_banks = '["UTIB"]' WHERE gateway = 'netbanking_axis' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_axis tpv terminals
+UPDATE terminals SET enabled_banks = '["UTIB"]' WHERE gateway = 'netbanking_axis' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_axis corp terminals
+UPDATE terminals SET enabled_banks = '["UTIB_C"]' WHERE gateway = 'netbanking_axis' AND corporate IN (1, 2);
+
+# netbanking_kotak normal terminals
+UPDATE terminals SET enabled_banks = '["KKBK"]' WHERE gateway = 'netbanking_kotak' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_kotak tpv terminals
+UPDATE terminals SET enabled_banks = '["KKBK"]' WHERE gateway = 'netbanking_kotak' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_airtel normal terminals
+UPDATE terminals SET enabled_banks = '["AIRP"]' WHERE gateway = 'netbanking_airtel' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_federal normal terminals
+UPDATE terminals SET enabled_banks = '["FDRL"]' WHERE gateway = 'netbanking_federal' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_federal tpv terminals
+UPDATE terminals SET enabled_banks = '["FDRL"]' WHERE gateway = 'netbanking_federal' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_idfc normal terminals
+UPDATE terminals SET enabled_banks = '["IDFB"]' WHERE gateway = 'netbanking_idfc' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_rbl normal terminals
+UPDATE terminals SET enabled_banks = '["RATN"]' WHERE gateway = 'netbanking_rbl' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_rbl tpv terminals
+UPDATE terminals SET enabled_banks = '["RATN"]' WHERE gateway = 'netbanking_rbl' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_indusind normal terminals
+UPDATE terminals SET enabled_banks = '["INDB"]' WHERE gateway = 'netbanking_indusind' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_indusind tpv terminals
+UPDATE terminals SET enabled_banks = '["INDB"]' WHERE gateway = 'netbanking_indusind' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_obc normal terminals
+UPDATE terminals SET enabled_banks = '["ORBC"]' WHERE gateway = 'netbanking_obc' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_csb normal terminals
+UPDATE terminals SET enabled_banks = '["ORBC"]' WHERE gateway = 'netbanking_csb' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_csb tpv terminals
+UPDATE terminals SET enabled_banks = '["CSBK"]' WHERE gateway = 'netbanking_csb' AND tpv IN (1, 2) AND corporate = 0;
+
+# netbanking_pnb normal terminals
+UPDATE terminals SET enabled_banks = '["PUNB_R"]' WHERE gateway = 'netbanking_pnb' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_bob normal terminals
+UPDATE terminals SET enabled_banks = '["BARB_R"]' WHERE gateway = 'netbanking_bob' AND tpv IN (0, 2) AND corporate = 0;
+
+# netbanking_bob corp terminals
+UPDATE terminals SET enabled_banks = '["BARB_C"]' WHERE gateway = 'netbanking_bob' AND corporate IN (1, 2);
+
+# billdesk normal terminals
+UPDATE terminals SET enabled_banks = '["ALLA","ANDB","BBKM","BKDN","BKID","CBIN","CIUB","CNRB","CORP","COSB","DCBL","DCBL","DEUT","DLXB","DBSS","IDFB","IBKL","IDIB","IOBA","JAKA","JSBP","KARB","KKBK","KVBL","MAHB","NKGS","PMCB","PSIB","SBBJ","SBHY","SBIN","SBMY","STBP","SBTR","SCBL","SIBL","SRCB","SVCB","SYNB","TMBL","TNSC","UBIN","UCBA","UTBI","UTIB","VIJB","YESB","PUNB_R","LAVB_R","BARB_C","PUNB_C","LAVB_C"]' WHERE gateway = 'billdesk' AND tpv IN (0, 2) AND corporate = 0;
+
+# billdesk tpv terminals
+UPDATE terminals SET enabled_banks = '["ANDB", "CIUB", "CORP", "IBKL", "KVBL", "LAVB_R", "UTIB", "BKID", "SBBJ", "SBHY", "SBIN", "SBMY", "STBP", "SBTR"]' WHERE gateway = 'billdesk' AND tpv IN (1, 2) AND corporate = 0;
+
+# atom normal terminals
+UPDATE terminals SET enabled_banks = '["ANDB", "BKID", "MAHB", "CNRB", "CBIN", "CIUB", "CORP", "DCBL", "DEUT", "DLXB", "ESFB", "IBKL", "IDIB", "IOBA", "JAKA", "KARB", "KVBL", "LAVB_R", "PMCB", "PSIB", "PUNB_R", "SRCB", "SIBL", "SBIN", "SBBJ", "SBHY", "SBMY", "SCBL", "STBP", "SBTR", "TMBL", "UCBA", "UBIN", "UTBI", "VIJB"]' WHERE gateway = 'atom' AND tpv IN (0, 2) AND corporate = 0;
+
+# atom tpv terminals
+UPDATE terminals SET enabled_banks = '["SBIN", "YESB", "MAHB", "DEUT", "CSBK", "CBIN", "CIUB", "DCBL", "DLXB", "FDRL", "IBKL", "IDIB", "INDB", "JAKA", "KVBL", "LAVB_R", "ORBC", "SRCB", "TMBL"]' WHERE gateway = 'billdesk' AND tpv IN (1, 2) AND corporate = 0;
+
+# ebs normal terminals
+UPDATE terminals SET enabled_banks = '["ANDB", "CBIN", "CNRB", "CORP", "DLXB", "IDIB", "IOBA", "JAKA", "KARB", "KKBK", "MAHB", "PSIB", "SRCB", "UBIN", "UCBA", "UTBI", "VIJB", "YESB", "LAVB_R", "PUNB_R", "UTIB", "BKID", "CIUB"]' WHERE gateway = 'ebs' AND tpv IN (0, 2) AND corporate = 0;
+
+# paytm normal terminals
+UPDATE terminals SET enabled_banks = '["CITI", "CIUB", "HDFC", "ICIC", "IDIB", "IOBA", "JAKA", "KKBK", "MAHB", "PUNB_R", "UBIN", "UTIB", "VIJB", "YESB"]' WHERE gateway = 'paytm' AND tpv IN (0, 2) AND corporate = 0;
+
+# Populating customer_email
+UPDATE subscriptions
+INNER JOIN customers ON customers.id=subscriptions.customer_id
+SET customer_email=customers.email
+WHERE customers.email IS NOT NULL
+  AND customer_email IS NOT NULL;
+
+# drop unique index on beneficiary code and add on both beneficiary_code and channel in table nodal_beneficiaries
+ALTER TABLE nodal_beneficiaries
+    DROP INDEX nodal_beneficiaries_beneficiary_code_unique,
+    ADD UNIQUE INDEX  nodal_beneficiaries_beneficiary_code_channel_unique(beneficiary_code, channel);

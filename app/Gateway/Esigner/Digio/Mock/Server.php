@@ -58,6 +58,23 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        // In verify action we calls the gateway twice:
+        // 1. For fetching the mandate status
+        // 2. For fetching the signed xml
+
+        // This is for fetching the signed xml
+        if (isset($input['mandate_id']) === true)
+        {
+            $xml = Xml::create('Document', []);
+
+            $response = $this->makeResponse($xml);
+
+            $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
+
+            return $response;
+        }
+
+        // For fetching the mandate status
         $request = $this->mockRequest;
 
         $data = $this->getVerifyResponse($request);

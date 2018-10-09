@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Payment\Status;
@@ -27,6 +30,8 @@ class BankTransferTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
 
         $this->bankAccount = $this->createVirtualAccount();
 
@@ -66,6 +71,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -196,34 +202,6 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($attempt['utr']);
     }
 
-    public function testBankTransferFundTransferAttemptBulkUpdate()
-    {
-        $this->testBankTransferRefund();
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $request = [
-            'method'  => 'PATCH',
-            'url'     => '/fund_transfer_attempts',
-            'content' => [
-                $attempt['id'] => [
-                    'status'  => 'failed',
-                    'remarks' => 'failed with reason',
-                    'bank_status_code' => 'blahbal',
-                ]
-            ],
-        ];
-
-        $this->makeRequestAndGetContent($request);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('failed', $attempt['status']);
-        $this->assertEquals('failed with reason', $attempt['remarks']);
-
-        $attempt = $this->getLastEntity('refund', true);
-        $this->assertEquals('failed', $attempt['status']);
-    }
-
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -267,6 +245,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('bt_kotak', $payment['gateway']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
@@ -339,6 +318,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
@@ -425,6 +405,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferRefundRetry()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -524,6 +508,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferRefundRetryManual()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $channel = Channel::AXIS;
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -625,6 +613,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferRefundRetryToDifferentAccount()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $channel = Channel::AXIS;
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -1357,7 +1349,7 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferNotifyFailure()
+    public function testBankTransferNotifyNonFailure()
     {
         $this->startTest();
     }
@@ -1375,27 +1367,12 @@ class BankTransferTest extends TestCase
         });
     }
 
-    public function testBankTransferReservedAccount()
-    {
-        $accountNumber = 'RZRNODAL123';
-        $ifsc = $this->bankAccount['ifsc'];
-
-        // Process API always returns true
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-        $this->assertEquals(true, $response['valid']);
-        $this->assertNull($response['message']);
-
-        // No bank transfer created
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertNull($bankTransfer);
-
-        // No payment created
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertNull($payment);
-    }
-
     public function testBankTransferRefundReconciliation()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $channel = Channel::ICICI;
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
@@ -1433,11 +1410,14 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals($attempt['utr'], $refund['arn']);
-
     }
 
     public function testBankTransferInsert()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 

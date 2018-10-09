@@ -8,6 +8,7 @@ use phpseclib\Crypt\AES;
 
 use RZP\Models\Base;
 use RZP\Encryption\Type;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -68,13 +69,21 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $rows = $this->getRows($entities);
 
+        $this->trace->info(TraceCode::FTA_ROWS_FETCHED_FOR_FILE);
+
         $txt = $this->getTxtFromRows($rows);
 
+        $this->trace->info(TraceCode::FTA_DATA_CREATED_FOR_FILE);
+
         $file = $this->createFile($txt);
+
+        $this->trace->info(TraceCode::FTA_FILE_CREATED_IN_S3);
 
         $fileData = $this->getFileData($file);
 
         $this->sendIciciTransferMail($fileData);
+
+        $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
 
         //
         // Pushing to Beam after sending the email
@@ -82,6 +91,8 @@ class NodalAccount extends NodalBase\FileProcessor
         // doesn't get affected by Beam errors.
         //
         $this->sendFile($file);
+
+        $this->trace->info(TraceCode::FTA_FILE_SEND_VIA_BEAM);
 
         return $file;
     }

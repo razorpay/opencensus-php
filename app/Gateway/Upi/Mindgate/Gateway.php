@@ -42,10 +42,11 @@ class Gateway extends Base\Gateway
     const PAY = 'PAY';
 
     const FIELD_LENGTH = [
-        Action::AUTHORIZE    => 17,
-        Action::VALIDATE_VPA => 14,
-        Action::REFUND       => 20,
-        Action::VERIFY       => 14,
+        Action::AUTHORIZE     => 17,
+        Action::VALIDATE_VPA  => 14,
+        Action::REFUND        => 20,
+        Action::VERIFY        => 14,
+        Action::VALIDATE_PUSH => 14,
     ];
 
     protected $map = [
@@ -62,6 +63,7 @@ class Gateway extends Base\Gateway
         ResponseFields::NPCI_UPI_TXN_ID   => Entity::NPCI_REFERENCE_ID,
         ResponseFields::ACCOUNT_NUMBER    => Entity::ACCOUNT_NUMBER,
         ResponseFields::IFSC_CODE         => Entity::IFSC,
+        Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
     ];
 
     /**
@@ -200,13 +202,13 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
+    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE, string $type = Base\Type::COLLECT)
     {
         $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
-            Entity::TYPE                => Base\Type::COLLECT,
+            Entity::TYPE                => $type,
         ];
 
         if ($action === Action::REFUND)
@@ -233,6 +235,8 @@ class Gateway extends Base\Gateway
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
+
+        $response[ResponseFields::CALLBACK_RESPONSE_PGMID] = $input[ResponseFields::CALLBACK_RESPONSE_PGMID];
 
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
@@ -597,6 +601,9 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        // update input using the merchant_reference in the gateway payment
+        $input['gateway']['merchant_reference'] = $verify->payment['merchant_reference'];
+
         $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -680,7 +687,7 @@ class Gateway extends Base\Gateway
         $data = [
             $this->getMerchantId(),
             $this->getRefundId($refund),
-            $input['payment']['id'],
+            $gatewayPayment[Entity::MERCHANT_REFERENCE] ?: $gatewayPayment[Entity::PAYMENT_ID],
             $gatewayPayment->getGatewayPaymentId(),
             $gatewayPayment->getNpciReferenceId(),
             $this->getRefundRemark($input),
@@ -726,9 +733,11 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
+        $reference = $input['gateway']['merchant_reference'] ?: $input['payment']['id'];
+
         $data = [
             $this->getMerchantId(),
-            $input['payment']['id'],
+            $reference,
             '',
             // This is the Reference ID field
             // which is supposed to be empty for now
@@ -748,7 +757,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request' => $request,
-                'decrypted_content' => $data
+                'decrypted_content' => $data,
             ]);
 
         return $request;
@@ -877,5 +886,119 @@ class Gateway extends Base\Gateway
     public function getPaymentIdFromServerCallback(array $response)
     {
         return $response[ResponseFields::PAYMENT_ID];
+    }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $gatewayPayment = $this->repo->fetchByMerchantReference($merchantReference);
+
+        if ($gatewayPayment !== null)
+        {
+            throw new Exception\LogicException(
+                'Duplicate Gateway payment found',
+                null,
+                [
+                    'callbackData' => $callbackData
+                ]
+            );
+        }
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        /*
+            Verifies if the payload specified in the server callback is valid.
+        */
+
+        $paymentId = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $input = [
+            'gateway' => [
+                'merchant_reference' => $paymentId,
+            ]
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $request = $this->getPaymentVerifyRequestArray($input);
+
+        $this->action = Action::VALIDATE_PUSH;
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+    }
+
+    public function getParsedDataFromUnexptectedCallback($callbackData)
+    {
+        $payment = [
+            "method"   => 'upi',
+            "amount"   => (int)($callbackData[ResponseFields::AMOUNT] * 100),
+            "currency" => "INR",
+            "vpa"      => $callbackData[ResponseFields::PAYER_VA],
+            "contact"  => "+919999999999",
+            "email"    => "void@razorpay.com",
+        ];
+
+        $terminal = [
+            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID]
+        ];
+
+        return [
+            'payment'  => $payment,
+            'terminal' => $terminal
+        ];
+    }
+
+    public function validatePush($input)
+    {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $this->isDuplicateUnexpectedPayment($input);
+
+        $this->isValidUnexpectedPayment($input);
+    }
+
+    public function authorizePush($input)
+    {
+        list($paymentId , $callbackData) = $input;
+
+        $gatewayInput = [
+            "payment" => [
+                "id"     => $paymentId,
+                "vpa"    => $callbackData[ResponseFields::PAYER_VA],
+                "amount" => (int)($callbackData[ResponseFields::AMOUNT] * 100),
+            ],
+            "upi"     => [
+                "expiry_time" => 1, // dummy value
+            ]
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = $this->getGatewayEntityAttributes($gatewayInput, Action::AUTHORIZE, Base\Type::PAY);
+
+        $callbackData[Entity::RECEIVED] = 1;
+
+        // Update merchant reference and payment_id
+        $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $callbackData[ResponseFields::PAYMENT_ID] = $paymentId;
+
+        $callbackData[Entity::MERCHANT_REFERENCE] = $merchantReference;
+
+        $attributes = array_merge($attributes, $callbackData);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 }

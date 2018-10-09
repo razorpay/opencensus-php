@@ -427,15 +427,8 @@ class Gateway extends Base\Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
-        {
-            return false;
-        }
-
         if (($input['payment']['recurring'] === true) and
-            ($input['token'] !== null) and
-            ($input['token']->isRecurring() === true))
+            ($input['payment']['recurring_type'] === 'auto'))
         {
             return true;
         }
@@ -584,7 +577,7 @@ class Gateway extends Base\Gateway
 
             default:
                 $response['result']         = 'Refund Failed';
-                $response['status_code']    = 'REFUND_FAILURE';
+                $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
         }
 
         return $response;
@@ -601,14 +594,35 @@ class Gateway extends Base\Gateway
             $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount']);
         }
 
-        return [
-                    'success'               => ($gatewayResponse['status_code'] === 'REFUND_SUCCESSFUL'),
-                    'status_code'           => $gatewayResponse['status_code'],
-                    'gateway_response'      => json_encode($gatewayResponse),
+        if (($action === 'refund') and ($gatewayResponse['status_code'] !== 'REFUND_SUCCESSFUL'))
+        {
+            throw new Exception\GatewayErrorException($gatewayResponse['status_code'],
+                $gatewayResponse['status_code'],
+                $gatewayResponse['result'],
+                [
+                    'gateway_response'  => json_encode($gatewayResponse),
                     'gateway_keys'          => [
                         'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
                         'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
                     ]
-                ];
+                ]);
+        }
+
+        $response = [
+            'gateway_response'      => json_encode($gatewayResponse),
+            'gateway_keys'          => [
+                'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
+                'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
+            ]
+        ];
+
+
+        if ($action === 'verify')
+        {
+            $response['success'] = ($gatewayResponse['status_code'] === 'REFUND_SUCCESSFUL');
+            $response['status_code'] = $gatewayResponse['status_code'];
+        }
+
+        return $response;
     }
 }

@@ -118,6 +118,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::GLOBAL_CUSTOMER       => 1,
+        self::CUSTOMER_EMAIL        => null,
         self::TYPE                  => 0,
         self::NOTES                 => [],
         self::QUANTITY              => 1,
@@ -685,6 +686,11 @@ class Entity extends Base\PublicEntity
     public function setGlobalCustomer(bool $isGlobalCustomer)
     {
         $this->setAttribute(self::GLOBAL_CUSTOMER, $isGlobalCustomer);
+    }
+
+    public function setCustomerEmail(string $customerEmail = null)
+    {
+        $this->setAttribute(self::CUSTOMER_EMAIL, $customerEmail);
     }
 
     public function setStartAt($startAt)

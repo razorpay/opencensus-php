@@ -316,7 +316,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid' => false,
+                'valid' => true,
             ],
         ],
     ],
@@ -367,7 +367,7 @@ return [
         ],
     ],
 
-    'testBankTransferNotifyFailure' => [
+    'testBankTransferNotifyNonFailure' => [
         'request' => [
             'url' => '/ecollect/pay',
             'method' => 'post',
@@ -385,17 +385,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The payee ifsc field is required.',
-                    'field'       => 'payee_ifsc',
-                ],
+                'success' => true,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

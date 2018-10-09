@@ -18,20 +18,52 @@ class ScheduleLibraryTest extends TestCase
 
     public function testBasicT3Schedule()
     {
-        $data = $this->testData[__FUNCTION__];
-
-        $basicT3Schedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
+        $this->startScheduleLibraryTest();
     }
 
     public function testT3ScheduleWithMinTime()
     {
-        $data = $this->testData[__FUNCTION__];
+        $this->startScheduleLibraryTest();
+    }
 
-        $basicT3Schedule = (new Schedule\Entity)->build($data['schedule']);
+    public function testTwoHourSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
 
-        $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
+    public function testEveryTuesdaySchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testEndOfEveryMonthSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testT0WithHourSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testTenthOfEveryMonthSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testSecondWeekOfEveryMonthSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testLastMondayOfEveryMonthSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
+    public function testSameDayHouredSchedule()
+    {
+        $this->startScheduleLibraryTest();
     }
 
     public function testComputeFutureRun()
@@ -43,67 +75,16 @@ class ScheduleLibraryTest extends TestCase
         $this->computeFutureRun($basicT3Schedule, $data['cases']);
     }
 
-    public function testTwoHourSchedule()
+    protected function startScheduleLibraryTest()
     {
-        $data = $this->testData[__FUNCTION__];
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $testName = $trace[1]['function'];
 
-        $twoHourSchedule = (new Schedule\Entity)->build($data['schedule']);
+        $data = $this->testData[$testName];
 
-        $this->runCaseWiseScheduleTest($twoHourSchedule, $data['cases']);
-    }
+        $schedule = (new Schedule\Entity)->build($data['schedule']);
 
-    public function testEveryTuesdaySchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $tuesdaySchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($tuesdaySchedule, $data['cases']);
-    }
-
-    public function testEndOfEveryMonthSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $endMonthSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($endMonthSchedule, $data['cases']);
-    }
-
-    public function testTenthOfEveryMonthSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $tenthOfMonthSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($tenthOfMonthSchedule, $data['cases']);
-    }
-
-    public function testSecondWeekOfEveryMonthSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $secondWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($secondWeekSchedule, $data['cases']);
-    }
-
-    public function testLastMondayOfEveryMonthSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $lastWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
-    }
-
-    public function testSameDayHouredSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $lastWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
+        $this->runCaseWiseScheduleTest($schedule, $data['cases']);
     }
 
     private function computeFutureRun($schedule, $cases)
@@ -133,9 +114,12 @@ class ScheduleLibraryTest extends TestCase
         {
             $initialTimestamp = $this->getTimestampFromFormatted($case['initialTime']);
 
-            $nextRun = $this->getInitialNextRun($case['initialTime']);
+            $nextRun = $this->getInitialNextRun($case['initialTime'], $schedule);
 
-            $nextTime = Schedule\Library::getNextApplicableTime($initialTimestamp, $schedule, $nextRun);
+            $ignoreHolidays = $case['ignoreHolidays'] ?? false;
+
+            $nextTime = Schedule\Library::getNextApplicableTime(
+                $initialTimestamp, $schedule, $nextRun, $ignoreHolidays);
 
             $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime);
 
@@ -148,11 +132,13 @@ class ScheduleLibraryTest extends TestCase
         return $this->getTimeObjectFromFormatted($formattedTime)->getTimestamp();
     }
 
-    private function getInitialNextRun($formattedTime)
+    private function getInitialNextRun($formattedTime, $schedule)
     {
         $timeObject = $this->getTimeObjectFromFormatted($formattedTime);
 
-        return $timeObject->hour(0)->minute(0)->second(0)->getTimestamp();
+        $hour = $schedule->getHour();
+
+        return $timeObject->hour($hour)->minute(0)->second(0)->getTimestamp();
     }
 
     private function getFormattedTimeFromTimestamp($timestamp)

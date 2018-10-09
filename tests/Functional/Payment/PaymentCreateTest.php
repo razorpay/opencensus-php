@@ -541,8 +541,7 @@ class PaymentCreateTest extends TestCase
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
-        $payment['recurring'] = true;
-        $payment['preferred_recurring'] = true;
+        $payment['recurring'] = 'xyz';
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
@@ -580,7 +579,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
-        $payment['preferred_recurring'] = true;
+        $payment['recurring'] = 'preferred';
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
@@ -630,14 +629,27 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $payment['save'] = true;
-        $payment['preferred_recurring'] = true;
-        unset($payment['recurring']);
+        $payment['recurring'] = 'preferred';
 
         $this->doAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $paymentEntity['recurring']);
+    }
+
+    public function testDirectSettlementPayment()
+    {
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
     }
 
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)

@@ -23,6 +23,9 @@ class CreateUpi extends Migration
 
             $table->increments(Upi::ID);
 
+            $table->string(Upi::GATEWAY)
+                ->nullable();
+
             $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(Upi::REFUND_ID, Payment::ID_LENGTH)
@@ -82,6 +85,12 @@ class CreateUpi extends Migration
             $table->string(Upi::NPCI_REFERENCE_ID, 20)
                   ->nullable();
 
+            $table->string(Upi::NPCI_TXN_ID)
+                  ->nullable();
+
+            $table->integer(Upi::RECONCILED_AT)
+                  ->nullable();
+
             $table->integer(Upi::CREATED_AT);
             $table->integer(Upi::UPDATED_AT);
 
@@ -97,6 +106,9 @@ class CreateUpi extends Migration
             $table->index(Upi::STATUS_CODE);
             $table->index(Upi::NPCI_REFERENCE_ID);
             $table->index(Upi::CREATED_AT);
+            $table->index([Upi::GATEWAY, Upi::RECONCILED_AT]);
+            $table->index(Upi::NPCI_TXN_ID);
+            $table->index(Upi::MERCHANT_REFERENCE);
         });
     }
 

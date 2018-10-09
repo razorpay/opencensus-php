@@ -43,6 +43,12 @@ class Fields
     const CHECK_STATUS_UNQ_TXN_ID      = 'tranid';
     const CHECK_STATUS_CHECKSUM        = 'checksum';
     const CHECK_STATUS_MOBILE_NO       = 'mobilenumber';
+    const CHECK_STATUS_REF_ID          = 'refid';
+    const CHECK_STATUS_DATE_TIME       = 'dateTime';
+    const CHECK_STATUS_DEBIT_VPA       = 'debitVpa';
+    const CHECK_STATUS_CREDIT_VPA      = 'creditVpa';
+    const STATUS                       = 'status';
+    const REMARKS                      = 'remarks';
 
     const CALLBACK_STATUS_CODE         = 'callBackstatusCode';
     const CALLBACK_STATUS_DESCRIPTION  = 'callBackstatusDescription';

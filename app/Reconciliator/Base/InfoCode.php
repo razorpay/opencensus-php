@@ -18,5 +18,8 @@ class InfoCode
 
     const UNKNOWN_RECON_TYPE    = 'UNKNOWN_RECON_TYPE';
 
+    const DATA_MISMATCH         = 'DATA_MISMATCH';
+
     const UNEXPECTED_PAYMENT    = 'UNEXPECTED_PAYMENT';
 }
+

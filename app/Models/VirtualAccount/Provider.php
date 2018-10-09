@@ -10,119 +10,28 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
-use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\BharatQr\Constants;
-use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Provider
 {
+    // Bank Account Providers
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
 
-    // Qr Code Providers
-    const BHARAT_QR = 'bharat_qr';
-
-    // Dashboard acts as a mock provider bank,
-    // and is used to run tests.
-    // Also used when merchant makes a test
-    // payment to a virtual account.
+    /*
+     * Dashboard acts as a mock bank account
+     * provider, and it's been used to run test.
+     *
+     * Also used when merchant makes a test
+     * payment to a virtual account.
+     */
     const DASHBOARD = 'dashboard';
 
-    const LIVE_PROVIDERS = [
-        self::YESBANK,
-        self::KOTAK,
-    ];
-
-    const TEST_PROVIDERS = [
-        self::DASHBOARD,
-    ];
-
-    // Kotak's whitelisted IP
-    const KOTAK_IP = '14.141.97.12';
-
-    // Each provider gives us a range of bank accounts
-    // by alloting an account number prefix/master/root
-    //
-    // We use the default root along with out own handle,
-    // in cases where handle is unset.
-    //
-    // Standard root is used when handle is set.
-    const ROOT = [
-        self::YESBANK => [
-            'numeric' => [
-                'default' => '222333',
-                'handle'  => '222333',
-                'special' => '543210',
-            ],
-            'alpha_numeric' => [
-                'default' => null,
-                'handle'  => null,
-                'special' => null,
-            ],
-            'reserved' => [],
-        ],
-        self::KOTAK     => [
-            'numeric' => [
-                // Numeric used for merchants who have not set handle
-                'default' => '139914',
-                // Numeric used for merchants who have set a 4-char handle
-                'handle'  => '139914',
-                // Numeric used for merchants who have set a 3-char handle
-                'special' => '139913',
-            ],
-            'alpha_numeric' => [
-                // Alphanumeric used for merchants who have not set handle
-                'default' => 'RAZO',
-                // Alphanumeric used for merchants who have set a 4-char handle
-                'handle'  => 'RZRP',
-                // Alphanumeric used for merchants who have set a 3-char handle
-                'special' => 'RAZR',
-            ],
-            // Used for our own nodal-to-nodal transfers
-            'reserved' => [
-                // DO NOT REFUND PAYMENTS MADE HERE
-                'RZRN',
-            ],
-        ],
-        self::DASHBOARD => [
-            'numeric' => [
-                'default' => '111222',
-                'handle'  => '111222',
-                'special' => '543210',
-            ],
-            'alpha_numeric' => [
-                'default' => 'RAZO',
-                'handle'  => 'RZRP',
-                'special' => 'RAZR',
-            ],
-            'reserved' => [
-                'RZRN',
-            ],
-        ],
-    ];
-
-    const DEFAULT_HANDLE_MAPPING = [
-        // Default
-        'RAZO'   => 'RPAY',
-        // Test mode
-        '111222' => '00',
-        // Kotak
-        '139913' => '00',
-        '139914' => '0',
-        // YesBank
-        '222333' => '00',
-        // BPCL has given a custom root for descriptor length 10.
-        '543210' => '',
-    ];
-
-    const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        // BPCL gets 2223339
-        Preferences::MID_BPCL => '',
-        // Tests
-        Account::TEST_ACCOUNT => '',
-    ];
+    // Qr Code Providers
+    const BHARAT_QR = 'bharat_qr';
 
     const IFSC = [
         self::YESBANK   => 'YESB0CMSNOC',
@@ -146,6 +55,18 @@ class Provider
             BankAccount::IFSC_CODE => self::IFSC[self::DASHBOARD],
         ],
     ];
+
+    const LIVE_PROVIDERS = [
+        self::YESBANK,
+        self::KOTAK,
+    ];
+
+    const TEST_PROVIDERS = [
+        self::DASHBOARD,
+    ];
+
+    // Kotak's whitelisted IP
+    const KOTAK_IP = '14.141.97.12';
 
     const IP = [
         self::YESBANK => [
@@ -202,21 +123,6 @@ class Provider
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
 
         return (($mode === Mode::TEST) or $isLiveProvider);
-    }
-
-    public static function isReservedAccount(string $accountNumber, string $provider)
-    {
-        $reservedRoots = self::ROOT[$provider]['reserved'];
-
-        foreach ($reservedRoots as $root)
-        {
-            if (substr($accountNumber, 0, strlen($root)) === $root)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function generateQrString(QrCode\Entity $qrCode)
@@ -454,19 +360,18 @@ class Provider
      * generate qr codes
      *
      * @param string        $method
-     * @param QrCode\Entity $qrCode
+     * @param PublicEntity  $receiver
      *
      * @param string|null   $network
+     * @param array|[]      $metadata
      *
      * @return mixed
      */
-    protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode, string $network = null)
+    public function getTerminalForMethod(string $method, PublicEntity $receiver, string $network = null, array $metadata = [])
     {
-        $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $network);
+        $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $receiver, $network, $metadata);
 
-        $paymentArray[Payment\Entity::RECEIVER] = $qrCode;
-
-        $paymentProcessor = new PaymentProcessor($qrCode->merchant);
+        $paymentProcessor = new PaymentProcessor($receiver->merchant);
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }

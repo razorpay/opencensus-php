@@ -73,7 +73,6 @@ class Entity
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
-    const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
     const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
@@ -161,6 +160,7 @@ class Entity
     const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
+    const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
@@ -176,6 +176,8 @@ class Entity
     const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
+    const NETBANKING_EQUITAS     = 'netbanking_equitas';
+
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -272,7 +274,6 @@ class Entity
         self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
-        self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
         self::PAYMENT_LINK          => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
@@ -327,6 +328,7 @@ class Entity
         self::ENACH                  => \RZP\Gateway\Enach\Base::class,
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
         self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
+        self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Legaldesk::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
@@ -346,6 +348,7 @@ class Entity
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
+        self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -393,13 +396,15 @@ class Entity
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
-
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
+
+        self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Base::class,
 
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,

@@ -76,8 +76,17 @@ abstract class RowProcessor extends Base\Core
 
         $sourceBatchId = $this->reconEntity->source->getBatchFundTransferId();
 
-        if ($sourceBatchId !== $this->reconEntity->getBatchFundTransferId())
+        $reconEntityBatchId = $this->reconEntity->getBatchFundTransferId();
+
+        if ($sourceBatchId !== $reconEntityBatchId)
         {
+            $this->trace->info(
+                TraceCode::FTA_RECON_SOURCE_UPDATE_SKIPPED,
+                [
+                    'source_batch_id'       => $sourceBatchId,
+                    'recon_entity_batch_id' => $reconEntityBatchId
+                ]
+            );
             return;
         }
 
@@ -131,6 +140,10 @@ abstract class RowProcessor extends Base\Core
         $this->reconEntity->source->setRemarks($remarks);
 
         $this->repo->saveOrFail($this->reconEntity->source);
+
+        $this->trace->info(
+            TraceCode::FTA_RECON_SOURCE_UPDATED,
+            ['source_id' => $this->reconEntity->source->getId()]);
     }
 
     /**

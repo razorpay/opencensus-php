@@ -118,9 +118,13 @@ class Beneficiary extends Base
         {
             $data = $this->extractFailedData($responseContent);
 
-            if($data['error'] !== self::RECORD_EXIST)
+            if($data[Constants::ERROR] !== self::RECORD_EXIST)
             {
-                throw new LogicException($data['error'], TraceCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+                throw new LogicException($data[Constants::ERROR], TraceCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+            }
+            else
+            {
+                return $data;
             }
         }
 
@@ -155,11 +159,12 @@ class Beneficiary extends Base
     /**
      * dummy implementation as per the interface.
      * we wont be doing anything on successful bene registration
+     * @param array $response
+     * @return array
      */
     protected function extractSuccessfulData(array $response): array
     {
-        // do nothing here as we are not doing anything with this data
-        return [];
+        return $response;
     }
 
     /**
@@ -177,8 +182,9 @@ class Beneficiary extends Base
         $error = json_decode($json, true);
 
         return [
-            'channel'        => $this->channel,
-            'beneficiary_id' => $response[Constants::BENEFICIARY_CD],
+            'channel'                   => $this->channel,
+            'beneficiary_id'            => $response[Constants::BENEFICIARY_CD],
+             Constants::REQUEST_STATUS  => $response[Constants::REQUEST_STATUS],
         ] + $this->getErrorDetails($error[Constants::ITEM]);
     }
 
@@ -195,7 +201,7 @@ class Beneficiary extends Base
         $code = $error[Constants::ERROR_SUB_CODE];
 
         return [
-            'error'          => $message,
+            Constants::ERROR => $message,
             'error_code'     => $code,
         ];
     }
@@ -207,6 +213,12 @@ class Beneficiary extends Base
      */
     protected function mockGenerateFailedResponse(): string
     {
+        $errorData = htmlentities(
+            '<Error><Item><ErrorSubCode>101</ErrorSubCode>'
+                 . '<GeneralMsg>Record already exists</GeneralMsg>'
+                 . '</Item></Error>'
+        );
+
         return '<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">'
             . '<soapenv:Body>'
             . '<NS1:maintainBeneficiaryResponse xmlns:NS1="http://BeneMaintenanceService">'
@@ -217,9 +229,7 @@ class Beneficiary extends Base
             . rand(1000, 9999)
             . '</ReqRefNo>'
             . '<Error>'
-            . '<![CDATA[<Error>'
-            . '<Item><ErrorSubCode>101</ErrorSubCode><GeneralMsg>Record already exists</GeneralMsg></Item>'
-            . '</Error>]]>'
+            . $errorData
             . '</Error>'
             . '<CustId>'
             . $this->customerId

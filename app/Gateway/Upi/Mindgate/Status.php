@@ -16,6 +16,8 @@ class Status
 
     const TIMEOUT = 'TIMEOUT';
 
+    const EXPIRED = 'EXPIRED';
+
     const REFUND_SUCCESS = 'SUCCESS';
 
     const REFUND_FAILED = 'FAILED';
