@@ -699,4 +699,44 @@ return [
             ],
         ],
     ],
+
+    'testCategoryDetailsSetOnSubCategoryChange' => [
+        'request'  => [
+            'content' => [
+                'business_subcategory' => 'mutual_fund',
+                'business_category'    => 'financial_services',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
+
+    'testCategoryDetailsSetForOthersCategory' => [
+        'request'  => [
+            'content' => [
+                'business_category'    => 'others',
+                'business_subcategory' => null,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
 ];

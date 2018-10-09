@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal\Category;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 
@@ -764,4 +766,46 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW => ActivationFlow::WHITELIST,
         ],
     ];
+
+    /**
+     * returns metadata for others category
+     * others business category does not have any subcategory associated with it
+     *
+     * @return array
+     */
+    private static function getMetaDataForOthersCategory(): array
+    {
+        return [
+            Merchant::CATEGORY      => 5399,
+            Merchant::CATEGORY2     => Category::OTHERS,
+            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
+        ];
+    }
+
+    /**
+     * returns metadata for given category , subcategory
+     * throws BadRequestException if metadata is not defined for subcategory
+     *
+     * @param string      $category
+     * @param null|string $subcategory
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public static function getSubCategoryMetaData(string $category, ?string $subcategory): array
+    {
+        if ($category === BusinessCategory::OTHERS)
+        {
+            return self::getMetaDataForOthersCategory();
+        }
+
+        if (isset(self::SUB_CATEGORY_METADATA[$subcategory]) === true)
+        {
+            return self::SUB_CATEGORY_METADATA[$subcategory];
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY,
+            [Entity::BUSINESS_SUBCATEGORY => $subcategory]);
+    }
 }

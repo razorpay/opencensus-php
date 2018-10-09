@@ -2,7 +2,9 @@
 
 namespace RZP\Reconciliator\Kotak\SubReconciliator;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -13,11 +15,30 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID];
+        $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID] ?? null;
 
-        $netbankingRepo = $this->repo->netbanking;
+        $paymentId = null;
 
-        $paymentId = $netbankingRepo->findByIntPaymentId($intPaymentId)->getPaymentId();
+        try
+        {
+            $paymentId = $this->repo->netbanking->findByIntPaymentId($intPaymentId)->getPaymentId();
+        }
+        catch (DbQueryException $ex)
+        {
+            //
+            // Only tracing as error, not sending slack messages as this can happen in three cases
+            // 1. file with wrong format has been uploaded and all payment_ids is mapped to some other data.
+            // 2. only few rows are not in proper format (extra data or less data in a row) and mapping goes wrong.
+            // 3. Int payment id present in file is genuinely not present in our database.
+            //
+            $this->messenger->setSkipSlack(true)->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_MISMATCH,
+                    'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_id'    => $intPaymentId,
+                    'gateway'       => $this->gateway
+                ]);
+        }
 
         return $paymentId;
     }
