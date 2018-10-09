@@ -44,6 +44,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
         DetailEntity::REVIEWER_ID,
+        DetailEntity::ACTIVATION_FLOW,
     ];
 
     protected $groupIndexedFields = [
@@ -79,6 +80,7 @@ class EsRepository extends Base\EsRepository
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
         DetailEntity::REVIEWER_ID,
+        Constants::INSTANT_ACTIVATION,
     ];
 
     /**
@@ -90,6 +92,14 @@ class EsRepository extends Base\EsRepository
      * @var boolean
      */
     protected $sortBySubmittedAtAsc = false;
+
+    /**
+     * By default we sort by descending created_at but in instant activation listing case
+     * we sort by descending order of balance , followed by ascending submitted_at.
+     *
+     * @var boolean
+     */
+    protected $sortByPendingBalance = false;
 
     // --------------- Getters -----------------------------
 
@@ -289,6 +299,26 @@ class EsRepository extends Base\EsRepository
         $this->addQueryForAcl($query, $params);
     }
 
+    public function buildQueryForInstantActivation(array & $query, string $value)
+    {
+        //https://github.com/laravel/ideas/issues/514
+        // request will contain "1" or "0" so converting it to boolean
+        $value = $value ? true : false;
+
+        $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_FLOW;
+
+        if ($value === true)
+        {
+            $this->sortByPendingBalance = true;
+
+            $this->addNotNullFilterForField($query, $attribute);
+        }
+        else
+        {
+            $this->addNullFilterForField($query, $attribute);
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -296,10 +326,18 @@ class EsRepository extends Base\EsRepository
      * set sortBySubmittedAtAsc as true and override the sort parameter of
      * query building.
      *
+     * In case of instant activation  , we set sortByPendingBalance as true
+     * and override the sort parameter of query building.
+     *
      * @return array
      */
     public function getSortParameter(): array
     {
+        if ($this->sortByPendingBalance === true)
+        {
+            return $this->getSortParameterForSortByBalance();
+        }
+
         if ($this->sortBySubmittedAtAsc === false)
         {
             return parent::getSortParameter();
@@ -309,6 +347,30 @@ class EsRepository extends Base\EsRepository
 
         return [
             Es::_SCORE => [
+                Es::ORDER => Es::DESC,
+            ],
+            $submittedAtAttr => [
+                Es::ORDER => Es::ASC,
+            ],
+        ];
+    }
+
+    /**
+     * returns sort parameters for instant activation case
+     * sort by merchant balance in descending order , followed by ascending order of submitted at
+     *
+     * @return array
+     */
+    private function getSortParameterForSortByBalance(): array
+    {
+        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+        $balanceAttr     = E::MERCHANT_DETAIL . '.' . BalanceEntity::BALANCE;
+
+        return [
+            Es::_SCORE       => [
+                Es::ORDER => Es::DESC,
+            ],
+            $balanceAttr     => [
                 Es::ORDER => Es::DESC,
             ],
             $submittedAtAttr => [

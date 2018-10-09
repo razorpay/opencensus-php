@@ -284,6 +284,9 @@ return [
                     'activation_status' => [
                         'type' => 'keyword',
                     ],
+                    'activation_flow' => [
+                        'type' => 'keyword',
+                    ],
                     'reviewer_id' => [
                         'type'  => 'keyword',
                     ],
