@@ -20,11 +20,15 @@ class EntityMapping extends Base
     {
         $fromEntityType = $this->settingsAccessor->get(Header::ENTITY_FROM_TYPE);
 
+        // Concatinating toEntityTpe with `s` because we have relationship functions ending with `s` like merchants()
+        // accounts() etc
         $toEntityType = $this->settingsAccessor->get(Header::ENTITY_TO_TYPE) . 's';
 
         $fromEntity = $this->repo->$fromEntityType->findOrFailPublic($entry[Header::ENTITY_FROM_ID]);
 
-        $fromEntity->$toEntityType()->sync($entry[Header::ENTITY_TO_ID]);
+        $this->repo->sync($fromEntity, $toEntityType, $entry[Header::ENTITY_TO_ID]);
+
+        $entry[Header::STATUS] = Status::SUCCESS;
     }
 
     /**
@@ -51,7 +55,10 @@ class EntityMapping extends Base
             return [Header::ENTITY_FROM_ID => $fromEntityId, Header::ENTITY_TO_ID => $toEntityId];
         }, array_keys($processedEntries), $processedEntries);
 
-        parent::processEntries($processedEntries);
+        // since entries is passed by reference the same is used in further processing so changing the whole entries.
+        $entries = $processedEntries;
+
+        parent::processEntries($entries);
     }
 
     /**
