@@ -9,6 +9,7 @@ import { trackOndemand } from './ga';
 import { fetchCurrentBalance } from 'merchant/modules/home';
 import Input from 'component/Input';
 import Alert from 'rzp/ui/Forms/Alert';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 @connect(
   state => ({ user: state.session.user }),
@@ -90,7 +91,7 @@ export default class OndemandModal extends Component {
     if (isInteger(val) && val > 0) {
       if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
-        return 'Amount cannot be greater than your current balance';
+        return 'Please ensure that the entered amount is not more than the balance';
       }
     } else {
       return 'Invalid Amount';
@@ -123,7 +124,18 @@ export default class OndemandModal extends Component {
             />
             <div class="modal-body">
               <div class="help-block">
-                The requested balance will be settled in the next few hours.
+                The requested balance will be settled in the next 3 working
+                hours
+                <i className="i i-info-circle" />
+                <Popover
+                  align="right"
+                  theme="dark"
+                  parentQuerySelector=".onmdemand-modal"
+                >
+                  <PopoverBody>
+                    Working hours are 9am - 6pm everyday except on Bank Holidays
+                  </PopoverBody>
+                </Popover>
               </div>
               <Button.Primary
                 class="close-btn"
@@ -141,7 +153,7 @@ export default class OndemandModal extends Component {
             />
             <div class="modal-body">
               <p>
-                Get settlements in a few working hours for an additional charge.
+                Get settlements in 3 working hours for an additional charge.
               </p>
               <p>
                 <i className="i i-info-circle" /> No Early Settlements on Bank
