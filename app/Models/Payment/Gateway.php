@@ -13,6 +13,7 @@ use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -588,6 +589,12 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
+    ];
+
+    public static $bankTransferProviderGateway = [
+        Provider::YESBANK   => self::BT_YESBANK,
+        Provider::KOTAK     => self::BT_KOTAK,
+        Provider::DASHBOARD => self::BT_DASHBOARD,
     ];
 
     /**

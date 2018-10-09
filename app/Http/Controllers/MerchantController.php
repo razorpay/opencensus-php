@@ -698,6 +698,15 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function bulkCreateMerchantCredits(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->bulkCreateCredits($input);
+
+        return ApiResponse::json($response);
+    }
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
