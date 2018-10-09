@@ -4349,3 +4349,7 @@ ALTER TABLE axis
 # adds index on merchant_reference (upi table)
 ALTER TABLE upi
     ADD INDEX upi_merchant_reference_index (merchant_reference);
+
+# Query to add activation_flow in merchant_details table for instant activations
+ALTER TABLE merchant_details
+    ADD COLUMN activation_flow VARCHAR (255) AFTER activation_status;

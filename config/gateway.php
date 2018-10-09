@@ -63,6 +63,8 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'bt_yesbank',
+        'bt_kotak',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),

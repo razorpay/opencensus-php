@@ -766,7 +766,7 @@ class Entity extends Base\PublicEntity
 
     public function setCategory2($category)
     {
-        return $this->setAttribute(self::CATEGORY2, $category);
+        $this->setAttribute(self::CATEGORY2, $category);
     }
 
     public function getCategory2()
@@ -886,6 +886,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function setCategory(int $category)
+    {
+        $this->setAttribute(self::CATEGORY, $category);
     }
 
     public function getMaxPaymentAmount()

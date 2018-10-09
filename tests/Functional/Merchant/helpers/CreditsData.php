@@ -26,6 +26,32 @@ return [
         ],
     ],
 
+    'testCreateCreditsBulk' => [
+        'request'  => [
+            'url'     => '/merchants/credits/bulk',
+            'method'  => 'post',
+            'content' => [
+                '10000000000000' => [
+                    'value'    => 250000,
+                    'type'     => 'amount',
+                    'campaign' => 'random_campaign'
+                ],
+                '1000000000000x' => [
+                    'value'    => 250000,
+                    'type'     => 'amount',
+                    'campaign' => 'random_campaign'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 2,
+                'failed_count' => 1,
+                'failed_ids'   => ['1000000000000x']
+            ],
+        ],
+    ],
+
     'testGetCreditsLog' => [
         'request' => [
             'url' => '/credits/',
