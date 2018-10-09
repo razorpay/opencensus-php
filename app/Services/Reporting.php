@@ -562,11 +562,13 @@ class Reporting implements ExternalService
         $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
         $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
+        $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
             $hasMarketplaceTag,
-            $hasMarketplaceOrOpenwalletTag)
+            $hasMarketplaceOrOpenwalletTag,
+            $hasChargeAtWillTag)
         {
             switch ($value['type'])
             {
@@ -581,6 +583,10 @@ class Reporting implements ExternalService
                 // Keep reversal type only if marketplace is enabled
                 case Table::REVERSAL:
                     return $hasMarketplaceTag;
+
+                // Show token report to folks with charge_at_will feature only
+                case Table::TOKEN:
+                    return $hasChargeAtWillTag;
 
                 default:
                     return true;
