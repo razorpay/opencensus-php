@@ -489,7 +489,7 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
-     public function testPreferencesForTPVMerchantsEmptyMethodInvalidBank()
+    public function testPreferencesForTPVMerchantsEmptyMethodInvalidBank()
     {
         $this->fixtures->merchant->enableTPV();
         $this->fixtures->merchant->enableUPI();
@@ -604,16 +604,21 @@ class OrderTest extends TestCase
         $res = $this->startTest();
 
         $order = $this->getLastEntity('order', true);
-        $entityOffers = $this->getEntities('entity_offer', [], true);
 
-        $entityOffer = $entityOffers['items'][0];
-        $this->assertEquals($offer1->getId(), $entityOffer['offer_id']);
-        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
-        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
-        $entityOffer = $entityOffers['items'][1];
-        $this->assertEquals($offer2->getId(), $entityOffer['offer_id']);
-        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
-        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
+        //
+        // Need to fetch both entity_offer entities separately since
+        // there's no guarantee on the ordering of entity_offers
+        //
+
+        $entityOffer1 = $this->getEntities('entity_offer', ['offer_id' => $offer1->getPublicId()], true)['items'][0];
+        $this->assertEquals($offer1->getId(), $entityOffer1['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer1['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer1['entity_type']);
+
+        $entityOffer2 = $this->getEntities('entity_offer', ['offer_id' => $offer2->getPublicId()], true)['items'][0];
+        $this->assertEquals($offer2->getId(), $entityOffer2['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer2['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer2['entity_type']);
     }
 
     public function testCreateOrderWithRepeatedOffers()
