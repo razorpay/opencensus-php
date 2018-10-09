@@ -777,8 +777,11 @@ class Entity extends Base\PublicEntity
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
+     *
+     * TODO: Temporarily made public for VA payments to set gateway externally
+     * This should be removed after VA terminals are used in payment flow as well
      */
-    protected function setGateway($gateway)
+    public function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
@@ -2795,7 +2798,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
-    public function getDummyPaymentArray(string $method, Base\PublicEntity $receiver = null, string $network = null, array $metadata = [], Order\Entity $orderEntity = null): array
+    public function getDummyPaymentArray(
+        string $method,
+        Base\PublicEntity $receiver = null,
+        string $network = null,
+        array $metadata = [],
+        Order\Entity $orderEntity = null): array
     {
         $paymentArray =  [
             self::CURRENCY    => Currency\Currency::INR,

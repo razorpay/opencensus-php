@@ -309,6 +309,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPendingGatewayCapture()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPendingGatewayCapture($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postManualGatewayCapture($id)
     {
         $data = $this->service()->manualGatewayCapture($id);
