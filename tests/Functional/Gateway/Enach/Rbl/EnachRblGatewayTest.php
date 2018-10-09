@@ -792,6 +792,22 @@ class EnachRblGatewayTest extends TestCase
         );
     }
 
+    public function testDebitVerify()
+    {
+        $this->testDebitFileReconciliation();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $verify = $this->verifyPayment('pay_' . $payment['id']);
+            });
+    }
+
     public function testDebitFileReconciliationFailure()
     {
         $payment = $this->makeDebitPayment();
