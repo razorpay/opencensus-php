@@ -39,7 +39,7 @@ class Crypto
             $this->setEncryptionCertificate($this->config['live_npci_emandate_encryption_certificate']);
             $this->setSigningCertificate($this->config['live_npci_emandate_signing_certificate']);
         }
-        elseif ($mode === Mode::TEST)
+        else if ($mode === Mode::TEST)
         {
             $key  = $this->config['test_emandate_private_key'];
             $cert = file_get_contents(__DIR__ . '/keys/onmag_cert.cer');
@@ -96,14 +96,14 @@ class Crypto
         {
             case 'decrypt':
                 $key = $this->getPrivateKey();
-                $rsa->loadKey($key);
                 break;
 
             case 'encrypt':
                 $key = $this->getEncryptionPublicKey();
-                $rsa->loadKey($key);
                 break;
         }
+
+        $rsa->loadKey($key);
 
         $rsa->setEncryptionMode(RSA::ENCRYPTION_OAEP);
         $rsa->setHash('sha256');
