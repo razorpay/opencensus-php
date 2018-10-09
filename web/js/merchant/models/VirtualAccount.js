@@ -41,4 +41,11 @@ export default class VirtualAccount extends GenericEntity {
       data,
     });
   }
+
+  close() {
+    const url = `${this.resourceUrl}/${this.id}/close`;
+    return this.makeGenericAjaxCall({ method: 'POST', url }).then(response => {
+      return new VirtualAccount(response.data).deserialize();
+    });
+  }
 }

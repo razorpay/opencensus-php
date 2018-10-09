@@ -75,7 +75,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       abortLabel: 'No',
       action: () =>
         this.props
-          .saveVirtualAccount({ ...virtualaccount, status: 'closed' })
+          .closeVirtualAccount({ ...virtualaccount, status: 'closed' })
           .then(response => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Smart Collect',
