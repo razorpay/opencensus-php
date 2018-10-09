@@ -25,8 +25,6 @@ class EntityMapping extends Base
         $fromEntity = $this->repo->$fromEntityType->findOrFailPublic($entry[Header::ENTITY_FROM_ID]);
 
         $fromEntity->$toEntityType()->sync($entry[Header::ENTITY_TO_ID]);
-
-        $this->repo->saveOrFail($fromEntity);
     }
 
     /**
