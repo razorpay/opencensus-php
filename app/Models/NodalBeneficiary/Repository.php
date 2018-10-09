@@ -9,10 +9,10 @@ class Repository extends Base\Repository
     protected $entity = 'nodal_beneficiary';
 
     protected $appFetchParamRules = [
-        Entity::CHANNEL             => 'filled|string|max:8|custom',
+        Entity::CHANNEL             => 'filled|string|max:8',
         Entity::MERCHANT_ID         => 'filled|string|size:14',
         Entity::BANK_ACCOUNT_ID     => 'filled|string|size:14',
-        Entity::REGISTRATION_STATUS => 'filled|string|max:40|custom',
+        Entity::REGISTRATION_STATUS => 'filled|string|max:40',
         Entity::BENEFICIARY_CODE    => 'sometimes|filled|nullable|string|max:30',
     ];
 
