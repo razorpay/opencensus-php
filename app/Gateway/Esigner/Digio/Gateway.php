@@ -452,7 +452,7 @@ class Gateway extends Base\Gateway
             $mandateXml = $response->body;
 
             $content = [
-                'registration_date' => Carbon::now(Timezone::IST)->getTimestamp(),
+                'registration_date' => Carbon::now(Timezone::IST)->addDays(1)->getTimestamp(),
                 'signed_xml'        => $mandateXml,
             ];
 
