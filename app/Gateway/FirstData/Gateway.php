@@ -429,13 +429,15 @@ class Gateway extends Base\Gateway
 
         $refundFields = $this->getRefundFields($refundResponse, $verify->input['refund']);
 
-        $this->updateOrCreateRefundEntity($refundFields, $verify->input);
+        $refundEntity = $this->updateOrCreateRefundEntity($refundFields, $verify->input);
 
         $refundGatewayStatus = (string) $refundTransactionValue->TransactionState;
 
         assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
+
+        $this->checkApprovalCode($refundEntity, $refundResponse, $refundFields);
 
         return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
     }
@@ -492,7 +494,7 @@ class Gateway extends Base\Gateway
         return $refundTransactionValue;
     }
 
-    protected function updateOrCreateRefundEntity(array $refundFields, array $input)
+    protected function updateOrCreateRefundEntity(array $refundFields, array $input): Entity
     {
         $gatewayRefundEntity = $this->repo->findByRefundId($refundFields['refund_id']);
 
@@ -508,6 +510,8 @@ class Gateway extends Base\Gateway
         $gatewayRefundEntity->fill($refundFields);
 
         $this->repo->saveOrFail($gatewayRefundEntity);
+
+        return $gatewayRefundEntity;
     }
 
     protected function validateVerifyRefundIsPossible(array $input)
