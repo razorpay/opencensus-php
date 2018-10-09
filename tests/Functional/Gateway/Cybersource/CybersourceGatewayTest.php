@@ -822,7 +822,7 @@ class CybersourceGatewayTest extends TestCase
             'response' => [
                 'content' => [
                     'payment_id' => $payment['id'],
-                    'manual_gateway_capture' => 'Successfully created a capture on gateway'
+                    'result'     => true
                 ]
             ]
         ];

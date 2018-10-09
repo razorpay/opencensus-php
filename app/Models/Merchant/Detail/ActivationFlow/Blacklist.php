@@ -16,7 +16,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class BlacklistActivationFlow implements ActivationFlowInterface
+class Blacklist implements ActivationFlowInterface
 {
     public function process(Entity $merchantDetails)
     {

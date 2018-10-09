@@ -952,7 +952,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testPopulateActivationFlow' => [
+    'testUpdateActivationFlow' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -975,7 +975,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testPopulateCategoryDetails' => [
+    'testUpdateCategoryDetails' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -993,85 +993,6 @@ return [
                 'business_category'    => "financial_services",
                 'business_subcategory' => "mutual_fund",
                 'can_submit'           => false,
-            ],
-        ],
-        'status_code' => 200,
-    ],
-
-    'testPostInstantActivationRequiredField' => [
-        'request'  => [
-            'method' => 'POST',
-            'url'    => '/merchant/instant_activation',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'description'         => 'The business category field is required.',
-        ],
-    ],
-
-    'testPostInstantActivation' => [
-        'request'     => [
-            'method'  => 'POST',
-            'url'     => '/merchant/instant_activation',
-            'content' => [
-                'business_category'    => 'services',
-                'business_subcategory' => 'event_planning',
-                'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
-            ],
-        ],
-        'response'    => [
-            'content' => [
-                'contact_email'                    => "test@razorpay.com",
-                'promoter_pan'                     => "ABCDE0000Z",
-                'promoter_pan_name'                => "John Doe",
-                'gstin'                            => null,
-                'p_gstin'                          => null,
-                'business_category'                => "services",
-                'business_subcategory'             => "event_planning",
-                'activation_progress'              => 0,
-                'archived'                         => 0,
-                'allowed_next_activation_statuses' => [],
-                'submitted_at'                     => null,
-                'verification'                     => [
-                    'status'              => "disabled",
-                    'disabled_reason'     => "required_fields",
-                    'required_fields'     => [
-                        "address_proof_url",
-                        "bank_account_name",
-                        "bank_account_number",
-                        "bank_branch_ifsc",
-                        "business_dba",
-                        "business_international",
-                        "business_name",
-                        "business_operation_address",
-                        "business_operation_city",
-                        "business_operation_pin",
-                        "business_operation_state",
-                        "business_pan_url",
-                        "business_proof_url",
-                        "business_registered_address",
-                        "business_registered_city",
-                        "business_registered_pin",
-                        "business_registered_state",
-                        "business_type",
-                        "contact_mobile",
-                        "contact_name",
-                        "promoter_address_url",
-                    ],
-                    'activation_progress' => 9,
-                ],
-                'can_submit'                       => false,
-                'activated'                        => 0,
             ],
         ],
         'status_code' => 200,

@@ -53,9 +53,9 @@ class ActivationTest extends TestCase
         $this->startTest();
     }
 
-    public function testPopulateActivationFlow()
+    public function testUpdateActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', []);
+        $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
@@ -68,9 +68,9 @@ class ActivationTest extends TestCase
         $this->assertSame('greylist', $testMerchant->merchantdetail->getActivationFlow());
     }
 
-    public function testPopulateCategoryDetails()
+    public function testUpdateCategoryDetails()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail', []);
+        $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 

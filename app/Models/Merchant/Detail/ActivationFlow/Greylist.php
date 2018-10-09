@@ -14,7 +14,7 @@ use RZP\Models\Merchant\Detail\Entity;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class GreylistActivationFlow implements ActivationFlowInterface
+class Greylist implements ActivationFlowInterface
 {
     public function process(Entity $merchantDetails)
     {
