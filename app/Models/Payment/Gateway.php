@@ -103,6 +103,12 @@ class Gateway
     // Stores raw gateway response in string format.
     const GATEWAY_RESPONSE   = 'gateway_response';
 
+    //
+    // If for a merchant, the esigner gateway is not assigned via config,
+    // the below gateway would be used
+    //
+    const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -395,6 +401,13 @@ class Gateway
         IFSC::ZSHX,
         Netbanking::BARB_R,
         Netbanking::PUNB_R,
+    ];
+
+    // Esigner Digio is added here just for test cases
+    const EMANDATE_AADHAAR_GATEWAYS = [
+        Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
+        Gateway::ENACH_RBL,
     ];
 
     /**
@@ -853,7 +866,8 @@ class Gateway
         // Please keep this list sorted
         // You can find the latest PDF version
         // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR => self::EMANDATE_AADHAAR_BANKS
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
     ];
 
     public static $bharatQrGateways = [
@@ -865,17 +879,13 @@ class Gateway
     ];
 
     public static $authTypeToEmandateGatewayMap = [
-        AuthType::NETBANKING => [
+        AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        // Esigner Digio and Legaldesk is added here just for test cases
-        AuthType::AADHAAR => [
-            Gateway::ESIGNER_DIGIO,
-            Gateway::ESIGNER_LEGALDESK,
-            Gateway::ENACH_RBL,
-        ],
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
     ];
 
     /**

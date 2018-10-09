@@ -8,6 +8,7 @@ use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -303,6 +304,11 @@ class Gateway extends Base\Gateway
             $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
 
             $content[RequestFields::FINAL_COLLECTION_DATE] = $finalCollection->format('Y-m-d');
+        }
+
+        if ($input['payment']['auth_type'] === Payment\AuthType::AADHAAR_FP)
+        {
+            $content[RequestFields::ESIGN_TYPE] = Constants::ESIGN_TYPE_BIOMETRIC;
         }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
