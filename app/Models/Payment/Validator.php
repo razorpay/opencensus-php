@@ -109,6 +109,11 @@ class Validator extends Base\Validator
         'gateway'                    => 'sometimes|string|max:50'
     ];
 
+    protected static $verifyAllRules = [
+        'gateway'                    => 'sometimes|string|max:50',
+        'delay'                      => 'sometimes|integer|max:30'
+    ];
+
     protected static $bulkVerifyRules = [
         'payment_ids'                => 'required|sequential_array',
         'payment_ids.*'              => 'required|public_id',

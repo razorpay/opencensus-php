@@ -41,7 +41,17 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->mockHdfcGatewayServer->threeDSecure($input);
+        if (isset($input['PaReq']) === false)
+        {
+           $data = $this->mockHdfcGatewayServer->debitPin($input);
+
+           return View::make('gateway.debitpin')->with('data', $data);
+        }
+
+        else
+        {
+            $data = $this->mockHdfcGatewayServer->threeDSecure($input);
+        }
 
         return View::make('gateway.3dsecure')->with('data', $data);
     }

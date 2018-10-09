@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Enach\Rbl;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -18,6 +19,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Enach\Base\CategoryCode;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -474,6 +476,20 @@ class Gateway extends Base\Gateway
         }
 
         parent::verify($input);
+
+        // For debit payments, we do not need to verify, since it's file based
+        if ($input['payment']['recurring_type'] === Payment\RecurringType::AUTO)
+        {
+            throw new Exception\PaymentVerificationException(
+                [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                    'action'     => 'verify'
+                ],
+                null,
+                VerifyAction::FINISH
+            );
+        }
 
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
