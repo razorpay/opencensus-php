@@ -32,9 +32,17 @@ class DailyReconStatusSummary extends Base\Core
         //
         $this->validateInput($inputParams);
 
-        $summary = $this->getFormattedSummary($inputParams[Constants::FROM], $inputParams[Constants::TO], $inputParams[Constants::ATTACH]);
+        $summary = $this->getFormattedSummary(
+            $inputParams[Constants::FROM],
+            $inputParams[Constants::TO],
+            $inputParams[Constants::ATTACH]
+        );
 
-        $reconSummaryMail = new ReconSummarymail($inputParams[Constants::EMAILS], Constants::AGGREGATE_PARAMS, $summary);
+        $reconSummaryMail = new ReconSummarymail(
+            $inputParams[Constants::EMAILS],
+            Constants::AGGREGATE_PARAMS,
+            $summary
+        );
 
         //
         // Our queue cannot handle the amount of data that gets sent in it. Hence, sync.
@@ -52,7 +60,7 @@ class DailyReconStatusSummary extends Base\Core
         {
             $entityClass = Helpers::getClassName($entity);
 
-            $data[$entity]['summary']                = (new $entityClass)->getReconStatusSummary($from, $to);
+            $data[$entity]['summary'] = (new $entityClass)->getReconStatusSummary($from, $to);
 
             if ($attach === true)
             {

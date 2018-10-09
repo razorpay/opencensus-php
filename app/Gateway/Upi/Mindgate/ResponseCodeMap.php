@@ -12,6 +12,7 @@ class ResponseCodeMap
         Status::FAILED            => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         Status::PENDING           => ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
         Status::TIMEOUT           => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+        Status::EXPIRED           => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
     ];
 
     public static function getApiErrorCode($code)

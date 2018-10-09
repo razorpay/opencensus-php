@@ -10,9 +10,9 @@ use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 class Factory
 {
     const ACTIVATION_FLOW_IMPLEMENTATION_MAPPING = [
-        ActivationFlow::WHITELIST => WhitelistActivationFlow::class,
-        ActivationFlow::BLACKLIST => BlacklistActivationFlow::class,
-        ActivationFlow::GREYLIST  => GreylistActivationFlow::class,
+        ActivationFlow::WHITELIST => Whitelist::class,
+        ActivationFlow::BLACKLIST => Blacklist::class,
+        ActivationFlow::GREYLIST  => Greylist::class,
     ];
 
     /**
