@@ -97,6 +97,10 @@ export default class ActivationContainer extends Component {
         showInstantActivation &&
         (!activationFlow || activationFlow === 'blacklist')
       ) {
+        modalClasses = modalClasses.concat([
+          'Activation--wizard',
+          'Activation--wizard--Instant',
+        ]);
         content = <InstantActivation {...commonProps} />;
       } else {
         content = (

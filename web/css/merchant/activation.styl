@@ -255,13 +255,56 @@ $side-width = 240px
 
 
 /* Modal-container size */
-.Modal-container
+.Modal-container.Modal-container
   &--Activation--wizard
     width: 90%
     max-width: 960px
     min-height: 560px
     height: 80vh
     max-height: 640px
+
+    &--Instant {
+
+      max-width: 640px;
+      height: auto;
+      max-height: none;
+      overflow: visible;
+
+      .Activation--wizard {
+
+        height: auto;
+        max-height: none;
+
+        main {
+
+          position: relative;
+          top: auto;
+          left: auto;
+          right: auto;
+          bottom: auto;
+          overflow: visible;
+
+          .Input-info, .Input-checkbox {
+
+            transition: none;
+          }
+
+          .form-footer {
+
+            .Input-content {
+
+              border-top: 1px solid #838383;
+              padding-top: 8px;
+
+              div.submit-btn {
+
+                margin-top: 32px;
+              }
+            }
+          }
+        }
+      }
+    }
 
   &--Activation--success
     width: 90%

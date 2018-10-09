@@ -171,6 +171,8 @@ export default class ActivationWizard extends React.Component {
   render() {
     const isFormLocked = !!this.props.data.locked;
 
+    console.log(this.state, this.props);
+
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
         return (
@@ -185,9 +187,23 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard Wizard">
         <main class={classList('form-container', isFormLocked && 'main--full')}>
           <main-title class="main-title">Activate your account</main-title>
+          <p>Enable live transactions by filling in a few more details</p>
 
           <Form onChange={this.onChange} layout="tabular">
             {content}
+            <div className="form-footer Input">
+              <div className="Input-content">
+                <p>
+                  By submitting this form you agree to our{' '}
+                  <span className="text-primary">Terms and Conditions</span>
+                </p>
+                <div className="text-right">
+                  <div className="btn btn-primary submit-btn">
+                    Activate Account
+                  </div>
+                </div>
+              </div>
+            </div>
           </Form>
         </main>
       </div>
