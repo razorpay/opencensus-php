@@ -21,7 +21,7 @@ import { showOrHideTour } from 'merchant/modules/session';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
-import * as ModalActions from 'rzp/modules/modals';
+import { openModal } from 'rzp/modules/modals';
 
 import {
   trackPresetChange,
@@ -35,7 +35,7 @@ import {
   state => ({ user: state.session.user }),
   {
     showOrHideTour,
-    ...ModalActions,
+    openModal,
   }
 )
 class AnalyticsDesktop extends Component {

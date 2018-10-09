@@ -16,7 +16,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
-import * as ModalActions from 'rzp/modules/modals';
+import { openModal } from 'rzp/modules/modals';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -25,7 +25,7 @@ import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
     windowWidth: state.app.windowWidth,
     user: state.session.user,
   }),
-  ...ModalActions
+  { openModal }
 )
 class AnalyticsMobile extends Component {
   constructor(props) {

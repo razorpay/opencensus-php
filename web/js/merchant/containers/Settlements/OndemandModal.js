@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import * as ModalActions from 'rzp/modules/modals';
-import Button from 'component/Button';
+import { closeModal } from 'rzp/modules/modals';
+import Button, { AsyncBtn } from 'component/Button';
 import { isInteger } from 'rzp/utils/validators';
 import ajax from 'merchant/utils/ajax';
 import { trackOndemand } from './ga';
@@ -14,7 +14,7 @@ import Popover, { PopoverBody } from 'rzp/ui/Popover';
 @connect(
   state => ({ user: state.session.user }),
   {
-    ...ModalActions,
+    closeModal,
     fetchCurrentBalance,
   }
 )
@@ -55,7 +55,8 @@ export default class OndemandModal extends Component {
       isSaving: true,
       errors: [],
     });
-    ajax(
+
+    return ajax(
       {
         url: '/merchant/payout/demand',
         method: 'POST',
@@ -181,13 +182,14 @@ export default class OndemandModal extends Component {
                     onChange={this.handleChange}
                   />
                 </div>
-                <Button.Primary
+                <AsyncBtn.Primary
                   class="submit-btn"
                   disabled={this.state.isSaving || !this.state.validAmount}
+                  pendingState="Requesting"
                   onClick={this.onSubmit}
                 >
                   Settle Early
-                </Button.Primary>
+                </AsyncBtn.Primary>
               </div>
             </div>
           </div>
