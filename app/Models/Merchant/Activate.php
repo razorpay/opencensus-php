@@ -45,16 +45,7 @@ class Activate extends Base\Core
     {
         $merchant->getValidator()->validateBeforeActivate();
 
-        //
-        // Ensure that all payment methods enabled for the merchant
-        // has an associated pricing assigned
-        //
-        //
-        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-
-        (new Methods\Core)->checkMccAndEnableEmi($merchant, $methods);
-
-        (new Methods\Core)->checkPricing($merchant, $methods, true);
+        $this->validateMethodsAndPricing($merchant);
 
         // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -64,51 +55,17 @@ class Activate extends Base\Core
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        if ($activateByStatus === true)
-        {
-            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
-        }
-
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
+        $this->createBankAccountIfApplicable($merchant);
 
         $oldMerchant = clone $merchant;
 
-        $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
-
-        $merchantPromotionCore = (new Merchant\Promotion\Core);
-
-        foreach ($merchantPromotions as $merchantPromotion)
-        {
-            try
-            {
-                $merchantPromotionCore->activate($merchantPromotion);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
-                    TraceCode::PROMOTION_ACTIVATION_FAILED,
-                    ['merchant_promotion_id' => $merchantPromotion->getId()]);
-            }
-        }
+        $this->activateMerchantPromotions($merchant);
 
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
 
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
-            ($merchant->getHasKeyAccess() === false))
-        {
-            $merchant->setHasKeyAccess(true);
-        }
+        $this->allowKeyAccessIfApplicable($merchant);
 
         if ($activateByStatus === true)
         {
@@ -158,68 +115,110 @@ class Activate extends Base\Core
     public function instantlyActivate(Entity $merchant): array
     {
         $merchant->getValidator()->validateBeforeInstantlyActivate();
-        //
-        // Ensure that all payment methods enabled for the merchant
-        // has an associated pricing assigned
-        //
-        //
-        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        (new Methods\Core)->checkMccAndEnableEmi($merchant, $methods);
-        (new Methods\Core)->checkPricing($merchant, $methods, true);
-        //        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
-        //        $ba = $this->repo->bank_account->getBankAccount($merchant);
-        //
-        //        if ($ba === null)
-        //        {
-        //            throw new Exception\BadRequestException(
-        //                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        //        }
-        // Add this later----------------------------------
-        //        $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
-        //
-        //        $merchantPromotionCore = (new Merchant\Promotion\Core);
-        //
-        //        foreach ($merchantPromotions as $merchantPromotion)
-        //        {
-        //            try
-        //            {
-        //                $merchantPromotionCore->activate($merchantPromotion);
-        //            }
-        //            catch (\Exception $e)
-        //            {
-        //                $this->trace->traceException(
-        //                    $e,
-        //                    Trace::CRITICAL,
-        //                    TraceCode::PROMOTION_ACTIVATION_FAILED,
-        //                    ['merchant_promotion_id' => $merchantPromotion->getId()]);
-        //            }
-        //        }
+
+        $this->validateMethodsAndPricing($merchant);
+
+        // @todo: Enable sometime later after instant activations is launched
+        // $this->activateMerchantPromotions($merchant);
+
         $merchant->enableReceiptEmails();
+
         $merchant->activate();
+
+        $this->allowKeyAccessIfApplicable($merchant);
+
+        (new Core)->createBalance($merchant, 'live');
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $this->repo->saveOrFail($merchant->merchantDetail);
+        });
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
+            ['merchant_id' => $merchant->getId()]);
+
+        //        $this->sendMerchantActivatedEvents($merchant);
+
+        //        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+        //
+        //        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+        //
+        //        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
+
+        return $merchant->toArrayPublic();
+    }
+
+    protected function createBankAccountIfApplicable(Entity $merchant, bool $activateByStatus)
+    {
+        if ($activateByStatus === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        }
+
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+    }
+
+    /**
+     * This function just sets the has_key_access attribute in the merchant entity, doesn't save it.
+     *
+     * @param Entity $merchant
+     */
+    protected function allowKeyAccessIfApplicable(Entity & $merchant)
+    {
         // making sure that merchant's has_key_access is set to true when website is set.
         if ((empty($merchant->merchantDetail->getWebsite()) === false) and
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);
         }
-        (new Merchant\Core)->createBalance($merchant, 'live');
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+    }
+
+    /**
+     * Ensure that all payment methods enabled for the merchant has an associated pricing assigned
+     *
+     * @param Entity $merchant
+     */
+    protected function validateMethodsAndPricing(Entity $merchant)
+    {
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        $methodCore = new Methods\Core;
+
+        $methodCore->checkMccAndEnableEmi($merchant, $methods);
+
+        $methodCore->checkPricing($merchant, $methods, true);
+    }
+
+    protected function activateMerchantPromotions(Entity $merchant)
+    {
+        $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
+
+        $merchantPromotionCore = (new Merchant\Promotion\Core);
+
+        foreach ($merchantPromotions as $merchantPromotion)
         {
-            $this->repo->saveOrFail($merchant);
-            $merchantDetail = $merchant->merchantDetail;
-            //            $merchantDetail->setLocked(true);
-            $this->repo->saveOrFail($merchantDetail);
-        });
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
-            ['merchant_id' => $merchant->getId()]);
-        //        $this->sendMerchantActivatedEvents($merchant);
-        //        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-        //
-        //        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-        //
-        //        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
-        return $merchant->toArrayPublic();
+            try
+            {
+                $merchantPromotionCore->activate($merchantPromotion);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::PROMOTION_ACTIVATION_FAILED,
+                    ['merchant_promotion_id' => $merchantPromotion->getId()]);
+            }
+        }
     }
 
     /**
