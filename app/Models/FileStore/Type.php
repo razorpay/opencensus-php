@@ -115,6 +115,7 @@ class Type
     const YES_EMI_FILE_MAIL                 = 'yes_emi_file_mail';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
+    const SBI_EMI_FILE_SFTP                 = 'sbi_emi_file_sftp';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -185,6 +186,7 @@ class Type
             self::YES_EMI_FILE_SFTP,
             self::ICICI_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_SFTP,
+            self::SBI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::UPI_ICICI_FAILED_REFUND,
@@ -254,6 +256,7 @@ class Type
         self::YES_EMI_FILE_SFTP,
         self::ICICI_EMI_FILE_MAIL,
         self::ICICI_EMI_FILE_SFTP,
+        self::SBI_EMI_FILE_SFTP,
         self::KOTAK_NETBANKING_CLAIM,
         self::CSB_NETBANKING_REFUND,
         self::KOTAK_NETBANKING_REFUND,
@@ -370,6 +373,7 @@ class Type
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
+            self::SBI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,

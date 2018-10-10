@@ -114,6 +114,7 @@ class Service extends Base\Service
         $emiFileBanks = [
             IFSC::ICIC,
             IFSC::YESB,
+            IFSC::SBIN,
         ];
 
         // if input bank is set, emi file to be processed for only that bank

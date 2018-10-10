@@ -1135,6 +1135,7 @@ class Gateway
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
         IFSC::HSBC => Gateway::FIRST_DATA,
+        IFSC::SBIN => Gateway::HITACHI,
     ];
 
     /**
