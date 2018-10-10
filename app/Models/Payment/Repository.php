@@ -57,6 +57,7 @@ class Repository extends Base\Repository
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
+        Entity::BATCH_ID        => 'sometimes|string|min:14|max:18',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
