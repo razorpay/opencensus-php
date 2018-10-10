@@ -137,6 +137,26 @@ export default class User {
     return !!parseInt(this.activated);
   }
 
+  get instantActivation() {
+    return {
+      get isWhitelistFlow() {
+        return this.activation_flow === 'whitelist';
+      },
+
+      get isBlacklistFlow() {
+        return this.activation_flow === 'blacklist';
+      },
+
+      get isGraylistFlow() {
+        return true || this.activation_flow === 'graylist';
+      },
+
+      get isL1Submitted() {
+        return !!this.activation_flow;
+      },
+    };
+  }
+
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }

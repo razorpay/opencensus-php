@@ -115,6 +115,7 @@ class AnalyticsDesktop extends Component {
       expandOnboardingBanner,
       payments,
       showOnboardingBanner,
+      showInstantActivation,
 
       onHideOnboardingBanner,
       onFirstStepClose,
@@ -185,6 +186,7 @@ class AnalyticsDesktop extends Component {
                 onClose={onHideOnboardingBanner}
                 onFirstStepClose={onFirstStepClose}
                 isFirstStep={showOnboardingBannerFirstStep}
+                showInstantActivation={showInstantActivation}
               />
             )}
           </div>

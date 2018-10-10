@@ -582,8 +582,12 @@ export default class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       expandOnboardingBanner,
       payments,
-      showOnboardingBanner: !user.showInstantActivation && showOnboardingBanner,
+      // Handling first step in a different way if its instant activations
+      showOnboardingBanner: showOnboardingBannerFirstStep
+        ? !user.showInstantActivation
+        : showOnboardingBanner,
       isMobile,
+      showInstantActivation: user.showInstantActivation,
 
       onHideOnboardingBanner,
       onFirstStepClose,

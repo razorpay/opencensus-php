@@ -1,0 +1,107 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
+
+const loading = 'loading',
+  progress = 'progress',
+  locked = 'locked',
+  done = 'done',
+  active = 'active';
+
+const possibleStatuses = { loading, progress, locked, done, active };
+
+class StepTitle extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return <div className="step-title">{this.props.children}</div>;
+  }
+}
+
+class StepContent extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return <div className="step-content">{this.props.children}</div>;
+  }
+}
+
+class Step extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    let stepTitle = null,
+      stepContent = null;
+
+    React.Children.forEach(this.props.children, child => {
+      if (!stepTitle && isChildSameType(child, StepTitle)) {
+        stepTitle = child;
+      }
+
+      if (!stepContent && isChildSameType(child, StepContent)) {
+        stepContent = child;
+      }
+    });
+
+    const { status } = this.props,
+      isLoading = status === loading;
+
+    return (
+      <div className={`onboarding-step status-${status}`}>
+        <div className="step-indicator">
+          {isLoading ? (
+            <PlaceholderLoader />
+          ) : (
+            <img src={`/dist/css/assets/onboarding/${status}.png`} />
+          )}
+        </div>
+        <div className="step-content">
+          <div className="step-content-title">
+            {stepTitle && (
+              <stepTitle.type>
+                {(isLoading && <PlaceholderLoader />) ||
+                  stepTitle.props.children}
+              </stepTitle.type>
+            )}
+          </div>
+          <div className="step-content-body">
+            {stepContent && (
+              <stepContent.type>
+                {isLoading ? (
+                  <div>
+                    <PlaceholderLoader />
+                    <PlaceholderLoader />
+                  </div>
+                ) : (
+                  stepContent.props.children
+                )}
+              </stepContent.type>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+Step.defaultProps = {
+  status: loading,
+};
+
+Step.propTypes = {
+  children: ({ children }) =>
+    checkChildrenType(children, [StepTitle, StepContent]),
+  status: PropTypes.oneOf(Object.keys(possibleStatuses)),
+};
+
+export { Step, StepTitle, StepContent, possibleStatuses };
+
+export default Step;
