@@ -19,6 +19,14 @@ export default ({ entity, mode, updateEntity }) => {
       delete body.terminal_mode;
     }
 
+    if (body.type) {
+      let temp = {};
+      body.type.split(',').forEach(elem => {
+        temp[elem] = '1';
+      });
+      body.type = temp;
+    }
+
     if (body.emi == 0) {
       delete body.emi_duration;
     }
