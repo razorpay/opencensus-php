@@ -3,7 +3,7 @@ import Field from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal, notifyError } from 'common/modal';
-import { adminFetch, adminPatch } from 'common/fetch';
+import { adminFetch, adminPatch, adminDelete } from 'common/fetch';
 import Table from 'ui/Table';
 import { SearchableSelectField } from 'ui/Field';
 
@@ -23,15 +23,18 @@ const options = [
 ];
 
 export default class SetEmandateGateway extends Component {
-  static title = 'Set Emandate Gateway for a Merchant';
+  static title = 'Set eSigner Gateway for a Merchant';
 
   constructor(props) {
     super(props);
     this.state = {
       merchantGateways: [],
       isLoading: true,
+      overrideEnabled: false,
+      overrideGateway: '',
     };
     this.onSubmit = this.onSubmit.bind(this);
+    this.deleteOverride = this.deleteOverride.bind(this);
     this.fields = [
       [<span>Merchant ID</span>, item => item.merchantId],
       [<span>Gateway</span>, item => item.gateway],
@@ -50,6 +53,8 @@ export default class SetEmandateGateway extends Component {
     adminFetch(`live/config/key?key=merchant_enach_configs`).then(response => {
       if (response) {
         const data = [];
+        let overrideEnabled = false,
+          overrideGateway = '';
 
         Object.keys(response.auth_gateway).forEach(elem => {
           let gateway = '',
@@ -60,15 +65,22 @@ export default class SetEmandateGateway extends Component {
           } else if (gatewayKey == 'esigner_legaldesk') {
             gateway = 'Legal Desk';
           }
-          data.push({
-            merchantId: elem,
-            gateway: gateway,
-          });
+          if (elem == 'override') {
+            overrideEnabled = true;
+            overrideGateway = gatewayKey;
+          } else {
+            data.push({
+              merchantId: elem,
+              gateway: gateway,
+            });
+          }
         });
 
         this.setState({
           merchantGateways: data,
           isLoading: false,
+          overrideEnabled,
+          overrideGateway,
         });
       } else {
         this.setState({
@@ -83,8 +95,12 @@ export default class SetEmandateGateway extends Component {
       notifyError('Merchant ID is mandatory');
       return;
     }
+    if (data.merchantId != 'override' && data.merchantId.length != 14) {
+      notifyError('Please enter a valid Merchant ID');
+      return;
+    }
     if (!data.emandateGateway) {
-      notifyError('Please select a emandate gateway');
+      notifyError('Please select a eSigner gateway');
       return;
     }
 
@@ -100,7 +116,31 @@ export default class SetEmandateGateway extends Component {
     }).then(response => {
       if (response) {
         this.fetchGateways();
-        notifySuccess('Emandate gateway successfully updated for the merchant');
+        if (data.merchantId == 'override') {
+          notifySuccess(
+            'Override for eSigner gateways is successfully enabled'
+          );
+        } else {
+          notifySuccess(
+            'eSigner gateway successfully updated for the merchant'
+          );
+        }
+      }
+    });
+  }
+
+  deleteOverride() {
+    let payload = {
+      key: 'merchant_enach_configs',
+      path: `auth_gateway.override`,
+    };
+    adminDelete({
+      url: `live/config/key`,
+      data: payload,
+    }).then(response => {
+      if (response) {
+        this.fetchGateways();
+        notifySuccess('Override for eSigner gateways is successfully disabled');
       }
     });
   }
@@ -109,35 +149,79 @@ export default class SetEmandateGateway extends Component {
     return (
       <div>
         <div>
-          <Form class="full-span">
-            <Field
-              label="Merchant ID"
-              placeholder="Enter Merchant ID"
-              name="merchantId"
-              type="text"
-              required
-            />
-            <SearchableSelectField
-              trackBy="value"
-              label="Emandate Gateway"
-              name="emandateGateway"
-              defaultValue=""
-              isSearchable={false}
-              allowClear={false}
-              options={options}
-              required
-            />
-            <br />
-            <AsyncButton
-              text="Save"
-              class="btn"
-              pendingClass="small spinner"
-              onSubmit={this.onSubmit}
-            />
-          </Form>
+          <div class="override-cnt m-b">
+            {this.state.overrideEnabled ? (
+              <div class="disable-override-cnt">
+                <div>
+                  Override Enabled -{' '}
+                  {this.state.overrideGateway == 'esigner_digio'
+                    ? 'Digio'
+                    : 'Legal Desk'}
+                </div>
+                <button class="disable-btn btn" onClick={this.deleteOverride}>
+                  Disable Override
+                </button>
+              </div>
+            ) : (
+              <div>
+                <Form class="full-span">
+                  <input
+                    type="hidden"
+                    name="merchantId"
+                    value="override"
+                    class="hide"
+                  />
+                  <SearchableSelectField
+                    trackBy="value"
+                    label="Enable Override"
+                    name="emandateGateway"
+                    defaultValue=""
+                    isSearchable={false}
+                    allowClear={false}
+                    options={options}
+                  />
+                  <AsyncButton
+                    text="Save"
+                    class="btn "
+                    pendingClass="small spinner"
+                    onSubmit={this.onSubmit}
+                  />
+                </Form>
+              </div>
+            )}
+          </div>
+          <div class="set-emandate-cnt">
+            <Form class="full-span">
+              <Field
+                label="Merchant ID"
+                placeholder="Enter Merchant ID"
+                name="merchantId"
+                type="text"
+                required
+              />
+              <SearchableSelectField
+                trackBy="value"
+                label="eSigner Gateway"
+                name="emandateGateway"
+                defaultValue=""
+                isSearchable={false}
+                allowClear={false}
+                options={options}
+                required
+              />
+              <div class="form-action">
+                <AsyncButton
+                  text="Save"
+                  class="btn"
+                  pendingClass="small spinner"
+                  onSubmit={this.onSubmit}
+                />
+              </div>
+            </Form>
+          </div>
         </div>
         <div class="gateways-container">
-          <h2>Emandate Gateways</h2>
+          <h2>eSigner Gateways</h2>
           {this.state.isLoading ? (
             <div class="spinner center" />
           ) : (

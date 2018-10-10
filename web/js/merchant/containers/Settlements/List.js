@@ -17,18 +17,32 @@ import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettl
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
+  trackOndemand,
 } from './ga';
+import { fetchCurrentBalance } from 'merchant/modules/home';
+import OndemandModal from './OndemandModal';
+import Amount from 'rzp/ui/Amount';
+import Button from 'component/Button';
 
-@connect(state => ({ user: state.session.user, ...state.settlements }), {
-  fetchAll,
-  ...ModalActions,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+    ...state.home,
+    ...state.settlements,
+  }),
+  {
+    fetchAll,
+    ...ModalActions,
+    fetchCurrentBalance,
+  }
+)
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlements',
       eventAction: 'Go To - Settlements',
     });
+    this.props.fetchCurrentBalance();
   }
 
   onSearchAnalytics = params => {
@@ -81,12 +95,24 @@ export default class SettlementsListContainer extends ListContainer {
     trackEarlySettlementRequests();
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
+      size: 'large',
+    });
+  };
+
+  showOndemandSettlementForm = e => {
+    trackOndemand.trackSettleNow('Settlements');
+    let balance = this.props.current_balance.data.balance;
+    this.props.openModal({
+      component: (
+        <OndemandModal currentBalance={balance} fromWhere="Settlements" />
+      ),
       size: 'small',
     });
   };
 
   render() {
-    let { loading, items, error } = this.props;
+    let { loading, items, error, current_balance } = this.props;
+    let balance = current_balance.data.balance || 0;
 
     return (
       <React.Fragment>
@@ -123,6 +149,19 @@ export default class SettlementsListContainer extends ListContainer {
                   >
                     How settlements work?&nbsp;<span class="icon i-external-link" />
                   </a>
+                  <span class="settlement-balance-amount">
+                    Current Balance: <Amount value={balance} />
+                  </span>
+
+                  {this.props.user.isOndemandSettlementEnabled && (
+                    <Button.Secondary
+                      class="settle-btn"
+                      onClick={this.showOndemandSettlementForm}
+                      disabled={current_balance.loading || balance < 100}
+                    >
+                      Settle Now
+                    </Button.Secondary>
+                  )}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter

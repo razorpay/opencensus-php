@@ -10,6 +10,7 @@
   <title>Razorpay Dashboard</title>
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
   <script type="text/javascript">
         _rzpAQ = [];
         function emptyRzpAQ () {
