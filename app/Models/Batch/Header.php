@@ -324,6 +324,7 @@ class Header
     // Entity Mapping headers
     const ENTITY_FROM_ID       = 'entity_from_id';
     const ENTITY_TO_ID         = 'entity_to_id';
+    const ENTITY_TO_IDS        = 'entity_to_ids';
     const ENTITY_FROM_TYPE     = 'entity_from_type';
     const ENTITY_TO_TYPE       = 'entity_to_type';
 
@@ -984,7 +985,7 @@ class Header
 
             self::OUTPUT => [
                 self::ENTITY_FROM_ID,
-                self::ENTITY_TO_ID,
+                self::ENTITY_TO_IDS,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

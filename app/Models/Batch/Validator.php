@@ -4,16 +4,16 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
-use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
+use RZP\Exception\BaseException;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
+use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 
 /**
  * Class Validator
@@ -118,10 +118,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $entityMappingCreateRules = [
-        Entity::TYPE   => 'required|custom',
-        Entity::NAME   => 'filled|string|max:255',
-        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Entity::CONFIG => 'required|array',
+        Entity::TYPE                         => 'required|in:entity_mapping',
+        Entity::NAME                         => 'filled|string|max:255',
+        Entity::FILE                         => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG                       => 'required|array',
+        Entity::CONFIG . '.entity_from_type' => 'required|string',
+        Entity::CONFIG . '.entity_to_type'   => 'required|string',
     ];
 
     /**

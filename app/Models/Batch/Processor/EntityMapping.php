@@ -8,11 +8,6 @@ use RZP\Models\Batch\Status;
 
 class EntityMapping extends Base
 {
-    public function __construct(Entity $batch)
-    {
-        parent::__construct($batch);
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -26,7 +21,7 @@ class EntityMapping extends Base
 
         $fromEntity = $this->repo->$fromEntityType->findOrFailPublic($entry[Header::ENTITY_FROM_ID]);
 
-        $this->repo->sync($fromEntity, $toEntityType, $entry[Header::ENTITY_TO_ID]);
+        $this->repo->sync($fromEntity, $toEntityType, $entry[Header::ENTITY_TO_IDS]);
 
         $entry[Header::STATUS] = Status::SUCCESS;
     }
@@ -50,12 +45,12 @@ class EntityMapping extends Base
             $processedEntries[$fromEntityId][] = $toEntityId;
         }
 
-        // modifying the processed entries in such a way that processEntries parent function will be able to accomdate.
+        // Modifying the processed entries in such a way that processEntries parent function will be able to accomdate.
         $processedEntries = array_map(function ($fromEntityId, $toEntityId) {
-            return [Header::ENTITY_FROM_ID => $fromEntityId, Header::ENTITY_TO_ID => $toEntityId];
+            return [Header::ENTITY_FROM_ID => $fromEntityId, Header::ENTITY_TO_IDS => $toEntityId];
         }, array_keys($processedEntries), $processedEntries);
 
-        // since entries is passed by reference the same is used in further processing so changing the whole entries.
+        // Since entries is passed by reference the same is used in further processing so changing the whole entries.
         $entries = $processedEntries;
 
         parent::processEntries($entries);
