@@ -849,8 +849,6 @@ class Gateway
             IFSC::ICIC,
             IFSC::UTIB,
             IFSC::HDFC,
-            IFSC::CBIN,
-            IFSC::IDFB
             //TODO add banks supported by NPCI for emandate
         ],
         // Please keep this list sorted
