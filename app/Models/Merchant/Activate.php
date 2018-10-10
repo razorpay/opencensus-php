@@ -114,6 +114,13 @@ class Activate extends Base\Core
 
     public function instantlyActivate(Entity $merchant): array
     {
+        //
+        // The function autoUpdateMerchantCategoryDetailsIfApplicable() sets some merchant attributes.
+        // Reload is required here since $merchant is being fetched from $merchantDetails->merchant and the
+        // updated attributes are not reflected here.
+        //
+        $merchant->reload();
+
         $merchant->getValidator()->validateBeforeInstantlyActivate();
 
         $this->validateMethodsAndPricing($merchant);

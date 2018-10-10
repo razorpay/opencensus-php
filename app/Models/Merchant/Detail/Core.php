@@ -103,25 +103,6 @@ class Core extends Base\Core
         });
     }
 
-    /**
-     * on business category or subcategory change updates merchant category and category2 data
-     *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
-     */
-    public function autoUpdateMerchantCategoryDetailsIfApplicable(
-        Entity $merchantDetails,
-        Merchant\Entity $merchant)
-    {
-        $category    = $merchantDetails->getBusinessCategory();
-        $subcategory = $merchantDetails->getBusinessSubcategory();
-
-        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
-        {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
-        }
-    }
-
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(
@@ -153,37 +134,62 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchantDetails);
 
-            (new WhitelistActivationFlow)->process($merchantDetails);
+            // $activationFlow will be an instance of the ActivationFlowInterface
+            $activationFlow = (new ActivationFlow\Factory)->getActivationFlowImpl($merchantDetails);
+
+            $activationFlow->process($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
 
             $eventAttributes = $merchantDetails->merchant->toArrayEvent();
 
+            //
+            // If a merchant does not have website or app, we would need to activate them
+            // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
+            // should be set to true only if one submits website details, there by will be able to
+            // generate/access keys.
+            //
+            $this->checkAndMarkHasKeyAccess($merchantDetails);
+
 //            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 //            $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
-//            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
             // used to show the progress of the activation form on the dashboard
             $activationProgress = $response['verification']['activation_progress'];
-
             $merchantDetails->setActivationProgress($activationProgress);
 
             $this->repo->saveOrFail($merchantDetails);
 
-//            if ($this->canSubmit($input, $response) === true)
-//            {
-//                $this->fireActivationTrigger($merchantDetails, $merchant);
-//            }
+            // @todo: Add support for emails here
+            // $this->fireInstnantActivationTrigger($merchantDetails, $merchant);
 
             $response['auto_activated'] = false;
 
             $eventAttributes['activation_progress'] = $activationProgress;
-
             $this->app['eventManager']
                  ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
+    }
+
+    /**
+     * on business category or subcategory change updates merchant category and category2 data
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(
+        Entity $merchantDetails,
+        Merchant\Entity $merchant)
+    {
+        $category    = $merchantDetails->getBusinessCategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        {
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+        }
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
