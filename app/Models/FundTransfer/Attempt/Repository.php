@@ -258,4 +258,19 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function getFailedSettlements(
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, Status::FAILED)
+                    ->whereBetween(Entity::CREATED_AT, [$startTime, $endTime])
+                    ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
+                    ->get();
+    }
 }
