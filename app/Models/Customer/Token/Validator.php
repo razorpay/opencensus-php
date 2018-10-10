@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         // We generate it if max_amount is not present and method is emandate
         Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
-        Entity::AUTH_TYPE           => 'required_only_if:method,emandate|string|filled|in:netbanking,aadhaar',
+        Entity::AUTH_TYPE           => 'required_only_if:method,emandate|string|filled|in:netbanking,aadhaar,aadhaar_fp',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'sometimes|string',
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',

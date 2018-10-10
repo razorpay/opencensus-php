@@ -92,7 +92,7 @@ class CreateRefunds extends Migration
             $table->integer(Refund::REFERENCE6)
                   ->nullable();
 
-            $table->string(Refund::REFERENCE7)
+            $table->string(Refund::SETTLED_BY)
                   ->nullable();
 
             $table->string(Refund::BANK_ACCOUNT_ID)

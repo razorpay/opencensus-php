@@ -241,11 +241,13 @@ class Gateway
         IFSC::BCBM,
         IFSC::BGBX,
         IFSC::BHSX,
+        IFSC::BHUX,
         IFSC::BKDN,
         IFSC::BKID,
         IFSC::BNPA,
         IFSC::BURX,
         IFSC::CBIN,
+        IFSC::CHAS,
         IFSC::CHAX,
         IFSC::CHDX,
         IFSC::CHSX,
@@ -268,6 +270,7 @@ class Gateway
         IFSC::DICX,
         IFSC::DSPX,
         IFSC::ESFB,
+        IFSC::EUCX,
         IFSC::FDRL,
         IFSC::FGCB,
         IFSC::GCBX,
@@ -362,9 +365,11 @@ class Gateway
         IFSC::TBCX,
         IFSC::TCUB,
         IFSC::TDIX,
+        IFSC::TDMX,
         IFSC::TECX,
         IFSC::TEHX,
         IFSC::TGMB,
+        IFSC::TJSB,
         IFSC::TKUX,
         IFSC::TMBL,
         IFSC::TPDX,
@@ -383,6 +388,7 @@ class Gateway
         IFSC::USFB,
         IFSC::UTIB,
         IFSC::UTZX,
+        IFSC::UUCX,
         IFSC::VARA,
         IFSC::VCCX,
         IFSC::VEDX,
@@ -395,6 +401,13 @@ class Gateway
         IFSC::ZSHX,
         Netbanking::BARB_R,
         Netbanking::PUNB_R,
+    ];
+
+    // Esigner Digio is added here just for test cases
+    const EMANDATE_AADHAAR_GATEWAYS = [
+        Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
+        Gateway::ENACH_RBL,
     ];
 
     /**
@@ -601,6 +614,15 @@ class Gateway
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
         Provider::DASHBOARD => self::BT_DASHBOARD,
+    ];
+
+    //
+    // Temporary, since bank transfers will be refactored to use terminals too
+    // TODO: Remove when above refactor is done
+    protected static $nonTerminalGateways = [
+        self::BT_YESBANK,
+        self::BT_KOTAK,
+        self::BT_DASHBOARD,
     ];
 
     /**
@@ -854,7 +876,8 @@ class Gateway
         // Please keep this list sorted
         // You can find the latest PDF version
         // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR => self::EMANDATE_AADHAAR_BANKS
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
     ];
 
     public static $bharatQrGateways = [
@@ -866,18 +889,14 @@ class Gateway
     ];
 
     public static $authTypeToEmandateGatewayMap = [
-        AuthType::NETBANKING => [
+        AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
             Gateway::ENACH_RBL,
         ],
-        // Esigner Digio and Legaldesk is added here just for test cases
-        AuthType::AADHAAR => [
-            Gateway::ESIGNER_DIGIO,
-            Gateway::ESIGNER_LEGALDESK,
-            Gateway::ENACH_RBL,
-        ],
+        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
+        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
     ];
 
     /**
@@ -1297,6 +1316,11 @@ class Gateway
             Gateway::SHARP,
         ],
     ];
+
+    public static function isNonTerminalGateway(string $gateway)
+    {
+        return in_array($gateway, self::$nonTerminalGateways, true);
+    }
 
     public static function getAcquirerName(string $acquirer)
     {

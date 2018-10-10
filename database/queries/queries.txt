@@ -4325,10 +4325,10 @@ ALTER TABLE upi
 Alter table orders
     CHANGE reference9 payer_name VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
-    
+
 ALTER TABLE enach
     ADD COLUMN authentication_gateway VARCHAR(255) DEFAULT NULL AFTER refund_id;
-    
+
 ALTER TABLE transaction
     MODIFY COLUMN balance BIGINT NULL AFTER currency;
 
@@ -4346,6 +4346,10 @@ ALTER TABLE payments
 ALTER TABLE axis
     ADD INDEX axis_refund_id_index (refund_id);
 
+Alter table payments
+    CHANGE reference15 settled_by VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
 # adds index on merchant_reference (upi table)
 ALTER TABLE upi
     ADD INDEX upi_merchant_reference_index (merchant_reference);
@@ -4353,3 +4357,7 @@ ALTER TABLE upi
 # Query to add activation_flow in merchant_details table for instant activations
 ALTER TABLE merchant_details
     ADD COLUMN activation_flow VARCHAR (255) AFTER activation_status;
+
+Alter table refunds
+    CHANGE reference7 settled_by VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;

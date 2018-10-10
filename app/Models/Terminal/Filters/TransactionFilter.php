@@ -498,7 +498,7 @@ class TransactionFilter extends Terminal\Filter
             else if ($terminal->getId() === '76lEBqibDvhOzY')
             {
                  $network = $this->input['payment']->card->getNetworkCode();
-                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 if ($network !== Network::RUPAY)
                  {
                     return false;
                  }
