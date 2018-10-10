@@ -107,7 +107,23 @@ export default class Content extends Component {
     const onModalClose = function() {
       this.props.history.push(location.pathname);
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
+      window.rzpTicketSystem.removeEventListener('modal-select', onModalSelect);
     }.bind(this); //so that this.props is available inside onModalClose
+
+    const onModalSelect = function(e) {
+      const { supportType } = e.detail;
+
+      try {
+        switch (supportType) {
+          case 'chat':
+            window.rzpTicketSystem.closeModal();
+            document
+              .querySelector('#web-messenger-container')
+              .contentDocument.querySelector('#header')
+              .click();
+        }
+      } catch (err) {}
+    };
 
     // For handling where url is encoded, so hash becomes part of pathname instead of hash (In gmail redirection).
     const urlWithHash = decodeURIComponent(location.pathname);
@@ -121,7 +137,11 @@ export default class Content extends Component {
         location.pathname !== '/'
       ) {
         window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
-        window.rzpTicketSystem.openModal('#ticket');
+        window.rzpTicketSystem.addEventListener('modal-select', onModalSelect);
+        window.rzpTicketSystem.openModal('#support', {
+          chat: Boolean(window.rzp_user && window.rzp_user.activated),
+          call: Boolean(window.rzp_user && window.rzp_user.activated),
+        });
       } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
         window.rzpTicketSystem.closeModal();
       }
