@@ -111,7 +111,8 @@ class Validator extends Base\Validator
 
     protected static $verifyAllRules = [
         'gateway'                    => 'sometimes|string|max:50',
-        'delay'                      => 'sometimes|integer|max:30'
+        'delay'                      => 'sometimes|integer|max:30',
+        'count'                      => 'sometimes|integer|max:10000'
     ];
 
     protected static $bulkVerifyRules = [
