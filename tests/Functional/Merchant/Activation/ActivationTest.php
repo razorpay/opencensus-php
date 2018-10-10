@@ -96,4 +96,22 @@ class ActivationTest extends TestCase
 
         $this->startTest();
     }
+
+    /**
+     * for blacklist activation flow  exception will be thrown
+     */
+    public function testBlacklistInstantActivation()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGreylistInstantActivation()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 }
