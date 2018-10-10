@@ -149,7 +149,7 @@ trait ReconTrait
 
         return $excel->string('xlsx');
     }
-  
+
     protected function getNewUpiEntity($merchantId, $gateway)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
@@ -171,5 +171,45 @@ trait ReconTrait
         $gatewayPayment = $this->getDbLastEntityToArray('upi');
 
         return $gatewayPayment;
+    }
+
+    protected function getNewUpiHulkEntity($merchantId, $gateway)
+    {
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
+
+        if ((isset($this->payment['_']['flow']) === true) and
+            ($this->payment['_']['flow'] === 'intent'))
+        {
+            $this->mockServerContentFunction(
+                function (& $content, $action = null)
+                {
+                    if ($action === 'callback')
+                    {
+                        $content['data'] = array_merge($content['data'], [
+                            'txn_id' => 'HDF2C8B_RANDOM_STRING_RANDOM_STRING',
+                        ]);
+                    }
+                    else
+                    {
+                        $content['txn_id'] = 'HDF2C8B_RANDOM_STRING_RANDOM_STRING';
+                    }
+                });
+        }
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $content = $this->getMockServer($gateway)->getAsyncCallbackRequest($upiEntity, $payment);
+
+        $response = $this->makeRequestAndGetContent($content);
+
+        $upiEntity->reload();
+
+        $payment->reload();
+
+        return $upiEntity->toArrayAdmin();
     }
 }
