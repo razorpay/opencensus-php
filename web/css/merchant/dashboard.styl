@@ -1503,6 +1503,8 @@ div.feature-activation-banner {
   font-size: 18px
   margin-left: -1px
 
+$stepIndicatorSize = 36px;
+
 // Onboarding Card - Instant Activations
 .onboarding-card-instant {
 
@@ -1546,6 +1548,7 @@ div.feature-activation-banner {
       
       .onboarding-step {
 
+        position: relative;
         float: left;
         width: (100/3)%;
         height: 100%;
@@ -1556,12 +1559,41 @@ div.feature-activation-banner {
           height: 1em;
         }
 
+        &:first-child .step-connector {
+
+          display: none;
+        }
+
+        .step-connector {
+
+          position: absolute;
+          top: 16px;
+          left: 0;
+          transform: translate(-50%, 0);
+          width: 100%;
+          padding-left: 22px;
+          padding-right: 22px;
+          height: 4px;
+
+          .step-connector-content {
+
+            background: transparent url('assets/onboarding/inactive_connector.png') 50% 0 no-repeat;
+            width: 100%;
+            height: 100%;
+          }
+        }
+
+        &.status-active .step-connector .step-connector-content {
+
+          background-image: url('assets/onboarding/active_connector.png');
+        }
+
         .step-indicator {
 
           margin: 0 auto;
-          width: 36px;
-          height: 36px;
-          font-size: 36px;
+          width: $stepIndicatorSize;
+          height: $stepIndicatorSize;
+          font-size: $stepIndicatorSize;
           border-radius: 50%;
           overflow: hidden;
           margin-bottom: 22px;

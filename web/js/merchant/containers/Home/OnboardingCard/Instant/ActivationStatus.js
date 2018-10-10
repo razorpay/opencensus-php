@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
 export default ({
@@ -19,8 +21,16 @@ export default ({
   } = instantActivation;
 
   if (!isL1Submitted) {
-    content =
-      'Give a few details to start transacting immediately CTA: Activate Account';
+    content = (
+      <div>
+        Give a few details to start transacting immediately
+        <div>
+          <Link to="/activation" className="btn btn-primary m-t">
+            Activate Account
+          </Link>
+        </div>
+      </div>
+    );
   } else if (isActivated) {
     title = 'Account Activated';
     status = possibleStatuses.done;

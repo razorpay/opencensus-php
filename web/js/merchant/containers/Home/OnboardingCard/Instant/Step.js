@@ -56,6 +56,9 @@ class Step extends Component {
 
     return (
       <div className={`onboarding-step status-${status}`}>
+        <div className="step-connector">
+          <div className="step-connector-content" />
+        </div>
         <div className="step-indicator">
           {isLoading ? (
             <PlaceholderLoader />
