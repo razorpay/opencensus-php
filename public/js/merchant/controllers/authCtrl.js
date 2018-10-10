@@ -74,7 +74,6 @@ app
         merchantData: {
           business_type: null,
           transaction_volume: null,
-          role: null,
           department: null,
           business_name: '',
           business_website: '',
@@ -128,15 +127,6 @@ app
             4: '25 Lacs to 50 Lacs',
             5: '50 Lacs to 1 Crore',
             6: 'More than 1 Crore',
-          },
-
-          role: {
-            1: 'Founder / Co-founder',
-            2: 'C-level / SVP',
-            3: 'VP / Director / Head',
-            4: 'Manager',
-            5: 'Individual Contributor',
-            6: 'Others',
           },
 
           department: {
@@ -298,7 +288,7 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard(data.user.merchants[0].role);
+                $scope.goToDashboard();
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -345,7 +335,7 @@ app
         $('.loading-animation').removeClass('active');
       }
 
-      $scope.goToDashboard = function(role) {
+      $scope.goToDashboard = function() {
         location.hash = '/app';
         location.reload();
       };
@@ -404,8 +394,7 @@ app
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
               if (user.isVerified()) {
-                var role = userDetails.merchants[userDetails.id].role;
-                $scope.goToDashboard(role);
+                $scope.goToDashboard();
               } else {
                 goToVerification();
               }
@@ -504,7 +493,6 @@ app
           var keys = [
             'business_type',
             'transaction_volume',
-            'role',
             'department',
             'business_name',
             'contact_mobile',
@@ -707,8 +695,7 @@ app
               } else if (!user.isVerified()) {
                 goToVerification();
               } else {
-                var role = userDetails.merchants[userDetails.id].role;
-                $scope.goToDashboard(role);
+                $scope.goToDashboard();
               }
             });
           }
@@ -768,12 +755,10 @@ app
           $scope.signup.currentSubStep = 0;
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
-        } else if (!merchantData.role) {
-          $scope.signup.currentSubStep = 2;
         } else if (!merchantData.department) {
-          $scope.signup.currentSubStep = 3;
+          $scope.signup.currentSubStep = 2;
         } else {
-          $scope.signup.currentSubStep = 4;
+          $scope.signup.currentSubStep = 3;
         }
         $timeout(function() {
           $scope.noTransition = false;
@@ -813,10 +798,6 @@ app
             // check questions have been answered or not
             user.identity(true).then(function(userDetails) {
               if (user.isVerified() && user.isPreSignupDone()) {
-                var role =
-                  userDetails.merchants &&
-                  userDetails.merchants[userDetails.id].role;
-
                 // parse query parameters to object
                 // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
                 var queryParams = location.search
@@ -840,7 +821,7 @@ app
                     return false;
                   }
                 }
-                $scope.goToDashboard(role);
+                $scope.goToDashboard();
               } else {
                 $scope.isLoggedIn = true;
                 hideSpinner();
@@ -970,7 +951,6 @@ app
           $scope.signup.data.captcha = null;
           $scope.signup.merchantData.business_type = null;
           $scope.signup.merchantData.transaction_volume = null;
-          $scope.signup.merchantData.role = null;
           $scope.signup.merchantData.department = null;
           $scope.signup.merchantData.business_name = '';
           $scope.signup.merchantData.business_website = '';
