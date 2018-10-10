@@ -616,6 +616,15 @@ class Gateway
         Provider::DASHBOARD => self::BT_DASHBOARD,
     ];
 
+    //
+    // Temporary, since bank transfers will be refactored to use terminals too
+    // TODO: Remove when above refactor is done
+    protected static $nonTerminalGateways = [
+        self::BT_YESBANK,
+        self::BT_KOTAK,
+        self::BT_DASHBOARD,
+    ];
+
     /**
      * Card gateways which support full auth reversal
      *
@@ -1185,6 +1194,11 @@ class Gateway
             Gateway::SHARP,
         ],
     ];
+
+    public static function isNonTerminalGateway(string $gateway)
+    {
+        return in_array($gateway, self::$nonTerminalGateways, true);
+    }
 
     public static function getAcquirerName(string $acquirer)
     {
