@@ -4,14 +4,15 @@ namespace RZP\Gateway\FirstData;
 
 class Status
 {
-    const APPROVED    = 'APPROVED';
-    const AUTHORIZED  = 'AUTHORIZED';
-    const CAPTURED    = 'CAPTURED';
-    const SETTLED     = 'SETTLED';
-    const FAILED      = 'FAILED';
-    const VOIDED      = 'VOIDED';
-    const WAITING_3DS = 'WAITING_3D_SECURE';
-    const WAITING     = 'WAITING';
+    const FAILED                    = 'FAILED';
+    const VOIDED                    = 'VOIDED';
+    const SETTLED                   = 'SETTLED';
+    const WAITING                   = 'WAITING';
+    const APPROVED                  = 'APPROVED';
+    const CAPTURED                  = 'CAPTURED';
+    const AUTHORIZED                = 'AUTHORIZED';
+    const WAITING_3DS               = 'WAITING_3D_SECURE';
+    const WAITING_3DS_IN_ENROLL     = '?:waiting 3dsecure';
 
     // Used for verify payment flow. The verify response usually contains
     // either AUTHORIZED or CAPTURED to indicate a successful payment.
