@@ -1,10 +1,16 @@
+import React from 'react';
+import { connect } from 'react-redux';
+
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
+import { showNotification } from 'rzp/modules/notifications';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { updateSession } from 'merchant/modules/session';
 
 import formFields from './L1FormMap';
 
@@ -45,6 +51,16 @@ function defaultFieldProps(f) {
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 3;
 
+@connect(
+  state => ({
+    session: state.session,
+    user: state.session.user,
+  }),
+  {
+    showNotification,
+    updateSession,
+  }
+)
 export default class ActivationWizard extends React.Component {
   state = {
     dirty: {},
@@ -70,13 +86,6 @@ export default class ActivationWizard extends React.Component {
     );
 
     defaultFieldProps.call(this, FORM_TABS); // Set the default props for all tab content views
-  }
-
-  get isIndividualTypeLock() {
-    const businessType =
-      this.state.dirty.business_type || this.props.data.business_type;
-
-    return businessType == INDIVIDUAL;
   }
 
   populateReqData(field, reqData, currentDirty) {
@@ -119,12 +128,72 @@ export default class ActivationWizard extends React.Component {
     return reqData;
   }
 
-  submitForm = () => {
-    console.log('jeffa');
-    return;
-    return this.props.submitForm().then(data => {
-      // Handle response
+  updateSession(data) {
+    const { session, accountId } = this.props;
+
+    // Update data
+    this.setState({ data });
+
+    // Session need not be updated if it's linked account form
+    if (accountId) {
+      return;
+    }
+
+    if (data.can_submit) {
+      this.preloadSuccessAsset();
+    }
+
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      submitted,
+    } = data;
+
+    // Updating % activation_progress (side bar) and other important activation fields
+    const user = new User({
+      ...session.user,
+      activation_progress,
+      activated,
+      activation_status,
+      submitted: +submitted,
     });
+
+    this.props.updateSession({
+      user,
+      mode: session.mode,
+    });
+  }
+
+  submitForm = () => {
+    const data = this.formData;
+
+    return merchantFetch({
+      url: 'merchant/instant_activation',
+      method: 'POST',
+      mode: 'live',
+      data: data,
+      accountId: this.props.accountId,
+    })
+      .then(response => {
+        if (!response.data.can_submit) {
+          throw { errors: ['Some mandatory fields are required'] };
+        }
+
+        this.updateSession(response.data); // Updating % activation_progress (side bar)
+
+        return response;
+      })
+      .catch(err => {
+        if (err.errors.length && err.errors[0]) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        }
+
+        return err;
+      });
   };
 
   onChange = ({ target }) => {
@@ -191,10 +260,6 @@ export default class ActivationWizard extends React.Component {
       });
     }
   };
-
-  componentWillReceiveProps(nextProps) {
-    console.log('next props', nextProps);
-  }
 
   render() {
     const isFormLocked = !!this.props.data.locked;
