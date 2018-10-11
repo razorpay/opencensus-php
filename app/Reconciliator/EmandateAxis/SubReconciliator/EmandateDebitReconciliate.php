@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingAxisEmandate\SubReconciliator;
+namespace RZP\Reconciliator\EmandateAxis\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 

@@ -50,7 +50,7 @@ class Base extends Core
     const OLAMONEY                 = 'Olamoney';
     const FREECHARGE               = 'Freecharge';
     const NETBANKING_AXIS          = 'NetbankingAxis';
-    const NETBANKING_AXIS_EMANDATE = 'NetbankingAxisEmandate';
+    const NETBANKING_AXIS_EMANDATE = 'EmandateAxis';
     const NETBANKING_ICICI         = 'NetbankingIcici';
     const NETBANKING_FEDERAL       = 'NetbankingFederal';
     const NETBANKING_CORPORATION   = 'NetbankingCorporation';
