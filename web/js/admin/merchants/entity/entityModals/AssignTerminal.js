@@ -271,9 +271,13 @@ export default class TerminalForm extends Component {
           </SelectField>
 
           <SelectField
-              name="bank_transfer"
-              label="Bank Transfer"
-              defaultValue={isEditMode && (entity.bank_transfer !== null) ? (entity.bank_transfer | 0): ''}
+            name="bank_transfer"
+            label="Bank Transfer"
+            defaultValue={
+              isEditMode && entity.bank_transfer !== null
+                ? entity.bank_transfer | 0
+                : ''
+            }
           >
             <option value="" />
             <option value="1">Yes</option>
@@ -392,6 +396,24 @@ export default class TerminalForm extends Component {
             name="type[ivr]"
             defaultChecked={
               entity && entity.type && entity.type.indexOf('ivr') >= 0
+            }
+          />
+          <CheckField
+            label="Numeric Account"
+            name="type[numeric_account]"
+            defaultChecked={
+              entity &&
+              entity.type &&
+              entity.type.indexOf('numeric_account') >= 0
+            }
+          />
+          <CheckField
+            label="Alpha Numeric Account"
+            name="type[alpha_numeric_account]"
+            defaultChecked={
+              entity &&
+              entity.type &&
+              entity.type.indexOf('alpha_numeric_account') >= 0
             }
           />
           <CheckField

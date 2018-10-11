@@ -49,7 +49,10 @@ export default class Announcement extends Component {
   }
 }
 
-@connect(state => ({ user: state.session.user }), { ...ModalActions })
+@connect(
+  state => ({ user: state.session.user }),
+  { ...ModalActions }
+)
 export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();
@@ -72,6 +75,15 @@ export class EarlySettlementAnnouncement extends Component {
     if (!this.state.isHidden) {
       trackESAnnouncements.earlySettlementAppear(this.props.from);
     }
+    window.addEventListener('remove-es-announcement', this.closeBanner, false);
+  }
+
+  removeCustomEvent() {
+    window.removeEventListener(
+      'remove-es-announcement',
+      this.closeBanner,
+      false
+    );
   }
 
   handleCloseButton() {
@@ -85,6 +97,11 @@ export class EarlySettlementAnnouncement extends Component {
     });
 
     LocalStorageService.setItem(this.state.bannerKey, 1);
+    this.removeCustomEvent();
+  }
+
+  componentWillUnmount() {
+    this.removeCustomEvent();
   }
 
   handleRequest() {
@@ -96,7 +113,7 @@ export class EarlySettlementAnnouncement extends Component {
           from={this.props.from}
         />
       ),
-      size: 'small',
+      size: 'large',
     });
   }
 

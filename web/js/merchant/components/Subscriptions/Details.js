@@ -193,7 +193,7 @@ export default ({
                     <b>Test Mode:</b>
                     {testModeMsg.infoMsg}
                     <a
-                      href="https://razorpay.com/docs/subscriptions/routes/#subscription"
+                      href="https://razorpay.com/docs/subscriptions"
                       target="_blank"
                     >
                       View docs >
