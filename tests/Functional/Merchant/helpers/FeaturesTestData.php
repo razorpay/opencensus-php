@@ -667,6 +667,8 @@ return [
                     'transaction_v2',
                     'es_automatic',
                     'headless',
+                    'first_data_s2s_flow',
+                    'bin_issuer_validator',
                     'terminal_banks_filter',
                 ]
             ]
