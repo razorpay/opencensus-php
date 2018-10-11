@@ -737,7 +737,7 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('3072M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
