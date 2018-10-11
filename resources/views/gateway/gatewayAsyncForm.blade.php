@@ -366,9 +366,9 @@
             ) {
               {{-- Cancel if webview is hidden or merchant is shaadi.com --}}
               {{-- Type-checking for resp.isWebviewVisible because it might be undefined --}}
-              if (resp.isWebviewVisible === false || key_id === 'rzp_live_5WqsyF9dNRzsmf') {
+              // if (resp.isWebviewVisible === false || key_id === 'rzp_live_5WqsyF9dNRzsmf') {
                 fetchWait(cancel_url);
-              }
+              // }
               $('cancel-btn').className = '';
               $('retry-btn').className = '';
               $('message-txt').innerHTML = 'Payment did not complete';
