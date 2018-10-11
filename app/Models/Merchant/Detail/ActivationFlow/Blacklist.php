@@ -25,7 +25,7 @@ class Blacklist implements ActivationFlowInterface
 
     /**
      * merchant with blacklist activation_flow are not allowed
-     * to submit full activation form
+     * to submit full activation form(L2 activation form)
      *
      * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
      *

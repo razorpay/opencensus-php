@@ -743,8 +743,7 @@ return [
     'testSupportedActivationFlow' => [
         'request'  => [
             'content' => [
-                'business_category'    => 'others',
-                'business_subcategory' => null,
+                'bank_branch_ifsc' => 'ICIC0000002',
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -764,8 +763,7 @@ return [
     'testUnsupportedActivationFlow' => [
         'request'   => [
             'content' => [
-                'business_category'    => 'others',
-                'business_subcategory' => null,
+                'bank_branch_ifsc' => 'ICIC0000002',
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -780,7 +778,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

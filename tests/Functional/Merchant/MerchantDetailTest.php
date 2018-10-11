@@ -664,6 +664,4 @@ class MerchantDetailTest extends TestCase
         
         $this->startTest();
     }
-    
-    
 }
