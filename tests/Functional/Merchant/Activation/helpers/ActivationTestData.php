@@ -915,6 +915,7 @@ return [
                 'archived'                         => 0,
                 'allowed_next_activation_statuses' => [],
                 'submitted_at'                     => null,
+                'activation_status'                => 'instantly_activated',
                 'verification'                     => [
                     'status'              => "disabled",
                     'disabled_reason'     => "required_fields",

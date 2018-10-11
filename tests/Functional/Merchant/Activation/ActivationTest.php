@@ -6,9 +6,11 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class ActivationTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
@@ -45,13 +47,15 @@ class ActivationTest extends TestCase
 
     public function testPostInstantActivation()
     {
-        $this->fixtures->create('merchant_detail', ['merchant_id' => '1cXSLlUU8V9sXl']);
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
 
-        $this->ba->proxyAuth('rzp_test_1cXSLlUU8V9sXl');
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
