@@ -135,7 +135,7 @@ app
               value: '7',
             },
             2: {
-              name: 'Tech',
+              name: 'Tech/Engineering',
               value: '1',
             },
             3: {
