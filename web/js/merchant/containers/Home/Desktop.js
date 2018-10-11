@@ -19,15 +19,25 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchant/modules/session';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import Button from 'component/Button';
+import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
+import { openModal } from 'rzp/modules/modals';
 
 import {
   trackPresetChange,
   trackSettlementsClick,
   trackPlatformAnalyticsHidden,
   trackViewTour,
+  trackSettleNow,
 } from './ga';
 
-@connect(null, { showOrHideTour })
+@connect(
+  state => ({ user: state.session.user }),
+  {
+    showOrHideTour,
+    openModal,
+  }
+)
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -44,6 +54,9 @@ class AnalyticsDesktop extends Component {
 
     this.onShowTour = this.onShowTour.bind(this);
     this.onHideNewAnalyticsBanner = this.onHideNewAnalyticsBanner.bind(this);
+    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
+      this
+    );
   }
 
   onShowTour() {
@@ -76,6 +89,15 @@ class AnalyticsDesktop extends Component {
         }, 500); // let the trasition to hide banner complete
       }
     );
+  }
+
+  showOndemandSettlementForm() {
+    trackSettleNow();
+    let balance = this.props.current_balance.data.balance;
+    this.props.openModal({
+      component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
+      size: 'small',
+    });
   }
 
   render() {
@@ -183,7 +205,13 @@ class AnalyticsDesktop extends Component {
                 onSelectPreset={trackPresetChange}
               />
             </div>
-            <div className="pull-right">
+            <div
+              className={`pull-right ${
+                this.props.user.isOndemandSettlementEnabled
+                  ? 'ondemand-enabled'
+                  : ''
+              }`}
+            >
               <Group>
                 <GroupItem>
                   <span className="balance-amount">
@@ -194,14 +222,27 @@ class AnalyticsDesktop extends Component {
                   </span>
                 </GroupItem>
                 <GroupItem>
-                  <Link className="pull-right" to="/settlements">
-                    <span
-                      className="text-no-wrap"
-                      onClick={trackSettlementsClick}
+                  {this.props.user.isOndemandSettlementEnabled ? (
+                    <Button.Secondary
+                      class="settle-btn"
+                      onClick={this.showOndemandSettlementForm}
+                      disabled={
+                        current_balance.loading ||
+                        current_balance.data.balance < 100
+                      }
                     >
-                      View Settlements
-                    </span>
-                  </Link>
+                      Settle Now
+                    </Button.Secondary>
+                  ) : (
+                    <Link className="pull-right" to="/settlements">
+                      <span
+                        className="text-no-wrap"
+                        onClick={trackSettlementsClick}
+                      >
+                        View Settlements
+                      </span>
+                    </Link>
+                  )}
                 </GroupItem>
               </Group>
             </div>

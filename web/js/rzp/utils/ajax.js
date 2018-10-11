@@ -1,5 +1,4 @@
 import { getCookie } from './cookies';
-import createEvent from './event';
 
 export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
@@ -38,25 +37,57 @@ export default function ajax(params = {}) {
         }
       },
       err => {
+        document.body.dispatchEvent(
+          new CustomEvent('REQUEST_ERROR', {
+            bubbles: true,
+            detail: {
+              url: params.url,
+              response: err.response,
+            },
+          })
+        );
+
         let message = '';
 
         if (err.response && err.response.status === 401) {
           message = 'Unauthorized';
 
+          function continueAjax() {
+            axios(params).then(({ data }) => {
+              if (data.success) {
+                resolve(data);
+              } else {
+                reject(
+                  Object.assign(
+                    {
+                      code: 'UNKNOWN_ERROR_CODE',
+                    },
+                    data
+                  )
+                );
+              }
+            });
+
+            // Not calling error section Again. The catch block is left on component this time
+          }
+
           document.body.dispatchEvent(
-            createEvent('NOT_AUTHENTICATED', { bubbles: true })
+            new CustomEvent('NOT_AUTHENTICATED', {
+              bubbles: true,
+              detail: { continueAjax },
+            })
+          );
+        } else {
+          reject(
+            Object.assign(
+              {
+                code: err.status,
+                errors: [message],
+              },
+              err.responseJSON
+            )
           );
         }
-
-        reject(
-          Object.assign(
-            {
-              code: err.status,
-              errors: [message],
-            },
-            err.responseJSON
-          )
-        );
       }
     );
   });

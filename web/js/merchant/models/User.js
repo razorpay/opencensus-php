@@ -175,6 +175,10 @@ export default class User {
       !this.isFeatureEnabled('es_on_demand')
     );
   }
+
+  get isOndemandSettlementEnabled() {
+    return this.isFeatureEnabled('ES_ON_DEMAND');
+  }
 }
 
 function _isAllowed(userRole, moduleName, isReadOnly) {

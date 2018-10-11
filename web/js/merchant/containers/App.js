@@ -5,7 +5,6 @@ import Smooch from 'smooch';
 
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
-import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 import Sidebar from 'merchant/containers/Sidebar';
@@ -14,8 +13,7 @@ import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
-import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
-import LogoutDialog from 'merchant/components/LogoutDialog';
+import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
@@ -46,6 +44,8 @@ import { resizeWindow } from 'merchant/modules/app';
   }
 )
 export default class App extends Component {
+  pendingRequests = [];
+
   constructor(props) {
     super(props);
 
@@ -76,29 +76,43 @@ export default class App extends Component {
     this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
+  resumePendingRequests = () => {
+    for (let i = 0; i < this.pendingRequests.length; i++) {
+      this.pendingRequests[i]();
+    }
+  };
+
+  registerPendingRequests(req) {
+    this.pendingRequests.push(req);
+  }
+
   componentWillMount() {
-    /*
-    * Event Based Redirection
-    *
-    window.addEventListener('NOT_AUTHENTICATED', () => {
-      if (this.logoutPopupShown) {
+    // Event Based method to lock dashboard screen
+    const self = this;
+    window.addEventListener('NOT_AUTHENTICATED', function(e) {
+      self.registerPendingRequests(e.detail.continueAjax);
+
+      if (this.isDashboardLocked) {
         return;
       }
 
-      let email = this.props.user.user.email;
-
-      this.props.closeModal();
-      this.props.openModal({
-        size: 'small',
-        component: <LogoutDialog email={email} />,
-      });
-      this.logoutPopupShown = true;
+      self.lockDashboard(self.resumePendingRequests);
     });
 
-    window.addEventListener('UNAUTHORIZED', () => {
-      this.props.history.push('/');
+    window.addEventListener('REQUEST_ERROR', function(e) {
+      const errorCode = e.detail.response
+        ? e.detail.response.status
+        : 'UNKNOWN STATUS';
+
+      window.ga &&
+        window.ga(
+          'send',
+          'event',
+          `Dashboard - ${errorCode} Error`,
+          e.detail.url,
+          e.detail.response
+        );
     });
-    */
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
@@ -303,7 +317,7 @@ export default class App extends Component {
       });
   };
 
-  lock = () => {
+  lockDashboard = cb => {
     let email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
@@ -312,21 +326,14 @@ export default class App extends Component {
       });
     }
 
-    return this.props.logout().then(() => {
-      // waiting for 100ms more hoping raven call
-      // would be resolved by then
-      window.setTimeout(() => {
-        location.hash = `/access/lockme/${email}`;
-        location.reload();
-      }, 100);
-    });
+    this.resumeLockActionCB = cb;
+
+    this.setState({ isDashboardLocked: true });
   };
 
-  showIdleWarning = () => {
-    this.props.closeModal();
-    this.props.openModal({
-      component: <IdleWarningDialog countdown={15} />,
-    });
+  removeLockScreen = () => {
+    this.resumeLockActionCB = undefined;
+    this.setState({ isDashboardLocked: false });
   };
 
   handleResize = () => {
@@ -372,15 +379,16 @@ export default class App extends Component {
         {/* Creates Portal for the comp */}
         <ModalDialog />
         <Notifications />
-        <ReactIdle
-          idleDuration={15 * 60}
-          warningDuration={15}
-          onIdleStart={this.showIdleWarning}
-          onIdleEnd={this.props.closeModal}
-          onIdleTimeout={this.lock}
-        />
-
         <MerchantTour user={user} />
+
+        {this.state.isDashboardLocked && (
+          <PasswordReLogin
+            userEmail={user.user.email}
+            removeLockScreen={this.removeLockScreen}
+            showNotification={this.props.showNotification}
+            resumeLockActionCB={this.resumeLockActionCB}
+          />
+        )}
       </div>
     );
   }

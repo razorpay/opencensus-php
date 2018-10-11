@@ -41,6 +41,12 @@ app
       $scope.rightLayout = false; // login layout ? right is true : right is false
       $scope.lockme = false; // only turns true for lockme route
 
+      /*
+        $scope.login = {
+          data: {email: $location.search().email || ''}
+        };
+      */
+
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
       organization.fetchCurrentOrg().then(function(data) {
@@ -389,7 +395,8 @@ app
           if (data.success) {
             trackDrip('signup_flow_completed');
             pushToDrip();
-            window.ga && window.ga('send', 'event', 'Click - Finish');
+            window.ga &&
+              window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -413,6 +420,7 @@ app
                   ga(
                     'send',
                     'event',
+                    'Signup - Steps',
                     'Click - Finish',
                     JSON.stringify(data.errors)
                   );
@@ -895,6 +903,7 @@ app
             window.ga(
               'send',
               'event',
+              'Signup - Steps',
               'Click - Resend Verification Email',
               JSON.stringify(data.errors)
             );
@@ -906,7 +915,6 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
-
         var data = {
           email: $scope.login.data.email,
         };
