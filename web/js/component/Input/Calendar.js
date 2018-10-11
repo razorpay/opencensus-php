@@ -6,7 +6,13 @@ import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
 import enUS from 'rc-calendar/lib/locale/en_US';
 import { classList } from 'common/util';
 
-import { Label, Error, inputClass, separateDomProps } from './index';
+import {
+  Label,
+  Error,
+  inputClass,
+  separateDomProps,
+  Description,
+} from './index';
 
 class CalendarWrapper extends React.Component {
   state = {
@@ -204,6 +210,7 @@ export default class CalendarPicker extends React.Component {
             onBlur={this.blur}
           />
           <Error text={this.props.propagatedError} />
+          <Description text={this.props.description} />
         </div>
       </div>
     );
