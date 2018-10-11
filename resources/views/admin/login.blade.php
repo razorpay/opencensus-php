@@ -96,7 +96,7 @@ document.forms[0].onsubmit = function(e) {
   }
   xhr.open(this.method, this.action)
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-  xhr.setRequestHeader('X-XSRF-TOKEN', readCookie('XSRF-TOKEN'))
+  xhr.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(readCookie('XSRF-TOKEN')))
   xhr.send(data)
 }
 </script>
