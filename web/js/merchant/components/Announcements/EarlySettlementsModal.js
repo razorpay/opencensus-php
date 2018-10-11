@@ -7,7 +7,6 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import trackESAnnouncements from './ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
-import createEvent from 'rzp/utils/event';
 
 @connect(
   state => ({ user: state.session.user }),
@@ -137,14 +136,19 @@ export default class RequestEarlyAccessForm extends Component {
             activeScreenIndex: nextScreen,
           });
           if (nextScreen == 2) {
-            const bannerEvent = createEvent('remove-es-announcement', {
+            const bannerEvent = new window.CustomEvent(
+              'remove-es-announcement',
+              {
+                bubbles: false,
+              }
+            );
+            const buttonEvent = new window.CustomEvent('remove-req-es-button', {
               bubbles: false,
             });
-            const buttonEvent = createEvent('remove-req-es-button', {
-              bubbles: false,
-            });
+
             window.dispatchEvent(bannerEvent);
             window.dispatchEvent(buttonEvent);
+
             LocalStorageService.setItem(this.requestKey, 1);
             this.props.closeModal();
             this.props.openModal({
@@ -335,6 +339,12 @@ export default class RequestEarlyAccessForm extends Component {
             Razorpay is working with <strong>top financing institutions</strong>{' '}
             to help you realise your settlements within a few working hours. No
             more shortfalls in working capital.
+            <p class="m-t">
+              <a target="_blank" href="https://razorpay.com/knowledgebase/">
+                Know more about Early Settlements{' '}
+                <i class="i i-external-link" />
+              </a>
+            </p>
           </div>
           <div class="features-list">
             <div class="feature-item">
@@ -406,17 +416,20 @@ const SuccessScreen = closeScreen => (
       <button class="close" onClick={() => closeScreen('Close Buuton')}>
         <i class="i i-close" />
       </button>
+
       <img class="banner" src="img/early_settlements/es-banner-2.png" />
       <h3 class="modal-title">Early Settlements Requested</h3>
       <div class="help-block">
         You shall be activated soon for Early Settlements. A confirmation email
         will be sent to your registered Email ID.
       </div>
+
       <div>
         <Button.Primary class="close-btn" onClick={() => closeScreen('Got it')}>
           Got it
         </Button.Primary>
       </div>
+
       <img
         class="banner-footer"
         src="img/early_settlements/es-banner-1-footer.png"
