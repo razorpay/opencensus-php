@@ -1,7 +1,7 @@
 .payment-pages-v2
   .page-nav
     color: #fff
-    background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
+    background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%)
     padding: 12px
     position: relative
 
@@ -39,3 +39,42 @@
 
       &:hover
         color: #cbdfff
+
+  .title--big
+    .Input-elWrapper
+      font-size: inherit
+
+      .Input-el
+        height: 40px
+        font-size: 24px
+        line-height: 32px
+        font-weight: 600
+
+
+#wysiwyg-root
+  .Input-el
+    padding: 3px 5px // 1px less cuz of border
+    position: relative
+    margin: -5px -8px -4px
+
+  .wysiwyg-edit-layer
+    width: 100%
+    position: relative
+    margin: 0 -8px -4px
+    padding: 4px 6px
+    cursor: pointer
+    border-radius: 2px
+
+    &:hover
+      background-color: #fff
+      box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
+
+  //Override Styles
+  .Input-info
+    color: #fff
+    background-color: #2c3243
+    line-height: 20px
+
+    &::before
+      border-right-color: #2c3243
+

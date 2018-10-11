@@ -7,30 +7,11 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
-/* This is just dummy data. To be  from API call + taken from props */
-const ppData = {
-  title: 'Invoice and Bill Payments',
-  description:
-    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, A when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type a A  And scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and  A  A typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.  AIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I",
-  social_share: 1,
-  support: {
-    email: 'support@savethewhales.org',
-    phone: '1800-1234-1323 (Timings: 9AM to 6PM)',
-  },
-  terms: 'If payment fails, we give free even ticket within 4 days. Enjoy!',
-};
-
-const isTestMode = true;
-
-const merchantData = {
-  name: 'Dummy Merchant Name',
-  brand_color: '#4f8cf3',
-  image: 'https://dummyimage.com/055aa0/ffffff/300x300&text=Merchant%20Logo',
-};
-
 @connect(state => ({
   user: state.session.user,
-  config: state.config,
+  mode: state.session.mode,
+  config: state.config.config,
+  ...state.wysiwyg,
 }))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
@@ -61,29 +42,30 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps() {
-    console.log('...INIT sub apps to render...');
-    setTimeout(() => {
-      console.log('...SUCCESS sub apps rendered...');
-      console.log(
-        'DETAILS-SECTION',
-        document.getElementById('details-section')
-      );
-
-      render(<DetailsView />, document.getElementById('details-section'));
-      render(<FormView />, document.getElementById('form-section'));
-    }, 2000); // Artificial delay. Need to see if we've any hook from Svelte's side for onMount, otherwise custom window listener to be added.
+    render(<DetailsView />, document.getElementById('details-section'));
+    render(<FormView />, document.getElementById('form-section'));
   }
 
+  handleCreate = () => {
+    console.log('Handle Create..', this.props.paymentPageEntity);
+  };
+
   render() {
-    const { user, config } = this.props;
     const { isPageReady } = this.state;
 
-    const paymentPageData = {}; // If creating new payment page
-    // const paymentPageData = ppData; // If editing existing payment page
+    const merchantData = {
+      name: this.props.user.name,
+      brand_color: this.props.config.brand_color,
+      image:
+        'https://cdn.razorpay.com/logos/AjkWrnqhycTNfR_medium.png' ||
+        this.props.user.logo_url,
+    };
 
     const actionBtns = (
       <React.Fragment>
-        <Button class="Button--invert">Create Page</Button>
+        <Button class="Button--invert" onClick={this.handleCreate}>
+          Create Page
+        </Button>
       </React.Fragment>
     );
 
@@ -97,9 +79,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         />
         {isPageReady && (
           <Svelte
-            isTestMode={isTestMode}
+            isTestMode={this.props.mode.toLowerCase() === 'test'}
             merchantData={merchantData}
-            paymentPageData={paymentPageData}
             onMount={this.initSubApps}
           />
         )}

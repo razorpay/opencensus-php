@@ -1,27 +1,13 @@
 import { Provider } from 'react-redux';
-import { render } from 'react-dom';
-
-import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import store from 'merchant/store';
+import View from './View';
 
 export default class FormView extends React.PureComponent {
   render() {
     return (
       <Provider store={store}>
-        <ConfirmModalProvider>
-          <View />
-        </ConfirmModalProvider>
+        <View />
       </Provider>
     );
-  }
-}
-
-class View extends React.PureComponent {
-  componentDidMount() {
-    console.log('render form..');
-  }
-
-  render() {
-    return <div>Hello World</div>;
   }
 }

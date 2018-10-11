@@ -1,26 +1,29 @@
-export default class Svelte extends React.PureComponent {
+export default class Svelte extends React.Component {
+  shouldComponentUpdate() {
+    return false; // No need to re-render again, all 3 React apps are working independently bridged via store
+  }
+
   initialize = node => {
     if (!node) return;
 
     this.templateData = {
-      // schema: FORM_SCHEMA,
       data: {
         is_test_mode: this.props.isTestMode,
         merchant: this.props.merchantData,
-        payment_page_data: this.props.paymentPageData,
       },
 
       context: {
         title: 'Payment Details',
         isWYSIWYGMode: true,
       },
+      // Other keys are not required by Svelte app in isWYSIWYGMode
     };
 
     this._svelteInstance = window.RZP.renderApp(node, this.templateData);
   };
 
   componentWillUnmount() {
-    this._svelteInstance && this._svelteInstance.teardown();
+    this._svelteInstance && this._svelteInstance.destroy();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -33,6 +36,8 @@ export default class Svelte extends React.PureComponent {
   }
 
   render() {
+    console.log('Render Svelete: should re-render only once');
+
     return React.createElement('div', {
       ref: this.initialize,
       id: 'wysiwyg-root',
