@@ -47,6 +47,21 @@ class DigioGatewayTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testSuccessfulBiometricEsignGeneration()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar_fp', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'UTIB0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+    }
+
     protected function runPaymentCallbackFlowEsignerDigio($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
@@ -57,10 +72,6 @@ class DigioGatewayTest extends TestCase
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
                                                     $url, $method, $content);
-        }
-        else
-        {
-            ;
         }
 
         return $this->submitPaymentCallbackRequest($request);

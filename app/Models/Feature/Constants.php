@@ -90,6 +90,7 @@ class Constants
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS                        = 'headless';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
+    const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -214,6 +215,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS                        => true,
+        self::FIRST_DATA_S2S_FLOW             => true,
     ];
 
     // Entity type constants

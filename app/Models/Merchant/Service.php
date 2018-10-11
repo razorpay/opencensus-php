@@ -2432,4 +2432,32 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    /**
+     * Fetches submerchant / linked / referred accounts for parent account.
+     */
+    public function fetchAssociatedAccounts(string $merchantId)
+    {
+        $associatedAccounts = [];
+
+        $merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        if ($merchant->isMarketplace() === true)
+        {
+            // linked accounts
+            $associatedAccounts = $merchant->accounts()->get()->getIds();
+        }
+        else if ($merchant->isPartner() === true)
+        {
+            // submerchant accounts
+            $associatedAccounts = $this->core()->listSubmerchants($merchant, [])->getIds();
+        }
+        else if ($merchant->hasAggregatorFeature() === true)
+        {
+            // referred accounts
+            $associatedAccounts = $this->repo->merchant->fetchReferredMerchants($merchantId)->getIds();
+        }
+
+        return ['associated_accounts' => array_unique($associatedAccounts)];
+    }
 }

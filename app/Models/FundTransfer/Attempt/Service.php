@@ -4,11 +4,8 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Settlement\Status as SettlementStatus;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Service extends Base\Service
@@ -193,7 +190,21 @@ class Service extends Base\Service
 
     public function sendFTAReconReport()
     {
-        $data = (new Report)->sendFTAReconReport();
+        $progressReport = new Report;
+
+        $failureReport  = clone $progressReport;
+
+        $fileInfo = [];
+
+        $data = $progressReport->sendFTAReconReport(Report::FTA_PROGRESS);
+
+        $data += $failureReport->sendFTAFailureReport(Report::FTA_FAILURES);
+
+        $fileInfo += $progressReport->getFileName(Report::FTA_PROGRESS);
+
+        $fileInfo += $failureReport->getFileName(Report::FTA_FAILURES);
+
+        Report::sendEmail($data, $fileInfo);
 
         return $data;
     }

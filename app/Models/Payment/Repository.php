@@ -417,6 +417,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways)
+    {
+        $query = $this->newQuery()
+                      ->where(Payment\Entity::VERIFY_AT, '<', $timestamp);
+
+        if ($gateway !== null)
+        {
+            $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+        }
+        else
+        {
+            $query->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
+        }
+
+        return $query->take($count)
+                     ->orderBy(Payment\Entity::VERIFY_AT, 'desc')
+                     ->get();
+    }
+
     /**
      * Return Payments object(s) which should be verified
      *

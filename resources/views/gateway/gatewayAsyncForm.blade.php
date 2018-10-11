@@ -361,11 +361,12 @@
           window.pollStatus = function(resp) {
             if (!Object.keys(resp).length ||
                 /txnId=(undefined|null|)(&|$)/i.test(resp.response) ||
-                // For PhonePe (txnId starts with YBL), if bleTxId doesn't exist, the user cancelled.
+                {{-- For PhonePe (txnId starts with YBL), if bleTxId does not exist, the user cancelled. --}}
                 (/txnId=YBL/i.test(resp.response) && Object.keys(resp).indexOf('bleTxId') < 0)
             ) {
-              // Cancel if shaadi.com
-              if (key_id === 'rzp_live_5WqsyF9dNRzsmf') {
+              {{-- Cancel if webview is hidden or merchant is shaadi.com --}}
+              {{-- Type-checking for resp.isWebviewVisible because it might be undefined --}}
+              if (resp.isWebviewVisible === false || key_id === 'rzp_live_5WqsyF9dNRzsmf') {
                 fetchWait(cancel_url);
               }
               $('cancel-btn').className = '';

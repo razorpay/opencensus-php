@@ -10,6 +10,8 @@ class Urls
 
     const LIVE_DOMAIN_V2                 = 'https://securepayments.fssnet.co.in/hdfcbank';
 
+    const DEBIT_PIN_AUTHENTICATION_URL   = '/servlet/TranPortalXMLServlet';
+
     const ENROLL_URL                     = '/servlet/MPIVerifyEnrollmentXMLServlet';
     const AUTH_NOT_ENROLLED_URL          = '/servlet/TranPortalXMLServlet';
     const AUTH_ENROLLED_URL              = '/servlet/MPIPayerAuthenticationXMLServlet';
