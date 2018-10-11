@@ -110,6 +110,24 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function setEarlySettlementPricingKeys()
     {
         $input = Request::all();

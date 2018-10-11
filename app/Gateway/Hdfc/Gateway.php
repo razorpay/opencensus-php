@@ -39,6 +39,7 @@ use RZP\Models\Payment\RecurringType;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
 use App;
+use RZP\Models\Payment\AuthType;
 
 class Gateway extends Base\Gateway
 {
@@ -208,6 +209,40 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
+    protected $debitPinAuthenticationRequest = [
+        'url' => Hdfc\Urls::DEBIT_PIN_AUTHENTICATION_URL,
+        'type' => 'debit_pin_authentication',
+        'fields' => [
+            'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
+            'expyear', 'type', 'member', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
+        ],
+        'headers' => ['Content-Type:text/xml'],
+        'xml' => '',
+        'data' => []
+    ];
+
+    protected $debitPinAuthenticationResponse = [
+        'fields' => [
+            'paymentId', 'paymenturl', 'result',
+        ],
+        'type' => 'debit_pin_authentication',
+        'xml' => '',
+        'data' => [],
+        'error' => null
+    ];
+
+    protected $debitPinAuthorizationResponse = [
+        'fields' => [
+            'paymentid', 'result', 'auth', 'amt', 'ref', 'postdate', 'trackid', 'tranid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'authRespCode', 'ErrorText', 'ErrorNo',
+            'error_service_tag', 'error_code_tag',
+        ],
+        'type'  => 'debit_pin_authorization',
+        'xml'   => '',
+        'data'  => [],
+        'error' => null
+    ];
+
     /**
      * The assoc array is used to construct
      * request for refunds/captures
@@ -323,6 +358,11 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
+        if ($input['payment']['auth_type'] === AuthType::PIN)
+        {
+            return $this->authorizeDebitPin($input);
+        }
+
         $status = $this->enrollCard($input);
 
         return $this->decideAuthStepAfterEnroll($status);
@@ -352,7 +392,11 @@ class Gateway extends Base\Gateway
                 ErrorCode::CM900000,
             ];
 
-            return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+            if ($e instanceof Exception\BaseException)
+            {
+                return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+            }
+
         };
 
         $this->retryHandler(
@@ -378,7 +422,39 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network'];
 
-        if ($network === Card\NetworkName::RUPAY)
+        if ($input['payment']['auth_type'] === AuthType::PIN)
+        {
+            $context['data'] = $input['gateway'];
+
+            $context['data'] = HDFC\Utility::unsetFields($context['data'],$this->stripFieldsList);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_DEBIT_PIN_CALLBACK,
+                [
+                    'content'     => $context['data'],
+                    'gateway'     => $this->gateway,
+                    'payment_id'  => $input['payment']['id'],
+                    'terminal_id' => $input['terminal']['id'],
+                ]);
+
+            $authResponse['data'] = $input['gateway'];
+            $authResponse['error'] = [];
+
+            $gatewayPaymentId = $authResponse['data']['paymentid'];
+
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail($gatewayPaymentId);
+
+            $this->verifyDebitPinAuthResponse($authResponse);
+
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->verifyCallback($input);
+        }
+
+        else if ($network === Card\NetworkName::RUPAY)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
@@ -408,6 +484,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyCallback($input);
         }
+
         else
         {
             $this->validateCallbackGatewayFields($input, $network);
@@ -652,7 +729,10 @@ class Gateway extends Base\Gateway
         {
             $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
 
-            if ($this->secondDebitRecurringFlag === true)
+            $payment = $this->input['payment'];
+
+            if ($this->secondDebitRecurringFlag === true or
+                ((isset($payment['auth_type']) === true) and ($payment['auth_type'] === AuthType::PIN)))
             {
                 $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
             }
@@ -666,7 +746,7 @@ class Gateway extends Base\Gateway
 
         $this->requestVar = $request;
 
-        try
+        try 
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);
@@ -779,6 +859,15 @@ class Gateway extends Base\Gateway
         {
             $request['data']['id'] = $this->config['test_terminal_id'];
             $request['data']['password'] = $this->config['test_terminal_pwd'];
+        }
+
+        $payment = $this->input['payment'];
+
+        if(($this->mode === Mode::TEST) and
+            ((isset($payment['auth_type']) === true and $payment['auth_type'] === AuthType::PIN)))
+        {
+            $request['data']['id'] = $this->config['test_debit_pin_terminal_id'];
+            $request['data']['password'] = $this->config['test_debit_pin_terminal_password'];
         }
     }
 

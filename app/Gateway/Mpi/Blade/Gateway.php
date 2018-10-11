@@ -264,7 +264,7 @@ class Gateway extends Base\Gateway
             $msg = $e->getMessage();
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,
                 null,
                 $msg,
                 [],
@@ -275,7 +275,7 @@ class Gateway extends Base\Gateway
         if ($ret === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,
                 null,
                 null,
                 [],

@@ -351,7 +351,7 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'version' => 'V3',
         'status' => FundTransferAttemptStatus::CREATED,
         'utr' => NULL,
@@ -360,7 +360,7 @@ return [
     ],
 
     'testPayoutEntitySuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'status' => PayoutStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
@@ -370,7 +370,7 @@ return [
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'version' => 'V3',
         'bank_status_code'  => 'P',
         'status'  => FundTransferAttemptStatus::INITIATED,

@@ -967,9 +967,9 @@ class Gateway extends Base\Gateway
             $respCode = $response['response_code'];
         }
 
-        $errorCode = ResponseCode::getErrorCode($respCode);
+        $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode($response);
 
-        $message = ResponseCode::getResponseMessage($respCode);
+        $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
         if ($respCode !== Status::SUCCESS_CODE)
         {
