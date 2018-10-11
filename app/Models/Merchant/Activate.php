@@ -132,6 +132,8 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
+        $merchant->holdFunds();
+
         (new Core)->createBalance($merchant, 'live');
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
