@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -28,6 +29,9 @@ class Core extends Base\Core
         {
             return;
         }
+
+        // Temporary: Undo this after migration(Ref PR description) is completed.
+        throw new BadRequestValidationFailureException('Please try after some time.');
 
         $taxableAmount = Calculator::getTaxableAmountOfLineItem($lineItem, $taxes);
 
@@ -59,6 +63,9 @@ class Core extends Base\Core
         {
             return;
         }
+
+        // Temporary: Undo this after migration(Ref PR description) is completed.
+        throw new BadRequestValidationFailureException('Please try after some time.');
 
         $this->cleanUpLineItemTaxes($lineItem);
 
