@@ -3,7 +3,6 @@ import { toJS } from 'mobx';
 import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import { TextAreaField, SelectField } from 'ui/Field';
-import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 import { adminFetch, adminPatch } from 'common/fetch';
 
@@ -16,6 +15,7 @@ export default class EditMerchantDetails extends Component {
 
     this.state = {
       isFetching: true,
+      isSaving: false,
       categories: {},
       data: {
         business_category: merchant_details.business_category,
@@ -42,12 +42,14 @@ export default class EditMerchantDetails extends Component {
   onSubmit(body) {
     let merchantId = this.props.merchantId;
     let payload = this.state.data;
+    this.setState({ isSaving: true });
 
     return adminPatch({
       url: `live_${merchantId}/merchants/details`,
       data: payload,
       headers: { ['X-Razorpay-Account']: merchantId },
     }).then(data => {
+      this.setState({ isSaving: false });
       if (data) {
         notifySuccess('Merchant details updated successfully.');
         this.props.props.updateDetails({
@@ -78,6 +80,7 @@ export default class EditMerchantDetails extends Component {
 
   render() {
     let categoryOptions, subcategoryOptions;
+    let { business_category, business_subcategory } = this.state.data;
 
     if (Object.keys(this.state.categories).length) {
       categoryOptions = Object.keys(this.state.categories).map(elem => (
@@ -86,31 +89,37 @@ export default class EditMerchantDetails extends Component {
         </option>
       ));
 
-      let subCategories = this.state.categories[
-        this.state.data.business_category
-      ].subcategories;
-      subcategoryOptions = Object.keys(subCategories).map(elem => (
-        <option key={elem} value={elem}>
-          {subCategories[elem].description}
-        </option>
-      ));
+      if (business_category) {
+        let subCategories = this.state.categories[business_category]
+          .subcategories;
+        subcategoryOptions = Object.keys(subCategories).map(elem => (
+          <option key={elem} value={elem}>
+            {subCategories[elem].description}
+          </option>
+        ));
+      }
     }
 
     return (
       <ModalContent header="Edit Advanced Details">
-        <Form class="full-span full-elements" style={{ width: '450px' }}>
+        <Form
+          class="full-span full-elements"
+          onSubmit={this.onSubmit}
+          style={{ width: '450px' }}
+        >
           <SelectField
             label="Business Category"
             name="business_category"
-            value={this.state.data.business_category}
+            value={business_category == null ? '' : business_category}
             disabled={this.state.isFetching}
             onChange={this.handleChange}
             required
           >
+            <option value=""> -- Select -- </option>
             {categoryOptions}
           </SelectField>
 
-          {this.state.data.business_category == 'others' ? (
+          {business_category == 'others' ? (
             <TextAreaField
               type="textarea"
               label="Business Model"
@@ -124,7 +133,7 @@ export default class EditMerchantDetails extends Component {
             <SelectField
               label="Business Subcategory"
               name="business_subcategory"
-              value={this.state.data.business_subcategory}
+              value={business_subcategory == null ? '' : business_subcategory}
               disabled={this.state.isFetching}
               onChange={this.handleChange}
               required
@@ -134,19 +143,9 @@ export default class EditMerchantDetails extends Component {
             </SelectField>
           )}
 
-          <AsyncButton
-            text="Cancel"
-            class="btn btn-default"
-            pendingClass="small spinner"
-            onSubmit={closeModal}
-          />
-
-          <AsyncButton
-            text="Save"
-            class="btn"
-            pendingClass="small spinner"
-            onSubmit={this.onSubmit}
-          />
+          <button class={`btn ${this.state.isSaving && 'disabled'}`}>
+            Save
+          </button>
         </Form>
       </ModalContent>
     );
