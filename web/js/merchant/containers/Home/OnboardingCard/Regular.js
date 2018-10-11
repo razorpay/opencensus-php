@@ -11,7 +11,7 @@ import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
-import { onBoardingItems } from './data';
+import { onBoardingItems, LIVE_MODE } from './data';
 import {
   trackWelcomeCTAClick,
   trackCloseOnboarding,
@@ -49,6 +49,20 @@ export default class OnboardingCard extends Component {
     });
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { mode, integration } = nextProps,
+      { keysGenerated, paymentsMade } = integration;
+
+    if (
+      !this.state.integrated &&
+      mode === LIVE_MODE &&
+      keysGenerated &&
+      paymentsMade
+    ) {
+      this.props.onIntegrationComplete();
+    }
+  }
+
   gotoNextStep = () => {
     trackWelcomeCTAClick();
     return this.props.onFirstStepClose && this.props.onFirstStepClose();
@@ -60,7 +74,7 @@ export default class OnboardingCard extends Component {
   }
 
   render() {
-    let { user, config, payments, mode, isFirstStep } = this.props;
+    let { user, config, integration, mode, isFirstStep } = this.props;
     let { integrated, activated } = this.state;
 
     let FirstStep = null;
@@ -144,10 +158,9 @@ export default class OnboardingCard extends Component {
               <GroupItem>
                 <Integration
                   mode={mode}
-                  payments={payments}
-                  onFinish={this.onIntegrationComplete}
                   hasKeyAccess={user.has_key_access}
                   businessWebsite={user.business_website}
+                  integration={integration}
                 />
               </GroupItem>
             </Group>

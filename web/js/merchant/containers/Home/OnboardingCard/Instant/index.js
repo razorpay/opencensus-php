@@ -12,7 +12,7 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, payments, user } = this.props,
+    const { mode, user, integration } = this.props,
       {
         has_key_access: hasKeyAccess,
         business_website: businessWebsite,
@@ -25,7 +25,7 @@ export default class OnboardingCardInstant extends Component {
       isKLA = !hasKeyAccess && !businessWebsite,
       commonModeCardProps = {
         mode,
-        payments,
+        integration,
         hasKeyAccess,
         isKLA,
       },
