@@ -128,7 +128,7 @@ class RazorXClient
     protected function getVariantHeaderKey(string $id, string $featureFlag, string $mode)
     {
         // TODO: Decide on this key structure
-        return $id . '_' . $featureFlag . '_' . $this->env . '_' . $mode;
+        return 'razorx_' . $id . '_' . $featureFlag . '_' . $this->env . '_' . $mode;
     }
 
     protected function getVariant()
