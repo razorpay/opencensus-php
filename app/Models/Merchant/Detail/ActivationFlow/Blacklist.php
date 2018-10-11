@@ -1,0 +1,23 @@
+<?php
+
+namespace RZP\Models\Merchant\Detail\ActivationFlow;
+
+use RZP\Models\Merchant\Detail\Entity;
+
+/**
+ * Class BlacklistActivationFlow
+ *
+ * contains activation logic for blacklist activation flow
+ * For Example :  Business category => FINANCIAL_SERVICES , Business SubCategory => CRYPTOCURRENCY
+ * falls under blacklist activation flow
+ * Detailed Mapping can be found here @Link @BusinessSubCategoryMetaData
+ *
+ * @package RZP\Models\Merchant\Detail\ActivationFlow
+ */
+class Blacklist implements ActivationFlowInterface
+{
+    public function process(Entity $merchantDetails)
+    {
+        // TODO: Implement process() method.
+    }
+}

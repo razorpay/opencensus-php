@@ -21,7 +21,7 @@
     try { CheckoutBridge.setPaymentID(data.payment_id) } catch(e){}
   </script>
   <div id="app"></div>
-  <script type="text/javascript" src="{{$data['cdn']}}/static/payment_redirect/bundle.js"></script>
+  <script type="text/javascript" src="{{$data['cdn']}}/static/payment_redirect/bundle.js" charset="utf-8"></script>
   {{-- Do not remove below form — needed to run tests --}}
   <form class="card" id="otpform" name="otpform" action="{{$data['data']['request']['url']}}" method="post">
     <input id='otp' type="hidden" name="otp" maxlength="6">

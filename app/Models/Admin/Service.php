@@ -198,6 +198,59 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @return array
+     * @throws Exception\ServerErrorException
+     *
+     * Set a single redis key.
+     *
+     * Sample input:
+     *      key=merchant_enach_configs
+     *      path=auth_gateway.8XGbgY6OnlIm6z
+     *      value=esigner_legaldesk
+     *
+     * Currently it supports the below key:
+     *  - `merchant_enach_configs`
+     *       - This is to set the merchant specific rule to select
+     *         the esigner gateway for enach.
+     *       - Supported values are `esigner_legaldesk` and `esigner_digio`
+     *       - Sample content of this:
+     *          {
+     *              "auth_gateway": {
+     *                  "override": "esigner_legaldesk",
+     *                  "8XGbgY6OnlIm6z": "esigner_legaldesk"
+     *              }
+     *          }
+     *       - Here, when "override" is set, all the merchants would be forcefully
+     *         redirected to that specific gateway, by overriring the merchant specific
+     *         configurations.
+     */
+    public function updateConfigKey(array $input): array
+    {
+        (new Validator)->validateInput('update_config_key', $input);
+
+        $currentConfig = null;
+
+        $currentConfig = $this->app['cache']->get($input['key'], []);
+
+        $oldConfig = $currentConfig;
+
+        array_set($currentConfig, $input['path'], $input['value']);
+
+        $data = [
+            'key'       => $input['key'],
+            'old_value' => $oldConfig,
+            'new_value' => $currentConfig,
+        ];
+
+        $this->app['cache']->forever($input['key'], $currentConfig);
+
+        $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+
+        return $data;
+    }
+
+    /**
      * @param string $key
      * @param mixed $newValue
      *
@@ -233,6 +286,42 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    public function getConfigKey($input): array
+    {
+        (new Validator)->validateInput('get_config_key', $input);
+
+        $key = $input['key'];
+
+        $config = $this->app['cache']->get($key, []);
+
+        return $config;
+    }
+
+    public function deleteConfigKey($input): array
+    {
+        (new Validator)->validateInput('delete_config_key', $input);
+
+        $currentConfig = null;
+
+        $currentConfig = $this->app['cache']->get($input['key'], []);
+
+        $oldConfig = $currentConfig;
+
+        array_forget($currentConfig, $input['path']);
+
+        $data = [
+            'key'       => $input['key'],
+            'old_value' => $oldConfig,
+            'new_value' => $currentConfig,
+        ];
+
+        $this->app['cache']->forever($input['key'], $currentConfig);
+
+        $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+
+        return $data;
     }
 
     public function getQueryCacheCounts(): array

@@ -50,6 +50,7 @@ class Processor
     use Reversal;
     use Transfer;
     use Vpa;
+    use AuthorizePush;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -1852,9 +1853,7 @@ class Processor
             return false;
         }
 
-        if (($payment->isNetbanking() === true) and
-            ($payment->hasTerminal() === true) and
-            ($payment->terminal->isDirectSettlement() === true))
+        if ($payment->isDirectSettlement() === true)
         {
             return true;
         }
@@ -2248,8 +2247,14 @@ class Processor
         return true;
     }
 
-    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return false;
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             //

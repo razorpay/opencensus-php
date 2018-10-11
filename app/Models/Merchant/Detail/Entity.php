@@ -543,6 +543,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_EMAIL, $email);
     }
 
+    public function setActivationFlow(string $activationFlow)
+    {
+        $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function getActivationFlow()
+    {
+        return $this->getAttribute(self::ACTIVATION_FLOW);
+    }
+
     public function setActivationProgress($activationProgress)
     {
         $this->setAttribute(self::ACTIVATION_PROGRESS, $activationProgress);

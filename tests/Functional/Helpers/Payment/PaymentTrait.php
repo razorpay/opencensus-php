@@ -873,6 +873,29 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
+        if ($response['status_code'] === 'REFUND_SUCCESSFUL')
+        {
+            $this->scroogeRefundMarkProcessed($refund);
+        }
+
+        return $response;
+    }
+
+    protected function scroogeRefundMarkProcessed(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'PUT',
+            'url'     => '/refunds/'.$input['id'].'/processed',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
         return $response;
     }
 
@@ -1164,6 +1187,12 @@ trait PaymentTrait
         if ($authType === Payment\AuthType::AADHAAR)
         {
             $payment['aadhaar']['number'] = '123123123123';
+
+            $payment['bank_account'] = [
+                'account_number' => '914010009305862',
+                'ifsc'           => 'utib0000123',
+                'name'           => 'Test account',
+            ];
         }
 
         return $payment;

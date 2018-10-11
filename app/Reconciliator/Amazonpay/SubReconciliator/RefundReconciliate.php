@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Amazonpay\SubReconciliator;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -26,7 +27,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if (($this->refund->getBaseAmount() === $this->getReconRefundAmount($row)) === false)
+        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -45,9 +46,12 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        $refundAmount = parent::getReconRefundAmount($row);
+        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === false)
+        {
+            return null;
+        }
 
-        return abs(intval(number_format($refundAmount, 2, '.', '')));
+        return abs(Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]));
     }
 
     protected function getGatewayTransactionId(array $row)

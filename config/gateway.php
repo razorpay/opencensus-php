@@ -20,6 +20,7 @@ return [
         'card_fss',
         'cybersource',
         'esigner_digio',
+        'esigner_legaldesk',
         'enach_rbl',
         'ebs',
         'first_data',
@@ -62,6 +63,8 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'bt_yesbank',
+        'bt_kotak',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -71,6 +74,7 @@ return [
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
+    'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),
     'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
@@ -118,9 +122,11 @@ return [
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'hdfc' => [
-        'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
-        'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
-        'mock_server'       => false,
+        'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
+        'test_terminal_pwd'                => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'test_debit_pin_terminal_id'       => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_ID'),
+        'test_debit_pin_terminal_password' => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_PASSWORD'),
+        'mock_server'                      => false,
     ],
 
     'cybersource' => [
@@ -239,6 +245,13 @@ return [
         'test_merchant_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
         'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
+    ],
+
+    'esigner_legaldesk' => [
+        'live_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_API_KEY'),
+        'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
+        'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
+        'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
     ],
 
     'enach_rbl' => [],

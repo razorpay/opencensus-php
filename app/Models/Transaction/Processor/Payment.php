@@ -100,42 +100,45 @@ class Payment extends Base
                 $this->calculateFeeDefault();
         }
 
-        $this->setCredit();
+        $amount = $this->getNetAmount();
 
-        $this->setDebit();
+        $this->credit = 0;
+        $this->debit  = 0;
+
+        if ($amount > 0)
+        {
+            $this->credit = $amount;
+        }
+        else
+        {
+            $this->debit = -1 * $amount;
+        }
     }
 
-
-    public function setCredit()
+    public function getNetAmount()
     {
-        $credit = 0;
+        $amount = $this->txn->getAmount();
+
+        if ($this->source->isDirectSettlement() === true)
+        {
+            $amount = 0;
+        }
+
+        $netAmount = 0;
 
         switch (true)
         {
             case ($this->txn->isPostpaid() === true):
             case ($this->txn->getCreditType() === Transaction\CreditType::FEE):
             case ($this->txn->getCreditType() === Transaction\CreditType::AMOUNT):
-
-                $credit = $this->txn->getAmount();
+                $netAmount = $amount;
                 break;
 
             default:
-                $credit = $this->txn->getAmount() - $this->fees;
+                $netAmount = $amount - $this->fees;
         }
 
-        $this->credit = $credit;
-    }
-
-    public function setDebit()
-    {
-        $debit = 0;
-
-        if ($this->credit < 0)
-        {
-            $debit = -1 * $this->credit;
-        }
-
-        $this->debit = $debit;
+        return $netAmount;
     }
 
     protected function getSettledAtTimestamp()

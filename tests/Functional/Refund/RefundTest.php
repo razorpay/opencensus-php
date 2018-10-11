@@ -1079,7 +1079,7 @@ class RefundTest extends TestCase
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
 
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
-
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
@@ -1223,6 +1223,22 @@ class RefundTest extends TestCase
         $this->ba->proxyAuth();
 
         parent::startTest();
+    }
+
+    public function testRefundSettledBy()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('Razorpay', $refund['settled_by']);
     }
 
     public function startTest($paymentId = null, $amount = null)

@@ -48,21 +48,21 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 ->format('y-M-dTH:i:s +0000');
 
             $col = [
-                $date,
-                '55500008822',
-                '',
-                $row['wallet']['gateway_payment_id'],
-                'Capture',
-                $row['wallet']['gateway_payment_id'],
-                $row['payment']['id'],
-                'XYZ Store',
-                $row['payment']['currency'],
-                'XYZ Store',
-                $this->formatAmount($row['payment']['amount'] / 100),
-                '0',
-                '0',
-                '0',
-                $this->formatAmount($row['payment']['amount'] / 100),
+                "\"{$date}\"",
+                '"55500008822"',
+                '""',
+                "\"{$row['wallet']['gateway_payment_id']}\"",
+                '"Capture"',
+                "\"{$row['wallet']['gateway_payment_id']}\"",
+                "\"{$row['payment']['id']}\"",
+                '"XYZ Store"',
+                "\"{$row['payment']['currency']}\"",
+                '"XYZ Store"',
+                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
+                '"0"',
+                '"0"',
+                '"0"',
+                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
             ];
 
             $col = array_combine_pad($keys, $col);
@@ -103,6 +103,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     public function formatAmount($amount)
     {
-        return number_format($amount, 2, '.', '');
+        return number_format($amount, 2, '.', ',');
     }
 }

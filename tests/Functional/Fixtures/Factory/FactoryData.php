@@ -149,6 +149,7 @@ final class FactoryData
             'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
+            'verify_at'  => $faker->timestamp,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);

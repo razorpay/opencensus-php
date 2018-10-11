@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
+        Entity::PAYER_NAME      => 'sometimes|string|max:100'
     );
 
     protected static $createValidators = [
@@ -289,15 +290,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($order->getMethod()) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
-        }
-
         $method = $order->getMethod();
 
-        if (($method !== Payment\Method::NETBANKING) and
+        if (($method !== null) and
+            ($method !== Payment\Method::NETBANKING) and
             ($method !== Payment\Method::UPI))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -319,7 +315,8 @@ class Validator extends Base\Validator
                 break;
         }
 
-        if (in_array($orderBank, $tpvBanks, true) === false)
+        if (($method !== null) and
+            (in_array($orderBank, $tpvBanks, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order bank does not support TPV');

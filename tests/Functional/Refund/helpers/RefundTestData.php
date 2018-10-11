@@ -513,6 +513,7 @@ return [
                 'method'         => 'netbanking',
                 'bank'           => 'SBIN',
                 'account_number' => '04030403040304',
+                'payer_name'     => 'test',
             ],
             'method'    => 'POST',
             'url'       => '/orders',
@@ -522,6 +523,18 @@ return [
                 'amount'         => 50000,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testRefundSettledBy' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
             ],
         ],
     ],

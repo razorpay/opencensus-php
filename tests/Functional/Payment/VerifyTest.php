@@ -112,6 +112,32 @@ class VerifyTest extends TestCase
         $this->runVerifyForMaxPeriod();
     }
 
+    public function testVerifyMultipleFailedPaymentsByVerifyAt()
+    {
+        $this->setupRedisMock();
+
+        $createdAt = time() - 180;
+
+        $payment = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $createdAt = time() - 240;
+
+        $payment2 = $this->fixtures->create(
+            'payment:netbanking_failed', ['created_at' => $createdAt]);
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+
     public function testVerifyMultipleFailedPayments()
     {
         $this->setupRedisMock();
@@ -356,18 +382,9 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $filter = 'verify_failed';
+        $payment = $this->getDbLastEntityPublic('payment');
 
-        $request = [
-            'url'    => '/payments/verify/'. $filter,
-            'method' => 'post'
-        ];
-
-        Carbon::setTestNow($time->addMinutes(60));
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = ['filter' => $filter, 'success' => 1];
+        $resultData = ['filter' => 'payments_failed', 'success' => 0, 'authorized' => 1];
 
         $this->assertContent($content, $resultData);
 

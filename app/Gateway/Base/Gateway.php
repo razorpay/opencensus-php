@@ -1305,4 +1305,22 @@ class Gateway
             $this->trace->traceException($ex);
         }
     }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        throw new Exception\LogicException(
+            'Unexpected Payment is not supported');
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        throw new Exception\LogicException(
+            'Unexpected Payment is not supported');
+    }
+
+    public function getParsedDataFromUnexptectedCallback($callbackData)
+    {
+        throw new Exception\LogicException(
+            'Extraction of payment and merchant details from callback data is not supported');
+    }
 }

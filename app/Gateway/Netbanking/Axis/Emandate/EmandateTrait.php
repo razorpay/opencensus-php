@@ -200,7 +200,7 @@ trait EmandateTrait
 
         if (StatusCode::isSuccess($statusCode) !== true)
         {
-            $errorCode = StatusCode::getErrorCodeMap($statusCode);
+            $errorCode = StatusCode::getErrorCodeMap($content);
 
             throw new GatewayErrorException(
                 $errorCode,
@@ -399,8 +399,6 @@ trait EmandateTrait
         $content = $this->getEmandatePaymentVerifyData($verify);
 
         $request = $this->getStandardRequestArray($content);
-
-        $request['options']['verify'] = $this->getCaInfo();
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,

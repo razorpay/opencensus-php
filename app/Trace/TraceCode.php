@@ -613,8 +613,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
     const GATEWAY_ONBOARD_REQUEST                   = 'GATEWAY_ONBOARD_REQUEST';
     const GATEWAY_ONBOARD_RESPONSE                  = 'GATEWAY_ONBOARD_RESPONSE';
+    const GATEWAY_DEBIT_PIN_AUTHENTICATION_REQUEST  = 'GATEWAY_DEBIT_PIN_AUTHENTICATION_REQUEST';
+    const GATEWAY_DEBIT_PIN_AUTHENTICATION_RESPONSE = 'GATEWAY_DEBIT_PIN_AUTHENTICATION_RESPONSE';
+    const GATEWAY_DEBIT_PIN_AUTHORIZATION_REQUEST   = 'GATEWAY_DEBIT_PIN_AUTHORIZATION_REQUEST';
+    const GATEWAY_DEBIT_PIN_CALLBACK                = 'GATEWAY_DEBIT_PIN_CALLBACK';
     const GATEWAY_PAYMENT_OTP_RESEND_REQUEST        = 'GATEWAY_PAYMENT_OTP_RESEND_REQUEST';
     const GATEWAY_PAYMENT_OTP_RESEND_RESPONSE       = 'GATEWAY_PAYMENT_OTP_RESEND_RESPONSE';
+
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
@@ -757,6 +762,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA = 'MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA';
     const MERCHANT_MARK_HAS_KEY_ACCESS              = 'MERCHANT_MARK_HAS_KEY_ACCESS';
     const MERCHANT_UPDATE_ACTIVATION_STATUS         = 'MERCHANT_UPDATE_ACTIVATION_STATUS';
     const MERCHANT_UPDATE_WEBSITE_DETAILS           = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
@@ -826,6 +832,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const REDIS_KEY_FETCH                           = 'REDIS_KEY_FETCH';
     const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
     const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
@@ -985,7 +992,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BULK_UPDATE_RESPONSE                 = 'MERCHANT_BULK_UPDATE_RESPONSE';
     const MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST     = 'MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST';
     const MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE    = 'MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE';
-
+    const MERCHANT_CREDITS_BULK_REQUEST                 = 'MERCHANT_CREDITS_BULK_REQUEST';
+    const MERCHANT_CREDITS_BULK_EXCEPTION               = 'MERCHANT_CREDITS_BULK_EXCEPTION';
 
 // Trace codes for Heimdall
     const HEIMDALL_EVENT_RECORD                         = 'HEIMDALL_EVENT_RECORD';
@@ -1275,6 +1283,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
+    const BIN_ISSUER_VALIDATION_FAILED                  = 'BIN_ISSUER_VALIDATION_FAILED';
+
+    const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
+
+    const FTA_FAILURE_REPORT_INITIATED                  = 'FTA_FAILURE_REPORT_INITIATED';
+    const FTA_FAILURE_REPORT_FILE_CREATED               = 'FTA_FAILURE_REPORT_FILE_CREATED';
+  
+    // Instant activation traces
+    const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -1425,6 +1443,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTIONS_TO_POSTPAID_INPUT            => 'Mark transactions as postpaid request',
         self::TRANSACTIONS_TO_POSTPAID_FAILED           => 'Transaction conversion from to postpaid failed',
         self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
+
+        self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
     ];
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\Payzapp;
+
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
@@ -115,9 +117,6 @@ class PayzappReconTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $payment = $this->getEntityById('payment', $payment, true);
-
-        // Date is not persisted as the payment amount validation failed
-        $this->assertNull($wallet['date']);
 
         $transactionId = $payment['transaction_id'];
 

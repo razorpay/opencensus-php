@@ -252,6 +252,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postVerifyAllPayments()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyAllPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyPaymentsBulk()
     {
         $input = Request::all();
@@ -305,6 +314,15 @@ class PaymentController extends Controller
     public function postCaptureVerify($id)
     {
         $data = $this->service()->verifyCapture($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPendingGatewayCapture()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPendingGatewayCapture($input);
 
         return ApiResponse::json($data);
     }
