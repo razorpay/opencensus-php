@@ -216,6 +216,7 @@ class Constants
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS                        => true,
         self::FIRST_DATA_S2S_FLOW             => true,
+        self::BIN_ISSUER_VALIDATOR            => true,
     ];
 
     // Entity type constants
