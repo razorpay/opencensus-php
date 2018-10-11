@@ -132,8 +132,6 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        $this->allowKeyAccessIfApplicable($merchant);
-
         (new Core)->createBalance($merchant, 'live');
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
@@ -144,16 +142,31 @@ class Activate extends Base\Core
         });
 
         $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
+            TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
-        //        $this->sendMerchantActivatedEvents($merchant);
+        $this->sendMerchantInstantActivatedEvents($merchant);
 
-        //        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+        $detailCore = new Detail\Core;
+
+        $merchantDetails = $merchant->merchantDetail;
+
         //
-        //        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+        // If a merchant does not have website or app, we would need to activate them
+        // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
+        // should be set to true only if one submits website details, there by will be able to
+        // generate/access keys.
         //
-        //        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
+        $detailCore->checkAndMarkHasKeyAccess($merchantDetails);
+
+        $activationStatusData = [
+            Detail\Entity::ACTIVATION_STATUS => Detail\Status::INSTANTLY_ACTIVATED,
+        ];
+
+        $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
+        // @todo: Add support for emails here
+        // $this->fireActivationTrigger($merchantDetails, $merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -243,6 +256,29 @@ class Activate extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
 
         $this->sendActivationEmail($merchant);
+    }
+
+    /**
+     * Send merchant activated events to drip & eventManager
+     * Also, send the email to merchant.
+     * Instant activation updates will not be sent to eventManager (Harvester)
+     *
+     * @param Entity $merchant
+     */
+    protected function sendMerchantInstantActivatedEvents(Entity $merchant)
+    {
+
+        // @todo: enable later
+        // $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::INSTANTLY_ACTIVATED);
+
+        // @todo: enable later
+        // $this->sendInstantActivationEmail($merchant);
+
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**

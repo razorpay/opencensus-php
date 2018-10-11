@@ -97,7 +97,7 @@ class Core extends Base\Core
             $eventAttributes['activation_progress'] = $activationProgress;
 
             $this->app['eventManager']
-                ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+                 ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
@@ -113,12 +113,57 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
+        $this->performInstantActivationValidations($merchantDetails, $input);
+
+        $merchantDetails->edit($input, 'instant_activation');
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        {
+            // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            // $activationFlow will be an instance of the ActivationFlowInterface
+            $activationFlow = (new ActivationFlow\Factory)->getActivationFlowImpl($merchantDetails);
+            $activationFlow->process($merchantDetails);
+
+            // Reload the merchant and merchant details to create a response with the updated values
+            $merchantDetails->reload();
+            $merchantDetails->load('merchant');
+
+            $response = $this->createResponse($merchantDetails);
+
+            // used to show the progress of the activation form on the dashboard
+            $activationProgress = $response['verification']['activation_progress'];
+            $merchantDetails->setActivationProgress($activationProgress);
+            $this->repo->saveOrFail($merchantDetails);
+
+            $this->trackActivationProgressEvents($merchantDetails, $activationProgress);
+
+            $response['auto_activated'] = false;
+
+            return $response;
+        });
+    }
+
+    protected function trackActivationProgressEvents(Entity $merchantDetails, $activationProgress)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        $eventAttributes = $merchantDetails->merchant->toArrayEvent();
+
+        $eventAttributes['activation_progress'] = $activationProgress;
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+    }
+
+    public function performInstantActivationValidations(Entity $merchantDetails, array $input)
+    {
         $merchantDetails->getValidator()->validateIsNotLocked();
 
         // validates if the business subcategory belongs to the business category
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
-
-        $merchantDetails->edit($input, 'instant_activation');
 
         $merchantValidator = new Merchant\Validator;
 
@@ -127,50 +172,6 @@ class Core extends Base\Core
         // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
         //
         $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
-
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
-        {
-            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            // $activationFlow will be an instance of the ActivationFlowInterface
-            $activationFlow = (new ActivationFlow\Factory)->getActivationFlowImpl($merchantDetails);
-
-            $activationFlow->process($merchantDetails);
-
-            $response = $this->createResponse($merchantDetails);
-
-            $eventAttributes = $merchantDetails->merchant->toArrayEvent();
-
-            //
-            // If a merchant does not have website or app, we would need to activate them
-            // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
-            // should be set to true only if one submits website details, there by will be able to
-            // generate/access keys.
-            //
-            $this->checkAndMarkHasKeyAccess($merchantDetails);
-
-//            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
-//            $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
-
-            // used to show the progress of the activation form on the dashboard
-            $activationProgress = $response['verification']['activation_progress'];
-            $merchantDetails->setActivationProgress($activationProgress);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            // @todo: Add support for emails here
-            // $this->fireInstnantActivationTrigger($merchantDetails, $merchant);
-
-            $response['auto_activated'] = false;
-
-            $eventAttributes['activation_progress'] = $activationProgress;
-            $this->app['eventManager']
-                 ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
-
-            return $response;
-        });
     }
 
     /**
