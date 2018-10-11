@@ -369,10 +369,13 @@
               // if (resp.isWebviewVisible === false || key_id === 'rzp_live_5WqsyF9dNRzsmf') {
                 fetchWait(cancel_url);
               // }
-              $('cancel-btn').className = '';
-              $('retry-btn').className = '';
-              $('message-txt').innerHTML = 'Payment did not complete';
-              $('spinner').className = 'hide';
+            //   $('cancel-btn').className = '';
+            //   $('retry-btn').className = '';
+            //   $('message-txt').innerHTML = 'Payment did not complete';
+            //   $('spinner').className = 'hide';
+
+            $('message-txt').innerHTML = 'Please wait..';
+            $('spinner').className = '';
             } else {
               fetchWait(request_url);
             }
