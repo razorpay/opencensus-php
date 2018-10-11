@@ -902,7 +902,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => '1',
+                'business_type'        => 1,
                 'business_model'       => '1245',
             ],
         ],
