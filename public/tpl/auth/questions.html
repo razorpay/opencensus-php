@@ -27,7 +27,7 @@
       {{signup.details.department[signup.merchantData.department]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 2)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">Back to Department</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">Back to Business Function</span>
   </div>
 </div>
 <div class="signup-detail-form">
@@ -85,14 +85,14 @@
       </div>
       <div class="auth-substep">
         <div class="auth-subheading">
-          Your Department
+          Your Business Function?
         </div>
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.department)" >
-            <input override-tab ng-click="quickSendDetails('department', key); trackStepClicksOnMore('Step - Your Department', signup.details.department[key])" type="radio" name="department" value="{{key}}" id="{{'department_'+key}}" ng-model="signup.merchantData.department"/>
-            <label for="{{'department_'+key}}">
-              {{signup.details.department[key]}}
+            <input override-tab ng-click="quickSendDetails('department', signup.details.department[key].value); trackStepClicksOnMore('Step - Your Department', signup.details.department[key].name)" type="radio" name="department" value="{{signup.details.department[key].value}}" id="{{'department_'+ signup.details.department[key].value}}" ng-model="signup.merchantData.department"/>
+            <label for="{{'department_'+ signup.details.department[key].value}}">
+              {{signup.details.department[key].name}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>

@@ -130,12 +130,18 @@ app
           },
 
           department: {
-            1: 'Engineering',
-            2: 'Product',
-            3: 'Business',
-            4: 'Finance',
-            5: 'Strategy',
-            6: 'Others',
+            1: {
+              name: 'Founder/Proprietor',
+              value: '7',
+            },
+            2: {
+              name: 'Tech',
+              value: '1',
+            },
+            3: {
+              name: 'Business',
+              value: '3',
+            },
           },
         },
         showMore: false,
