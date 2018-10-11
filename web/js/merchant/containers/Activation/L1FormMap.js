@@ -142,12 +142,10 @@ export default [
     },
   ],
   {
-    label: 'Company PAN Number',
-    name: 'company_pan',
+    label: 'Propreitor PAN',
+    name: 'promoter_pan',
     placeholder: 'PAN Number',
     className: 'Input--capitalize',
-    info:
-      'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
     _when: excludeFor_Indiv,
   },

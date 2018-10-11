@@ -79,7 +79,49 @@ export default class ActivationWizard extends React.Component {
     return businessType == INDIVIDUAL;
   }
 
+  populateReqData(field, reqData, currentDirty) {
+    const name = field.name;
+
+    if (!name) {
+      return;
+    }
+
+    const fieldVal =
+      name in currentDirty ? currentDirty[name] : this.props.data[name];
+
+    reqData[name] = fieldVal;
+
+    // For business website empty string => user don't have website. null => user didn't attempt the field.
+    const allowEmptyString = ['business_website', 'gstin'];
+    if (allowEmptyString.indexOf(name) === -1) {
+      reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+    }
+  }
+
+  get formData() {
+    const currentDirty = this.state.dirty;
+    const reqData = {};
+
+    FORM_TABS.forEach(field => {
+      if (Array.isArray(field)) {
+        return field.forEach(field =>
+          this.populateReqData(field, reqData, currentDirty)
+        );
+      }
+
+      return this.populateReqData(field, reqData, currentDirty);
+    });
+
+    if (!Object.keys(reqData).length) {
+      return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
+    }
+
+    return reqData;
+  }
+
   submitForm = () => {
+    console.log('jeffa');
+    return;
     return this.props.submitForm().then(data => {
       // Handle response
     });
@@ -150,22 +192,8 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
-  /* Find if all tabs are valid */
-  isAllTabsValid() {
-    let isValid = true;
-
-    for (let i = 0; i < this.state.tabs.length; i++) {
-      if (!this.state.tabs[i]) {
-        isValid = false;
-        break;
-      }
-    }
-
-    if (isValid && this.isIndividualTypeLock) {
-      isValid = false;
-    }
-
-    return isValid;
+  componentWillReceiveProps(nextProps) {
+    console.log('next props', nextProps);
   }
 
   render() {
@@ -182,6 +210,12 @@ export default class ActivationWizard extends React.Component {
 
       return ActivationField.call(this, field);
     });
+
+    const submitBtnProps = {};
+
+    if (!this.tabValidity()) {
+      submitBtnProps.disabled = 'disabled';
+    }
 
     return (
       <div class="Activation--wizard Wizard">
@@ -200,9 +234,14 @@ export default class ActivationWizard extends React.Component {
                   <span className="text-primary">Terms and Conditions</span>
                 </p>
                 <div className="text-right">
-                  <div className="btn btn-primary submit-btn">
+                  <button
+                    type="button"
+                    className="btn btn-primary submit-btn"
+                    onClick={this.submitForm}
+                    {...submitBtnProps}
+                  >
                     Activate Account
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -213,12 +252,17 @@ export default class ActivationWizard extends React.Component {
   }
 
   // returns validity
-  tabValidity(i) {
-    return FORM_TABS[i].every(
-      c =>
-        Array.isArray(c)
-          ? c.every(d => isFieldValid(d, this))
-          : isFieldValid(c, this)
+  tabValidity() {
+    const data = this.formData;
+
+    return (
+      data !== void 0 &&
+      FORM_TABS.every(
+        c =>
+          Array.isArray(c)
+            ? c.every(d => isFieldValid(d, this, data))
+            : isFieldValid(c, this, data)
+      )
     );
   }
 }
@@ -291,9 +335,8 @@ function ActivationField(field) {
   );
 }
 
-function isFieldValid(field, activation) {
-  let data = activation.props.data;
-  if (!field.name) {
+function isFieldValid(field, activation, data) {
+  if (!field.name || data[field.name] === void 0) {
     // what isn't submissible is valid
     return true;
   }
@@ -317,5 +360,10 @@ function isFieldValid(field, activation) {
     // value missing in required field
     return false;
   }
+
+  if (typeof field.validator === 'function' && field.validator(value)) {
+    return false;
+  }
+
   return true;
 }
