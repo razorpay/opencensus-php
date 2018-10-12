@@ -12,9 +12,16 @@ const HDFC_restrictedModules = [
   // 'paymentpages'
 ];
 
-const antiOrgsPermissions = {
-  rzp: [], // All modules are allowed
-  hdfc: HDFC_restrictedModules, // These modules are not allowed for this org
+const HDFC_restrictedFeatures = ['flash_checkout'];
+
+/*
+* Map of orgs having restrictions on corresponding modules/features
+* */
+
+export const antiOrgsModules = {
+  hdfc: HDFC_restrictedModules,
 };
 
-export default antiOrgsPermissions;
+export const antiOrgsFeatures = {
+  hdfc: HDFC_restrictedFeatures,
+};

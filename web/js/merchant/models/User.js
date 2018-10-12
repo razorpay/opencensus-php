@@ -9,7 +9,8 @@ import { getOrg } from 'merchant/store';
 import {
   roleEditPermissions,
   roleViewPermissions,
-  antiOrgsPermissions,
+  antiOrgsModules,
+  antiOrgsFeatures,
 } from '../resources/permissions';
 
 // TODO: Rename fn. name
@@ -74,11 +75,18 @@ export default class User {
     return this.user.confirmed;
   }
 
-  /*
-   * Return string of allowed roles for the given module.
-   * If isReadOnly = false, then role strictly needs to have 'ALL' access.
-   * Note: Since 'All' can view the route, so, by default it has isReadOnly = true for it.
-   * */
+  isOrgAllowedFunctionality(featureName) {
+    const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
+
+    if (restrictedFeaturesForOrg) {
+      const isFeatureAllowed =
+        restrictedFeaturesForOrg.indexOf(featureName) === -1;
+      return isFeatureAllowed;
+    }
+
+    return true;
+  }
+
   isAllowedEdit(moduleName) {
     const isEditAllowed = _isAllowed(
       this.userRole,
@@ -204,8 +212,7 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
     return;
   }
 
-  // const restrictedModulesForOrg = antiOrgsPermissions[getOrg().custom_code];
-  const restrictedModulesForOrg = antiOrgsPermissions['hdfc'];
+  const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];
 
   if (restrictedModulesForOrg) {
     const isModuleAllowed = restrictedModulesForOrg.indexOf(moduleName) === -1;
