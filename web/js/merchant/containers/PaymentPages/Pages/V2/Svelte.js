@@ -36,8 +36,6 @@ export default class Svelte extends React.Component {
   }
 
   render() {
-    console.log('Render Svelete: should re-render only once');
-
     return React.createElement('div', {
       ref: this.initialize,
       id: 'wysiwyg-root',

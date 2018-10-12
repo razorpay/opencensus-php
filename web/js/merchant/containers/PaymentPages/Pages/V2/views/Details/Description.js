@@ -1,63 +1,38 @@
 import Input from 'component/Input';
 import EditLayer from '../EditLayer';
 
-export default props => (
-  <div id="description-details">
-    <Title title={props.title} onChange={props.onChange} />
-    <PaymentFor description={props.description} onChange={props.onChange} />
-  </div>
-);
+export default class extends React.PureComponent {
+  state = { isEditable: false };
 
-class Title extends React.PureComponent {
-  // state = { isEditable: !this.props.title };
-  state = { isEditable: !this.props.title };
-
-  toggleEditMode = () => {
+  toggleEditMode = e => {
     this.setState({ isEditable: !this.state.isEditable });
   };
 
   render() {
-    const isEditable = this.state.isEditable || !this.props.title;
+    const isEditable = this.state.isEditable;
 
     return (
-      <div class="title title--big">
+      <div id="description" class="text-wrap">
         {isEditable ? (
-          <Input
-            name="title"
-            placeholder="Enter page title here"
-            info="This is the heading of your page. Help your customers recognise the page with this"
-            value={this.props.title}
-            onChange={this.props.onChange}
-            onBlur={this.toggleEditMode}
+          <Input.Textarea
+            name="description"
+            placeholder="Enter page description"
+            info={
+              'Describe what the purpose of this page is and mention any additional details that might help the customer.\n\nNote:\nAll URLs will convert to links.'
+            }
+            defaultValue={this.props.description}
+            onBlur={e => {
+              this.toggleEditMode();
+              this.props.updateData(e);
+            }}
             autoFocus
           />
         ) : (
           <EditLayer onClick={this.toggleEditMode}>
-            {this.props.title}
+            {this.props.description || (
+              <span class="btn-link">+ Add page description</span>
+            )}
           </EditLayer>
-        )}
-
-        <div class="title-underline" />
-      </div>
-    );
-  }
-}
-
-class PaymentFor extends React.PureComponent {
-  state = {
-    isEditable: false,
-  };
-
-  render() {
-    return (
-      <div id="description" class="text-wrap">
-        {!this.state.isEditable ? (
-          <Input.Textarea
-            name="description"
-            info="Example: Acme Infotech Private Limited"
-          />
-        ) : (
-          this.props.description
         )}
       </div>
     );

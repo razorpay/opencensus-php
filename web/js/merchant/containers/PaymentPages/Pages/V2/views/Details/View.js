@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { updateData } from 'merchant/modules/wysiwyg';
-import debounce from 'rzp/utils/debounce';
 
+import Title from './Title';
 import Description from './Description';
 import Share from './Share';
 import Support from './Support';
@@ -11,33 +11,42 @@ import Terms from './Terms';
   updateData,
 })
 export default class View extends React.PureComponent {
-  onChange = ({ target }) => {
+  updateData({ target }) {
     const { name, value } = target;
+    console.log('NAME...', name);
 
     this.props.updateData({
       [name]: value,
     });
-  };
+  }
+
+  updateData = this.updateData.bind(this);
 
   render() {
     const paymentPageEntity = this.props.paymentPageEntity;
+    const self = this;
 
     return (
       <React.Fragment>
-        <Description
-          title={paymentPageEntity.title}
-          description={paymentPageEntity.description}
-          onChange={this.onChange}
-        />
+        <div id="description-details">
+          <Title title={paymentPageEntity.title} updateData={this.updateData} />
+          <Description
+            description={paymentPageEntity.description}
+            updateData={this.updateData}
+          />
+        </div>
 
         <Share
           socialshare={paymentPageEntity.social_share}
-          onChange={this.onChange}
+          updateData={this.updateData}
         />
 
-        <Support support={paymentPageEntity.support} onChange={this.onChange} />
+        <Support
+          support={paymentPageEntity.support}
+          updateData={this.updateData}
+        />
 
-        <Terms terms={paymentPageEntity.terms} onChange={this.onChange} />
+        <Terms terms={paymentPageEntity.terms} updateData={this.updateData} />
       </React.Fragment>
     );
   }

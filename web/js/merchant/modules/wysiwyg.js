@@ -29,7 +29,7 @@ export default function(state = initialState, action) {
   switch (action.type) {
     case 'UPDATE_DATA':
       return set(state, 'paymentPageEntity', {
-        ...state.paymentPage,
+        ...state.paymentPageEntity,
         ...action.field,
       });
 
