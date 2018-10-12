@@ -3,6 +3,7 @@ import { ModalContent } from 'component/Modal';
 
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 
+import { isOrgHDFC } from 'admin/user';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'common/fetch';
@@ -37,19 +38,27 @@ export default class ScheduleModal extends Component {
   }
 
   componentWillMount() {
-    adminFetch('live/settlements/schedules').then(data => {
-      const settlementPlans = {};
+    if (isOrgHDFC()) {
+      this.setSettlementPlans(HDFC_SettlementPlan);
+    } else {
+      adminFetch('live/settlements/schedules').then(data => {
+        const settlementPlans = {};
 
-      for (let key in data.items) {
-        let value = data.items[key];
-        settlementPlans[value.id] = value.name;
-      }
+        for (let key in data.items) {
+          let value = data.items[key];
+          settlementPlans[value.id] = value.name;
+        }
 
-      this.setState({
-        settlementPlans,
-        pending: false,
-        defaultSchedule: this.getCurrentSchedule(null),
+        this.setSettlementPlans(settlementPlans);
       });
+    }
+  }
+
+  setSettlementPlans(settlementPlans) {
+    this.setState({
+      settlementPlans,
+      pending: false,
+      defaultSchedule: this.getCurrentSchedule(null),
     });
   }
 
@@ -148,3 +157,13 @@ export default class ScheduleModal extends Component {
     );
   }
 }
+
+/*
+  To be moved to Api, currently not supported.
+  Note: These are env=production values.
+*/
+const HDFC_SettlementPlan = {
+  '70cLLZOrU1rda6': 'Basic T1',
+  '70cFKcUYGQ7z0b': 'Basic T2',
+  '6gt8vvBKnjJsL5': 'Basic T3',
+};
