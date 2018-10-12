@@ -6,18 +6,19 @@ import { fetchKeys } from 'merchant/modules/keys';
 import InstantActivationsCard from './Instant';
 import RegularActivationsCard from './Regular';
 
-@connect(null, { fetchKeys })
+@connect(state => ({ user: state.session.user }), { fetchKeys })
 export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, payments } = props;
+    const { mode, payments, user } = props;
 
     this.state = {
       integration: {
         isLoading: true,
         keysGenerated: false,
         paymentsMade: false,
+        isKLA: !user.has_key_access,
       },
     };
 
@@ -39,12 +40,16 @@ export default class OnboardingCard extends Component {
   componentWillMount() {
     let params = {};
 
+    const { user } = this.props,
+      isKLA = !user.has_key_access;
+
     params.mode = this.props.mode;
 
     Promise.all([
-      this.props.fetchKeys(params).then(({ data }) => {
-        return !!data.items.length;
-      }),
+      (isKLA && Promise.resolve(false)) ||
+        this.props.fetchKeys(params).then(({ data }) => {
+          return !!data.items.length;
+        }),
       this.paymentsRequest.then(payments => {
         return !!payments.length;
       }),
@@ -56,6 +61,7 @@ export default class OnboardingCard extends Component {
           isLoading: false,
           keysGenerated,
           paymentsMade,
+          isKLA,
         },
       });
     });

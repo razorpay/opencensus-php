@@ -36,15 +36,17 @@ export default class OnboardingCardInstant extends Component {
     });
   }
 
-  showTransactionsModal() {
+  showTransactionsModal(isKLA) {
     this.setState({
       showTransactionsHelper: true,
+      isKLA,
     });
   }
 
   hideTransactionsModal() {
     this.setState({
       showTransactionsHelper: false,
+      isKLA: false,
     });
   }
 
@@ -59,8 +61,7 @@ export default class OnboardingCardInstant extends Component {
         isRejected,
         needsClarification,
       } = user,
-      { showProducts, showTransactionsHelper } = this.state,
-      isKLA = !hasKeyAccess && !businessWebsite,
+      { showProducts, showTransactionsHelper, isKLA } = this.state,
       commonModeCardProps = {
         mode,
         integration,
@@ -79,7 +80,10 @@ export default class OnboardingCardInstant extends Component {
       <div className="onboarding-card-instant">
         {showProducts && <ProductsModal onClose={this.hideProductsModal} />}
         {showTransactionsHelper && (
-          <TransactionsModal onClose={this.hideTransactionsModal} />
+          <TransactionsModal
+            onClose={this.hideTransactionsModal}
+            isKLA={isKLA}
+          />
         )}
         <div className="onboarding-card-instant-content">
           <div className="onboarding-steps clearfix">

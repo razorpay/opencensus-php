@@ -174,7 +174,9 @@ export default class HomeContainer extends Component {
         this.state = {
           ...this.state,
           showOnboardingBanner: true,
-          showOnboardingBannerFirstStep: true,
+          showOnboardingBannerFirstStep: user.showInstantActivation
+            ? !user.isActivated
+            : true,
           expandOnboardingBanner: true,
         };
 
@@ -485,10 +487,15 @@ export default class HomeContainer extends Component {
   }
 
   setShowOnboardingBanner() {
+    const { user } = this.props,
+      showOnboardingBannerFirstStep = user.showInstantActivation
+        ? !user.isActivated
+        : true;
+
     this.setState(
       {
         showOnboardingBanner: true,
-        showOnboardingBannerFirstStep: true,
+        showOnboardingBannerFirstStep,
       },
       () => {
         this.setState(
@@ -502,7 +509,10 @@ export default class HomeContainer extends Component {
       }
     );
 
-    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    if (showOnboardingBannerFirstStep) {
+      LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    }
+
     LocalStorageService.setItem(this.firstStepToken, 'true');
   }
 

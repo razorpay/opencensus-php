@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import AsyncButton from 'react-async-button';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -275,12 +276,6 @@ export default class ActivationWizard extends React.Component {
       return ActivationField.call(this, field);
     });
 
-    const submitBtnProps = {};
-
-    if (!this.tabValidity()) {
-      submitBtnProps.disabled = 'disabled';
-    }
-
     return (
       <div class="Activation--wizard Wizard">
         <main class={classList('form-container', isFormLocked && 'main--full')}>
@@ -298,14 +293,14 @@ export default class ActivationWizard extends React.Component {
                   <span className="text-primary">Terms and Conditions</span>
                 </p>
                 <div className="text-right">
-                  <button
+                  <AsyncButton
                     type="button"
                     className="btn btn-primary submit-btn"
                     onClick={this.submitForm}
-                    {...submitBtnProps}
+                    pendingText="Submitting..."
                   >
                     Activate Account
-                  </button>
+                  </AsyncButton>
                 </div>
               </div>
             </div>

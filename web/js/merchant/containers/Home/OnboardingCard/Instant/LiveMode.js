@@ -10,7 +10,7 @@ export default ({
   showProductsModal,
   showTransactionsModal,
 }) => {
-  const { isLoading, keysGenerated, paymentsMade } = integration;
+  const { isLoading, keysGenerated, paymentsMade, isKLA } = integration;
 
   let status = possibleStatuses.locked,
     title = 'Live Payments',
@@ -52,7 +52,7 @@ export default ({
               </div>
               <button
                 className="btn btn-primary m-t"
-                onClick={showTransactionsModal}
+                onClick={() => showTransactionsModal(isKLA)}
               >
                 How do I accept payments?
               </button>

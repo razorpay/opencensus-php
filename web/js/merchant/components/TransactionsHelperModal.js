@@ -13,7 +13,7 @@ export default class InstantActivationSuccess extends Component {
   onCloseModal() {}
 
   render() {
-    const { onClose } = this.props;
+    const { onClose, isKLA } = this.props;
 
     return (
       <ModalMask>
@@ -27,16 +27,18 @@ export default class InstantActivationSuccess extends Component {
           </modal-header>
           <modal-body>
             <Group>
-              <GroupItem>
-                <p>
-                  <b>Accept payments on your website</b>
-                </p>
-                <p>
-                  Integrate Razorpay onto your website. Want to know how to
-                  integrate?
-                </p>
-                <Button.Secondary>Read Integration Docs</Button.Secondary>
-              </GroupItem>
+              {!isKLA && (
+                <GroupItem>
+                  <p>
+                    <b>Accept payments on your website</b>
+                  </p>
+                  <p>
+                    Integrate Razorpay onto your website. Want to know how to
+                    integrate?
+                  </p>
+                  <Button.Secondary>Read Integration Docs</Button.Secondary>
+                </GroupItem>
+              )}
               <GroupItem>
                 <p>
                   <b>Accept payments using products</b>

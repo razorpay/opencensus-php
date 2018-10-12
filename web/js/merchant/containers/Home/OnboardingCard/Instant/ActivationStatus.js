@@ -37,8 +37,16 @@ export default ({
     content = 'Your account activation is complete.';
   } else if (isGraylistFlow) {
     if (!isSubmitted) {
-      content =
-        'For your business model, we need a few more details for activation Fill KYC Form';
+      content = (
+        <div>
+          <div>
+            For your business model, we need a few more details for activation
+          </div>
+          <Link to="/activation" className="btn btn-primary m-t">
+            Fill KYC Form
+          </Link>
+        </div>
+      );
     } else {
       if (needsClarification) {
         status = possibleStatuses.blocked;
