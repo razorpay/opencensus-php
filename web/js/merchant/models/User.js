@@ -4,10 +4,13 @@ import { filterBy } from 'rzp/utils/rzp-utils';
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
 
+import { getOrg } from 'merchant/store';
+
 import {
-  editPermissions,
-  viewPermissions,
-} from '../resources/user-permissions';
+  roleEditPermissions,
+  roleViewPermissions,
+  antiOrgsPermissions,
+} from '../resources/permissions';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -80,7 +83,7 @@ export default class User {
     const isEditAllowed = _isAllowed(
       this.userRole,
       moduleName,
-      editPermissions
+      roleEditPermissions
     );
     return isEditAllowed;
   }
@@ -89,7 +92,7 @@ export default class User {
     const isViewAllowed = _isAllowed(
       this.userRole,
       moduleName,
-      viewPermissions
+      roleViewPermissions
     );
     return isViewAllowed;
   }
@@ -201,13 +204,19 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
     return;
   }
 
-  const allowedRoles = permissionsMap[moduleName.toLowerCase()];
+  // const restrictedModulesForOrg = antiOrgsPermissions[getOrg().custom_code];
+  const restrictedModulesForOrg = antiOrgsPermissions['hdfc'];
 
+  if (restrictedModulesForOrg) {
+    const isModuleAllowed = restrictedModulesForOrg.indexOf(moduleName) === -1;
+    return isModuleAllowed;
+  }
+
+  const allowedRoles = permissionsMap[moduleName.toLowerCase()];
   if (!allowedRoles) {
     return false; // Module is missing in the map
   }
 
   const isAllowed = allowedRoles.indexOf(userRole) > -1;
-
   return isAllowed;
 }
