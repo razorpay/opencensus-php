@@ -9,10 +9,10 @@ const HDFC_restrictedModules = [
   'marketplace',
   'invoices',
   'virtual_accounts',
-  // 'paymentpages'
+  'paymentpages',
 ];
 
-const HDFC_restrictedFeatures = ['flash_checkout'];
+const HDFC_restrictedFeatures = ['flashcheckout', 'monthlyInvoice'];
 
 /*
 * Map of orgs having restrictions on corresponding modules/features

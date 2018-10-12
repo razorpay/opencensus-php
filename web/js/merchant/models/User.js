@@ -81,10 +81,11 @@ export default class User {
     if (restrictedFeaturesForOrg) {
       const isFeatureAllowed =
         restrictedFeaturesForOrg.indexOf(featureName) === -1;
+
       return isFeatureAllowed;
     }
 
-    return true;
+    return true; // By default it's allowed if not restricted
   }
 
   isAllowedEdit(moduleName) {
@@ -216,7 +217,9 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
 
   if (restrictedModulesForOrg) {
     const isModuleAllowed = restrictedModulesForOrg.indexOf(moduleName) === -1;
-    return isModuleAllowed;
+    if (!isModuleAllowed) {
+      return false; // Module not allowed for Org
+    }
   }
 
   const allowedRoles = permissionsMap[moduleName.toLowerCase()];
