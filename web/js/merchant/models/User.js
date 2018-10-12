@@ -4,6 +4,11 @@ import { filterBy } from 'rzp/utils/rzp-utils';
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
 
+import {
+  editPermissions,
+  viewPermissions,
+} from '../resources/user-permissions';
+
 // TODO: Rename fn. name
 export function setFeatures(features) {
   let enabledFeatures = filterBy(features, 'value', true);
@@ -72,11 +77,21 @@ export default class User {
    * Note: Since 'All' can view the route, so, by default it has isReadOnly = true for it.
    * */
   isAllowedEdit(moduleName) {
-    return _isAllowed(this.userRole, moduleName, false);
+    const isEditAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      editPermissions
+    );
+    return isEditAllowed;
   }
 
   isAllowedView(moduleName) {
-    return _isAllowed(this.userRole, moduleName, true);
+    const isViewAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      viewPermissions
+    );
+    return isViewAllowed;
   }
 
   /*
@@ -181,97 +196,18 @@ export default class User {
   }
 }
 
-function _isAllowed(userRole, moduleName, isReadOnly) {
-  if (typeof isReadOnly === undefined) {
-    throw new Error('isReadOnly is required argument.');
+function _isAllowed(userRole, moduleName, permissionsMap) {
+  if (!moduleName) {
+    return;
   }
 
-  const permissionSetForModule = MODULE_PERMISSION_MAP[moduleName];
-  let isAllowed = false;
+  const allowedRoles = permissionsMap[moduleName.toLowerCase()];
 
-  let myRole = [];
-  const roleIndex = USER_ROLES.indexOf(userRole);
-
-  const permissionLevel = permissionSetForModule.charAt(roleIndex);
-
-  if (permissionLevel == 2 || (isReadOnly && permissionLevel == 1)) {
-    isAllowed = true;
+  if (!allowedRoles) {
+    return false; // Module is missing in the map
   }
+
+  const isAllowed = allowedRoles.indexOf(userRole) > -1;
 
   return isAllowed;
 }
-
-const USER_ROLES = [
-  'owner',
-  'admin',
-  'manager',
-  'operations',
-  'finance',
-  'support',
-  'sellerapp', // epos is public name
-  'agent',
-];
-
-// PERMISSION Level:
-// 2: All
-// 1: Read only
-// 0: None
-
-/*
-* Each set below is in same order as USER_ROLES
-* */
-const MODULE_PERMISSION_MAP = {
-  home: '22222000',
-
-  // Transactions
-  payments: '22221100',
-  orders: '22211100',
-  refunds: '22221100',
-  payments_batch_uploads: '22220000',
-  refunds_batch_uploads: '22220000',
-
-  // Settlements
-  settlements: '22211100',
-
-  // Invoices
-  invoices: '22221122',
-  items: '22211122',
-
-  // Payment Links
-  payment_links: '22221022',
-
-  // Payment Pages
-  payment_pages: '22211020',
-
-  // Marketplace
-  accounts: '222000000',
-
-  // Subscriptions
-  subscriptions: '22222200',
-  plans: '22222200',
-  addons: '22222200',
-
-  // Smart Collect
-  virtual_accounts: '22222000',
-
-  // Customers
-  customers: '22211100',
-
-  // Reports
-  reports: '22211000',
-  api_keys: '22000000',
-
-  // My Account
-  profile: '22222220',
-  add_funds: '22220000',
-  profile_gst: '22222112',
-  credits: '22211000',
-  activation: '22200000',
-  referrals: '22211100',
-  team: '20000000',
-
-  // Settings
-  webhooks: '22200000',
-  configuration: '22200000',
-  applications: '20000000',
-};
