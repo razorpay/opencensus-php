@@ -139,6 +139,8 @@ export default class User {
 
   get instantActivation() {
     return {
+      activation_flow: this.activation_flow,
+
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
       },

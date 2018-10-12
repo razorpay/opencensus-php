@@ -6,11 +6,16 @@ export default ({
   isActivated,
   isSubmitted,
   isRejected,
-  payments,
+  integration,
+  showProductsModal,
+  showTransactionsModal,
 }) => {
+  const { isLoading, keysGenerated, paymentsMade } = integration;
+
   let status = possibleStatuses.locked,
     title = 'Live Payments',
     content = null;
+
   const { isL1Submitted, isGraylistFlow, isBlacklistFlow } = instantActivation;
 
   if (!isActivated) {
@@ -34,16 +39,30 @@ export default ({
       status = possibleStatuses.blocked;
       content = 'Transactions are not allowed as your account has been blocked';
     } else {
-      if (payments.loading) {
+      if (isLoading) {
         status = possibleStatuses.loading;
       } else {
-        if (payments.items && payments.items.length === 0) {
+        if (!paymentsMade) {
+          status = possibleStatuses.active;
           title = 'Transact in Live Mode';
-          content =
-            'Receive payments by integrating in Live mode or view products';
+          content = (
+            <div>
+              <div>
+                Receive payments by integrating in Live mode or view products
+              </div>
+              <button
+                className="btn btn-primary m-t"
+                onClick={showTransactionsModal}
+              >
+                How do I accept payments?
+              </button>
+            </div>
+          );
         } else {
           status = possibleStatuses.done;
-          content = 'View payments in Transactions tab, or keep using products';
+          content = (
+            <div>View payments in Transactions tab, or keep using products</div>
+          );
         }
       }
     }

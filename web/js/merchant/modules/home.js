@@ -12,6 +12,9 @@ const ENTITY_TOTALS_FETCH = 'ENTITY_TOTALS_FETCH';
 const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
+// Instant activation actions
+const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
+
 let initialState = {
   analytics: {
     loading: true,
@@ -33,6 +36,9 @@ let initialState = {
     loading: true,
     data: {},
     error: null,
+  },
+  instantActivations: {
+    showInstantActivationSuccess: false,
   },
 };
 
@@ -99,6 +105,12 @@ export const fetchCurrentBalance = () => {
   return {
     type: CURRENT_BALANCE_FETCH,
     payload: merchantFetch('balance'),
+  };
+};
+
+export const showInstantActivationSuccessModal = () => {
+  return {
+    type: SHOW_IA_SUCCESS,
   };
 };
 
@@ -180,6 +192,11 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.current_balance.data,
+      });
+
+    case `SHOW_IA_SUCCESS`:
+      return set(state, 'instantActivations', {
+        showInstantActivationSuccess: true,
       });
 
     default:

@@ -3,8 +3,14 @@ import { Link } from 'react-router-dom';
 
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
+const TestProducts = ({ onClick }) => (
+  <span className="btn-link cursor-pointer" onClick={onClick}>
+    Test Products
+  </span>
+);
+
 export default props => {
-  const { mode, integration } = props,
+  const { mode, integration, showProductsModal } = props,
     { isLoading, keysGenerated, paymentsMade } = integration;
 
   let status = possibleStatuses.done,
@@ -21,21 +27,21 @@ export default props => {
           <Link to="/keys" className="btn-link">
             Generate Test Keys
           </Link>{' '}
-          and use Test Products
+          and use <TestProducts onClick={showProductsModal} />
         </span>
       );
     } else if (!paymentsMade) {
       content = (
         <span>
-          Create Test payments now. For details, Read
+          Create Test payments now. For details, Read{' '}
           <a
             target="_blank"
             className="btn-link"
             href="https://docs.razorpay.com/"
           >
             documentation
-          </a>
-          or use Test Products
+          </a>{' '}
+          or use <TestProducts onClick={showProductsModal} />
         </span>
       );
     } else {

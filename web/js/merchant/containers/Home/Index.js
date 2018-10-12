@@ -25,6 +25,8 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
+import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import { switchToLive } from 'merchant/containers/Home/OnboardingCard/SwitchToLive';
 
 import {
   trackError,
@@ -69,6 +71,8 @@ const keymetricsSectionTitle = 'Transactions Overview',
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
+      showInstantActivationSuccess:
+        state.home.instantActivations.showInstantActivationSuccess,
     };
   },
   {
@@ -197,6 +201,13 @@ export default class HomeContainer extends Component {
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
     this.onExtraContentMount = this.onExtraContentMount.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 500);
+    this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(
+      this
+    );
+  }
+
+  onInstantActivationSuccess() {
+    return switchToLive(this.props.user.current);
   }
 
   onExtraContentMount(node) {
@@ -541,6 +552,7 @@ export default class HomeContainer extends Component {
       isAdmin,
       analyticsFetch,
       onFilterChange,
+      showInstantActivationSuccess,
     } = this.props;
 
     const {
@@ -615,6 +627,9 @@ export default class HomeContainer extends Component {
               </Modal>
             </ModalMask>
           )}
+        {showInstantActivationSuccess && (
+          <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
+        )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );

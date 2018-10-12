@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -11,6 +12,8 @@ import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
+import { showInstantActivationSuccessModal } from 'merchant/modules/home';
 
 import formFields from './L1FormMap';
 
@@ -51,6 +54,7 @@ function defaultFieldProps(f) {
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 3;
 
+@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -59,6 +63,7 @@ let BUSINESS_CATEGORY_FIELD = 3;
   {
     showNotification,
     updateSession,
+    showInstantActivationSuccessModal,
   }
 )
 export default class ActivationWizard extends React.Component {
@@ -176,13 +181,9 @@ export default class ActivationWizard extends React.Component {
       accountId: this.props.accountId,
     })
       .then(response => {
-        if (!response.data.can_submit) {
-          throw { errors: ['Some mandatory fields are required'] };
-        }
-
         this.updateSession(response.data); // Updating % activation_progress (side bar)
-
-        return response;
+        this.props.showInstantActivationSuccessModal();
+        return this.props.history.replace(`/`);
       })
       .catch(err => {
         if (err.errors.length && err.errors[0]) {

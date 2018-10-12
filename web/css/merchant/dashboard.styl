@@ -1583,9 +1583,17 @@ $stepIndicatorSize = 36px;
           }
         }
 
-        &.status-active .step-connector .step-connector-content {
+        &.status-active .step-connector {
 
-          background-image: url('assets/onboarding/active_connector.png');
+          .step-indicator {
+
+            padding: 0;
+          }
+
+          .step-connector-content {
+
+            background-image: url('assets/onboarding/active_connector.png');
+          }
         }
 
         .step-indicator {
@@ -1593,15 +1601,17 @@ $stepIndicatorSize = 36px;
           margin: 0 auto;
           width: $stepIndicatorSize;
           height: $stepIndicatorSize;
-          font-size: $stepIndicatorSize;
           border-radius: 50%;
           overflow: hidden;
           margin-bottom: 22px;
+          padding: 6px;
 
           .PlaceholderLoader {
 
             vertical-align: top;
             width: 100%;
+            height: 100%;
+            border-radius: 50%;
           }
 
           img {
@@ -1624,5 +1634,189 @@ $stepIndicatorSize = 36px;
         }
       }
     }
+  }
+}
+
+// Product suite
+
+.Modal-container--products-suite-modal {
+
+  width: 90%;
+  max-width: 375px;
+}
+
+
+.product-suite {
+
+  padding-top: 18px;
+
+  > h1, > p, > ul > li > a {
+
+    padding-left: 64px;
+  }
+
+  > h1 {
+
+    position: relative;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    line-height: 22px;
+
+    > i {
+
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translate(0, -50%);
+      display: block;
+      font-size: 14px;
+      line-height: 1em;
+    }
+  }
+
+  > p {
+
+    margin-bottom: 4px;
+  }
+
+  > ul > li > a {
+
+    position: relative;
+    color: inherit;
+    padding-top: 21px;
+    padding-bottom: 18px;
+    padding-right: 42px;
+    display: table;
+    width: 100%;
+
+    &:after {
+
+      position: absolute;
+      top: 100%;
+      left: 0;
+      content: "";
+      display: block;
+      width: 100%;
+      height: 3px;
+      background-image: radial-gradient(#eee, transparent);
+    }
+
+    > img {
+
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translate(0, -50%);
+      display: block;
+      width: 28px;
+      height: 28px;
+    }
+
+    > i {
+
+      font-size: 24px;
+      position: absolute;
+      top: 50%;
+      right: 18px;
+      transform: translate(0, -50%);
+    }
+
+    > p {
+
+      font-size: 12px;
+      line-height: 15px;
+      margin-bottom: 0;
+
+      &:first-of-type {
+
+        font-size: 14px;
+        font-weight: bold;
+        line-height: 17px;
+        margin-bottom: 6px;
+      }
+    }
+  }
+}
+
+// Instant activation success
+.Modal-container--instant-activations-success {
+
+  width: 90%;
+  max-width: 328px;
+
+  .Modal-close, modal-header {
+
+    color: #fff !important;
+  }
+
+  modal-header, modal-body {
+
+    display: block;
+    text-align: center;
+  }
+ 
+  modal-header {
+
+    padding: 34px;
+    background: transparent url('assets/instant_activations/success_modal_bg.png') top left no-repeat;
+    background-size: cover;
+
+    > h1, p {
+
+      margin: 0;
+    }
+
+    > h1 {
+
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 22px;
+    }
+  }
+
+  modal-body {
+
+    padding: 24px;
+
+    > p {
+
+      margin-bottom: 32px;
+    }
+  }
+}
+
+// Instant Activations , Transactions helper
+.Modal-container--transactions-helper {
+
+  width: 90%;
+  max-width: 640px;
+
+  modal-header, modal-body {
+
+    display: block;
+    text-align: center;
+  }
+
+  .Modal-close, modal-header {
+
+    color: #fff !important;
+  }
+
+  modal-header {
+
+    background: transparent url('assets/instant_activations/transactions_helper.png') top left no-repeat;
+    background-size: cover;
+    padding: 34px;
+
+    h1, p {
+
+      margin: 0;
+    }
+  }
+
+  modal-body {
+
+    padding: 24px;
   }
 }

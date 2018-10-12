@@ -65,7 +65,8 @@ export default class ActivationContainer extends Component {
 
   render() {
     const { data, categories, additionalModalClass } = this.state,
-      { showInstantActivation, activationFlow } = this.props.user,
+      { showInstantActivation, instantActivation } = this.props.user,
+      { isL1Submitted, isBlacklistFlow } = instantActivation,
       commonProps = {
         accountId: this.props.accountId,
         fetchActivationDetails: this.fetchActivationDetails,
@@ -93,10 +94,7 @@ export default class ActivationContainer extends Component {
         </div>
       );
     } else {
-      if (
-        showInstantActivation &&
-        (!activationFlow || activationFlow === 'blacklist')
-      ) {
+      if (showInstantActivation && (!isL1Submitted || isBlacklistFlow)) {
         modalClasses = modalClasses.concat([
           'Activation--wizard',
           'Activation--wizard--Instant',

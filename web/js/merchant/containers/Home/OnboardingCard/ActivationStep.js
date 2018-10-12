@@ -14,7 +14,6 @@ import {
   CLARIFICATION_THROUGH_CALL,
   CLARIFICATION_THROUGH_EMAIL,
   TEST_MODE,
-  LIVE_MODE,
   PERSONALISE_URL,
 } from './data';
 import {
@@ -23,6 +22,7 @@ import {
   trackGoToPersonalise,
   trackSwitchToLive,
 } from './ga';
+import SwitchToLive from './SwitchToLive';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
@@ -41,34 +41,6 @@ const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
 
   return <div className={`activation-step-icon ${className}`} />;
 };
-
-class SwitchToLive extends Component {
-  constructor(props) {
-    super(props);
-
-    this.modeToken = `rzp_mode--${props.merchantId}`;
-
-    this.switchToLive = this.switchToLive.bind(this);
-  }
-
-  switchToLive() {
-    if (!LocalStorageService.getItem(`hide-mode-dd-popover`)) {
-      LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
-    }
-
-    trackSwitchToLive(this.props.stepNum);
-    LocalStorageService.setItem(this.modeToken, LIVE_MODE);
-    window.location.reload();
-  }
-
-  render() {
-    return (
-      <a className="switch-to-live" onClick={this.switchToLive}>
-        {this.props.children}
-      </a>
-    );
-  }
-}
 
 /*
  * WrapperElement returns either a link to different tab
