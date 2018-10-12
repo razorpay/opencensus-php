@@ -2,7 +2,9 @@
 
 namespace RZP\Reconciliator\EmandateAxis\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
+use RZP\Exception\ReconciliationException;
 
 class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitReconciliate
 {
@@ -23,6 +25,11 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const STATUS_SUCCESS = 'success';
     const STATUS_FAILURE = 'rejected';
 
+    protected $paymentStatusMappings = [
+        self::STATUS_SUCCESS => Payment\Status::AUTHORIZED,
+        self::STATUS_FAILURE => Payment\Status::FAILED,
+    ];
+
     protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
@@ -41,5 +48,26 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         }
 
         return null;
+    }
+
+    /**
+     * @param array $row
+     * @return mixed|null
+     * @throws ReconciliationException
+     */
+    protected function getReconPaymentStatus(array $row)
+    {
+        if (in_array($row[self::COLUMN_STATUS], $this->paymentStatusMappings) === true)
+        {
+            return $this->paymentStatusMappings[$row[self::COLUMN_STATUS]];
+        }
+
+        throw new ReconciliationException(
+            "Invalid payment status sent",
+            [
+                'row'     => $row,
+                'gateway' => 'axis_emandate'
+            ]
+        );
     }
 }
