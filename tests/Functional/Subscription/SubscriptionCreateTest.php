@@ -319,6 +319,7 @@ class SubscriptionCreateTest extends TestCase
         $this->assertEquals(2000, $invoice['amount']);
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
+        $this->assertEquals(false, $subscription['global_customer']);
 
         $this->assertEquals('2/monthly', $schedule['name']);
         $this->assertEquals($plan['period'], $schedule['period']);
