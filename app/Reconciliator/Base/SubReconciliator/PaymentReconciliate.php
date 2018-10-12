@@ -6,7 +6,7 @@ use App;
 
 use RZP\Models\Card;
 use RZP\Models\Payment;
-use Rzp\Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
