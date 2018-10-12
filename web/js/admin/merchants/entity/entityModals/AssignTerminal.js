@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 
+import { isOrgHDFC } from '/admin/user';
+
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
@@ -375,22 +377,30 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('non_recurring') >= 0
             }
           />
-          <CheckField
-            label="Recurring 3DS"
-            name="type[recurring_3ds]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('recurring_3ds') >= 0
-            }
-          />
-          <CheckField
-            label="Recurring Non 3DS"
-            name="type[recurring_non_3ds]"
-            defaultChecked={
-              entity &&
-              entity.type &&
-              entity.type.indexOf('recurring_non_3ds') >= 0
-            }
-          />
+
+          {!isOrgHDFC() && (
+            <CheckField
+              label="Recurring 3DS"
+              name="type[recurring_3ds]"
+              defaultChecked={
+                entity &&
+                entity.type &&
+                entity.type.indexOf('recurring_3ds') >= 0
+              }
+            />
+          )}
+
+          {!isOrgHDFC() && (
+            <CheckField
+              label="Recurring Non 3DS"
+              name="type[recurring_non_3ds]"
+              defaultChecked={
+                entity &&
+                entity.type &&
+                entity.type.indexOf('recurring_non_3ds') >= 0
+              }
+            />
+          )}
           <CheckField
             label="IVR"
             name="type[ivr]"
@@ -437,13 +447,15 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('collect') >= 0
             }
           />
-          <CheckField
-            label="Pin Auth"
-            name="type[pin]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('pin') >= 0
-            }
-          />
+          {!isOrgHDFC() && (
+            <CheckField
+              label="Pin Auth"
+              name="type[pin]"
+              defaultChecked={
+                entity && entity.type && entity.type.indexOf('pin') >= 0
+              }
+            />
+          )}
           <CheckField
             label="Bharat Qr"
             name="type[bharat_qr]"
@@ -451,15 +463,17 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
             }
           />
-          <CheckField
-            label="Debit Recurring"
-            name="type[debit_recurring]"
-            defaultChecked={
-              entity &&
-              entity.type &&
-              entity.type.indexOf('debit_recurring') >= 0
-            }
-          />
+          {!isOrgHDFC() && (
+            <CheckField
+              label="Debit Recurring"
+              name="type[debit_recurring]"
+              defaultChecked={
+                entity &&
+                entity.type &&
+                entity.type.indexOf('debit_recurring') >= 0
+              }
+            />
+          )}
 
           <div class="m-t m-b" />
           <AsyncButton
