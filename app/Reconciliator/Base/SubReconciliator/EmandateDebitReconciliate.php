@@ -96,4 +96,17 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
         return true;
     }
+
+    /**
+     * Overriding from PaymentReconciliate because:
+     * 1. We do not need to check if the payment is in failed state
+     * 2. Authorize Failed does not apply in emandate debit recon
+     *
+     * @param $row
+     * @return bool
+     */
+    protected function validatePaymentStatus($row)
+    {
+        return true;
+    }
 }
