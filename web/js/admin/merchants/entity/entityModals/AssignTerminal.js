@@ -75,6 +75,10 @@ const gatewayAcquirerMapping = {
   fss: 'FSS',
 };
 
+const HDFC_gatewayAcquirerMapping = {
+  hdfc: 'HDFC',
+};
+
 export default class TerminalForm extends Component {
   state = { pricingPlans: {} };
 
@@ -153,6 +157,9 @@ export default class TerminalForm extends Component {
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
     const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
+    const gatewayAcquirers = isOrgHDFC()
+      ? HDFC_gatewayAcquirerMapping
+      : gatewayAcquirerMapping;
 
     return (
       <ModalContent header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
@@ -201,9 +208,9 @@ export default class TerminalForm extends Component {
             defaultValue={''}
           >
             <option value="">NA</option>
-            {Object.keys(gatewayAcquirerMapping).map(key => (
+            {Object.keys(gatewayAcquirers).map(key => (
               <option key={key} value={key}>
-                {gatewayAcquirerMapping[key]}
+                {gatewayAcquirers[key]}
               </option>
             ))}
           </SelectField>
