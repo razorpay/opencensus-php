@@ -55,7 +55,18 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $content = $input['gateway'];
+        $response = $input['gateway'];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RESPONSE,
+            [
+                'gateway'          => $this->gateway,
+                'gateway_response' => $response,
+                'payment_id'       => $input['payment']['id']
+            ]
+        );
+
+        $content = $this->getEncryptor()->decryptData($response[ResponseFields::ENCRYPTED_DATA], '=', '&');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -339,7 +350,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
-            RequestFields::VERIFY_DATA          => $encryptedString
+            RequestFields::ENCRYPTED_DATA       => $encryptedString,
         ];
 
         $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
