@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { openModal, closeModal } from 'common/modal';
 import { DataTable } from 'ui/Table';
 import Plan, { options } from './plan';
-import { observable } from 'mobx';
+import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
@@ -28,6 +28,10 @@ export default class PlanEntity extends Component {
     this.collection.save().then(data => data && closeModal());
   };
 
+  copyPlan = () => {
+    this.props.plan.collection.data.copyItem(toJS(this.collection.items));
+  };
+
   render() {
     let { props, items, updateName, pending } = this.collection;
     pending = pending.fetch;
@@ -38,7 +42,16 @@ export default class PlanEntity extends Component {
       <ModalContent
         class="pricing-container"
         header={
-          (props.id && props.name) || (
+          props.id && props.name ? (
+            <div>
+              <span>{props.name}</span>
+              {!isLoading && (
+                <button class="btn" onClick={this.copyPlan}>
+                  Clone Plan
+                </button>
+              )}
+            </div>
+          ) : (
             <div class="pricing-header">
               <Field
                 label="Enter Plan Name:"
@@ -162,4 +175,40 @@ const fields = [
 
 export function openPricingEntity() {
   openModal(<PlanEntity plan={this} />);
+}
+
+export function copyPricingEntity(rules) {
+  let copiedPlan = {
+    collection: this.collection,
+    id: null,
+    items: [],
+  };
+
+  copiedPlan.items = rules.map(rule => {
+    let {
+      id,
+      plan_id,
+      plan_name,
+      created_at,
+      updated_at,
+      deleted_at,
+      expired_at,
+      payment_network_name,
+      ...data
+    } = rule;
+
+    data.international = data.international ? 1 : 0;
+    ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'].forEach(elem => {
+      if (data[elem] || parseInt(data[elem]) === 0) {
+        data[elem] *= 100;
+      }
+    });
+
+    if (id) {
+      data.readonly = true;
+    }
+    return data;
+  });
+
+  openModal(<PlanEntity plan={copiedPlan} />);
 }
