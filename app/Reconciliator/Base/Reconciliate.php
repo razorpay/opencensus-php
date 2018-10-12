@@ -303,7 +303,11 @@ class Reconciliate extends Base\Core
         string $reconciliationType,
         array $extraDetails)
     {
-        if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
+        if ($reconciliationType === self::EMANDATE_DEBIT)
+        {
+            $batch->setSubType($reconciliationType);
+        }
+        else if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
             ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_COUNT] > 0))
         {
             $batch->setSubType(self::COMBINED);
