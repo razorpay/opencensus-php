@@ -387,7 +387,8 @@ trait Capture
      * If gateway call for capture times out, we catch the exception thrown
      * and push it into a queue. We continue with the normal flow afterwards.
      *
-     * @param $data
+     * @param      $data
+     * @param bool $autoCaptured
      */
     protected function captureOnGateway($data, $autoCaptured = false)
     {

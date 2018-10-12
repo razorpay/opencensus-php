@@ -10,7 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Admin;
+use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -820,37 +820,24 @@ class Service extends Base\Service
 
         $total = count($refundIds);
 
-        $allRefundsStatuses = [];
+        Entity::verifyIdAndStripSignMultiple($refundIds);
 
         foreach ($refundIds as $refundId)
         {
-            try
-            {
-                $refund = $this->repo->refund->findByPublicId($refundId);
+            $data = [
+                'id' => $refundId,
+                'mode' => Mode::LIVE,
+                'verify' => true,
+            ];
 
-                $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
-
-                $allRefundsStatuses[$refundStatus][] = $refundId;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
-
-                $allRefundsStatuses['errors'][] = [
-                    'refund_id' => $refundId,
-                    'message'   => $ex->getMessage(),
-                ];
-            }
+            BulkRefundJob::dispatch($data);
         }
 
-        $summary = [
-            'total' => $total,
-            'refunds_statuses' => $allRefundsStatuses,
-        ];
-
-        $this->trace->info(TraceCode::REFUND_RETRY_BULK_SUMMARY, $summary);
-
-        return $summary;
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_BULK_DISPATCHED,
+            [
+                'total' => $total
+            ]);
     }
 
     public function directRetryBulk(array $input)
@@ -863,41 +850,24 @@ class Service extends Base\Service
 
         $total = count($refundIds);
 
-        $allRefundsStatuses = [];
-
         Entity::verifyIdAndStripSignMultiple($refundIds);
-
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::GATEWAY_UNPROCESSED_REFUNDS => $refundIds]);
 
         foreach ($refundIds as $refundId)
         {
-            try
-            {
-                $refund = $this->repo->refund->findOrFailPublic($refundId);
+            $data = [
+                'id' => $refundId,
+                'mode' => Mode::LIVE,
+                'verify' => false,
+            ];
 
-                $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
-
-                $allRefundsStatuses[$refundStatus][] = $refundId;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
-
-                $allRefundsStatuses['errors'][] = [
-                    'refund_id' => $refundId,
-                    'message'   => $ex->getMessage(),
-                ];
-            }
+            BulkRefundJob::dispatch($data);
         }
 
-        $summary = [
-            'total' => $total,
-            'refunds_statuses' => $allRefundsStatuses,
-        ];
-
-        $this->trace->info(TraceCode::REFUND_DIRECT_RETRY_BULK_SUMMARY, $summary);
-
-        return $summary;
+        $this->trace->info(
+            TraceCode::REFUND_DIRECT_RETRY_BULK_DISPATCHED,
+            [
+                'total' => $total
+            ]);
     }
 
     public function verify(string $id)
