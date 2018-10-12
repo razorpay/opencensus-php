@@ -76,4 +76,24 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     {
         return null;
     }
+
+    /**
+     * Here, we check if the payment status is anything other than created.
+     * The reason for this is, during emandate debit reconciliation process, we
+     * move the payment to success or failure.
+     *
+     * @param $payment
+     * @return bool
+     */
+    protected function checkIfAlreadyReconciled($payment)
+    {
+        if ($payment->isStatus(Payment\Status::CREATED) === true)
+        {
+            // If transaction is not present, it would mean that
+            // the reconciliation did not happen for this.
+            return false;
+        }
+
+        return true;
+    }
 }
