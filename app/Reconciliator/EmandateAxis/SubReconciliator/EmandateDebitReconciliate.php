@@ -32,4 +32,14 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
 
         return null;
     }
+
+    protected function getGatewayToken(array $row)
+    {
+        if (empty($row[self::COLUMN_GATEWAY_TOKEN]) === false)
+        {
+            return $row[self::COLUMN_GATEWAY_TOKEN];
+        }
+
+        return null;
+    }
 }

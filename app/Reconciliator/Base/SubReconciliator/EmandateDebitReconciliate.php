@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class EmandateDebitReconciliate extends PaymentReconciliate
 {
@@ -47,5 +48,32 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
+    }
+
+    protected function getRowDetailsStructured($row)
+    {
+        $rowDetails = parent::getRowDetailsStructured($row);
+
+        $gatewayToken = $this->getGatewayToken($row);
+
+        if (empty($gatewayToken) === false)
+        {
+            $rowDetails[BaseReconciliate::GATEWAY_TOKEN] = trim($gatewayToken);
+        }
+
+        return $rowDetails;
+    }
+
+    /**
+     * If this is being implemented in the child class.
+     * The gateway token would be used to assert with the value
+     * currently present in the token entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayToken(array $row)
+    {
+        return null;
     }
 }
