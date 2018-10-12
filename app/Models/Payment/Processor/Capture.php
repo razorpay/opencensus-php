@@ -410,6 +410,8 @@ trait Capture
         $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
+
+        (new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)

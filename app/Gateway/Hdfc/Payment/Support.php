@@ -38,7 +38,8 @@ trait Support
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if ((in_array($input['card']['network_code'], $this->purchase, true)) or
+                ($input['payment']['auth_type'] === PaymentModel\AuthType::PIN))
             {
                 return;
             }
@@ -82,7 +83,8 @@ trait Support
             $status = Status::AUTHORIZED;
 
             // For purchase transactions, status will be captured.
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if ((in_array($input['card']['network_code'], $this->purchase, true)) or
+                (isset($input['payment']['auth_type']) === true and $input['payment']['auth_type'] === PaymentModel\AuthType::PIN))
             {
                 $status = Status::CAPTURED;
             }

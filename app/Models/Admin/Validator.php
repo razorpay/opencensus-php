@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_SMART_COLLECT                  => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK                        => 'filled|boolean',
         ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
+        ConfigKey::MERCHANT_ENACH_CONFIGS               => 'filled|array',
     ];
 
     protected static $scorecardRules = [
@@ -55,6 +56,15 @@ class Validator extends Base\Validator
         'key'   => 'required|in:merchant_enach_configs',
         'path'  => 'required|string',
         'value' => 'required|string',
+    ];
+
+    protected static $getConfigKeyRules = [
+        'key'   => 'required|in:merchant_enach_configs'
+    ];
+
+    protected static $deleteConfigKeyRules = [
+        'key'   => 'required|in:merchant_enach_configs',
+        'path'  => 'required|string',
     ];
 
     protected static $updateConfigKeyValidators = [

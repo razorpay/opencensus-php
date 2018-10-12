@@ -1527,7 +1527,7 @@ class Core extends Base\Core
     public function autoUpdateCategoryDetails(
         Entity $merchant,
         string $category,
-        ?string $subcategory): Entity
+        string $subcategory = null): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
