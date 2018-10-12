@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 
 use RZP\Exception;
@@ -11,6 +12,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
@@ -1025,5 +1027,102 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REFUND_MARK_PROCESSED_BULK_SUMMARY, $summary);
 
         return $summary;
+    }
+
+    public function fetchRefundDetailsForCustomer(array $input)
+    {
+        (new Validator)->validateInput('customer_refund_details', $input);
+
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
+        if (empty($input['payment_id']) === false)
+        {
+            $payment = $this->getPaymentFromPaymentIdForCustomerDetails($input['payment_id']);
+
+            if (empty($payment) === false)
+            {
+                $refunds = $payment->refunds;
+            }
+        }
+        else if (empty($input['refund_id']) === false)
+        {
+            $refund = $this->getRefundFromRefundIdForCustomerDetails($input['refund_id']);
+
+            if (empty($refund) === false)
+            {
+                $payment = $refund->payment;
+
+                $refunds = $payment->refunds;
+            }
+        }
+        else
+        {
+            $payment = $this->getPaymentFromReservationIdForCustomerDetails($input['reservation_id']);
+
+            if (empty($payment) === false)
+            {
+                $refunds = $payment->refunds;
+            }
+        }
+
+        if (empty($refunds) === false)
+        {
+            if ($refunds->count() > 0)
+            {
+                // This needs to be set for `toArrayPublicCustomer`. Specifically, for the acquirer data.
+                $this->auth->setMerchantById($refunds->first()->getMerchantId());
+            }
+        }
+
+        return [
+            'refunds' => isset($refunds) ? $refunds->toArrayPublicCustomer() : [],
+            'payment' => isset($payment) ? $payment->toArrayPublicCustomer() : [],
+        ];
+    }
+
+    protected function getPaymentFromReservationIdForCustomerDetails($reservationId)
+    {
+        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures([Feature\Constants::IRCTC_REPORT]);
+
+        $irctcMerchantIds = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+
+        $payment = $this->repo->payment->fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants($reservationId, $irctcMerchantIds);
+
+        if (empty($payment) === true)
+        {
+            return null;
+        }
+
+        return $payment;
+    }
+
+    protected function getPaymentFromPaymentIdForCustomerDetails($paymentId)
+    {
+        Payment\Entity::stripSignWithoutValidation($paymentId);
+
+        $payment = $this->repo->payment->find($paymentId);
+
+        if (empty($payment) === true)
+        {
+            return null;
+        }
+
+        return $payment;
+    }
+
+    protected function getRefundFromRefundIdForCustomerDetails($refundId)
+    {
+        Entity::stripSignWithoutValidation($refundId);
+
+        $refund = $this->repo->refund->find($refundId);
+
+        if (empty($refund) === true)
+        {
+            return null;
+        }
+
+        return $refund;
     }
 }

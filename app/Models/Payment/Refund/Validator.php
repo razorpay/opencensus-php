@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -58,6 +59,14 @@ class Validator extends Base\Validator
         'refund_ids.*'  => 'required|public_id',
     ];
 
+    protected static $customerRefundDetailsRules = [
+        'refund_id'         => 'required_without_all:payment_id,reservation_id|public_id',
+        'payment_id'        => 'required_without_all:refund_id,reservation_id|public_id',
+        'reservation_id'    => 'required_without_all:payment_id,refund_id|string|max:50',
+        'mode'              => 'sometimes|in:live,test',
+        'captcha'           => 'required|string|custom',
+    ];
+
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS
@@ -88,6 +97,44 @@ class Validator extends Base\Validator
     public function setPayment($payment)
     {
         $this->payment = $payment;
+    }
+
+    protected function validateCaptcha($attribute, $captchaResponse)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'];
+
+        $noCaptchaSecret = config('app.customer_refund_details.nocaptcha_secret');
+
+        $input = [
+            'secret'   => $noCaptchaSecret,
+            'response' => $captchaResponse,
+            'remoteip' => $clientIpAddress,
+        ];
+
+        $captchaQuery = http_build_query($input);
+
+        $url = "https://www.google.com/recaptcha/api/siteverify?". $captchaQuery;
+
+        $response = \Requests::get($url);
+
+        $output = json_decode($response->body);
+
+        if ($output->success !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'captcha' => $captchaResponse
+                ]);
+        }
     }
 
     protected function validateStatus($attribute, $value)
