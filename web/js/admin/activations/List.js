@@ -59,9 +59,10 @@ export default class MerchantList extends Component {
 
   componentWillMount() {
     let requests = [];
+    let isInstantActivationTab = this.props.instantActivation ? '1' : '0';
 
     requests.push({
-      url: 'live/admins/merchants',
+      url: `live/admins/merchants?instant_activation=${isInstantActivationTab}`,
       params: defaultFilters,
     });
     requests.push({ url: 'live/merchant/activation/reviewers' });
@@ -71,7 +72,7 @@ export default class MerchantList extends Component {
         // update collection items
         this.collection = new Collection({
           data: {
-            url: 'live/admins/merchants',
+            url: `live/admins/merchants?instant_activation=${isInstantActivationTab}`,
           },
           items: merchants.items,
           fetchFn: fetchMerchants.bind(this),
