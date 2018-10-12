@@ -873,6 +873,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getAssociatedAccounts(string $merchantId)
+    {
+        $data = $this->service()->fetchAssociatedAccounts($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function addTags($id)
     {
         $input = Request::all();

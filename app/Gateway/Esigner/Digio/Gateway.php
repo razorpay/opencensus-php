@@ -111,9 +111,15 @@ class Gateway extends Base\Gateway
         $mandateId = $decodedResponse['id'];
 
         $content = [
-            'logo' => urlencode('https://razorpay.com/assets/razorpay-logo-95e9447029.svg'),
+            'logo'         => urlencode('https://razorpay.com/assets/razorpay-logo-95e9447029.svg'),
             'redirect_url' => $input['callbackUrl'],
         ];
+
+        // For biometric authentication, Digio expects this parameter
+        if ($input['payment'][Payment\Entity::AUTH_TYPE] === Payment\AuthType::AADHAAR_FP)
+        {
+            $content['mode'] = Constants::MODE_FP;
+        }
 
         $this->domainType = 'redirect_' . $this->getMode();
 
@@ -452,7 +458,8 @@ class Gateway extends Base\Gateway
             $mandateXml = $response->body;
 
             $content = [
-                'signed_xml' => $mandateXml
+                'registration_date' => Carbon::now(Timezone::IST)->addDays(1)->getTimestamp(),
+                'signed_xml'        => $mandateXml,
             ];
 
             $gatewayPayment->fill($content);

@@ -215,7 +215,19 @@ class Reporting implements ExternalService
     {
         $path = self::CONFIG_PATH . '/' . $id;
 
-        return $this->createAndSendRequest(Requests::DELETE, $path);
+        $response = $this->createAndSendRequest(Requests::DELETE, $path);
+
+        if (isset($response['error']) === false)
+        {
+            $scheduleIds = $response['schedule_ids'];
+
+            foreach ($scheduleIds as $scheduleId)
+            {
+                $this->deleteScheduleTask($scheduleId);
+            }
+        }
+
+        return $response;
     }
 
     public function createLog(array $input): array
@@ -298,14 +310,25 @@ class Reporting implements ExternalService
         // Deleting the corresponding schedule task as well.
         if (isset($response['error']) === false)
         {
-            $entityId = $this->generateEntityId($id);
-
-            $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
-
-            $this->repo->deleteOrFail($scheduleTask);
+            $this->deleteScheduleTask($id);
         }
 
         return $response;
+    }
+
+    /**
+     *  Delete schedule task
+     */
+    protected function deleteScheduleTask(string $id)
+    {
+        $entityId = $this->generateEntityId($id);
+
+        $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+        if (empty($scheduleTask) === false)
+        {
+            $this->repo->deleteOrFail($scheduleTask);
+        }
     }
 
     public function processTasks(PublicCollection $scheduleTasks): array
@@ -524,8 +547,8 @@ class Reporting implements ExternalService
     protected function getAuthHeaders(): array
     {
         return [
-            $this->config['auth']['username'],
-            $this->config['auth']['password'],
+            $this->config['username'],
+            $this->config['secret'],
         ];
     }
 
@@ -562,11 +585,13 @@ class Reporting implements ExternalService
         $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
         $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
+        $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
             $hasMarketplaceTag,
-            $hasMarketplaceOrOpenwalletTag)
+            $hasMarketplaceOrOpenwalletTag,
+            $hasChargeAtWillTag)
         {
             switch ($value['type'])
             {
@@ -581,6 +606,10 @@ class Reporting implements ExternalService
                 // Keep reversal type only if marketplace is enabled
                 case Table::REVERSAL:
                     return $hasMarketplaceTag;
+
+                // Show token report to folks with charge_at_will feature only
+                case Table::TOKEN:
+                    return $hasChargeAtWillTag;
 
                 default:
                     return true;

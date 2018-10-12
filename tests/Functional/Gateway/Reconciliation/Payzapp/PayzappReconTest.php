@@ -118,9 +118,6 @@ class PayzappReconTest extends TestCase
 
         $payment = $this->getEntityById('payment', $payment, true);
 
-        // Date is not persisted as the payment amount validation failed
-        $this->assertNull($wallet['date']);
-
         $transactionId = $payment['transaction_id'];
 
         $transaction = $this->getEntityById('transaction', $transactionId, true);

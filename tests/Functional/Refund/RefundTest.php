@@ -1225,6 +1225,22 @@ class RefundTest extends TestCase
         parent::startTest();
     }
 
+    public function testRefundSettledBy()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('Razorpay', $refund['settled_by']);
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
