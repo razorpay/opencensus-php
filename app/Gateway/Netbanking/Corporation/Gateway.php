@@ -129,10 +129,11 @@ class Gateway extends Base\Gateway
         //
         $this->createGatewayPaymentEntity($data);
 
-        $encrypted = $this->getEncryptor()->encryptData($data);
+        $encrypted = $this->getEncryptor()->encryptData($data, '=', '&');
 
         $result = [
-            RequestFields::QUERY_STRING => $encrypted
+            RequestFields::MERCHANT_CODE => $this->getMerchantId(),
+            RequestFields::QUERY_STRING  => $encrypted,
         ];
 
         return $result;
