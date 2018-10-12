@@ -173,12 +173,13 @@ trait ReconTrait
         return $gatewayPayment;
     }
 
-    protected function getNewUpiHulkEntity($merchantId, $gateway)
+    protected function getNewUpiHulkEntity($merchantId, $gateway, $overrideTxnId = true)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
 
         if ((isset($this->payment['_']['flow']) === true) and
-            ($this->payment['_']['flow'] === 'intent'))
+            ($this->payment['_']['flow'] === 'intent') and
+            ($overrideTxnId === true))
         {
             $this->mockServerContentFunction(
                 function (& $content, $action = null)

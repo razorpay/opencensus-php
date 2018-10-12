@@ -69,6 +69,38 @@ class UpiHulkReconTest extends TestCase
         $this->assertEquals($entries[1]['PAYER_IFSC_CODE'], $upiEntity['ifsc']);
     }
 
+    public function testUpiHulkPaymentFileDuplicateTxnId()
+    {
+        $this->fixtures->create('terminal:shared_upi_hulk_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewUpiHulkEntity('10000000000000', 'upi_hulk');
+
+        $entries[] = $this->overrideUpiHulkPayment($upiEntity);
+
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $upiEntity = $this->getNewUpiHulkEntity('10000000000000', 'upi_hulk', false);
+
+        $entries[] = $this->overrideUpiHulkPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'Razorpay_Transaction_Details');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $response = $this->reconcile($uploadedFile, 'UpiHulk');
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     protected function overrideUpiHulkPayment($upiEntity)
     {
         $facade = $this->testData['upiHulk'];
