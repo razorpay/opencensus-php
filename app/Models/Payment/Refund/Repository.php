@@ -90,6 +90,8 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $query->where($paymentGateway, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 
     protected function addQueryParamMethod($query, $params)
