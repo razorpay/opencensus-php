@@ -22,8 +22,8 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const COLUMN_REASON            = 'return_reason';
     const COLUMN_RECORD_IDENTIFIER = 'record_identifier';
 
-    const STATUS_SUCCESS = 'success';
-    const STATUS_FAILURE = 'rejected';
+    const STATUS_SUCCESS = 'Success';
+    const STATUS_FAILURE = 'Rejected';
 
     protected $paymentStatusMappings = [
         self::STATUS_SUCCESS => Payment\Status::AUTHORIZED,
@@ -57,7 +57,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
      */
     protected function getReconPaymentStatus(array $row)
     {
-        if (in_array($row[self::COLUMN_STATUS], $this->paymentStatusMappings) === true)
+        if (isset($this->paymentStatusMappings[$row[self::COLUMN_STATUS]]) === true)
         {
             return $this->paymentStatusMappings[$row[self::COLUMN_STATUS]];
         }

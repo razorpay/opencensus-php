@@ -87,7 +87,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      */
     protected function checkIfAlreadyReconciled($payment)
     {
-        if ($payment->isStatus(Payment\Status::CREATED) === true)
+        if ($payment->getStatus() === Payment\Status::CREATED)
         {
             // If transaction is not present, it would mean that
             // the reconciliation did not happen for this.
