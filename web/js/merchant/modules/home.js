@@ -14,6 +14,8 @@ const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
+const SHOW_KYC_DETAILS = 'SHOW_KYC_DETAILS';
+const HIDE_KYC_DETAILS = 'HIDE_KYC_DETAILS';
 
 let initialState = {
   analytics: {
@@ -39,6 +41,7 @@ let initialState = {
   },
   instantActivations: {
     showInstantActivationSuccess: false,
+    showKYCDetails: false,
   },
 };
 
@@ -113,6 +116,14 @@ export const showInstantActivationSuccessModal = () => {
     type: SHOW_IA_SUCCESS,
   };
 };
+
+export const showKYCDetailsModal = () => ({
+  type: SHOW_KYC_DETAILS,
+});
+
+export const hideKYCDetailsModal = () => ({
+  type: HIDE_KYC_DETAILS,
+});
 
 export default function(state = initialState, action) {
   switch (action.type) {
@@ -197,6 +208,16 @@ export default function(state = initialState, action) {
     case `SHOW_IA_SUCCESS`:
       return set(state, 'instantActivations', {
         showInstantActivationSuccess: true,
+      });
+
+    case `SHOW_KYC_DETAILS`:
+      return set(state, 'instantActivations', {
+        showKYCDetails: true,
+      });
+
+    case `HIDE_KYC_DETAILS`:
+      return set(state, 'instantActivations', {
+        showKYCDetails: false,
       });
 
     default:

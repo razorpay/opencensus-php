@@ -14,7 +14,10 @@ import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
-import { showInstantActivationSuccessModal } from 'merchant/modules/home';
+import {
+  showInstantActivationSuccessModal,
+  showKYCDetailsModal,
+} from 'merchant/modules/home';
 
 import formFields from './L1FormMap';
 
@@ -65,6 +68,7 @@ let BUSINESS_CATEGORY_FIELD = 3;
     showNotification,
     updateSession,
     showInstantActivationSuccessModal,
+    showKYCDetailsModal,
   }
 )
 export default class ActivationWizard extends React.Component {
@@ -157,13 +161,13 @@ export default class ActivationWizard extends React.Component {
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
-    const user = new User({
+    const user = (this.user = new User({
       ...session.user,
       activation_progress,
       activated,
       activation_status,
       submitted: +submitted,
-    });
+    }));
 
     this.props.updateSession({
       user,
@@ -183,7 +187,19 @@ export default class ActivationWizard extends React.Component {
     })
       .then(response => {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
-        this.props.showInstantActivationSuccessModal();
+
+        const {
+          isWhitelistFlow,
+          isBlacklistFlow,
+          isGraylistFlow,
+        } = this.user.instantActivation;
+
+        if (isWhitelistFlow) {
+          this.props.showInstantActivationSuccessModal();
+        } else if (isGraylistFlow) {
+          this.props.showKYCDetailsModal();
+        }
+
         return this.props.history.replace(`/`);
       })
       .catch(err => {

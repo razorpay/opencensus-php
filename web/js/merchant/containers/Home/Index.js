@@ -26,6 +26,7 @@ import {
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { switchToLive } from 'merchant/containers/Home/OnboardingCard/SwitchToLive';
 
 import {
@@ -73,6 +74,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       current_balance: state.home.current_balance,
       showInstantActivationSuccess:
         state.home.instantActivations.showInstantActivationSuccess,
+      showKYCDetails: state.home.instantActivations.showKYCDetails,
     };
   },
   {
@@ -563,6 +565,8 @@ export default class HomeContainer extends Component {
       analyticsFetch,
       onFilterChange,
       showInstantActivationSuccess,
+      showKYCDetails,
+      hideKYCDetailsModal,
     } = this.props;
 
     const {
@@ -640,6 +644,7 @@ export default class HomeContainer extends Component {
         {showInstantActivationSuccess && (
           <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
         )}
+        {showKYCDetails && <KycDetailsModal onClose={hideKYCDetailsModal} />}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );
