@@ -25,5 +25,6 @@ class Validator extends Merchant\Validator
         Entity::EMAIL => 'sometimes|email',
         Fetch::SKIP   => 'sometimes|integer',
         Fetch::COUNT  => 'sometimes|integer',
+        Fetch::ID     => 'sometimes|alpha_num|size:14',
     ];
 }
