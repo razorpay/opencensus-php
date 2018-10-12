@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
+import { isOrgHDFC } from 'admin/user';
+
 import { adminFetch } from 'common/fetch';
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
@@ -31,9 +33,11 @@ export default class PermissionsList extends Component {
         <div class="box">
           <header>
             Permissions
-            <div class="btn pull-right" onClick={this.showEntity}>
-              Add a Permission
-            </div>
+            {!isOrgHDFC() && (
+              <div class="btn pull-right" onClick={this.showEntity}>
+                Add a Permission
+              </div>
+            )}
           </header>
         </div>
         <PageTable
@@ -63,14 +67,16 @@ const Actions = ({ item, collection }) => (
     <div class="link m-r" onClick={item::openRoleModal}>
       Roles
     </div>
-    <AsyncButton
-      class="link danger m-l"
-      pendingClass="link danger-faded m-l btn-pending"
-      confirm={`Are you sure you want to delete permission id "${item.id}"`}
-      onClick={removeEntity.bind(item, collection)}
-    >
-      Delete
-      <span class="dot-loader">.</span>
-    </AsyncButton>
+    {!isOrgHDFC() && (
+      <AsyncButton
+        class="link danger m-l"
+        pendingClass="link danger-faded m-l btn-pending"
+        confirm={`Are you sure you want to delete permission id "${item.id}"`}
+        onClick={removeEntity.bind(item, collection)}
+      >
+        Delete
+        <span class="dot-loader">.</span>
+      </AsyncButton>
+    )}
   </div>
 );
