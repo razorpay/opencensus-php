@@ -58,6 +58,14 @@ const gatewayMapping = {
   bt_dashboard: 'Bank Transfer - Dashboard (Test)',
 };
 
+const HDFC_gatewayMapping = {
+  hdfc: 'HDFC',
+  wallet_payzapp: 'Payzapp',
+  upi_hulk: 'UPI/HULK',
+  upi_mindgate: 'UPI/Mindgate',
+  cybersource: 'Cybersource',
+};
+
 const gatewayAcquirerMapping = {
   hdfc: 'HDFC',
   axis: 'Axis',
@@ -144,6 +152,8 @@ export default class TerminalForm extends Component {
 
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
+    const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
+
     return (
       <ModalContent header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
         <div class="m-b">
@@ -178,9 +188,9 @@ export default class TerminalForm extends Component {
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
           >
-            {Object.keys(gatewayMapping).map(key => (
+            {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
-                {gatewayMapping[key]}
+                {gateways[key]}
               </option>
             ))}
           </SelectField>
