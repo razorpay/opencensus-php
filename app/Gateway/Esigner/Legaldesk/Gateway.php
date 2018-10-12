@@ -248,9 +248,12 @@ class Gateway extends Base\Gateway
         {
             $mandateXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;
 
+            $dt = Carbon::now(Timezone::IST);
+            $nextWorkingDayTimestamp = Holidays::getNextWorkingDay($dt)->getTimestamp();
+
             $content = [
                 'signed_xml'        => $mandateXml,
-                'registration_date' => Carbon::now(Timezone::IST)->addDays(1)->getTimestamp(),
+                'registration_date' => $nextWorkingDayTimestamp,
             ];
 
             $gatewayPayment->fill($content);
