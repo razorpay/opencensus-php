@@ -15,15 +15,15 @@ use RZP\Reconciliator\Base\Reconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const NPCI_RESPONSE_CODE    = 'npci_response_code';
-    const PAYEE_VIRTUAL_ADDR    = 'payee_virtual_addr';
-    const PAYER_VIRTUAL_ADDR    = 'payer_virtual_addr';
-    const PAYER_IFSC_CODE       = 'payer_ifsc_code';
-    const UPI_TRANSACTION_ID    = 'upi_transaction_id';
-    const TRANSACTIONAMOUNT     = 'transactionamount';
-    const CUSTOMER_REF_NO       = 'customer_ref_no';
-    const TRN_STATUS_DESC       = 'trn_status_desc';
-    const SETTLEMANT_DATE       = 'settlemant_date';
+    const NPCI_RESPONSE_CODE    = 'NPCI_RESPONSE_CODE';
+    const PAYEE_VIRTUAL_ADDR    = 'PAYEE_VIRTUAL_ADDR';
+    const PAYER_VIRTUAL_ADDR    = 'PAYER_VIRTUAL_ADDR';
+    const PAYER_IFSC_CODE       = 'PAYER_IFSC_CODE';
+    const UPI_TRANSACTION_ID    = 'UPI_TRANSACTION_ID';
+    const TRANSACTIONAMOUNT     = 'TRANSACTIONAMOUNT';
+    const CUSTOMER_REF_NO       = 'CUSTOMER_REF_NO';
+    const TRN_STATUS_DESC       = 'TRN_STATUS_DESC';
+    const SETTLEMANT_DATE       = 'SETTLEMANT_DATE';
 
     const SUCCESS = 'SUCCESS';
 

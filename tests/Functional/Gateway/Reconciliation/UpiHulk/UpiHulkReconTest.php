@@ -46,9 +46,9 @@ class UpiHulkReconTest extends TestCase
 
         $entries[] = $this->overrideUpiHulkPayment($upiEntity);
 
-        $file = $this->writeToExcelFile($entries, 'Razorpay_Transaction_Details');
+        $file = $this->writeToCsvFile($entries, 'Razorpay_Transaction_Details');
 
-        $uploadedFile = $this->createUploadedFile($file);
+        $uploadedFile = $this->createUploadedFileCsv($file);
 
         $this->reconcile($uploadedFile, 'UpiHulk');
 
@@ -92,13 +92,17 @@ class UpiHulkReconTest extends TestCase
 
         $entries[] = $this->overrideUpiHulkPayment($upiEntity);
 
-        $file = $this->writeToExcelFile($entries, 'Razorpay_Transaction_Details');
+        $file = $this->writeToCsvFile($entries, 'Razorpay_Transaction_Details');
 
-        $uploadedFile = $this->createUploadedFile($file);
+        $uploadedFile = $this->createUploadedFileCsv($file);
 
         $response = $this->reconcile($uploadedFile, 'UpiHulk');
 
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
     }
 
     protected function overrideUpiHulkPayment($upiEntity)
