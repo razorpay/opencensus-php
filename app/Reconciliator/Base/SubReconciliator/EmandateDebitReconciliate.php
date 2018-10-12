@@ -149,12 +149,29 @@ class EmandateDebitReconciliate extends PaymentReconciliate
                 $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
             }
         }
+    }
 
-        //
-        // Payment can be updated from setPaymentAcquirerData before validation or
-        // from markGatewayCapturedAsTrue after validation, for both cases we are
-        // saving payment entity here from single location to save update queries
-        //
-        $this->repo->saveOrFail($this->payment);
+    /**
+     * Used for updating ARN and AuthCode in the parent function.
+     * Overrode this because:
+     * 1. ARN and AuthCode does not exist for emandate debit payments
+     * 2. We do not save payment entity at the end of recon process here
+     *
+     * @param $rowDetails
+     */
+    protected function setPaymentAcquirerData($rowDetails)
+    {
+        return;
+    }
+
+    /**
+     * Overriding this here because:
+     * 1. We can not map the gateway captured field now,
+     *    because the payment is not yet authorized.
+     * 2. We do not save payment entity at the end of recon process here
+     */
+    protected function markGatewayCapturedAsTrue()
+    {
+        return;
     }
 }
