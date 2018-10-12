@@ -28,6 +28,8 @@ trait SettlementTrait
     {
         $filterGroupedTxns = [];
 
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
+
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
@@ -77,6 +79,8 @@ trait SettlementTrait
 
             $filterGroupedTxns[$merchantId]->push($txn);
         }
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }
@@ -737,7 +741,7 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('3072M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
@@ -800,5 +804,22 @@ trait SettlementTrait
         }
 
         return false;
+    }
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+               'memory_allocated'               => $memoryAllocated,
+               'memory_used'                    => $memoryUsed,
+               'memory_peak_usage'              => $memoryPeakUsage,
+               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }
