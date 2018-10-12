@@ -117,50 +117,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
-            // Setting reconciled attribute before pre Reconciled check to check for duplicate row
-            $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
-
-            // Increment the total count for the summary
-            $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
-
-            $this->runPreReconciledAtCheckRecon($rowDetails);
-
-            if ($this->reconciled === true)
-            {
-                $this->handleAlreadyReconciled($paymentId);
-
-                //
-                // Record gateway fee and service tax for reconciled payments
-                //
-                $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
-            }
-            else
-            {
-                $validate = $this->validatePaymentDetails($row);
-
-                if ($validate === true)
-                {
-                    $persistSuccess = $this->persistReconciliationData($rowDetails);
-
-                    if ($persistSuccess === false)
-                    {
-                        // Increment the failure count for the summary.
-                        $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
-                    }
-                }
-                else
-                {
-                    // Increment the failure count for the summary.
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
-                }
-            }
-
-            //
-            // Payment can be updated from setPaymentAcquirerData before validation or
-            // from markGatewayCapturedAsTrue after validation, for both cases we are
-            // saving payment entity here from single location to save update queries
-            //
-            $this->repo->saveOrFail($this->payment);
+            $this->processReconciliationRow($row, $rowDetails, $paymentId);
         }
         catch (\Exception $ex)
         {
@@ -183,6 +140,62 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    /**
+     * Core payment reconciliation functionalities
+     *
+     * @param $row
+     * @param $rowDetails
+     * @param $paymentId
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function processReconciliationRow($row, $rowDetails, $paymentId)
+    {
+        // Setting reconciled attribute before pre Reconciled check to check for duplicate row
+        $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
+
+        // Increment the total count for the summary
+        $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
+
+        $this->runPreReconciledAtCheckRecon($rowDetails);
+
+        if ($this->reconciled === true)
+        {
+            $this->handleAlreadyReconciled($paymentId);
+
+            //
+            // Record gateway fee and service tax for reconciled payments
+            //
+            $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
+        }
+        else
+        {
+            $validate = $this->validatePaymentDetails($row);
+
+            if ($validate === true)
+            {
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
+
+                if ($persistSuccess === false)
+                {
+                    // Increment the failure count for the summary.
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                }
+            }
+            else
+            {
+                // Increment the failure count for the summary.
+                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+            }
+        }
+
+        //
+        // Payment can be updated from setPaymentAcquirerData before validation or
+        // from markGatewayCapturedAsTrue after validation, for both cases we are
+        // saving payment entity here from single location to save update queries
+        //
+        $this->repo->saveOrFail($this->payment);
     }
 
     public function resetRowProcessingAttributes()
