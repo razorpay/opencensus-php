@@ -38,7 +38,7 @@ export default class PermissionsList extends Component {
         </div>
         <PageTable
           model={this.collection}
-          fields={fields}
+          fields={getFields(this.collection)}
           onClick={showEntity}
           searchFilters={['name', 'description', 'category']}
         />
@@ -47,14 +47,18 @@ export default class PermissionsList extends Component {
   }
 }
 
-const fields = [
-  ['Permissions', item => item.name],
-  ['Description', item => item.description],
-  ['Category', item => item.category],
-  ['Actions', item => <Actions item={item} />],
-];
+function getFields(collection) {
+  const fields = [
+    ['Permissions', item => item.name],
+    ['Description', item => item.description],
+    ['Category', item => item.category],
+    ['Actions', item => <Actions item={item} collection={collection} />],
+  ];
 
-const Actions = ({ item }) => (
+  return fields;
+}
+
+const Actions = ({ item, collection }) => (
   <div>
     <div class="link m-r" onClick={item::openRoleModal}>
       Roles
@@ -63,7 +67,7 @@ const Actions = ({ item }) => (
       class="link danger m-l"
       pendingClass="link danger-faded m-l btn-pending"
       confirm={`Are you sure you want to delete permission id "${item.id}"`}
-      onClick={item::removeEntity}
+      onClick={removeEntity.bind(item, collection)}
     >
       Delete
       <span class="dot-loader">.</span>
