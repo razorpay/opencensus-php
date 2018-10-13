@@ -65,11 +65,18 @@
 
 
   #share-details
-    .share-icons.icons--grayscale
-      float: right
-      filter: grayscale()
-      opacity: 0
-      margin-top: -1px
+    .wysiwyg-edit-layer
+      margin-top: -8px
+
+    .share-icons
+      img:not(:nth-last-child(1))
+        margin-right: 12px
+
+      &.icons--grayscale
+        float: right
+        filter: grayscale()
+        opacity: 0
+        margin-top: -1px
 
     input
       position: absolute
