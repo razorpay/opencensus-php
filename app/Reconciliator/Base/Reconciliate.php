@@ -63,6 +63,8 @@ class Reconciliate extends Base\Core
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
 
     const GATEWAY_TOKEN          = 'gateway_token';
+    const ERROR_CODE             = 'error_code';
+    const ERROR_DESC             = 'error_desc';
 
     /*************************
      * Card types

@@ -56,10 +56,18 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
         $gatewayToken = $this->getGatewayToken($row);
 
-        if (empty($gatewayToken) === false)
-        {
-            $rowDetails[BaseReconciliate::GATEWAY_TOKEN] = trim($gatewayToken);
-        }
+        $gatewayErrorCode = $this->getPaymentFailureGatewayErrorCode($row);
+
+        $gatewayErrorDescription = $this->getPaymentFailureGatewayErrorDescription($row);
+
+        $rowDetails = array_merge(
+            $rowDetails,
+            [
+                BaseReconciliate::GATEWAY_TOKEN => $gatewayToken,
+                BaseReconciliate::ERROR_CODE    => $gatewayErrorCode,
+                BaseReconciliate::ERROR_DESC    => $gatewayErrorDescription,
+            ]
+        );
 
         return $rowDetails;
     }
