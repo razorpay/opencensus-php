@@ -12,8 +12,12 @@ import Terms from './Terms';
 })
 export default class View extends React.PureComponent {
   updateData({ target }) {
-    const { name, value } = target;
+    let { name, value } = target;
     console.log('NAME...', name);
+
+    if (target.type === 'checkbox') {
+      value = target.checked | 0; // Convert to 1 / 0
+    }
 
     this.props.updateData({
       [name]: value,
@@ -37,7 +41,7 @@ export default class View extends React.PureComponent {
         </div>
 
         <Share
-          socialshare={paymentPageEntity.social_share}
+          hasSocialShare={paymentPageEntity.social_share}
           updateData={this.updateData}
         />
 
