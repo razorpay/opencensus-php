@@ -49,35 +49,36 @@
 
 
   #details-section
-    .title--big
-      .Input-elWrapper
-        font-size: inherit
+    .Input-elWrapper
+      font-size: inherit
 
-        .Input-el
-          height: 40px
-          font-size: 24px
-          line-height: 32px
-          font-weight: 600
+    .title--big
+      .Input-el
+        height: 40px
+        font-size: 24px
+        line-height: 32px
+        font-weight: 600
 
     textarea.Input-el
       min-height: 72px
       max-height: 230px // Supports 720 char on desktop
 
 
-  #share-details
+  #share-details, #support-details, #terms-details
     .wysiwyg-edit-layer
       margin-top: -8px
 
+  #share-details, #support-details
     .share-icons
       img:not(:nth-last-child(1))
         margin-right: 12px
 
-      &.icons--grayscale
-        float: right
-        filter: grayscale()
-        opacity: 0
-        margin-top: -1px
+    .icons--grayscale
+      float: right
+      filter: grayscale()
+      opacity: 0
 
+  #share-details
     input
       position: absolute
       display: block
@@ -90,8 +91,21 @@
       margin: 0
       cursor: pointer
 
+  #support-details
+    .sub-detail
+      .Input
+        width: calc(100% - 28px)
+        display: inline-block
+        vertical-align: middle
+        margin: 0
 
-#wysiwyg-root
+      .Input-el
+        height: 28px
+        border: none
+        background: transparent
+        color: #0D2366 // Same as in customer-facing view
+
+
   .Input
     margin: -4px -6px
 
@@ -99,19 +113,26 @@
       padding: 3px 5px
       position: relative
 
+
   .title--big .Input-el
     padding: 1px 5px 2px // 1px less cuz of border
+
 
   .wysiwyg-edit-layer
     position: relative
     margin: -4px -6px
     padding: 4px 6px
-    cursor: pointer
     border-radius: 2px
+
+    &:not(.expanded)
+      cursor: pointer
 
     &:hover
       background-color: #fff
       box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
+
+      .close-btn
+        opacity: 0.5
 
       .share-icons.icons--grayscale
         opacity: 0.2
@@ -130,6 +151,7 @@
     color: #fff
     background-color: #2c3243
     line-height: 20px
+    min-width: 180px
 
     &::before
       border-right-color: #2c3243

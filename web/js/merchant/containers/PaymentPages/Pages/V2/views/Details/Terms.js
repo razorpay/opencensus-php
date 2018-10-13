@@ -46,7 +46,7 @@ export default class extends React.PureComponent {
           <EditLayer onClick={this.toggleEditMode}>
             {this.props.terms ? (
               <React.Fragment>
-                <label>Terms and Conditions:</label>
+                <label>Terms & Conditions:</label>
                 <div>{this.props.terms}</div>
               </React.Fragment>
             ) : (
