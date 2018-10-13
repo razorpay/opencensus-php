@@ -101,7 +101,7 @@ export function separateDomProps(props) {
   };
 }
 
-class Info extends React.Component {
+export class Info extends React.Component {
   render() {
     const { text } = this.props;
 

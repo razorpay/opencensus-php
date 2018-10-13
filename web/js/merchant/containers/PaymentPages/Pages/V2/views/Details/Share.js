@@ -14,7 +14,7 @@ export default class extends React.PureComponent {
 
     return (
       <div id="share-details">
-        <EditLayer>
+        <EditLayer infoTxt="This lets your customers share this page on their social media">
           <input
             name="social_share"
             type="checkbox"
