@@ -168,14 +168,22 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
             if ($validate === true)
             {
-                $this->processPayment($row, $rowDetails);
+                $paymentProcessed = $this->processPayment($row, $rowDetails);
 
-                $persistSuccess = $this->persistReconciliationData($rowDetails);
+                $this->persistReconciliationData($rowDetails);
 
-                if ($persistSuccess === false)
+                /**
+                 * We mark the recon as failed if payment status mapping
+                 * is not found from the status in file
+                 */
+                if ($paymentProcessed === false)
                 {
                     // Increment the failure count for the summary.
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                }
+                else
+                {
+                    $this->setSummaryCount(self::SUCCESSES_SUMMARY, $paymentId);
                 }
             }
             else
@@ -188,9 +196,11 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
     /**
      * Here we mark the payment as authorized or failed depending on the bank's status
+     * Returns true if the payment gets processed, false otherwise
      *
      * @param array $row
      * @param array $rowDetails
+     * @return bool
      */
     protected function processPayment(array $row, array $rowDetails)
     {
@@ -219,8 +229,20 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             //
             $processor->processAuth($this->payment);
         }
+        else
+        {
+            return false;
+        }
+
+        return true;
     }
 
+    /**
+     * Mark the payment as failed with the appropriate error code mapping
+     *
+     * @param Processor $processor
+     * @param array $rowDetails
+     */
     protected function failPayment(Processor $processor, array $rowDetails)
     {
         //
@@ -246,7 +268,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
     /**
      * Used for updating ARN and AuthCode in the parent function.
-     * Overrode this because:
+     * Override this because:
      * 1. ARN and AuthCode does not exist for emandate debit payments
      * 2. We do not save payment entity at the end of recon process here
      *
