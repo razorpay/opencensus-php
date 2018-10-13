@@ -2,8 +2,11 @@
 
 namespace RZP\Reconciliator\Base\SubReconciliator;
 
+use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class EmandateDebitReconciliate extends PaymentReconciliate
@@ -86,6 +89,28 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     }
 
     /**
+     * To be overridden in the child classes
+     * We can map the failure code in the GatewayErrorException and thus store it in
+     * payment entity if it fails
+     *
+     * @return null
+     */
+    protected function getPaymentFailureGatewayErrorCode(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * To be overridden in the child classes
+     *
+     * @return null
+     */
+    protected function getPaymentFailureGatewayErrorDescription(array $row)
+    {
+        return null;
+    }
+
+    /**
      * Here, we check if the payment status is anything other than created.
      * The reason for this is, during emandate debit reconciliation process, we
      * move the payment to success or failure.
@@ -143,6 +168,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
             if ($validate === true)
             {
+                $this->processPayment($row, $rowDetails);
+
                 $persistSuccess = $this->persistReconciliationData($rowDetails);
 
                 if ($persistSuccess === false)
@@ -157,6 +184,64 @@ class EmandateDebitReconciliate extends PaymentReconciliate
                 $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
             }
         }
+    }
+
+    /**
+     * Here we mark the payment as authorized or failed depending on the bank's status
+     *
+     * @param array $row
+     * @param array $rowDetails
+     */
+    protected function processPayment(array $row, array $rowDetails)
+    {
+        $reconPaymentStatus = $this->getReconPaymentStatus($row);
+
+        $merchant = $this->payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $processor->setPayment($this->payment);
+
+        if ($reconPaymentStatus === Payment\Status::FAILED)
+        {
+            //
+            // If the payment status is failed in recon, we need
+            // to mark the payment as failed  and update the
+            // related entities + push events for the same.
+            //
+            $this->failPayment($processor, $rowDetails);
+        }
+        else if ($reconPaymentStatus === Payment\Status::AUTHORIZED)
+        {
+            //
+            // The payment gets authorized once the recon details
+            // are confirmed. This will also create a transaction.
+            //
+            $processor->processAuth($this->payment);
+        }
+    }
+
+    protected function failPayment(Processor $processor, array $rowDetails)
+    {
+        //
+        // If payment's status is already failed, we don't
+        // need to update the payment status. This can happen
+        // if we upload the same file again. `alreadyReconciled`
+        // check won't be of use here since transaction won't
+        // be created at all, since it's a failed payment.
+        //
+        if ($this->payment->isFailed() === true)
+        {
+            return;
+        }
+
+        $exception = new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            $rowDetails[BaseReconciliate::ERROR_CODE],
+            $rowDetails[BaseReconciliate::ERROR_DESC]);
+
+        // Update payment status failed and send the corresponding events
+        $processor->updatePaymentAuthFailed($exception);
     }
 
     /**
