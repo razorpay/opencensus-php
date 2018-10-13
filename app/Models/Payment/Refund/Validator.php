@@ -108,7 +108,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'];
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $app['request']->ip();
 
         $noCaptchaSecret = config('app.customer_refund_details.nocaptcha_secret');
 
