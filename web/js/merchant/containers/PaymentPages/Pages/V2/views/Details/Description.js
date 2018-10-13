@@ -15,7 +15,7 @@ export default class extends React.PureComponent {
 
   handleOnInput = ({ target }) => {
     const content = target.value;
-    const fakeEle = window.document.querySelector('#fakeTextArea');
+    const fakeEle = window.document.querySelector('#description .fakeTextArea');
 
     fakeEle.innerHTML = content;
     this.elHeight = fakeEle.scrollHeight + 6 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
@@ -24,13 +24,12 @@ export default class extends React.PureComponent {
 
   render() {
     const isEditable = this.state.isEditable;
-    console.log('EL HEIGHT..', this.elHeight);
 
     return (
       <div id="description" class="text-wrap">
         {isEditable ? (
           <React.Fragment>
-            <div id="fakeTextArea" />
+            <div class="fakeTextArea" />
             <Input.Textarea
               style={{ height: this.elHeight }}
               name="description"
