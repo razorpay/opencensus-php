@@ -62,15 +62,19 @@
 
 
 #wysiwyg-root
-  .Input-el
-    padding: 3px 5px // 1px less cuz of border
-    position: relative
-    margin: -5px -8px -4px
+  .Input
+    margin: -4px -6px
+
+    .Input-el
+      padding: 3px 5px
+      position: relative
+
+  .title--big .Input-el
+    padding: 1px 5px 2px // 1px less cuz of border
 
   .wysiwyg-edit-layer
-    width: 100%
     position: relative
-    margin: 0 -8px -4px
+    margin: -4px -6px
     padding: 4px 6px
     cursor: pointer
     border-radius: 2px
@@ -78,6 +82,7 @@
     &:hover
       background-color: #fff
       box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
+
 
   //Override Styles
   .Input-info
