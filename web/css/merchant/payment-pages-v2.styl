@@ -40,25 +40,28 @@
       &:hover
         color: #cbdfff
 
-  .title--big
-    .Input-elWrapper
-      font-size: inherit
-
-      .Input-el
-        height: 40px
-        font-size: 24px
-        line-height: 32px
-        font-weight: 600
-
-  textarea.Input-el
-    min-height: 96px
-
   .btn-link
     padding-left: 0
 
     &:hover
       color: $primary-color
       text-decoration: none
+
+
+  #details-section
+    .title--big
+      .Input-elWrapper
+        font-size: inherit
+
+        .Input-el
+          height: 40px
+          font-size: 24px
+          line-height: 32px
+          font-weight: 600
+
+    textarea.Input-el
+      min-height: 72px
+      max-height: 230px // Supports 720 char on desktop
 
 
 #wysiwyg-root
@@ -93,3 +96,17 @@
     &::before
       border-right-color: #2c3243
 
+      @media (max-width: 1024px)
+        border-right-color: transparent
+        border-bottom-color: #2c3243
+
+
+#fakeTextArea
+  overflow: hidden
+  word-wrap: break-word
+  white-space: pre-wrap
+  height: 0
+  margin: 0 16px 0 -6px // Has no vertical footprint. 16px to act as look-ahead while typing -6 is same as .Input
+  padding: 0 5px
+  line-height: 20px
+  font-size: 14px
