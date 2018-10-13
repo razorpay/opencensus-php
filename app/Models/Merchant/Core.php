@@ -1057,17 +1057,13 @@ class Core extends Base\Core
 
     public function addSubMerchantReferral($aggregratorMerchant, $account)
     {
-        // Get existing tag names
-        $merchantTags = $account->tagNames();
-
         $refTag = 'ref-' . $aggregratorMerchant->getId();
 
-        array_push($merchantTags, $refTag);
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, ['tags' => [$refTag]]);
 
-        $tagInputData = ['tags' => $merchantTags];
+        $account->tag($refTag);
 
-        // addTags() uses retag() which resets all tags, hence sending all the existing tags along with the new tag
-        $this->addTags($account->id, $tagInputData);
+        $this->repo->merchant->syncToEsLiveAndTest($account, EsRepository::UPDATE);
     }
 
     /**
