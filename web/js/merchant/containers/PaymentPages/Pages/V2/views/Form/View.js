@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { classList } from 'common/util';
+import { classList, getFormattedAmount } from 'common/util';
 import EditLayer from '../EditLayer';
 import {
   deleteInSchema,
@@ -37,27 +37,7 @@ export default class View extends React.PureComponent {
             />
           );
         })}
-        <div id="form-footer">
-          <img
-            id="fin-logo"
-            alt="pay-methods"
-            src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
-          />
-          <div class="btn" type="submit" disabled>
-            <div>
-              <span>Pay ₹ 45.33</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-              >
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        <FormFooter />
       </div>
     );
   }
@@ -94,3 +74,27 @@ const PlaceholderField = ({ field, handleClick, infoTxt }) => {
     </EditLayer>
   );
 };
+
+const FormFooter = ({ amountToPay = 0 }) => (
+  <div id="form-footer">
+    <img
+      id="fin-logo"
+      alt="pay-methods"
+      src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
+    />
+    <div class="btn" type="submit" disabled>
+      <div>
+        <span>Pay ₹{getFormattedAmount(amountToPay)}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+);
