@@ -123,6 +123,14 @@
     padding: 1px 5px 2px // 1px less cuz of border
 
 
+  #form-section
+    #form-footer
+      .btn > div
+        position: absolute
+        left: 50%
+        top: 50%
+        transform: translate(-50%, -50%)
+
   .wysiwyg-edit-layer
     position: relative
     margin: -4px -6px
@@ -130,19 +138,11 @@
     border-radius: 2px
     cursor: pointer
 
-    &.Field
-      margin-left: -44px
-      margin-right: -44px
-      padding: 8px 44px
-
-      .Field-description
-        transform: none
-        margin-bottom: 0
-
-    &:hover
+    &:not(.disable-hover):hover
       background-color: #fff
       box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
 
+    &:hover
       .close-btn
         opacity: 0.5
 
@@ -174,6 +174,36 @@
       &::before
         border-right-color: transparent
         border-bottom-color: #2c3243
+
+
+.UI-form
+  .wysiwyg-edit-layer
+    &.Field
+      margin: 32px -44px -8px
+      padding: 8px 44px
+
+      .Field-description
+        transform: none
+        margin-bottom: 0
+
+    &.Field--disabled .Field-el
+      pointer-events: none
+
+  .Input-info
+    left: 50%
+    top: 0
+    margin-left: 0
+    margin-top: 8px
+    transform: translate(-50%, -100%) !important
+
+    &:before
+      border-right-color: transparent
+      border-bottom-color: transparent
+      border-top-color: #2c3243
+      left: 50%
+      transform: translateX(-50%)
+      top: unset
+      bottom: -16px
 
 
 .fakeTextArea

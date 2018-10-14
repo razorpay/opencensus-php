@@ -63,9 +63,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const actionBtns = (
       <React.Fragment>
-        <Button class="Button--invert" onClick={this.handleCreate}>
-          Create Page
-        </Button>
+        <Button.Primary onClick={this.handleCreate}>
+          Create and Publish Page
+        </Button.Primary>
       </React.Fragment>
     );
 
