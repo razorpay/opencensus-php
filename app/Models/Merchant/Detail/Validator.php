@@ -461,4 +461,36 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
         }
     }
+
+    /**
+     * Throws an exception if the activation form is not submitted
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateActivationFormSubmitted()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
+        }
+    }
+
+    /**
+     * Throws an exception if the merchant details are archived
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotArchived()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+        }
+    }
 }

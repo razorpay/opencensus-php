@@ -142,10 +142,10 @@ final class Constants
     const ACTIVATION_MANDATORY_FIELDS = [
         Entity::CATEGORY,
         Entity::BILLING_LABEL,
-        Entity::TRANSACTION_REPORT_EMAIL,
     ];
     const INSTANT_ACTIVATION_MANDATORY_FIELDS = [
         Entity::CATEGORY,
-        //        Entity::CATEGORY2,
+        Entity::CATEGORY2,
+        Entity::BILLING_LABEL,
     ];
 }

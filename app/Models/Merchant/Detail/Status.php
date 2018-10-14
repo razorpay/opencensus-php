@@ -7,10 +7,10 @@ class Status
     /*
      * Enum values used for activation form status
      */
+    const INSTANTLY_ACTIVATED = 'instantly_activated';
     const UNDER_REVIEW        = 'under_review';
     const NEEDS_CLARIFICATION = 'needs_clarification';
     const ACTIVATED           = 'activated';
-    const INSTANTLY_ACTIVATED = 'instantly_activated';
     const REJECTED            = 'rejected';
 
     /*

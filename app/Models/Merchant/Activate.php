@@ -55,7 +55,18 @@ class Activate extends Base\Core
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        $this->createBankAccountIfApplicable($merchant);
+        if ($activateByStatus === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        }
+
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
 
         $oldMerchant = clone $merchant;
 
@@ -65,7 +76,12 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        $this->allowKeyAccessIfApplicable($merchant);
+        // making sure that merchant's has_key_access is set to true when website is set.
+        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
+            ($merchant->getHasKeyAccess() === false))
+        {
+            $merchant->setHasKeyAccess(true);
+        }
 
         if ($activateByStatus === true)
         {
@@ -114,13 +130,6 @@ class Activate extends Base\Core
 
     public function instantlyActivate(Entity $merchant): array
     {
-        //
-        // The function autoUpdateMerchantCategoryDetailsIfApplicable() sets some merchant attributes.
-        // Reload is required here since $merchant is being fetched from $merchantDetails->merchant and the
-        // updated attributes are not reflected here.
-        //
-        $merchant->reload();
-
         $merchant->getValidator()->validateBeforeInstantlyActivate();
 
         $this->validateMethodsAndPricing($merchant);
@@ -147,8 +156,6 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
-        $this->sendMerchantInstantActivatedEvents($merchant);
-
         $detailCore = new Detail\Core;
 
         $merchantDetails = $merchant->merchantDetail;
@@ -167,41 +174,10 @@ class Activate extends Base\Core
 
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
-        // @todo: Add support for emails here
-        // $this->fireActivationTrigger($merchantDetails, $merchant);
+        // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
+        // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
 
         return $merchant->toArrayPublic();
-    }
-
-    protected function createBankAccountIfApplicable(Entity $merchant, bool $activateByStatus)
-    {
-        if ($activateByStatus === true)
-        {
-            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
-        }
-
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
-    }
-
-    /**
-     * This function just sets the has_key_access attribute in the merchant entity, doesn't save it.
-     *
-     * @param Entity $merchant
-     */
-    protected function allowKeyAccessIfApplicable(Entity & $merchant)
-    {
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
-            ($merchant->getHasKeyAccess() === false))
-        {
-            $merchant->setHasKeyAccess(true);
-        }
     }
 
     /**
@@ -258,29 +234,6 @@ class Activate extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
 
         $this->sendActivationEmail($merchant);
-    }
-
-    /**
-     * Send merchant activated events to drip & eventManager
-     * Also, send the email to merchant.
-     * Instant activation updates will not be sent to eventManager (Harvester)
-     *
-     * @param Entity $merchant
-     */
-    protected function sendMerchantInstantActivatedEvents(Entity $merchant)
-    {
-
-        // @todo: enable later
-        // $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::INSTANTLY_ACTIVATED);
-
-        // @todo: enable later
-        // $this->sendInstantActivationEmail($merchant);
-
-        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**

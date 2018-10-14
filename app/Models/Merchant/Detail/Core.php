@@ -97,10 +97,29 @@ class Core extends Base\Core
             $eventAttributes['activation_progress'] = $activationProgress;
 
             $this->app['eventManager']
-                 ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+                ->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
+    }
+
+    /**
+     * on business category or subcategory change updates merchant category and category2 data
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(
+        Entity $merchantDetails,
+        Merchant\Entity $merchant)
+    {
+        $category    = $merchantDetails->getBusinessCategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        {
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+        }
     }
 
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
@@ -172,25 +191,6 @@ class Core extends Base\Core
         // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
         //
         $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
-    }
-
-    /**
-     * on business category or subcategory change updates merchant category and category2 data
-     *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
-     */
-    public function autoUpdateMerchantCategoryDetailsIfApplicable(
-        Entity $merchantDetails,
-        Merchant\Entity $merchant)
-    {
-        $category    = $merchantDetails->getBusinessCategory();
-        $subcategory = $merchantDetails->getBusinessSubcategory();
-
-        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
-        {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
-        }
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity

@@ -19,6 +19,16 @@ class Whitelist implements ActivationFlowInterface
 {
     public function process(Entity $merchantDetails)
     {
-        (new Merchant\Activate)->instantlyActivate($merchantDetails->merchant);
+        //
+        // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
+        // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
+        // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
+        // merchant entity attributes, these values will not be reflected in the relation unless explicitly reloaded.
+        //
+        $merchantDetails->load('merchant');
+
+        $merchant = $merchantDetails->merchant;
+
+        (new Merchant\Activate)->instantlyActivate($merchant);
     }
 }

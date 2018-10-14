@@ -503,28 +503,32 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIsNotArchived()
+    public function validateBeforeActivate()
     {
         $merchant = $this->entity;
 
-        if ($merchant->merchantDetail->isArchived() === true)
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
+
+        $this->validateIsNotActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+
+        // Don't validate these rest of the attributes for Marketplace accounts
+        if ($merchant->isLinkedAccount() === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+            return;
         }
+
+        $this->validateActivationMandatoryAttributes();
     }
 
-    public function validateActivationFormSubmitted()
-    {
-        $merchant = $this->entity;
-
-        if ($merchant->merchantDetail->isSubmitted() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
-        }
-    }
-
+    /**
+     * @param array $attributes
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function validateMandatoryAttributes(array $attributes)
     {
         $merchant = $this->entity;
@@ -566,32 +570,15 @@ class Validator extends Base\Validator
         $this->validateMandatoryAttributes($attributes);
     }
 
-    public function validateBeforeActivate()
-    {
-        $merchant = $this->entity;
-
-        $this->validateActivationFormSubmitted();
-
-        $this->validateIsNotActivated($merchant);
-
-        $this->validateIsNotArchived();
-
-        // Don't validate these rest of the attributes for Marketplace accounts
-        if ($merchant->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        $this->validateActivationMandatoryAttributes();
-    }
-
     public function validateBeforeInstantlyActivate()
     {
         $merchant = $this->entity;
 
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
         $this->validateIsNotActivated($merchant);
 
-        $this->validateIsNotArchived();
+        $detailValidator->validateIsNotArchived();
 
         // LA's should directly be activated. They should not go through the instant activations flow
         if ($merchant->isLinkedAccount() === true)
@@ -602,7 +589,6 @@ class Validator extends Base\Validator
 
         $this->validateInstantActivationMandatoryAttributes();
     }
-
 
     public function validateVisibleFeatures(array $input)
     {
