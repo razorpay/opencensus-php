@@ -154,9 +154,14 @@ trait Support
 
         if ($success === false)
         {
-            $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
+            $errorCode = Hdfc\ErrorCodes\ErrorCodes::getErrorCodeForResult($result);
 
             Hdfc\ErrorHandler::setErrorInResponse($response, $errorCode);
+
+            if (isset($response['data']['authRespCode']))
+            {
+                $response['error']['authRespCode'] = $response['data']['authRespCode'];
+            }
 
             $this->error = true;
 
@@ -176,7 +181,7 @@ trait Support
         $input = $this->input;
 
         if (($this->action === Base\Action::CAPTURE) and
-            ($error['code'] === Hdfc\ErrorCode::GW00176) and
+            ($error['code'] === Hdfc\ErrorCodes\ErrorCodes::GW00176) and
             ($input['payment']['status'] === 'authorized') and
             ($input['payment']['amount_authorized'] === (int) $input['amount']))
         {
