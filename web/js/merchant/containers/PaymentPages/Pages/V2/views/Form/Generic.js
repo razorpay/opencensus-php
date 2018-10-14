@@ -1,15 +1,17 @@
+import Form from 'component/Form';
+import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList } from 'common/util';
 
-export const GenericField = ({ field, handleClick, infoTxt }) => {
+export const GenericField = ({ field, onEditField, infoTxt }) => {
   return (
     <EditLayer
       class={classList(
         'Field Field--disabled',
         field.required && 'Field--required',
-        !handleClick && 'disable-hover'
+        !onEditField && 'disable-hover'
       )}
-      onClick={handleClick}
+      onClick={onEditField}
       infoTxt={infoTxt}
     >
       <div class="Field-label">
@@ -33,6 +35,24 @@ export const GenericField = ({ field, handleClick, infoTxt }) => {
   );
 };
 
-export const GenericCreator = ({}) => {
-  return <div />;
-};
+export class GenericCreator extends React.PureComponent {
+  onChange = ({ target }) => {
+    const { name, value } = target;
+    console.log(name, value);
+  };
+
+  render() {
+    const { onClose, onSubmit } = this.props;
+
+    return (
+      <Form onChange={this.onChange}>
+        <footer>
+          <button type="button" class="btn-link" onClick={onClose}>
+            Cancel
+          </button>
+          <Button.Primary onClick={onSubmit}>Add</Button.Primary>
+        </footer>
+      </Form>
+    );
+  }
+}

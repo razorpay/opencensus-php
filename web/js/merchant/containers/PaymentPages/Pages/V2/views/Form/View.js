@@ -1,7 +1,8 @@
 import { connect } from 'react-redux';
 import EditLayer from '../EditLayer';
-import { AmountField, FormFooter } from './Amount';
+import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
+import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
 import {
   deleteInSchema,
@@ -9,22 +10,97 @@ import {
   addInSchema,
 } from 'merchant/modules/wysiwyg';
 
+function offset(el) {
+  var rect = el.getBoundingClientRect(),
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  return { top: rect.top + scrollTop, left: rect.left + scrollLeft };
+}
+
+const CreatorType = {
+  AMOUNT: 'AMOUNT',
+  GENERIC: 'GENERIC',
+};
+
 @connect(state => ({ FORM_SCHEMA: state.wysiwyg.FORM_SCHEMA }), {
   deleteInSchema,
   updateInSchema,
   addInSchema,
 })
 export default class View extends React.PureComponent {
-  handleClick = _ => {};
-  handleAddNewField = _ => {};
-  handleAddAmount = _ => {};
+  state = { activeCreatorType: null };
+
+  openCreator = (e, activeCreatorType) => {
+    const parent = document.getElementById('form-section');
+    const width = parent.clientWidth + 44 * 2;
+
+    this.creatorStructure = {
+      width,
+      top: offset(e.target).top,
+      left: offset(parent).left - 44,
+    };
+
+    this.setState({ activeCreatorType });
+  };
+
+  onCreatorClose = _ => {
+    this.setState({ activeCreatorType: false });
+  };
+
+  onCreatorSubmit = _ => {
+    // Add / Update FORM_SCHEMA
+    this.setState({ activeCreatorType: false });
+  };
+
+  onAmountCreatorSubmit = _ => {
+    // Add / Update FORM_SCHEMA
+    this.setState({ activeCreatorType: false });
+  };
+
+  onGenericCreatorSubmit = _ => {
+    // Add / Update FORM_SCHEMA
+    this.setState({ activeCreatorType: false });
+  };
 
   render() {
     const FORM_SCHEMA = this.props.FORM_SCHEMA;
+    const activeCreatorType = this.state.activeCreatorType;
+
+    let editorContent;
+
+    if (activeCreatorType) {
+      const field = {}; // Get data from FORM_SCHEMA if available
+
+      if (activeCreatorType === CreatorType.AMOUNT) {
+        editorContent = (
+          <AmountCreator
+            field={field}
+            onClose={this.onCreatorClose}
+            onSubmit={this.onAmountCreatorSubmit}
+          />
+        );
+      } else if (activeCreatorType === CreatorType.GENERIC) {
+        editorContent = (
+          <GenericCreator
+            field={field}
+            onClose={this.onCreatorClose}
+            onSubmit={this.onGenericCreatorSubmit}
+          />
+        );
+      }
+    }
 
     return (
       <div class="UI-form">
-        <AmountField handleAddAmount={this.handleAddAmount} />
+        {activeCreatorType && (
+          <Creator creatorStructure={this.creatorStructure}>
+            {editorContent}
+          </Creator>
+        )}
+
+        <AmountField
+          onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
+        />
 
         {FORM_SCHEMA.map((field, idx) => {
           let infoTxt = '';
@@ -39,12 +115,16 @@ export default class View extends React.PureComponent {
               key={idx}
               field={field}
               infoTxt={infoTxt}
-              handleClick={!isDisabled ? this.handleClick : undefined}
+              onEditField={
+                !isDisabled
+                  ? e => this.openCreator(e, CreatorType.GENERIC)
+                  : undefined
+              }
             />
           );
         })}
         <EditLayer
-          onClick={this.handleAddNewField}
+          onClick={e => this.openCreator(e, CreatorType.GENERIC)}
           style={{ marginTop: 32, display: 'inline-block' }}
         >
           <span class="btn-link">+ Add new field</span>
@@ -55,3 +135,23 @@ export default class View extends React.PureComponent {
     );
   }
 }
+
+const Creator = ({ children, creatorStructure }) => {
+  return (
+    <ModalMask maskClosable={false} class="payment-pages-v2">
+      <Modal
+        class="animate-appear"
+        showCloseBtn={false}
+        style={{
+          width: creatorStructure.width,
+          top: creatorStructure.top,
+          left: creatorStructure.left,
+          marginBottom: 80,
+          transform: 'none',
+        }}
+      >
+        <ModalContent>{children}</ModalContent>
+      </Modal>
+    </ModalMask>
+  );
+};

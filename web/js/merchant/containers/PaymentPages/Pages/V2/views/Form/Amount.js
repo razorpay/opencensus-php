@@ -1,7 +1,9 @@
+import Form from 'component/Form';
+import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList, getFormattedAmount } from 'common/util';
 
-export const AmountField = ({ amountToPay, handleAddAmount }) => {
+export const AmountField = ({ amountToPay, onAddAmount }) => {
   const cls = 'Field Field--disabled Field--required';
   const content = (
     <React.Fragment>
@@ -15,7 +17,7 @@ export const AmountField = ({ amountToPay, handleAddAmount }) => {
             <input class="Field-el" disabled />
           ) : (
             <EditLayer
-              onClick={handleAddAmount}
+              onClick={onAddAmount}
               style={{ display: 'inline-block' }}
             >
               <span class="btn-link">+ Add Amount</span>
@@ -57,6 +59,24 @@ export const FormFooter = ({ amountToPay }) => (
   </div>
 );
 
-export const AmountCreator = ({}) => {
-  return <div />;
-};
+export class AmountCreator extends React.PureComponent {
+  onChange = ({ target }) => {
+    const { name, value } = target;
+    console.log(name, value);
+  };
+
+  render() {
+    const { onClose, onSubmit } = this.props;
+
+    return (
+      <Form onChange={this.onChange}>
+        <footer>
+          <button type="button" class="btn-link" onClick={onClose}>
+            Cancel
+          </button>
+          <Button.Primary onClick={onSubmit}>Add</Button.Primary>
+        </footer>
+      </Form>
+    );
+  }
+}
