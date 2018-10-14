@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
-import { classList, getFormattedAmount } from 'common/util';
 import EditLayer from '../EditLayer';
+import { AmountField, FormFooter } from './Amount';
+import { GenericCreator, GenericField } from './Generic';
+
 import {
   deleteInSchema,
   updateInSchema,
@@ -14,12 +16,16 @@ import {
 })
 export default class View extends React.PureComponent {
   handleClick = _ => {};
+  handleAddNewField = _ => {};
+  handleAddAmount = _ => {};
 
   render() {
     const FORM_SCHEMA = this.props.FORM_SCHEMA;
 
     return (
       <div class="UI-form">
+        <AmountField handleAddAmount={this.handleAddAmount} />
+
         {FORM_SCHEMA.map((field, idx) => {
           let infoTxt = '';
           let isDisabled;
@@ -29,7 +35,7 @@ export default class View extends React.PureComponent {
           }
 
           return (
-            <PlaceholderField
+            <GenericField
               key={idx}
               field={field}
               infoTxt={infoTxt}
@@ -37,64 +43,15 @@ export default class View extends React.PureComponent {
             />
           );
         })}
-        <FormFooter />
+        <EditLayer
+          onClick={this.handleAddNewField}
+          style={{ marginTop: 32, display: 'inline-block' }}
+        >
+          <span class="btn-link">+ Add new field</span>
+        </EditLayer>
+
+        <FormFooter amountToPay={340 * 100} />
       </div>
     );
   }
 }
-
-const PlaceholderField = ({ field, handleClick, infoTxt }) => {
-  return (
-    <EditLayer
-      customClass={classList(
-        'Field Field--disabled',
-        field.required && 'Field--required',
-        !handleClick && 'disable-hover'
-      )}
-      onClick={handleClick}
-      infoTxt={infoTxt}
-    >
-      <div class="Field-label">
-        {field.title}
-        {field.required && <span class="symbol--red">*</span>}
-      </div>
-      <div class="Field-content">
-        <div
-          class={classList(
-            'Field-wrapper',
-            field._type && 'Field-wrapper--' + field_type
-          )}
-        >
-          <input class="Field-el" disabled />
-        </div>
-        {field.description && (
-          <div class="Field-description">{field.description}</div>
-        )}
-      </div>
-    </EditLayer>
-  );
-};
-
-const FormFooter = ({ amountToPay = 0 }) => (
-  <div id="form-footer">
-    <img
-      id="fin-logo"
-      alt="pay-methods"
-      src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
-    />
-    <div class="btn" type="submit" disabled>
-      <div>
-        <span>Pay ₹{getFormattedAmount(amountToPay)}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-        >
-          <path d="M0 0h24v24H0z" fill="none" />
-          <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-        </svg>
-      </div>
-    </div>
-  </div>
-);

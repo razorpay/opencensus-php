@@ -1,4 +1,4 @@
-import fUnits from './field_units';
+import fUnits from './field-units';
 
 /*
 * A. Type: text
@@ -24,7 +24,7 @@ export const TYPES = [
   fUnits.dropdown,
 ];
 
-export default function createShellField(type, validation) {
+export default function getFieldShell(type, validation) {
   return {
     name: '__0__', // Dummy quantum name
     label: '',
