@@ -100,9 +100,9 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
 
         {handleClose &&
           isPageReady && (
-            <Button.Transparent class="close-btn" onClick={handleClose}>
+            <span class="close-btn" onClick={handleClose}>
               ×
-            </Button.Transparent>
+            </span>
           )}
       </div>
     </div>

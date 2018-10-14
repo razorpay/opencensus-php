@@ -1,4 +1,8 @@
 import { set, merge, removeItem, updateItem, push } from 'rzp/utils/immutable';
+import {
+  createEmailField,
+  createPhoneField,
+} from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
 export const updateData = field => ({
   type: 'UPDATE_DATA',
@@ -22,7 +26,7 @@ export const addInSchema = field => ({
 
 let initialState = {
   paymentPageEntity: {},
-  FORM_SCHEMA: [],
+  FORM_SCHEMA: [createEmailField(), createPhoneField()],
 };
 
 export default function(state = initialState, action) {
