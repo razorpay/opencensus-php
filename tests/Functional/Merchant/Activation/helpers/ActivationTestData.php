@@ -911,9 +911,10 @@ return [
                 'p_gstin'                          => null,
                 'business_category'                => "ecommerce",
                 'business_subcategory'             => "fashion_and_lifestyle",
-                'activation_progress'              => 0,
                 'archived'                         => 0,
-                'allowed_next_activation_statuses' => [],
+                'allowed_next_activation_statuses' => [
+                    'under_review'
+                ],
                 'submitted_at'                     => null,
                 'activation_status'                => 'instantly_activated',
                 'verification'                     => [
@@ -948,6 +949,32 @@ return [
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testPostInstantActivationLinkedAccount' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+        ],
     ],
 
     'testPostInstantActivationByActivatedMerchant' => [

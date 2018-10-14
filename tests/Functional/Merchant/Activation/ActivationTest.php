@@ -58,6 +58,29 @@ class ActivationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->getHoldFunds());
+
+        $this->assertFalse($merchant->merchantDetail->isSubmitted());
+    }
+
+    public function testPostInstantActivationLinkedAccount()
+    {
+        $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $merchantId = $linkedAccount->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
     }
 
     /**
