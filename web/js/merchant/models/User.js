@@ -75,6 +75,14 @@ export default class User {
     return this.user.confirmed;
   }
 
+  isOrgRZP() {
+    const org = getOrg();
+
+    if (org && org.custom_code.toLowerCase() === 'rzp') {
+      return true;
+    }
+  }
+
   isOrgAllowedFunctionality(featureName) {
     const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
 
