@@ -68,12 +68,15 @@ export default class OnboardingCard extends Component {
       FirstStep = (
         <div class="media-body">
           <div class="media-heading">
-            <span className="highlight">W</span>elcome to Razorpay! Let's get
-            you going.
+            <span className="highlight">W</span>elcome{user.isOrgRZP
+              ? ' to Razorpay!'
+              : '!'}{' '}
+            Let's get you going.
           </div>
           <div className="onboarding-desc">
-            Your Razorpay account is ready to use! There is a lot that you can
-            do on the Dashboard. Here are some of the actions that you can take:
+            Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to
+            use! There is a lot that you can do on the Dashboard. Here are some
+            of the actions that you can take:
           </div>
           <div class="row">
             {onBoardingItems(user).map((item, index) => {
@@ -103,7 +106,8 @@ export default class OnboardingCard extends Component {
       FirstStep = (
         <div class="media-body">
           <div class="media-heading">
-            <span className="highlight">G</span>etting Started with Razorpay
+            <span className="highlight">G</span>etting Started{' '}
+            {user.isOrgRZP ? 'with Razorpay' : ''}
           </div>
           <div className="onboarding-desc">
             {mode === 'test' ? (

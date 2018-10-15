@@ -15,8 +15,8 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import { updateFeatures } from 'merchant/modules/config';
 
-const heading = '';
-
+const heading =
+  'Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with Razorpay Route.';
 @connect(
   state => {
     return {
@@ -34,10 +34,6 @@ export default class MarketplaceContainer extends Component {
     if (props.user.isOrgRZP) {
       this.prefix = 'Razorpay ';
     }
-
-    this.heading = `Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with ${
-      this.prefix
-    }Route.`;
   }
 
   enableFeature = () => {

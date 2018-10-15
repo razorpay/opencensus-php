@@ -2,7 +2,11 @@ import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
 
+import { getUser } from 'merchant/store';
+
 export default () => {
+  const user = getUser();
+
   return (
     <div class="form-body">
       <div class="form-group">
@@ -35,7 +39,7 @@ export default () => {
           <i class="i i-info-outline" style={{ marginRight: '4px' }} />
           <span>
             Approximate monthly revenue you expect to receive via virtual
-            accounts on Razorpay Smart Collect
+            accounts on {user.isOrgRZP ? 'Razorpay' : ''} Smart Collect
           </span>
         </small>
       </div>

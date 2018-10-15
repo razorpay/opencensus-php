@@ -1,10 +1,10 @@
 import { trackLinkClick } from './ga';
 import { Link } from 'react-router-dom';
-
 import { getUser } from 'merchant/store';
-const user = getUser();
 
 export default () => {
+  const user = getUser();
+
   return (
     <React.Fragment>
       <img

@@ -32,9 +32,7 @@ export default class SubscriptionsController extends Component {
       this.prefix = 'Razorpay ';
     }
 
-    this.heading = `Collect recurring payments from your customers easily with ${
-      this.prefix
-    }Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.`;
+    this.heading = `Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.`;
   }
 
   enableFeature = () => {
