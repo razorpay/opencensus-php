@@ -117,7 +117,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity;
     }
 
-    public function findOrFailPublic($id, $columns = array('*'))
+    public function findOrFailPublic($id, $columns = ['*'])
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
     }

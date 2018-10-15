@@ -14,6 +14,9 @@ class Repository extends BaseRepository
     /**
      * In case any entity defines email fetch filter, we ensure
      * that unicode is handled properly via this function
+     *
+     * @param $query
+     * @param $params
      */
     protected function addQueryParamEmail($query, $params)
     {
@@ -22,6 +25,6 @@ class Repository extends BaseRepository
         // Email should be case insensitive
         $email = mb_strtolower($params['email']);
 
-        $query = $query->where($attribute, '=', $email);
+        $query->where($attribute, '=', $email);
     }
 }

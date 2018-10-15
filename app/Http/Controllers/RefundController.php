@@ -209,4 +209,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getRefundDetailsForCustomer()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchRefundDetailsForCustomer($input);
+
+        return ApiResponse::json($data);
+    }
 }

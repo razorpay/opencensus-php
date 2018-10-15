@@ -217,10 +217,9 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($p2p, Status::COMPLETED);
-
-        // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $p2p);
+
+        $this->checkResponseStatus($p2p, Status::COMPLETED);
 
         return [
             'acquirer' => [
