@@ -6,7 +6,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
@@ -77,7 +76,7 @@ export default class OnboardingCard extends Component {
             do on the Dashboard. Here are some of the actions that you can take:
           </div>
           <div class="row">
-            {onBoardingItems.map((item, index) => {
+            {onBoardingItems(user).map((item, index) => {
               return (
                 <div className="col-md-4" key={index}>
                   <div className="onboarding-checklist-item">

@@ -1,8 +1,8 @@
 import { trackLinkClick } from './ga';
 import { Link } from 'react-router-dom';
 
-import store from 'merchant/store';
-const user = store.getState().getUser();
+import { getUser } from 'merchant/store';
+const user = getUser();
 
 export default () => {
   return (
