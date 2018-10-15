@@ -8,9 +8,12 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
 /**
  * @group dns-sensitive
@@ -584,5 +587,52 @@ class MerchantDetailTest extends TestCase
         $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
         $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
+    }
+    
+    /**
+     * checks that category and category2 details should be set on business subcategory change
+     */
+    public function testCategoryDetailsSetOnSubCategoryChange()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
+
+        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
+        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('mutual_funds', $testMerchant->getCategory2());
+    }
+
+    /**
+     * checks that category and category2 details should be set on business category changed to others
+     * this is a special case as business subcategory field will be null
+     */
+    public function testCategoryDetailsSetForOthersCategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('others', $liveMerchant->getCategory2());
+
+        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
+        $this->assertSame(5399, $testMerchant->getCategory());
+        $this->assertSame('others', $testMerchant->getCategory2());
     }
 }

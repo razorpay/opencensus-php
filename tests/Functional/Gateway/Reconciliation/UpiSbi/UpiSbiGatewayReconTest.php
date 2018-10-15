@@ -104,10 +104,6 @@ class UpiSbiGatewayReconTest extends TestCase
             $this->assertNull($transaction['reconciled_at']);
         }
 
-        // We assert that the entity's values remain the same as before
-        // This is because the payment is failed, and we do not reconcile failed payments
-        $this->assertUpiEntityNotChanged();
-
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
@@ -116,13 +112,6 @@ class UpiSbiGatewayReconTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals(12345, $upiEntity['npci_reference_id']);
-    }
-
-    private function assertUpiEntityNotChanged()
-    {
-        $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals(99999, $upiEntity['npci_reference_id']);
     }
 
     private function createUploadedFile($file)

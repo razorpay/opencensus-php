@@ -13,8 +13,6 @@ use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient implements ExternalService
 {
-    const REQUEST_TIMEOUT   = 30; // In secs
-
     const RULES_PATH        = '/merchants/{merchant_id}/rules';
 
     const EVALUATE_PATH     = '/rules/evaluate';
@@ -328,7 +326,6 @@ class ShieldClient implements ExternalService
         $headers = $this->getShieldHeaders();
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => $this->getAuthHeaders(),
         ];
 

@@ -7,18 +7,20 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class AuthType
 {
-    const NETBANKING    = 'netbanking';
-    const AADHAAR       = 'aadhaar';
-    const SKIP          = 'skip';
-    const PIN           = 'pin';
-    const _3DS          = '3ds';
-    const OTP           = 'otp';
-    const HEADLESS_OTP  = 'headless_otp';
+    const NETBANKING   = 'netbanking';
+    const AADHAAR      = 'aadhaar';
+    const AADHAAR_FP   = 'aadhaar_fp';
+    const SKIP         = 'skip';
+    const PIN          = 'pin';
+    const _3DS         = '3ds';
+    const OTP          = 'otp';
+    const HEADLESS_OTP = 'headless_otp';
 
     public static $types = [
         Method::EMANDATE => [
             self::NETBANKING,
             self::AADHAAR,
+            self::AADHAAR_FP,
         ],
         Method::CARD    => [
             self::PIN,

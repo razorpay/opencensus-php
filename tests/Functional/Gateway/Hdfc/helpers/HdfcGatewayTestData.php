@@ -253,5 +253,37 @@ return [
         'error_text' => 'Denied by risk. Response result code is "DENIED BY RISK"',
         'entity' => 'hdfc',
     ],
+
+    'testDebitPinAuthorizeFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+        ],
+    ],
+
+    'testDebitPinVerifyFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
 ];
 

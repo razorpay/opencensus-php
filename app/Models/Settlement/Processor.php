@@ -320,6 +320,8 @@ class Processor extends Base\Core
     protected function fetchRequiredEntities(
         int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [])
     {
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
+
         $txns = $this->repo->transaction->fetchUnsettledTransactions(
                     $settledAtCutOff, $channel, $inMids, $notInMids);
 
@@ -337,6 +339,8 @@ class Processor extends Base\Core
                                         MerchantModel\Entity::PARENT_ID
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHED_ENTITIES);
 
         return $txns;
     }
@@ -367,8 +371,10 @@ class Processor extends Base\Core
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
 
-        foreach ($groupedTxns as $key => $txns)
+        foreach ($groupedTxns as $merchantId => $txns)
         {
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
+
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
 
             if ($setl !== null)
@@ -384,6 +390,8 @@ class Processor extends Base\Core
 
                 $this->updateSettlementIdInTransfer($txns);
             }
+
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END);
         }
 
         $response = [

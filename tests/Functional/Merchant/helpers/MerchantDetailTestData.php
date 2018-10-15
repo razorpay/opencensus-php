@@ -652,6 +652,7 @@ return [
         'request' => [
             'content' => [
                 'business_type' => '2',
+                'department'    => '7',
             ],
             'url'     => '/pre_signup',
             'method'  => 'PUT',
@@ -660,7 +661,7 @@ return [
             'content' => [
                 'business_type'      => '2',
                 'transaction_volume' => null,
-                'department'         => null,
+                'department'         => '7',
                 'contact_mobile'     => null,
                 'role'               => null,
             ],
@@ -696,6 +697,46 @@ return [
             'content' => [
                 'total'  => 1,
                 'failed' => 0,
+            ],
+        ],
+    ],
+
+    'testCategoryDetailsSetOnSubCategoryChange' => [
+        'request'  => [
+            'content' => [
+                'business_subcategory' => 'mutual_fund',
+                'business_category'    => 'financial_services',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
+
+    'testCategoryDetailsSetForOthersCategory' => [
+        'request'  => [
+            'content' => [
+                'business_category'    => 'others',
+                'business_subcategory' => null,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
             ],
         ],
     ],

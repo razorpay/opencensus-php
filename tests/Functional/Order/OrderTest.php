@@ -145,6 +145,27 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateTPVOrderEmptyMethod()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrderUpiBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testCreateTPVOrderInvalidMethod()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateOrderWithBank()
     {
         $order = $this->startTest();
@@ -436,6 +457,46 @@ class OrderTest extends TestCase
         $this->setUpBillDeskGateway();
 
         $this->testCreateTPVOrder();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPreferencesForTPVMerchantsEmptyMethod()
+    {
+        $this->fixtures->merchant->enableTPV();
+        $this->fixtures->merchant->enableUPI();
+
+        $this->setUpBillDeskGateway();
+
+        $this->testCreateTPVOrderEmptyMethod();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+     public function testPreferencesForTPVMerchantsEmptyMethodInvalidBank()
+    {
+        $this->fixtures->merchant->enableTPV();
+        $this->fixtures->merchant->enableUPI();
+
+        $this->setUpBillDeskGateway();
+
+        $this->testCreateTPVOrderUpiBank();
 
         $order = $this->getLastEntity('order', true);
 

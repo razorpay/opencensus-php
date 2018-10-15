@@ -115,7 +115,7 @@ class RefundTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
-    public function testRefundEditStatustoFailedFromInitiated()
+    public function testRefundEditStatusToFailedFromInitiated()
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -169,9 +169,9 @@ class RefundTest extends TestCase
         $this->assertEquals('initiated', $refund['status']);
     }
 
-    public function testRefundEditStatustoProcessedFromFailed()
+    public function testRefundEditStatusToProcessedFromFailed()
     {
-         $payment = $this->defaultAuthPayment();
+        $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $refund = $this->refund(
@@ -248,6 +248,98 @@ class RefundTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('processed', $refund['status']);
+    }
+
+    public function testRefundFetchDetailsForCustomerFromRefundIdAndPaymentId()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_arn_refund']);
+
+        $payment = $this->fixtures->create(
+                                    'payment:captured',
+                                    [
+                                        'amount'   => 50000,
+                                    ]);
+
+        $refund1 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
+        $refund2 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
+
+        $refund2 = $this->getDbLastEntity('refund');
+
+        $this->fixtures->edit('refund', $refund2->getId(), [
+            'reference1' => 'random_arn'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['refund_id'] = $refund1['id'];
+
+        $this->ba->directAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertEquals($refund1['id'], $response['refunds'][0]['id']);
+        $this->assertEquals($refund1['payment_id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals('processed', $response['refunds'][0]['status']);
+        $this->assertEquals('Test Merchant', $response['refunds'][0]['merchant_name']);
+
+        $this->assertEquals($refund2->getPublicId(), $response['refunds'][1]['id']);
+        $this->assertEquals('pay_' . $refund2->getPaymentId(), $response['refunds'][1]['payment_id']);
+
+        $this->assertEquals($refund1['acquirer_data']['arn'], $response['refunds'][0]['acquirer_data']['arn']);
+
+        $this->fixtures->edit('refund', $refund2->getId(), [
+            'status' => 'failed'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = 'pay_' . $payment['id'];
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertEquals($refund1['id'], $response['refunds'][0]['id']);
+        $this->assertEquals($refund1['payment_id'], $response['refunds'][0]['payment_id']);
+
+        $this->assertEquals($refund2->getPublicId(), $response['refunds'][1]['id']);
+        $this->assertEquals('pay_' . $refund2->getPaymentId(), $response['refunds'][1]['payment_id']);
+        $this->assertEquals('initiated', $response['refunds'][1]['status']);
+
+        // just resetting
+        $this->ba->adminAuth('test');
+    }
+
+    public function testRefundFetchDetailsForCustomerFromReservationId()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_arn_refund', 'irctc_report']);
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'authorized' => true]);
+
+        $payment = $this->fixtures->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order->getId(),
+                                        'amount'   => 50000,
+                                    ]);
+
+        $refund1 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
+        $refund2 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
+
+        $refund2 = $this->getDbLastEntity('refund');
+
+        $this->fixtures->edit('refund', $refund2->getId(), [
+            'reference1' => 'random_arn'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reservation_id'] = $order->getReceipt();
+
+        $this->ba->directAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertEquals($refund1['id'], $response['refunds'][0]['id']);
+        $this->assertEquals($refund1['payment_id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals('processed', $response['refunds'][0]['status']);
+        $this->assertEquals('Test Merchant', $response['refunds'][0]['merchant_name']);
+
+        $this->assertEquals($refund2->getPublicId(), $response['refunds'][1]['id']);
+        $this->assertEquals('pay_' . $refund2->getPaymentId(), $response['refunds'][1]['payment_id']);
+
+        $this->assertEquals($refund1['acquirer_data']['arn'], $response['refunds'][0]['acquirer_data']['arn']);
     }
 
     public function testRefundDisputedPayment()
@@ -1223,6 +1315,22 @@ class RefundTest extends TestCase
         $this->ba->proxyAuth();
 
         parent::startTest();
+    }
+
+    public function testRefundSettledBy()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('Razorpay', $refund['settled_by']);
     }
 
     public function startTest($paymentId = null, $amount = null)

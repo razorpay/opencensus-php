@@ -41,6 +41,7 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
 
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);

@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal\Category;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 
@@ -11,7 +13,7 @@ class BusinessSubCategoryMetaData
     const DESCRIPTION        = 'description';
     const NORMAL_AUTH_FIELDS = [self::DESCRIPTION];
 
-    // @TODO add metadata for others and day care
+    // @TODO add metadata for others
     const SUB_CATEGORY_METADATA = [
         Sub::ACCOMMODATION                 => [
             Merchant::CATEGORY      => 7011,
@@ -206,8 +208,10 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,
         ],
         Sub::DAY_CARE                      => [
+            Merchant::CATEGORY      => 8351,
             self::DESCRIPTION       => Sub::DESCRIPTIONS[Sub::DAY_CARE],
-            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
+            Merchant::CATEGORY2     => Category::OTHERS,
+            Entity::ACTIVATION_FLOW => ActivationFlow::WHITELIST,
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY      => 6513,
@@ -762,4 +766,46 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW => ActivationFlow::WHITELIST,
         ],
     ];
+
+    /**
+     * returns metadata for others category
+     * others business category does not have any subcategory associated with it
+     *
+     * @return array
+     */
+    private static function getMetaDataForOthersCategory(): array
+    {
+        return [
+            Merchant::CATEGORY      => 5399,
+            Merchant::CATEGORY2     => Category::OTHERS,
+            Entity::ACTIVATION_FLOW => ActivationFlow::GREYLIST,
+        ];
+    }
+
+    /**
+     * returns metadata for given category , subcategory
+     * throws BadRequestException if metadata is not defined for subcategory
+     *
+     * @param string      $category
+     * @param null|string $subcategory
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public static function getSubCategoryMetaData(string $category, string $subcategory = null): array
+    {
+        if ($category === BusinessCategory::OTHERS)
+        {
+            return self::getMetaDataForOthersCategory();
+        }
+
+        if (isset(self::SUB_CATEGORY_METADATA[$subcategory]) === true)
+        {
+            return self::SUB_CATEGORY_METADATA[$subcategory];
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY,
+            [Entity::BUSINESS_SUBCATEGORY => $subcategory]);
+    }
 }

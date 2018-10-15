@@ -39,24 +39,35 @@ class Core extends Base\Core
         //
         // For now, we're simply adding a global lock on VA creation to avoid duplicates being created.
         //
-        $virtualAccount = $this->mutex->acquireAndRelease(
-            self::VA_BANK_ACCOUNT_GENERATION,
-            function() use ($input, $merchant, $customer, $order)
-            {
-                $virtualAccount = $this->createEntityAndAssociate($merchant);
+        try
+        {
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION,
+                function() use ($input, $merchant, $customer, $order)
+                {
+                    $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-                return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
-            },
-            // The entire VA creation process inside this lock actually takes
-            // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-            // A process will generally not need to do multiple retries at all,
-            // since the retry times are adequate for the previous process to complete.
-            2,
-            // 2x and 4x of avg response time for this entire route (not just the process within the lock)
-            200,
-            400);
+                    return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                },
+                // The entire VA creation process inside this lock actually takes
+                // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+                10,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                // A process will generally not need to do multiple retries at all,
+                // since the retry times are adequate for the previous process to complete.
+                2,
+                // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+                200,
+                400);
+        }
+        catch (\Throwable $e)
+        {
+            (new Metric)->pushFailedMetrics($input, $e);
+
+            throw $e;
+        }
+
+        (new Metric)->pushCreateMetrics($input);
 
         return $virtualAccount;
     }

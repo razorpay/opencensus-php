@@ -40,7 +40,7 @@ class ScroogeRefund extends Job
 
         try
         {
-            App::getFacadeRoot()['scrooge']->initiateRefund($this->data);
+            App::getFacadeRoot()['scrooge']->initiateRefund($this->data, true);
 
             $this->trace->info(
                 TraceCode::REFUND_QUEUE_SCROOGE_SUCCESS,

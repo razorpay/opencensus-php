@@ -65,7 +65,7 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['verify_at']);
+        $this->assertNull($payment['verify_at']);
     }
 
     public function testGatewayCallbackWithEmptyInput()
@@ -822,7 +822,7 @@ class CybersourceGatewayTest extends TestCase
             'response' => [
                 'content' => [
                     'payment_id' => $payment['id'],
-                    'manual_gateway_capture' => 'Successfully created a capture on gateway'
+                    'result'     => true
                 ]
             ]
         ];

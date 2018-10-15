@@ -2,11 +2,16 @@
 
 namespace RZP\Tests\Functional\Merchant\helpers;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
+
 return [
-    'testMerchantActivationCategoriesResponseForAdminAuth'    => [
+    'testMerchantActivationCategoriesResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/merchant/activation/business_categories'
+            'url'    => '/merchant/activation/business_categories',
         ],
         'response' => [
             'content'     => [
@@ -839,15 +844,16 @@ return [
                             'activation_flow' => 'greylist',
                         ],
                     ],
-                ]
+                ],
             ],
-            'status_code' => 200
-        ]
+            'status_code' => 200,
+        ],
     ],
+
     'testMerchantActivationCategoriesResponseForNonAdminAuth' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/merchant/activation/business_categories'
+            'url'    => '/merchant/activation/business_categories',
         ],
         'response' => [
             'content'     => [
@@ -859,11 +865,194 @@ return [
                         ],
                         'lending'     => [
                             'description' => 'Lending',
-                        ]
-                    ]
+                        ],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPostInstantActivationRequiredField' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/merchant/instant_activation',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'The business category field is required.',
+        ],
+    ],
+
+    'testPostInstantActivation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'services',
+                'business_subcategory' => 'event_planning',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'gstin'                            => null,
+                'p_gstin'                          => null,
+                'business_category'                => "services",
+                'business_subcategory'             => "event_planning",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+                'verification'                     => [
+                    'status'              => "disabled",
+                    'disabled_reason'     => "required_fields",
+                    'required_fields'     => [
+                        "address_proof_url",
+                        "bank_account_name",
+                        "bank_account_number",
+                        "bank_branch_ifsc",
+                        "business_international",
+                        "business_operation_address",
+                        "business_operation_city",
+                        "business_operation_pin",
+                        "business_operation_state",
+                        "business_pan_url",
+                        "business_proof_url",
+                        "business_registered_address",
+                        "business_registered_city",
+                        "business_registered_pin",
+                        "business_registered_state",
+                        "contact_mobile",
+                        "contact_name",
+                        "promoter_address_url",
+                    ],
+                    'activation_progress' => 18,
+                ],
+                'can_submit'                       => false,
+                'activated'                        => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testUpdateActivationFlow' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testUpdateCategoryDetails' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testPostInstantActivationByActivatedMerchant' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'services',
+                'business_subcategory' => 'event_planning',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
                 ]
             ],
-            'status_code' => 200
+            'status_code' => 400
         ],
-    ]
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+        ]
+    ],
+
+    'testL1ResubmissionForBlacklist' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "accounting",
+                'can_submit'           => false,
+                //'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

@@ -113,7 +113,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
-    const REFERENCE15           = 'reference15';
     const REFERENCE16           = 'reference16';
     const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
@@ -173,6 +172,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER        = 'account_number';
 
     const OFFER_ID              = 'offer_id';
+    const SETTLED_BY            = 'settled_by';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -291,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::MDR,
         self::TAX,
+        self::SETTLED_BY,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
@@ -352,6 +353,13 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::STATUS,
         self::METHOD,
+        self::AMOUNT,
+        self::CREATED_AT,
+    ];
+
+    protected $publicCustomer = [
+        self::ID,
+        self::STATUS,
         self::AMOUNT,
         self::CREATED_AT,
     ];
@@ -777,8 +785,11 @@ class Entity extends Base\PublicEntity
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
+     *
+     * TODO: Temporarily made public for VA payments to set gateway externally
+     * This should be removed after VA terminals are used in payment flow as well
      */
-    protected function setGateway($gateway)
+    public function setGateway($gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
@@ -929,6 +940,11 @@ class Entity extends Base\PublicEntity
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setSettledBy($settledBy)
+    {
+        $this->setAttribute(self::SETTLED_BY, $settledBy);
     }
 
     public function setErrorNull()
@@ -1862,6 +1878,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TERMINAL_ID);
     }
 
+    public function getSettledBy()
+    {
+        $settledBy = $this->getAttribute(self::SETTLED_BY);
+
+        if ($settledBy === null)
+        {
+            $settledBy = "Razorpay";
+        }
+
+        return $settledBy;
+    }
+
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
@@ -2277,6 +2305,8 @@ class Entity extends Base\PublicEntity
         $this->terminal()->associate($terminal);
 
         $this->setGateway($terminal->getGateway());
+
+        $this->setSettledBy("Razorpay");
 
         $this->setRelation('terminal', $terminal);
     }
@@ -2795,7 +2825,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
-    public function getDummyPaymentArray(string $method, Base\PublicEntity $receiver = null, string $network = null, array $metadata = [], Order\Entity $orderEntity = null): array
+    public function getDummyPaymentArray(
+        string $method,
+        Base\PublicEntity $receiver = null,
+        string $network = null,
+        array $metadata = [],
+        Order\Entity $orderEntity = null): array
     {
         $paymentArray =  [
             self::CURRENCY    => Currency\Currency::INR,
@@ -2873,5 +2908,17 @@ class Entity extends Base\PublicEntity
             default:
                 return 'PG';
         }
+    }
+
+    public function isDirectSettlement()
+    {
+        if (($this->isNetbanking() === true) and
+            ($this->hasTerminal() === true) and
+            ($this->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

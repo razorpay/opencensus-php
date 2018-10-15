@@ -65,13 +65,16 @@ class Gateway extends Hdfc\Gateway
                 $response = $server->gatewayTransaction('auth_second_recurring');
                 break;
 
+            case 'debit_pin_authentication':
+                $response = $server->debitPinAuth();
+                break;
+
             case 'auth_not_enrolled':
             case 'capture':
             case 'refund':
             case 'inquiry':
                 $response = $server->gatewayTransaction();
                 break;
-
             default:
                 throw new Exception\LogicException(
                     'Unrecognized request type.',

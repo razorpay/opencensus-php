@@ -18,6 +18,9 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Metric
 {
+    // Gateway metrics are pushed to a different statsd_exporter instance.
+    const DOGSTATSD_DRIVER               = 'dogstatsd_gateway';
+
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
 
@@ -298,7 +301,9 @@ class Metric
 
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
-                app('trace')->count(Metric::GATEWAY_REQUEST_COUNT, $dimensions);
+                $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
+
+                $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
             }
         }
         catch (\Throwable $exc)
