@@ -1029,4 +1029,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
         ]
     ],
+
+    'testL1ResubmissionForBlacklist' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "accounting",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];
