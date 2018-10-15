@@ -99,7 +99,7 @@ class ActivationTest extends TestCase
     }
 
     /**
-     * blacklist merchant should be able to resubmit L1 activation form(basic activation form)
+     * Blacklist merchant should be able to resubmit L1 activation form (basic activation form)
      */
     public function testL1ResubmissionForBlacklist()
     {
@@ -113,8 +113,5 @@ class ActivationTest extends TestCase
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
         $this->assertSame('whitelist', $liveMerchant->merchantdetail->getActivationFlow());
-
-        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame('whitelist', $testMerchant->merchantdetail->getActivationFlow());
     }
 }

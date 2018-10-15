@@ -1050,6 +1050,7 @@ return [
                 'business_category'    => "financial_services",
                 'business_subcategory' => "accounting",
                 'can_submit'           => false,
+                //'activated'            => 1,
             ],
         ],
         'status_code' => 200,
