@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\ReconSummary;
 
+use RZP\Constants\Entity as ConstantEntity;
+
 class RefundReconStatusSummary extends DailyReconStatusSummary
 {
     public function getReconStatusSummary(int $from, int $to): array
@@ -34,9 +36,9 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
 
         foreach ($payments as $entry)
         {
-            $date = Helpers::getFormattedDate($entry['created_at']);
+            $date = Helpers::getFormattedDate($entry['processed_at']);
 
-            Helpers::formatSheetColumns($entry);
+            Helpers::formatSheetColumns($entry, ConstantEntity::REFUND);
 
             $formattedPayments[$date][$entry['gateway']][] = $entry;
         }

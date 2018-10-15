@@ -248,7 +248,7 @@ class Core extends Base\Core
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.
-            $this->processFiles($data, $merchant, $action);
+            $this->processFiles($data, $merchant);
 
             $this->processOnboardingKeys($data, $merchant, $action);
 

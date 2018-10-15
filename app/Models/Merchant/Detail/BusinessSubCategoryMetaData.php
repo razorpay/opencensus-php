@@ -792,7 +792,7 @@ class BusinessSubCategoryMetaData
      * @return array
      * @throws \RZP\Exception\BadRequestException
      */
-    public static function getSubCategoryMetaData(string $category, ?string $subcategory): array
+    public static function getSubCategoryMetaData(string $category, string $subcategory = null): array
     {
         if ($category === BusinessCategory::OTHERS)
         {

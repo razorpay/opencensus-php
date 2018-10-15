@@ -32,7 +32,37 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoFailedFromInitiated' => [
+    'testRefundFetchDetailsForCustomerFromRefundIdAndPaymentId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'refund_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundFetchDetailsForCustomerFromReservationId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'reservation_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundEditStatusToFailedFromInitiated' => [
         'request'  => [
             'content' => [
                 'status'    => 'failed',
@@ -62,7 +92,7 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoProcessedFromFailed' => [
+    'testRefundEditStatusToProcessedFromFailed' => [
         'request'  => [
             'content' => [
                 'status'    => 'processed',

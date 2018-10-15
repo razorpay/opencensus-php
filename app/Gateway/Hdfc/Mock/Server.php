@@ -608,7 +608,7 @@ class Server extends Base\Mock\Server
             ($status === 'captured'))
         {
             $txn = $this->getRepo()->findByGatewayTransactionIdAndErrorCode(
-                                            $gatewayTxnId, Hdfc\ErrorCode::GW00176);
+                                            $gatewayTxnId, Hdfc\ErrorCodes\ErrorCodes::GW00176);
         }
 
         return $txn;
@@ -686,32 +686,34 @@ class Server extends Base\Mock\Server
         switch ($cardNumber)
         {
             case '4012001036853337':
-                $code = Hdfc\ErrorCode::GV00007;
+                $code = Hdfc\ErrorCodes\ErrorCodes::GV00007;
                 break;
 
             case '4012001036983332':
-                $code = Hdfc\ErrorCode::GV00008;
+                $code = Hdfc\ErrorCodes\ErrorCodes::GV00008;
                 break;
 
             case '4012001037461114':
-                $code = Hdfc\ErrorCode::GV00004;
+                $code = Hdfc\ErrorCodes\ErrorCodes::GV00004;
                 break;
 
             case '4012001037484447':
             case '4012001037490006':
-                $code = Hdfc\ErrorCode::FSS0001;
+                $code = Hdfc\ErrorCodes\ErrorCodes::FSS0001;
                 break;
 
             default:
                 throw new \LogicException('Card number given here is not special');
         }
 
+        $errorText = Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription([ 'code' => $code]);
+
         $error['error_code_tag'] = $code;
-        $error['error_text'] = '!ERROR!-'.$code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
+        $error['error_text'] = '!ERROR!-'.$code . '-' . $errorText;
         $error['error_service_tag'] = '';
 
         // @todo: figure out exactly how and when to send 'result' field
-        $error['result'] = $code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
+        $error['result'] = $code . '-' . $errorText;
 
         return $error;
     }

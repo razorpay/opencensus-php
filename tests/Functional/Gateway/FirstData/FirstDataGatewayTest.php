@@ -187,16 +187,13 @@ class FirstDataGatewayTest extends TestCase
         $this->getFailureInVerifyRefund($refundId);
 
         //TODO: Check for retry flow
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
-        {
-            $this->assertEquals('processed', $actualRefund['status']);
-        }
+        $this->assertEquals('processed', $actualRefund['status']);
 
         $this->assertEquals(1, $actualRefund['attempts']);
 
@@ -243,23 +240,19 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getFailureInVerifyRefund($refund['id']);
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
-        {
-            $this->assertEquals('processed', $actualRefund['status']);
-            $this->assertEquals(2, $actualRefund['attempts']);
-            $this->assertEquals(true, $actualRefund['gateway_refunded']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
-            $firstData = $this->getLastEntity('first_data', true);
+        $firstData = $this->getLastEntity('first_data', true);
 
-            $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
-            $this->assertEquals('CAPTURED', $firstData['status']);
-        }
+        $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
     public function testVerifyRefundSuccessfulOnGateway()
@@ -295,24 +288,20 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getSuccessInVerifyRefund();
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
-        {
-            $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals('processed', $actualRefund['status']);
 
-            $this->assertEquals(2, $actualRefund['attempts']);
-            $this->assertEquals(true, $actualRefund['gateway_refunded']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
-            $firstData = $this->getLastEntity('first_data', true);
+        $firstData = $this->getLastEntity('first_data', true);
 
-            $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
-            $this->assertEquals('CAPTURED', $firstData['status']);
-        }
+        $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
     public function testVerifyReverse()

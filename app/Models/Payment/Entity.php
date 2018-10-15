@@ -357,6 +357,13 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicCustomer = [
+        self::ID,
+        self::STATUS,
+        self::AMOUNT,
+        self::CREATED_AT,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ENTITY,

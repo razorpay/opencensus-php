@@ -455,7 +455,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', Payment\Status::CAPTURE_FAILED)
-                    ->where('error_code2', '=', ErrorCode::GW00176)
+                    ->where('error_code2', '=', Hdfc\ErrorCodes\ErrorCodes::GW00176)
                     ->firstOrFail();
     }
 

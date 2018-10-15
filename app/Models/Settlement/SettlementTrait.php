@@ -28,6 +28,8 @@ trait SettlementTrait
     {
         $filterGroupedTxns = [];
 
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
+
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
@@ -64,12 +66,21 @@ trait SettlementTrait
                 continue;
             }
 
+            $skipForKarvy = $this->skipForKarvy($txn);
+
+            if ($skipForKarvy === true)
+            {
+                continue;
+            }
+
             $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
             $filterGroupedTxns[$merchantId]->push($txn);
         }
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }
@@ -730,9 +741,85 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('3072M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
+    }
+
+    /**
+     * Early settlement timing check added
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForKarvy($txn): bool
+    {
+        // Karvy wants settlements only at 1 pm and 3 pm ¯\_(ツ)_/¯
+        if ($txn->merchant->getParentId() === Preferences::MID_KARVY)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
+
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+
+            $yesterdayThreePm = Carbon::yesterday(Timezone::IST)->hour(15)->getTimestamp();
+
+            //if settlement for a previous day transaction with
+            // settled_at of 3pm was not created then intiate it asap next day
+            if ($txn->getSettledAt() <= $yesterdayThreePm)
+            {
+              return false;
+            }
+
+            if (($now > $threePm) and ($txn->getSettledAt() <= $threePm))
+            {
+                return false;
+            }
+
+            if (($now > $onePm) and ($txn->getSettledAt() <= $onePm))
+            {
+                return false;
+            }
+
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ],
+                1);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ]);
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+               'memory_allocated'               => $memoryAllocated,
+               'memory_used'                    => $memoryUsed,
+               'memory_peak_usage'              => $memoryPeakUsage,
+               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

@@ -203,12 +203,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->setPaymentAcquirerData($rowDetails);
 
         //
-        // Persisting reference number in Pre Reconciled-At check to identify duplicate row.
+        // Persisting gateway data in Pre Reconciled-At check to identify duplicate row.
         // If reference number is already set, identify for duplicate row or data mismatch.
         //
-        $this->persistReferenceNumber($rowDetails);
-
-        $this->persistGatewayTransactionId($rowDetails);
+        $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
@@ -793,6 +791,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     /**
      * Saving Gateway Data into DB
      *
+     * Calling this again because payment status can change after verify.
+     * Gateway payment can be in failed state earlier and hence gateway data won't be set
+     * in preReconciledAtCheckRecon method. After verification, it may have changed to success
+     * and now we can set gateway data.
+     *
      * @param array $rowDetails
      */
     protected function persistGatewayData(array $rowDetails)
@@ -804,17 +807,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             return;
         }
 
-        //
-        // Calling this again because payment status can change after verify.
-        // Gateway payment can be in failed state earlier and hence reference number won't be set
-        // in preReconciledAtCheckRecon method. After verification, it may have changed to success
-        // and now we can set reference number. For the same reason we are calling persistGatewayTransactionId
-        // also twice
-        $this->persistReferenceNumber($rowDetails);
+        $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
         $this->persistAccountDetails($rowDetails, $gatewayPayment);
 
-        $this->persistGatewayTransactionId($rowDetails);
+        $this->persistGatewayTransactionId($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
@@ -839,16 +836,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * Saving the Bank Payment Id from reconciliator file
      *
      * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails)
+    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        $gatewayPayment = $this->updateAndFetchGatewayPayment();
-
-        if ($gatewayPayment === null)
-        {
-            return;
-        }
-
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
             return;
@@ -864,16 +855,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * Replacing existing value or adding it to the DB
      *
      * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistGatewayTransactionId(array $rowDetails)
+    protected function persistGatewayTransactionId(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        $gatewayPayment = $this->updateAndFetchGatewayPayment();
-
-        if ($gatewayPayment === null)
-        {
-            return;
-        }
-
         if (empty($rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID]) === true)
         {
             return;
