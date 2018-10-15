@@ -122,9 +122,11 @@ return [
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'hdfc' => [
-        'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
-        'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
-        'mock_server'       => false,
+        'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
+        'test_terminal_pwd'                => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'test_debit_pin_terminal_id'       => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_ID'),
+        'test_debit_pin_terminal_password' => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_PASSWORD'),
+        'mock_server'                      => false,
     ],
 
     'cybersource' => [

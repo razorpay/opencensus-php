@@ -39,6 +39,7 @@ use RZP\Models\Payment\RecurringType;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
 use App;
+use RZP\Models\Payment\AuthType;
 
 class Gateway extends Base\Gateway
 {
@@ -140,7 +141,7 @@ class Gateway extends Base\Gateway
     protected $authEnrolledResponse = [
         'fields'    => [
             'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid',
-            'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'
+            'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text', 'authRespCode'
             ],
         'type'      => 'auth_enrolled',
         'xml'       => '',
@@ -172,7 +173,7 @@ class Gateway extends Base\Gateway
     protected $authNotEnrolledResponse = [
         'fields' => [
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text', 'authRespCode'
             ],
         'type' => 'auth_not_enrolled',
         'xml' => '',
@@ -208,6 +209,40 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
+    protected $debitPinAuthenticationRequest = [
+        'url' => Hdfc\Urls::DEBIT_PIN_AUTHENTICATION_URL,
+        'type' => 'debit_pin_authentication',
+        'fields' => [
+            'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
+            'expyear', 'type', 'member', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
+        ],
+        'headers' => ['Content-Type:text/xml'],
+        'xml' => '',
+        'data' => []
+    ];
+
+    protected $debitPinAuthenticationResponse = [
+        'fields' => [
+            'paymentId', 'paymenturl', 'result',
+        ],
+        'type' => 'debit_pin_authentication',
+        'xml' => '',
+        'data' => [],
+        'error' => null
+    ];
+
+    protected $debitPinAuthorizationResponse = [
+        'fields' => [
+            'paymentid', 'result', 'auth', 'amt', 'ref', 'postdate', 'trackid', 'tranid',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'authRespCode', 'ErrorText', 'ErrorNo',
+            'error_service_tag', 'error_code_tag',
+        ],
+        'type'  => 'debit_pin_authorization',
+        'xml'   => '',
+        'data'  => [],
+        'error' => null
+    ];
+
     /**
      * The assoc array is used to construct
      * request for refunds/captures
@@ -223,7 +258,7 @@ class Gateway extends Base\Gateway
 
     protected $supportPaymentResponse = [
         'fields'    => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
-                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'],
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text', 'authRespCode'],
         'type'      => '',
         'xml'       => '',
         'data'      => [],
@@ -323,6 +358,11 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
+        if ($input['payment']['auth_type'] === AuthType::PIN)
+        {
+            return $this->authorizeDebitPin($input);
+        }
+
         $status = $this->enrollCard($input);
 
         return $this->decideAuthStepAfterEnroll($status);
@@ -342,17 +382,21 @@ class Gateway extends Base\Gateway
         $shouldRetry = function ($e)
         {
             $errorCodes =[
-                ErrorCode::CM00030,
-                ErrorCode::CM90000,
-                ErrorCode::CM90001,
-                ErrorCode::CM90002,
-                ErrorCode::CM90003,
-                ErrorCode::CM90004,
-                ErrorCode::CM90005,
-                ErrorCode::CM900000,
+                Hdfc\ErrorCodes\ErrorCodes::CM00030,
+                Hdfc\ErrorCodes\ErrorCodes::CM90000,
+                Hdfc\ErrorCodes\ErrorCodes::CM90001,
+                Hdfc\ErrorCodes\ErrorCodes::CM90002,
+                Hdfc\ErrorCodes\ErrorCodes::CM90003,
+                Hdfc\ErrorCodes\ErrorCodes::CM90004,
+                Hdfc\ErrorCodes\ErrorCodes::CM90005,
+                Hdfc\ErrorCodes\ErrorCodes::CM900000,
             ];
 
-            return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+            if ($e instanceof Exception\BaseException)
+            {
+                return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+            }
+
         };
 
         $this->retryHandler(
@@ -378,7 +422,39 @@ class Gateway extends Base\Gateway
 
         $network = $input['card']['network'];
 
-        if ($network === Card\NetworkName::RUPAY)
+        if ($input['payment']['auth_type'] === AuthType::PIN)
+        {
+            $context['data'] = $input['gateway'];
+
+            $context['data'] = HDFC\Utility::unsetFields($context['data'],$this->stripFieldsList);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_DEBIT_PIN_CALLBACK,
+                [
+                    'content'     => $context['data'],
+                    'gateway'     => $this->gateway,
+                    'payment_id'  => $input['payment']['id'],
+                    'terminal_id' => $input['terminal']['id'],
+                ]);
+
+            $authResponse['data'] = $input['gateway'];
+            $authResponse['error'] = [];
+
+            $gatewayPaymentId = $authResponse['data']['paymentid'];
+
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail($gatewayPaymentId);
+
+            $this->verifyDebitPinAuthResponse($authResponse);
+
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->verifyCallback($input);
+        }
+
+        else if ($network === Card\NetworkName::RUPAY)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_RUPAY_CALLBACK,
@@ -408,6 +484,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyCallback($input);
         }
+
         else
         {
             $this->validateCallbackGatewayFields($input, $network);
@@ -652,7 +729,10 @@ class Gateway extends Base\Gateway
         {
             $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
 
-            if ($this->secondDebitRecurringFlag === true)
+            $payment = $this->input['payment'];
+
+            if ($this->secondDebitRecurringFlag === true or
+                ((isset($payment['auth_type']) === true) and ($payment['auth_type'] === AuthType::PIN)))
             {
                 $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
             }
@@ -666,7 +746,7 @@ class Gateway extends Base\Gateway
 
         $this->requestVar = $request;
 
-        try
+        try 
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);
@@ -780,6 +860,15 @@ class Gateway extends Base\Gateway
             $request['data']['id'] = $this->config['test_terminal_id'];
             $request['data']['password'] = $this->config['test_terminal_pwd'];
         }
+
+        $payment = $this->input['payment'];
+
+        if(($this->mode === Mode::TEST) and
+            ((isset($payment['auth_type']) === true and $payment['auth_type'] === AuthType::PIN)))
+        {
+            $request['data']['id'] = $this->config['test_debit_pin_terminal_id'];
+            $request['data']['password'] = $this->config['test_debit_pin_terminal_password'];
+        }
     }
 
     protected function checkResponseErrorCode($response)
@@ -872,32 +961,10 @@ class Gateway extends Base\Gateway
         $this->error = false;
 
         $gatewayErrorCode = $error['code'];
-        $gatewayErrorDesc = $error['text'];
 
-        if (Hdfc\ErrorHandler::isValidErrorCode($gatewayErrorCode))
-        {
-            $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
+        $apiErrorCode = Hdfc\ErrorCodes\ErrorCodes::getInternalErrorCode($error);
 
-            //
-            // For error codes returned by gateway, the error messages are in a format
-            // which we don't parse. So get the standard messages for those from here.
-            //
-            $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
-        }
-        else
-        {
-            $apiErrorCode = Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
-
-            $this->trace->error(
-                TraceCode::GATEWAY_UNKNOWN_ERROR,
-                [
-                    'action' => $this->action,
-                    'gateway_error_code' => $gatewayErrorCode,
-                    'gateway_error_description' => $gatewayErrorDesc,
-                    'gateway' => $this->gateway,
-                    'time' => time()
-                ]);
-        }
+        $gatewayErrorDesc = Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($error);
 
         $exception = null;
 

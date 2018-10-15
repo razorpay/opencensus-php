@@ -14,6 +14,12 @@ class Validator extends Base\Validator
 {
     const CREATE_DIRECT = 'create_direct';
 
+    /**
+     * token epoch constrains :
+     * min : Sat Jan  1 05:30:00 IST 2000
+     * max : 17 August 292278994 - max for 64 bit signed int
+    **/
+
     protected static $createRules = [
         Entity::METHOD              => 'required|in:card,emandate,wallet',
         Entity::CARD_ID             => 'required_only_if:method,card|alpha_num|size:14',
@@ -21,12 +27,12 @@ class Validator extends Base\Validator
         // We generate it if max_amount is not present and method is emandate
         Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
-        Entity::AUTH_TYPE           => 'required_only_if:method,emandate|string|filled|in:netbanking,aadhaar',
+        Entity::AUTH_TYPE           => 'required_only_if:method,emandate|string|filled|in:netbanking,aadhaar,aadhaar_fp',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'sometimes|string',
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',
         // We generate it if expired_at is not present and method is emandate
-        Entity::EXPIRED_AT          => 'sometimes|epoch|nullable|custom',
+        Entity::EXPIRED_AT          => 'sometimes|epoch:946684800,9223372036854775807|nullable|custom',
         Entity::ACCOUNT_NUMBER      => 'sometimes|nullable|alpha_num|between:5,20',
         Entity::ACCOUNT_TYPE        => 'sometimes|nullable|string|in:savings,current',
         Entity::BENEFICIARY_NAME    => 'sometimes|nullable|alpha_space_num|between:4,120',

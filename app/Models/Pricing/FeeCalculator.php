@@ -521,10 +521,10 @@ class FeeCalculator
 
         // If network is not amex, we can check for AMOUNT RANGE FILTERS
 
-        $filters2 = array(
+        $filters2 = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
             [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 

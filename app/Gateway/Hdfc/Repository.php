@@ -113,6 +113,92 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
+    public function persistAfterDebitPinAuth($request, $response)
+    {
+        $attributes = [
+            'received'                  => '0',
+            'payment_id'                => $request['trackid'],
+            'gateway_payment_id'        => $response['paymentId'],
+            'action'                    => $request['action'],
+            'amount'                    => $request['amt'],
+            'currency'                  => $request['currencycode'],
+            'status'                    => $response['result'],
+            'card'                      => $request['card'],
+            'type'                      => $request['type'],
+        ];
+
+        return $this->createOrFail($attributes);
+    }
+
+    public function persistAfterDebitPinAuthError($request, $error)
+    {
+        $attributes = [
+            'received'               => '0',
+            'payment_id'             => $request['trackid'],
+            'action'                 => $request['action'],
+            'amount'                 => $request['amt'],
+            'currency'               => $request['currencycode'],
+            'card'                   => $request['card'],
+            'type'                   => $request['type'],
+            'error_code2'            => $error['code'],
+            'error_text'             => $error['text'],
+            'status'                 => Payment\Status::DEBIT_PIN_AUTHENTICATION_FAILED,
+        ];
+
+        return $this->createOrFail($attributes);
+    }
+
+    public function persistAfterDebitPinAuthorize($model, $data)
+    {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+
+        $attributes = [
+            'received'               => '1',
+            'payment_id'             => $data['trackid'],
+            'status'                 => $status,
+            'result'                 => $data['result'],
+            'ref'                    => $data['ref'],
+            'auth'                   => $data['auth'],
+            'postdate'               => $data['postdate'],
+            'gateway_transaction_id' => $data['tranid'],
+        ];
+
+        $model->fill($attributes);
+
+        $this->saveOrFail($model);
+
+        return $model;
+    }
+
+    public function persistAfterDebitPinAuthorizeError($model, $authResponse)
+    {
+        $error = $authResponse['error'];
+
+        $result = null;
+
+        if (isset($authResponse['data']['result']))
+        {
+            $result = $authResponse['data']['result'];
+        }
+
+        $attributes = [
+            'received'    => '1',
+            'status'      => Payment\Status::DEBIT_PIN_AUTHORIZATION_FAILED,
+            'result'      => $result,
+            'error_text'  => $error['text'],
+            'error_code'  => $error['code'],
+        ];
+
+        $model->fill($attributes);
+
+        $this->saveOrFail($model);
+    }
+
     public function persistAfterAuthNotEnrolled($model, $data)
     {
         return $this->persistCallbackData($model, $data);
@@ -369,7 +455,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', Payment\Status::CAPTURE_FAILED)
-                    ->where('error_code2', '=', ErrorCode::GW00176)
+                    ->where('error_code2', '=', Hdfc\ErrorCodes\ErrorCodes::GW00176)
                     ->firstOrFail();
     }
 

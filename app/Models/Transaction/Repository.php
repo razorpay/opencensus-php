@@ -619,10 +619,10 @@ class Repository extends Base\Repository
                     ->where('transactions.service_tax', '>', 0)
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNotIn("transactions.id", function($query)
-                        {
-                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
-                                  ->from(Table::FEE_BREAKUP);
-                        });
+                    {
+                        $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                              ->from(Table::FEE_BREAKUP);
+                    });
 
         return $query->limit(1000)->get();
     }
@@ -766,8 +766,13 @@ class Repository extends Base\Repository
         //
         // Adding join with payment and terminal
         //
-        $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
-              ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+        $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn);
+
+        //
+        // Doing a left join because bank_transfer payments currently don't have terminal
+        // TODO: Remove this when bank_transfers use terminals in payment flow
+        //
+        $query->leftJoin(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
 
         $this->getQueryClausesForReconSummary($query, $from, $to);
 
@@ -890,9 +895,10 @@ class Repository extends Base\Repository
                     ELSE '. $terminalGatewayColumn . '
                   END) gateway, '. $paymentMethodColumn;
 
+        $dateCol = 'STRAIGHT_JOIN FROM_UNIXTIME('. $transactionsCreatedAtColumn .' + 19800,"%D %M, %Y") AS date';
+
         $query = $this->newQuery()
-                      ->selectRaw('STRAIGHT_JOIN FROM_UNIXTIME('. $transactionsCreatedAtColumn .' + 19800,"%D %M, %Y") AS date' . ',' .
-                                    $params);
+                      ->selectRaw($dateCol . ',' . $params);
 
         return $query;
     }
@@ -998,7 +1004,20 @@ class Repository extends Base\Repository
                 $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn);
             }
 
-            $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            if (Payment\Gateway::isNonTerminalGateway($gateway) === false)
+            {
+                $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            }
+            else
+            {
+                //
+                // Still need to join because there are columns being selected from there and
+                // removing those is to significant a change for a temporary hack like this
+                //
+                // TODO: Remove this when bank_transfers use terminals in payment flow
+                //
+                $query->leftJoin(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            }
 
             $this->getQueryClausesForUnreconciledEntities($query, $from, $to, $gateway, $limit);
 
@@ -1045,11 +1064,17 @@ class Repository extends Base\Repository
             $selectParams .= (implode(',', $refundParams)) . ',';
         }
 
-        $selectParams .= (implode(',', $paymentParams)) . ','
-                         . '(Case WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
-                                THEN '. $terminalGatewayAcquirerColumn . '
-                                ELSE '. $terminalGatewayColumn . '
-                            END) gateway ,'. $gatewayTerminalIdColumn;
+        $paymentParams = implode(',', $paymentParams);
+
+        $gatewayCol = '('.
+            'CASE '.
+            'WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")' .
+                'THEN '. $terminalGatewayAcquirerColumn .
+                'ELSE '. $terminalGatewayColumn .
+            'END' .
+        ') gateway';
+
+        $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
 
         $query = $this->newQuery()
                       ->selectRaw($selectParams);

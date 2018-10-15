@@ -340,6 +340,7 @@ class Response
             'payment_topup_ajax',
             'merchant_methods_downtime',
             'customer_create_token_public',
+            'refund_fetch_for_customer',
         ];
 
         if (in_array($route, $routes, true) === true)
@@ -347,7 +348,7 @@ class Response
             //
             // These routes are being hit from razorpay.js which is being called
             // not from our own domain but someone else's. We need to allow for that
-            // otherwise these routes will not work there. Read furhter on CORS
+            // otherwise these routes will not work there. Read further on CORS
             // to understand better.
             //
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');

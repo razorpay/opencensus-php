@@ -874,7 +874,8 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]      = $merchant->isLive();
 
         return $response;
     }

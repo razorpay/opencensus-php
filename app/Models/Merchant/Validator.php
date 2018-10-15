@@ -59,9 +59,9 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
-        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
         Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
     ];
