@@ -910,6 +910,13 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
+        // We have mapped status_code to response field of authorized
+        // Thus we need to change field name in callback to update it
+        $content[Fields::RESPONSE] = $status;
+
+        // We are saving the gateway entity even if txn was failed
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+
         if ($status !== Status::SUCCESS)
         {
             $message = "Payment Failed during callback";
@@ -919,9 +926,6 @@ class Gateway extends Base\Gateway
                 $status,
                 $message);
         }
-
-        // Authorization was successful
-        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
         return [
             'acquirer' => [
