@@ -66,6 +66,11 @@ class Gateway extends Base\Gateway
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
     ];
 
+    protected $forceFillable = [
+        Entity::VPA                       => Entity::VPA,
+        Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
+    ];
+
     /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
@@ -1063,5 +1068,33 @@ class Gateway extends Base\Gateway
         $class = $ns . '\\' . 'RefundFile';
 
         return (new $class)->generate($input);
+    }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+            Action::AUTHORIZE);
+
+        /**
+         * We do not update the upi status code on callback, thus we are going to
+         * use success as status code to make sure we do not force auth already auth txns.
+         */
+        if (($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) and
+            ($gatewayPayment[Entity::RECEIVED]) === true)
+        {
+            return true;
+        }
+
+        $attr = array_only($input['gateway'], $this->forceFillable);
+
+        $attr[Entity::STATUS_CODE] = Status::SUCCESS;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->generatePspData($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return true;
     }
 }
