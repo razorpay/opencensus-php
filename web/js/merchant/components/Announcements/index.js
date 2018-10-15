@@ -75,6 +75,15 @@ export class EarlySettlementAnnouncement extends Component {
     if (!this.state.isHidden) {
       trackESAnnouncements.earlySettlementAppear(this.props.from);
     }
+    window.addEventListener('remove-es-announcement', this.closeBanner, false);
+  }
+
+  removeCustomEvent() {
+    window.removeEventListener(
+      'remove-es-announcement',
+      this.closeBanner,
+      false
+    );
   }
 
   handleCloseButton() {
@@ -88,6 +97,11 @@ export class EarlySettlementAnnouncement extends Component {
     });
 
     LocalStorageService.setItem(this.state.bannerKey, 1);
+    this.removeCustomEvent();
+  }
+
+  componentWillUnmount() {
+    this.removeCustomEvent();
   }
 
   handleRequest() {

@@ -2,6 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'rzp/utils/rzp-utils';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
+import LocalStorageService from 'rzp/utils/localStorage';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -167,6 +168,9 @@ export default class User {
     return (
       this.activated &&
       this.findTag('announcement_early_settlements') &&
+      !LocalStorageService.getItem(
+        `early-settlement-requested-${this.current}`
+      ) &&
       !this.findTag('es_automatic') &&
       !this.isFeatureEnabled('es_on_demand')
     );
