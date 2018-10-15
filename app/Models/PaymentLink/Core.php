@@ -541,38 +541,36 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns the name of the Payment link view template to be used
+     * Returns the name of the Payment link view template to be used.
+     * In order:
+     * 1. If has custom template id defined use that.
+     * 2. If has udf schema use general new template that renders and handles udf schema
+     * 3. By default the first version of view (which should get replaced by 2 in time).
      *
-     * @param Entity $paymentLink
+     * @param  Entity $paymentLink
      *
      * @return string
      */
     public function getHostedViewTemplate(Entity $paymentLink): string
     {
-        $templateId = $paymentLink->getHostedTemplateId();
+        $defaultView  = 'payment_link.hosted';
+        $templateId   = $paymentLink->getHostedTemplateId();
+        $hasUdfSchema = ($paymentLink->getSettingsScalarElseNull(Entity::UDF_SCHEMA) !== null);
 
-        // Default view name
-        $defaultView = 'payment_link.hosted';
-
-        //
-        // If hosted_template_id is not sent for the Payment link,
-        // use the default view
-        //
-        if ($templateId === null)
+        if ($templateId !== null)
         {
-            return $defaultView;
+            $templateAccessor = new HostedTemplate($templateId);
+            if ($templateAccessor->exists() === true)
+            {
+                return 'hostedpage.' . $templateAccessor->getViewName();
+            }
         }
 
-        $templateAccessor = new HostedTemplate($templateId);
-
-        // If a custom hosted page template exists, use that
-        if ($templateAccessor->exists() === true)
+        if ($hasUdfSchema === true)
         {
-            $hostedPageHint = 'hostedpage.';
-            return $hostedPageHint . $templateAccessor->getViewName();
+            return 'payment_link.hosted_with_udf';
         }
 
-        // else fallback to the default hosted view
         return $defaultView;
     }
 
