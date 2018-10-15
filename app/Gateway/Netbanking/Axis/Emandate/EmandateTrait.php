@@ -200,7 +200,7 @@ trait EmandateTrait
 
         if (StatusCode::isSuccess($statusCode) !== true)
         {
-            $errorCode = StatusCode::getErrorCodeMap($statusCode);
+            $errorCode = StatusCode::getErrorCodeMap($content);
 
             throw new GatewayErrorException(
                 $errorCode,

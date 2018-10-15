@@ -652,6 +652,7 @@ return [
         'request' => [
             'content' => [
                 'business_type' => '2',
+                'department'    => '7',
             ],
             'url'     => '/pre_signup',
             'method'  => 'PUT',
@@ -660,7 +661,7 @@ return [
             'content' => [
                 'business_type'      => '2',
                 'transaction_volume' => null,
-                'department'         => null,
+                'department'         => '7',
                 'contact_mobile'     => null,
                 'role'               => null,
             ],

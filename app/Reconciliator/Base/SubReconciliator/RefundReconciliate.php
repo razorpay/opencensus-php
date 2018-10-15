@@ -577,14 +577,27 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      */
     protected function persistRefundArn(array $rowDetails)
     {
+        $refund = $this->refund;
+
         if (empty($rowDetails[BaseReconciliate::ARN]) === true)
         {
+            if ($refund->getStatus() === Refund\Status::FAILED)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code'     => Base\InfoCode::FAILED_REFUND_ARN_ABSENT,
+                        'message'       => 'ARN absent for a failed refund, not marked processed.',
+                        'payment_id'    => $this->payment->getId(),
+                        'refund_id'     => $this->refund->getId(),
+                        'gateway'       => $this->gateway
+                    ]);
+            }
+
             return;
         }
 
         $reconArn = $rowDetails[BaseReconciliate::ARN];
-
-        $refund = $this->refund;
 
         $refundAcquirerData = $refund->getAcquirerData();
 

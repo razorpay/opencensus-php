@@ -113,7 +113,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
-    const REFERENCE15           = 'reference15';
     const REFERENCE16           = 'reference16';
     const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
@@ -173,6 +172,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER        = 'account_number';
 
     const OFFER_ID              = 'offer_id';
+    const SETTLED_BY            = 'settled_by';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -291,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::MDR,
         self::TAX,
+        self::SETTLED_BY,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
@@ -352,6 +353,13 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::STATUS,
         self::METHOD,
+        self::AMOUNT,
+        self::CREATED_AT,
+    ];
+
+    protected $publicCustomer = [
+        self::ID,
+        self::STATUS,
         self::AMOUNT,
         self::CREATED_AT,
     ];
@@ -932,6 +940,11 @@ class Entity extends Base\PublicEntity
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setSettledBy($settledBy)
+    {
+        $this->setAttribute(self::SETTLED_BY, $settledBy);
     }
 
     public function setErrorNull()
@@ -1865,6 +1878,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TERMINAL_ID);
     }
 
+    public function getSettledBy()
+    {
+        $settledBy = $this->getAttribute(self::SETTLED_BY);
+
+        if ($settledBy === null)
+        {
+            $settledBy = "Razorpay";
+        }
+
+        return $settledBy;
+    }
+
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
@@ -2280,6 +2305,8 @@ class Entity extends Base\PublicEntity
         $this->terminal()->associate($terminal);
 
         $this->setGateway($terminal->getGateway());
+
+        $this->setSettledBy("Razorpay");
 
         $this->setRelation('terminal', $terminal);
     }
@@ -2881,5 +2908,17 @@ class Entity extends Base\PublicEntity
             default:
                 return 'PG';
         }
+    }
+
+    public function isDirectSettlement()
+    {
+        if (($this->isNetbanking() === true) and
+            ($this->hasTerminal() === true) and
+            ($this->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

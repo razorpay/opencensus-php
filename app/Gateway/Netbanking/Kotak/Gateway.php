@@ -288,6 +288,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
+        // Hotfix for disabling ssl verify for kotak
+        $request['options']['verify'] = false;
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $request);

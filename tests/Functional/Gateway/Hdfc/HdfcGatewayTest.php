@@ -64,7 +64,7 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['verify_at']);
+        $this->assertNull($payment['verify_at']);
     }
 
     public function testTamperedPayment()
@@ -360,6 +360,149 @@ class HdfcGatewayTest extends TestCase
         $this->assertNotNull($payment['transaction_id']);
 
         $this->assertEquals(TwoFactorAuth::PASSED, $payment['two_factor_auth']);
+    }
+
+    public function testDebitPinAuthPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testDebitPinAuthorizeFailed()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'debit_pin_authorization_response')
+            {
+                $content['result'] = 'NOT CAPTURED';
+                $content['authRespCode'] = '';
+                $content['ErrorText'] = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"';
+                $content['ErrorNo'] = 'RP00007';
+                $content['error_service_tag'] = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"';
+                $content['error_code_tag'] = 'RP00007';
+            }
+        });
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testDebitPinVerifyFailed()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if($action === 'verify')
+            {
+                $content['result'] = 'NOT APPROVED';
+                $content['authRespCode'] = '';
+                $content['ErrorText'] = '';
+                $content['ErrorNo'] = '';
+                $content['error_service_tag'] = '';
+                $content['error_code_tag'] = '';
+            }
+        });
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testTwoFaNotApplicable()
