@@ -94,8 +94,9 @@ export default props => {
                         <a class="btn-link" onClick={props.onInviteMerchant}>
                           Invite
                         </a>{' '}
-                        the merchant to sign up on Razorpay, and manage the
-                        account
+                        the merchant to sign up{user.isOrgRZP()
+                          ? ' on Razorpay'
+                          : ''}, and manage the account
                       </Fragment>
                     )}
                   </div>

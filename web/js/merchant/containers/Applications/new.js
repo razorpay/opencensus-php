@@ -25,15 +25,21 @@ import LoaderDots from 'rzp/ui/LoaderDots';
 
 import AppWebhook from './AppWebhook';
 
+import store from 'merchant/store';
+const user = store.getState().getUser();
+
 const INFO = {
-  icon:
-    'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
-  dev:
-    "Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect with Razorpay.",
+  icon: `Your uploaded app icon will be shown to your users on ${
+    user.isOrgRZP() ? 'Razorpay' : 'the'
+  } Connect screens. The icon will also be displayed in the connected applications list`,
+  dev: `Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect ${
+    user.isOrgRZP() ? 'with Razorpay' : 'their account'
+  }.`,
   prod: (
     <span>
       Add comma separated URIs. <b>URIs must be HTTPs.</b> We'll redirect your
-      users back to any of the URI provided, after they connect with Razorpay.
+      users back to any of the URI provided, after they connect{' '}
+      {user.isOrgRZP() ? 'with Razorpay' : 'their account'}.
     </span>
   ),
 };

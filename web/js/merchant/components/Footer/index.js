@@ -1,10 +1,13 @@
 import { trackLinkClick } from './ga';
 import { Link } from 'react-router-dom';
 
+import store from 'merchant/store';
+const user = store.getState().getUser();
+
 export default () => {
   return (
     <footer class="pagefooter">
-      © 2017 Copyright Razorpay ·{' '}
+      © {user.isOrgRZP() ? '2017' : '2018'} Copyright Razorpay ·{' '}
       <u>
         <a
           href="https://razorpay.com/agreement/"
