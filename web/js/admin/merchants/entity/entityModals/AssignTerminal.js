@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 
-import { isOrgHDFC } from '/admin/user';
+import { isOrgHDFC } from 'admin/user';
 
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
