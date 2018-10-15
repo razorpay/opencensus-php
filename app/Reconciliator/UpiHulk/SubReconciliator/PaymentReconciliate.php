@@ -18,6 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const NPCI_RESPONSE_CODE    = 'NPCI_RESPONSE_CODE';
     const PAYEE_VIRTUAL_ADDR    = 'PAYEE_VIRTUAL_ADDR';
     const PAYER_VIRTUAL_ADDR    = 'PAYER_VIRTUAL_ADDR';
+    const PAYER_AC_NAME         = 'PAYER_AC_NAME';
     const PAYER_IFSC_CODE       = 'PAYER_IFSC_CODE';
     const UPI_TRANSACTION_ID    = 'UPI_TRANSACTION_ID';
     const TRANSACTIONAMOUNT     = 'TRANSACTIONAMOUNT';
@@ -162,6 +163,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if (empty($row[self::PAYER_IFSC_CODE]) === false)
         {
             $accountDetails['ifsc'] = $row[self::PAYER_IFSC_CODE];
+        }
+
+        if (empty($row[self::PAYER_AC_NAME]) === false)
+        {
+            $accountDetails['name'] = $row[self::PAYER_AC_NAME];
         }
 
         return $accountDetails;
