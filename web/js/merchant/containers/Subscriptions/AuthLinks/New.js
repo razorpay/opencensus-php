@@ -25,15 +25,22 @@ const methods = [
 ];
 
 const accountTypes = [
+  'Select Account Type...',
   { label: 'Savings', name: 'savings' },
   { label: 'Current', name: 'current' },
 ];
 
+const authTypes = [
+  'Select Auth Type...',
+  { label: 'Netbanking', name: 'netbanking' },
+  { label: 'Aadhar', name: 'aadhar' },
+];
+
 const mandatoryFields = [
-  // 'description',
-  // 'mandateMethod',
-  // 'customerContact',
-  // 'customerEmail',
+  'description',
+  'mandateMethod',
+  'customerContact',
+  'customerEmail',
 ];
 
 @withRouter
@@ -47,20 +54,25 @@ const mandatoryFields = [
 export default class CreateNewAuthLinkContainer extends Component {
   state = {
     mandateMethod: '',
-    _hasNoExpiry: '',
+    hasNoExpiry: '1',
+    tokenHasNoExpiry: '1',
   };
 
   allMandatoryFieldsPresent = () => {
-    return mandatoryFields.every(field => !!this.state[field]);
+    const mandatoryFieldsPresent = mandatoryFields.every(
+      field => !!this.state[field]
+    );
+    if (mandatoryFieldsPresent && this.state.mandateMethod === 'card') {
+      return !!this.state.amount;
+    }
+    return mandatoryFieldsPresent;
   };
 
   handleChange = ({ target }) => {
     const value = target.value;
     const name = target.name || target.getAttribute('data-name');
 
-    // if (this.state.hasOwnProperty(name) || mandatoryFields[name]) {
     this.setState({ [name]: value });
-    // }
   };
 
   handleDateChange = fieldName => date => {
@@ -69,8 +81,19 @@ export default class CreateNewAuthLinkContainer extends Component {
     });
   };
 
+  handleNotesChange = notes => {
+    this.setState({ notes });
+  };
+
   onCreate = () => {
     const data = { ...this.state };
+    const notes =
+      data.notes &&
+      data.notes.reduce(
+        (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
+        {}
+      );
+
     const payload = {
       type: 'auth_link',
       description: data.description,
@@ -80,6 +103,7 @@ export default class CreateNewAuthLinkContainer extends Component {
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
       email_notify: data.emailNotify,
+      notes: notes || undefined,
       customer: {
         name: data.customerName,
         contact: data.customerContact,
@@ -135,7 +159,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: error,
+          message: errors,
         });
       });
   };
@@ -160,7 +184,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               required
             />
 
-            <Input name="customerName" label="Customer Name" required />
+            <Input name="customerName" label="Customer Name" />
 
             <Input.Group
               class="InputGroup--inline"
@@ -205,7 +229,11 @@ export default class CreateNewAuthLinkContainer extends Component {
             />
 
             <Input.Group label="Expiry" class="InputGroup--vTop">
-              <Input.Check fieldLabel="No Expiry" data-name="hasNoExpiry" />
+              <Input.Check
+                fieldLabel="No Expiry"
+                data-name="hasNoExpiry"
+                defaultValue="1"
+              />
 
               <Input.ToCalendar
                 name="expireAt"
@@ -231,33 +259,66 @@ export default class CreateNewAuthLinkContainer extends Component {
 
             {method === 'emandate' && (
               <Fragment>
-                <Input name="mandateBeneficiaryName" label="Name on Account" />
+                <Input.Group label="Bank Details" class="InputGroup--inline">
+                  <div class="Input-content">
+                    <Input
+                      name="mandateBankName"
+                      size="half_big"
+                      placeholder="Bank Name"
+                    />
 
-                <Input
-                  label="Bank Name"
-                  name="mandateBankName"
-                  size="half_big"
-                />
+                    <Input
+                      name="mandateBankAccountIFSC"
+                      size="half_big"
+                      placeholder="IFSC"
+                    />
+                  </div>
+                </Input.Group>
 
-                <Input
-                  label="IFSC"
-                  name="mandateBankAccountIFSC"
-                  size="half_big"
-                />
+                <Input label="Account Number" name="mandateBankAccountNumber" />
 
-                <Input
-                  label="Account Number"
-                  name="mandateBankAccountNumber"
-                  size="half_big"
-                />
+                <Input.Group label="Authentication" class="InputGroup--inline">
+                  <div class="Input-content">
+                    <Input.Select
+                      name="mandateAuthType"
+                      options={authTypes}
+                      size="half_big"
+                    />
 
-                <Input.Select
-                  label="Account Type"
-                  name="mandateBankAccountType"
-                  options={accountTypes}
-                  size="half_big"
-                />
+                    <Input.Select
+                      name="mandateBankAccountType"
+                      options={accountTypes}
+                      size="half_big"
+                      disabled={this.state.mandateAuthType !== 'aadhar'}
+                      value={
+                        this.state.mandateAuthType === 'netbanking'
+                          ? 'savings'
+                          : this.state.mandateBankAccountType || ''
+                      }
+                    />
+                  </div>
+                </Input.Group>
 
+                <Input.Group label="Token Expiry" class="InputGroup--vTop">
+                  <Input.Check
+                    fieldLabel="No Token Expiry"
+                    data-name="tokenHasNoExpiry"
+                    defaultValue="1"
+                  />
+
+                  <Input.ToCalendar
+                    name="mandateExpireAt"
+                    placeholder="Expiry (DD-MM-YYYY)"
+                    allowToday
+                    disablePastDates
+                    placement="topLeft"
+                    size="half_big"
+                    addonAfter={<i class="i i-date-range" />}
+                    description="Need to add help text here"
+                    onChange={this.handleDateChange('mandateExpireAt')}
+                    disabled={!!Number(this.state.tokenHasNoExpiry)}
+                  />
+                </Input.Group>
                 <Input
                   name="mandateMaxAmount"
                   placeholder="100000"
@@ -265,19 +326,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                   description="Need to add help text here"
                   addonBefore="₹"
                   size="half_big"
-                />
-
-                <Input.ToCalendar
-                  name="mandateExpireAt"
-                  placeholder="DD-MM-YYYY"
-                  allowToday
-                  disablePastDates
-                  placement="topLeft"
-                  size="half_big"
-                  addonAfter={<i class="i i-date-range" />}
-                  description="Need to add help text here"
-                  label="Token Expiry"
-                  onChange={this.handleDateChange('mandateExpireAt')}
+                  validator={checkIfAmount}
                 />
               </Fragment>
             )}
@@ -291,7 +340,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 addonBefore="₹"
                 description="Enter amount you want to charge"
                 required
-                // validator={val => isAmount(Number(val)) && 'Invalid Amount'}
+                validator={checkIfAmount}
               />
             )}
 
@@ -299,6 +348,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               name="notes"
               label="Internal Notest"
               class="Input--vTop"
+              onChange={this.handleNotesChange}
             />
           </Form>
         </main>
@@ -309,7 +359,7 @@ export default class CreateNewAuthLinkContainer extends Component {
             pendingState="Creating..."
             type="submit"
             onClick={this.onCreate}
-            // disabled={!this.allMandatoryFieldsPresent()}
+            disabled={!this.allMandatoryFieldsPresent()}
           >
             Create Auth Link
           </AsyncBtn.Primary>
@@ -328,4 +378,8 @@ export default class CreateNewAuthLinkContainer extends Component {
       <div class="StandAloneContainer">{this.renderForm({ isModalView })}</div>
     );
   }
+}
+
+function checkIfAmount(value) {
+  return !isAmount(Number(value)) && 'Invalid Amount';
 }
