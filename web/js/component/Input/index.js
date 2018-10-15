@@ -403,7 +403,11 @@ class Check extends Field {
             <label>
               <input
                 {...props}
-                defaultChecked={this.checked}
+                defaultChecked={
+                  typeof this.props.checked !== 'undefined'
+                    ? undefined
+                    : this.checked
+                }
                 class="Input-el"
                 type="checkbox"
                 onChange={this.toggle}

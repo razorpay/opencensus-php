@@ -52,9 +52,16 @@ export default class View extends React.PureComponent {
     this.setState({ activeCreatorType: false });
   };
 
-  onAmountCreatorSubmit = _ => {
-    // Add / Update FORM_SCHEMA
-    this.setState({ activeCreatorType: false });
+  onAmountCreatorSubmit = formData => {
+    console.log('FORM DATA.....', formData);
+
+    return false;
+
+    // If all fields valid, then
+    if (true) {
+      // Add / Update FORM_SCHEMA
+      this.setState({ activeCreatorType: false });
+    }
   };
 
   onGenericCreatorSubmit = _ => {
@@ -91,47 +98,49 @@ export default class View extends React.PureComponent {
     }
 
     return (
-      <div class="UI-form">
+      <React.Fragment>
         {activeCreatorType && (
           <Creator creatorStructure={this.creatorStructure}>
             {editorContent}
           </Creator>
         )}
+        <div class="UI-form">
+          <AmountField
+            onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
+          />
 
-        <AmountField
-          onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
-        />
+          {FORM_SCHEMA.map((field, idx) => {
+            let infoTxt = '';
+            let isDisabled;
+            if (['email', 'phone'].indexOf(field.name) > -1) {
+              infoTxt =
+                'Email and Phone are fixed fields. You cannot edit them';
+              isDisabled = true;
+            }
 
-        {FORM_SCHEMA.map((field, idx) => {
-          let infoTxt = '';
-          let isDisabled;
-          if (['email', 'phone'].indexOf(field.name) > -1) {
-            infoTxt = 'Email and Phone are fixed fields. You cannot edit them';
-            isDisabled = true;
-          }
+            return (
+              <GenericField
+                key={idx}
+                field={field}
+                infoTxt={infoTxt}
+                onEditField={
+                  !isDisabled
+                    ? e => this.openCreator(e, CreatorType.GENERIC)
+                    : undefined
+                }
+              />
+            );
+          })}
+          <EditLayer
+            onClick={e => this.openCreator(e, CreatorType.GENERIC)}
+            style={{ marginTop: 32, display: 'inline-block' }}
+          >
+            <span class="btn-link">+ Add new field</span>
+          </EditLayer>
 
-          return (
-            <GenericField
-              key={idx}
-              field={field}
-              infoTxt={infoTxt}
-              onEditField={
-                !isDisabled
-                  ? e => this.openCreator(e, CreatorType.GENERIC)
-                  : undefined
-              }
-            />
-          );
-        })}
-        <EditLayer
-          onClick={e => this.openCreator(e, CreatorType.GENERIC)}
-          style={{ marginTop: 32, display: 'inline-block' }}
-        >
-          <span class="btn-link">+ Add new field</span>
-        </EditLayer>
-
-        <FormFooter amountToPay={340 * 100} />
-      </div>
+          <FormFooter amountToPay={340 * 100} />
+        </div>
+      </React.Fragment>
     );
   }
 }
@@ -146,11 +155,11 @@ const Creator = ({ children, creatorStructure }) => {
           width: creatorStructure.width,
           top: creatorStructure.top,
           left: creatorStructure.left,
-          marginBottom: 80,
+          margin: '12px 0 80px',
           transform: 'none',
         }}
       >
-        <ModalContent>{children}</ModalContent>
+        <ModalContent class="paymentlinks-creator">{children}</ModalContent>
       </Modal>
     </ModalMask>
   );

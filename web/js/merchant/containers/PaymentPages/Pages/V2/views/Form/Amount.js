@@ -1,4 +1,5 @@
 import Form from 'component/Form';
+import Input from 'component/Input';
 import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList, getFormattedAmount } from 'common/util';
@@ -60,21 +61,87 @@ export const FormFooter = ({ amountToPay }) => (
 );
 
 export class AmountCreator extends React.PureComponent {
+  state = { isDynamicAmount: false, hasStock: false };
+
   onChange = ({ target }) => {
     const { name, value } = target;
-    console.log(name, value);
+    if (name === 'dynamic_amount') {
+      this.setState({
+        isDynamicAmount: value == 1 ? true : false,
+        hasQuantityPerPerson: 0,
+        hasStock: 0,
+      });
+
+      document.getElementsByName('amount')[0].value = '';
+    } else if (name === 'quantity') {
+      this.setState({
+        hasQuantityPerPerson: target.checked ? 1 : 0,
+      });
+    } else if (name === 'stock') {
+      this.setState({
+        hasStock: value == 1 ? true : false,
+      });
+    }
   };
 
   render() {
     const { onClose, onSubmit } = this.props;
+    const {
+      amount,
+      isDynamicAmount,
+      hasQuantityPerPerson,
+      hasStock,
+    } = this.state;
 
     return (
-      <Form onChange={this.onChange}>
+      <Form onChange={this.onChange} onSubmit={onSubmit}>
+        <div class="section section-1">
+          <Input
+            label="Amount"
+            name="amount"
+            type="number"
+            placeholder="Enter Amount"
+            addonBefore="₹"
+            autoFocus
+            disabled={isDynamicAmount}
+          />
+          <Input.Check
+            name="dynamic_amount"
+            fieldLabel="Customer decides this while paying"
+          />
+        </div>
+        <div class="section section-2">
+          <Input.Check
+            name="quantity"
+            fieldLabel="Allow multiple purchases per customer"
+            disabled={isDynamicAmount}
+            checked={Boolean(hasQuantityPerPerson)}
+            autoRender
+          />
+          <Input.Check
+            name="stock"
+            autoRender={true}
+            disabled={isDynamicAmount}
+            checked={Boolean(hasStock)}
+            fieldLabel={() => (
+              <span>
+                This item has limited stock{' '}
+                {!!hasStock && (
+                  <React.Fragment>
+                    of{' '}
+                    <Input name="quantity" class="checkbox-Input" autoFocus />{' '}
+                    units available
+                  </React.Fragment>
+                )}
+              </span>
+            )}
+          />
+        </div>
         <footer>
           <button type="button" class="btn-link" onClick={onClose}>
             Cancel
           </button>
-          <Button.Primary onClick={onSubmit}>Add</Button.Primary>
+          <Button.Primary type="submit">Add</Button.Primary>
         </footer>
       </Form>
     );

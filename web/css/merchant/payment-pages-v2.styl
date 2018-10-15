@@ -126,12 +126,13 @@
         color: #0D2366 // Same as in customer-facing view
 
 
-  .Input
-    margin: -4px -6px
+  #details-section
+    .Input
+      margin: -4px -6px
 
-    .Input-el
-      padding: 3px 5px
-      position: relative
+      .Input-el
+        padding: 3px 5px
+        position: relative
 
 
   .title--big .Input-el
@@ -179,6 +180,7 @@
     background-color: #2c3243
     line-height: 20px
     min-width: 180px
+    white-space: normal
 
     &::before
       border-right-color: #2c3243
@@ -219,6 +221,59 @@
         transform: translateX(-50%)
         top: unset
         bottom: -16px
+
+
+.paymentlinks-creator
+  .section
+    padding: 24px
+
+  .section-1
+    border-bottom: 1px solid #efefef
+
+    & > div
+      width: 50%
+      display: inline-block
+      padding: 0
+      margin: 0
+
+      .Input-addons
+        width: 32px
+        line-height: 32px
+        background: transparent !important
+
+      .Input-el
+        padding-left: 32px
+
+      .Input-content, .Input-label
+        display: inline-block
+
+      .Input-content
+        vertical-align: middle
+
+      .Input-label
+        top: 8px
+        margin-right: 16px
+        float: left
+
+      .Input-el:not([type=checkbox])
+        width: 160px
+        height: 32px
+
+  .section-2
+    > .Input:nth-of-type(1)
+      margin-top: 0
+
+    .Input .Input
+      display: inline-block
+
+    .Input-el:not([type=checkbox])
+      height: 32px
+      width: 80px
+      padding: 0 8px
+
+
+    .checkbox-Input
+      margin: -8px 4px
 
 
 .fakeTextArea
