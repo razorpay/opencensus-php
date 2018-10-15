@@ -56,6 +56,12 @@ class EntityMappingTest extends TestCase
         $admin = $this->getDbEntityById('admin', Org::MAKER_ADMIN);
 
         $this->assertEquals(2, $admin->merchants()->count());
+
+        $merchantIds = $admin->merchants()->get()->getIds();
+
+        $this->assertContains('10000000000000', $merchantIds);
+        $this->assertContains($entries[2][Header::ENTITY_TO_ID], $merchantIds);
+
     }
 
     public function getDefaultFileEntries()
