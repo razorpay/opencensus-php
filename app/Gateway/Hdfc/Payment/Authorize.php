@@ -188,7 +188,7 @@ trait Authorize
         // HDFC throws CM90004 when the authorize request has already been
         // sent for this payment.
         if (($this->model->getStatus() === Status::AUTHORIZED) and
-            ($authResponse['error']['code'] === Hdfc\ErrorCode::CM90004))
+            ($authResponse['error']['code'] === Hdfc\ErrorCodes\ErrorCodes::CM90004))
         {
             return true;
         }
@@ -256,54 +256,54 @@ trait Authorize
                 return true;
 
             case Payment\Result::NOT_APPROVED:
-                $errorCode = Hdfc\ErrorCode::RP00006;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00006;
                 break;
 
             case Payment\Result::NOT_CAPTURED:
-                $errorCode = Hdfc\ErrorCode::RP00007;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00007;
                 break;
 
             case Payment\Result::HOST_TIMEOUT:
-                $errorCode = Hdfc\ErrorCode::RP00004;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00004;
                 break;
 
             case Payment\Result::DENIED_BY_RISK:
-                $errorCode = Hdfc\ErrorCode::RP00005;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00005;
                 break;
 
             case Payment\Result::AUTH_ERROR:
-                $errorCode = Hdfc\ErrorCode::RP00010;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00010;
                 break;
 
             case Payment\Result::CANCELED:
-                $errorCode = Hdfc\ErrorCode::RP00011;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00011;
                 break;
             case Payment\Result::NOT_APPROVED_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00016;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00016;
                 break;
 
             case Payment\Result::NOT_CAPTURED_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00017;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00017;
                 break;
 
             case Payment\Result::HOST_TIMEOUT_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00015;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00015;
                 break;
 
             case Payment\Result::DENIED_BY_RISK_IPAY:
-                $errorCode = Hdfc\ErrorCode::GW00256;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::GW00256;
                 break;
 
             case Payment\Result::AUTH_ERROR_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00020;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00020;
                 break;
 
             case Payment\Result::DENIED_CAPTURE:
-                $errorCode = Hdfc\ErrorCode::RP00021;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00021;
                 break;
 
             case '':
-                $errorCode = Hdfc\ErrorCode::RP00002;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00002;
                 break;
 
             default:
@@ -312,6 +312,11 @@ trait Authorize
         }
 
         Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
+
+        if (isset($authResponse['data']['authRespCode']))
+        {
+            $authResponse['error']['authRespCode'] = $authResponse['data']['authRespCode'];
+        }
 
         $this->error = true;
 

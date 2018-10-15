@@ -90,7 +90,7 @@ class EmiFile extends Base\EmiFile
                 'Tx Amount'                    => $this->getFormattedAmount($principalAmount),
                 'EMI_Offer'                    => $emiTenure.' Months',
                 'Manufacturer'                 => $notApplicable,
-                'Merchant Name'                => $notApplicable,
+                'Merchant Name'                => $emiPayment->merchant->getName(),
                 'Address1'                     => $notApplicable,
                 'Store City'                   => $notApplicable,
                 'Store State'                  => $notApplicable,

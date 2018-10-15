@@ -56,7 +56,7 @@ class Gateway extends Base\Gateway
         Entity::TYPE                      => Entity::TYPE,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::STATUS            => Entity::STATUS_CODE,
+        ResponseFields::RESPCODE          => Entity::STATUS_CODE,
         // This is a 5 digit number that is the reference ID on the HDFC side
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
         // NPCI provided RRN for the transaction
@@ -202,7 +202,10 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE, string $type = Base\Type::COLLECT)
+    protected function getGatewayEntityAttributes(
+        array $input,
+        string $action = Action::AUTHORIZE,
+        string $type = Base\Type::COLLECT)
     {
         $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
@@ -311,9 +314,9 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS]);
-
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+
+        $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Gateways must return array in callback
         return [
@@ -937,7 +940,7 @@ class Gateway extends Base\Gateway
     {
         $payment = [
             "method"   => 'upi',
-            "amount"   => (int)($callbackData[ResponseFields::AMOUNT] * 100),
+            "amount"   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
             "currency" => "INR",
             "vpa"      => $callbackData[ResponseFields::PAYER_VA],
             "contact"  => "+919999999999",
@@ -971,7 +974,7 @@ class Gateway extends Base\Gateway
             "payment" => [
                 "id"     => $paymentId,
                 "vpa"    => $callbackData[ResponseFields::PAYER_VA],
-                "amount" => (int)($callbackData[ResponseFields::AMOUNT] * 100),
+                "amount" => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
             ],
             "upi"     => [
                 "expiry_time" => 1, // dummy value

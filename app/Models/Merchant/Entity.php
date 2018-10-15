@@ -516,7 +516,7 @@ class Entity extends Base\PublicEntity
 
     public function isExposeARNRefundEnabled(): bool
     {
-       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
     }
 
     public function isExposeARNPaymentEnabled(): bool

@@ -112,6 +112,10 @@ trait CustomAssertions
 
     protected function getGatewayErrorDescription(array $actual)
     {
-        return Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']] ?? $actual['gateway_error_desc'];
+        $code = [
+            'code' => $actual['gateway_error_code']
+        ];
+
+        return $actual['gateway_error_desc'] ?? Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($code);
     }
 }

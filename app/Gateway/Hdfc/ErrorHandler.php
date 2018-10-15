@@ -12,41 +12,19 @@ class ErrorHandler
         return static::$invalidErrorCode;
     }
 
-    public static function getInvalidError()
-    {
-        return self::getErrorDetailsHdfc(ErrorCode::$invalidErrorCode);
-    }
-
     public static function getErrorMessage($code)
     {
-        return Hdfc\ErrorCode::$errorMessages[$code];
+        return Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription(['code' => $code]);
     }
 
     public static function isValidErrorCode($code)
     {
-        return (defined(ErrorCode::class.'::'.$code));
-    }
-
-    public static function getMappedError($code)
-    {
-        $appErrorCode = null;
-
-        if (self::isValidErrorCode($code) === false)
-        {
-            throw new Exception\InvalidArgumentException(
-                'should not reach here for now' . $code);
-        }
-        else
-        {
-            $appErrorCode = Hdfc\ErrorCode::$errorMap[$code];
-        }
-
-        return $appErrorCode;
+        return (defined(ErrorCodes\ErrorCodes::class.'::'.$code));
     }
 
     public static function checkErrorCode($code)
     {
-        if (defined(ErrorCode::class.'::'.$code) === false)
+        if (defined(ErrorCodes\ErrorCodes::class.'::'.$code) === false)
         {
             throw new Exception\LogicException(
                 'Invalid Hdfc Error Code provided.',
@@ -59,13 +37,11 @@ class ErrorHandler
 
     public static function getInvalidResultCodeError()
     {
-        return self::getErrorDetails(Hdfc\ErrorCode::RP00002);
+        return self::getErrorDetails(Hdfc\ErrorCodes\ErrorCodes::RP00002);
     }
 
     public static function getErrorDetails($code)
     {
-        self::checkErrorCode($code);
-
         $text = Hdfc\ErrorHandler::getErrorMessage($code);
 
         return array('code' => $code, 'text' => $text);
@@ -73,19 +49,17 @@ class ErrorHandler
 
     public static function setErrorInResponse(array & $response, $code)
     {
-        self::checkErrorCode($code);
-
         $response['error'] = self::getErrorDetails($code);
     }
 
     public static function setTimeoutError(array & $response, $curlMessage = null)
     {
-        $code = Hdfc\ErrorCode::RP00003;
+        $code = Hdfc\ErrorCodes\ErrorCodes::RP00003;
 
         if ((empty($curlMessage) === false) and
             (strpos($curlMessage, 'operation timed out') !== false))
         {
-            $code = Hdfc\ErrorCode::RP00013;
+            $code = Hdfc\ErrorCodes\ErrorCodes::RP00013;
         }
 
         $response['error'] = self::getErrorDetails($code);
@@ -93,7 +67,7 @@ class ErrorHandler
 
     public static function setRequestError(array & $response, $curlMessage = null)
     {
-        $code = Hdfc\ErrorCode::RP00014;
+        $code = Hdfc\ErrorCodes\ErrorCodes::RP00014;
 
         $response['error'] = self::getErrorDetails($code);
         $response['text'] = $curlMessage;
@@ -101,7 +75,7 @@ class ErrorHandler
 
     public static function setGatewayWrongStatusCode(array & $response, $status_code)
     {
-        $code = Hdfc\ErrorCode::RP00008;
+        $code = Hdfc\ErrorCodes\ErrorCodes::RP00008;
 
         $response['error'] = self::getErrorDetails($code);
 
@@ -110,7 +84,7 @@ class ErrorHandler
 
     public static function setGatewayWrongContentType(array & $response, $contentType)
     {
-        $code = Hdfc\ErrorCode::RP00009;
+        $code = Hdfc\ErrorCodes\ErrorCodes::RP00009;
 
         $response['error'] = self::getErrorDetails($code);
 
