@@ -608,7 +608,8 @@ class Entity extends Base\PublicEntity
         // associated with it.
         //
 
-        if (($this->isExternal()) === true and $this->isGlobalCustomer() === true)
+        if (($this->isExternal() === true) and
+            ($this->isGlobalCustomer() === true))
         {
             return true;
         }

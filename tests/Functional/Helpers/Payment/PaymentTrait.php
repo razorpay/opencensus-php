@@ -873,6 +873,29 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
+        if ($response['status_code'] === 'REFUND_SUCCESSFUL')
+        {
+            $this->scroogeRefundMarkProcessed($refund);
+        }
+
+        return $response;
+    }
+
+    protected function scroogeRefundMarkProcessed(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'PUT',
+            'url'     => '/refunds/'.$input['id'].'/processed',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
         return $response;
     }
 

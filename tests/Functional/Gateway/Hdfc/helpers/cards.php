@@ -37,7 +37,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayTimeoutException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-            'gateway_error_code'  => Hdfc\ErrorCode::RP00013,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::RP00013,
         ],
     ],
 
@@ -80,7 +80,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::FSS0001,
         ],
     ],
 
@@ -104,7 +104,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::FSS0001,
         ],
     ],
 
@@ -151,7 +151,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
-            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::FSS0001,
         ],
     ],
 
@@ -177,7 +177,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
-            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+            'gateway_error_code' => Hdfc\ErrorCodes\ErrorCodes::RP00006,
         ],
     ],
 
@@ -201,7 +201,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
-            'gateway_error_code' => Hdfc\ErrorCode::RP00006,
+            'gateway_error_code' => Hdfc\ErrorCodes\ErrorCodes::RP00006,
         ],
     ],
 
@@ -225,7 +225,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
-            'gateway_error_code'  => Hdfc\ErrorCode::GV00007,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::GV00007,
         ],
     ],
 
@@ -249,7 +249,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
-            'gateway_error_code'  => Hdfc\ErrorCode::GV00008,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::GV00008,
         ],
     ],
 
@@ -273,7 +273,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PARES_NOT_SUCCESSFUL,
-            'gateway_error_code'  => Hdfc\ErrorCode::GV00004,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::GV00004,
         ],
     ],
 
@@ -297,7 +297,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::FSS0001,
         ],
     ],
 
@@ -321,7 +321,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::FSS0001,
         ],
     ],
 
@@ -345,7 +345,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            'gateway_error_code'  => Hdfc\ErrorCode::PY20007,
+            'gateway_error_code'  => Hdfc\ErrorCodes\ErrorCodes::PY20007,
         ],
     ],
 

@@ -176,12 +176,10 @@ return [
     ],
 
     'reporting' => [
-        'mock' => env('REPORTING_MOCK', false),
-        'url'  => env('REPORTING_BASE_URL'),
-        'auth' => [
-            'username' => 'api',
-            'password' => env('REPORTING_PASSWORD'),
-        ],
+        'mock'   => env('REPORTING_MOCK', false),
+        'url'    => env('REPORTING_BASE_URL'),
+        'username' => 'api',
+        'secret' => env('REPORTING_PASSWORD'),
     ],
 
     'ufh' => [

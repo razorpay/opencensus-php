@@ -14,7 +14,8 @@ build:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
       - redis
-      - elasticsearch
+      - id: elasticsearch
+        tag: 5.2-alpine
     # The steps that will be executed on build
     steps:
       - script:

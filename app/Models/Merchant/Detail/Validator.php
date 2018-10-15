@@ -171,8 +171,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
-        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,6',
-        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
+        Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
@@ -207,9 +207,13 @@ class Validator extends Base\Validator
 
     protected static $instantActivationRules = [
         Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY => 'sometimes|max:255|custom',
         Entity::PROMOTER_PAN         => 'required|alpha_num|max:15',
-        Entity::PROMOTER_PAN_NAME    => 'required|max:255',
+        Entity::BUSINESS_NAME        => 'required|string|max:255',
+        Entity::BUSINESS_MODEL       => 'sometimes|max:255',
+        Entity::BUSINESS_WEBSITE     => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_DBA         => 'required|string|max:255',
+        Entity::BUSINESS_TYPE        => 'required|numeric|digits_between:1,10',
     ];
 
     protected static $websiteDetailsRules = [

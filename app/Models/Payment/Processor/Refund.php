@@ -1170,8 +1170,8 @@ trait Refund
         // failed state. As scrooge doesn't mark refund as failed, new refunds will never be retried via this flow.
         //
         if (($refund->isProcessed() === true) or
-            ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true)
-             and ($refund->isCreated() === true)))
+            ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
+             ($refund->isCreated() === true)))
         {
             return $refund->getStatus();
         }
