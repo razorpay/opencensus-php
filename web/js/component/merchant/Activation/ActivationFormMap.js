@@ -111,6 +111,9 @@ const businessModel = [
       name: 'business_category',
       _cmp: Input.Select,
       options: [],
+      _disabledWhen: function(form) {
+        return !!form.props.user.showInstantActivation;
+      },
     },
     {
       label: 'Business Model',
@@ -127,6 +130,9 @@ const businessModel = [
             : props.data.business_category;
 
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
+      },
+      _disabledWhen: function(form) {
+        return !!form.props.user.showInstantActivation;
       },
     },
     {
@@ -172,6 +178,9 @@ const businessModel = [
 
         // 'Others' business_category has no sub_category
         return hasBusinessCategory;
+      },
+      _disabledWhen: function(form) {
+        return !!form.props.user.showInstantActivation;
       },
     },
   ],

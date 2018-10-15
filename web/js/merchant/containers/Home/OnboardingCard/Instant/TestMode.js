@@ -13,7 +13,8 @@ export default props => {
   const { mode, integration, showProductsModal } = props,
     { isLoading, keysGenerated, paymentsMade } = integration;
 
-  let status = possibleStatuses.done,
+  let title = 'Test Mode Enabled',
+    status = possibleStatuses.done,
     content = null;
 
   if (mode === 'live') {
@@ -21,7 +22,15 @@ export default props => {
   } else if (isLoading) {
     status = possibleStatuses.loading;
   } else {
-    if (!keysGenerated) {
+    if (paymentsMade) {
+      title = 'Test Mode Payments';
+      content = (
+        <span>
+          View all payments received in Test mode in{' '}
+          <Link to="/payments">Transactions</Link> tab
+        </span>
+      );
+    } else if (!keysGenerated) {
       content = (
         <span>
           <Link to="/keys" className="btn-link">
@@ -30,7 +39,8 @@ export default props => {
           and use <TestProducts onClick={showProductsModal} />
         </span>
       );
-    } else if (!paymentsMade) {
+    } else {
+      title = 'Transact in Test Mode';
       content = (
         <span>
           Create Test payments now. For details, Read{' '}
@@ -44,19 +54,12 @@ export default props => {
           or use <TestProducts onClick={showProductsModal} />
         </span>
       );
-    } else {
-      content = (
-        <span>
-          View all payments received in Test mode in{' '}
-          <Link to="/payments">Transactions</Link> tab
-        </span>
-      );
     }
   }
 
   return (
     <Step status={status}>
-      <StepTitle>Test Mode Enabled</StepTitle>
+      <StepTitle>{title}</StepTitle>
       <StepContent>{content}</StepContent>
     </Step>
   );

@@ -1,4 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
+import Button from 'component/Button';
+
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
 export default ({
@@ -62,7 +66,18 @@ export default ({
         } else {
           status = possibleStatuses.done;
           content = (
-            <div>View payments in Transactions tab, or keep using products</div>
+            <div>
+              View payments in{' '}
+              <Link to="/payments" className="btn-link">
+                Transactions
+              </Link>{' '}
+              tab, or keep using products.
+              <div className="m-t">
+                <Button.Secondary onClick={() => showProductsModal()}>
+                  View Products
+                </Button.Secondary>
+              </div>
+            </div>
           );
         }
       }

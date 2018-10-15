@@ -123,6 +123,9 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     let isMerchant = !!user.current;
 
+    const { showInstantActivation } = user,
+      { isL1Submitted } = user.instantActivation;
+
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -136,11 +139,16 @@ export default class Sidebar extends Component {
               if (!isMerchant) {
                 null;
               } else {
-                let actionCopy;
+                let actionCopy,
+                  actionContent = null;
 
                 if (user.activation_progress < 100) {
                   // If user form is still unfilled
                   actionCopy = 'Activate your account';
+
+                  if (isL1Submitted) {
+                    actionCopy = 'Submit KYC';
+                  }
                 } else if (user.isSubmitted) {
                   actionCopy = 'Form submitted';
                 } else if (user.activation_progress == 100) {
@@ -177,24 +185,34 @@ export default class Sidebar extends Component {
                             <i className="i i-chevron-right" />
                           </div>
                         </div>
-                        {!user.isSubmitted ? (
-                          <div className="activation-bar-content activation-status-secondary">
-                            <div className="activation-bar-text">
-                              {user.activation_progress}% Complete
-                            </div>
-                            <div className="activation-bar">
-                              <ProgressBar
-                                type="success"
-                                max={100}
-                                value={user.activation_progress}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="activation-status-secondary">
-                            Personalise your Account
-                          </div>
-                        )}
+                        {do {
+                          if (showInstantActivation && !isL1Submitted) {
+                            actionContent = (
+                              <div className="activation-status-secondary">
+                                Form not Completed
+                              </div>
+                            );
+                          } else {
+                            actionContent = !user.isSubmitted ? (
+                              <div className="activation-bar-content activation-status-secondary">
+                                <div className="activation-bar-text">
+                                  {user.activation_progress}% Complete
+                                </div>
+                                <div className="activation-bar">
+                                  <ProgressBar
+                                    type="success"
+                                    max={100}
+                                    value={user.activation_progress}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="activation-status-secondary">
+                                Personalise your Account
+                              </div>
+                            );
+                          }
+                        }}
                       </div>
                     </Link>
                   </ShowWhen>

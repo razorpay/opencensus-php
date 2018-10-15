@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Form from 'component/Form';
+import { connect } from 'react-redux';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
@@ -88,6 +89,9 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
+@connect(state => ({
+  user: state.session.user,
+}))
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
