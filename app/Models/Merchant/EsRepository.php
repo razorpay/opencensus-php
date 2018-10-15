@@ -271,9 +271,12 @@ class EsRepository extends Base\EsRepository
                 $this->addFilter($query, $filter);
 
                 break;
+
             case AccountStatus::INSTANTLY_ACTIVATED:
 
                  $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::INSTANTLY_ACTIVATED));
+
+                 break;
 
             default:
 
