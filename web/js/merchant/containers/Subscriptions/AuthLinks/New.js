@@ -98,7 +98,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       type: 'auth_link',
       description: data.description,
       receipt: data.receipt,
-      // expire_by: data.expireAt,
+      expire_by: data.expireAt,
       amount:
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
@@ -285,7 +285,23 @@ export default class CreateNewAuthLinkContainer extends Component {
                   </div>
                 </Input.Group>
 
-                <Input label="Account Number" name="mandateBankAccountNumber" />
+                <Input.Group label="Account Details" class="InputGroup--inline">
+                  <div class="Input-content">
+                    <Input
+                      placeholder="Beneficiary Name"
+                      name="mandateBeneficiaryName"
+                      description="Customer/Beneficiary Name on the Account"
+                      size="half_big"
+                    />
+
+                    <Input
+                      placeholder="Account Number"
+                      name="mandateBankAccountNumber"
+                      description="Bank Account Number"
+                      size="half_big"
+                    />
+                  </div>
+                </Input.Group>
 
                 <Input.Group label="Authentication" class="InputGroup--inline">
                   <div class="Input-content">
