@@ -2,9 +2,11 @@
 
 namespace RZP\Reconciliator\EmandateAxis\SubReconciliator;
 
+use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Reconciliator\Base;
-use RZP\Exception\ReconciliationException;
+use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 
 class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitReconciliate
 {
@@ -22,12 +24,20 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const COLUMN_REASON            = 'return_reason';
     const COLUMN_RECORD_IDENTIFIER = 'record_identifier';
 
-    const STATUS_SUCCESS = 'Success';
-    const STATUS_FAILURE = 'Rejected';
+    const STATUS_SUCCESS  = 'Success';
+    const STATUS_FAILURE  = 'Failure';
+    const STATUS_REJECTED = 'Rejected';
+
+    protected $allowedStatuses = [
+        self::STATUS_SUCCESS,
+        self::STATUS_FAILURE,
+        self::STATUS_REJECTED
+    ];
 
     protected $paymentStatusMappings = [
-        self::STATUS_SUCCESS => Payment\Status::AUTHORIZED,
-        self::STATUS_FAILURE => Payment\Status::FAILED,
+        self::STATUS_SUCCESS  => Payment\Status::AUTHORIZED,
+        self::STATUS_FAILURE  => Payment\Status::FAILED,
+        self::STATUS_REJECTED => Payment\Status::FAILED,
     ];
 
     protected function getPaymentId(array $row)
@@ -44,7 +54,26 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     {
         if (empty($row[self::COLUMN_GATEWAY_TOKEN]) === false)
         {
-            return $row[self::COLUMN_GATEWAY_TOKEN];
+            return trim($row[self::COLUMN_GATEWAY_TOKEN]);
+        }
+
+        return null;
+    }
+
+    protected function getGatewayErrorCode(array $row)
+    {
+        if (empty($row[self::COLUMN_STATUS]) === false)
+        {
+            return trim($row[self::COLUMN_STATUS]);
+        }
+
+        return null;
+    }
+    protected function getGatewayErrorDescription(array $row)
+    {
+        if (empty($row[self::COLUMN_REASON]) === false)
+        {
+            return $row[self::COLUMN_REASON];
         }
 
         return null;
@@ -53,7 +82,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     /**
      * @param array $row
      * @return mixed|null
-     * @throws ReconciliationException
+     * @throws Exception\ReconciliationException
      */
     protected function getReconPaymentStatus(array $row)
     {
@@ -62,12 +91,40 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
             return $this->paymentStatusMappings[$row[self::COLUMN_STATUS]];
         }
 
-        throw new ReconciliationException(
+        throw new Exception\ReconciliationException(
             "Invalid payment status sent",
             [
                 'row'     => $row,
                 'gateway' => 'axis_emandate'
             ]
         );
+    }
+
+    protected function getApiErrorCodeMapped(array $rowDetails)
+    {
+        $gatewayErrorCode = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_CODE];
+
+        $this->checkValidStatus($gatewayErrorCode);
+
+        return $this->getApiErrorCodeFromDescription($rowDetails);
+    }
+
+    protected function checkValidStatus($status)
+    {
+        if (in_array($status, $this->allowedStatuses, true) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                $status,
+                'Gateway response status is invalid'
+            );
+        }
+    }
+
+    protected function getApiErrorCodeFromDescription(array $rowDetails): string
+    {
+        $errorDescription = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_DESC];
+
+        return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
 }

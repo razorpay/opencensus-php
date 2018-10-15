@@ -59,16 +59,16 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
         $gatewayToken = $this->getGatewayToken($row);
 
-        $gatewayErrorCode = $this->getPaymentFailureGatewayErrorCode($row);
+        $gatewayErrorCode = $this->getGatewayErrorCode($row);
 
-        $gatewayErrorDescription = $this->getPaymentFailureGatewayErrorDescription($row);
+        $gatewayErrorDescription = $this->getGatewayErrorDescription($row);
 
         $rowDetails = array_merge(
             $rowDetails,
             [
-                BaseReconciliate::GATEWAY_TOKEN => $gatewayToken,
-                BaseReconciliate::ERROR_CODE    => $gatewayErrorCode,
-                BaseReconciliate::ERROR_DESC    => $gatewayErrorDescription,
+                BaseReconciliate::GATEWAY_TOKEN      => $gatewayToken,
+                BaseReconciliate::GATEWAY_ERROR_CODE => $gatewayErrorCode,
+                BaseReconciliate::GATEWAY_ERROR_DESC => $gatewayErrorDescription,
             ]
         );
 
@@ -95,7 +95,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      *
      * @return null
      */
-    protected function getPaymentFailureGatewayErrorCode(array $row)
+    protected function getGatewayErrorCode(array $row)
     {
         return null;
     }
@@ -105,7 +105,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      *
      * @return null
      */
-    protected function getPaymentFailureGatewayErrorDescription(array $row)
+    protected function getGatewayErrorDescription(array $row)
     {
         return null;
     }
@@ -257,10 +257,12 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             return;
         }
 
+        $apiErrorCode = $this->getApiErrorCodeMapped($rowDetails);
+
         $exception = new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-            $rowDetails[BaseReconciliate::ERROR_CODE],
-            $rowDetails[BaseReconciliate::ERROR_DESC]);
+            $apiErrorCode,
+            $rowDetails[BaseReconciliate::GATEWAY_ERROR_CODE],
+            $rowDetails[BaseReconciliate::GATEWAY_ERROR_DESC]);
 
         // Update payment status failed and send the corresponding events
         $processor->updatePaymentAuthFailed($exception);
@@ -288,5 +290,16 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     protected function markGatewayCapturedAsTrue()
     {
         return;
+    }
+
+    /**
+     * Override this in the gateway implementation to map error codes
+     *
+     * @param array $rowDetails
+     * @return string
+     */
+    protected function getApiErrorCodeMapped(array $rowDetails)
+    {
+        return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 }
