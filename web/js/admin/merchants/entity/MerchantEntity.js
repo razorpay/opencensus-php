@@ -18,6 +18,7 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'common/util';
+import { isOrgHDFC } from 'admin/user';
 
 let parentProps, merchantId;
 const actions = {};
@@ -542,12 +543,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-money" />
           </div>
         </ShowWhen>
-        <ShowWhen permission="assign_merchant_handle">
-          <div onClick={actions.AssignMerchantHandle}>
-            Assign Merchant Handle
-            <i class="pull-right i">@</i>
-          </div>
-        </ShowWhen>
+        {isOrgHDFC() && (
+          <ShowWhen permission="assign_merchant_handle">
+            <div onClick={actions.AssignMerchantHandle}>
+              Assign Merchant Handle
+              <i class="pull-right i">@</i>
+            </div>
+          </ShowWhen>
+        )}
         {merchant.features['live'] &&
           merchant.features['live'].assigned_features.indexOf('irctc_report') >
             -1 && (
@@ -747,12 +750,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-camera" />
           </div>
         </ShowWhen>
-        <ShowWhen permission="edit_merchant">
-          <div onClick={isDetailsLoading ? null : actions.EditWhiteListIps}>
-            Edit Whitelist IPs
-            {isDetailsLoading && <div class="dot-loader">.</div>}
-          </div>
-        </ShowWhen>
+        {isOrgHDFC() && (
+          <ShowWhen permission="edit_merchant">
+            <div onClick={isDetailsLoading ? null : actions.EditWhiteListIps}>
+              Edit Whitelist IPs
+              {isDetailsLoading && <div class="dot-loader">.</div>}
+            </div>
+          </ShowWhen>
+        )}
       </div>
     </aside>
   );

@@ -12,6 +12,7 @@ import Field, { SelectField, SwitchField } from 'ui/Field';
 import MultiSelectField from 'ui/MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
+import { isOrgHDFC } from 'admin/user';
 
 @observer
 export default class EditMerchant extends Component {
@@ -202,11 +203,13 @@ export default class EditMerchant extends Component {
             name="max_payment_amount"
             defaultValue={details.max_payment_amount / 100}
           />
-          <SwitchField
-            label="Marketplace Linked Account KYC"
-            name="linked_account_kyc"
-            defaultValue={details.linked_account_kyc ? '1' : '0'}
-          />
+          {isOrgHDFC() && (
+            <SwitchField
+              label="Marketplace Linked Account KYC"
+              name="linked_account_kyc"
+              defaultValue={details.linked_account_kyc ? '1' : '0'}
+            />
+          )}
 
           <SelectField
             name="category2"
