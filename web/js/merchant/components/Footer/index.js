@@ -7,7 +7,7 @@ const user = store.getState().getUser();
 export default () => {
   return (
     <footer class="pagefooter">
-      © {user.isOrgRZP() ? '2017' : '2018'} Copyright Razorpay ·{' '}
+      © {user.isOrgRZP ? '2017' : '2018'} Copyright Razorpay ·{' '}
       <u>
         <a
           href="https://razorpay.com/agreement/"

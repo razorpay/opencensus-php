@@ -31,7 +31,7 @@ export default class MarketplaceContainer extends Component {
     super(props);
 
     this.prefix = '';
-    if (props.user.isOrgRZP()) {
+    if (props.user.isOrgRZP) {
       this.prefix = 'Razorpay ';
     }
 

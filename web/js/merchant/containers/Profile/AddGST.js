@@ -126,7 +126,7 @@ export default class AddGST extends Component {
                 <i class="i i-close" />
               </button>
 
-              {session.user.isOrgRZP() && (
+              {session.user.isOrgRZP && (
                 <React.Fragment>
                   <label>Razorpay's GST number</label>
                   <div>

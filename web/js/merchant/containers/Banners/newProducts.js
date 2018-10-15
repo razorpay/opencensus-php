@@ -3,7 +3,7 @@ import store from 'merchant/store';
 const user = store.getState().getUser();
 
 let prefix = '';
-if (user.isOrgRZP()) {
+if (user.isOrgRZP) {
   prefix = 'Razorpay ';
 }
 

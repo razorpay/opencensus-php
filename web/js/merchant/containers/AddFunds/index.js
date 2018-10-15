@@ -135,7 +135,7 @@ export default class AddFundsContainer extends Component {
     let { handleSubmit, user } = this.props;
 
     let prefix = '';
-    if (user.isOrgRZP()) {
+    if (user.isOrgRZP) {
       prefix = ' with Razorpay';
     }
 

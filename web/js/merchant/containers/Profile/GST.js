@@ -48,7 +48,7 @@ export default class GSTDetails extends Component {
             )}
           </div>
 
-          {user.isOrgRZP() && (
+          {user.isOrgRZP && (
             <div class="list-group-item">
               <span>Razorpay's GST Number</span>
               <span>{rzp_gst.gstin}</span>

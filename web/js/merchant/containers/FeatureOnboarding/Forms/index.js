@@ -9,7 +9,7 @@ import SubscriptionsPreStep from '../PreStepForms/Subscriptions';
 const user = store.getState().getUser();
 
 let prefix = '';
-if (user.isOrgRZP()) {
+if (user.isOrgRZP) {
   prefix = 'Razorpay';
 }
 

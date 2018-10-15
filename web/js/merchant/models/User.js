@@ -75,7 +75,7 @@ export default class User {
     return this.user.confirmed;
   }
 
-  isOrgRZP() {
+  get isOrgRZP() {
     const org = getOrg();
 
     if (org && org.custom_code.toLowerCase() === 'rzp') {

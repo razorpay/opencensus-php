@@ -64,7 +64,7 @@ export default class Invite extends Component {
 
             <span class="help-block">
               By inviting the merchant to sign up on{' '}
-              {user.isOrgRZP() ? 'Razorpay' : 'the'} dashboard, you both can
+              {user.isOrgRZP ? 'Razorpay' : 'the'} dashboard, you both can
               manage the account.
             </span>
 

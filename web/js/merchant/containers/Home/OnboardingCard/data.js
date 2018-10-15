@@ -13,7 +13,7 @@ export const onBoardingItems = [
   'Generate Financial Reports',
   'Check Transaction History',
   'Access API keys  & Webhooks',
-  `Access ${user.isOrgRZP() ? 'Razorpay ' : ''}Products`,
+  `Access ${user.isOrgRZP ? 'Razorpay ' : ''}Products`,
   'Check Settlements',
   'Issue Refunds',
 ];
