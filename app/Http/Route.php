@@ -135,6 +135,8 @@ final class Route
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
+        // TODO: Add rate limiting on this route!
+        'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
         'card_check_recurring'                     => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                         => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                      => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -2143,7 +2145,8 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
-        'gateway_payment_validate_bharatqr'
+        'gateway_payment_validate_bharatqr',
+        'refund_fetch_for_customer',
     ];
 
     /**
@@ -2278,6 +2281,7 @@ final class Route
         ],
 
         'subscriptions' => [
+            'payment_fetch_multiple',
             'invoice_create',
             'invoice_fetch',
             'customer_fetch_by_id',

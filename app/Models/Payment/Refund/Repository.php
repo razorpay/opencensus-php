@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
@@ -20,9 +21,9 @@ class Repository extends Base\Repository
 {
     protected $entity = 'refund';
 
-    protected $entityFetchParamRules = array(
+    protected $entityFetchParamRules = [
         Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
-    );
+    ];
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
@@ -31,7 +32,7 @@ class Repository extends Base\Repository
         self::EXPAND . '.*'     => 'filled|string|in:reversal|custom:expand',
     ];
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::AMOUNT          => 'sometimes|integer',
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
@@ -41,7 +42,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY         => 'sometimes|string|max:30',
         Payment\Entity::METHOD  => 'sometimes|string|max:30',
         'payment_gateway'       => 'sometimes|string|max:30',
-    );
+    ];
 
     protected $signedIds = [
         Entity::BATCH_ID,
@@ -59,8 +60,6 @@ class Repository extends Base\Repository
      */
     protected function validateExpand($attribute, $value)
     {
-        $merchant = $this->merchant;
-
         if ((optional($this->merchant)->isLinkedAccount() === false) and
             $value === 'reversal')
         {
@@ -90,6 +89,8 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $query->where($paymentGateway, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
     }
 
     protected function addQueryParamMethod($query, $params)
@@ -140,7 +141,7 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPaymentAndMerchant($payment, $merchant)
+    public function findForPaymentAndMerchant(Payment\Entity $payment, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
@@ -148,10 +149,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findForPayment($payment)
+    public function findForPayment(Payment\Entity $payment)
+    {
+        return $this->findForPaymentId($payment->getId());
+    }
+
+    public function findForPaymentId(string $paymentId)
     {
         return $this->newQuery()
-                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
                     ->get();
     }
 
@@ -761,7 +767,6 @@ class Repository extends Base\Repository
     {
         $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $refundStatus    = $this->dbColumn(Refund\Entity::STATUS);
-        $refundGateway   = $this->dbColumn(Refund\Entity::GATEWAY);
 
         $paymentId      = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $paymentMethod  = $this->repo->payment->dbColumn(Payment\Entity::METHOD);

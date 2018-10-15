@@ -126,6 +126,14 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicCustomer = [
+        self::ID,
+        self::AMOUNT,
+        self::PAYMENT_ID,
+        self::ACQUIRER_DATA,
+        self::CREATED_AT,
+    ];
+
     protected $hiddenInReport = [self::ACQUIRER_DATA];
 
     protected $defaults = [
@@ -509,8 +517,6 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
-        // We are hardcoding the merchant ids for now.
-        // Will move this to feature flag.
         if (($auth->isAdminAuth() === true) or
             (($auth->getMerchant() !== null) and
              ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
@@ -603,6 +609,17 @@ class Entity extends Base\PublicEntity
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
+
+        return $data;
+    }
+
+    public function toArrayPublicCustomer(): array
+    {
+        $data = parent::toArrayPublicCustomer();
+
+        $data['merchant_name'] = $this->merchant->getBillingLabel();
+
+        $data[self::STATUS] = (($this->isProcessed() === true) ? Status::PROCESSED : Status::INITIATED);
 
         return $data;
     }

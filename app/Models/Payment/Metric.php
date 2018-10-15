@@ -77,7 +77,9 @@ class Metric extends Base\Core
 
         $dimensions = array_merge($dimensions, $extraDimensions);
 
-        $this->trace->count(self::PAYMENT_CAPTURED, $dimensions);
+        $captureTime = ($payment->getCapturedAt() - $payment->getCreatedAt());
+
+        $this->trace->histogram(self::PAYMENT_CAPTURED, $captureTime, $dimensions);
     }
 
     protected function getDefaultDimentions(Entity $payment)
@@ -140,6 +142,7 @@ class Metric extends Base\Core
     protected function getPaymentCapturedDimensions(Entity $payment)
     {
         $dimensions = [
+            self::LABEL_PAYMENT_AUTO_CAPTURED => $payment->getAutoCaptured(),
         ];
 
         return $dimensions;
