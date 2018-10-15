@@ -13,7 +13,7 @@ export default ({ entity, mode, updateEntity }) => {
   function retryRefund(body) {
     return adminPost(`${mode}/refunds/${entity.id}/retry`).then(data => {
       if (data) {
-        notifySuccess('Refund is successful');
+        notifySuccess('Refund retry request is successful');
         setTimeout(() => window.location.reload(), 1500);
       }
     });
@@ -46,7 +46,7 @@ export default ({ entity, mode, updateEntity }) => {
   return (
     <div class="refund-actions">
       <ShowWhen permission="retry_refund_failed">
-        {entity.status === 'failed' && (
+        {((entity.status === 'created') || (entity.status === 'failed')) && (
           <AsyncButton
             class="btn btn-default text-primary"
             pendingClass="btn btn-default text-primary btn-pending"
