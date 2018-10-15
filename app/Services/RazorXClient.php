@@ -18,9 +18,6 @@ class RazorXClient
     const ENVIRONMENT     = 'environment';
     const MODE            = 'mode';
 
-    // Key for variant in request headers
-    const VARIANT_HEADER  = 'X-RazorX-Variant';
-
     /**
      * The default case to be returned so that the old flow is taken
      * when the featureFlag is not to be applied to merchant or the
@@ -71,7 +68,7 @@ class RazorXClient
             return $variant;
         }
 
-        $this->getVariantFromCookieOrHeadersIfSet($id, $featureFlag, $mode);
+        $this->getVariantFromCookieIfSet($id, $featureFlag, $mode);
 
         $variant = $this->getVariant();
 
@@ -104,31 +101,25 @@ class RazorXClient
         $this->setVariant($variant);
     }
 
-    protected function getVariantFromCookieOrHeadersIfSet(string $id, string $featureFlag, string $mode)
+    protected function getVariantFromCookieIfSet(string $id, string $featureFlag, string $mode)
     {
         // Check in the cookie first, in case the request is coming from a browser.
-        $variantKey = $this->getVariantHeaderKey($id, $featureFlag, $mode);
+        $variantKey = 'razorx';
 
         $variant = Request::cookie($variantKey);
 
         // Check headers if not found in cookie.
-        if (empty($variant) === true)
+        if (empty($variant) === false)
         {
-            $variantArray = json_decode(base64_decode(Request::header(self::VARIANT_HEADER)), true);
+            $variantArray = json_decode($variant, true);
 
-            $variant = $variantArray[$variantKey] ?? null;
+            $variant = $variantArray[$featureFlag] ?? null;
         }
 
         if (empty($variant) === false)
         {
             $this->setVariant($variant);
         }
-    }
-
-    protected function getVariantHeaderKey(string $id, string $featureFlag, string $mode)
-    {
-        // TODO: Decide on this key structure
-        return 'razorx_' . $id . '_' . $featureFlag . '_' . $this->env . '_' . $mode;
     }
 
     protected function getVariant()
