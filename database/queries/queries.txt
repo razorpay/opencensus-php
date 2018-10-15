@@ -4358,6 +4358,11 @@ ALTER TABLE upi
 ALTER TABLE merchant_details
     ADD COLUMN activation_flow VARCHAR (255) AFTER activation_status;
 
+# adds processedAt column for refunds (renaming the existing column 'reference5')
+ALTER TABLE refunds
+    CHANGE COLUMN reference5 processed_at INT DEFAULT NULL AFTER last_attempted_at,
+    ADD INDEX refunds_processed_at_index (`processed_at`);
+    
 Alter table refunds
     CHANGE reference7 settled_by VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;

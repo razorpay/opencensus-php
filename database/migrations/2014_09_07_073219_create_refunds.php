@@ -74,6 +74,9 @@ class CreateRefunds extends Migration
             $table->integer(Refund::LAST_ATTEMPTED_AT)
                   ->nullable();
 
+            $table->integer(Refund::PROCESSED_AT)
+                  ->nullable();
+
             $table->string(Refund::REFERENCE1)
                   ->nullable();
 
@@ -84,9 +87,6 @@ class CreateRefunds extends Migration
                   ->nullable();
 
             $table->tinyInteger(Refund::REFERENCE4)
-                  ->nullable();
-
-            $table->integer(Refund::REFERENCE5)
                   ->nullable();
 
             $table->integer(Refund::REFERENCE6)
@@ -114,6 +114,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::ATTEMPTS);
             $table->index(Refund::CREATED_AT);
             $table->index(Refund::LAST_ATTEMPTED_AT);
+            $table->index(Refund::PROCESSED_AT);
             $table->index(Refund::REFERENCE1);
             $table->index(Refund::UPDATED_AT);
             $table->index([Refund::MERCHANT_ID, Refund::CREATED_AT]);
