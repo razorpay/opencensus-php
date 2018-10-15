@@ -6,11 +6,12 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
+
 return [
     'testMerchantActivationCategoriesResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/v1/merchant/activation/business_categories',
+            'url'    => '/merchant/activation/business_categories',
         ],
         'response' => [
             'content'     => [
@@ -852,7 +853,7 @@ return [
     'testMerchantActivationCategoriesResponseForNonAdminAuth' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/v1/merchant/activation/business_categories',
+            'url'    => '/merchant/activation/business_categories',
         ],
         'response' => [
             'content'     => [
@@ -900,14 +901,16 @@ return [
                 'business_category'    => 'services',
                 'business_subcategory' => 'event_planning',
                 'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
             ],
         ],
         'response'    => [
             'content' => [
                 'contact_email'                    => "test@razorpay.com",
                 'promoter_pan'                     => "ABCDE0000Z",
-                'promoter_pan_name'                => "John Doe",
                 'gstin'                            => null,
                 'p_gstin'                          => null,
                 'business_category'                => "services",
@@ -924,9 +927,7 @@ return [
                         "bank_account_name",
                         "bank_account_number",
                         "bank_branch_ifsc",
-                        "business_dba",
                         "business_international",
-                        "business_name",
                         "business_operation_address",
                         "business_operation_city",
                         "business_operation_pin",
@@ -937,15 +938,64 @@ return [
                         "business_registered_city",
                         "business_registered_pin",
                         "business_registered_state",
-                        "business_type",
                         "contact_mobile",
                         "contact_name",
                         "promoter_address_url",
                     ],
-                    'activation_progress' => 9,
+                    'activation_progress' => 18,
                 ],
                 'can_submit'                       => false,
                 'activated'                        => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testUpdateActivationFlow' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testUpdateCategoryDetails' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "mutual_fund",
+                'can_submit'           => false,
             ],
         ],
         'status_code' => 200,
@@ -959,7 +1009,10 @@ return [
                 'business_category'    => 'services',
                 'business_subcategory' => 'event_planning',
                 'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
             ],
         ],
         'response'  => [
@@ -975,5 +1028,31 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
         ]
+    ],
+
+    'testL1ResubmissionForBlacklist' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => "ABCDE0000Z",
+                'business_category'    => "financial_services",
+                'business_subcategory' => "accounting",
+                'can_submit'           => false,
+                //'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
     ],
 ];

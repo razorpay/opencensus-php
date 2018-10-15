@@ -356,6 +356,8 @@ class Verify extends Base\Core
 
                 $notApplicable++;
 
+                $this->releasePaymentAfterVerify($payment);
+
                 continue;
             }
 

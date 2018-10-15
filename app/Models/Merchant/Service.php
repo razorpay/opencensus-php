@@ -1277,7 +1277,7 @@ class Service extends Base\Service
 
         return [
             $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.3
+            $key2 => Cache::get($key2) ?? 0.2
         ];
     }
 
