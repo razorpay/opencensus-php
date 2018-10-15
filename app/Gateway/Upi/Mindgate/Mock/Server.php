@@ -193,11 +193,13 @@ class Server extends Base\Mock\Server
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
         $status = Status::SUCCESS;
+        $respCode = '00';
 
         switch ($payment['vpa'])
         {
             case 'failed@hdfcbank':
                 $status = Status::FAILED;
+                $respCode = 'ZA';
                 break;
         }
 
@@ -208,7 +210,7 @@ class Server extends Base\Mock\Server
             '2017:12:01 00:00:02',
             $status,
             'Transaction success',
-            '00',
+            $respCode,
             // Approval Number
             random_integer(5),
             $payment['vpa'],
@@ -330,6 +332,7 @@ class Server extends Base\Mock\Server
         if ($payment['vpa'] === 'failedrefund@hdfcbank')
         {
             $response[4] = Status::FAILED;
+            $response[6] = 'BT';
         }
 
         $this->content($response, 'refund');

@@ -5,6 +5,7 @@ namespace RZP\Models\Admin;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -200,7 +201,6 @@ class Service extends Base\Service
     /**
      * @param array $input
      * @return array
-     * @throws Exception\ServerErrorException
      *
      * Set a single redis key.
      *
