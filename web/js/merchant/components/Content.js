@@ -250,7 +250,9 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}
-            additionalCondition={user => user.isAllowedView('profile')}
+            additionalCondition={user =>
+              user.isAllowedView('profile') || !user.userRole
+            }
           />
           <ShowWhenRoute
             path="/addfunds"
