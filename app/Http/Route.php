@@ -2281,6 +2281,7 @@ final class Route
         ],
 
         'subscriptions' => [
+            'payment_fetch_multiple',
             'invoice_create',
             'invoice_fetch',
             'customer_fetch_by_id',
