@@ -32,6 +32,7 @@ export default ({
       }
     } else if (isBlacklistFlow) {
       status = possibleStatuses.blocked;
+      title += ' (Locked)';
       content = 'We currently do not support your business model';
     }
   } else {

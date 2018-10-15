@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
-export default ({ onClose }) => {
+export default ({ onClose, onBack }) => {
   return (
     <ModalMask>
       <Modal className="products-suite-modal" onClose={onClose}>
         <div className="product-suite">
           <h1>
-            <i class="i i-arrow-back cursor-pointer" onClick={onClose} />
+            <i class="i i-arrow-back cursor-pointer" onClick={onBack} />
             <span>Our Product Suite</span>
           </h1>
           <p>

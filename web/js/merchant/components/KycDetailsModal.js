@@ -18,7 +18,7 @@ export default ({ onClose }) => {
           For your business model, you need to give a few more details to
           activate your account
         </p>
-        <Link to="/activation" className="btn btn-primary">
+        <Link to="/activation" className="btn btn-primary" onClick={onClose}>
           Give Details
         </Link>
       </Modal>

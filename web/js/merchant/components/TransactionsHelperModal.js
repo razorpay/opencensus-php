@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -8,9 +8,16 @@ import Button from 'component/Button';
 export default class InstantActivationSuccess extends Component {
   constructor(props) {
     super(props);
+
+    this.handleProductsView = this.handleProductsView.bind(this);
   }
 
-  onCloseModal() {}
+  handleProductsView() {
+    const { onClose, showProductsModal, showTransactionsModal } = this.props;
+
+    onClose();
+    showProductsModal(() => showTransactionsModal(this.props.isKLA));
+  }
 
   render() {
     const { onClose, isKLA } = this.props;
@@ -28,18 +35,38 @@ export default class InstantActivationSuccess extends Component {
           <modal-body>
             <Group>
               {!isKLA && (
-                <GroupItem>
-                  <p>
-                    <b>Accept payments on your website</b>
-                  </p>
-                  <p>
-                    Integrate Razorpay onto your website. Want to know how to
-                    integrate?
-                  </p>
-                  <Button.Secondary>Read Integration Docs</Button.Secondary>
-                </GroupItem>
+                <Fragment>
+                  <GroupItem>
+                    <p>
+                      <img src="/dist/css/assets/symbols/card.svg" />
+                    </p>
+                    <p>
+                      <b>Accept payments on your website</b>
+                    </p>
+                    <p>
+                      Integrate Razorpay onto your website. Want to know how to
+                      integrate?
+                    </p>
+                    <a
+                      className="Button--secondary Button active"
+                      target="_blank"
+                      href="https://docs.razorpay.com/"
+                      onClick={onClose}
+                    >
+                      Read Integration Docs
+                    </a>
+                  </GroupItem>
+                  <GroupItem className="vertical-splitter">
+                    <div />
+                  </GroupItem>
+                </Fragment>
               )}
               <GroupItem>
+                <p>
+                  <img src="/dist/css/assets/symbols/sc.svg" />
+                  <img className="m-l" src="/dist/css/assets/symbols/pl.svg" />
+                  <img className="m-l" src="/dist/css/assets/symbols/inv.svg" />
+                </p>
                 <p>
                   <b>Accept payments using products</b>
                 </p>
@@ -47,7 +74,9 @@ export default class InstantActivationSuccess extends Component {
                   You can receive Payment through Payment Links, Invoices &
                   Smart Collect
                 </p>
-                <Button.Secondary>Read Integration Docs</Button.Secondary>
+                <Button.Secondary onClick={this.handleProductsView}>
+                  View products
+                </Button.Secondary>
               </GroupItem>
             </Group>
           </modal-body>

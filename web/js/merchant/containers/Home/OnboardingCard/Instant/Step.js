@@ -8,9 +8,10 @@ const loading = 'loading',
   progress = 'progress',
   locked = 'locked',
   done = 'done',
-  active = 'active';
+  active = 'active',
+  blocked = 'blocked';
 
-const possibleStatuses = { loading, progress, locked, done, active };
+const possibleStatuses = { loading, progress, locked, done, active, blocked };
 
 class StepTitle extends Component {
   constructor(props) {

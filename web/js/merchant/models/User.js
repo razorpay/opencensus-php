@@ -150,7 +150,7 @@ export default class User {
       },
 
       get isGraylistFlow() {
-        return true || this.activation_flow === 'graylist';
+        return this.activation_flow === 'greylist';
       },
 
       get isL1Submitted() {

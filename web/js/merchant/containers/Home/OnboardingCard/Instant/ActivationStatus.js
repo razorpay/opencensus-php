@@ -59,8 +59,15 @@ export default ({
     }
   } else if (isBlacklistFlow) {
     status = possibleStatuses.blocked;
-    content =
-      'We do not support your selected business model. In case you entered it wrong, change it here';
+    content = (
+      <span>
+        We do not support your selected business model. In case you entered it
+        wrong, change it{' '}
+        <Link to="/activation" className="btn-link">
+          here
+        </Link>
+      </span>
+    );
   }
 
   return (

@@ -18,22 +18,40 @@ export default class OnboardingCardInstant extends Component {
       showTransactionsHelper: false,
     };
 
+    this.onCloseProductsModal = null;
     this.showProductsModal = this.showProductsModal.bind(this);
     this.hideProductsModal = this.hideProductsModal.bind(this);
     this.showTransactionsModal = this.showTransactionsModal.bind(this);
     this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
+    this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
   }
 
-  showProductsModal() {
+  showProductsModal(onCloseCb) {
+    if (typeof onCloseCb === 'function') {
+      this.onCloseProductsModal = onCloseCb;
+    }
+
     this.setState({
       showProducts: true,
     });
   }
 
-  hideProductsModal() {
-    this.setState({
-      showProducts: false,
-    });
+  hideProductsModal(onHide) {
+    this.setState(
+      {
+        showProducts: false,
+      },
+      typeof onHide === 'function' ? onHide : void 0
+    );
+  }
+
+  handleProductsModalBack() {
+    this.hideProductsModal(
+      () => (
+        this.onCloseProductsModal && this.onCloseProductsModal(),
+        (this.onCloseProductsModal = null)
+      )
+    );
   }
 
   showTransactionsModal(isKLA) {
@@ -78,15 +96,22 @@ export default class OnboardingCardInstant extends Component {
 
     return (
       <div className="onboarding-card-instant">
-        {showProducts && <ProductsModal onClose={this.hideProductsModal} />}
+        {showProducts && (
+          <ProductsModal
+            onClose={this.hideProductsModal}
+            onBack={this.handleProductsModalBack}
+          />
+        )}
         {showTransactionsHelper && (
           <TransactionsModal
             onClose={this.hideTransactionsModal}
             isKLA={isKLA}
+            showProductsModal={this.showProductsModal}
+            showTransactionsModal={this.showTransactionsModal}
           />
         )}
         <div className="onboarding-card-instant-content">
-          <div className="onboarding-steps clearfix">
+          <div className="onboarding-steps">
             <TestModeCard {...commonModeCardProps} />
             <ActivationStatusCard {...activationCardProps} />
             <LiveModeCard

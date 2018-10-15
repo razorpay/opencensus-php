@@ -157,6 +157,7 @@ export default class ActivationWizard extends React.Component {
       activation_progress,
       activated,
       activation_status,
+      activation_flow,
       submitted,
     } = data;
 
@@ -166,6 +167,7 @@ export default class ActivationWizard extends React.Component {
       activation_progress,
       activated,
       activation_status,
+      activation_flow,
       submitted: +submitted,
     }));
 
@@ -313,6 +315,7 @@ export default class ActivationWizard extends React.Component {
                     type="button"
                     className="btn btn-primary submit-btn"
                     onClick={this.submitForm}
+                    disabled={!this.tabValidity()}
                     pendingText="Submitting..."
                   >
                     Activate Account
