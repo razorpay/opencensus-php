@@ -180,11 +180,15 @@ export default class CreateNewAuthLinkContainer extends Component {
             <Input.Textarea
               name="description"
               label="Description"
-              description="This will be visible to customer"
+              description="Payment / Authentication Description"
               required
             />
 
-            <Input name="customerName" label="Customer Name" />
+            <Input
+              name="customerName"
+              label="Customer Name"
+              description="Name of Customer"
+            />
 
             <Input.Group
               class="InputGroup--inline"
@@ -199,6 +203,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                   size="half_big"
                   required
                   validator={val => !isPhone(val) && 'Invalid Phone'}
+                  description="Phone number of Customer"
                 />
                 <Input
                   name="customerEmail"
@@ -207,6 +212,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                   size="half_big"
                   required
                   validator={val => !isEmail(val) && 'Invalid Email'}
+                  description="Email of Customer"
                 />
               </div>
             </Input.Group>
@@ -225,7 +231,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               name="receipt"
               size="half_big"
               label="Receipt No."
-              description="This should be unique"
+              description="Receipt for Customer"
             />
 
             <Input.Group label="Expiry" class="InputGroup--vTop">
@@ -246,6 +252,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 description="On this date link is expired"
                 disabled={!!Number(this.state.hasNoExpiry)}
                 onChange={this.handleDateChange('expireAt')}
+                description="Expiry of Authentication Link"
               />
             </Input.Group>
 
@@ -255,6 +262,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               name="mandateMethod"
               options={methods}
               class="Input--vTop"
+              description="Method to be used for Auth Link"
             />
 
             {method === 'emandate' && (
@@ -265,12 +273,14 @@ export default class CreateNewAuthLinkContainer extends Component {
                       name="mandateBankName"
                       size="half_big"
                       placeholder="Bank Name"
+                      description="Preferred bank for authentication"
                     />
 
                     <Input
                       name="mandateBankAccountIFSC"
                       size="half_big"
                       placeholder="IFSC"
+                      description="IFSC on the Bank Account"
                     />
                   </div>
                 </Input.Group>
@@ -283,6 +293,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                       name="mandateAuthType"
                       options={authTypes}
                       size="half_big"
+                      description="Preferred Authentication Method"
                     />
 
                     <Input.Select
@@ -290,6 +301,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                       options={accountTypes}
                       size="half_big"
                       disabled={this.state.mandateAuthType !== 'aadhar'}
+                      description="Type of Bank Account"
                       value={
                         this.state.mandateAuthType === 'netbanking'
                           ? 'savings'
@@ -314,7 +326,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                     placement="topLeft"
                     size="half_big"
                     addonAfter={<i class="i i-date-range" />}
-                    description="Need to add help text here"
+                    description="Expiry of Token"
                     onChange={this.handleDateChange('mandateExpireAt')}
                     disabled={!!Number(this.state.tokenHasNoExpiry)}
                   />
@@ -323,10 +335,10 @@ export default class CreateNewAuthLinkContainer extends Component {
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
-                  description="Need to add help text here"
                   addonBefore="₹"
                   size="half_big"
                   validator={checkIfAmount}
+                  description="Max Amount for Mandate"
                 />
               </Fragment>
             )}
@@ -338,7 +350,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 type="tel"
                 placeholder="0.00"
                 addonBefore="₹"
-                description="Enter amount you want to charge"
+                description="Amount of Auth Link Payment"
                 required
                 validator={checkIfAmount}
               />
