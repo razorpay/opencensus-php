@@ -15,8 +15,7 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import { updateFeatures } from 'merchant/modules/config';
 
-const heading =
-  'Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with Razorpay Route.';
+const heading = '';
 
 @connect(
   state => {
@@ -28,6 +27,19 @@ const heading =
   { updateFeatures, showNotification, ...ModalActions }
 )
 export default class MarketplaceContainer extends Component {
+  constructor(props) {
+    super(props);
+
+    this.prefix = '';
+    if (props.user.isOrgRZP()) {
+      this.prefix = 'Razorpay ';
+    }
+
+    this.heading = `Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with ${
+      this.prefix
+    }Route.`;
+  }
+
   enableFeature = () => {
     var data = {
       features: {
@@ -40,7 +52,7 @@ export default class MarketplaceContainer extends Component {
       .then(res => {
         this.props.showNotification({
           type: 'success',
-          message: 'Razorpay Route has been enabled!',
+          message: `${this.prefix}Route has been enabled!`,
         });
         setTimeout(() => location.reload());
       })
@@ -57,7 +69,7 @@ export default class MarketplaceContainer extends Component {
       component: (
         <FeatureOnboardingModal
           onClose={this.props.closeModal}
-          heading="Razorpay Route"
+          heading={`${this.prefix}Route`}
           description={heading}
           formType="marketplace"
           isTestMode={false}
@@ -73,7 +85,7 @@ export default class MarketplaceContainer extends Component {
     if (!featureEnabled) {
       return (
         <FeatureOnboarding
-          heading="Razorpay Route"
+          heading={`${this.prefix}Route`}
           description={heading}
           formType="marketplace"
           isTestMode={this.props.mode === 'test'}
@@ -86,7 +98,7 @@ export default class MarketplaceContainer extends Component {
       <div>
         {this.props.mode === 'test' && (
           <ActivationBanner
-            productName="Razorpay Route"
+            productName={`${this.prefix}Route`}
             productDocs="https://razorpay.com/docs/route"
             feature="marketplace"
             symbol="route"

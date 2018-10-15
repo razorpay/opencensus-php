@@ -127,6 +127,7 @@ export default class OnBoarding extends Component {
       formType,
       enableFeatureInTestMode,
       isTestMode,
+      user,
     } = this.props;
 
     const currentForm = FORM_TYPE[formType];
@@ -224,7 +225,7 @@ export default class OnBoarding extends Component {
                     </div>
                   ) : (
                     <div class="m-t">
-                      {heading === 'Razorpay Subscriptions' ? (
+                      {heading.indexOf('Subscriptions') > -1 ? (
                         <span>
                           We will review your request and get back to you.
                         </span>

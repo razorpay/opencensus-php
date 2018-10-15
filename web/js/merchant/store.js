@@ -13,3 +13,7 @@ export function getMode() {
 export function getOrg() {
   return store.getState().session.org;
 }
+
+export function getUser() {
+  return store.getState().session.user;
+}

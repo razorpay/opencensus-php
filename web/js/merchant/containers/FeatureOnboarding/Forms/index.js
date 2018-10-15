@@ -1,8 +1,17 @@
+import store from 'merchant/store';
+
 import RouteForm from './Routes';
 import SubscriptionsForm from './Subscriptions';
 import VirtualAccountsForm from './VirtualAccounts';
 
 import SubscriptionsPreStep from '../PreStepForms/Subscriptions';
+
+const user = store.getState().getUser();
+
+let prefix = '';
+if (user.isOrgRZP()) {
+  prefix = 'Razorpay';
+}
 
 const FORM_TYPE = {
   marketplace: {
@@ -11,8 +20,7 @@ const FORM_TYPE = {
       docs: 'https://razorpay.com/docs/route',
       knowMore: 'https://razorpay.com/route',
     },
-    formText:
-      "We'd require the following details to enable Razorpay Route on your account.",
+    formText: `We'd require the following details to enable ${prefix} Route on your account.`,
   },
 
   subscriptions: {
@@ -26,8 +34,7 @@ const FORM_TYPE = {
       docs: 'https://razorpay.com/docs/subscriptions',
       knowMore: 'https://razorpay.com/subscriptions',
     },
-    formText:
-      "We'd require the following details to enable Razorpay Subscriptions on your account.",
+    formText: `We'd require the following details to enable ${prefix} Subscriptions on your account.`,
   },
 
   virtual_accounts: {
@@ -36,8 +43,7 @@ const FORM_TYPE = {
       docs: 'https://razorpay.com/docs/smart-collect',
       knowMore: 'https://razorpay.com/smartcollect',
     },
-    formText:
-      "We'd require the following details to enable Razorpay Smart Collect on your account.",
+    formText: `We'd require the following details to enable ${prefix} Smart Collect on your account.`,
   },
 };
 
