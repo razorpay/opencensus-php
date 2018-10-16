@@ -197,7 +197,8 @@ export function copyPricingEntity(rules) {
       ...data
     } = rule;
 
-    data.international = data.international ? 1 : 0;
+    data.international =
+      data.international && data.international !== '0' ? 1 : 0;
     ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'].forEach(elem => {
       if (data[elem] || parseInt(data[elem]) === 0) {
         data[elem] *= 100;
