@@ -31,7 +31,6 @@ export default {
     'finance',
     'support',
   ],
-  plans: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   addons: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   virtual_accounts: ['owner', 'admin', 'manager', 'operations', 'finance'],
   customers: ['owner', 'admin', 'manager'],

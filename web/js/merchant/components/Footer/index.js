@@ -7,12 +7,14 @@ export default () => {
 
   return (
     <React.Fragment>
-      <img
-        src="/img/branding/powered-by-razorpay-dashboard.png"
-        class="rzp-branding-logo"
-        alt="Powered by Razorpay"
-        style={{ marginLeft: 14 }}
-      />
+      {!user.isOrgRZP && (
+        <img
+          src="/img/branding/powered-by-razorpay-dashboard.png"
+          class="rzp-branding-logo"
+          alt="Powered by Razorpay"
+          style={{ marginLeft: 14 }}
+        />
+      )}
       <footer class="pagefooter">
         © {user.isOrgRZP ? '2017' : '2018'} Copyright Razorpay ·{' '}
         <u>

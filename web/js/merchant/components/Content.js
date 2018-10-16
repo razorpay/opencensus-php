@@ -223,8 +223,16 @@ export default class Content extends Component {
             featureEnabled="paymentpages"
             additionalCondition={user => user.isAllowedView('payment_pages')}
           />
-          <Route path="/subscriptions" component={Subscriptions} />
-          <Route path="/plans" component={Subscriptions} />
+          <ShowWhenRoute
+            path="/subscriptions"
+            component={Subscriptions}
+            additionalCondition={user => user.isAllowedView('subscriptions')}
+          />
+          <ShowWhenRoute
+            path="/plans"
+            component={Subscriptions}
+            additionalCondition={user => user.isAllowedView('subscriptions')}
+          />
           {/*<Route path="/addons" component={Subscriptions} />*/}
           <Route
             path="/customers"
@@ -238,8 +246,17 @@ export default class Content extends Component {
             )}
           />
 
-          <Route path="/route" component={Marketplace} />
-          <Route path="/virtualaccounts" component={VirtualAccounts} />
+          <ShowWhenRoute
+            path="/route"
+            component={Marketplace}
+            additionalCondition={user => user.isAllowedView('marketplace')}
+          />
+
+          <ShowWhenRoute
+            path="/virtualaccounts"
+            component={VirtualAccounts}
+            additionalCondition={user => user.isAllowedView('virtual_accounts')}
+          />
 
           <ShowWhenRoute
             path="/reports"
