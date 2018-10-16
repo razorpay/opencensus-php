@@ -35,7 +35,7 @@
             <div class="text-center">For any help or assistance, feel free to <a href="https://razorpay.com/contact/" target="_blank" ng-click="trackContactUsClick()"><u>Contact us</u></a></div>
           </div>
         </div>
-        <div class="login-messaging" ng-if="isOrgRZP">
+        <div class="login-messaging" ng-if="isOrgRZP === true">
           <img src="img/signup-early-access.svg" alt="Early access products" style="margin-bottom: 4px" />
 
           <div class="messaging-text">
@@ -55,7 +55,7 @@
           <a href="https://razorpay.com/invoices/" target="_blank" class="messaging-link">Learn More <span>→</span></a>
 
         </div>
-        <div class="login-messaging" ng-if="!isOrgRZP">
+        <div class="login-messaging" ng-if="isOrgRZP === false">
           <div class="messaging-heading" style="margin-top: 8px">
             Powered by Razorpay and {{organization.business_name}}
           </div>
