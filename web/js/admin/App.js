@@ -55,6 +55,7 @@ import OperationsDashboard from 'admin/operations/List';
 import AsyncButton from 'ui/AsyncButton';
 
 import fetch, { adminFetch } from 'common/fetch';
+import { isOrgHDFC } from 'admin/user';
 
 @withRouter
 export default class App extends Component {
@@ -135,9 +136,12 @@ export default class App extends Component {
 
               <Route path="/invites" component={InvitesList} />
 
-              <Route path="/activation" component={ActivationList} />
-
-              <Route path="/operations" component={OperationsDashboard} />
+              {!isOrgHDFC() && (
+                <Route path="/activation" component={ActivationList} />
+              )}
+              {!isOrgHDFC() && (
+                <Route path="/operations" component={OperationsDashboard} />
+              )}
 
               <Redirect to="/merchants" />
             </Switch>
@@ -170,16 +174,23 @@ export default class App extends Component {
           />
           {links.map((linkGroup, i) => (
             <div key={i}>
-              {linkGroup.map((l, i) => (
-                <MainNavLink
-                  key={i}
-                  to={l[1]}
-                  permission={l[2]}
-                  icon={l[3] || 'layers'}
-                >
-                  {l[0]}
-                </MainNavLink>
-              ))}
+              {linkGroup.map((l, i) => {
+                // For HDFC, don't render HDFC's restricted routes. (FE only solution. BE doesn't support.)
+                if (isOrgHDFC() && HDFC_restrictRoutes.indexOf(l[1]) > -1) {
+                  return null;
+                }
+
+                return (
+                  <MainNavLink
+                    key={i}
+                    to={l[1]}
+                    permission={l[2]}
+                    icon={l[3] || 'layers'}
+                  >
+                    {l[0]}
+                  </MainNavLink>
+                );
+              })}
             </div>
           ))}
         </aside>
@@ -226,3 +237,5 @@ const links = [
     ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
 ];
+
+const HDFC_restrictRoutes = ['/activation', '/operations'];

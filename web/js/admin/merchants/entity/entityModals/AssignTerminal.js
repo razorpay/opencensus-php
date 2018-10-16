@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 
+import { isOrgHDFC } from 'admin/user';
+
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
@@ -57,6 +59,14 @@ const gatewayMapping = {
   bt_dashboard: 'Bank Transfer - Dashboard (Test)',
 };
 
+const HDFC_gatewayMapping = {
+  hdfc: 'HDFC',
+  wallet_payzapp: 'Payzapp',
+  upi_hulk: 'UPI/HULK',
+  upi_mindgate: 'UPI/Mindgate',
+  cybersource: 'Cybersource',
+};
+
 const gatewayAcquirerMapping = {
   hdfc: 'HDFC',
   axis: 'Axis',
@@ -66,7 +76,11 @@ const gatewayAcquirerMapping = {
   fss: 'FSS',
 };
 
-const terminalTypes = [
+const HDFC_gatewayAcquirerMapping = {
+  hdfc: 'HDFC',
+};
+
+const terminalTypesMapping = [
   { value: 'non_recurring', name: 'Non Recurring' },
   { value: 'recurring_3ds', name: 'Recurring 3DS' },
   { value: 'recurring_non_3ds', name: 'Recurring Non 3DS' },
@@ -79,6 +93,18 @@ const terminalTypes = [
   { value: 'pin', name: 'PIN' },
   { value: 'bharat_qr', name: 'Bharat QR' },
   { value: 'debit_recurring', name: 'Debit Recurring' },
+  { value: 'direct_settlement', name: 'Direct Settlement' },
+];
+
+const HDFC_terminalTypesMapping = [
+  { value: 'non_recurring', name: 'Non Recurring' },
+  { value: 'ivr', name: 'IVR' },
+  { value: 'numeric_account', name: 'Numeric Account' },
+  { value: 'alpha_numeric_account', name: 'Alpha Numeric Account' },
+  { value: 'no_2fa', name: 'No 2FA' },
+  { value: 'pay', name: 'UPI Pay' },
+  { value: 'collect', name: 'UPI Collect' },
+  { value: 'bharat_qr', name: 'Bharat QR' },
   { value: 'direct_settlement', name: 'Direct Settlement' },
 ];
 
@@ -161,6 +187,16 @@ export default class TerminalForm extends Component {
 
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
+
+    const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
+    const gatewayAcquirers = isOrgHDFC()
+      ? HDFC_gatewayAcquirerMapping
+      : gatewayAcquirerMapping;
+
+    const terminalTypes = isOrgHDFC()
+      ? HDFC_terminalTypesMapping
+      : terminalTypesMapping;
+
     let selectedTypes = [];
     if (entity && entity.type) {
       selectedTypes = entity.type.map(elem => ({
@@ -202,9 +238,9 @@ export default class TerminalForm extends Component {
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
           >
-            {Object.keys(gatewayMapping).map(key => (
+            {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
-                {gatewayMapping[key]}
+                {gateways[key]}
               </option>
             ))}
           </SelectField>
@@ -215,9 +251,9 @@ export default class TerminalForm extends Component {
             defaultValue={''}
           >
             <option value="">NA</option>
-            {Object.keys(gatewayAcquirerMapping).map(key => (
+            {Object.keys(gatewayAcquirers).map(key => (
               <option key={key} value={key}>
-                {gatewayAcquirerMapping[key]}
+                {gatewayAcquirers[key]}
               </option>
             ))}
           </SelectField>
@@ -393,6 +429,7 @@ export default class TerminalForm extends Component {
           <Field label="Visa mpan" name="visa_mpan" />
           <Field label="Rupay mpan" name="rupay_mpan" />
           <Field label="VPA" name="vpa" />
+
           <Field label="Account Number" name="account_number" />
 
           <div class="types-select">

@@ -63,7 +63,9 @@ export default class CongfigurationContainer extends Component {
         ) : (
           <div>
             <CheckoutTheme form="configForm" onSave={this.saveConfig} />
-            <FlashCheckout />
+            {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
+              <FlashCheckout />
+            )}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}

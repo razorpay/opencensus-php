@@ -16,3 +16,7 @@ export function isSuperAdmin() {
     return true;
   }
 }
+
+export function isOrgHDFC() {
+  return org.custom_code === 'hdfc';
+}

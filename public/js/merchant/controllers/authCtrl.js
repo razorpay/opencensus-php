@@ -53,6 +53,7 @@ app
         $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
+        $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
       });
       $scope.forms = {};
 

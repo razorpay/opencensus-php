@@ -46,7 +46,7 @@ export default ({ entity, mode, updateEntity }) => {
   return (
     <div class="refund-actions">
       <ShowWhen permission="retry_refund_failed">
-        {((entity.status === 'created') || (entity.status === 'failed')) && (
+        {(entity.status === 'created' || entity.status === 'failed') && (
           <AsyncButton
             class="btn btn-default text-primary"
             pendingClass="btn btn-default text-primary btn-pending"
