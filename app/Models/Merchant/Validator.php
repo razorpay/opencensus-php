@@ -109,6 +109,12 @@ class Validator extends Base\Validator
         'merchant_ids.*' => 'required|string|filled|max:14'
     ];
 
+    protected static $bulkAssignScheduleRules = [
+        'input'          => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14',
+    ];
+
     protected static $oauthMailRules = [
         'client_id'    => 'required|alpha_num|size:14',
         'user_id'      => 'required|alpha_num|size:14',

@@ -1142,4 +1142,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkAssignSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignSchedule($input);
+
+        return ApiResponse::json($response);
+    }
 }

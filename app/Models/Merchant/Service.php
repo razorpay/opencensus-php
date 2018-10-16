@@ -508,6 +508,48 @@ class Service extends Base\Service
         return $scheduleTask->toArrayPublic();
     }
 
+    public function bulkAssignSchedule(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_schedule', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        $input       = $input['input'];
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->assignSettlementSchedule($merchantId, $input);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_CREDITS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
     public function migrateMerchantToSettlementSchedules($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
