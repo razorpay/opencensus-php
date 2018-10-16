@@ -22,6 +22,7 @@ export default class ActivationContainer extends Component {
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
     this.setAdditionalModalClass = this.setAdditionalModalClass.bind(this);
+    this.handleNewData = this.handleNewData.bind(this);
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -53,6 +54,10 @@ export default class ActivationContainer extends Component {
 
       return [data, categories];
     });
+  }
+
+  handleNewData(data) {
+    this.setState({ data });
   }
 
   componentWillMount() {
@@ -105,6 +110,7 @@ export default class ActivationContainer extends Component {
         content = (
           <KycForm
             {...commonProps}
+            onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );

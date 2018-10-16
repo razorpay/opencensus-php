@@ -79,7 +79,9 @@ export default class ActivationContainer extends React.Component {
     const { session, accountId } = this.props;
 
     // Update data
-    this.setState({ data });
+    if (this.props.onNewData) {
+      this.props.onNewData(data);
+    }
 
     // Session need not be updated if it's linked account form
     if (accountId) {
