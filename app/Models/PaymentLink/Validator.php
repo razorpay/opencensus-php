@@ -36,11 +36,11 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array|custom',
 
-        Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
-        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
-        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
-        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
-        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
+        Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
 
     protected static $editRules = [
@@ -58,11 +58,11 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array|custom',
 
-        Entity::SETTINGS.'.'.Entity::UDF_SCHEMA                   => 'nullable|json',
-        Entity::SETTINGS.'.'.Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
-        Entity::SETTINGS.'.'.Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
-        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
-        Entity::SETTINGS.'.'.Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
+        Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
     ];
 
     protected static $sendNotificationRules = [
@@ -167,7 +167,7 @@ class Validator extends Base\Validator
         }
 
         // Additionally, validates udf schema
-        $udfSchema = isset($value[Entity::UDF_SCHEMA]) ? json_decode($value[Entity::UDF_SCHEMA], true) : [];
+        $udfSchema = json_decode($value[Entity::UDF_SCHEMA] ?? '{}', true);
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
     }
 

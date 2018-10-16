@@ -420,5 +420,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOTAL_AMOUNT_PAID, ($this->getTotalAmountPaid() + $incrementValue));
     }
 
+    public function setUdfJsonschemaId(string $id)
+    {
+        $this->setAttribute(self::UDF_JSONSCHEMA_ID, $id);
+    }
+
     // -------------------------------------- End Setters -----------------------------
 }

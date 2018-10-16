@@ -663,14 +663,11 @@ class Core extends Base\Core
 
     /**
      * Every payment link could have set of setting associated. Ref: Model\Settings.
-     * This method upserts given input setting for the payment link.
      * @param  Entity $paymentLink
-     * @param  array  $input
+     * @param  array  $settings
      */
-    protected function upsertSettings(Entity $paymentLink, array $input)
+    protected function upsertSettings(Entity $paymentLink, array $settings)
     {
-        $settings = $input[Entity::SETTINGS] ?? [];
-
         if (empty($settings) === false)
         {
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();

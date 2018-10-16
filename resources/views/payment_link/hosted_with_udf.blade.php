@@ -53,7 +53,7 @@
                 maxLength: '10',
                 required: true,
                 description: 'This is the help text of field, present under Input field',
-                _options: {
+                options: {
                   // Optional keyword
                   // cmp: 'Input' // Default field if cmp not present
                   value: 'Initialy dummy name', // keyword dynamically inserted if we have seeding data. In case.
@@ -65,7 +65,7 @@
                 title: 'Customer Contact',
                 // pattern: '^([0-9]){8,}$', // Pattern restricts typing, so even if valid patter, it will not allow user to type anything
                 minLength: 8,
-                _options: {
+                options: {
                   // cmp: 'Input' // Default field for any component of type:string/number/integer is Input
                   icon: {
                     before: 'i-phone',
@@ -79,7 +79,7 @@
                 minimum: '1', // Can be anything (>0) technically
                 maximum: '50000000', // Could be user defined max(technically)/ default for amount that we support
                 pattern: '^[1-9]+(.([0-9]){1,2})?$',
-                _options: {
+                options: {
                   // cmp: 'Input' // Default field for any component of type:string/number/integer is Input
                   padded_text: {
                     before: '₹',
@@ -92,7 +92,7 @@
                 title: 'Some Counter Field',
                 minimum: '2', // Optional
                 maximum: '4', // Required keyword, Product wise defines Stock
-                _options: {
+                options: {
                   cmp: 'Counter', // type:number can be represented as Input.Counter component
                 },
               },
@@ -101,7 +101,7 @@
                 type: 'number',
                 title: 'Dropdown with value as labels',
                 enum: [0, 1, 4], // Empty value shouldn't be allowed. First empty value is auto inserted from UI.
-                _options: {
+                options: {
                   cmp: 'Select', // Default field for type:enum is Select
                   value: 4,
                 },
@@ -111,7 +111,7 @@
                 type: 'string',
                 title: 'Dropdown with custom Labels',
                 enum: ['option_0', 'option_1', 'option_2'],
-                _options: {
+                options: {
                   cmp: 'Select', // Default field for type:enum is Select
                   enum_labels: ['Option Label 0', 'Option Label 1', 'Option Label 2'],
                   // value: 'option_2',
