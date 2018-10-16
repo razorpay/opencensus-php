@@ -68,6 +68,11 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
+        if (isset(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]) === true)
+        {
+            $merchant->setPricingPlan(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]);
+        }
+
         $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
