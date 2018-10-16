@@ -15,14 +15,12 @@ class Report extends Base
 
     protected function getFromHeader()
     {
-        return 'Settlement Alert';
+        return $this->data['header'];
     }
 
     protected function addSubject()
     {
-        $subject = 'Settlement Potential Failures for ' . $this->data['date'];
-
-        $this->subject($subject);
+        $this->subject($this->data['subject']);
 
         return $this;
     }
@@ -34,7 +32,10 @@ class Report extends Base
 
     protected function addAttachments()
     {
-        $this->attach($this->data['file'], ['as' => 'report.csv']);
+        foreach ( $this->data['attachments'] as $file)
+        {
+            $this->attach($file);
+        }
 
         return $this;
     }

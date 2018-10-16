@@ -18,11 +18,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const MYSQL_SIGNED_INT_MIN   = -2147483648;
     const MYSQL_SIGNED_INT_MAX   = 2147483647;
 
+    const MYSQL_SIGNED_BIGINT_MAX = 9223372036854775807;
+
     const INT_PERCENTAGE_MIN     = 0;
     const INT_PERCENTAGE_MAX     = 10000;
 
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
+    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
 
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
@@ -55,6 +57,27 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+
+        //
+        // This should be compared against 1 and not 0 because
+        // preg_match returns either 0 or false in case of failure.
+        //
+        if ($match !== 1)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return true;
+    }
+
+    protected function validateUnsignedId($attribute, $id)
+    {
+        if (is_string($id) === false)
+        {
+            throw new BadRequestValidationFailureException("The $attribute must be a string");
+        }
+
+        $match = preg_match('/[a-zA-Z0-9]{14}\b/', $id);
 
         //
         // This should be compared against 1 and not 0 because

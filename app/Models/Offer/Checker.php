@@ -34,6 +34,7 @@ class Checker extends Base\Core
         Entity::INTERNATIONAL,
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
+        Entity::EMI_DURATIONS,
         self::CARD_USAGE,
     ];
 
@@ -50,15 +51,21 @@ class Checker extends Base\Core
     {
         $this->order = $order;
 
-        // Validates order amount for offer
-        $this->offer->getDiscountedAmount($order->getAmount());
-
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
         return (($offerActive === true) and
                 ($validOfferPeriod === true));
+    }
+
+    public function checkValidityOnOrder(Order\Entity $order): bool
+    {
+        $validOrderAmount = (($this->offer->getMinAmount() === null) or
+                             ($order->getAmount() >= $this->offer->getMinAmount()));
+
+        return (($validOrderAmount === true) and
+                ($this->checkApplicabilityOnOrder($order) === true));
     }
 
     public function checkApplicabilityForPayment(Payment\Entity $payment): bool
@@ -183,6 +190,20 @@ class Checker extends Base\Core
             default:
                 return false;
         }
+    }
+
+    protected function checkEmiDurations()
+    {
+        $emiDurations = $this->offer->getEmiDurations();
+
+        if (empty($emiDurations) === true)
+        {
+            return true;
+        }
+
+        $emiDuration = $this->payment->emiPlan->getDuration();
+
+        return  (in_array($emiDuration, $emiDurations, true));
     }
 
     protected function checkInternational(): bool

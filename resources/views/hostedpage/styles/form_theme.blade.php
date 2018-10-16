@@ -1,5 +1,5 @@
 <?php
-    $primary_text    = '#528FF0';
+    $rzp_prime_color    = '#528FF0';
     $secondary_color = '#6F7691';
     $text_red        = '#F05150';
 ?>
@@ -38,8 +38,8 @@
         line-height: 18px;
     }
 
-    .form-group input:focus {
-        border: 1px solid {{$primary_text}};
+    .form-group input:focus, .form-group select:focus {
+        border: 1px solid {{$rzp_prime_color}};
     }
 
     .form-group select {
@@ -82,6 +82,10 @@
         padding-left: 40px;
     }
 
+    input[name="amount"] {
+        font-weight: bold;
+    }
+
     /* Placeholder style */
     ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
         color: rgba(0,0,0,0.3);
@@ -94,6 +98,21 @@
     }
     :-moz-placeholder { /* Firefox 18- */
         color: rgba(0,0,0,0.3);
+    }
+
+    /* Placeholder style for AMOUNT */
+
+    input[name="amount"]::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        font-weight: bold;
+    }
+    input[name="amount"]::-moz-placeholder { /* Firefox 19+ */
+        font-weight: bold;
+    }
+    input[name="amount"]:-ms-input-placeholder { /* IE 10+ */
+        font-weight: bold;
+    }
+    input[name="amount"]:-moz-placeholder { /* Firefox 18- */
+        font-weight: bold;
     }
 
     @media (max-width: 924px) {
@@ -111,5 +130,5 @@
             margin-left: 0;
         }
     }
-    
+
 </style>

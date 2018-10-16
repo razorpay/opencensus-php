@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiIcici;
+
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
@@ -363,6 +365,7 @@ class UpiIciciGatewayReconTest extends TestCase
                             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
                             'amount'      => $this->payment['amount'],
                             'base_amount' => $this->payment['amount'],
+                            'gateway'     => 'upi_icici',
                         ]);
 
             $transaction = $this->fixtures->create(

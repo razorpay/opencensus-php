@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
@@ -66,6 +67,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
+        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -127,6 +129,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
+        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -384,8 +387,10 @@ class Validator extends Base\Validator
 
     /**
      * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
+     *
      * @param  string $attribute
      * @param  string $receipt
+     *
      * @throws BadRequestValidationFailureException
      */
     public function validateReceipt(string $attribute, string $receipt)
@@ -406,8 +411,6 @@ class Validator extends Base\Validator
      * allowed to be created or not.
      *
      * @return null
-     *
-     * @throws BadRequestException
      */
     public function validateMerchantSpecificData()
     {
@@ -593,23 +596,37 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Invoice is only payable if it's not deleted and is in either
-     * issued or partially_paid state.
-     *
+     * Validates if a invoice is payable against given payment request.
+     * @param  Payment\Entity $payment
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateInvoicePayableForPayment(Payment\Entity $payment)
+    {
+        // Counts total payment attempts
+        $invoice          = $this->entity;
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions       = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, $dimensions);
+
+        $this->validateInvoicePayable();
+    }
+
+    /**
+     * Invoice is only payable if it's not deleted and is in either issued or partially_paid state.
      * @return void
      * @throws BadRequestValidationFailureException
      */
     public function validateInvoicePayable()
     {
         $invoice = $this->entity;
+        $status  = $invoice->getStatus();
 
         if ($invoice->trashed())
         {
             throw new BadRequestValidationFailureException(
                 $invoice->getTypeLabel() . ' is not payable as it is deleted.');
         }
-
-        $status = $invoice->getStatus();
 
         if (in_array($status, [Status::ISSUED, Status::PARTIALLY_PAID], true) === false)
         {

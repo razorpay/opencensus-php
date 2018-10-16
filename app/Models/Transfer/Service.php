@@ -3,8 +3,11 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal;
+use RZP\Models\Transfer;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as EntityConstant;
 
 class Service extends Base\Service
@@ -50,6 +53,19 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
+    public function fetchLinkedAccountReversalsOfTransfer(string $transferId): array
+    {
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+        $transferId = Entity::verifyIdAndStripSign($transferId);
+
+        $merchantId = $this->merchant->getId();
+
+        $reversals = $this->repo->reversal->fetchLaReversalsOfTransfer($transferId, $merchantId);
+
+        return $reversals->toArrayPublic();
+    }
+
     public function create(array $input): array
     {
         $transfer = $this->core->createForMerchant($input, $this->merchant);
@@ -91,5 +107,61 @@ class Service extends Base\Service
         $reversal = (new Reversal\Core)->reverseForTransfer($transfer, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
+    }
+
+    public function fetchLinkedAccountTransfer(string $id): array
+    {
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+        $merchantId = $this->merchant->getId();
+
+        Transfer\Entity::verifyIdAndStripSign($id);
+
+        $relations = ['transfer', 'transfer.recipientSettlement'];
+
+        $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+
+        return $this->createTransferResponseFromPayment($payment);
+    }
+
+    public function fetchLinkedAccountTransfers(array $input): array
+    {
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+        $merchantId = $this->merchant->getId();
+
+        $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
+
+        // fetching by payments fetch to handle notes search.
+        $payments = $this->repo->payment->fetch($input, $merchantId);
+
+        $transfers = $this->createResponse($payments);
+
+        $transfers = new Base\PublicCollection($transfers);
+
+        return $transfers->toArrayWithItems();
+    }
+
+    private function createResponse($payments): array
+    {
+        $transfers = [];
+        foreach ($payments as $payment)
+        {
+            $transferData = $this->createTransferResponseFromPayment($payment);
+
+            $transfers[] = $transferData;
+        }
+
+        return $transfers;
+    }
+
+    private function createTransferResponseFromPayment($payment): array
+    {
+        $result = $payment->toArrayPublic();
+
+        $transferData = $result[Payment\Entity::TRANSFER];
+        $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
+
+        return $transferData;
     }
 }

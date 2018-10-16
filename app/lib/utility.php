@@ -195,6 +195,16 @@ if (! function_exists('flatten_array'))
     }
 }
 
+if (! function_exists('random_string_special_chars'))
+{
+    function random_string_special_chars($length = 1)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyz:';
+
+        return substr(str_shuffle($chars), 0, $length);
+    }
+}
+
 /**
  * We do not check for whether this function is defined already
  * If it is defined already by some other library (like phpunit)
@@ -251,6 +261,78 @@ function is_sequential_array(array $input)
     return array_keys($input) === range(0, count($input) - 1);
 }
 
+/**
+ * This function does array_combine after making both array to the
+ * same size, by slicing the bigger length array to the smaller one
+ *
+ * @param array $headers
+ * @param array $columns
+ * @return array
+ */
+function array_combine_slice(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    $size = ($headersCount > $columnsCount) ? $columnsCount : $headersCount;
+
+    $headers = array_slice($headers, 0, $size);
+    $columns = array_slice($columns, 0, $size);
+
+    return array_combine($headers, $columns);
+}
+
+function array_combine_pad(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    if ($headersCount > $columnsCount)
+    {
+        $extra = $headersCount - $columnsCount;
+
+        for ($i = 0; $i < $extra; $i++)
+        {
+            $columns[] = null;
+        }
+    }
+    // more fields than headers
+    else if ($headersCount < $columnsCount)
+    {
+        $extra = $columnsCount - $headersCount;
+
+        // Needs to start from 1 so that the first
+        // extra field is named as extra_field_1
+        for($i = 1; $i <= $extra; $i++)
+        {
+            $key = 'extra_field_' . $i;
+
+            $headers[] = $key;
+        }
+    }
+
+    return array_combine($headers, $columns);
+}
+
+function array_combine_pad_headers(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    $extra = $columnsCount - $headersCount;
+
+    // Needs to start from 1 so that the first
+    // extra field is named as extra_field_1
+    for($i = 1; $i <= $extra; $i++)
+    {
+        $key = 'extra_field_' . $i;
+
+        $headers[] = $key;
+    }
+
+    return array_combine($headers, $columns);
+}
+
 function upi_uuid($prefix = true)
 {
     $uuid = strtoupper(gen_uuid());
@@ -261,6 +343,13 @@ function upi_uuid($prefix = true)
     }
 
     return $uuid;
+}
+
+function get_human_readable_size($size)
+{
+    $unit= ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
+
+    return round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
 }
 
 function upi_ts() {
@@ -485,8 +574,9 @@ if (! function_exists('multidim_array_unique'))
     /**
      * Sorts the given multi dimensional array based on a key
      *
-     * @param array $array
+     * @param array  $array
      * @param string $key
+     * @param int    $sortOrder
      */
     function sortMultiDimensionalArray(array & $array, string $key, int $sortOrder = SORT_DESC)
     {
@@ -528,5 +618,50 @@ if (! function_exists('amount_format_IN'))
     function amount_format_IN(int $amount = null): string
     {
         return money_format_IN(number_format($amount / 100, 2, '.', ''));
+    }
+}
+
+if (! function_exists('millitime'))
+{
+    /**
+     * Gets current unix timestamp in milliseconds
+     * @return int
+     */
+    function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+}
+
+if (! function_exists('stringify'))
+{
+
+    /**
+     * Stringifies given value, e.g. true -> 'true', 0 -> '0', null -> "null", 10.0 -> "10.0" etc
+     * @param  mixed  $value
+     * @return string
+     */
+    function stringify($value): string
+    {
+        if (is_string($value) === true)
+        {
+            return $value;
+        }
+
+        return json_encode($value);
+    }
+}
+
+if (! function_exists('str_wrap'))
+{
+    /**
+     * Wraps string with given value: Adds the value as prefix and suffix if not already exists
+     * @param  string $value
+     * @param  string $wrap
+     * @return string
+     */
+    function str_wrap(string $value, string $wrap): string
+    {
+        return str_finish(str_start($value, $wrap), $wrap);
     }
 }

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
@@ -15,15 +16,60 @@ use RZP\Models\Merchant\Entity as Merchant;
 
 class Core extends Base\Core
 {
+    const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
         Order $order = null): Entity
     {
-        $virtualAccount = $this->createEntityAndAssociate($merchant);
+        //
+        // VA creation is a bit broken at the moment. Creation requires multiple entities (VA+receivers)
+        // to be committed to the DB, but while building receivers we also need to take a lock on the
+        // generated account number and do a DB query to check for uniqueness. This will require a
+        // refactor to be solved.
+        //
+        // For now, we're simply adding a global lock on VA creation to avoid duplicates being created.
+        //
+        try
+        {
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION,
+                function() use ($input, $merchant, $customer, $order)
+                {
+                    $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                    return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                },
+                // The entire VA creation process inside this lock actually takes
+                // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+                10,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                // A process will generally not need to do multiple retries at all,
+                // since the retry times are adequate for the previous process to complete.
+                2,
+                // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+                200,
+                400);
+        }
+        catch (\Throwable $e)
+        {
+            (new Metric)->pushFailedMetrics($input, $e);
+
+            throw $e;
+        }
+
+        (new Metric)->pushCreateMetrics($input);
+
+        return $virtualAccount;
     }
 
     /**
@@ -53,11 +99,9 @@ class Core extends Base\Core
         {
             $virtualAccount->build($input);
 
-            $this->validateDescriptor($virtualAccount);
-
             $virtualAccount->customer()->associate($customer);
 
-            $virtualAccount->associateOrder($order);
+            $virtualAccount->entity()->associate($order);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
@@ -167,47 +211,27 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function validateDescriptor(Entity $virtualAccount)
+    public function updateStatus(Entity $virtualAccount, string $status)
     {
-        if ($virtualAccount->getDescriptor() === null)
+        $bankAccount = $virtualAccount->bankAccount;
+
+        if (($status === Status::CLOSED) and ($bankAccount !== null))
         {
-            return;
+            $this->repo->deleteOrFail($bankAccount);
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
         }
 
-        if ($virtualAccount->merchant->getHandle() === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
-        }
+        $virtualAccount->setStatus($status);
 
-        // Removing the below check for crypto merchants so that they can
-        // create new VAs with the same descriptor, using a different provider.
-        // Default provider for crypto merchants has already been changed.
-        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
-        {
-            return;
-        }
+        $this->repo->saveOrFail($virtualAccount);
 
-        $existingVirtualAccounts = $this->repo->virtual_account
-                                        ->findActiveByDescriptorAndMerchant(
-                                            $virtualAccount->getDescriptor(),
-                                            $virtualAccount->merchant);
-
-        if ($existingVirtualAccounts->count() > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
-                'descriptor',
-                [
-                    'existing_ids' => $existingVirtualAccounts->getIds(),
-                    'descriptor'   => $virtualAccount->getDescriptor(),
-                ]);
-        }
+        return $virtualAccount;
     }
 
     protected function verifyBankTransferEnabled(Merchant $merchant)
     {
-        $merchantMethods = $this->getMethodsForMerchant($merchant);
+        $merchantMethods = $merchant->getMethods();
 
         if (($merchantMethods === null) or
             ($merchantMethods->isBankTransferEnabled() === false))
@@ -227,16 +251,6 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
         }
 
-    }
-
-    protected function getMethodsForMerchant(Merchant $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     public function eventVirtualAccountCredited(Payment $payment)

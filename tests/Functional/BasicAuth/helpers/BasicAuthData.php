@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -437,6 +436,29 @@ return [
         ],
     ],
 
+    'testPartnerAuthOnJsonpRouteAppMissing' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
     'testPartnerAuthOnJsonpRouteWrongMerchantForClient' => [
         'request'   => [
             'url'     => '/emi',
@@ -578,15 +600,11 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED,
                 ]
             ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'status_code' => 400,
         ],
     ],
 

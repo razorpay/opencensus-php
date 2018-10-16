@@ -41,7 +41,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Entity::ROLE                  => 'sometimes|string|in:owner,manager,operations,finance,support,admin,sellerapp',
+        Entity::ROLE                  => 'sometimes|string|custom',
     ];
 
     protected static $loginRules = [
@@ -68,8 +68,7 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
-        Entity::TOKEN                 => 'required|string',
-        Entity::EXPIRY_TIME           => 'required',
+        Entity::TOKEN                 => 'required|string|size:50',
     ];
 
     protected static $teamManagementValidators = [
@@ -130,6 +129,13 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+        }
+    }
+
+    protected function validateRole(string $attribute, string $role)
+    {
+        if (Role::exists($role) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }
     }
 

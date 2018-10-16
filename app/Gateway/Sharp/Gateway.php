@@ -127,13 +127,13 @@ class Gateway extends Base\Gateway
 
         if ($isBharatQr === true)
         {
-            $response = $this->getBharatQrResponse($body);
+            $response = $this->getQrData($body);
         }
 
         return $response;
     }
 
-    protected function getBharatQrResponse(array $input)
+    protected function getQrData(array $input)
     {
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
@@ -325,6 +325,13 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
+                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+        {
+            return $this->getScroogeResponse($input, 'refund');
+        }
     }
 
     public function validateVpa(array $input)
@@ -420,15 +427,8 @@ class Gateway extends Base\Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
-        {
-            return false;
-        }
-
         if (($input['payment']['recurring'] === true) and
-            ($input['token'] !== null) and
-            ($input['token']->isRecurring() === true))
+            ($input['payment']['recurring_type'] === 'auto'))
         {
             return true;
         }
@@ -465,5 +465,173 @@ class Gateway extends Base\Gateway
         }
 
         return $recurringData;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
+                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+        {
+            return $this->getScroogeResponse($input, 'verify');
+        }
+
+        return false;
+    }
+
+    protected function getGatewayResponse(int $amount)
+    {
+        $response = [
+            'amount'                => $amount,
+            'action'                => 'refund',
+            'received'              => true,
+            'response_code'         => 300,
+            'gateway_refund_id'     => '',
+            'gateway_merchant_id'   => '10000000000000'
+        ];
+
+        switch ($amount)
+        {
+            // Validation failure
+            case ($amount === 8888):
+
+                $response['result']         = 'Your account does not have enough credits to carry out the refund operation.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS;
+                break;
+
+            // Hard failure
+            case ($amount === 4444):
+
+                $response['result']         = 'Payment failed because of risk score.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK;
+                break;
+
+             // Soft failure
+            case (($amount === 5555) or ($amount === 6666)):
+
+                $response['result']         = 'Your account does not have enough balance to carry out the refund operation.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+                break;
+
+             // Request failure
+            case (($amount === 7777) or ($amount === 9999)):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+                break;
+
+            default:
+                $response = [
+                    'result'                => 'REFUND SUCCESSFUL',
+                    'action'                => 'refund',
+                    'amount'                => $amount,
+                    'received'              => true,
+                    'response_code'         => 200,
+                    'status_code'           => 'REFUND_SUCCESSFUL',
+                    'gateway_refund_id'     => '224343435454',
+                    'gateway_merchant_id'   => '10000000000000'
+                ];
+        }
+
+        return $response;
+    }
+
+    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded)
+    {
+        $response = [
+            'amount'                => $amount,
+            'action'                => 'verify',
+            'received'              => true,
+            'response_code'         => 200,
+            'gateway_refund_id'     => '',
+            'gateway_merchant_id'   => '10000000000000'
+        ];
+
+        switch ($amount)
+        {
+            case ($amount === 8888):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+
+                break;
+
+            // Hard failure. Added amount check to mock the case when refund for amount 5000 of payment 5000
+            // will be failed at first time but if full 5000 is refunded, it will be successful
+            case (($amount === 4444) and ($amount === $amountRefunded)):
+                $response['result']         = 'Payment failed because of risk score.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK;
+
+                break;
+
+            case (($amount === 4444) and ($amount !== $amountRefunded)):
+                $response['result']         = 'REFUND_SUCCESSFUL';
+                $response['status_code']    = 'REFUND_SUCCESSFUL';
+
+                break;
+
+            case ($amount === 5555):
+                $response['result']         = 'Refund Failed';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+
+                break;
+
+            // Soft failure. Added amount check to mock the case when verify for refund of 6666 of payment 7000
+            // will be failed at first time but if full 7000 is refunded, it will be successful
+            case (($amount === 6666) and ($amount !== $amountRefunded)):
+                $response['result']         = 'REFUND_SUCCESSFUL';
+                $response['status_code']    = 'REFUND_SUCCESSFUL';
+
+                break;
+
+            default:
+                $response['result']         = 'Refund Failed';
+                $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
+        }
+
+        return $response;
+    }
+
+    protected function getScroogeResponse(array $input, string $action)
+    {
+        if ($action === 'refund')
+        {
+            $gatewayResponse = $this->getGatewayResponse($input['refund']['amount']);
+        }
+        else
+        {
+            $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount'], $input['payment']['amount_refunded']);
+        }
+
+        if (($action === 'refund') and ($gatewayResponse['status_code'] !== 'REFUND_SUCCESSFUL'))
+        {
+            throw new Exception\GatewayErrorException($gatewayResponse['status_code'],
+                $gatewayResponse['status_code'],
+                $gatewayResponse['result'],
+                [
+                    'gateway_response'  => json_encode($gatewayResponse),
+                    'gateway_keys'          => [
+                        'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
+                        'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
+                    ]
+                ]);
+        }
+
+        $response = [
+            'gateway_response'      => json_encode($gatewayResponse),
+            'gateway_keys'          => [
+                'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
+                'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
+            ]
+        ];
+
+
+        if ($action === 'verify')
+        {
+            $response['success'] = ($gatewayResponse['status_code'] === 'REFUND_SUCCESSFUL');
+            $response['status_code'] = $gatewayResponse['status_code'];
+        }
+
+        return $response;
     }
 }

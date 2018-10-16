@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
@@ -56,11 +57,19 @@ class NodalAccount extends NodalBase\FileProcessor
             array_push($textData, $record);
         }
 
+        $this->trace->info(TraceCode::FTA_ROWS_FETCHED_FOR_FILE);
+
         $text = $this->generateText($textData, ',', true);
+
+        $this->trace->info(TraceCode::FTA_DATA_CREATED_FOR_FILE);
 
         $textFileEntity = $this->createSettlementFiles($text, $h2h);
 
+        $this->trace->info(TraceCode::FTA_FILE_CREATED_IN_S3);
+
         $this->sendSettlementMail($textFileEntity);
+
+        $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
 
         return $textFileEntity;
     }
@@ -77,7 +86,7 @@ class NodalAccount extends NodalBase\FileProcessor
         }
         else
         {
-            $mode = $this->getTransferMode($amount);
+            $mode = $this->getTransferMode($amount, $bankAccount->merchant);
         }
 
         return [
@@ -185,7 +194,7 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         return [
             'gid'   => '10000',
-            'uid'   => '10001',
+            'uid'   => '10007',
             'mtime' => Carbon::now(Timezone::IST)->getTimestamp(),
             'mode'  => '33188',
         ];

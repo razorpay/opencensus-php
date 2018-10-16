@@ -23,6 +23,9 @@ class MailTags
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 
+    const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+    const YESBANK_SETTLEMENT               = 'yesbank_settlement';
+
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
@@ -40,9 +43,11 @@ class MailTags
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
     const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
+    const IDFC_NETBANKING_REFUNDS_MAIL          = 'idfc_netbanking_refunds_mail';
     const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
     const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
+    const ISG_REFUNDS_MAIL                      = 'isg_refunds_mail';
     const AXIS_MIGS_FAILED_REFUNDS_MAIL         = 'axis_migs_failed_refunds_mail';
     const ICICI_FIRST_DATA_FAILED_REFUNDS_MAIL  = 'icici_firstdata_failed_refunds_mail';
     const HDFC_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'hdfc_cybersource_failed_refunds_mail';
@@ -92,6 +97,7 @@ class MailTags
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
+    const FEE_CREDITS_ALERT                = 'fee_credits_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
@@ -108,6 +114,8 @@ class MailTags
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
+    const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
+    const AFFILIATE_ADDED                  = 'affiliate_added';
 
     const ICICI_FILES                      = 'icici_files';
 
@@ -135,6 +143,8 @@ class MailTags
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+    const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
+    const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';

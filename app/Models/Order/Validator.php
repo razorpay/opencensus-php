@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
 
@@ -25,6 +26,8 @@ class Validator extends Base\Validator
         Entity::OFFERS          => 'sometimes|array',
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
+        Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
+        Entity::PAYER_NAME      => 'sometimes|string|max:100'
     );
 
     protected static $createValidators = [
@@ -81,12 +84,27 @@ class Validator extends Base\Validator
 
     protected function validateCurrency($input)
     {
+        $currency = $input[Entity::CURRENCY];
+
+        $merchant = $this->entity->merchant;
+
+        // if currency conversion is not enabled allow only INR
+        // if currency conversion is enabled, it should be a valid current
+        if ((($merchant->convertOnApi() === null) and
+            ($currency !== Currency::INR)) or
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED,
+                'currency');
+        }
+
+        // if method is not defined, dont validate currency
         if (isset($input[Entity::METHOD]) === false)
         {
             return;
         }
 
-        $currency = $input[Entity::CURRENCY];
         $method = $input[Entity::METHOD];
 
         if (($method !== Payment\Method::CARD) and
@@ -126,15 +144,7 @@ class Validator extends Base\Validator
     {
         $this->validateOrderNotPaid();
 
-        //
-        // Bank transfer is a push payment, it cannot be rejected.
-        // So even if the amount mismatches here, we go ahead and
-        // authorize it anyway, and will later refund it.
-        //
-        if ($payment->isBankTransfer() === false)
-        {
-            $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
-        }
+        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
 
         $this->validateOrderCurrency($payment->getCurrency());
 
@@ -195,12 +205,14 @@ class Validator extends Base\Validator
      */
     protected function validateOrderAmount(int $paymentAmount)
     {
-        $orderAmountDue = $this->entity->getAmountDue();
+        $order = $this->entity;
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
         // otherwise it should be same.
 
-        $partialPaymentAllowed = $this->entity->isPartialPaymentAllowed();
+        $partialPaymentAllowed = $order->isPartialPaymentAllowed();
+
+        $orderAmountDue = $order->getAmountDue();
 
         if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))
@@ -215,7 +227,8 @@ class Validator extends Base\Validator
         }
 
         if (($partialPaymentAllowed === true) and
-            ($paymentAmount > $orderAmountDue))
+            ($paymentAmount > $orderAmountDue) and
+            ($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
@@ -277,15 +290,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($order->getMethod()) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);
-        }
-
         $method = $order->getMethod();
 
-        if (($method !== Payment\Method::NETBANKING) and
+        if (($method !== null) and
+            ($method !== Payment\Method::NETBANKING) and
             ($method !== Payment\Method::UPI))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -307,7 +315,8 @@ class Validator extends Base\Validator
                 break;
         }
 
-        if (in_array($orderBank, $tpvBanks, true) === false)
+        if (($method !== null) and
+            (in_array($orderBank, $tpvBanks, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Order bank does not support TPV');

@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
@@ -41,19 +42,23 @@ class Core extends Base\Core
      * @param  User\Entity     $user
      *
      * @return Entity
+     * @throws BadRequestException
+     * @throws BaseException
      */
     public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
-        $paymentLink = (new Entity)->build($input);
+        $paymentLink = (new Entity)->generateId();
 
+        // Association of merchant must happens before build() call as the same is needed in validations
         $paymentLink->merchant()->associate($merchant);
+
         $paymentLink->user()->associate($user);
 
-        $paymentLink->generateId();
+        $paymentLink->build($input);
 
-        $this->setShortUrl($paymentLink);
+        $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
         $this->repo->saveOrFail($paymentLink);
 
@@ -67,6 +72,8 @@ class Core extends Base\Core
      * @param  array  $input
      *
      * @return Entity
+     * @throws BadRequestException
+     * @throws BaseException
      */
     public function update(Entity $paymentLink, array $input): Entity
     {
@@ -88,9 +95,30 @@ class Core extends Base\Core
             $this->repo->saveOrFail($paymentLink);
         });
 
+        $this->updateShortUrlIfApplicable($paymentLink, $input);
+
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
+    }
+
+    /**
+     * Attempts recreating short URL for payment link in case of new slug in patch input
+     *
+     * @param Entity $paymentLink
+     * @param array  $input
+     *
+     * @throws BadRequestException
+     * @throws BaseException
+     */
+    public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
+    {
+        if (($slug = $input[Entity::SLUG] ?? null) !== null)
+        {
+            $this->createAndSetShortUrl($paymentLink, $slug);
+
+            $this->repo->saveOrFail($paymentLink);
+        }
     }
 
     public function deactivate(Entity $paymentLink): Entity
@@ -179,6 +207,8 @@ class Core extends Base\Core
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_ATTEMPTS_TOTAL);
+
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
@@ -276,12 +306,12 @@ class Core extends Base\Core
     {
         //
         // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
-        // status which are shared in multiple payment process & entity operation in parallel.
+        // status which are shared in multiple payment process and entity operation in parallel.
         //
         $this->repo->assertTransactionActive();
 
         $paymentLink->incrementTimesPaid();
-        $paymentLink->incrementTotalAmountPaidBy($payment->getAmount());
+        $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
         if ($paymentLink->isTimesPayableExhausted() === true)
         {
@@ -296,6 +326,8 @@ class Core extends Base\Core
                 Entity::PAYMENT_ID => $payment->getId(),
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL);
     }
 
     /**
@@ -306,7 +338,7 @@ class Core extends Base\Core
      * - will be marked complete if times_payable post update is equal to times_paid
      *
      * Currently there is no other cases. Expire by edits will not affect this because that must already by at least
-     * 15 mins in future (validated via Validator method during build).
+     * 15 minutes in future (validated via Validator method during build).
      *
      * @param Entity $paymentLink
      */
@@ -379,21 +411,74 @@ class Core extends Base\Core
     }
 
     /**
-     * This method sets the short_url of a paymentLink
-     * @param Entity $paymentLink
+     * @param Entity      $paymentLink
+     * @param string|null $slug
+     *
+     * @throws BadRequestException
+     * @throws BaseException
      */
-    protected function setShortUrl(Entity $paymentLink)
+    protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
     {
-        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl);
-        $shortUrl = $this->elfin->shorten($url, ['ptype' => 'link']);
+        list($url, $params, $fail) = $this->getShortenUrlRequestParams($paymentLink, $slug);
 
-        $paymentLink->setShortUrl($shortUrl);
+        try
+        {
+            $shortUrl = $this->elfin->shorten($url, $params, $fail);
+
+            $paymentLink->setShortUrl($shortUrl);
+        }
+        catch (BaseException $e)
+        {
+            // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
+            if (str_contains($e->getDataAsString(), 'Duplicate') === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED,
+                    Entity::SLUG,
+                    [
+                        Entity::SLUG => $slug,
+                    ]);
+            }
+
+            throw $e;
+        }
+    }
+
+    protected function getShortenUrlRequestParams(Entity $paymentLink, string $slug = null): array
+    {
+        // Following are default set of parameters, when there is no slug passed in input
+        // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max30Slug
+        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $slug);
+        // Fail: In case not able to shorten URL, will keep above value itself as short URL and continue with creation
+        $fail = false;
+        // Ptype: Input request for Gimli
+        $params = ['ptype' => 'link'];
+
+        // If slug is passed in input, we override above parameters in following way
+        if ($slug !== null)
+        {
+            // Fail: If failed to shorten the URL, do not continue with creation and fail
+            $fail = true;
+            // No fall back: Only use Gimli(our shortener service) and do not fall back to Bitly etc if that fails
+            $this->elfin->setNoFallback();
+            // Additional parameters/metadata which gets used later in rendering view endpoint
+            $params += [
+                'alias'          => $slug,
+                'fail_if_exists' => true,
+                'metadata'       => [
+                    'mode'   => $this->mode,
+                    'entity' => $paymentLink->getEntity(),
+                    'id'     => $paymentLink->getPublicId(),
+                ],
+            ];
+        }
+
+        return [$url, $params, $fail];
     }
 
     /**
      * Called from CRON.
      * Updates status to INACTIVE, status_reason to EXPIRED of all payment links which are active and past expire_by.
-     *
      * @return array
      */
     public function expirePaymentLinks(): array
@@ -520,17 +605,17 @@ class Core extends Base\Core
             {
                 $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                if ($paymentLink->isActive() === true)
+                // Continues with expiration only if current status is active and expire_by's value is past now
+                if (($paymentLink->isActive() === true) and
+                    ($paymentLink->isPastExpireBy() === true))
                 {
-                    return;
+                    $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::EXPIRED);
+
+                    $this->repo->saveOrFail($paymentLink);
                 }
-
-                // TODO: Use Core's method to do status change. That method is being added in another PR.
-                $paymentLink->setStatus(Status::INACTIVE);
-                $paymentLink->setStatusReason(StatusReason::EXPIRED);
-
-                $this->repo->saveOrFail($paymentLink);
             });
+
+        $this->trace->count(Metric::PAYMENT_PAGE_EXPIRED_TOTAL);
     }
 
     /**
@@ -551,6 +636,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_REQUEST, $tracePayload);
 
+        $refund = null;
+
         try
         {
             //
@@ -570,13 +657,23 @@ class Core extends Base\Core
             }
             else
             {
-                $refund = null;
                 $this->trace->critical(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
             }
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Logger::CRITICAL, TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
+            $this->trace->traceException(
+                $e,
+                Logger::CRITICAL,
+                TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
+        }
+
+        // If refund was made, increments counter of at what payment status the refund was made
+        if ($refund !== null)
+        {
+            $dimensions = ['payment_status' => $payment->getStatus()];
+
+            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, $dimensions);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);

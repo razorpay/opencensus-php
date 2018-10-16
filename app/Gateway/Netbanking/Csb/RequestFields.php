@@ -22,7 +22,8 @@ class RequestFields
     const ACCOUNT_NUM  = 'ACNO';
     const TRAN_REF_NUM = 'TID';
     const DATE_TIME    = 'DT';
-
+    const NARRATION    = 'NAR';
+    
     /**
      * We would be sending the request data in this field
      */

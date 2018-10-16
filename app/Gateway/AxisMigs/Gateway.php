@@ -4,6 +4,8 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
+use Requests_Hooks;
+
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -12,6 +14,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
+use RZP\Gateway\AxisMigs;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Trace\TraceCode;
 
@@ -73,7 +76,7 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($this->gatewayEntity);
 
-        $this->verifyAmaTransactionResponse($response, $input);
+        $this->checkTransactionResponse($response, $input);
     }
 
     public function callback(array $input)
@@ -145,7 +148,7 @@ class Gateway extends Base\Gateway
             'payment' => $input['payment'],
             'refund' => $input['refund']]);
 
-        $this->verifyAmaTransactionResponse($content, $input);
+        $this->checkTransactionResponse($content, $input);
     }
 
     public function verifyInternalRefund(array $input)
@@ -329,7 +332,7 @@ class Gateway extends Base\Gateway
             'payment' => $input['payment'],
             'refund' => $input['refund']]);
 
-        $this->verifyAmaTransactionResponse($content, $input);
+        $this->checkTransactionResponse($content, $input);
     }
 
     public function forceAuthorizeFailed($input)
@@ -504,7 +507,7 @@ class Gateway extends Base\Gateway
         $content['received'] = 1;
         $gatewayCapturedPayment->fill($content)->saveOrFail();
 
-        $this->verifyAmaTransactionResponse($content, $input);
+        $this->checkTransactionResponse($content, $input);
     }
 
     protected function sendVerifyRequest($input, $entity = 'payment')
@@ -870,7 +873,19 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAmaRequestArray($content);
         // send the request and get response
-        $response = $this->postRequest($request);
+
+        $this->paymentId = $input['payment']['id'];
+
+        $shouldRetry = function ($e)
+        {
+            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+        };
+
+        $response = $this->retryHandler(
+            [$this, 'postRequest'],
+            [$request],
+            $shouldRetry,
+            2);
 
         return $response;
     }
@@ -878,9 +893,45 @@ class Gateway extends Base\Gateway
     public function postRequest($request)
     {
         $options['timeout'] = 60;
+
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', function ($curl)
+        {
+            $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
+
+            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
+
+            curl_setopt($curl, CURLOPT_VERBOSE, true);
+            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
+        });
+
+        $options['hooks'] = $hooks;
+
         $request['options'] = $options;
 
-        $this->response = $this->sendGatewayRequest($request);
+        try
+        {
+            $this->response = $this->sendGatewayRequest($request);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->traceCurlErrorIfApplicable();
+
+            throw $e;
+        }
+        finally
+        {
+            if (isset($this->curlLog) === true)
+            {
+                fclose($this->curlLog);
+
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
+            }
+        }
 
         return $this->response;
     }
@@ -1033,50 +1084,21 @@ class Gateway extends Base\Gateway
 
     protected function getApiErrorCode($input)
     {
-        $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
-        $message = $input['gateway']['vpc_Message'] ?? null;
-
         if ($this->isSessionExpired($input))
         {
             return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED;
         }
 
-        // check if Acq error
-        if (isset($input['gateway']['vpc_AcqResponseCode']))
-        {
-            $acqResponseCode = $input['gateway']['vpc_AcqResponseCode'];
-
-            if (isset(AcqResponseCode::$map[$acqResponseCode]))
-            {
-                return AcqResponseCode::$map[$acqResponseCode];
-            }
-        }
-
-        // Check for mapped TxnResponseCode value
-        if (TxnResponseCode::isErrorCodeMapped($txnResponseCode))
-        {
-            return TxnResponseCode::getErrorCodeMapped($txnResponseCode, $message);
-        }
-        else
-        {
-            $this->trace->error(
-                TraceCode::GATEWAY_UNKNOWN_ERROR,
-                ['payment_id' => $input['payment']['id'],
-                'action' => $this->action,
-                'gateway_error_code' => $txnResponseCode,
-                'gateway' => $this->gateway,
-                'time' => time()]);
-
-            return Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-        }
+        return $this->checkTransactionResponse($input['gateway'], $input);
     }
 
     protected function isSessionExpired($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+
         $message = $input['gateway']['vpc_Message'];
 
-        if ((isset(TxnResponseCode::$map[$txnResponseCode])) and
+        if ((isset(AxisMigs\ErrorCodes\ErrorCodes::$txnErrorCodeMap[$txnResponseCode])) and
             ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
@@ -1084,62 +1106,6 @@ class Gateway extends Base\Gateway
         }
 
         return false;
-    }
-
-    protected function verifyAmaTransactionResponse($content, $input)
-    {
-        $txnResponseCode = null;
-
-        if (isset($content['vpc_TxnResponseCode']) === true)
-        {
-            $txnResponseCode = $content['vpc_TxnResponseCode'];
-        }
-
-        if ($txnResponseCode === '0')
-        {
-            return;
-        }
-
-        $msg = null;
-
-        if (isset($content['vpc_Message']) === true)
-        {
-            $msg = $content['vpc_Message'];
-        }
-        else if (isset($content['ERROR']) === true)
-        {
-            $msg = $content['ERROR'];
-        }
-
-        $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-
-        if (($txnResponseCode !== null) and
-            (TxnResponseCode::isErrorCodeMapped($txnResponseCode) === true))
-        {
-            $code = TxnResponseCode::getErrorCodeMapped($txnResponseCode, $msg);
-        }
-
-        if ($this->action === Base\Action::REFUND)
-        {
-            // Refund request failed. Just check if refund amount due to
-            // previous requests matches the expected amount.
-            // In that case, we will mark it as success.
-
-            $ret = $this->returnIfRefundAmountMatches($content, $input);
-
-            if ($ret === true)
-            {
-                return;
-            }
-
-            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
-        }
-
-        // Payment fails, throw exception
-        throw new Exception\GatewayErrorException(
-                    $code,
-                    $txnResponseCode,
-                    $msg);
     }
 
     protected function returnIfRefundAmountMatches($content, $input)
@@ -1193,5 +1159,46 @@ class Gateway extends Base\Gateway
     protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
     {
         return ($input['merchant']['international'] === false);
+    }
+
+    protected function checkTransactionResponse($content, $input)
+    {
+        $msg = $txnResponseCode = null;
+
+        if (isset($content[AxisMigs\ErrorCodes\ErrorFields::VPC_TXNRESPONSECODE]) === true)
+        {
+            $txnResponseCode = $content[AxisMigs\ErrorCodes\ErrorFields::VPC_TXNRESPONSECODE];
+        }
+
+        if ($txnResponseCode === '0')
+        {
+            return;
+        }
+
+        $code = AxisMigs\ErrorCodes\ErrorCodes::getInternalErrorCode($content);
+
+        $msg = AxisMigs\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($content);
+
+        if ($this->action === Base\Action::REFUND)
+        {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
+            $ret = $this->returnIfRefundAmountMatches($content, $input);
+
+            if ($ret === true)
+            {
+                return;
+            }
+
+            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+            $code,
+            $txnResponseCode,
+            $msg);
     }
 }

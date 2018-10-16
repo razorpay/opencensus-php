@@ -6,20 +6,17 @@ use DB;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Models\Base;
 use RZP\Services\Mutex;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Adjustment;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Dispute\File\Core as DisputeFileCore;
+use RZP\Models\{Base, Payment, Merchant, Adjustment};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
 {
@@ -78,8 +75,8 @@ class Core extends Base\Core
                 $dispute->generateId();
 
                 $this->app['workflow']
-                    ->setEntityAndId($dispute->getEntity(), $dispute->getId())
-                    ->handle((new \stdClass), $dispute);
+                     ->setEntityAndId($dispute->getEntity(), $dispute->getId())
+                     ->handle((new \stdClass), $dispute);
 
                 $dispute->setAuditAction(Action::CREATE_DISPUTE);
 
@@ -156,9 +153,9 @@ class Core extends Base\Core
      * @param Entity $dispute
      * @param array  $input
      *
-     * @return Entity
+     * @return array
      */
-    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): Entity
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
@@ -170,16 +167,16 @@ class Core extends Base\Core
 
         $fileCore = new File\Core;
 
-        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
+        if (array_key_exists(DisputeFileCore::FILES, $input) === true)
         {
-            $files = $input[DisputeFileEntity::FILES];
+            $files = $input[DisputeFileCore::FILES];
 
             $files = $fileCore->checkFilesInput($files);
 
-            unset($input[DisputeFileEntity::FILES]);
+            unset($input[DisputeFileCore::FILES]);
         }
 
-        $dispute = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
             if (empty($input) === false)
             {
@@ -191,14 +188,12 @@ class Core extends Base\Core
                 $fileCore->uploadFiles($dispute, $files);
             }
 
-            return $dispute;
+            return $dispute->toArrayPublic();
         });
 
-        //
-        // Load the 'files' relation on the dispute entity
-        // before return
-        //
-        return $dispute->load(Entity::FILES);
+        $response[File\Core::ALL_FILES] = $fileCore->getFilesForEntity($dispute);
+
+        return $response;
     }
 
     /**
@@ -217,9 +212,13 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::OPERATION_MERCHANT_EDIT, $input);
 
-        $input = $this->generateInputForMerchantEdit($dispute, $input);
+        $generatedInput = $this->generateInputForMerchantEdit($dispute, $input);
 
-        return $this->update($dispute, $input);
+        $dispute = $this->update($dispute, $generatedInput);
+
+        $this->sendDisputeMailToAdmin($dispute, $input);
+
+        return $dispute;
     }
 
     /**
@@ -479,6 +478,30 @@ class Core extends Base\Core
         $parent->getValidator()->validateDisputeCanBecomeParent();
 
         return $parent;
+    }
+
+    protected function sendDisputeMailToAdmin(Entity $dispute, array $input)
+    {
+        $submit        = (bool) ($input[Entity::SUBMIT] ?? false);
+        $acceptDispute = (bool) ($input[Entity::ACCEPT_DISPUTE] ?? false);
+
+        $org = $dispute->merchant->org;
+
+        $data = [
+            'dispute'            => $dispute->toArrayAdmin(),
+            'payment'            => $dispute->payment->toArrayAdmin(),
+            'dashboard_hostname' => $org->getPrimaryHostName(),
+        ];
+
+        if ($dispute->hasMerchantAcceptedStatus($acceptDispute) === true)
+        {
+            Mail::queue(new DisputeMailer\Admin\AcceptedAdmin($data));
+        }
+
+        if (($submit === true) and ($dispute->getStatus() === Status::UNDER_REVIEW))
+        {
+            Mail::queue(new DisputeMailer\Admin\SubmittedAdmin($data));
+        }
     }
 
     protected function sendDisputeMailToMerchant(

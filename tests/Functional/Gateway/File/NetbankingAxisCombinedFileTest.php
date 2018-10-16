@@ -23,6 +23,8 @@ class NetbankingAxisCombinedFileTest extends TestCase
 
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingAxisCombinedFileTestData.php';
 
+        $this->gateway = 'netbanking_axis';
+
         parent::setUp();
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
@@ -98,6 +100,13 @@ class NetbankingAxisCombinedFileTest extends TestCase
 
             $this->assertCount(2, $mail->attachments);
 
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return true;
         });
     }
@@ -110,6 +119,15 @@ class NetbankingAxisCombinedFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content['type'] = 'corporate';
+                }
+            });
 
         $payment = $this->doAuthAndCapturePayment($payment);
 

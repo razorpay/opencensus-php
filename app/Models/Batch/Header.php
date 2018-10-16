@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
+use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -174,6 +175,23 @@ class Header
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
 
     //
+    // AXIS Emandate Debit Response File Headers
+    //
+    const AXIS_EM_DEBIT_HEADING_PAYMENT_ID         = AxisEMDebitHeadings::HEADING_PAYMENT_ID;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_DATE         = AxisEMDebitHeadings::HEADING_DEBIT_DATE;
+    const AXIS_EM_DEBIT_HEADING_MERCHANT_ID        = AxisEMDebitHeadings::HEADING_MERCHANT_ID;
+    const AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER    = AxisEMDebitHeadings::HEADING_BANK_REF_NUMBER;
+    const AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME      = AxisEMDebitHeadings::HEADING_CUSTOMER_NAME;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT      = AxisEMDebitHeadings::HEADING_DEBIT_ACCOUNT;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT       = AxisEMDebitHeadings::HEADING_DEBIT_AMOUNT;
+    const AXIS_EM_DB_HEADING_MIS_INFO3             = AxisEMDebitHeadings::HEADING_MIS_INFO3;
+    const AXIS_EM_DEBIT_HEADING_MIS_INFO4          = AxisEMDebitHeadings::HEADING_MIS_INFO4;
+    const AXIS_EM_DEBIT_HEADING_FILE_REF           = AxisEMDebitHeadings::HEADING_FILE_REF;
+    const AXIS_EM_DEBIT_HEADING_STATUS             = AxisEMDebitHeadings::HEADING_STATUS;
+    const AXIS_EM_DEBIT_HEADING_REMARK             = AxisEMDebitHeadings::HEADING_REMARK;
+    const AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER  = AxisEMDebitHeadings::HEADING_RECORD_IDENTIFIER;
+
+    //
     // eNach Acknowledgement Response File Headers
     //
     const ENACH_ACK_MANDATE_DATE    = 'MANDATE_DATE';
@@ -287,8 +305,28 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
 
-    const ELFIN_LONG_URL             = 'Long Url';
-    const ELFIN_SHORT_URL            = 'Short Url';
+    const ELFIN_LONG_URL               = 'Long Url';
+    const ELFIN_SHORT_URL              = 'Short Url';
+
+    //
+    // OAuth Migration Token
+    // Also uses MERCHANT_ID declared above
+    //
+    const ACCESS_TOKEN                 = 'access_token';
+    const PUBLIC_TOKEN                 = 'public_token';
+    const REFRESH_TOKEN                = 'refresh_token';
+
+    // Partner submerchant headers
+    const PARTNER_TYPE         = 'partner_type';
+    const SUBMERCHANT_ID       = 'submerchant_id';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
+
+    // Entity Mapping headers
+    const ENTITY_FROM_ID       = 'entity_from_id';
+    const ENTITY_TO_ID         = 'entity_to_id';
+    const ENTITY_TO_IDS        = 'entity_to_ids';
+    const ENTITY_FROM_TYPE     = 'entity_from_type';
+    const ENTITY_TO_TYPE       = 'entity_to_type';
 
     /**
      * Input and output file headers
@@ -421,6 +459,8 @@ class Header
                 self::REFERENCE_ID,
                 self::STATUS,
                 self::ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -461,6 +501,58 @@ class Header
                 self::HDFC_EM_DEBIT_STATUS,
                 self::HDFC_EM_DEBIT_REJECTION_REMARKS,
                 self::HDFC_EM_DEBIT_NARRATION,
+            ],
+            self::OUTPUT => [
+                self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_MANDATE_ID,
+                self::HDFC_EM_DEBIT_ACCOUNT_NO,
+                self::HDFC_EM_DEBIT_AMOUNT,
+                self::HDFC_EM_DEBIT_SIP_DATE,
+                self::HDFC_EM_DEBIT_FREQUENCY,
+                self::HDFC_EM_DEBIT_FROM_DATE,
+                self::HDFC_EM_DEBIT_TO_DATE,
+                self::HDFC_EM_DEBIT_STATUS,
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS,
+                self::HDFC_EM_DEBIT_NARRATION,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        'emandate_debit_axis' => [
+            self::INPUT => [
+                self::AXIS_EM_DEBIT_HEADING_PAYMENT_ID,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_DATE,
+                self::AXIS_EM_DEBIT_HEADING_MERCHANT_ID,
+                self::AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER,
+                self::AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT,
+                self::AXIS_EM_DB_HEADING_MIS_INFO3,
+                self::AXIS_EM_DEBIT_HEADING_MIS_INFO4,
+                self::AXIS_EM_DEBIT_HEADING_FILE_REF,
+                self::AXIS_EM_DEBIT_HEADING_STATUS,
+                self::AXIS_EM_DEBIT_HEADING_REMARK,
+                self::AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER,
+            ],
+            self::OUTPUT => [
+                self::AXIS_EM_DEBIT_HEADING_PAYMENT_ID,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_DATE,
+                self::AXIS_EM_DEBIT_HEADING_MERCHANT_ID,
+                self::AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER,
+                self::AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT,
+                self::AXIS_EM_DB_HEADING_MIS_INFO3,
+                self::AXIS_EM_DEBIT_HEADING_MIS_INFO4,
+                self::AXIS_EM_DEBIT_HEADING_FILE_REF,
+                self::AXIS_EM_DEBIT_HEADING_STATUS,
+                self::AXIS_EM_DEBIT_HEADING_REMARK,
+                self::AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -481,6 +573,26 @@ class Header
                 self::ENACH_DEBIT_STATUS,
                 self::ENACH_DEBIT_REASON_CODE,
                 self::ENACH_DEBIT_REASON_DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::ENACH_DEBIT_SERIAL_NO,
+                self::ENACH_DEBIT_ECS_DATE,
+                self::ENACH_DEBIT_SETTLEMENT_DATE,
+                self::ENACH_DEBIT_CUST_REFNO,
+                self::ENACH_DEBIT_SCH_REFNO,
+                self::ENACH_DEBIT_CUSTOMER_NAME,
+                self::ENACH_DEBIT_AMOUNT,
+                self::ENACH_DEBIT_REFNO,
+                self::ENACH_DEBIT_UMRN,
+                self::ENACH_DEBIT_UPLOAD_DATE,
+                self::ENACH_DEBIT_ACKUPD_DATE,
+                self::ENACH_DEBIT_RESPONSE_RECEIVED,
+                self::ENACH_DEBIT_STATUS,
+                self::ENACH_DEBIT_REASON_CODE,
+                self::ENACH_DEBIT_REASON_DESCRIPTION,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 
@@ -554,6 +666,25 @@ class Header
                 self::HDFC_EM_REGISTER_STATUS,
                 self::HDFC_EM_REGISTER_REMARKS,
             ],
+            self::OUTPUT => [
+                self::HDFC_EM_REGISTER_CLIENT_NAME,
+                self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
+                self::HDFC_EM_REGISTER_AMOUNT,
+                self::HDFC_EM_REGISTER_AMOUNT_TYPE,
+                self::HDFC_EM_REGISTER_START_DATE,
+                self::HDFC_EM_REGISTER_END_DATE,
+                self::HDFC_EM_REGISTER_FREQUENCY,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REF_NO,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NO,
+                self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARKS,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ],
 
         'emandate_acknowledge_enach_rbl' => [
@@ -583,6 +714,35 @@ class Header
                 self::ENACH_ACK_UPDATE_DATE,
                 self::ENACH_ACK_SOLE_ID,
             ],
+            self::OUTPUT => [
+                self::ENACH_ACK_MANDATE_DATE,
+                self::ENACH_ACK_BATCH,
+                self::ENACH_ACK_IHNO,
+                self::ENACH_ACK_MANDATE_TYPE,
+                self::ENACH_ACK_UMRN,
+                self::ENACH_ACK_REF_1,
+                self::ENACH_ACK_REF_2,
+                self::ENACH_ACK_CUST_NAME,
+                self::ENACH_ACK_BANK,
+                self::ENACH_ACK_BRANCH,
+                self::ENACH_ACK_BANK_CODE,
+                self::ENACH_ACK_AC_TYPE,
+                self::ENACH_ACK_ACNO,
+                self::ENACH_ACK_ACK_DATE,
+                self::ENACH_ACK_ACK_DESC,
+                self::ENACH_ACK_AMOUNT,
+                self::ENACH_ACK_FREQUENCY,
+                self::ENACH_ACK_TEL_NO,
+                self::ENACH_ACK_MOBILE_NO,
+                self::ENACH_ACK_MAIL_ID,
+                self::ENACH_ACK_UPLOAD_BATCH,
+                self::ENACH_ACK_UPLOAD_DATE,
+                self::ENACH_ACK_UPDATE_DATE,
+                self::ENACH_ACK_SOLE_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ],
 
         'emandate_register_enach_rbl' => [
@@ -618,6 +778,42 @@ class Header
                 self::ENACH_REGISTER_STATUS,
                 self::ENACH_REGISTER_RETURN_CODE,
                 self::ENACH_REGISTER_CODE_DESC,
+            ],
+            self::OUTPUT => [
+                self::ENACH_REGISTER_SRNO,
+                self::ENACH_REGISTER_MANDATE_DATE,
+                self::ENACH_REGISTER_MANDATE_ID,
+                self::ENACH_REGISTER_UMRN,
+                self::ENACH_REGISTER_CUST_REFNO,
+                self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_REF_1,
+                self::ENACH_REGISTER_CUST_NAME,
+                self::ENACH_REGISTER_BANK,
+                self::ENACH_REGISTER_BRANCH,
+                self::ENACH_REGISTER_BANK_CODE,
+                self::ENACH_REGISTER_AC_TYPE,
+                self::ENACH_REGISTER_ACNO,
+                self::ENACH_REGISTER_UPDATE_DATE,
+                self::ENACH_REGISTER_AMOUNT,
+                self::ENACH_REGISTER_FREQUENCY,
+                self::ENACH_REGISTER_COLLECTION_TYPE,
+                self::ENACH_REGISTER_START_DATE,
+                self::ENACH_REGISTER_END_DATE,
+                self::ENACH_REGISTER_TEL_NO,
+                self::ENACH_REGISTER_MOBILE_NO,
+                self::ENACH_REGISTER_MAIL_ID,
+                self::ENACH_REGISTER_UPLOAD_BATCH,
+                self::ENACH_REGISTER_UPLOAD_DATE,
+                self::ENACH_REGISTER_RESPONSE_DATE,
+                self::ENACH_REGISTER_UTILITY_CODE,
+                self::ENACH_REGISTER_UTILITY_NAME,
+                self::ENACH_REGISTER_NODAL_ACNO,
+                self::ENACH_REGISTER_STATUS,
+                self::ENACH_REGISTER_RETURN_CODE,
+                self::ENACH_REGISTER_CODE_DESC,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -725,6 +921,8 @@ class Header
                 self::NOTES,
                 self::DIRECT_DEBIT_ORDER_ID,
                 self::DIRECT_DEBIT_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -737,6 +935,57 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::OAUTH_MIGRATION_TOKEN => [
+
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACCESS_TOKEN,
+                self::PUBLIC_TOKEN,
+                self::REFRESH_TOKEN,
+
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PARTNER_SUBMERCHANTS => [
+
+            self::INPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::ENTITY_MAPPING => [
+            self::INPUT => [
+                self::ENTITY_FROM_ID,
+                self::ENTITY_TO_ID,
+            ],
+
+            self::OUTPUT => [
+                self::ENTITY_FROM_ID,
+                self::ENTITY_TO_IDS,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

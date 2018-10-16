@@ -693,6 +693,7 @@ class Creator extends Base\Core
                 $this->writeTextFile();
                 break;
 
+            case Format::XLS:
             case Format::XLSX:
                 Config::set('excel::export.calculate', true);
 
@@ -878,7 +879,7 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFileName()
+    public function getFullFileName()
     {
         $extension = $this->file->getExtension();
 

@@ -42,6 +42,8 @@ class Gateway extends Base\Gateway
 
         $entity->setAcquirer(static::ACQUIRER);
 
+        $entity->setGateway($this->gateway);
+
         $entity->generate($attr);
 
         $entity->fill($attr);
@@ -61,5 +63,50 @@ class Gateway extends Base\Gateway
         $query = str_replace(' ', '', urldecode(http_build_query($content)));
 
         return 'upi://pay?' . $query;
+    }
+
+    /*
+     * * * * * * * * * * SIGNED INTENT * * * * * * * * * * * *
+     */
+
+    /**
+     * We are using SI Private Key Check as SI is migration change.
+     * Once we move all terminals to SI, this check can be removed.
+     *
+     * @return bool
+     */
+    protected function shouldSignIntentRequest(): bool
+    {
+        return (empty($this->getSignIntentPrivateKey()) === false);
+    }
+
+    /**
+     * Private key is merchant dependent, thus can only be retrieved
+     * from terminal, Starting with MindGate where it's store in
+     * gateway_terminal_password2, Later gateways can override this.
+     *
+     * @return mixed
+     */
+    protected function getSignIntentPrivateKey()
+    {
+        return $this->terminal['gateway_terminal_password2'];
+    }
+
+    /**
+     * Create an instance of Secure modes in UPI which are SI and SQR
+     * Method must not be overridden, if there are gateway specific
+     * changes required, Add a getter and override that.
+     *
+     * @return Secure
+     */
+    protected function getSecureInstance(): Secure
+    {
+        $config = [
+            Secure::PRIVATE_KEY => $this->getSignIntentPrivateKey(),
+        ];
+
+        $secure = new Secure($config);
+
+        return $secure;
     }
 }

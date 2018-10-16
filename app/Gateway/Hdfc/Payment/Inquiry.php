@@ -2,12 +2,14 @@
 
 namespace RZP\Gateway\Hdfc\Payment;
 
+use Illuminate\Support\Facades\Auth;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Hdfc\Payment;
+use RZP\Models\Payment\AuthType;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
@@ -64,6 +66,14 @@ trait Inquiry
 
             return true;
         }
+        else if (($data['result'] === 'FAILURE(SUSPECT)') and
+                 ($data['trackid'] === $input['refund']['id']) and
+                 ((int) ($data['amt'] * 100) === $input['refund']['amount']) and
+                 (empty($data['authRespCode']) === false) and
+                 (Hdfc\AuthRespCode::shouldRetryRefund($data['authRespCode']) === true))
+        {
+            return false;
+        }
 
         $this->trace->critical(
             TraceCode::GATEWAY_REFUND_VERIFY_UNEXPECTED,
@@ -111,6 +121,16 @@ trait Inquiry
         // enroll_result is null
         $payments = $this->repo->findPaymentsByPaymentIdToVerify($input['payment']['id']);
 
+        if (($input['payment']['auth_type'] === AuthType::PIN) or
+            ($this->isSecondRecurringPaymentRequest($input) === true))
+        {
+            $payment = $payments->first();
+
+            $verify->payment = $payment;
+
+            return $payment;
+        }
+
         $payment = $payments->filter(function ($payment)
         {
             return ($payment->getEnrollResult() !== null);
@@ -149,7 +169,8 @@ trait Inquiry
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($this->wasEnrollSuccessful($gatewayPayment) === false)
+        if (($this->wasEnrollSuccessful($gatewayPayment) === false) and
+            ($input['payment']['auth_type'] !==AuthType::PIN ))
         {
             $verify->match = true;
 
@@ -362,7 +383,6 @@ trait Inquiry
         // Gets the request array for verify from gateway
         $requestContent = $this->getPaymentVerifyRequestContentArray($verify);
 
-        // Sets the gateway URL for the inquiry (verifying payment status)
         $this->inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
 
         // Sets the request body for the inquiry (verifying payment status)
@@ -384,6 +404,7 @@ trait Inquiry
             $this->inquiryRequest,
             $this->inquiryResponse);
 
+
         $this->checkAndSetResponseResult($payment);
 
         $inquiryResponse = $this->inquiryResponse;
@@ -391,9 +412,10 @@ trait Inquiry
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'payment_id' => $payment->getPaymentId(),
-                'xml' => $inquiryResponse['xml'],
-                'response_content' => $inquiryResponse['data']
+                'payment_id'        => $payment->getPaymentId(),
+                'xml'               => $inquiryResponse['xml'],
+                'response_content'  => $inquiryResponse['data'],
+                'gateway'           => $this->gateway
             ]);
 
         $verify->verifyResponse = $inquiryResponse;

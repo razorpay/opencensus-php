@@ -19,10 +19,11 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
@@ -36,7 +37,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
-            ['input' => $input]);
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+            ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
@@ -46,6 +50,8 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -97,6 +103,95 @@ class Core extends Base\Core
         });
     }
 
+    /**
+     * fetches activation flow from business category and subcategory and
+     * updates merchant activation flow
+     *
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $category    = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+    }
+
+    /**
+     * on business category or subcategory change updates merchant category and category2 data
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(
+        Entity $merchantDetails,
+        Merchant\Entity $merchant)
+    {
+        $category    = $merchantDetails->getBusinessCategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        {
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+        }
+    }
+
+    public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
+            [
+                'input' => $input,
+            ]);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->getValidator()->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
+
+        $merchantDetails->edit($input, 'instant_activation');
+
+        $merchantValidator = new Merchant\Validator;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+            $this->autoUpdateMerchantActivationFlow($merchantDetails);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
+
+            $activationFlowImpl->process($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
+
+            // used to show the progress of the activation form on the dashboard
+            $activationProgress = $response['verification']['activation_progress'];
+
+            $merchantDetails->setActivationProgress($activationProgress);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            return $response;
+        });
+    }
+
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
     {
         $merchantDetails = $merchant->merchantDetail;
@@ -122,9 +217,9 @@ class Core extends Base\Core
      */
     public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
     {
-        $merchantDetails->getValidator()->validateInput('patchMerchantDetails', $input);
+        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
 
-        $merchantDetails->edit($input);
+        $merchantDetails->edit($input, 'patchMerchantDetails');
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -572,10 +667,12 @@ class Core extends Base\Core
 
     /**
      * This function is used for updating merchant website details
+     *
      * @param Entity $merchantDetails
-     * @param array $input
+     * @param array  $input
      *
      * @return Entity
+     * @throws \Exception
      */
     public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
     {
@@ -593,14 +690,22 @@ class Core extends Base\Core
 
             $merchant = $merchantDetails->merchant;
 
-            // website is being synced to merchant entity as well
+            // Website is being synced to merchant entity as well
             $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
 
             $this->repo->saveOrFail($merchant);
-
-            // admin must be notified through email about the website details update
-            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
         });
+
+        //
+        // If the merchant is activated, admins must be notified via email about the website
+        // details update, so they can review the change.
+        // However, for a merchant who is not activated yet, this change is reviewed during
+        // merchant activation
+        //
+        if ($merchantDetails->merchant->isActivated() === true)
+        {
+            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
+        }
 
         return $merchantDetails;
     }
@@ -647,13 +752,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function createResponse(Entity $merchantDetails)
+    public function getValidationFields(Entity $merchantDetails): array
     {
-        $merchantDetailsArr = $merchantDetails->toArray();
-
-        $response = $merchantDetails->toArrayPublic();
-
-        $requiredFields = [];
+        // @todo: Activation flow will define its own validation fields
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
@@ -691,12 +792,34 @@ class Core extends Base\Core
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
+        }
+
+        return $validationFields;
+    }
+
+    public function createResponse(Entity $merchantDetails): array
+    {
+        $merchantDetailsArr = $merchantDetails->toArray();
+
+        $response = $merchantDetails->toArrayPublic();
+
+        $requiredFields = [];
+
+        $validationFields = $this->getValidationFields($merchantDetails);
+
+        $merchant = $merchantDetails->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $parentMerchant = $merchant->parent;
 
             //
             // set key `need_kyc` for the client to determine where full KYC is needed
             // for a linked accounts activation
             //
-            $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['need_kyc']                   = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account']             = true;
+            $response['marketplace_merchant_name']  = $parentMerchant->getName();
         }
 
         $currentActivationState = $merchant->currentActivationState();
@@ -713,6 +836,12 @@ class Core extends Base\Core
 
         foreach ($validationFields as $key)
         {
+            //
+            // Add the key to the list of the required fields if:
+            // - The key that needs to be validated is not present in the merchant details array
+            // - Or, if the value for the key is null
+            // - Or, if the value is not a boolean and is empty (empty(false) => true)
+            //
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                 (is_null($merchantDetailsArr[$key]) === true) or
                 ((is_bool($merchantDetailsArr[$key]) !== true) and
@@ -745,7 +874,8 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]      = $merchant->isLive();
 
         return $response;
     }

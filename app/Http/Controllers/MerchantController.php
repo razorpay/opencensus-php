@@ -7,9 +7,9 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Report;
+use RZP\Models\Gateway;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -57,6 +57,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLinkedAccountMerchantEmail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editLinkedAccountEmail($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchantConfig()
     {
         $input = Request::all();
@@ -95,6 +104,15 @@ class MerchantController extends Controller
     public function getMerchant($id)
     {
         $data = $this->service()->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function onboardMerchantOnGateway($id)
+    {
+        $input = Request::all();
+
+        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -247,6 +265,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccountChangeStatus($id)
     {
         $input = Request::all();
@@ -310,6 +337,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMethods($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();
@@ -321,6 +357,13 @@ class MerchantController extends Controller
     public function getAccountConfig()
     {
         $data = $this->service()->fetchConfig();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountConfigInternal()
+    {
+        $data = $this->service()->fetchConfig($isInternal = true);
 
         return ApiResponse::json($data);
     }
@@ -357,9 +400,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantBeneficiaryFile($channel)
+    public function getMerchantBeneficiary($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile($this->input, $channel);
+        $data = $this->service()->getMerchantBeneficiary($this->input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -417,11 +460,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMerchantBeneficiaryFile($channel)
+    public function postMerchantBeneficiary($channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->postMerchantBeneficiaryFile($input, $channel);
+        $data = $this->service()->postMerchantBeneficiary($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -613,6 +656,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEarlySettlementPricingForMerchant()
+    {
+        $data = $this->service()->getEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
@@ -647,6 +697,15 @@ class MerchantController extends Controller
         $data = $service->fetchMultiple($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function bulkCreateMerchantCredits(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->bulkCreateCredits($input);
+
+        return ApiResponse::json($response);
     }
 // --------------------- End Credits API Handlers -----------------------------------------
 
@@ -814,6 +873,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getAssociatedAccounts(string $merchantId)
+    {
+        $data = $this->service()->fetchAssociatedAccounts($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function addTags($id)
     {
         $input = Request::all();
@@ -874,6 +940,17 @@ class MerchantController extends Controller
     }
 
     /**
+     * Bulk updates merchant attributes against given CSV input(refer service method).
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bulkEditMerchantAttributes()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->bulkEditMerchantAttributes($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Sends OAuth notification mails. This route is called by auth service.
      *
      * @param string $type - Type of event, e.g. app_authorized (When merchant
@@ -892,7 +969,7 @@ class MerchantController extends Controller
 
     public function getPublicGatewayDowntimeData()
     {
-        $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+        $data = $this->service(E::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
     }
@@ -988,5 +1065,74 @@ class MerchantController extends Controller
         $data = (new AccessMap\Service)->updateMapFromTokens();
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createPartnerAccessMap(string $merchantId)
+    {
+        $response = $this->service()->createPartnerAccessMap($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function deletePartnerAccessMap(string $merchantId)
+    {
+        $this->service()->deletePartnerAccessMap($merchantId);
+
+        return ApiResponse::json([], 204);
+    }
+
+    public function getSubmerchant(string $submerchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchant($submerchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listSubmerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listSubmerchants($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantBeneficiaryThroughApi($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateLinkedAccountDashboardAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLinkedAccountDashboardAccess($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function saveInstantActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->saveInstantActivationDetails($input);
+
+        return ApiResponse::json($response);
     }
 }

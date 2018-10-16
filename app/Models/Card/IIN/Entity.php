@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const FLOWS         = 'flows';
     const ENABLED       = 'enabled';
     const LOCKED        = 'locked';
+    const NUMBER        = 'number';
 
     const INTERNATIONAL = 'international';
 
@@ -231,6 +232,20 @@ class Entity extends Base\PublicEntity
     public function setOtpRead($flag)
     {
         $this->setAttribute(self::OTP_READ, $flag);
+    }
+
+    public function setFlows($bitmap)
+    {
+        $this->setAttribute(self::FLOWS, $bitmap);
+    }
+
+    public function disableFlow($flow)
+    {
+        $flows = $this->getFlows();
+
+        $bitmap = Flow::disableFlow($flows, $flow);
+
+        $this->setFlows($bitmap);
     }
 
     protected function getOtpReadAttribute()

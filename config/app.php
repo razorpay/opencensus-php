@@ -181,7 +181,6 @@ return array(
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
-        RZP\Services\Metrics\ServiceProvider::class,
     ],
 
     /*
@@ -250,7 +249,6 @@ return array(
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
-        'Metrics'         => RZP\Services\Metrics\Facade::class,
     ],
 
     'context'                      => env('CONTEXT'),
@@ -285,6 +283,14 @@ return array(
 
     'signup' => [
         'nocaptcha_secret' => env('NOCAPTCHA_SECRET', ''),
+    ],
+
+    'payment_link' => [
+        'gcaptcha_key' => env('PAYMENT_LINK_GCAPTCHA_KEY'),
+    ],
+
+    'customer_refund_details' => [
+        'nocaptcha_secret' => env('WEBPAGE_GCAPTCHA_SECRET', ''),
     ],
 
     'query_cache' => [

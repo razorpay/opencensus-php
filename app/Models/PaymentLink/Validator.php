@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
@@ -21,7 +22,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -29,10 +30,11 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
@@ -40,6 +42,8 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        // Todo: Discuss with product on should making slug null be allowed in patch requests?
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
     ];
 
     protected static $sendNotificationRules = [
@@ -82,6 +86,36 @@ class Validator extends Base\Validator
                 Entity::TIMES_PAYABLE,
                 [
                     Entity::TIMES_PAYABLE => $value,
+                ]);
+        }
+    }
+
+    /**
+     * @param  string   $attribute
+     * @param  int|null $amount
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateAmount(string $attribute, int $amount = null)
+    {
+        $paymentLink = $this->entity;
+
+        if ($amount === null)
+        {
+            return;
+        }
+
+        // If amount is set, validate that it doesn't exceeds max payment amount allowed for merchant
+        $maxAmountAllowed = $paymentLink->merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new BadRequestValidationFailureException(
+                'Amount exceeds maximum payment amount allowed',
+                Entity::AMOUNT,
+                [
+                    Entity::ID                          => $paymentLink->getId(),
+                    Entity::AMOUNT                      => $amount,
+                    Merchant\Entity::MAX_PAYMENT_AMOUNT => $maxAmountAllowed,
                 ]);
         }
     }
@@ -175,7 +209,7 @@ class Validator extends Base\Validator
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount     = $payment->getAmount();
+        $paymentAmount     = $payment->getAdjustedAmountWrtCustFeeBearer();
         $paymentLinkAmount = $this->entity->getAmount();
 
         if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))

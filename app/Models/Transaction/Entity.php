@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const CREDIT              = 'credit';
     const CURRENCY            = 'currency';
     const FEE                 = 'fee';
+    const MDR                 = 'mdr';
     const TAX                 = 'tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
@@ -51,6 +52,18 @@ class Entity extends Base\PublicEntity
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
+
+    // dummy columns usable later
+    const REFERENCE1          = 'reference1';
+    const REFERENCE2          = 'reference2';
+    const REFERENCE3          = 'reference3';
+    const REFERENCE4          = 'reference4';
+    const REFERENCE5          = 'reference5';
+    const REFERENCE6          = 'reference6';
+    const REFERENCE7          = 'reference7';
+    const REFERENCE8          = 'reference8';
+    const REFERENCE9          = 'reference9';
+    const REFERENCE10         = 'reference10';
 
     const PAYMENT_ID        = 'payment_id';
 
@@ -132,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::TAX                   => null,
+        self::MDR                   => null,
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
@@ -143,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::FEE,
         self::TAX,
+        self::MDR,
     ];
 
     protected $casts = [
@@ -332,6 +347,16 @@ class Entity extends Base\PublicEntity
         return Merchant\FeeModel::getFeeModelStringForValue($feeModel);
     }
 
+    protected function getMdrAttribute($mdr)
+    {
+        if ($mdr === null)
+        {
+            return $this->getFee();
+        }
+
+        return $mdr;
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
 /* --------------------------- Mutators --------------------------------------*/
@@ -456,6 +481,11 @@ class Entity extends Base\PublicEntity
         assert ($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setMdr(int $mdr)
+    {
+        $this->setAttribute(self::MDR, $mdr);
     }
 
     public function setCredit($credit)
@@ -776,5 +806,10 @@ class Entity extends Base\PublicEntity
         $entityId = [self::ENTITY_ID => $this->getEntityId()];
 
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
+    }
+
+        public function getReconTimeFromTransactionCreationInMinutes(): int
+    {
+        return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
     }
 }

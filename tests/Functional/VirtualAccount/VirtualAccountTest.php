@@ -2,14 +2,16 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
-use Closure;
 use Mockery;
-use RZP\Exception\BadRequestException;
+use Closure;
+use RZP\Models\Terminal\Type;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\VirtualAccount\Status;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 /**
@@ -19,10 +21,9 @@ class VirtualAccountTest extends TestCase
 {
     protected $t1;
     protected $t2;
+    use PaymentTrait;
     use MocksDnsTrait;
-    use EntityActionTrait;
     use VirtualAccountTrait;
-    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -42,9 +43,11 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
-
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
@@ -68,11 +71,7 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $response = $this->createVirtualAccountForOrder($order, [
-            'notes' => [
-                'a' => 'b',
-            ],
-        ]);
+        $response = $this->createVirtualAccountForOrder($order);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -80,7 +79,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
         $this->assertEquals('order', $virtualAccount['entity_type']);
 
@@ -94,7 +93,14 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals($originalVirtualAccountId, $virtualAccount['id']);
 
+        $lastBankAccount = $this->getLastEntity('bank_account', true);
+
         $this->closeVirtualAccount($virtualAccount['id']);
+
+        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+
+        // Because Bank Account is deleted when VA is closed
+        $this->assertNotEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
 
         // If the old VA is closed, then another request would create a new one
         $this->createVirtualAccountForOrder($order);
@@ -115,7 +121,7 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(1005900, $virtualAccount['amount_expected']);
+        $this->assertEquals($order->getAmount(), $virtualAccount['amount_expected']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
     }
 
@@ -124,8 +130,17 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountValidationFailure()
+    {
+        // This is to check that validation rules on receiver attribute should stop after the first validation failure.
+        // In this specific case custom validation will not run. Validation will bail after array validation failure.
+        // If custom validation was still running then 2nd argument passed to it would have been invalid.
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountCrypto()
     {
+        // Currently BharatQR generation is also blocked in the same flow.
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
 
         $data = $this->testData[__FUNCTION__];
@@ -373,48 +388,69 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is unset so default root is used with default handle
+        // Root and handle from numeric shared terminal will be used.
         $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
 
-        $this->fixtures->merchant->setHandle('hand');
-
-        $this->createVirtualAccount([], false, 'desc1234');
+        $this->createVirtualAccount([], false);
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given descriptor
-        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+        // Root and handle from alpha numeric shared terminal will be used.
+        $this->assertStringStartsWith("RZRPRPAY", $vba['account_number']);
+
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'ROHI',
+            'gateway_merchant_id2'  => 'TKES',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->createVirtualAccount([], false, 'hwani123');
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Terminal is associated so root from there and given descriptor will be used.
+        $this->assertEquals("ROHITKESHWANI123", $vba['account_number']);
 
         $this->createVirtualAccount([], true);
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set, but numeric accounts can still be created
+        // Alpha Numeric terminal is associated, but numeric accounts can still be created using shared terminal
         $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
     {
-        // Without handle
+        // With shared terminal
         $response = $this->createVirtualAccountOldFormat();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is not set so default root is used with given descriptor
+        // No Terminal is associated so default shared terminal root is used with random descriptor
         $this->assertStringStartsWith('11122200', $vba['account_number']);
 
-        // With handle
-        $this->fixtures->merchant->setHandle('hand');
+        // With shared terminal
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '222333',
+            'gateway_merchant_id2'  => '01',
+            'type'                  => [
+                Type::NON_RECURRING       => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $response = $this->createVirtualAccountOldFormat([
-            'descriptor' => 'desc1234'
-        ]);
+        // Terminal is associated so this terminal's root is used with random descriptor
+        $response = $this->createVirtualAccountOldFormat();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given descriptor
-        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+        $this->assertStringStartsWith("22233301", $vba['account_number']);
 
-        $response = $this->createVirtualAccountOldFormat([]);
-        $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with random descriptor
-        $this->assertStringStartsWith("RZRPHAND", $vba['account_number']);
+        // Note: Custom descriptor is not supported anymore in old format and only Numeric bank accounts can be created.
     }
 
     public function testVirtualAccountCreateRequestUpdate()
@@ -423,95 +459,31 @@ class VirtualAccountTest extends TestCase
 
         // New format
         // receivers[types][]=bank_account
-        $response = $this->createVirtualAccount([]);
+        $this->createVirtualAccount();
         $vba = $this->getLastEntity('bank_account', true);
         $this->assertStringStartsWith('11122200', $vba['account_number']);
 
-        // Sending descriptor throws error, can't use with numeric
-        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        // Sending descriptor throws error, can only be used with direct terminal.
         $this->runRequestResponseFlow($data['descriptorWithNumeric'], function() {
-            $response = $this->createVirtualAccount([], true, "desc");
+            $this->createVirtualAccount([], true, "12345678");
         });
-
-        // Alphanumeric succeeds
-        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0
-        $response = $this->createVirtualAccount([], false);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('RAZORPAY', $vba['account_number']);
-
-        // Alphanumeric fails with descriptor, as handle isn't set
-        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0&descriptor=desc
-        $this->runRequestResponseFlow($data['descriptorWithAlphaWithoutHandle'], function() {
-            $response = $this->createVirtualAccount([], false, 'desc');
-        });
-
-        // With handle
-        $this->fixtures->merchant->setHandle('hand');
-
-        // New format with handle
-        // receivers[types][]=bank_account
-        $response = $this->createVirtualAccount([]);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11122200', $vba['account_number']);
-
-        // Sending descriptor throws error, can't use with numeric
-        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
-        $this->runRequestResponseFlow($data['descriptorWithNumericWithHandle'], function() {
-            $response = $this->createVirtualAccount([], true, 'desc');
-        });
-
-        // Numeric false, without descriptor, gives random descriptor
-        $response = $this->createVirtualAccount([], false);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('RZRPHAND', $vba['account_number']);
-
-        // Numeric false, with descriptor
-        $response = $this->createVirtualAccount([], false, 'desc');
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertEquals('RZRPHANDDESC', $vba['account_number']);
-    }
-
-    public function testCreateVirtualAccountDescriptorLengths()
-    {
-        // Descriptor lengths are only relevant
-        // (i.e. configurable) for alphanumeric accounts
-        $this->markTestSkipped('Alphanumeric account are no longer supported');
-
-        $this->fixtures->merchant->setHandle('hand');
-
-        $this->createVirtualAccount([], false, '9chardesc');
-
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
-
-        // Only upto nine chars allows in descriptor
-        $data = $this->testData[__FUNCTION__];
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount([], false, '10chardesc');
-        });
-
-        // Shortening handle to 3 characters
-        $this->fixtures->merchant->setHandle('han');
-
-        // Now 10 characters are allows
-        $this->createVirtualAccount([], false, '10chardesc');
-
-        $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
-        $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountDescriptorInvalidLength()
     {
-        // Shortening handle to 3 characters
-        $this->fixtures->merchant->setHandle('han');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        //
-        // 10 char descriptors were previously allowed
-        // with numeric VAs for 3char handle merchants.
-        //
-        // These are now completely blocked.
-        //
+        // passed descriptor length is wrong as root + handle + descriptor should be 16
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {
@@ -521,26 +493,46 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()
     {
-        $this->fixtures->merchant->setHandle('hand');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $this->createVirtualAccount([],false, 'samedesc');
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => 'samedesc']);
+            $this->createVirtualAccount([],false, 'samedesc');
         });
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptorAfterClosing()
     {
-        $this->fixtures->merchant->setHandle('hand');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $virtualAccount = $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $virtualAccount =  $this->createVirtualAccount([],false, 'samedesc');
 
         $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $this->createVirtualAccount([],false, 'samedesc');
     }
 
     public function testFetchVirtualAccount()
@@ -568,11 +560,33 @@ class VirtualAccountTest extends TestCase
 
     public function testEditVirtualAccount()
     {
+        // Via close Virtual Account API
         $virtualAccount = $this->createVirtualAccount();
+
+        $lastBankAccount = $this->getLastEntity('bank_account', true);
 
         $response = $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->assertEquals('closed', $response['status']);
+        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+
+        // Because Bank Account is deleted when VA is closed
+        $this->assertNotEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
+
+        $this->assertEquals(Status::CLOSED, $response['status']);
+
+        // Via edit Virtual Account API
+        $virtualAccount = $this->createVirtualAccount();
+
+        $lastBankAccount = $this->getLastEntity('bank_account', true);
+
+        $response = $this->closeVirtualAccountViaEdit($virtualAccount['id']);
+
+        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+
+        // Because Bank Account is not deleted when VA is closed via edit flow
+        $this->assertEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
+
+        $this->assertEquals(Status::CLOSED, $response['status']);
     }
 
     public function testVirtualAccountPay()
@@ -585,12 +599,12 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(10000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -605,7 +619,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -618,6 +632,119 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPayment()
+    {
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentExcessAmount()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(2000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentPartialAmount()
+    {
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentMultiple()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20000]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(2500000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
     }
 
     public function testVirtualAccountForOrderPayCustomerFeeBearer()
@@ -630,8 +757,8 @@ class VirtualAccountTest extends TestCase
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(1005900, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -643,24 +770,118 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
-    public function testVirtualAccountForOrderPayAndRefund()
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialPayment()
     {
-        $order = $this->fixtures->create('order');
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
 
         $virtualAccount = $this->createVirtualAccountForOrder($order);
 
-        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals(1005900, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialExcessPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20059]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(2000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals(2005900, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5059]);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        // Will see about this later
-        // $this->assertEquals(0, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20059]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(2500000, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+    }
+
+
+    public function testVirtualAccountForOrderPayAndRefund()
+    {
+        $order = $this->fixtures->create('order');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        // Make a payment with wrong order amount
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        // Will see about this later
+        // $this->assertEquals(0, $virtualAccount['amount_paid']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        // Order status will not change
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('created', $order['status']);
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -670,6 +891,25 @@ class VirtualAccountTest extends TestCase
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals('created', $refund['status']);
         $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        // Make a payment with right order amount
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1005000, $virtualAccount['amount_paid']);
+
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
     public function testVirtualAccountExcess()
@@ -683,7 +923,7 @@ class VirtualAccountTest extends TestCase
         // Account is paid in excess
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(11000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $this->refundVirtualAccountExcessPayments();
 
@@ -804,6 +1044,28 @@ class VirtualAccountTest extends TestCase
         });
 
         $this->payVirtualAccount($virtualAccount['id']);
+    }
+
+    public function testVirtualAccountMarkedClosed()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->createVirtualAccountForOrder($order);
+
+        $lastBankAccount = $this->getLastEntity('bank_account', true);
+
+        $payment = $this->fixtures->create('payment:authorized', ['order_id' => $order->getId()]);
+
+        $this->capturePayment('pay_'. $payment->getId(), $payment->getAmount());
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $updatedLastBankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount['status']);
+
+        // Because Bank Account is deleted too when VA is closed
+        $this->assertNotEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
     }
 
     protected function mockInfernoFire(Closure $closure)

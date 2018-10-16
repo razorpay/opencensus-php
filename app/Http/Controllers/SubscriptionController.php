@@ -121,9 +121,16 @@ class SubscriptionController extends Controller
         return ApiResponse::json($summary);
     }
 
-    public function postChargeSubscriptionInvoiceManually($invoiceId)
+    public function postChargeSubscriptionInvoiceManuallyOld($invoiceId)
     {
-        $invoice = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
+        $invoice = $this->service()->chargeSubscriptionInvoiceManuallyOld($invoiceId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function postChargeSubscriptionInvoiceManually($subscriptionId, $invoiceId)
+    {
+        $invoice = $this->service()->chargeSubscriptionInvoiceManually($subscriptionId, $invoiceId);
 
         return ApiResponse::json($invoice);
     }

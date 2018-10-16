@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use DB;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -16,6 +17,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -25,8 +27,10 @@ use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -51,8 +55,9 @@ class Repository extends Base\Repository
         Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
-        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
     // These are admin allowed params to search on.
@@ -90,6 +95,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID,
         Entity::CUSTOMER_ID,
         Entity::PAYMENT_LINK_ID,
+        Entity::TRANSFER_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -105,6 +111,24 @@ class Repository extends Base\Repository
             (Merchant\Entity::hascustomerTransactionHistoryEnabled($merchant->getId()) === false))
         {
             throw new Exception\ExtraFieldsException($attribute);
+        }
+    }
+
+    /**
+     * This validates the expand route to allow transfer and settlement expand only for linked account merchants
+     * @param $attribute
+     * @param $value
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    protected function validateExpand($attribute, $value)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
+            (($value === 'transfer') or ($value === 'transfer.settlement')))
+        {
+            throw new Exception\ExtraFieldsException("expand=transfer");
         }
     }
 
@@ -139,6 +163,14 @@ class Repository extends Base\Repository
                     ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->status(Payment\Status::CAPTURED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+                    ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
                     ->get();
     }
 
@@ -315,6 +347,65 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+
+    /**
+     * Fetch the payments that are authorized, refund_at time has not been crossed yet,
+     * are within lower & upper time limits whose order's auto capture is set and
+     * merchant wants to capture late_auth payments
+     *
+     * @todo : We have hardcoded goibibo mid for now. We need to fix this.
+     *
+     * @param $from     int     Lower limit to capture payments
+     * @param $to       int     Upper limit to capture payments
+     *
+     * @return mixed
+     */
+    public function getAuthorizedAutoCapturePaymentsBetweenTimestamps(int $from, int $to)
+    {
+        $paymentRepo = $this->repo->payment;
+
+        $merchantRepo = $this->repo->merchant;
+
+        $orderRepo = $this->repo->order;
+
+        $paymentMerchantId = $paymentRepo->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $paymentOrderId = $paymentRepo->dbColumn(Payment\Entity::ORDER_ID);
+
+        $merchantId = $merchantRepo->dbColumn(Merchant\Entity::ID);
+
+        $orderId    = $orderRepo->dbColumn(Order\Entity::ID);
+
+        $paymentAuthorizedAt = $paymentRepo->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+
+        $paymentRefundAt = $paymentRepo->dbColumn(Payment\Entity::REFUND_AT);
+
+        $paymentMerchantId = $paymentRepo->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $merchantAutoCaptureLateAuth = $merchantRepo->dbColumn(Merchant\Entity::AUTO_CAPTURE_LATE_AUTH);
+
+        $orderPaymentCaptureFlag = $orderRepo->dbColumn(Order\Entity::PAYMENT_CAPTURE);
+
+        $query = $this->newQuery()
+                        ->select($this->dbColumn('*'))
+                        ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
+                        ->join(Table::ORDER, $paymentOrderId, '=', $orderId)
+                        ->whereBetween($paymentAuthorizedAt, [$from, $to])
+                        ->where($paymentStatus, '=', Payment\Status::AUTHORIZED)
+                        ->where($paymentRefundAt, '>', $currentTime)
+                        ->where($merchantAutoCaptureLateAuth, '=', true)
+                        ->where($orderPaymentCaptureFlag, '=', true)
+                        // '10000000000000', '1cXSLlUU8V9sXl' are test cases MID
+                        ->whereIn($paymentMerchantId, ['6ZLE5BE57SExGF', '10000000000000', '1cXSLlUU8V9sXl'])
+                        ->get();
+
+        return $query;
+    }
+
     public function getAutoCapturedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
         return $this->newQuery()
@@ -325,6 +416,25 @@ class Repository extends Base\Repository
                     ->orderBy(Payment\Entity::MERCHANT_ID, 'desc')
                     ->orderBy(Payment\Entity::ID, 'desc')
                     ->get();
+    }
+
+    public function getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways)
+    {
+        $query = $this->newQuery()
+                      ->where(Payment\Entity::VERIFY_AT, '<', $timestamp);
+
+        if ($gateway !== null)
+        {
+            $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+        }
+        else
+        {
+            $query->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
+        }
+
+        return $query->take($count)
+                     ->orderBy(Payment\Entity::VERIFY_AT, 'desc')
+                     ->get();
     }
 
     /**
@@ -361,7 +471,6 @@ class Repository extends Base\Repository
         {
             $query->where(Payment\Entity::GATEWAY, '=', $gateway);
         }
-
 
         if ($verifyStatus !== null)
         {
@@ -636,6 +745,39 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants(string $receipt, array $merchantIds)
+    {
+        /**
+         * SELECT `payments`.`*`
+         * FROM `payments`
+         * INNER JOIN `orders` ON `payments`.`order_id` = `orders`.`id`
+         * WHERE `payments`.`authorized_at` IS NOT NULL
+         * AND `orders`.`receipt` = ?
+         * AND `orders`.`authorized` = ?
+         * AND `orders`.`merchant_id` IN (?)
+         */
+
+        $ordersTable = $this->repo->order->getTableName();
+
+        $paymentCols = $this->dbColumn('*');
+        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
+        $paymentAuthorizedAtCol = $this->dbColumn(Entity::AUTHORIZED_AT);
+
+        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $orderMerchantIdCol = $this->repo->order->dbColumn(Order\Entity::MERCHANT_ID);
+        $orderAuthorizedCol = $this->repo->order->dbColumn(Order\Entity::AUTHORIZED);
+        $orderReceiptCol = $this->repo->order->dbColumn(Order\Entity::RECEIPT);
+
+        return $this->newQuery()
+                    ->select($paymentCols)
+                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
+                    ->whereNotNull($paymentAuthorizedAtCol)
+                    ->where($orderReceiptCol, $receipt)
+                    ->where($orderAuthorizedCol, true)
+                    ->whereIn($orderMerchantIdCol, $merchantIds)
+                    ->first();
+    }
+
     /**
      * Fetches all payments for on hold flag update with on_hold_until
      * timestamp earlier than timestamp parameter.
@@ -902,6 +1044,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAuthorizedPaymentCountForMerchants(array $merchantIds)
+    {
+        $dateFormat = '\'%Y-%m-%d\'';
+
+        $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'COUNT(*) AS count,' .
+                       'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
+                    )
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '<', $minCreatedAt)
+                    ->groupBy([Entity::MERCHANT_ID, 'dates'])
+                    ->get();
+    }
+
     public function fetchAuthorizedSummary()
     {
         return $this->newQuery()
@@ -913,11 +1073,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::TRANSFER_ID, $transferId)
                     ->merchantId($accountId)
+                    ->with($relations)
                     ->firstOrFailPublic();
     }
 
@@ -944,28 +1105,37 @@ class Repository extends Base\Repository
      */
     public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
     {
-        $ordersTable = $this->repo->order->getTableName();
-        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
-        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $entityOfferTable = $this->repo->entity_offer->getTableName();
         $paymentStatusCol = $this->dbColumn(Entity::STATUS);
-        $orderOfferIdCol = $this->repo->order->dbColumn(Order\Entity::OFFER_ID);
+        $entityOfferEntityIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
+        $entityOfferEntityTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
+        $entityOfferOfferIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
         $paymentCardIdCol = $this->dbColumn(Entity::CARD_ID);
         $paymentIdCol = $this->dbColumn(Entity::ID);
 
-        // Query executed - select count(payments.id) AS payment_count, orders.offer_id
-        // from `payments` inner join `orders` on `payments`.`order_id` = `orders`.`id`
-        // where `payments`.`status` = ? and `orders`.`offer_id` in (?) and `payments`.`card_id`
-        // in (?) having payment_count >= 1 group by `orders`.`offer_id`
-        return $this->newQuery()
-                    ->select(DB::raw("count($paymentIdCol) AS payment_count, $orderOfferIdCol"))
-                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
-                    ->where($paymentStatusCol, '=', Status::CAPTURED)
-                    ->whereIn($orderOfferIdCol, $offerIds)
-                    ->whereIn($paymentCardIdCol, $cardIds)
-                    ->groupBy($orderOfferIdCol)
-                    ->having('payment_count', '>=', 1)
-                    ->pluck('payment_count', 'offer_id')
-                    ->toArray();
+        //
+        // SELECT count(payments.id) AS payment_count,
+        //        entity_offer.offer_id
+        // FROM `payments`
+        // INNER JOIN `entity_offer` ON `payments`.`id` = `entity_offer`.`entity_id`
+        // WHERE `payments`.`status` = 'captured'
+        //   AND `entity_offer`.`entity_type` = 'payment'
+        //   AND `entity_offer`.`offer_id` IN (?)
+        //   AND `payments`.`card_id` IN (?)
+        // GROUP BY `entity_offer`.`offer_id`
+        // HAVING payment_count >= 1
+        //
+        $query = $this->newQuery()
+                      ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
+                      ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+                      ->where($paymentStatusCol, '=', Status::CAPTURED)
+                      ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+                      ->whereIn($entityOfferOfferIdCol, $offerIds)
+                      ->whereIn($paymentCardIdCol, $cardIds)
+                      ->groupBy($entityOfferOfferIdCol)
+                      ->having('payment_count', '>=', 1);
+
+        return $query->pluck('payment_count', 'offer_id')->toArray();
     }
 
     public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
@@ -990,10 +1160,10 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($paymentColumns)
                     ->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
-                        {
-                            $join->on($paymentReceiverId, '=', $qrcodeId);
-                            $join->orOn($paymentReceiverId, '=', $bankAccountId);
-                        })
+                    {
+                        $join->on($paymentReceiverId, '=', $qrcodeId);
+                        $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                    })
                     ->where($virtualAccountIdCol, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->orderByCreatedAt()
@@ -1089,7 +1259,7 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
-        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
 
         $selectCols = $this->dbColumn('*');
 
@@ -1107,7 +1277,7 @@ class Repository extends Base\Repository
                     ->where($paymentRecurringColumn, '=', 1)
                     ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->whereBetween($paymentAuthorizedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
@@ -1340,7 +1510,8 @@ class Repository extends Base\Repository
      *  - When correction flag is true the adds conition where created in given time frame
      *
      * - Here cut off amount is checked on base_amount to handle multiple currencies
-     *   In payments table base_amount field will hold the amount in INR(paise) regardless of what type of currency been used
+     *   In payments table base_amount field will hold the amount in
+     *   INR(paise) regardless of what type of currency been used
      *
      * @param string $merchantId
      * @param int    $start
@@ -1439,5 +1610,27 @@ class Repository extends Base\Repository
                     ->whereNull(Payment\Entity::RECEIVER_ID)
                     ->limit(1000)
                     ->get();
+    }
+
+    public function buildUpdateMdrQuery(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
+    {
+        $query = $this->newQuery()->with('transaction')
+                      ->where(Entity::GATEWAY, Payment\Gateway::HITACHI)
+                      ->whereBetween(Entity::CAPTURED_AT, [$lastUpdatedPaymentCapturedAt, 1533925800]);
+
+        if ($lastUpdatedPaymentId !== null)
+        {
+            $query->where(Entity::ID, '>', $lastUpdatedPaymentId);
+        }
+
+        return $query;
+    }
+
+    public function getLastCreatedEmandatePaymentByGateway($gateway)
+    {
+        return $this->newQuery()
+            ->where(Entity::METHOD, Method::EMANDATE)
+            ->where(Entity::GATEWAY, $gateway)
+            ->first();
     }
 }

@@ -6,7 +6,7 @@ Hi,
 
 Thanks for choosing Razorpay and welcome to the Future of Payments!
 
-If you have any queries, please reach out to us at support@razorpay.com
+If you have any queries, please reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
 
 Regards,
 Team Razorpay

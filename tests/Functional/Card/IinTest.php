@@ -64,7 +64,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'otpelf']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless']);
 
         $this->startTest();
     }
@@ -90,7 +90,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->fixtures->merchant->addFeatures(['headless']);
 
         $response = $this->startTest();
 
@@ -145,6 +145,37 @@ class IinTest extends TestCase
         $this->assertEquals('credit', $iin['type']);
         $this->assertEquals('RuPay', $iin['network']);
         $this->assertEquals(null, $iin['issuer']);
+    }
+
+    public function testGetCardPaymentFlowsFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlowsEmpty()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlows()
+    {
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function startTest($testDataToReplace = [])

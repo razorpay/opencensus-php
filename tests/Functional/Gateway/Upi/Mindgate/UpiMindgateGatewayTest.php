@@ -3,19 +3,22 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
 use RZP\Constants\Mode;
-use RZP\Constants\Entity as ConstantsEntity;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Base\Secure;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * @var Terminal
@@ -41,6 +44,8 @@ class UpiMindgateGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
     }
 
     /**
@@ -77,6 +82,7 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
+        $this->assertSame('00', $upiEntity['status_code']);
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);
@@ -165,6 +171,81 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('random@rzp', $payment['vpa']);
+    }
+
+    public function testSignedIntentPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_signed_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+        $this->assertArrayHasKey('qr_code_url', $response['data']);
+
+        $upi = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('pay', $upi['type']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $secure = new Secure([
+            Secure::PUBLIC_KEY => $payment->terminal['gateway_access_code'],
+        ]);
+
+        $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
+        $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
+    }
+
+    public function testSignedIntentInvoice()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_signed_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        // Adding current merchant for test only
+        \Cache::forever('npci_upi_demo',
+                        [
+                            'merchants' => [
+                                '10000000000000' => 'https://cdn.razorpay.com/i?',
+                            ],
+                        ]);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        \Cache::forget('npci_upi_demo');
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+        $this->assertArrayHasKey('qr_code_url', $response['data']);
+
+        $upi = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('pay', $upi['type']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $secure = new Secure([
+            Secure::PUBLIC_KEY => $payment->terminal['gateway_access_code'],
+        ]);
+
+        $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
+        $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
+
+        $this->assertContains('&url=', $response['data']['intent_url']);
+        $this->assertContains('&url=', $response['data']['qr_code_url']);
     }
 
     public function testUpiAmountCap()
@@ -425,6 +506,10 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertSame('ZA', $upiEntity['status_code']);
     }
 
     public function testPaymentWithExpiryPrivateAuth()
@@ -467,6 +552,9 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $entity['status']);
         $this->assertEquals(false, $entity['gateway_refunded']);
 
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('BT', $upi['status_code']);
     }
 
     public function testRetryRefund()
@@ -596,5 +684,127 @@ class UpiMindgateGatewayTest extends TestCase
         $status = $response['status'];
 
         $this->assertEquals($expectedStatus, $status);
+    }
+
+    protected function createUnexpectedPayment($data)
+    {
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
+
+        $response = $this->makeS2SCallbackAndGetContent($data);
+
+        return $response;
+    }
+
+    public function testUnexpectedPaymentSuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertTrue($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertNull($paymentEntity['verified']);
+
+        $this->verifyPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['verified'], 1);
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $refundUpiEntity = $this->getLastEntity('upi', true);
+
+        $refundTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'refunded'                            => $paymentEntity['status'],
+            $paymentEntity['id']                  => 'pay_' . $refundUpiEntity['payment_id'],
+            'refund'                              => $refundUpiEntity['action'],
+            'collect'                             => $refundUpiEntity['type'],
+            $paymentEntity['amount']              => $refundUpiEntity['amount'],
+            $refundEntity['id']                   => 'rfnd_' . $refundUpiEntity['refund_id'],
+            $paymentEntity['amount']              => $refundEntity['amount'],
+            'processed'                           => $refundEntity['status'],
+            $refundTransactionEntity['id']        => 'txn_' . $refundEntity['transaction_id'],
+            $refundTransactionEntity['entity_id'] => $refundEntity['id'],
+            $refundTransactionEntity['type']      => 'refund',
+            $refundTransactionEntity['amount']    => $refundEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
+    public function testUnexpectedPaymentFail()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertFalse($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity);
+    }
+
+    public function testDuplicateUnexpectedPayment()
+    {
+        $data = $this->testData['testUnexpectedPaymentSuccess'];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        /*
+            Only api success is checked , as the rest of the validation
+            is alreay done in testUnexpectedPaymentSuccess
+        */
+        $this->assertTrue($response['success']);
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertFalse($response['success']);
+
+        $paymentEntities = $this->getEntities('payment', array(), true);
+
+        $upiEntities = $this->getEntities('upi', array(), true);
+
+        $transactionEntities = $this->getEntities('transaction', array(), true);
+
+        $this->assertEquals(1, $paymentEntities['count']);
+
+        $this->assertEquals(1, $upiEntities['count']);
+
+        $this->assertEquals(1, $transactionEntities['count']);
     }
 }

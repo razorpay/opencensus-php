@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Constants\Mode;
 
 use RZP\Exception;
 use RZP\Error;
@@ -13,9 +14,11 @@ use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMa
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
@@ -439,6 +442,13 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($payment->hasBeenCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
+            );
+        }
+
         $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
@@ -608,22 +618,59 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function postPendingGatewayCapture($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_REQUEST,
+            $input
+        );
+
+        (new Payment\Validator)->validateInput('bulk_capture', $input);
+
+        if (isset($input['payment_ids']) === true)
+        {
+            $paymentIds = $input['payment_ids'];
+
+            Entity::verifyIdAndStripSignMultiple($paymentIds);
+
+            $payments = $this->repo->payment->findMany($paymentIds);
+        }
+        else
+        {
+            $from = Carbon::today(Timezone::IST)->subDays(8);
+            $to = Carbon::today(Timezone::IST)->subDays(3);
+
+            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to);
+        }
+
+        $total = $payments->count();
+        $success = 0;
+
+        foreach ($payments as $payment)
+        {
+            $result = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+
+            $success += intval($result);
+        }
+
+        return [
+            'total'   => $total,
+            'success' => $success
+        ];
+    }
+
     public function manualGatewayCapture($paymentId)
     {
         Entity::verifyIdAndSilentlyStripSign($paymentId);
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
-        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+        $result = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
 
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
-            [
-                'payment_id'    => $paymentId,
-                'data'          => $data
-            ]);
-
-        return $data;
+        return [
+            'payment_id' => $payment->getId(),
+            'result'     => $result
+        ];
     }
 
     /**
@@ -662,6 +709,24 @@ class Service extends Base\Service
         return $this->getNewProcessor($merchant)->s2sCallback($payment, $input);
     }
 
+    public function unexpectedCallback(array $input, string $referenceId, string $gateway)
+    {
+        $isProduction = ($this->app->environment('production') === true);
+
+        // set mode for unexpectecd payments
+        $mode = $isProduction ? Mode::LIVE : Mode::TEST;
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        // use demo accounts for unexpected payments
+        $merchantId = $isProduction ? Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        return $this->getNewProcessor($merchant)
+                    ->authorizePush($input, $referenceId, $gateway);
+    }
+
     public function fetchMultiple(array $input)
     {
         $merchantId = $this->merchant->getId();
@@ -688,9 +753,38 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $data = $merchant->getPaymentFlows($iinEntity);
+        $flows = $merchant->getPaymentFlows($iinEntity);
+
+        $data = $flows;
+
+        $data['flows'] = $data;
+
+        if (isset($input['order_id']) === true)
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+            if ($order->hasOffers() === true)
+            {
+                $payment = $this->getDummyPayment($order, $iinEntity);
+
+                $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
+
+                $data['offers'] = $applicableOffers;
+            }
+        }
 
         return $data;
+    }
+
+    public function getPaymentFlowsPrivate(array $input)
+    {
+        (new Card\Validator)->validateInput('card_number', $input);
+
+        $iin = substr($input['card_number'], 0, 6);
+        unset($input['card_number']);
+        $input['iin'] = $iin;
+
+        return $this->getPaymentFlows($input);
     }
 
     /**
@@ -1010,13 +1104,19 @@ class Service extends Base\Service
 
     public function autoCaptureOldAuthorizedPayments()
     {
-        $timeLowerLimit = time() - (48 * 60 * 60);
-        $timeUpperLimit = time() - (24 * 60 * 60);
+        $timeLowerLimit = Carbon::now()->subHour()->getTimestamp();
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps(
-                            $timeLowerLimit, $timeUpperLimit);
+        $timeUpperLimit = Carbon::now()->subMinutes(5)->getTimestamp();
 
-        $count = 0;
+        $payments = $this->repo
+                         ->payment
+                         ->getAuthorizedAutoCapturePaymentsBetweenTimestamps(
+                            $timeLowerLimit, $timeUpperLimit
+                         );
+
+        $success          = 0;
+        $totalCount       = count($payments);
+        $failedPaymentIds = [];
 
         foreach ($payments as $payment)
         {
@@ -1024,17 +1124,37 @@ class Service extends Base\Service
 
             try
             {
-                $this->getNewProcessor()->autoCapturePayment($payment);
+                $this->getNewProcessor()->autoCapturePaymentIfApplicable($payment);
+
+                $success++;
             }
             catch (Exception\RecoverableException $e)
             {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                    [
+                        'step'          => 'auto_capture_authorized',
+                        'payment_id'    => $payment->getId()
+                    ]
+                );
+
+                $failedPaymentIds[] = $payment->getId();
+
                 continue;
             }
-
-            $count++;
         }
 
-        return ['count' => $count];
+        $dataToTrace = [
+            'count'              => $totalCount,
+            'success_count'      => $success,
+            'failed_payment_ids' => $failedPaymentIds
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_AUTO_CAPTURE_CRON, $dataToTrace);
+
+        return $dataToTrace;
     }
 
     public function deliverAutoCaptureEmail()
@@ -1069,6 +1189,21 @@ class Service extends Base\Service
         }
 
         return ['payments_count' => $count, 'emails_count' => $emailCount];
+    }
+
+    public function verifyAllPayments(array $input)
+    {
+        (new Payment\Validator)->validateInput('verify_all', $input);
+
+        $gateway = $input['gateway'] ?? null;
+
+        $delay = $input['delay'] ?? 0;
+
+        $count = $input['count'] ?? 200;
+
+        $timestamp = Carbon::now(Timezone::IST)->subHours($delay)->getTimestamp();
+
+        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
 
     public function verifyPaymentsInBulk(array $input)
@@ -1362,5 +1497,26 @@ class Service extends Base\Service
 
             return true;
         });
+    }
+
+    private function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
+    {
+        $payment = new Payment\Entity;
+
+        $card = new Card\Entity;
+
+        $payment->merchant()->associate($this->merchant);
+
+        $paymentInput = $payment->getDummyPaymentArray(Payment\Method::CARD, null, $iinEntity->getNetworkCode());
+
+        $payment->fill($paymentInput);
+
+        $cardInput = $card->getDummyCardArray(null, $iinEntity);
+
+        $card->fill($cardInput);
+
+        $payment->card()->associate($card);
+
+        return $payment;
     }
 }

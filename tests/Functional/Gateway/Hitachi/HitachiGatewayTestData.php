@@ -194,14 +194,14 @@ return [
         'entity'            => 'payment',
     ],
     'testPaymentEnrollEntity' => [
-        'entity'      => 'hitachi',
-        'action'      => 'authorize',
-        'received'    => true,
-        'amount'      => 50000,
-        'currency'    => 'INR',
-        'pAuthStatus' => 'Y',
-        'pECI'        => '06',
-        'pALGO'       => 2,
+        'entity'                 => 'hitachi',
+        'action'                 => 'authorize',
+        'received'               => true,
+        'amount'                 => 50000,
+        'currency'               => 'INR',
+        'pAuthStatus'            => 'Y',
+        'pECI'                   => '06',
+        'pALGO'                  => 2,
     ],
 
     'testPaymentNotEnrollEntity' => [
@@ -368,15 +368,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
             'gateway_error_code'    => '79',
             'gateway_error_desc'    => 'No Response Message found in mapping',
         ],
@@ -415,16 +415,49 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
             'gateway_error_code'    => '30',
         ],
+    ],
+
+    'testExpressPayNotEnrolled' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'card',
+        'status'            => 'authorized',
+        'two_factor_auth'   => 'not_applicable',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'            => 'hitachi',
+        'terminal_id'        => '100HitachiTmnl',
+        'entity'             => 'payment',
+    ],
+
+    'motoTransactionRequest' => [
+        'pTranType' => 'MT',
+        'pECI'      => '07',
+        'pPan'      => '5567630000002004',
+        'pXID'      => '',
+        'pALGO'     => '',
+        'pCAVV2'    => '',
+        'pUCAF'     => '',
     ],
 ];

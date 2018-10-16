@@ -64,6 +64,11 @@ class Service extends Impl\Base
         return $this->services;
     }
 
+    public function setNoFallback()
+    {
+        $this->allowFallback = false;
+    }
+
     /**
      * Shorten given url.
      *
@@ -120,7 +125,7 @@ class Service extends Impl\Base
      * @return Impl\Base
      * @throws Exception\RuntimeException
      */
-    protected function driver(string $service)
+    public function driver(string $service)
     {
         if (isset($this->drivers[$service]) === false)
         {

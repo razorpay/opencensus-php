@@ -47,13 +47,25 @@ class ViewSerializer extends Base\Core
 
     public function serializeForHosted(): array
     {
-        return [
+        $payload = [
             'key_id'         => $this->getMerchantKeyId(),
             'is_test_mode'   => ($this->mode === Mode::TEST),
             'environment'    => $this->app->environment(),
             E::MERCHANT      => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
         ];
+
+        // Temporary hack: Specific to Apspdcl flow, adds few endpoints to be used by general view.
+        $checkoutUrl = $this->app['config']->get('app.checkout');
+        $payload += [
+            'endpoints' => [
+                'details' => "{$checkoutUrl}/integration/{$this->mode}/apspdcl/pages/{$this->paymentLink->getPublicId()}/details",
+                'order'   => "{$checkoutUrl}/integration/{$this->mode}/apspdcl/pages/{$this->paymentLink->getPublicId()}/order",
+            ],
+            'gcaptcha_key' => $this->app['config']->get('app.payment_link.gcaptcha_key'),
+        ];
+
+        return $payload;
     }
 
     public function serializeForInternal(): array
@@ -79,7 +91,7 @@ class ViewSerializer extends Base\Core
     {
         return [
             'id'               => $this->merchant->getId(),
-            'name'             => $this->merchant->getName(),
+            'name'             => $this->merchant->getBillingLabel(),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),

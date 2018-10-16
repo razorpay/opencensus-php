@@ -7,8 +7,11 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
@@ -32,7 +35,35 @@ class GatewayController extends Controller
         // Some gateways may need some pre-processing on the input
         // to be able to call the next few methods.
         //
-        // Eg: gateway request needs to be decrypted
+        // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
+        // TODO: change this to utilize callGatewayFunction
+        $input = $gateway->preProcessServerCallback($input);
+
+        // TODO: this should also utilize callGatewayFunction, although we should have
+        // used preProcessServerCallback itself to return it in some way
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        // This is hackish, we find mode based on searchin in both DB's
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if ($mode === null)
+        {
+            return (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+        }
+        else
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $paymentId = Payment\Entity::getSignedId($paymentId);
+
+            return (new Payment\Service)->s2sCallback($paymentId, $input);
+        }
+    }
+
+    protected function handleServerCallback($input, $gatewayDriver)
+    {
+        $gateway = $this->app['gateway']->gateway($gatewayDriver);
+
         $input = $gateway->preProcessServerCallback($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
@@ -41,8 +72,8 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-        throw new Exception\LogicException(
-            'Payment id not found in either database',
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => $gatewayDriver,
@@ -56,7 +87,22 @@ class GatewayController extends Controller
 
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
-        return (new Payment\Service)->s2sCallback($paymentId, $input);
+        $postInput = [
+            'gateway'   => $input,
+        ];
+
+        try
+        {
+            $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+
+            $response = $gateway->postProcessServerCallback($postInput);
+        }
+        catch (\Exception $exception)
+        {
+            $response = $gateway->postProcessServerCallback($postInput, $exception);
+        }
+
+        return $response;
     }
 
     protected function callbackEbs($input)
@@ -74,7 +120,11 @@ class GatewayController extends Controller
         if ($mode === null)
         {
             throw new Exception\LogicException(
-                'Payment id not found in either database: ' . $paymentId);
+                'Payment id not found in either database',
+                null,
+                [
+                    'payment_id' => $paymentId
+                ]);
         }
 
         $this->app['basicauth']->setMode($mode);
@@ -143,6 +193,9 @@ class GatewayController extends Controller
                 $data = $this->processServerCallback($input, Gateway::UPI_HULK);
 
                 break;
+
+            case Gateway::UPI_AXIS:
+                $data = $this->handleServerCallback($input, $gateway);
 
         }
 
@@ -286,9 +339,20 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    public function callbackAmazonpay()
+    public function callbackAmazonpay($responseFormat = 'html')
     {
         $input = Request::all();
+
+        if (isset($input[AmazonResponse::SELLER_ORDER_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'gateway' => Gateway::WALLET_AMAZONPAY,
+                    'input'   => $input,
+                ]);
+        }
 
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -322,7 +386,18 @@ class GatewayController extends Controller
         $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
         $publicKey = $keys->first()->getPublicKey($mode);
 
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+        switch ($responseFormat)
+        {
+            case 'ajax':
+                $route = 'payment_callback_ajax_with_key_get';
+                break;
+
+            default:
+                $route = 'payment_callback_with_key_get';
+                break;
+        }
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey, $route);
 
         $query = http_build_query($input);
 

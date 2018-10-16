@@ -14,6 +14,7 @@ class BusinessSubcategory
     const AVIATION                        = 'aviation';
 
     const BABY_PRODUCTS                   = 'baby_products';
+    const BETTING                         = 'betting';
     const BILL_AND_RECHARGE_AGGREGATORS   = 'bill_and_recharge_aggregators';
     const BOOKS                           = 'books';
     const BROADBAND                       = 'broadband';
@@ -37,12 +38,14 @@ class BusinessSubcategory
     const COWORKING                       = 'coworking';
     const CROWDFUNDING                    = 'crowdfunding';
     const CRYPTOCURRENCY                  = 'cryptocurrency';
+    const CRYPTO_MACHINERY                = 'crypto_machinery ';
 
     const DAY_CARE                        = 'day_care';
     const DEVELOPER                       = 'developer';
     const DIETICIAN                       = 'dietician';
     const DISTANCE_LEARNING               = 'distance_learning';
     const DISTRIBUTION_MANAGEMENT         = 'distribution';
+    const DROP_SHIPPING                   = 'drop_shipping';
     const DTH                             = 'dth';
 
     const ECOMMERCE_MARKETPLACE           = 'ecommerce_marketplace';
@@ -66,6 +69,7 @@ class BusinessSubcategory
     const GAME_DEVELOPER                  = 'game_developer';
     const GAMING_MARKETPLACE              = 'gaming_marketplace';
     const GAS                             = 'gas';
+    const GET_RICH_SCHEMES                = 'get_rich_schemes';
     const GIFTING                         = 'gifting';
     const GROCERY                         = 'grocery';
 
@@ -86,6 +90,7 @@ class BusinessSubcategory
     const MATCHMAKING                     = 'matchmaking';
     const MESSAGING                       = 'messaging';
     const MOVERS_AND_PACKERS              = 'movers_and_packers';
+    const MULTI_LEVEL_MARKETING           = 'multi_level_marketing';
     const MULTIPLEX                       = 'multiplex';
     const MUSIC_STREAMING                 = 'music_streaming';
     const MUTUAL_FUND                     = 'mutual_fund';
@@ -121,13 +126,16 @@ class BusinessSubcategory
     const SECURITIES                      = 'securities';
     const SERVICE_CENTRE                  = 'service_centre';
     const SERVICES_CLASSIFIEDS            = 'services_classifieds';
+    const SEXUAL_WELLNESS_PRODUCTS        = 'sexual_wellness_products';
     const SOCIAL_NETWORK                  = 'social_network';
     const SPACE_RENTAL                    = 'space_rental';
     const SPORTS_PRODUCTS                 = 'sports_products';
     const STATE                           = 'state';
 
+    const TECHNICAL_SUPPORT               = 'technical_support';
     const TELECOM                         = 'telecom';
     const TICKETING                       = 'ticketing';
+    const TOBACCO                         = 'tobacco';
     const TRADING                         = 'trading';
     const TRAIN_AND_METRO                 = 'train_and_metro';
     const TRAVEL_AGENCY                   = 'travel_agency';
@@ -138,6 +146,7 @@ class BusinessSubcategory
 
     const WAREHOUSING                     = 'warehousing';
     const WATER                           = 'water';
+    const WEAPONS_AND_AMMUNITIONS         = 'weapons_and_ammunitions';
     const WEB_DEVELOPMENT                 = 'web_development';
     const WHOLESALE                       = 'wholesale';
 
@@ -151,6 +160,7 @@ class BusinessSubcategory
         self::ARTS_AND_COLLECTIBLES           => 'Arts, crafts and collectibles',
         self::AVIATION                        => 'Aviation',
         self::BABY_PRODUCTS                   => 'Baby Care and Toys',
+        self::BETTING                         => 'Betting',
         self::BILL_AND_RECHARGE_AGGREGATORS   => 'Bill Payment and Recharge Aggregators',
         self::BOOKS                           => 'Books and Publications',
         self::BROADBAND                       => 'Broadband',
@@ -173,11 +183,13 @@ class BusinessSubcategory
         self::COWORKING                       => 'Co-working spaces',
         self::CROWDFUNDING                    => 'Crowdfunding Platform',
         self::CRYPTOCURRENCY                  => 'Cryptocurrency',
+        self::CRYPTO_MACHINERY                => 'Crypto Machinery',
         self::DAY_CARE                        => 'Pre-School/Day Care',
         self::DEVELOPER                       => 'Developer',
         self::DIETICIAN                       => 'Dietician/Diet Services',
         self::DISTANCE_LEARNING               => 'Distance Learning',
         self::DISTRIBUTION_MANAGEMENT         => 'Distribution Management',
+        self::DROP_SHIPPING                   => 'Dropshipping',
         self::DTH                             => 'DTH',
         self::ECOMMERCE_MARKETPLACE           => 'Horizontal Commerce/Marketplace',
         self::EDUCATIONAL                     => 'Educational',
@@ -198,6 +210,7 @@ class BusinessSubcategory
         self::GAME_DEVELOPER                  => 'Game developer and publisher',
         self::GAMING_MARKETPLACE              => 'Game distributor/Marketplace',
         self::GAS                             => 'Gas',
+        self::GET_RICH_SCHEMES                => 'Get Rich Schemes',
         self::GIFTING                         => 'Flowers and Gifts',
         self::GROCERY                         => 'Grocery',
         self::HEALTH_COACHING                 => 'Health and Lifestyle Coaching',
@@ -214,6 +227,7 @@ class BusinessSubcategory
         self::MATCHMAKING                     => 'Dating and Matrimony platforms',
         self::MESSAGING                       => 'Messaging and Communication',
         self::MOVERS_AND_PACKERS              => 'Movers and Packers',
+        self::MULTI_LEVEL_MARKETING           => 'Multi-level Marketing',
         self::MULTIPLEX                       => 'Multiplexes',
         self::MUSIC_STREAMING                 => 'Music streaming services',
         self::MUTUAL_FUND                     => 'Mutual Fund',
@@ -244,12 +258,15 @@ class BusinessSubcategory
         self::SECURITIES                      => 'Securities',
         self::SERVICE_CENTRE                  => 'Service Centre',
         self::SERVICES_CLASSIFIEDS            => 'Services Classifieds',
+        self::SEXUAL_WELLNESS_PRODUCTS        => 'Sexual Wellness Products',
         self::SOCIAL_NETWORK                  => 'Social Network',
         self::SPACE_RENTAL                    => 'Home or office rentals',
         self::SPORTS_PRODUCTS                 => 'Sports goods',
         self::STATE                           => 'State Department',
+        self::TECHNICAL_SUPPORT               => 'Technical Support',
         self::TELECOM                         => 'Telecom Service Provider',
         self::TICKETING                       => 'Events and movie ticketing',
+        self::TOBACCO                         => 'Tobacco',
         self::TRADING                         => 'Stock Brokerage and Trading',
         self::TRAIN_AND_METRO                 => 'Train and metro ticketing',
         self::TRAVEL_AGENCY                   => 'Tours and Travel Agency',
@@ -257,6 +274,7 @@ class BusinessSubcategory
         self::VIDEO_ON_DEMAND                 => 'Video on demand',
         self::WATER                           => 'Water',
         self::WAREHOUSING                     => 'Public/Contract Warehousing',
+        self::WEAPONS_AND_AMMUNITIONS         => 'Weapons and Ammunitions',
         self::WEB_DEVELOPMENT                 => 'Web designing, development and hosting',
         self::WHOLESALE                       => 'Wholesale/Bulk trade',
     ];
@@ -267,7 +285,7 @@ class BusinessSubcategory
      * @param string $subcategory
      * @return boolean true/false
      */
-    public static function isValidSubcategory($subcategory)
+    public static function isValidSubcategory(string $subcategory) : bool
     {
         // return false if subcategory is `descriptions`
         if (strtolower($subcategory) === 'descriptions')

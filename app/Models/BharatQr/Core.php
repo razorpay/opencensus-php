@@ -2,15 +2,9 @@
 
 namespace RZP\Models\BharatQr;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\QrCode;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\VirtualAccount\Provider;
 
 class Core extends Base\Core
 {
@@ -23,7 +17,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse)
+    public function processPayment(array $gatewayResponse, $terminal)
     {
         $input = $this->getBharatQrInputParams($gatewayResponse['qr_data']);
 
@@ -38,11 +32,11 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-            $bharatQr = $this->mutex->acquireAndRelease(
+            $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
-                function() use ($bharatQr, $gatewayResponse)
+                function() use ($bharatQr, $gatewayResponse, $terminal)
                 {
-                    $bharatQr = (new Processor($gatewayResponse))->process($bharatQr);
+                    $bharatQr = (new Processor($gatewayResponse, $terminal))->process($bharatQr);
 
                     // This will be null in case it's a duplicate notification
                     return $bharatQr;

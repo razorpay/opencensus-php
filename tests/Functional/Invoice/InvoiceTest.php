@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -24,6 +25,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
+    use TestsMetrics;
     use PaymentTrait;
     use MocksDnsTrait;
     use CreatesInvoice;
@@ -143,6 +145,8 @@ class InvoiceTest extends TestCase
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
+
+        $metrics = $this->createMetricsMock();
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
@@ -1021,8 +1025,8 @@ class InvoiceTest extends TestCase
                ->method('delete')
                ->with(
                     [
-                        'index' => 'testing_invoice_test',
-                        'type'  => 'testing_invoice_test',
+                        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+                        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
                         'id'    => '1000000invoice',
                     ]);
 
@@ -1502,6 +1506,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPayments()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
@@ -1517,6 +1523,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPaymentsCard()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
@@ -1777,6 +1785,19 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
+    public function testGetInvoicesLineItemsWithTaxableAmount()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+
+        $this->fixtures->create('item');
+
+        $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
+
+        $this->startTest();
+    }
+
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()
     {
         $order1 = $this->createOrder();
@@ -1862,6 +1883,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createOrder();
 
         $this->createIssuedInvoice(['type' => 'link', 'description' => 'Sample description']);
@@ -1871,6 +1904,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createDraftInvoice(['type' => 'link']);
 
         $this->callViewUrlAndMakeAssertions(
@@ -2197,6 +2242,8 @@ class InvoiceTest extends TestCase
 
     public function testExpireInvoices()
     {
+        $metrics = $this->createMetricsMock();
+
         // Issued invoice
         $this->createOrder();
         $this->fixtures->create('invoice');

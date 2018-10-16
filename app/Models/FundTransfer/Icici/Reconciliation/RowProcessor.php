@@ -50,6 +50,8 @@ class RowProcessor extends BaseRowProcessor
         ];
 
         $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
     }
 
     protected function updateReconEntity()
@@ -81,11 +83,16 @@ class RowProcessor extends BaseRowProcessor
                 ]);
         }
 
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
+        $this->updateUtrOnReconEntity();
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
         $this->reconEntity->setBankStatusCode($newBankStatusCode);
         $this->reconEntity->setCmsRefNo($this->parsedData[self::CMS_REF_NO]);
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function getUtrToUpdate()
+    {
+        return $this->parsedData[self::UTR];
     }
 }

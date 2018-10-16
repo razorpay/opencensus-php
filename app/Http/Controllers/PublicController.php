@@ -39,6 +39,7 @@ class PublicController extends Controller
             'sc'     => $this->getCacheStatus('secure'),
             // Elastic search
             's'      => $this->getEsStatus(),
+            'gnupg'  => $this->getGnupgStatus(),
         ];
 
         foreach ($okStatusRequired as $field)
@@ -52,6 +53,13 @@ class PublicController extends Controller
         }
 
         return ApiResponse::json($status, $statusCode);
+    }
+
+    public function getGnupgStatus()
+    {
+        $user = posix_getpwuid(posix_getuid());
+
+        return is_writable($user['dir']  . "/.gnupg");
     }
 
     public function getCatchAllRoute(string $uri = null)
@@ -127,7 +135,8 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
-    public function renderEmbedded() {
+    public function renderEmbedded()
+    {
         return View::make('public.embedded', [
             'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all()),
@@ -141,20 +150,37 @@ class PublicController extends Controller
 
         $this->validateHostedParams($params);
 
+        // place flashcheckout check here
+        $showEmbeddedUi = false;
         $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
-        $checkout    = $this->getCheckoutCommon();
-        $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
         $urls        = json_encode($params['url'], JSON_FORCE_OBJECT);
 
-        $data = [
-            'options'      => $options,
-            'checkout'     => $checkoutUrl,
-            'urls'         => $urls,                      // used directly in JS side
-            'url_callback' => $params['url']['callback'], // Used in PHP
-            'retry'        => true,
-        ];
+        if ($showEmbeddedUi) {
+            $key         = $params['checkout']['key'];
+            $embeddedJsUrl = $this->config->get('url.cdn.production') . '/static/hosted/embedded.js';
+            $data = [
+                'key'          => $key,
+                'options'      => $options,
+                'script'       => $embeddedJsUrl,
+                'urls'         => $urls,
+            ];
 
-        return View::make('public.hosted', $data);
+            return View::make('public.embedded', $data);
+        } else {
+            $checkout    = $this->getCheckoutCommon();
+            $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
+            $data = [
+                'options'      => $options,
+                'checkout'     => $checkoutUrl,
+                'urls'         => $urls,                      // used directly in JS side
+                'url_callback' => $params['url']['callback'], // Used in PHP
+                'retry'        => true,
+            ];
+
+            return View::make('public.hosted', $data);
+        }
+
+
     }
 
     protected function validateHostedParams($params)

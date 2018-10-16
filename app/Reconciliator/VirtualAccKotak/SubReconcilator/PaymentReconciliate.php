@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\VirtualAccKotak;
+namespace RZP\Reconciliator\VirtualAccKotak\SubReconciliator;
 
 use Cache;
 use Config;
@@ -12,7 +12,7 @@ use RZP\Models\BankTransfer;
 use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Provider;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_UTR           = 'txn_ref_no';
     const COLUMN_AMOUNT        = 'amount';
@@ -92,12 +92,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function alertUnexpectedBankTransferIfApplicable(array $row)
     {
-        // No alerts for reserved accounts
-        if ($this->isPaymentToReservedAccount($row) === true)
-        {
-            return;
-        }
-
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer, alert skipped',
             'info_code'     => 'PAYMENT_ABSENT',
@@ -109,24 +103,24 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         //  Disabling slack alerts for now, for a single large VA recon file
         //
 
-        // // Don't alert for recent payments
-        // if (($this->isRecentBankTransfer($row) === false) and
-        //     ($this->isAlreadyAlerted($row) === false))
-        // {
-        //     $this->app['slack']->queue(
-        //         TraceCode::BANK_TRANSFER_UNEXPECTED,
-        //         $row,
-        //         [
-        //             'channel'  => Config::get('slack.channels.virtual_accounts_log'),
-        //             'username' => 'Scrooge',
-        //             'icon'     => ':x:'
-        //         ]
-        //     );
+        // Don't alert for recent payments
+        /*if (($this->isRecentBankTransfer($row) === false) and
+            ($this->isAlreadyAlerted($row) === false))
+        {
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_UNEXPECTED,
+                $row,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
 
-        //     $cacheKey = $this->getCacheKey($row);
+            $cacheKey = $this->getCacheKey($row);
 
-        //     Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
-        // }
+            Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
+        }*/
     }
 
     /**
@@ -218,27 +212,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
-    }
-
-    /**
-     * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal
-     * transfers. We ignore these payments completely, and raise no alerts.
-     *
-     * @param  array $row
-     * @return bool
-     */
-    protected function isPaymentToReservedAccount(array $row)
-    {
-        $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
-
-        if (Provider::isReservedAccount($payeeAccount, Provider::KOTAK) === true)
-        {
-            $this->trace->info(TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT, $row);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**

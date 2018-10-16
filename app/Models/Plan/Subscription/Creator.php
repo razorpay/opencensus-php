@@ -52,6 +52,18 @@ class Creator extends Base\Core
                 $subscription->build($input);
 
                 //
+                // This should be after build because any of these
+                // keys have defaults present in the entity class
+                // then build will override any previously set values
+                //
+                if ($customer !== null)
+                {
+                    $subscription->setGlobalCustomer(false);
+
+                    $subscription->setCustomerEmail($customer->getEmail());
+                }
+
+                //
                 // This should be called before filling end_at and total_count,
                 // since they require the schedule to be created first.
                 //

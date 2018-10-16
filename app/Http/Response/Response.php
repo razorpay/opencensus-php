@@ -5,6 +5,7 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -93,6 +94,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
     }
 
+    public function requestBlocked()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
     public function onlyHttpsAllowed()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
@@ -174,6 +180,10 @@ class Response
         else if ($this->isCheckoutRoute($route))
         {
             return $this->generateCheckoutView($data);
+        }
+        else if ($this->isViewRoute($route))
+        {
+            return $this->generateDefaultErrorView($data);
         }
 
         return $this->json($data, $status);
@@ -288,8 +298,10 @@ class Response
         $callbackRoutes = [
             'payment_create_fees',
             'payment_create_checkout',
-            'payment_callback_with_key_post',
+            'payment_callback_get',
+            'payment_callback_post',
             'payment_callback_with_key_get',
+            'payment_callback_with_key_post',
             'payment_redirect_callback'
         ];
 
@@ -328,6 +340,7 @@ class Response
             'payment_topup_ajax',
             'merchant_methods_downtime',
             'customer_create_token_public',
+            'refund_fetch_for_customer',
         ];
 
         if (in_array($route, $routes, true) === true)
@@ -335,7 +348,7 @@ class Response
             //
             // These routes are being hit from razorpay.js which is being called
             // not from our own domain but someone else's. We need to allow for that
-            // otherwise these routes will not work there. Read furhter on CORS
+            // otherwise these routes will not work there. Read further on CORS
             // to understand better.
             //
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
@@ -377,5 +390,27 @@ class Response
     protected function getCurrentRouteName()
     {
         return $this->route->getCurrentRouteName();
+    }
+
+    /**
+     * Returns true if given route is expected to render a view(always)
+     * @param  string $route
+     * @return bool
+     */
+    protected function isViewRoute(string $route = null): bool
+    {
+        return in_array($route, Route::$publicView, true);
+    }
+
+    /**
+     * Generates and renders a fallback minimal error view
+     * @param  array $data
+     * @return \Illuminate\Http\Response
+     */
+    protected function generateDefaultErrorView(array $data)
+    {
+        $response = \View::make('public.error', ['data' => $data]);
+
+        return \Response::make($response);
     }
 }

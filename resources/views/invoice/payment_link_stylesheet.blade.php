@@ -486,7 +486,7 @@
     }
 
     .showmore {
-        padding-left: 10px
+        padding-left: 10px;
         margin-left: -9px;
     }
 

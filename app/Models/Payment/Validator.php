@@ -9,25 +9,30 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Models\Payment;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
+    /**
+     * recurring_token epoch constrains :
+     * min : Sat Jan  1 05:30:00 IST 2000 => 946684800
+     * max : 17 August 292278994 => 9223372036854775807 - max for 64 bit signed int
+     **/
+
     protected static $createRules = [
         'amount'                        => 'required|integer',
-        'currency'                      => 'required|string|size:3',
+        'currency'                      => 'required|string|size:3|custom',
         'method'                        => 'required|string|custom',
         'vpa'                           => 'sometimes_if:method,upi|string|filled|max:100|custom',
         'aadhaar'                       => 'required_if:method,aeps|array',
@@ -57,7 +62,7 @@ class Validator extends Base\Validator
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
-        'recurring'                     => 'sometimes_if:method,card,emandate|in:1',
+        'recurring'                     => 'sometimes|in:1,preferred',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
         'on_hold'                       => 'sometimes_if:method,transfer|boolean',
@@ -70,7 +75,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
@@ -78,7 +83,7 @@ class Validator extends Base\Validator
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
         'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
-        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
     ];
 
@@ -91,7 +96,7 @@ class Validator extends Base\Validator
 
     protected static $captureRules = [
         Entity::AMOUNT               => 'required|integer',
-        Entity::CURRENCY             => 'required|in:INR,USD',
+        Entity::CURRENCY             => 'required|custom',
     ];
 
     protected static $bulkCaptureRules = [
@@ -99,10 +104,21 @@ class Validator extends Base\Validator
         'payment_ids.*'              => 'required|public_id',
     ];
 
+    protected static $bulkGatewayCaptureRules = [
+        'payment_ids'                => 'sometimes|sequential_array',
+        'payment_ids.*'              => 'required|public_id',
+    ];
+
     protected static $verifyRules = [
         'bucket'                     => 'sometimes|sequential_array',
         'bucket.*'                   => 'sometimes|integer|max:7',
         'gateway'                    => 'sometimes|string|max:50'
+    ];
+
+    protected static $verifyAllRules = [
+        'gateway'                    => 'sometimes|string|max:50',
+        'delay'                      => 'sometimes|integer|max:720',
+        'count'                      => 'sometimes|integer|max:10000'
     ];
 
     protected static $bulkVerifyRules = [
@@ -121,20 +137,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $transferRules = [
-        'transfers'                  => 'required|array',
-        'transfers.*.customer'       => 'sometimes|public_id',
-        'transfers.*.account'        => 'sometimes|public_id',
-        'transfers.*.amount'         => 'required|integer|min:100',
-        'transfers.*.currency'       => 'required|string|size:3',
-        'transfers.*.notes'          => 'sometimes|notes',
-        'transfers.*.on_hold'        => 'sometimes|boolean',
-        'transfers.*.on_hold_until'  => 'sometimes|epoch',
+        'transfers'                        => 'required|array',
+        'transfers.*.customer'             => 'sometimes|public_id',
+        'transfers.*.account'              => 'sometimes|public_id',
+        'transfers.*.amount'               => 'required|integer|min:100',
+        'transfers.*.currency'             => 'required|string|size:3',
+        'transfers.*.notes'                => 'sometimes|notes',
+        'transfers.*.linked_account_notes' => 'sometimes|array',
+        'transfers.*.on_hold'              => 'sometimes|boolean',
+        'transfers.*.on_hold_until'        => 'sometimes|epoch',
     ];
 
     protected static $getFlowsRules = [
         'callback'                  => 'sometimes', // JSONP
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
+        'order_id'                  => 'sometimes|filled',
     ];
 
     protected static $pspAmountLimit = [
@@ -149,7 +167,6 @@ class Validator extends Base\Validator
         'card_key',
         'amount',
         'bank',
-        'currency',
         'fee',
         'contact',
         'email',
@@ -157,7 +174,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
@@ -353,19 +369,9 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
                 $attribute,
-                $vpa);
-        }
-    }
-
-    protected function validateRecurring(array $input)
-    {
-        if ($input['method'] === Payment\Method::EMANDATE)
-        {
-            if (isset($input['recurring']) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The recurring field should be 1 when payment method is eMandate.');
-            }
+                [
+                    'vpa' => $vpa
+                ]);
         }
     }
 
@@ -680,10 +686,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCurrency($input)
+    protected function validateCurrency($attribute, $currency)
     {
-        $currency = $input['currency'];
-
         if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
@@ -857,6 +861,23 @@ class Validator extends Base\Validator
                     Entity::STATUS          => $payment->getStatus(),
                     Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
                 ]);
+        }
+    }
+
+    public function validateGatewayForForceAuth()
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        $allowedGateways = Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS;
+
+        if (in_array($gateway, $allowedGateways, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot force authorize on this gateway',
+                'gateway',
+                $gateway);
         }
     }
 }

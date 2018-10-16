@@ -2,7 +2,8 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use Carbon\Carbon;
+use Mail;
+use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -109,22 +110,22 @@ class CreditsTest extends TestCase
     public function testPartialCredits()
     {
         $this->fixtures->create('credits', [
-                       'type'        => 'amount',
-                       'value'       => 100000,
-                   ]);
+            'type'  => 'amount',
+            'value' => 100000,
+        ]);
 
-         $this->fixtures->create('credits', [
-                       'type'        => 'amount',
-                       'value'       => 100000,
-                       'merchant_id' => '10NodalAccount',
-                   ]);
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10NodalAccount',
+        ]);
 
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
         $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment           = $this->getDefaultNetbankingPaymentArray();
         $payment['amount'] = '500000';
         $this->doAuthAndCapturePayment($payment);
 
@@ -219,6 +220,140 @@ class CreditsTest extends TestCase
 
         // $this->assertEquals(1050000, $nodalBalance['balance']);
         // $this->assertEquals(10000 - $txn['fee_credits'], $nodalBalance['fee_credits']);
+    }
+
+    // We authorize, check the fields and capture the payment. We then check if
+    // credits are crossing threshold and an alert is triggered.
+    public function testFeeCreditsThresholdAlerts()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $this->fixtures->merchant->editFeeCreditsThreshold('9999', '10000000000000');
+
+        // Check if mail is getting triggered when 1st Threshold is crossed
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1000000, $balance['balance']);
+
+        $this->assertEquals(10000, $balance['fee_credits']);
+
+        $this->capturePayment($payment['razorpay_payment_id'], '50000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($txn['fee_credits'], $txn['fee']);
+
+        $this->assertEquals(1050000, $balance['balance']);
+
+        $this->assertEquals(10000 - $txn['fee_credits'], $balance['fee_credits']);
+
+        Mail::assertQueued(FeeCreditsAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals(1, $viewData['alert_ratio']);
+
+            $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('dashboard.razorpay.in', $viewData['org_hostname']);
+
+            $this->assertEquals('emails.merchant.fee_credits_alert', $mail->view);
+
+            return true;
+        });
+
+        // Check if mail is getting triggered when 2nd and 3rd Threshold is crossed together
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['amount'] = 150000;
+
+        $payment = $this->doAuthPayment($payment);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(1050000, $balance['balance']);
+
+        $this->assertEquals(10000 - $txn['fee_credits'], $balance['fee_credits']);
+
+        $this->capturePayment($payment['razorpay_payment_id'], '150000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($txn['fee_credits'], $txn['fee']);
+
+        $this->assertEquals(1200000, $balance['balance']);
+
+        $this->assertEquals(4098, $balance['fee_credits']);
+
+        Mail::assertQueued(FeeCreditsAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($viewData['fee_credits'] === '₹ 40.98')
+            {
+                $this->assertEquals(0.5, $viewData['alert_ratio']);
+
+                $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+                $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+                $this->assertEquals('emails.merchant.fee_credits_alert', $mail->view);
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function testFeeCreditsAlertNotFiredCases()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 9998,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('9998', '10000000000000');
+        $this->fixtures->merchant->editFeeCreditsThreshold('9999', '10000000000000');
+
+        // Check if mail is getting triggered when 1st Threshold is crossed
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1000000, $balance['balance']);
+        $this->assertEquals(9998, $balance['fee_credits']);
+
+        $this->capturePayment($payment['razorpay_payment_id'], '50000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($txn['fee_credits'], $txn['fee']);
+
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(9998 - $txn['fee_credits'], $balance['fee_credits']);
+
+        Mail::assertNotQueued(FeeCreditsAlert::class);
     }
 
     public function testRefundCredits()

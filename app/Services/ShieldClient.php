@@ -13,19 +13,29 @@ use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient implements ExternalService
 {
-    const REQUEST_TIMEOUT   = 30; // In secs
-
     const RULES_PATH        = '/merchants/{merchant_id}/rules';
 
     const EVALUATE_PATH     = '/rules/evaluate';
 
     const ANALYTICS_PATH    = '/rules/analytics';
 
+    const RISKS_PATH        = '/merchants/{merchant_id}/risks';
+    
+    const LISTS_PATH        = '/merchants/{merchant_id}/lists';
+
+    const LIST_ITEMS_PATH   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
+
     const CONTENT_TYPE      = 'content-type';
 
     const RULES             = 'rules';
 
     const RULE_ANALYTICS    = 'rule_analytics';
+
+    const RISKS             = 'risks';
+    
+    const LISTS             = 'lists';
+
+    const LIST_ITEMS        = 'list_items';
 
     protected $config;
 
@@ -61,13 +71,24 @@ class ShieldClient implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Account::SHARED_ACCOUNT;
+
         switch ($entity)
         {
             case self::RULES:
-                return $this->getRules($input);
+                return $this->getRules($input, $merchantId);
 
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
+
+            case self::RISKS:
+                return $this->getRisks($input, $merchantId);
+                
+            case self::LISTS:
+                return $this->getLists($input, $merchantId);
+
+            case self::LIST_ITEMS:
+                return $this->getListItems($input, $merchantId);
         }
 
         return [];
@@ -75,10 +96,21 @@ class ShieldClient implements ExternalService
 
     public function fetch(string $entity, string $id, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Account::SHARED_ACCOUNT;
+
         switch ($entity)
         {
             case self::RULES:
-                return $this->getRuleById($id);
+                return $this->getRuleById($id, $merchantId);
+
+            case self::RISKS:
+                return $this->getRiskById($id, $merchantId);
+
+            case self::LISTS:
+                return $this->getListById($id, $merchantId);
+
+            case self::LIST_ITEMS:
+                return $this->getListItemsById($id, $merchantId, $input);
         }
 
         return [];
@@ -86,27 +118,27 @@ class ShieldClient implements ExternalService
 
     public function createRule(array $input)
     {
-        return $this->sendRequest($this->getRulesPath(), Requests::POST, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH), Requests::POST, $input);
     }
 
-    public function getRules(array $input)
+    public function getRules(array $input, string $merchantId)
     {
-        return $this->sendRequest($this->getRulesPath(), Requests::GET, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH, $merchantId), Requests::GET, $input);
     }
 
-    public function getRuleById(string $id): array
+    public function getRuleById(string $id, string $merchantId): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::GET);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH, $merchantId) . '/' . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::DELETE);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::DELETE);
     }
 
     public function updateRuleById(string $id, array $input): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::PUT, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::PUT, $input);
     }
 
     public function evaluateRules(array $input): array
@@ -124,6 +156,50 @@ class ShieldClient implements ExternalService
     public function getRuleAnalytics(array $input): array
     {
         return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
+    }
+
+    public function getRisks(array $input, string $merchantId)
+    {
+        return $this->sendRequest($this->getMerchantPath(self::RISKS_PATH, $merchantId), Requests::GET, $input);
+    }
+
+    public function getRiskById(string $id, string $merchantId): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::RISKS_PATH, $merchantId) . '/' . $id, Requests::GET);
+    }
+
+    public function getLists(array $input, string $merchantId): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH, $merchantId), Requests::GET, $input);
+    }
+
+    public function getListById(string $id, string $merchantId): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH, $merchantId) . '/' . $id, Requests::GET);
+    }
+
+    public function getListItems(array $input, $merchantId): array
+    {
+        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH, $merchantId);
+
+        $listId =  $input['list_id'] ?? 1; // by default use the first list
+
+        unset($input['list_id']);
+
+        $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
+
+        return $this->sendRequest($listItemPath, Requests::GET, $input);
+    }
+
+    public function getListItemsById(string $id, string $merchantId, array $input): array
+    {
+        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH, $merchantId);
+
+        $listId =  $input['list_id'] ?? 1; // by default use the first list
+
+        $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
+
+        return $this->sendRequest($listItemPath . '/' . $id, Requests::GET);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
@@ -250,7 +326,6 @@ class ShieldClient implements ExternalService
         $headers = $this->getShieldHeaders();
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => $this->getAuthHeaders(),
         ];
 
@@ -283,7 +358,7 @@ class ShieldClient implements ExternalService
                 $options
             );
 
-            return $this->parseAndReturnResponse($response);
+            return $this->parseAndReturnResponse($response, $data);
         }
         catch(\Requests_Exception $e)
         {
@@ -299,14 +374,26 @@ class ShieldClient implements ExternalService
         return [];
     }
 
-    protected function parseAndReturnResponse($res): array
+    protected function parseAndReturnResponse($res, array $data)
     {
         $code = $res->status_code;
+
         $responseArray = json_decode($res->body, true);
 
         if ($code !== 200)
         {
-            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, ['response' => $responseArray]);
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR,
+                    [
+                        'response' => $responseArray,
+                        'request'  => $data,
+                    ]);
+        }
+
+        // In case json_decode fails, we $responseArray would be null.
+        // We need to make sure that the response is always an array type
+        if ($responseArray == null)
+        {
+            $responseArray = [];
         }
 
         return $responseArray;
@@ -327,13 +414,9 @@ class ShieldClient implements ExternalService
         ];
     }
 
-    /**
-     * Shield stores all global rules which are create by Admin under the Shared merchant account.
-     * This will be changed when we expose Shield entities to Merchants.
-     */
-    private function getRulesPath(): string
+    private function getMerchantPath(string $path, string $merchantId = Account::SHARED_ACCOUNT): string
     {
-        return str_replace('{merchant_id}', Account::SHARED_ACCOUNT, self::RULES_PATH);
+        return str_replace('{merchant_id}', $merchantId, $path);
     }
 
 }

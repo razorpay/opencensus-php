@@ -7,6 +7,7 @@ use App;
 use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 
@@ -19,7 +20,7 @@ class Validator extends Base\Validator
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
-        Entity::BENEFICIARY_NAME                => 'required|between:4,120|alpha_space_num',
+        Entity::BENEFICIARY_NAME                => 'required|between:4,120|string',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|max:30',
@@ -34,22 +35,33 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'required|numeric|digits_between:10,12',
     ];
 
+    protected static $editRules = [
+        Entity::ACCOUNT_NUMBER      => 'sometimes|alpha_num|between:5,22',
+        Entity::BENEFICIARY_NAME    => 'sometimes|between:4,120|string|custom',
+    ];
+
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
     ];
 
     protected static $editVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
     ];
 
     protected static $addPayoutDestinationRules = [
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
+    ];
+
+    protected static $addBankTransferRules = [
+        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
     ];
 
     protected static $addBankAccountValidators = [
@@ -75,6 +87,12 @@ class Validator extends Base\Validator
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];
 
+    protected static $beneficiaryRegisterApiRules = [
+        Entity::ALL                     => 'sometimes|boolean',
+        Entity::DURATION                => 'sometimes|integer',
+        'failed_response'               => 'sometimes|int'
+    ];
+
     protected function validateBeneficiaryState($input)
     {
         if ((isset($input[Entity::BENEFICIARY_STATE]) === true) and
@@ -82,6 +100,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');
+        }
+    }
+
+    protected function validateBeneficiaryName(string $attribute, string $value)
+    {
+        $currentBeneficiaryName = $this->entity->getBeneficiaryName();
+
+        if (empty($currentBeneficiaryName) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Can edit only empty beneficiary names',
+                Entity::BENEFICIARY_NAME,
+                [
+                    'current_beneficiary_name'  => $currentBeneficiaryName,
+                    'new_beneficiary_name'      => $value
+                ]);
         }
     }
 
@@ -128,5 +162,21 @@ class Validator extends Base\Validator
         return ((($mode === Mode::TEST) or ($mode === null)) and
                 (($ifsc === Entity::SPECIAL_IFSC_CODE) or
                  ($ifsc === 'RAZR0000001')));
+    }
+
+    public function validateRefundIsAllowed()
+    {
+        $bankAccount = $this->entity;
+
+        // If payer bank account exists, but without an IFSC, it means we
+        // did not have the bank-code-to-IFSC mapping for an IMPS payment.
+        $ifsc = $bankAccount->getIfscCode();
+
+        if ($ifsc === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                $bankAccount);
+        }
     }
 }

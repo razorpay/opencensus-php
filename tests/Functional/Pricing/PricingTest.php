@@ -48,6 +48,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testDuplicateReceiverRule()
+    {
+        $content = $this->createPricingPlan(['receiver_type' => 'qr_code']);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testBulkPricingPlan()
     {
         $this->startTest();

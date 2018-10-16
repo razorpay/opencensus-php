@@ -2,16 +2,18 @@
 
 namespace RZP\Tests\Functional\FundTransfer;
 
-use Carbon\Carbon;
 use Mail;
+use Queue;
+use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait AttemptTrait
 {
@@ -41,26 +43,23 @@ trait AttemptTrait
     protected function assertInitiateTransferResponseSuccess(string $channel, array $content, int $sourceCount)
     {
         $this->assertArrayHasKey($channel, $content);
-        $this->assertArrayHasKey('file', $content[$channel]);
-        $this->assertNotNull($content[$channel]['file']['local_file_path']);
 
-        $this->assertEquals($sourceCount, $content[$channel]['count']);
-    }
+        $count = $content[$channel]['count'];
 
-    protected function assertInitiateOnlineTransferResponseSuccess(
-        string $channel, array $content, int $sourceCount, bool $failureTest)
-    {
-        $this->assertArrayHasKey($channel, $content);
+        $this->assertEquals($sourceCount, $count);
 
-        $this->assertEquals($sourceCount, $content[$channel]['count']);
-
-        if ($failureTest === false)
+        if($count > 0)
         {
-            $this->assertEquals($sourceCount, $content[$channel]['success']);
-        }
-        else
-        {
-            $this->assertEquals($sourceCount, $content[$channel]['failure']);
+            if (in_array($channel, Channel::getFileBasedChannels(), true) === true)
+            {
+                $this->assertArrayHasKey('file', $content[$channel]);
+                $this->assertNotNull($content[$channel]['file']['local_file_path']);
+            }
+            else if (in_array($channel, Channel::getApiBasedChannels(), true) === true)
+            {
+                $this->assertEquals($sourceCount, $content[$channel]['success']);
+                $this->assertEquals(0, $content[$channel]['failed']);
+            }
         }
     }
 
@@ -71,7 +70,21 @@ trait AttemptTrait
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $sourceCount);
 
-        $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $sourceCount);
+        if ($sourceCount > 0)
+        {
+            $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $sourceCount);
+        }
+
+        return $content;
+    }
+
+    protected function initiateTransferAndAssertSuccess(
+        string $channel, string $purpose, int $sourceCount, string $sourceType)
+    {
+        $content = $this->initiateTransfer($channel, $purpose);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         return $content;
     }
@@ -85,7 +98,7 @@ trait AttemptTrait
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $setlCount);
 
-        return $content[$channel]['file']['local_file_path'];
+        return $content;
     }
 
     protected function createDataAndAssertInitiateOnlineTransferResponse(
@@ -94,8 +107,6 @@ trait AttemptTrait
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
         $content = $this->initiateTransfer($channel, $purpose, $failureTest);
-
-        $this->assertInitiateOnlineTransferResponseSuccess($channel, $content, $setlCount, $failureTest);
     }
 
     protected function createDataAndAssertInitiateTransferSuccess(string $channel, int $setlCount, string $sourceType)
@@ -108,10 +119,6 @@ trait AttemptTrait
             $channel, $purpose, $setlCount, $sourceType);
 
         $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $setlCount);
-
-        $mailClass = 'RZP\\Mail\\Settlement\\Settlement';
-
-        Mail::assertQueued($mailClass);
 
         return $content;
     }
@@ -138,8 +145,16 @@ trait AttemptTrait
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);
-        $this->assertNotNull($batch['urls']['file']);
-        $this->assertNotNull($batch[Batch\Entity::TXT_FILE_ID]);
+
+        if (in_array($channel, Channel::getFileBasedChannels(), true) === true)
+        {
+            $this->assertNotNull($batch['urls']['file']);
+            $this->assertNotNull($batch[Batch\Entity::TXT_FILE_ID]);
+
+            $mailClass = 'RZP\\Mail\\Settlement\\Settlement';
+
+            Mail::assertQueued($mailClass);
+        }
 
         // Verify settlement entity
         $sourceEntities = $this->getEntities($sourceType, ['count' => $sourceCount], true);
@@ -208,7 +223,7 @@ trait AttemptTrait
             'payout',
             [
                'channel' => $channel,
-                'amount' => 1000,
+                'amount' => 10000000,
             ]);
 
         if ($sourceCount === 1)

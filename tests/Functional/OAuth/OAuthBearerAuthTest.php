@@ -418,6 +418,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->create(
             'feature',
             [

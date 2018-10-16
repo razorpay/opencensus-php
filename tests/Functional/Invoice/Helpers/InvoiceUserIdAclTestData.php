@@ -291,6 +291,53 @@ return [
         ],
     ],
 
+    'testUpdateInvoiceWithAgentUserIdHeaderSuccess' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'patch',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [
+                'description' => 'Updated Description It Is',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'inv_1000000invoice',
+                'description' => 'Updated Description It Is',
+            ],
+        ],
+    ],
+
+    'testUpdateInvoiceWithAgentUserIdHeaderForbidden' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'patch',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '101AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [
+                'description' => 'Updated Description It Is',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This operation can only be performed by the creator',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDeleteInvoiceWithUserIdHeaderSuccess' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',
@@ -328,6 +375,46 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testDeleteInvoiceWithAgentUserIdHeaderSuccess' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDeleteInvoiceWithAgentUserIdHeaderForbidden' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This operation can only be performed by the creator',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -374,12 +461,55 @@ return [
         ],
     ],
 
+    'testCancelInvoiceWithAgentUserIdHeaderSuccess' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice/cancel',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'inv_1000000invoice',
+                'status' => 'cancelled',
+            ],
+        ],
+    ],
+
+    'testCancelInvoiceWithAgentUserIdHeaderForbidden' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice/cancel',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
+                'HTTP_X-Dashboard-User-Role' => 'agent',
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This operation can only be performed by the creator',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
     'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

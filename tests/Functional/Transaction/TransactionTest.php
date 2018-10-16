@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transaction;
 use Carbon\Carbon;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -98,6 +99,18 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testFetchAuthPaymentTransaction()
+    {
+        $payment = $this->doAuthPayment();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$payment['razorpay_payment_id'].'/transaction';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testTransactionCreateForOldPayment()
     {
         $this->markTestSkipped();
@@ -161,6 +174,155 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $dispute;
+    }
+
+    public function testMarkTransactionPostpaid()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment:captured');
+        $payment2 = $this->fixtures->create('payment:captured');
+
+        $txn = $this->getEntityById('transaction', $payment->getTransactionId(), true);
+        $txn2 = $this->getEntityById('transaction', $payment2->getTransactionId(), true);
+
+        $txnIds = [$payment->getTransactionId(), $payment2->getTransactionId()];
+
+        $transaction = [
+            'transaction_ids' => $txnIds,
+        ];
+
+        $request = [
+            'content' => $transaction,
+            'url'     => '/transactions/postpaid',
+            'method'  => 'POST',
+        ];
+
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals('prepaid', $txn2['fee_model']);
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($txnIds, $response['success_ids']);
+        $this->assertEmpty($response['failed_ids']);
+
+        $txn = $this->getEntityById('transaction', $payment->getTransactionId(), true);
+        $txn2 = $this->getEntityById('transaction', $payment2->getTransactionId(), true);
+
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals('postpaid', $txn2['fee_model']);
+    }
+
+
+    public function testDirectSettlementFeeCredits()
+    {
+         $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals('prepaid', $transaction['fee_model']);
+        $this->assertEquals('fee', $transaction['credit_type']);
+        $this->assertEquals($payment['fee'], $transaction['fee_credits']);
+        $this->assertEquals($oldBalance['fee_credits'] - $payment['fee'], $balance['fee_credits']);
+    }
+
+    public function testDirectSettlementMerchnatBalance()
+    {
+         $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals($payment['fee'], $transaction['debit']);
+        $this->assertEquals('prepaid', $transaction['fee_model']);
+        $this->assertEquals('default', $transaction['credit_type']);
+        $this->assertEquals($oldBalance['balance'] - $payment['fee'], $transaction['balance']);
+        $this->assertEquals($oldBalance['balance'] - $payment['fee'], $balance['balance']);
+    }
+
+    public function testDirectSettlementNoMerchnatBalance()
+    {
+         $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editBalance('100', '10000000000000');
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->createDirectSettlementPayment();
+        },BadRequestException::class, 'Payment failed');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDirectSettlementPostPaid()
+    {
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals('postpaid', $transaction['fee_model']);
+        $this->assertEquals('default', $transaction['credit_type']);
+        $this->assertEquals(0, $transaction['fee_credits']);
+        $this->assertEquals($payment['fee'], $transaction['fee']);
+    }
+
+    protected function createDirectSettlementPayment()
+    {
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+
+        return $payment;
     }
 
     protected function startTest($testDataToReplace = array())

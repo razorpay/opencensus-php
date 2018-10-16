@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -60,6 +61,10 @@ class HdfcGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHdfcPaymentEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
     }
 
     public function testTamperedPayment()
@@ -104,6 +109,7 @@ class HdfcGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
 
         $token = $paymentEntity['token_id'];
         unset($payment['card']);
@@ -122,6 +128,7 @@ class HdfcGatewayTest extends TestCase
         // $this->assertTestResponse($paymentEntity);
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
 
         $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
 
@@ -140,6 +147,138 @@ class HdfcGatewayTest extends TestCase
         $hdfcData = $this->testData['testHdfcPaymentEntity'];
 
         $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
+    }
+
+    public function testDebitRecurringPayment()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->create('iin',
+                                [
+                                    'iin'    => '607466',
+                                    'issuer' => 'HDFC',
+                                    'type'   => 'debit',
+                                ]);
+
+        $payment['card']['number'] = '6074661038443336';
+
+        $type = [
+            'recurring_3ds'     => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $this->fixtures->merchant->addFeatures(['hdfc_debit_si']);
+
+        $response = $this->doAuthAndCapturePayment($payment);
+        $paymentId = $response['id'];
+
+        $type = [
+            'recurring_non_3ds' => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+
+        $token = $paymentEntity['token_id'];
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+
+        $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertNotNull($hdfc['ref']);
+        $this->assertNotNull($hdfc['auth']);
+        $this->assertEquals($paymentId, $hdfc['payment_id']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+        $this->assertEquals('authorized', $hdfc['status']);
+
+        $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
+
+        $hdfcCaptured = $this->getLastEntity('hdfc', true);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+
+        $hdfcData = $this->testData['testHdfcPaymentEntity'];
+
+        $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
+    }
+
+    public function testDebitRecurringPaymentVerify()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'    => '607466',
+                'issuer' => 'HDFC',
+                'type'   => 'debit',
+            ]);
+
+        $payment['card']['number'] = '6074661038443336';
+
+        $type = [
+            'recurring_3ds'     => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $this->fixtures->merchant->addFeatures(['hdfc_debit_si']);
+
+        $response = $this->doAuthAndCapturePayment($payment);
+        $paymentId = $response['id'];
+
+        $this->verifyPayment($paymentId);
+
+        $type = [
+            'recurring_non_3ds' => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+    }
+
+    public function testDebitRecurringRefund()
+    {
+        $this->testDebitRecurringPayment();
+
+        $payment = $this->getLastPayment(true);
+
+        $this->mockServerRequestFunction(function (&$content, $action = null) use ($payment)
+        {
+            if ($action === 'refund')
+            {
+                $this->assertEquals($payment['id'], $content['transid']);
+                $this->assertEquals($payment['id'], $content['trackid']);
+                $this->assertEquals('TrackId',  $content['udf5']);
+            }
+        });
+
+        $this->refundPayment($payment['id'], $payment['amount']);
     }
 
     public function testFailureInRecurringPayment()
@@ -221,6 +360,149 @@ class HdfcGatewayTest extends TestCase
         $this->assertNotNull($payment['transaction_id']);
 
         $this->assertEquals(TwoFactorAuth::PASSED, $payment['two_factor_auth']);
+    }
+
+    public function testDebitPinAuthPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testDebitPinAuthorizeFailed()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'debit_pin_authorization_response')
+            {
+                $content['result'] = 'NOT CAPTURED';
+                $content['authRespCode'] = '';
+                $content['ErrorText'] = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"';
+                $content['ErrorNo'] = 'RP00007';
+                $content['error_service_tag'] = 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"';
+                $content['error_code_tag'] = 'RP00007';
+            }
+        });
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testDebitPinVerifyFailed()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id' => 'SharedHdfcTrml',
+            'gateway_acquirer' => 'hdfc',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if($action === 'verify')
+            {
+                $content['result'] = 'NOT APPROVED';
+                $content['authRespCode'] = '';
+                $content['ErrorText'] = '';
+                $content['ErrorNo'] = '';
+                $content['error_service_tag'] = '';
+                $content['error_code_tag'] = '';
+            }
+        });
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testTwoFaNotApplicable()
@@ -377,7 +659,7 @@ class HdfcGatewayTest extends TestCase
         });
     }
 
-    public function testVerifyRefundDeniedByRiskOnGateway()
+    public function testVerifyRefundFailedOnGatewayRetry()
     {
         $payment = $this->doAuthAndCapturePayment();
 
@@ -406,20 +688,15 @@ class HdfcGatewayTest extends TestCase
                 $content['udf5']         = 'TrackID';
             }
 
-            if ($action === 'refund')
-            {
-                $content['result'] = 'DENIED BY RISK';
-            }
-
             return $content;
         });
 
-        $testData = $this->testData[__FUNCTION__];
+        $response = $this->retryFailedRefund($refund['id']);
 
-        $this->runRequestResponseFlow($testData, function() use ($refund)
-        {
-            $this->retryFailedRefund($refund['id']);
-        });
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testVerifyRefundFailedOnGateway()
@@ -583,7 +860,7 @@ class HdfcGatewayTest extends TestCase
 
     public function testPaymentFailWithFailureLongResultCode()
     {
-        $this->hdfcPaymentMockResultCode('!ERROR!-Transaction denied due to previous capture check failure ( Validate Original Transaction )', 'authorize');
+        $this->hdfcPaymentMockResultCode(Result::DENIED_CAPTURE, 'authorize');
 
         $this->makeRequestAndCatchException(
             function ()

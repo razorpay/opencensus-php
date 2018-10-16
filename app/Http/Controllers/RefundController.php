@@ -85,6 +85,8 @@ class RefundController extends Controller
      * - No refund entity created on the gateway side.
      *
      * @param $gateway
+     *
+     * @return array
      */
     public function postGatewayRefundRecord($gateway)
     {
@@ -135,9 +137,57 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postRefundRetryBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->retryBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postRefundDirectRetryBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->directRetryBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundVerify(string $id)
     {
         $response = $this->service()->verify($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function markRefundProcessed(string $id)
+    {
+        $data = $this->service()->markRefundProcessed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGatewayRefundCall(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->makeGatewayRefundCall($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postGatewayVerifyRefundCall(string $id)
+    {
+        $response = $this->service()->makeGatewayVerifyRefundCall($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function scroogeRefundCreate(string $id)
+    {
+        $response = $this->service()->createScroogeRefund($id);
 
         return ApiResponse::json($response);
     }
@@ -147,6 +197,33 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->editStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putRefundMarkProcessedBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->markProcessedBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getRefundDetailsForCustomer()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchRefundDetailsForCustomer($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateProcessedAt()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateProcessedAt($input);
 
         return ApiResponse::json($data);
     }

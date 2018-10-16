@@ -14,6 +14,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Netbanking\Base\Entity as E;
 
 class Gateway extends Base\Gateway
 {
@@ -111,11 +112,16 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->saveOrFail();
 
-        if ($attrs['status'] !== 'Y')
+        if ($attrs[Fields::STATUS] === Status::SUCCESS)
+        {
+            $response = $this->verifyCallback($input, $gatewayPayment);
+        }
+        else
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
+                ['content' => $content]
+            );
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
@@ -282,6 +288,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
+        // Hotfix for disabling ssl verify for kotak
+        $request['options']['verify'] = false;
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $request);
@@ -386,5 +395,56 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //here the payment will be in created state and the callback has also returned a Success status so
+        //marking apiSuccess as true
+        $verify->apiSuccess = true;
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                [
+                    'gateway'         => $this->gateway,
+                    'verify_response' => $verify->verifyResponseContent,
+                ]);
+        }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $actualAmount = number_format($verify->verifyResponseContent['Amount'], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->assertPaymentId($verify->verifyResponseContent[Fields::BANK_REFERENCE_NO],
+            $gatewayPayment[E::BANK_PAYMENT_ID]);
+
+        return $verify->verifyResponseContent;
+    }
+
+    protected function checkGatewaySuccess($verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ((isset($content[Fields::AUTHORIZATION_STATUS]) === true) and
+            ($content[Fields::AUTHORIZATION_STATUS] === Status::SUCCESS))
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 }

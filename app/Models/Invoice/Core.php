@@ -79,18 +79,43 @@ class Core extends Base\Core
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
+        $shouldFailOnDuplicateInternalRef = boolval($input['fail_existing'] ?? true);
+        unset($input['fail_existing']);
+
+        //
+        // This happens when the invoice is being created for a subscription,
+        // but not internally via API. Instead, the request has come to
+        // API from SubServ. In this case, we don't have a subscription
+        // object, but do need to set the id in invoice entity.
+        //
+        if (($subscription === null) and
+            (empty($input[Entity::SUBSCRIPTION_ID]) === false))
+        {
+            $subscription = $input[Entity::SUBSCRIPTION_ID];
+
+            unset($input[Entity::SUBSCRIPTION_ID]);
+        }
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setBatch($batch)
+                        ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
+        $this->trace->count(Metric::INVOICE_CREATED_TOTAL, $invoice->getMetricDimensions());
 
         $this->repo->loadRelations($invoice);
 
         if ($invoice->isIssued())
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+
+            // Internal flow (e.g. via subscription) requires delay to accommodate for time in wrapping txn commit
+            if ($invoice->hasSubscription())
+            {
+                $pendingDispatch->delay(self::QUEUE_JOB_DELAY);
+            }
         }
 
         return $invoice;
@@ -420,6 +445,8 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
+        $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
+
         InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 
         // Sends expiration mails to customer asynchronously
@@ -458,13 +485,12 @@ class Core extends Base\Core
         string $invoiceId,
         Merchant\Entity $merchant): array
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice->getValidator()->validateInvoicePayable();
 
         $orderId       = $invoice->getOrderId();
         $publicOrderId = Order\Entity::getSignedId($orderId);
-
-        $customer = $invoice->customer;
+        $customer      = $invoice->customer;
 
         // Currently EPOS application usage following attributes.
         //

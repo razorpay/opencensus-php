@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\Atom;
+namespace RZP\Reconciliator\Atom\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     const COLUMN_TXN_STATE = 'txn_state';
     const COLUMN_REFUND_STATUS = 'refund_status';

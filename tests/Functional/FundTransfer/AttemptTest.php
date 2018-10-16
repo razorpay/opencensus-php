@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\FundTransfer;
 
+use Queue;
 use Carbon\Carbon;
 
+use RZP\Jobs\BeamJob;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
@@ -29,20 +31,42 @@ class AttemptTest extends TestCase
 
     public function testSettlementFileCreationIcici()
     {
+        Queue::fake();
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::ICICI, 1, Attempt\Type::SETTLEMENT);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testSettlementFileCreationKotak()
     {
+        $this->markTestSkipped('Kotak is not used anymore');
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::KOTAK, 1, Attempt\Type::SETTLEMENT);
     }
 
     public function testSettlementFileCreationAxis()
     {
+        Queue::fake();
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::AXIS, 1, Attempt\Type::SETTLEMENT);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()
@@ -51,11 +75,11 @@ class AttemptTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
 
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createPaymentEntities(2);
-
-        $today = Carbon::today(Timezone::IST);
-
-        Carbon::setTestNow($today);
 
         $this->initiateSettlements($channel);
 
@@ -65,7 +89,7 @@ class AttemptTest extends TestCase
         $initiate_at = $fta[Attempt\Entity::INITIATE_AT];
 
         // Set current time to a value before initiate_at
-        $beforeInitiateTime = Carbon::createFromTimestamp($initiate_at, Timezone::IST)->subDay();
+        $beforeInitiateTime = Carbon::createFromTimestamp($initiate_at, Timezone::IST)->subDay()->hour(10);
 
         Carbon::setTestNow($beforeInitiateTime);
 
@@ -76,7 +100,7 @@ class AttemptTest extends TestCase
         $this->assertEquals('No Attempts to process', $content[$channel]['message']);
 
         // Set initiate_at to a value post the value in the column
-        $postInitiateAt = Carbon::createFromTimestamp($initiate_at, Timezone::IST)->addSecond();
+        $postInitiateAt = Carbon::createFromTimestamp($initiate_at, Timezone::IST)->addSecond()->hour(10);
 
         Carbon::setTestNow($postInitiateAt);
 
@@ -86,15 +110,157 @@ class AttemptTest extends TestCase
         $this->assertEquals(1, $content[$channel]['count']);
     }
 
-    public function testPayoutFileCreationAxis()
+    public function testPayoutFileCreationAxisSuccess()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::AXIS, 1, Attempt\Type::PAYOUT);
     }
 
-    public function testPayoutFileCreationIcici()
+    public function testPayoutFileCreationAxisFail()
     {
+        $this->markTestSkipped('test mode overrides transfer time check');
+
+        $channel = Channel::AXIS;
+
+        $purpose = Attempt\Purpose::SETTLEMENT;
+
+        $now = Carbon::create(2018, 8, 14, 6, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'channel' => $channel,
+                'amount' => 1000,
+            ]);
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'channel'                   => $channel,
+                'source_id'                 => $payout->getId(),
+                'bank_account_id'           => $payout->getDestinationId(),
+                'merchant_id'               => $payout->getMerchantId(),
+                'purpose'                   => $purpose,
+                'status'                    => Attempt\Status::CREATED,
+                'source_type'               => Attempt\Type::PAYOUT,
+                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]
+        );
+
+        $content = $this->initiateTransfer($channel, $purpose, false);
+
+        $this->assertEquals($channel, $content['channel']);
+        $this->assertEquals(0, $content['count']);
+        $this->assertEquals('Invalid time to initiate transfer', $content['message']);
+    }
+
+    public function testPayoutFileCreationIciciSuccess()
+    {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::ICICI, 1, Attempt\Type::PAYOUT);
+    }
+
+    public function testPayoutFileCreationIciciFail()
+    {
+        $this->markTestSkipped('test mode overrides transfer time check');
+
+        $channel = Channel::ICICI;
+
+        $purpose = Attempt\Purpose::SETTLEMENT;
+
+        $now = Carbon::create(2018, 8, 15, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'channel' => $channel,
+                'amount' => 1000,
+            ]);
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'channel'                   => $channel,
+                'source_id'                 => $payout->getId(),
+                'bank_account_id'           => $payout->getDestinationId(),
+                'merchant_id'               => $payout->getMerchantId(),
+                'purpose'                   => $purpose,
+                'status'                    => Attempt\Status::CREATED,
+                'source_type'               => Attempt\Type::PAYOUT,
+                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]
+        );
+
+        $content = $this->initiateTransfer($channel, $purpose, false);
+
+        $this->assertEquals($channel, $content['channel']);
+        $this->assertEquals(0, $content['count']);
+        $this->assertEquals('Invalid time to initiate transfer', $content['message']);
+    }
+
+    public function testPayoutFileCreationYesbankImps()
+    {
+        $this->createDataAndAssertInitiateTransferSuccess(
+            Channel::YESBANK, 1, Attempt\Type::PAYOUT);
+    }
+
+    public function testPayoutFileCreationYesbankRtgsSuccess()
+    {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->createDataAndAssertInitiateTransferSuccess(
+            Channel::YESBANK, 2, Attempt\Type::PAYOUT);
+    }
+
+    public function testPayoutFileCreationYesbankRtgsFailed()
+    {
+        $channel = Channel::YESBANK;
+
+        $purpose = Attempt\Purpose::SETTLEMENT;
+
+        $now = Carbon::create(2018, 8, 14, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'channel' => $channel,
+                'amount' => 30000000,
+            ]);
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'channel'                   => $channel,
+                'source_id'                 => $payout->getId(),
+                'bank_account_id'           => $payout->getDestinationId(),
+                'merchant_id'               => $payout->getMerchantId(),
+                'purpose'                   => $purpose,
+                'status'                    => Attempt\Status::CREATED,
+                'source_type'               => Attempt\Type::PAYOUT,
+                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]
+        );
+
+        $content = $this->initiateTransfer($channel, $purpose, false);
+
+        $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
     }
 }

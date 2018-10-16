@@ -126,7 +126,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
-        self::FILES,
         self::CREATED_AT,
     ];
 
@@ -168,10 +167,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
-    ];
-
-    protected $with = [
-        self::FILES,
     ];
 
     // ----------------------- Setters -----------------------------------------
@@ -328,11 +323,6 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
-    public function files()
-    {
-        return $this->hasMany(File\Entity::class);
-    }
-
     public function parent()
     {
         return $this->belongsTo(Entity::class, self::PARENT_ID, self::ID);
@@ -373,6 +363,12 @@ class Entity extends Base\PublicEntity
     public function isWon(): bool
     {
         return ($this->getStatus() === Status::WON);
+    }
+
+    public function hasMerchantAcceptedStatus(bool $acceptDispute): bool
+    {
+        return (($acceptDispute === true) and
+                (in_array($this->getStatus(), Status::getMerchantAcceptedStatuses(), true) === true));
     }
 
     public function isNonTransactional(): bool

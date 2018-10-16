@@ -32,7 +32,37 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoFailedFromInitiated' => [
+    'testRefundFetchDetailsForCustomerFromRefundIdAndPaymentId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'refund_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundFetchDetailsForCustomerFromReservationId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'reservation_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundEditStatusToFailedFromInitiated' => [
         'request'  => [
             'content' => [
                 'status'    => 'failed',
@@ -62,7 +92,7 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoProcessedFromFailed' => [
+    'testRefundEditStatusToProcessedFromFailed' => [
         'request'  => [
             'content' => [
                 'status'    => 'processed',
@@ -375,6 +405,39 @@ return [
         ]
     ],
 
+    'testFetchRefundsProxyAuth' => [
+        'request' => [],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateRefundProxyAuth' => [
+        'request'   => [],
+        'response'  => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 1000000,
+                'currency' => 'INR',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateRefundProxyAuthInvalidRole' => [
+        'request'   => [],
+        'response'  => [
+            'content' => [
+                'error'       => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testRefundValidationOnWrongGateway' => [
         'request' => [
             'url'       => '/refunds/wallet_airtelmoney/validate',
@@ -431,6 +494,70 @@ return [
     ],
 
     'testRefundIciciDebitCard' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'tpvPaymentNetbankingEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank_name'       => 'SBIN',
+        'status'          => 'Ok',
+    ],
+
+    'testFetchRefundReversal' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds',
+            'content' => [
+                'expand' => ['reversal'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'tpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'SBIN',
+                'account_number' => '04030403040304',
+                'payer_name'     => 'test',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testRefundSettledBy' => [
         'request' => [
         ],
         'response' => [

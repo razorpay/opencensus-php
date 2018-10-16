@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -10,7 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
@@ -58,10 +59,11 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
-        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
     ];
 
     protected static $uniqueEmailRules = [
@@ -76,6 +78,11 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editPreSignupRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+        Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+    ];
+
     protected static $editNameRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
     ];
@@ -87,8 +94,8 @@ class Validator extends Base\Validator
         Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
-        MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
-        MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
+        Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
+        Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
     ];
 
     protected static $actionRules = [
@@ -156,10 +163,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSubMerchantUserRules = [
-        'merchant_id'           => 'required|alpha_num|size:14',
-        'password'              => 'required|between:7,50|confirmed|numbers|letters',
-        'password_confirmation' => 'required|between:7,50',
-        Entity::EMAIL           => 'required|email',
+        'merchant_id' => 'required|alpha_num|size:14',
+        Entity::EMAIL => 'required|email',
+    ];
+
+    protected static $editMethodsRules = [
+        //only this method editing is allowed for now
+        Methods\Entity::EMI => 'required|bool',
     ];
 
     protected static $editConfigValidators = [
@@ -175,16 +185,24 @@ class Validator extends Base\Validator
         'uneditable_features',
     ];
 
-    protected static $createSubMerchantUserValidators = [
-        'sub_merchant_owner',
-    ];
-
     protected static $editEmailValidators = [
         'is_test_account',
     ];
 
     protected static $keyAccessValidators = [
         'key_access',
+    ];
+
+    protected static $listSubmerchantsRules = [
+        Entity::NAME                     => 'sometimes|string',
+        Entity::ID                       => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                    => 'sometimes|email',
+        Constants::APPLICATION_ID        => 'sometimes|string|size:14',
+        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
+        Constants::FROM                  => 'integer',
+        Constants::TO                    => 'integer',
+        Constants::COUNT                 => 'integer|min:1|max:50',
+        Constants::SKIP                  => 'integer',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -199,26 +217,6 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
         }
 
-    }
-
-    /**
-     * validates if the user who is attempting to create a submerchant user is the owner  or not.
-     *
-     * @param array $input
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function validateSubMerchantOwner(array $input)
-    {
-        $app = App::getFacadeRoot();
-
-        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
-
-        if ($dashboardHeaders['user_role'] !== 'owner')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
-        }
     }
 
     /**
@@ -365,6 +363,65 @@ class Validator extends Base\Validator
     }
 
     /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerWithSettingsAccess(Entity $merchant)
+    {
+        if ($merchant->isPartnerWithSettingsAccess() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNonPurePlatformPartner(Entity $merchant)
+    {
+        // Block non partners and pure platforms
+        if ($merchant->isNonPurePlatformPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsPurePlatformPartner(Entity $merchant)
+    {
+        // Block non partners and non pure-platforms
+        if ($merchant->isPurePlatformPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
      * Submerchant creation without providing an email explicitly is only allowed if
      * 1. The partner is of type fully-managed
      * 2. The partner is of type aggregator and has the feature allowing optional emails
@@ -407,7 +464,7 @@ class Validator extends Base\Validator
 
         if ($merchant->isPartner() === true)
         {
-            if (($merchant->isFullyManagedTypePartner() === false) and
+            if (($merchant->isFullyManagedPartner() === false) and
                 ($merchant->isOptionalEmailAllowedAggregator() === false))
             {
                 throw new Exception\BadRequestException(
@@ -456,11 +513,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
         }
 
-        if ($merchant->isActivated() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
+        $this->validateIsNotActivated($merchant);
 
         if ($merchant->merchantDetail->isArchived() === true)
         {
@@ -486,7 +539,7 @@ class Validator extends Base\Validator
         // i.e merchant will have access to keys.
         // or if website is not null [this check to be removed later]
         if (($merchant->getHasKeyAccess() === true) or
-            (isset($website) === true))
+            (empty($website) === false))
         {
             $attributes[] = Entity::WEBSITE;
         }
@@ -730,12 +783,17 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateIfNotAPartner(Entity $merchant)
+    public function validateIsPartner(Entity $merchant)
     {
         if ($merchant->isPartner() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
         }
     }
 
@@ -751,6 +809,82 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER);
 
+        }
+    }
+
+    public function validatePartnerType(string $partnerType)
+    {
+        if (in_array($partnerType, Constants::$partnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $partnerType,
+                ]);
+        }
+    }
+
+    public function validateLinkedAccount(Entity $merchant)
+    {
+        if ($merchant->isLinkedAccount() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
+    }
+
+    /**
+     * Validate if the input application is
+     *
+     * @param string $inputAppId
+     * @param array  $partnerAppIds
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerApplicationId(string $inputAppId, array $partnerAppIds)
+    {
+        if (in_array($inputAppId, $partnerAppIds, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+                Constants::APPLICATION_ID,
+                [
+                    'partner_app_ids'         => $partnerAppIds,
+                    Constants::APPLICATION_ID => $inputAppId,
+                ]);
+        }
+    }
+
+    public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
+    {
+        $merchantUsersCount = $merchant->users->count();
+
+        if ($dashboardAccess === true and $merchantUsersCount > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN);
+        }
+
+        if ($dashboardAccess === false and $merchantUsersCount === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+                Entity::ACTIVATED);
         }
     }
 }

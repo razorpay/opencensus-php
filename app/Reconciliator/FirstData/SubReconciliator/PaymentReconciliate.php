@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\FirstData;
+namespace RZP\Reconciliator\FirstData\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
@@ -8,7 +8,7 @@ use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

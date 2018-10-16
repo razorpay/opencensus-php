@@ -149,6 +149,7 @@ final class FactoryData
             'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
+            'verify_at'  => $faker->timestamp,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);
@@ -914,6 +915,17 @@ final class FactoryData
             'entity_type' => 'virtual_account',
             'short_url'   => 'abc.com',
             'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
+        ]);
+
+        $factory(\RZP\Gateway\Mpi\Base\Entity::class, [
+        ]);
+
+        $factory(\RZP\Models\NodalBeneficiary\Entity::class, [
+            'channel'             => 'yesbank',
+            'beneficiary_code'    => 'abc123459',
+            'registration_status' => 'created',
+            'merchant_id'         => $faker->uniqueid,
+            'bank_account_id'     => $faker->uniqueid,
         ]);
     }
 }

@@ -26,8 +26,12 @@ class Mailgun extends Base
         self::HDFC,
         self::AXIS,
         self::KOTAK,
+        self::AIRTEL,
+        self::PAYZAPP,
         self::HITACHI,
         self::OLAMONEY,
+        self::UPI_HDFC,
+        self::CARD_FSS_HDFC,
         self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,
@@ -37,6 +41,7 @@ class Mailgun extends Base
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL,
         self::VIRTUAL_ACC_KOTAK,
+        self::NETBANKING_CORPORATION,
     ];
 
     const LINK_BASED_GATEWAYS = [
@@ -80,6 +85,8 @@ class Mailgun extends Base
 
             $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
+
+        $this->inputDetails[self::SOURCE] = self::MAILGUN;
 
         $allFilesDetails = $this->getFileDetailsFromInput(
             $this->inputDetails, $input, $fileLocationType);

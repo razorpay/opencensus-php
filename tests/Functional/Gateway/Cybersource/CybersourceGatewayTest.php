@@ -62,6 +62,10 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testCybersourceCaptureEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
     }
 
     public function testGatewayCallbackWithEmptyInput()
@@ -83,6 +87,12 @@ class CybersourceGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
+
+        $this->assertNull($payment['verify_bucket']);
     }
 
     public function testThreeDSAuthFailedPayment()
@@ -96,6 +106,12 @@ class CybersourceGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
+
+        $this->assertNull($payment['verify_bucket']);
     }
 
     public function testGatewayTimeoutError()
@@ -806,7 +822,7 @@ class CybersourceGatewayTest extends TestCase
             'response' => [
                 'content' => [
                     'payment_id' => $payment['id'],
-                    'manual_gateway_capture' => 'Successfully created a capture on gateway'
+                    'result'     => true
                 ]
             ]
         ];

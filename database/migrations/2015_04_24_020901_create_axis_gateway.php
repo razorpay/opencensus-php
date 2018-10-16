@@ -76,6 +76,7 @@ class CreateAxisGateway extends Migration
             $table->index('vpc_3DSstatus');
             $table->index('vpc_Command');
             $table->index('vpc_MerchTxnRef');
+            $table->index('refund_id');
 
             $table->foreign('payment_id')
                   ->references('id')

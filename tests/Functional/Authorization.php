@@ -8,7 +8,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 class Authorization
 {
     protected $test;
-    protected $auth  = array();
+    protected $auth  = [];
     protected $type;
     protected $proxy = false;
 
@@ -89,6 +89,13 @@ class Authorization
         $this->type = 'app';
 
         $this->addAppAuthHeaders($hostName);
+    }
+
+    public function subscriptionsAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.subscriptions')['secret']);
+
+        $this->proxy = true;
     }
 
     public function addAppAuthHeaders($hostName)
@@ -273,6 +280,24 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function kotakAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.kotak');
+
+        $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function yesbankAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.yesbank');
+
+        $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function noAuth()
     {
         $this->directAuth();
@@ -283,6 +308,15 @@ class Authorization
         $this->type = 'direct';
 
         $this->basicAuth(null, null);
+    }
+
+    public function scroogeAuth($mode = 'test')
+    {
+        $cronConfig = \Config::get('applications.scrooge');
+
+        $pwd = $cronConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
     }
 
     /**

@@ -4,21 +4,21 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 
-use RZP\Error\ErrorCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Base;
-use RZP\Constants;
-use RZP\Constants\Table;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
-use RZP\Models\Transaction;
+use RZP\Constants;
+use RZP\Models\Base;
+use RZP\Jobs\BulkRefund as BulkRefundJob;
+use RZP\Models\Payment;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Refund;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
 {
@@ -29,6 +29,8 @@ class Service extends Base\Service
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
+
+    protected $mutex;
 
     public function __construct()
     {
@@ -187,7 +189,7 @@ class Service extends Base\Service
             // TODO : Implement send email feature for other netbanking gateways.
             // Implemented for Daily file gateways.
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                                            $type, $gatewayCode, $from, $to, $gateway);
+                                                $type, $gatewayCode, $from, $to, $gateway);
 
             return $this->generateRefundFile($refunds, $email);
         }
@@ -320,6 +322,39 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function makeGatewayRefundCall(string $refundId, array $input)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeGatewayRefund($refund, $input);
+
+        return $response;
+    }
+
+    public function makeGatewayVerifyRefundCall(string $refundId)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund);
+
+        return $response;
+    }
+
+    public function createScroogeRefund(string $refundId)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->callRefundFunctionOnScrooge($refund);
+
+        return $response;
     }
 
     /**
@@ -775,6 +810,66 @@ class Service extends Base\Service
         ];
     }
 
+    public function retryBulk(array $input)
+    {
+        (new Validator)->validateInput('retry_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $total = count($refundIds);
+
+        Entity::verifyIdAndStripSignMultiple($refundIds);
+
+        foreach ($refundIds as $refundId)
+        {
+            $data = [
+                'id' => $refundId,
+                'mode' => Mode::LIVE,
+                'verify' => true,
+            ];
+
+            BulkRefundJob::dispatch($data);
+        }
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_BULK_DISPATCHED,
+            [
+                'total' => $total
+            ]);
+    }
+
+    public function directRetryBulk(array $input)
+    {
+        (new Validator)->validateInput('direct_retry_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_DIRECT_RETRY_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $total = count($refundIds);
+
+        Entity::verifyIdAndStripSignMultiple($refundIds);
+
+        foreach ($refundIds as $refundId)
+        {
+            $data = [
+                'id' => $refundId,
+                'mode' => Mode::LIVE,
+                'verify' => false,
+            ];
+
+            BulkRefundJob::dispatch($data);
+        }
+
+        $this->trace->info(
+            TraceCode::REFUND_DIRECT_RETRY_BULK_DISPATCHED,
+            [
+                'total' => $total
+            ]);
+    }
+
     public function verify(string $id)
     {
         $refund = $this->repo->refund->findByPublicId($id);
@@ -795,10 +890,236 @@ class Service extends Base\Service
 
         $refund->edit($input, 'editStatus');
 
+        if ($refund->isProcessed() === true)
+        {
+            $refund->setErrorNull();
+        }
+
         $this->repo->saveOrFail($refund);
 
         return [
             'status' => $refund->getStatus(),
+        ];
+    }
+
+    public function markRefundProcessed(string $refundId)
+    {
+        $this->trace->info(
+            TraceCode::REFUND_MARK_PROCESSED_REQUEST,
+            [
+                'refund_id' => $refundId,
+            ]);
+
+        try
+        {
+            $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+            $gateway = $refund->getGateway();
+            $merchantId = $refund->merchant->getId();
+
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            {
+                $refund->getValidator()->validateMarkProcessed();
+
+                $refund->setStatusProcessed();
+                $refund->setGatewayRefunded(true);
+
+                $this->repo->saveOrFail($refund);
+
+                $refund = $refund->toArrayPublic();
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
+                    [
+                        'refund_id' => $refund->getId(),
+                        'status' => $refund->getStatus(),
+                    ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+
+            throw $ex;
+        }
+
+        return $refund;
+    }
+
+    public function markProcessedBulk(array $input)
+    {
+        (new Validator)->validateInput('mark_processed_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_MARK_PROCESSED_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $total = count($refundIds);
+
+        $allRefundsStatuses = [];
+
+        foreach ($refundIds as $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findByPublicId($refundId);
+
+                $this->trace->info(
+                    TraceCode::REFUND_MARK_PROCESSED_OLD_STATUS,
+                    [
+                        'status' => $refund->getStatus()
+                    ]);
+
+                $refund->setStatusProcessed();
+
+                $this->repo->saveOrFail($refund);
+
+                $allRefundsStatuses[Status::PROCESSED][] = $refundId;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+
+                $allRefundsStatuses['errors'][] = [
+                    'refund_id' => $refundId,
+                    'message'   => $ex->getMessage(),
+                ];
+            }
+        }
+
+        $summary = [
+            'total' => $total,
+            'refunds_statuses' => $allRefundsStatuses,
+        ];
+
+        $this->trace->info(TraceCode::REFUND_MARK_PROCESSED_BULK_SUMMARY, $summary);
+
+        return $summary;
+    }
+
+    public function fetchRefundDetailsForCustomer(array $input)
+    {
+        (new Validator)->validateInput('customer_refund_details', $input);
+
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
+        if (empty($input['payment_id']) === false)
+        {
+            $payment = $this->getPaymentFromPaymentIdForCustomerDetails($input['payment_id']);
+
+            if (empty($payment) === false)
+            {
+                $refunds = $payment->refunds;
+            }
+        }
+        else if (empty($input['refund_id']) === false)
+        {
+            $refund = $this->getRefundFromRefundIdForCustomerDetails($input['refund_id']);
+
+            if (empty($refund) === false)
+            {
+                $payment = $refund->payment;
+
+                $refunds = $payment->refunds;
+            }
+        }
+        else
+        {
+            $payment = $this->getPaymentFromReservationIdForCustomerDetails($input['reservation_id']);
+
+            if (empty($payment) === false)
+            {
+                $refunds = $payment->refunds;
+            }
+        }
+
+        if (empty($refunds) === false)
+        {
+            if ($refunds->count() > 0)
+            {
+                // This needs to be set for `toArrayPublicCustomer`. Specifically, for the acquirer data.
+                $this->auth->setMerchantById($refunds->first()->getMerchantId());
+            }
+        }
+
+        return [
+            'refunds' => isset($refunds) ? $refunds->toArrayPublicCustomer() : [],
+            'payment' => isset($payment) ? $payment->toArrayPublicCustomer() : [],
+        ];
+    }
+
+    protected function getPaymentFromReservationIdForCustomerDetails($reservationId)
+    {
+        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures([Feature\Constants::IRCTC_REPORT]);
+
+        $irctcMerchantIds = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+
+        $payment = $this->repo->payment->fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants($reservationId, $irctcMerchantIds);
+
+        if (empty($payment) === true)
+        {
+            return null;
+        }
+
+        return $payment;
+    }
+
+    protected function getPaymentFromPaymentIdForCustomerDetails($paymentId)
+    {
+        Payment\Entity::stripSignWithoutValidation($paymentId);
+
+        $payment = $this->repo->payment->find($paymentId);
+
+        if (empty($payment) === true)
+        {
+            return null;
+        }
+
+        return $payment;
+    }
+
+    protected function getRefundFromRefundIdForCustomerDetails($refundId)
+    {
+        Entity::stripSignWithoutValidation($refundId);
+
+        $refund = $this->repo->refund->find($refundId);
+
+        if (empty($refund) === true)
+        {
+            return null;
+        }
+
+        return $refund;
+    }
+
+    public function updateProcessedAt(array $input)
+    {
+        if (isset($input['limit']) === true)
+        {
+            $limit = intval($input['limit']);
+        }
+        else
+        {
+            $limit = 5000;
+        }
+
+        if (isset($input['created_at']) === true)
+        {
+            $createdAt = $input['created_at'];
+        }
+        else
+        {
+            $createdAt = now()->subHour(6)->getTimestamp();
+        }
+
+        $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
+
+        return [
+                'success_count'   => $successCount
         ];
     }
 }

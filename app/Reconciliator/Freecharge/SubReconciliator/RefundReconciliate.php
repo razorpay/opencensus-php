@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Freecharge;
+namespace RZP\Reconciliator\Freecharge\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -8,7 +8,7 @@ use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const COLUMN_REFUND_ID     = 'transaction_id';
     const COLUMN_PAYMENT_ID    = 'order_id';

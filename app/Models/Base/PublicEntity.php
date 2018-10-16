@@ -73,6 +73,19 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $hosted           = [];
 
+    /**
+     * This variable name cannot be "customer" since
+     * some entities like subscriptions have a relation
+     * named customer already which is accessed by magic method.
+     * That clashes. Hence, using publicCustomer instead.
+     *
+     * This is mainly used right now for displaying refund
+     * details to the customer.
+     *
+     * @var array
+     */
+    protected $publicCustomer      = [];
+
     protected $publicSetters    = [
         self::ID,
         self::ENTITY,
@@ -87,6 +100,13 @@ class PublicEntity extends UniqueIdEntity
      * @var array
      */
     protected $adminOnlyPublic   = [];
+
+    /**
+     * Fields exposed through the toArrayPartner() function.
+     *
+     * @var array
+     */
+    protected $partner           = [];
 
     public function toArrayPublic()
     {
@@ -150,6 +170,24 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
+    public function toArrayPartner(): array
+    {
+        $arrayAttributes = $this->attributesToArray();
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
+        $publicAttributes = $this->toArrayPublic();
+
+        $array = array_merge($publicAttributes, $partnerAttributes);
+
+        return $array;
+    }
+
     protected function formatAmountFieldsForReport(array & $report)
     {
         foreach ($this->amounts as $key)
@@ -193,6 +231,13 @@ class PublicEntity extends UniqueIdEntity
         $attributes = $this->toArrayPublic();
 
         return array_only($attributes, $this->hosted);
+    }
+
+    public function toArrayPublicCustomer()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->publicCustomer);
     }
 
     /**

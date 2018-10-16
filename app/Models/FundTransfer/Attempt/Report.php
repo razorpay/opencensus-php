@@ -8,13 +8,18 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Mail\Settlement\Report as ReportEmail;
 
 class Report extends Base\Core
 {
-    const REPORT_HEADER = [
+    const FTA_PROGRESS = 'fta_progress';
+
+    const FTA_FAILURES = 'fta_failures';
+
+    const PROGRESS_REPORT_HEADER = [
         'Channel',
         'Attempt ID',
         'Source',
@@ -26,6 +31,26 @@ class Report extends Base\Core
         'Merchant ID',
         'Merchant Name',
         'Merchant Email'
+    ];
+
+    const FAILURE_REPORT_HEADER = [
+        'Source ID',
+        'Source',
+        'Merchant ID',
+        'Merchant Name',
+        'Bank Status Code',
+        'Remarks',
+        'Failure Reason',
+        'Created On'
+    ];
+
+    const REPORT_DATA = [
+        self::FTA_PROGRESS => [
+            'headers'  => self::PROGRESS_REPORT_HEADER,
+        ],
+        self::FTA_FAILURES => [
+            'headers'  => self::FAILURE_REPORT_HEADER,
+        ]
     ];
 
     const LIMIT = 2000;
@@ -54,24 +79,24 @@ class Report extends Base\Core
         unlink($this->fileName);
     }
 
-    protected function init()
+    protected function initialize(string $type)
     {
         $this->count = 0;
 
-        $this->fileName = $this->getFileNameForReport();
+        $this->fileName    = $this->getFileNameForReport($type);
 
-        $this->fileHandler = $this->initiateFileHandler();
+        $this->fileHandler = $this->initiateFileHandler($type);
 
-        $this->startTime = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
+        $this->startTime   = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
 
-        $this->endTime = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
+        $this->endTime     = Carbon::now(Timezone::IST)->subHour(1)->getTimestamp();
     }
 
-    public function sendFTAReconReport()
+    public function sendFTAReconReport(string $type)
     {
         $channels = Channel::getChannels();
 
-        $this->init();
+        $this->initialize($type);
 
         $this->trace->info(TraceCode::FTA_RECON_REPORT_INITIATED, [
             'start_time'    => $this->startTime,
@@ -91,18 +116,16 @@ class Report extends Base\Core
 
         $this->trace->info(TraceCode::FTA_RECON_REPORT_FILE_CREATED);
 
-        $this->sendEmail();
-
         return [
-            'count' => $this->count
+            'progressCount' => $this->count
         ];
     }
 
-    protected function initiateFileHandler()
+    protected function initiateFileHandler(string $type)
     {
         $fileHandler = fopen($this->fileName, 'w');
 
-        fputcsv($fileHandler, self::REPORT_HEADER);
+        fputcsv($fileHandler, self::REPORT_DATA[$type]['headers']);
 
         return $fileHandler;
     }
@@ -128,7 +151,7 @@ class Report extends Base\Core
         do {
             $records = $this->repo
                             ->fund_transfer_attempt
-                            ->getFailedAttemptsInitiatedAtBetweenTime(
+                            ->getFailedAttemptsCreatedBetweenTime(
                                 $channel,
                                 $this->startTime,
                                 $this->endTime,
@@ -228,25 +251,42 @@ class Report extends Base\Core
             return;
         }
 
-        (new SlackNotification)->success(
+        (new SlackNotification)->send(
             'fta_recon_report',
             [
                 'channel' => $this->channel,
                 'count' => $count
-            ]);
+            ],
+            null,
+            $count);
     }
 
-    protected function sendEmail()
+    public static function sendEmail(array $count, array $fileInfo)
     {
-        if ($this->count === 0)
+        $data = [
+            'header'  => 'Settlement Potential Failures',
+            'subject' => 'Settlement Report for ' . Carbon::today(Timezone::IST)->format('Y-m-d'),
+            'date'    => Carbon::today(Timezone::IST)->format('Y-m-d')
+        ];
+
+        $attachments = [];
+
+        if ($count['progressCount'] !== 0)
+        {
+            $attachments[] = $fileInfo[self::FTA_PROGRESS];
+        }
+
+        if ($count['failureCount'] !== 0)
+        {
+            $attachments[] = $fileInfo[self::FTA_FAILURES];
+        }
+
+        if (empty($attachments) === true)
         {
             return false;
         }
 
-        $data = [
-            'file'      => $this->fileName,
-            'date'      => Carbon::today(Timezone::IST)->format('Y-m-d')
-        ];
+        $data['attachments'] = $attachments;
 
         $reportEmail = new ReportEmail($data);
 
@@ -259,13 +299,13 @@ class Report extends Base\Core
         return true;
     }
 
-    protected function getFileNameForReport()
+    protected function getFileNameForReport(string $type)
     {
-        $dir  = storage_path('files/settlement');
+        $dir  = Utility::getStorageDir();
 
         $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
-        return $dir . DIRECTORY_SEPARATOR . 'report_' . $date . '.csv';
+        return $dir . DIRECTORY_SEPARATOR . $type . '_' . $date . '.csv';
     }
 
     protected function createOrUpdateFile($records)
@@ -288,5 +328,82 @@ class Report extends Base\Core
 
             fputcsv($this->fileHandler, $data);
         }
+    }
+
+    public function sendFTAFailureReport(string $type)
+    {
+        $this->initialize($type);
+
+        $this->trace->info(TraceCode::FTA_FAILURE_REPORT_INITIATED, [
+            'start_time'    => $this->startTime,
+            'end_time'      => $this->endTime,
+        ]);
+
+         $this->createFailureReport();
+
+        fclose($this->fileHandler);
+
+        $this->trace->info(TraceCode::FTA_FAILURE_REPORT_FILE_CREATED);
+
+        return [
+            'failureCount' => $this->count
+        ];
+    }
+
+    protected function createFailureReport()
+    {
+        $offset = 0;
+
+        $recordCount = 0;
+
+        do
+        {
+            $records = $this->repo
+                            ->fund_transfer_attempt
+                            ->getFailedSettlements(
+                                $this->startTime,
+                                $this->endTime,
+                                self::LIMIT,
+                                $offset);
+
+            $offset += self::LIMIT;
+
+            $this->createOrUpdateFailureFile($records);
+
+            $count = count($records);
+
+            $recordCount += $count;
+
+            $this->count += $count;
+
+        } while ($count === self::LIMIT);
+
+        $this->notify($recordCount);
+    }
+
+    protected function createOrUpdateFailureFile($records)
+    {
+        foreach ($records as $record)
+        {
+            $createdDate = Carbon::createFromTimestamp($record->getCreatedAt(), Timezone::IST);
+
+            $data = [
+                $record->getSourceId(),
+                $record->getSourceType(),
+                $record->merchant->getId(),
+                $record->merchant->getName(),
+                $record->getBankStatusCode(),
+                $record->getRemarks(),
+                $record->getFailureReason(),
+                $createdDate->format('d-m-Y')
+            ];
+
+            fputcsv($this->fileHandler, $data);
+        }
+    }
+
+    public function getFileName(string $type)
+    {
+        return [$type => $this->fileName];
     }
 }

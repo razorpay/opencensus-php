@@ -5,7 +5,6 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
@@ -34,6 +33,11 @@ abstract class Base extends BaseProcessor
      * @var array Used for mapping the file content to the corresponding gateway entity
      */
     protected $gatewayPaymentMapping = [];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
 
     protected function processEntry(array & $entry)
     {
@@ -69,7 +73,7 @@ abstract class Base extends BaseProcessor
     }
 
     abstract protected function getDataFromRow(array $entry): array;
-    abstract protected function getTokenStatus(string $gatewayTokenStatus): string;
+    abstract protected function getTokenStatus(string $gatewayTokenStatus, array $content): string;
     abstract protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry);
     abstract protected function getGatewayPayment(Payment\Entity $payment);
 
@@ -92,6 +96,10 @@ abstract class Base extends BaseProcessor
             ($payment->hasBeenCaptured() === false))
         {
             $this->captureAuthorizedPayment($payment);
+        }
+        else if ($data[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED)
+        {
+            $this->refundPayment($payment);
         }
     }
 
@@ -152,6 +160,22 @@ abstract class Base extends BaseProcessor
         $this->paymentProcessor->capture($payment, $parameters);
     }
 
+    protected function refundPayment($payment)
+    {
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'status' => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
+        (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
+    }
+
     protected function updateTokenEntity(Token\Entity $token, array $content)
     {
         // In some gateways like HDFC, there's no gateway token
@@ -191,9 +215,11 @@ abstract class Base extends BaseProcessor
         return false;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    public function getOutputFileHeadings(): array
     {
-        return;
+        $headerRule = $this->batch->getValidator()->getHeaderRule();
+
+        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $headerRule);
     }
 
     protected function sendProcessedMail()

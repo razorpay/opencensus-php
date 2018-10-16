@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\BillDesk;
+namespace RZP\Reconciliator\BillDesk\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Constants\Timezone;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

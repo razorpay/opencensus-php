@@ -14,6 +14,7 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
@@ -23,7 +24,7 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
-    const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
+    const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
 
     const PAYOUT_RETRY       = 'payout_retry_%s';
 
@@ -233,7 +234,8 @@ class Core extends Base\Core
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        $payout->setChannel($merchant->getChannel());
+        // $payout->setChannel($merchant->getChannel());
+        $payout->setChannel(Settlement\Channel::YESBANK);
 
         $payout->merchant()->associate($merchant);
 

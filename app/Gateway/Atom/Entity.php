@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const TOKEN              = 'token';
     const METHOD             = 'method';
     const CALLBACK_DATA      = 'callback_data';
+    const DATE               = 'date';
 
     protected $entity = Constants\Entity::ATOM;
 
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::SUCCESS,
         self::ACCOUNT_NUMBER,
         self::RECEIVED,
+        self::DATE,
     ];
 
     protected $fillable = [
@@ -59,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::RECEIVED,
         self::ERROR_CODE,
         self::SUCCESS,
+        self::DATE,
     ];
 
     protected $casts = [
@@ -84,6 +87,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function getDate()
+    {
+        return $this->getAttribute(self::DATE);
     }
 
     public function setAction(string $action)
@@ -119,5 +127,10 @@ class Entity extends Base\PublicEntity
     public function setBankPaymentId($bankPaymentId)
     {
         $this->setAttribute(self::BANK_PAYMENT_ID, $bankPaymentId);
+    }
+
+    public function setDate($date)
+    {
+        $this->setAttribute(self::DATE, $date);
     }
 }

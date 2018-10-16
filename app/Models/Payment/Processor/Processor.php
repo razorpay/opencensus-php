@@ -8,9 +8,9 @@ use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Http;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Metric;
 use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
@@ -49,6 +50,7 @@ class Processor
     use Reversal;
     use Transfer;
     use Vpa;
+    use AuthorizePush;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -91,6 +93,11 @@ class Processor
     const UPI_COLLECT_EXPIRY = 5;
 
     /**
+     * Minimum payment amount for which mdr should be calculated
+     */
+    const MIN_MDR_PAYMENT_AMOUNT = 200000;
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -130,6 +137,11 @@ class Processor
      */
     protected $offer;
 
+    /**
+     * @var Subscription\Entity
+     */
+    protected $subscription;
+
     protected $receiver;
     protected $segment;
 
@@ -147,6 +159,8 @@ class Processor
      */
     protected $ba;
 
+    protected $cache;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -155,7 +169,7 @@ class Processor
         $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $this->getMethodsForMerchant($merchant);
+        $this->methods = $merchant->getMethods();
 
         $this->checkMerchantPermissions();
 
@@ -181,37 +195,68 @@ class Processor
 
     public function flushPaymentObjects()
     {
-        $this->order   = null;
-        $this->offer   = null;
-        $this->payment = null;
-        $this->refund  = null;
-        $this->type    = null;
+        $this->order        = null;
+        $this->offer        = null;
+        $this->payment      = null;
+        $this->refund       = null;
+        $this->type         = null;
+        $this->subscription = null;
     }
 
     public function process(array $input, $gatewayInput = []): array
     {
-        $this->setMethodForInput($input);
-
-        $payment = $this->buildPaymentEntity($input);
-
-        $ret = $this->preProcessPaymentInputs($input, $payment);
-
-        if ($ret !== null)
+        try
         {
-            return $ret;
+            $this->setMethodForInput($input);
+
+            $payment = $this->buildPaymentEntity($input);
+
+            $this->preProcessForSubscriptionsIfApplicable($input, $payment);
+
+            $ret = $this->preProcessPaymentInputs($input, $payment);
+
+            if ($ret !== null)
+            {
+                return $ret;
+            }
+
+            $this->repo->transaction(function() use ($input, $payment)
+            {
+                $this->createPaymentEntity($input, $payment);
+            });
+
+            $payment = $this->payment;
+
+            // This flow is being used for only hosted (Shopify).
+            $this->checkSignature($input, $payment);
+
+            return $this->authorize($payment, $input, $gatewayInput);
         }
-
-        $this->repo->transaction(function() use ($input, $payment)
+        catch (Exception\BaseException $e)
         {
-            $this->createPaymentEntity($input, $payment);
-        });
+            $attributes = [];
 
-        $payment = $this->payment;
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $attributes = $e->getError()->getAttributes();
+            }
 
-        // This flow is being used for only hosted (Shopify).
-        $this->checkSignature($input, $payment);
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
-        return $this->authorize($payment, $input, $gatewayInput);
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
+        catch (\Throwable $e)
+        {
+            $attributes = [Metric::LABEL_TRACE_CODE => $e->getCode()];
+
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
     }
 
     public function getPayment(): Payment\Entity
@@ -219,6 +264,69 @@ class Processor
         $this->payment->reload();
 
         return $this->payment;
+    }
+
+    protected function preProcessForSubscriptionsIfApplicable(array & $input, Payment\Entity $payment)
+    {
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $this->subscription = $this->app['module']
+                                   ->subscription
+                                   ->fetchSubscriptionInfo($input, $payment->merchant);
+
+        if ($this->subscription->isExternal() === true)
+        {
+            $payment->setSubscriptionId($this->subscription->getId());
+
+            $subscriptionPaymentRecurringType = $this->subscription->getRecurringType();
+
+            $payment->setRecurringType($subscriptionPaymentRecurringType);
+
+            $this->addOrderIdToInputForExternalSubscription($input);
+
+            $this->addCustomerIdToInputForExternalSubscription($input);
+        }
+    }
+
+    protected function addOrderIdToInputForExternalSubscription(array & $input)
+    {
+        assert($this->subscription->isExternal() === true);
+
+        if ($this->subscription->hasCurrentInvoice() === true)
+        {
+            $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
+
+            $invoice = $this->repo->invoice->findOrFailPublic($currentInvoiceId);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($invoice->getOrderId());
+        }
+    }
+
+    protected function addCustomerIdToInputForExternalSubscription(array & $input)
+    {
+        assert($this->subscription->isExternal() === true);
+        //
+        // If a subscription_id is sent in the input, the customer_id should
+        // never be sent. It's either associated with the subscription (local customer)
+        // or we use the global customer and associate that later.
+        //
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                null,
+                [
+                    'subscription_id'   => $this->subscription->getId(),
+                ]);
+        }
+
+        if ($this->subscription->hasCustomer() === true)
+        {
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
+        }
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
@@ -277,12 +385,9 @@ class Processor
         // We need this flow only if either:
         //   - bank_account is missing
         //   - auth_type is missing
-        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false) and
-            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
-             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
+            (empty($payment->getAuthType()) === false))
         {
             return null;
         }
@@ -326,7 +431,7 @@ class Processor
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
                 'content' => [
-                    'input' => $input,
+                    'input' => array_assoc_flatten($input, '%s[%s]'),
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
@@ -361,7 +466,7 @@ class Processor
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
-                    'content' => $input,
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
                 ],
                 'method' => 'wallet',
                 'version' => '1',
@@ -439,6 +544,8 @@ class Processor
                 // It's not going to be saved in the database.
                 //
                 $payment = $this->buildPaymentEntity($input);
+
+                $payment->setMetadata($input);
 
                 $payment->receiver()->associate($receiver);
 
@@ -582,7 +689,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -645,26 +752,35 @@ class Processor
             return $offers->first();
         }
 
-        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
-    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
         $offerId = $input[Payment\Entity::OFFER_ID];
 
         Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // TODO: this needs to be checked for shared merchant offers also
+        // skipping for now because there aren't any
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        // if its just a checkout display offer, just return null so that further validations
+        // and associations don't happen.
+        if ($offer->getCheckoutDisplay() === true)
+        {
+            return null;
+        }
 
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
+                'offer_id' => Offer\Entity::getSignedId($offerId),
+                'order_id' => $payment->order->getPublicId(),
             ]);
         }
-
-        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
         return $offer;
     }
@@ -899,6 +1015,13 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getUpiStatus($id);
+
+        if ($response !== null)
+        {
+            return $response;
+        }
+
         $payment = $this->retrieve($id);
 
         $order = $this->getOrderForPayment($payment);
@@ -930,9 +1053,13 @@ class Processor
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
-            return [
+            $response = [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
+
+            $this->setUpiStatus($payment->getPublicId(), $response);
+
+            return $response;
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1052,12 +1179,13 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->setVerified(null);
-        $payment->setVerifyBucket(0);
+        $this->updateVerifyBucketOnPaymentFailure($exception);
 
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        (new Payment\Metric)->pushFailedMetrics($payment);
 
         $this->eventPaymentFailed();
 
@@ -1090,6 +1218,35 @@ class Processor
         $source = $riskData[Risk\Entity::SOURCE];
 
         (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
+    protected function updateVerifyBucketOnPaymentFailure(Exception\BaseException $e)
+    {
+        $payment = $this->payment;
+
+        $payment->setVerified(null);
+
+        $payment->setVerifyBucket(0);
+
+        //
+        // In case the gateway error exception is thrown on authenticate
+        // we set verify bucket to null
+        //
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            {
+                $payment->setNonVerifiable();
+            }
+        }
+
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setNonVerifiable();
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1213,7 +1370,7 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
-        if ($this->merchant->isFeeBearerCustomer())
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -1221,8 +1378,6 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
-
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
 
@@ -1266,14 +1421,10 @@ class Processor
      */
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
-        if (isset ($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        if (($this->subscription === null) or ($this->subscription->isExternal() === true))
         {
             return;
         }
-
-        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
-
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         //
         // In case the subscription is in active or halted state,
@@ -1281,9 +1432,9 @@ class Processor
         // 1. It would already be present if it's automated charge.
         // 2. Change card flow is being done. Hence, no invoice and stuff.
         //
-        if ($subscription->isCreated() === true)
+        if ($this->subscription->isCreated() === true)
         {
-            $this->addOrderIdToInputForCreatedSubscription($subscription, $input);
+            $this->addOrderIdToInputForCreatedSubscription($input);
         }
         else
         {
@@ -1291,6 +1442,8 @@ class Processor
 
             if ($cardChange === true)
             {
+                $subscription = $this->subscription;
+
                 if ($subscription->isCardChangeStatus() === false)
                 {
                     throw new Exception\BadRequestException(
@@ -1314,14 +1467,14 @@ class Processor
         }
     }
 
-    protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
+    protected function addOrderIdToInputForCreatedSubscription(array & $input)
     {
         //
         // Invoice would have been created if:
         // - First charge needs to be done as part of authentication with or without addons
         // - Only addons need to be added, and no first charge needs to be done as part of authentication.
         //
-        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($this->subscription);
 
         $subscriptionInvoicesCount = $subscriptionInvoices->count();
 
@@ -1348,7 +1501,7 @@ class Processor
         }
     }
 
-    protected function addOrderIdToInputForPendingSubscription(Subscription\Entity $subscription, array & $input)
+    protected function addOrderIdToInputForPendingSubscription($subscription, array & $input)
     {
         $subscriptionInvoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
 
@@ -1378,8 +1531,10 @@ class Processor
      * amount and verify that it's the same as received from checkout.
      *
      * @param Payment\Entity $payment
-     * @param $input
+     * @param                $input
+     *
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
@@ -1512,7 +1667,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -1698,6 +1853,11 @@ class Processor
             return false;
         }
 
+        if ($payment->isDirectSettlement() === true)
+        {
+            return true;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //
@@ -1867,6 +2027,11 @@ class Processor
             return false;
         }
 
+        if ($this->isAutoRefundDelayExceeded($payment) === true)
+        {
+            return false;
+        }
+
         if ($payment->isLateAuthorized() === true)
         {
             return $this->shouldAutoCaptureLateAuthorized($payment);
@@ -1875,44 +2040,50 @@ class Processor
         return true;
     }
 
-    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment): bool
+    protected function isAutoRefundDelayExceeded(Payment\Entity $payment): bool
     {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
         $merchant = $payment->merchant;
 
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
 
-        $shouldRefundAt = $createdAt + $autoRefundDelay;
+        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;;
+        $merchantRefundAt = $createdAt + $autoRefundDelay;
 
-        $currentTime = Carbon::now()->getTimestamp();
+        $refundAt = max($minRefundAt, $merchantRefundAt);
+
+        if ($payment->isEmandate() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+        }
 
         $this->trace->info(
-            TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,
+            TraceCode::AUTO_CAPTURE_REFUND_DELAY,
             [
                 'payment_id'        => $payment->getId(),
                 'status'            => $payment->getStatus(),
                 'refund_delay'      => $autoRefundDelay,
-                'should_refund_at'  => $shouldRefundAt,
+                'should_refund_at'  => $refundAt,
                 'current_time'      => $currentTime,
             ]);
 
-        //
-        // If the payment is supposed to get refunded by now,
-        // do not auto capture it.
-        //
-        if ($currentTime > $shouldRefundAt)
-        {
-            return false;
-        }
+        return ($currentTime > $refundAt);
+    }
 
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment): bool
+    {
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
-        if ($payment->hasInvoice())
+        if ($payment->hasInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
+
+        $merchant = $payment->merchant;
 
         return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
     }
@@ -2066,16 +2237,6 @@ class Processor
 
     }
 
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
-    }
-
     protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
     {
         if ($payment->isBankTransfer() === true)
@@ -2086,8 +2247,14 @@ class Processor
         return true;
     }
 
-    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return false;
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             //
@@ -2172,5 +2339,89 @@ class Processor
         $this->repo->saveOrFail($order);
 
         $this->eventOrderPaid();
+    }
+
+
+    protected function getUpiStatus(string $id)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
+     * Key will be deleted from the cache when the upi
+     * payment entity gets updated. Deletion is in the
+     * observer class(Models/Payment/Observer.php).
+     *
+     * @param string $id
+     * @param array  $value
+     * @param float  $ttl
+     */
+    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                 '$value' => $value]);
+        }
+    }
+
+    protected function pushPaymentCreateErrorMetrics(array $errorAttributes)
+    {
+        $this->trace->count(
+            Metric::PAYMENT_PROCESS_FAILED,
+            [
+                Metric::LABEL_TRACE_CODE            => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+                Metric::LABEL_TRACE_FIELD           => array_get($errorAttributes, Error::FIELD),
+                Metric::LABEL_TRACE_SOURCE          => array_get($errorAttributes, Error::ERROR_CLASS),
+                Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
+            ]
+        );
+    }
+
+    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment)
+    {
+        if (($payment->isEmandate() === true) and
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isTpvMethod() === true) and
+            ($this->merchant->isTPVRequired() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

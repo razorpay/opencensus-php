@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const BANK                      = 'bank';
     const WALLET                    = 'wallet';
     const ACCOUNT_NUMBER            = 'account_number';
+    const ACCOUNT_TYPE              = 'account_type';
     const GATEWAY_TOKEN             = 'gateway_token';
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const IFSC                      = 'ifsc';
     const AADHAAR_NUMBER            = 'aadhaar_number';
+    const AADHAAR_VID               = 'aadhaar_vid';
     const CONFIRMED_AT              = 'confirmed_at';
     const REJECTED_AT               = 'rejected_at';
     const INITIATED_AT              = 'initiated_at';
@@ -54,6 +56,12 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
+
+    //
+    // These values goes in the account_type field
+    //
+    const ACCOUNT_TYPE_SAVINGS = 'savings';
+    const ACCOUNT_TYPE_CURRENT = 'current';
 
     //
     // These keys will be under recurring_details
@@ -89,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::BENEFICIARY_NAME,
         self::IFSC,
         self::TOKEN,
@@ -97,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
+        self::AADHAAR_VID,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
     ];
@@ -107,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::BENEFICIARY_NAME,
         self::IFSC,
         self::TOKEN,
@@ -124,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
+        self::AADHAAR_VID,
         self::USED_COUNT,
         self::CONFIRMED_AT,
         self::REJECTED_AT,
@@ -145,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::RECURRING,
         self::RECURRING_DETAILS,
+        self::AUTH_TYPE,
         self::USED_AT,
         self::CREATED_AT,
         // TODO: uncomment when we start accepting token as input
@@ -155,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::WALLET                    => null,
         self::CARD_ID                   => null,
         self::ACCOUNT_NUMBER            => null,
+        self::ACCOUNT_TYPE              => null,
         self::IFSC                      => null,
         self::BENEFICIARY_NAME          => null,
         self::BANK                      => null,
@@ -165,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT                => null,
         self::AUTH_TYPE                 => null,
         self::AADHAAR_NUMBER            => null,
+        self::AADHAAR_VID               => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
@@ -236,6 +251,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
     public function getBeneficiaryName()
     {
         return $this->getAttribute(self::BENEFICIARY_NAME);
@@ -249,6 +269,11 @@ class Entity extends Base\PublicEntity
     public function getAadhaarNumber()
     {
         return $this->getAttribute(self::AADHAAR_NUMBER);
+    }
+
+    public function getAadhaarVid()
+    {
+        return $this->getAttribute(self::AADHAAR_VID);
     }
 
     public function getToken()
@@ -456,12 +481,18 @@ class Entity extends Base\PublicEntity
      * It needs to be in fillable because
      * merchant can send its value too.
      *
+     * In case of aadhaar auth type, we will have to keep
+     * the expiry as null.
+     *
      * @param $expiredAt
      */
     protected function setExpiredAtAttribute($expiredAt)
     {
+        // todo: Change token's expired_at value based on response from gateway
         if ((empty($expiredAt) === true) and
-            ($this->getMethod() === Payment\Method::EMANDATE))
+            ($this->getMethod() === Payment\Method::EMANDATE) and
+            ($this->getAuthType() !== Payment\AuthType::AADHAAR)
+        )
         {
             $expiredAt = Carbon::now(Timezone::IST)
                                ->addYears(self::DEFAULT_EXPIRY_YEARS)
@@ -479,6 +510,16 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::AADHAAR_NUMBER] = $aadhaarNumber;
+    }
+
+    protected function setAadhaarVidAttribute($aadhaarVid)
+    {
+        if ($aadhaarVid !== null)
+        {
+            $aadhaarVid = Crypt::encrypt($aadhaarVid);
+        }
+
+        $this->attributes[self::AADHAAR_VID] = $aadhaarVid;
     }
 
     protected function setPublicCardAttribute(array & $array)
@@ -509,6 +550,16 @@ class Entity extends Base\PublicEntity
         }
 
         return Crypt::decrypt($aadhaarNumber);
+    }
+
+    protected function getAadhaarVidAttribute($aadhaarVid)
+    {
+        if ($aadhaarVid === null)
+        {
+            return $aadhaarVid;
+        }
+
+        return Crypt::decrypt($aadhaarVid);
     }
 
     public function setPublicRecurringDetailsAttribute(array & $array)

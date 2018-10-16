@@ -46,4 +46,13 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function nodalFileUploadThroughBeam()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->nodalFileUploadThroughBeam($input);
+
+        return ApiResponse::json($data);
+    }
 }

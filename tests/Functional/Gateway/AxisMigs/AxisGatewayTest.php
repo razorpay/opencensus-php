@@ -156,8 +156,12 @@ class AxisGatewayTest extends TestCase
         $payment['card']['number'] = '5081597022059105';
 
         $this->fixtures->on('live')->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1, 'live' => 1, 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        // $merchant = $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->edit('10000000000000',
+                                        [
+                                            'activated' => 1,
+                                            'live' => 1,
+                                            'pricing_plan_id' => '1hDYlICobzOCYt'
+                                        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -187,9 +191,9 @@ class AxisGatewayTest extends TestCase
         $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
 
         $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['vpc_DRExists'] = 'Y';
-                        });
+        {
+            $content['vpc_DRExists'] = 'Y';
+        });
 
         $data = $this->testData[__FUNCTION__];
 
@@ -389,6 +393,7 @@ class AxisGatewayTest extends TestCase
                 $content['vpc_Amount']          = '0';
                 $content['vpc_BatchNo']         = '0';
                 $content['vpc_Currency']        = 'INR';
+                // @codingStandardsIgnoreLine
                 $content['vpc_Message']         = 'E5414-08311437: Capture Error : Field in error: \'transaction.amount\', value \'INR 500.00\' - reason: Requested capture amount exceeds outstanding authorized amount';
                 $content['vpc_TransactionNo']   = '0';
                 $content['vpc_TxnResponseCode'] = '7';
@@ -403,6 +408,24 @@ class AxisGatewayTest extends TestCase
         {
             $this->doAuthAndCapturePayment($testData['request']['content']);
         });
+    }
+
+    public function testCaptureGatewayRequestExceptionRetry()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->getGatewayRequestExceptionInCapture();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $this->i);
+
+        $this->assertEquals('captured', $payment['status']);
     }
 
     public function testFailedPaymentWithProperError()
@@ -478,6 +501,7 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }
 
+    // @codingStandardsIgnoreLine
     public function testFailureWhen3DSFailsForDomesticMerchant()
     {
         $this->fixtures->merchant->disableInternational();
@@ -500,6 +524,7 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
     }
 
+    // @codingStandardsIgnoreLine
     public function testFailureWhen3DSFailsForRiskyMerchant()
     {
         $this->fixtures->merchant->enableInternational();
@@ -562,5 +587,175 @@ class AxisGatewayTest extends TestCase
         $this->assertNotNull($migs['vpc_AuthorizeId']);
         $this->assertEquals($paymentId, $migs['payment_id']);
         $this->assertArraySelectiveEquals($migsData, $migs);
+    }
+
+    public function testFailedPaymentMessageException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSRequestCode']    = 'Z';
+                $content['vpc_AcqCSCRespCode']    = 'N';
+                $content['vpc_AcqResponseCode']   = '91';
+                $content['vpc_CSCResultCode']     = 'N';
+                $content['vpc_Message']           = 'E5415-09120704: Refund Error : 
+                                                     Field in error: \'initialTransaction.orderNumber\',  
+                                                     value \'27950\' - reason: No order identified';
+                $content['vpc_TxnResponseCode']   = '3';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
+    }
+
+    public function testFailedPaymentAcqResponseCodeException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSRequestCode']    = 'Z';
+                $content['vpc_AcqCSCRespCode']    = 'N';
+                $content['vpc_AcqResponseCode']   = '91';
+                $content['vpc_CSCResultCode']     = 'N';
+                $content['vpc_Message']           = '';
+                $content['vpc_TxnResponseCode']   = 'E';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
+    }
+
+    public function testFailedPaymentTxnResponseCodeException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSRequestCode']    = 'Z';
+                $content['vpc_AcqCSCRespCode']    = 'N';
+                $content['vpc_AcqResponseCode']   = '';
+                $content['vpc_CSCResultCode']     = 'N';
+                $content['vpc_Message']           = '';
+                $content['vpc_TxnResponseCode']   = 'E';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
+    }
+
+    public function testFailedPaymentAvsResponseCodeException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSResultCode']    = 'Z';
+                $content['vpc_AcqCSCRespCode']    = 'N';
+                $content['vpc_AcqResponseCode']   = '';
+                $content['vpc_CSCResultCode']     = 'N';
+                $content['vpc_Message']           = '';
+                $content['vpc_TxnResponseCode']   = '';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
+    }
+
+    public function testFailedPaymentCscResponseCodeException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSResultCode']    = '';
+                $content['vpc_AcqCSCRespCode']    = 'N';
+                $content['vpc_AcqResponseCode']   = '';
+                $content['vpc_CSCResultCode']     = 'U';
+                $content['vpc_Message']           = '';
+                $content['vpc_TxnResponseCode']   = '';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
+    }
+
+    public function testFailedPaymentUnknownResponseCodeException()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'acs')
+            {
+                $content['vpc_3DSECI']            = '05';
+                $content['vpc_AVSRequestCode']    = 'Z';
+                $content['vpc_AcqCSCRespCode']    = '';
+                $content['vpc_AcqResponseCode']   = '';
+                $content['vpc_CSCResultCode']     = 'AVNA';
+                $content['vpc_Message']           = '';
+                $content['vpc_TxnResponseCode']   = '';
+                $content['vpc_VerSecurityLevel']  = '05';
+                $content['vpc_VerStatus']         = 'Y';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthPayment($testData['request']['content']);
+        });
     }
 }

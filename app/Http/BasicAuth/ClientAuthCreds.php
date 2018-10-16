@@ -120,6 +120,12 @@ class ClientAuthCreds extends AuthCreds
         return true;
     }
 
+    /**
+     * This function does not actually check for live mode since this is on the partner merchant
+     * and partner's access to live mode doesn't matter while accessing submerchant resources.
+     *
+     * @return \RZP\Models\Merchant\Entity
+     */
     public function fetchAndSetMerchantAndCheckLive()
     {
         $merchantId = $this->partnerClient->getMerchantId();

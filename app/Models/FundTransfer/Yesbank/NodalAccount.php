@@ -3,301 +3,196 @@
 namespace RZP\Models\FundTransfer\Yesbank;
 
 use App;
-use Excel;
-use Mail;
 use Carbon\Carbon;
+use Config;
 
-use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
-use RZP\Exception;
-use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\BankAccount;
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\FileStore;
-use RZP\Models\FundTransfer;
+use RZP\Models\BankAccount;
+use RZP\Models\FundTransfer\Mode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\FundTransfer\Attempt\Lock;
+use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\Settlement;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
 
-class NodalAccount extends NodalBase\FileProcessor
+class NodalAccount extends NodalBase\NodalAccount
 {
-    use FileHandlerTrait;
+    const IFSC_IDENTIFIER = IFSC::YESB;
 
-    protected static $fileToWriteName = 'YESB_Settlement';
+    protected $trace;
 
-    protected static $nodalAccountNumber = '002261100000070';
+    protected $config;
 
-    protected static $bankCodes = [IFSC::YESB];
-
-    protected $summary;
-
-    protected $app;
-
-    protected $hour;
-
-    protected $queue;
-
-    protected $date;
-
-    public function __construct(string $purpose)
+    public function __construct(string $purpose = null)
     {
         parent::__construct($purpose);
 
-        // Date format is DD/MM/YYYY in human representation
-        $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
-
-        $this->hour = Carbon::now(Timezone::IST)->hour;
-
-        $this->queue = \Queue::getFacadeRoot();
-
-        $this->app = App::getFacadeRoot();
-
-        $this->initSummary();
+        $this->initStats();
     }
 
-    protected function initSummary()
+    /**
+     * Makes request to the bank for fund transfer for given attempts
+     *
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    public function process(PublicCollection $attempts): array
     {
-        $this->summary['total']['amount'] = 0;
-        $this->summary['total']['count'] = 0;
+        $transfer = new Transfer($this->purpose);
 
-        $this->summary['NEFT']['amount'] = 0;
-        $this->summary['NEFT']['count'] = 0;
+        $processedCount = 0;
 
-        $this->summary['IFT']['amount'] = 0;
-        $this->summary['IFT']['count'] = 0;
+        $lock = (new Lock($this->channel));
 
-        $this->summary['RTGS']['amount'] = 0;
-        $this->summary['RTGS']['count'] = 0;
+        $attempts = $lock->lockAttempts($attempts);
+
+        foreach ($attempts as $entity)
+        {
+            //
+            // This is required only for Yesbank since the schedule sets
+            // time during non-working days and non-working hours also
+            // only for yesbank right now, for some merchants, based
+            // on certain conditions.
+            // Not required for other banks since the settled_at time will
+            // never be set during non-working hours/days.
+            // Also, for other banks, settlements itself won't be even
+            // initiated on non-working days/hours
+            //
+            $isTransferAllowedToday = $this->isTransferAllowedToday($entity);
+
+            if ($isTransferAllowedToday === false)
+            {
+                continue;
+            }
+
+            try
+            {
+                // Calling init will reset all the data of previous request
+                $response = $transfer->init()
+                                     ->setEntity($entity)
+                                     ->makeRequest();
+
+                $this->repo->saveOrFail($entity);
+
+                $this->repo->saveOrFail($entity->source);
+
+                $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
+                    [
+                        'channel'       => $this->channel,
+                        'entity_id'     => $entity->getId(),
+                        'settlement_id' => $entity->getSourceId(),
+                    ]);
+
+                $lock->releaseAttempt($entity);
+
+                $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $entity->getSourceType());
+
+                continue;
+            }
+
+            $processedCount++;
+
+            try
+            {
+                (new StatusProcessor($response))->updateTransferStatus();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
+                    $response
+                );
+            }
+            finally
+            {
+                $lock->releaseAttempt($entity);
+            }
+        }
+
+        $this->updateTransferStatus($processedCount);
+
+        return $this->transferStatus;
     }
 
-    public static function getHeadings()
+    /**
+     * filters the attempts based on holiday and channel
+     * for yesbank we allow settlements on holidays but it should only be IMPS
+     * IMPS has amount limit of 2L.
+     * So if any attempt of yesbank on holidays will be filtered based on amount
+     *
+     * @param Attempt\Entity $attempt
+     * @return bool
+     */
+    protected function isTransferAllowedToday(Attempt\Entity $attempt):  bool
     {
-        return Headings::getRequestFileHeadings();
+        $amount = $attempt->source->getAmount() / 100;
+
+        $mode = $this->getPaymentMode($attempt->bankAccount, $amount);
+
+        $allowedModes = Mode::get24x7TransferModes();
+
+        if (in_array($mode, $allowedModes, true) === true)
+        {
+            return true;
+        }
+
+        if ($this->isWorkingDay === false)
+        {
+            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+                'attempt_id'=> $attempt->getId(),
+                'reason'    => 'Holiday today!',
+            ]);
+
+            return false;
+        }
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if (($currentTime >= $this->bankingStartTime) and
+            ($currentTime <= $this->bankingEndTime))
+        {
+            return true;
+        }
+
+        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+            'attempt_id'            => $attempt->getId(),
+            'amount'                => $amount,
+            'mode'                  => $mode,
+            'banking_start_time'    => $this->bankingStartTime,
+            'banking_ending_time'   => $this->bankingEndTime,
+        ]);
+
+        return false;
     }
 
-    public function generateFundTransferFile($entities, $h2h = true): array
+    protected function getPaymentMode(BankAccount\Entity $ba, $amount): string
     {
-        $h2h = false;
-
-        $textData = $excelData = [];
-
-        $row = 2; // row number
-
-        foreach ($entities as $entity)
-        {
-            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);
-
-            $merchant = $entity->merchant;
-
-            $ba = $merchant->bankAccount;
-
-            $amount = $source->getAmount() / 100;
-
-            $type = $this->getPaymentType($ba, $amount, $entity);
-
-            $this->updateSummary($type, $amount);
-
-            $array = [
-                Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
-                Headings::IFSC_CODE               => $ba->getIfscCode(),
-                Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                Headings::AMOUNT                  => $amount,
-                Headings::BENEFICIARY_BANK        => $ba->getBankName()
-            ];
-
-            $array = $this->getAllFields($array);
-
-            $textDataArray = $array;
-            $textDataArray['Amount'] = (string) $amount;
-
-            array_push($textData, $textDataArray);
-
-            $row++;
-
-            array_push($excelData, $array);
-        }
-
-        $txt = $this->generateText($textData);
-
-        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
-
-        $this->sendSettlementMail($excelFileEntity, $textFileEntity);
-
-        return [$textFileEntity, $excelFileEntity];
-    }
-
-    protected function getPaymentRefNoAndVersion($entity)
-    {
-        $version = Attempt\Version::V1;
-
-        if ($entity instanceof Attempt\Entity)
-        {
-            $version = Attempt\Version::V3;
-
-            $source = $entity->source;
-
-            $paymentRefNo = $entity->getPublicId();
-        }
-        else if ($entity instanceof Settlement\Entity)
-        {
-            $source = $entity;
-
-            $paymentRefNo = $source->getPublicId();
-        }
-        else
-        {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid entity for Settlement-file generation: ' . get_class($entity));
-        }
-
-        return [$version, $paymentRefNo, $source];
-    }
-
-    protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
-    {
-        // Check RTGS time and minimum
-        $type = $this->getTransferMode($amount);
-
-        // Mode will be present only for attempts of type Refund
-        if ($attempt->getMode() != null)
-        {
-            $type = $attempt->getMode();
-        }
-
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        // For YESB beneficiaries, none of the
-        // above logic matters, we only do IFT
-        if ($ifscFirstFour === 'YESB')
+        if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
         {
-            $type = FundTransfer\Mode::IFT;
+            return Mode::IFT;
+        }
+        else if ($amount < self::MAX_IMPS_AMOUNT)
+        {
+            return Mode::IMPS;
         }
 
-        return $type;
+        return $this->getTransferMode($amount, $ba->merchant);
     }
-
-    protected function updateSummary($type, $amount)
-    {
-        $this->summary['total']['count']++;
-        $this->summary['total']['amount'] += $amount;
-
-        $this->summary[$type]['amount'] += $amount;
-        $this->summary[$type]['count']++;
-    }
-
-    protected function getEmptyArray()
-    {
-        $headings = self::getHeadings();
-
-        $count = count($headings);
-
-        return array_combine($headings, array_fill(0, $count, null));
-    }
-
-    protected function getAllFields($partialValues)
-    {
-        $dict = $this->getEmptyArray();
-
-        foreach ($partialValues as $key => $value)
-        {
-            $dict[$key] = $value;
-        }
-
-        return $dict;
-    }
-
-    protected function createSettlementFiles($excelData, $textData, bool $h2h): array
-    {
-        // Create excel file
-        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                              ->content($excelData)
-                                              ->extension(FileStore\Format::XLSX)
-                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                              ->save();
-
-        // Create txt file in h2h only for live mode and h2h is true
-        if (($this->getMode() === Mode::LIVE) and
-            ($h2h === true))
-        {
-            $metadata = [
-                'gid'   => '10000',
-                'uid'   => '10001',
-                'mtime' => Carbon::now()->getTimestamp(),
-                'mode'  => '33188',
-            ];
-
-            $textFile = (new FileStore\Creator())->name('yesbank/outgoing/' . $this->getH2HFileNameWithoutExt())
-                                                 ->content($textData)
-                                                 ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                                                 ->metadata($metadata)
-                                                 ->save();
-        }
-
-        $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                             ->content($textData)
-                                             ->extension(FileStore\Format::TXT)
-                                             ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                             ->save();
-
-        return [$excelFile, $textFile];
-    }
-
-    protected function sendSettlementMail(
-        FileStore\Creator $excelFileEntity,
-        FileStore\Creator $textFileEntity)
-    {
-        // Don't send mail if mode is test and env is not dev or testing
-        if (($this->getMode() === Mode::TEST) and
-            ($this->app->environment('dev', 'testing') === false))
-        {
-            return;
-        }
-
-        $summary = $this->summary;
-        $channel = 'Yesbank';
-
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-        $subject = "$channel Settlement files for $today";
-
-        $data = compact('summary', 'subject', 'channel');
-
-        $excelFileEntity = $excelFileEntity->get();
-        $textFileEntity = $textFileEntity->get();
-
-        $data['excelFile'] = $excelFileEntity['local_file_path'];
-        $data['textFile'] = $textFileEntity['local_file_path'];
-
-        $yesbankSettlementMail = new SettlementMail\KotakSettlement($data);
-
-        Mail::queue($yesbankSettlementMail);
-    }
-
-    protected function getFileToWriteNameWithoutExt()
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y-H-i-s');
-
-        $mode = $this->getMode();
-
-        return static::$fileToWriteName.'_'.$mode.'_'.$time;
-    }
-
-    // @codingStandardsIgnoreStart
-    protected function getH2HFileName()
-    {
-        $name = $this->getH2HFileNameWithoutExt() . '.txt';
-
-        return $name;
-    }
-
-    protected function getH2HFileNameWithoutExt()
-    {
-        $name = 'RAZORNODAL_'. Carbon::now(Timezone::IST)->format('dmYHis');
-
-        return $name;
-    }
-    // @codingStandardsIgnoreEnd
 }

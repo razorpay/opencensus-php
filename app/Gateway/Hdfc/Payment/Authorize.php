@@ -7,6 +7,9 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Card;
 use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
@@ -144,6 +147,37 @@ trait Authorize
         }
     }
 
+    protected function verifyDebitPinAuthResponse(array & $authResponse)
+    {
+        $this->isAuthSuccess($authResponse);
+
+        if (isset($authResponse['data']['trackid']) === true)
+        {
+            $this->assertPaymentId($this->input['payment']['id'], $authResponse['data']['trackid']);
+        }
+
+        if (($this->error === true) and
+            ($this->callbackAlreadyProcessed($authResponse) === true))
+        {
+            // We don't want to silently return here because that would mean
+            // that it is considered as authorized and will end up notifying and
+            // triggering a webhook if present.
+
+            // We are throwing an error here itself because we don't want to persist this data.
+            // The second callback should have never come in the first place and hence not storing
+            // this data in the gateway entity. It was a mistake.
+
+            $this->throwException($authResponse['error']);
+        }
+
+        $this->persistAfterDebitPinAuthorize($authResponse);
+
+        if ($this->error === true)
+        {
+            $this->throwException($authResponse['error']);
+        }
+    }
+
     protected function callbackAlreadyProcessed($authResponse)
     {
         // This function is called only if $this->error is set.
@@ -154,7 +188,7 @@ trait Authorize
         // HDFC throws CM90004 when the authorize request has already been
         // sent for this payment.
         if (($this->model->getStatus() === Status::AUTHORIZED) and
-            ($authResponse['error']['code'] === Hdfc\ErrorCode::CM90004))
+            ($authResponse['error']['code'] === Hdfc\ErrorCodes\ErrorCodes::CM90004))
         {
             return true;
         }
@@ -222,54 +256,54 @@ trait Authorize
                 return true;
 
             case Payment\Result::NOT_APPROVED:
-                $errorCode = Hdfc\ErrorCode::RP00006;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00006;
                 break;
 
             case Payment\Result::NOT_CAPTURED:
-                $errorCode = Hdfc\ErrorCode::RP00007;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00007;
                 break;
 
             case Payment\Result::HOST_TIMEOUT:
-                $errorCode = Hdfc\ErrorCode::RP00004;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00004;
                 break;
 
             case Payment\Result::DENIED_BY_RISK:
-                $errorCode = Hdfc\ErrorCode::RP00005;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00005;
                 break;
 
             case Payment\Result::AUTH_ERROR:
-                $errorCode = Hdfc\ErrorCode::RP00010;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00010;
                 break;
 
             case Payment\Result::CANCELED:
-                $errorCode = Hdfc\ErrorCode::RP00011;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00011;
                 break;
             case Payment\Result::NOT_APPROVED_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00016;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00016;
                 break;
 
             case Payment\Result::NOT_CAPTURED_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00017;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00017;
                 break;
 
             case Payment\Result::HOST_TIMEOUT_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00015;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00015;
                 break;
 
             case Payment\Result::DENIED_BY_RISK_IPAY:
-                $errorCode = Hdfc\ErrorCode::GW00256;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::GW00256;
                 break;
 
             case Payment\Result::AUTH_ERROR_IPAY:
-                $errorCode = Hdfc\ErrorCode::RP00020;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00020;
                 break;
 
             case Payment\Result::DENIED_CAPTURE:
-                $errorCode = Hdfc\ErrorCode::RP00021;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00021;
                 break;
 
             case '':
-                $errorCode = Hdfc\ErrorCode::RP00002;
+                $errorCode = Hdfc\ErrorCodes\ErrorCodes::RP00002;
                 break;
 
             default:
@@ -278,6 +312,11 @@ trait Authorize
         }
 
         Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
+
+        if (isset($authResponse['data']['authRespCode']))
+        {
+            $authResponse['error']['authRespCode'] = $authResponse['data']['authRespCode'];
+        }
 
         $this->error = true;
 
@@ -373,6 +412,22 @@ trait Authorize
         }
     }
 
+    protected function persistAfterDebitPinAuthorize($authResponse)
+    {
+        if ($this->error === true)
+        {
+            $this->repo->persistAfterDebitPinAuthorizeError(
+                $this->model,
+                $authResponse);
+        }
+        else
+        {
+            $this->repo->persistAfterDebitPinAuthorize(
+                $this->model,
+                $authResponse['data']);
+        }
+    }
+
     protected function createAuthEnrolledRequestFields($input)
     {
         $this->authEnrolledRequest['url'] = Hdfc\Urls::AUTH_ENROLLED_URL;
@@ -422,7 +477,7 @@ trait Authorize
 
         $data = [
             'trackid'      => $payment['id'],
-            'amt'          => $payment['amount']/100,
+            'amt'          => $payment['amount'] / 100,
             'udf1'         => 'test',
             'udf2'         => $payment['email'],
             'udf3'         => $payment['contact'],
@@ -431,6 +486,29 @@ trait Authorize
             'currencycode' => Currency::ISO_NUMERIC_CODES[$currency],
             'action'       => Action::AUTHORIZE,
         ];
+
+        $this->setDebitSecondRecurringPayment($input);
+
+        if ($this->secondDebitRecurringFlag === true)
+        {
+            $data['expmonth'] = $card['expiry_month'];
+
+            $data['expyear'] = $card['expiry_year'];
+
+            $data['cavv'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_CAVV;
+
+            $data['xid'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_XID;
+
+            $data['enrollmentflag'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_ENROLLMENT_FLAG;
+
+            $data['authenticationflag'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_AUTHENTICATION_FLAG;
+
+            $data['eci'] = $this->getEci($input);
+
+            $data['type'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_TYPE;
+
+            $this->authSecondRecurringRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL_DEBIT_SI;
+        }
 
         // Collect udf fields
         // Only visa/master are supported for recurring
@@ -451,6 +529,14 @@ trait Authorize
         unset($this->authSecondRecurringRequest['data']['cvv2']);
     }
 
+    protected function getEci($input)
+    {
+        $network = $input['card']['network_code'];
+
+        $eci = ($network === Card\Network::VISA) ? '05' : '02';
+
+        return $eci;
+    }
 
     protected function authorizeRecurring($input)
     {
@@ -464,7 +550,7 @@ trait Authorize
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,
             $this->authSecondRecurringResponse);
-
+       
         // Check for auth success.
         if ($this->isAuthSuccess($this->authSecondRecurringResponse) === true)
         {
@@ -480,6 +566,155 @@ trait Authorize
             $this->throwException($this->authSecondRecurringResponse['error']);
         }
 
+    }
+
+    protected function authorizeDebitPin($input)
+    {
+        $this->createDebitPinAuthRequestFields($input);
+
+        $context['data'] = $this->debitPinAuthenticationRequest['data'];
+
+        $context['data'] = Hdfc\Utility::unsetFields($context['data'], $this->stripFieldsList);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_DEBIT_PIN_AUTHENTICATION_REQUEST,
+            [
+                'content'      => $context['data'],
+                'gateway'      => $this->gateway,
+                'payment_id'   => $input['payment']['id'],
+                'terminal_id'  => $input['terminal']['id'],
+            ]);
+
+        $this->runRequestResponseFlow(
+            $this->debitPinAuthenticationRequest,
+            $this->debitPinAuthenticationResponse);
+        
+        $this->trace->info(
+            TraceCode::GATEWAY_DEBIT_PIN_AUTHENTICATION_RESPONSE,
+            [
+                'content'    => $this->debitPinAuthenticationResponse,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'terminal_id'=> $input['terminal']['id'],
+            ]);
+
+        $response = $this->debitPinAuthenticationResponse;
+
+        if ($this->isDebitPinAuthSuccess($response) === false)
+        {
+            $this->model = $this->repo->persistAfterDebitPinAuthError(
+                $this->debitPinAuthenticationRequest['data'],
+                $this->debitPinAuthenticationResponse['error']);
+
+            $this->throwException($this->debitPinAuthenticationResponse['error'], true, Base\Action::AUTHENTICATE);
+        }
+
+        $this->model = $this->repo->persistAfterDebitPinAuth(
+            $this->debitPinAuthenticationRequest['data'],
+            $this->debitPinAuthenticationResponse['data']);
+
+        $tranportalId = $this->debitPinAuthenticationRequest['data']['id'];
+
+        $tranportalPassword = $this->debitPinAuthenticationRequest['data']['password'];
+
+        return $this->getAuthorizeUrl($response, $tranportalId, $tranportalPassword);
+    }
+
+    protected function getAuthorizeUrl($response, $tranportalId, $tranportalPassword)
+    {
+        $stringToHash = $response['data']['paymentId'] . $tranportalId;
+
+        $hashedTranData = $this->getHash($stringToHash, $tranportalId.$tranportalPassword);
+
+        $queryParamArray = [
+            'PaymentID' => $response['data']['paymentId'],
+            'trandata'  => $hashedTranData,
+            'id'        => $tranportalId,
+        ];
+
+        $queryParam = http_build_query($queryParamArray);
+
+        $request['url'] = $response['data']['paymenturl'] . '?' . $queryParam;
+
+        $request['method'] = 'post';
+
+        $request['content'] = [];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_DEBIT_PIN_AUTHORIZATION_REQUEST,
+            [
+                'content' => $request,
+                'gateway' => $this->gateway,
+            ]);
+
+        return $request;
+    }
+
+    protected function getHash($str, $secret)
+    {
+        return hash_hmac('sha256', $str, $secret);
+    }
+
+    protected function createDebitPinAuthRequestFields($input)
+    {
+        $payment = $input['payment'];
+
+        $card = $input['card'];
+
+        $currency = $payment['currency'];
+
+        $data = [
+            Hdfc\Fields::ACTION        => Action::PURCHASE,
+            Hdfc\Fields::AMOUNT        => $payment['amount']/100,
+            Hdfc\Fields::CURRENCY      => Currency::ISO_NUMERIC_CODES[$currency],
+            Hdfc\Fields::TRACKID       => $payment['id'],
+            Hdfc\Fields::CARD          => $card['number'],
+            Hdfc\Fields::EXPIRY_MONTH  => $card['expiry_month'],
+            Hdfc\Fields::EXPIRY_YEAR   => $card['expiry_year'],
+            Hdfc\Fields::TYPE          => 'DC',
+            Hdfc\Fields::NAME          => $card['name'],
+            Hdfc\Fields::UDF1          => $input['callbackUrl'],
+            Hdfc\Fields::UDF2          => $input['callbackUrl'],
+            Hdfc\Fields::UDF3          => 'test',
+            Hdfc\Fields::UDF4          => 'test',
+            Hdfc\Fields::UDF5          => $this->getUdf5hash($payment),
+        ];
+
+        $this->debitPinAuthenticationRequest['data'] = $data;
+    }
+
+    protected function getUdf5hash($payment)
+    {
+        $terminal = $this->terminal;
+
+        $tranPortalId = $terminal['gateway_terminal_id'];
+
+        // For TEST mode, replace any random terminal given with
+        // hdfc test terminal
+        if ($this->mode === Mode::TEST)
+        {
+            $tranPortalId = $this->config['test_debit_pin_terminal_id'];
+        }
+
+        $currency = $payment['currency'];
+
+        $amt = $payment['amount']/100;
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $strToHash = $tranPortalId . $payment['id'] . $amt . $currencyCode . Action::PURCHASE;
+
+        return hash_hmac('sha256', $strToHash, $tranPortalId);
+    }
+
+    protected function isDebitPinAuthSuccess($response)
+    {
+        if(isset($response['error']) === true)
+        {
+            $this->error = true;
+
+            return false;
+        }
     }
 
     protected function traceAuthRecurringResponse()

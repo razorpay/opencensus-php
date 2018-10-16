@@ -59,10 +59,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function createVirtualAccountOldFormat(
-        array $input = [],
-        $numeric = true,
-        $descriptor = null)
+    private function createVirtualAccountOldFormat(array $input = [])
     {
         $defaultValues = $this->getOldVirtualAccountRequestArray();
 
@@ -81,7 +78,7 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function closeVirtualAccount(string $id)
+    private function closeVirtualAccountViaEdit(string $id)
     {
         $request = [
             'method'  => 'PATCH',
@@ -89,6 +86,20 @@ trait VirtualAccountTrait
             'content' => [
                 'status' => 'closed',
             ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    private function closeVirtualAccount(string $id)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/'.$id.'/close',
         ];
 
         $this->ba->privateAuth();

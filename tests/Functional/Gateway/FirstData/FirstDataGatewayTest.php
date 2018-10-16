@@ -131,6 +131,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);
+
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
@@ -160,7 +161,15 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        {
+            $this->assertEquals('created', $refund['status']);
+        }
+        else
+        {
+            $this->assertEquals('failed', $refund['status']);
+        }
+
         $this->assertEquals(1, $refund['attempts']);
 
         $firstData = $this->getLastEntity('first_data', true);
@@ -177,18 +186,25 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getFailureInVerifyRefund($refundId);
 
-        $response = $this->retryFailedRefunds();
+        //TODO: Check for retry flow
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
+
         $this->assertEquals('processed', $actualRefund['status']);
+
         $this->assertEquals(1, $actualRefund['attempts']);
 
         $firstData = $this->getLastEntity('first_data', true);
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
-        $this->assertEquals('CAPTURED', $firstData['status']);
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
+        {
+            $this->assertEquals('CAPTURED', $firstData['status']);
+        }
     }
 
     public function testVerifyRefundFailure()
@@ -201,7 +217,15 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        {
+            $this->assertEquals('created', $refund['status']);
+        }
+        else
+        {
+            $this->assertEquals('failed', $refund['status']);
+        }
+
         $this->assertEquals(1, $refund['attempts']);
 
         $firstData = $this->getLastEntity('first_data', true);
@@ -216,18 +240,18 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getFailureInVerifyRefund($refund['id']);
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
+
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
         $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
@@ -241,7 +265,15 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        {
+            $this->assertEquals('created', $refund['status']);
+        }
+        else
+        {
+            $this->assertEquals('failed', $refund['status']);
+        }
+
         $this->assertEquals(1, $refund['attempts']);
 
         $firstData = $this->getLastEntity('first_data', true);
@@ -256,18 +288,19 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getSuccessInVerifyRefund();
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
+
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals($actualRefund['id'], 'rfnd_' . $firstData['refund_id']);
         $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
@@ -643,6 +676,23 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testCaptureGatewayRequestExceptionRetry()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->getGatewayRequestExceptionInCapture();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $this->i);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
     public function testInvalidAuthFields()
     {
         $validatedFields = [
@@ -812,5 +862,43 @@ class FirstDataGatewayTest extends TestCase
             "Payment was not completed on time." .
             "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
-}
 
+    public function testSwitchForRecurringPayment()
+    {
+        $this->mockTokenex();
+
+        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('first_data_s2s_flow');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+
+        $this->assertEquals(true, $paymentEntity['recurring']);
+
+        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+
+        $this->assertEquals(true, $token['recurring']);
+
+        $this->verifyPayment($paymentId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment['verified']);
+    }
+}

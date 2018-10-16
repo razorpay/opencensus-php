@@ -1,0 +1,60 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: api-sqs-batch
+  namespace: echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: api-sqs-batch
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: echo-api
+      labels:
+        name: api-sqs-batch
+    spec:
+      containers:
+      - name: api
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:8f38ab13cab96a5decf0a598145af2c9b7deb4d8
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "batch", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+        volumeMounts:
+          - name: trace
+            mountPath: /app/storage/logs/
+          - name: apache
+            mountPath: /var/log/apache/
+      dnsPolicy: Default
+      imagePullSecrets:
+      - name: registry
+      nodeSelector:
+        node-role.kubernetes.io/node-api: ""
+      restartPolicy: Always
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/api/trace
+      - name: apache
+        hostPath:
+          path: /var/log/fluentd/splunk/api/apache

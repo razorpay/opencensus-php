@@ -15,7 +15,9 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT       => 'required|numeric',
         RequestFields::RETURN_URL   => 'required|string|url',
         RequestFields::MODE         => 'required|string|in:P',
-        RequestFields::CHECKSUM     => 'required|string'
+        RequestFields::CHECKSUM     => 'required|string',
+        RequestFields::ACCOUNT_NUM  => 'sometimes|string|size:18',
+        RequestFields::NARRATION    => 'sometimes|string|max:20',
     ];
 
     protected static $verifyRules = [

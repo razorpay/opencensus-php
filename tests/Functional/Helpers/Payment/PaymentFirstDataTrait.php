@@ -75,8 +75,12 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
-            $content['TransactionResult'] = 'FAILED';
+            if (is_array($content) === true)
+            {
+                $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
+                $content['TransactionResult'] = 'FAILED';
+            }
+
         });
     }
 
@@ -113,6 +117,22 @@ trait PaymentFirstDataTrait
         $this->mockServerContentFunction(function (& $content)
         {
             throw new Exception\GatewayTimeoutException('operation timed out');
+        });
+    }
+
+    protected function getGatewayRequestExceptionInCapture()
+    {
+        $this->i = true;
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            if ($this->i === true)
+            {
+                $this->i = false;
+
+                throw new Exception\GatewayRequestException('Gateway request exception');
+            }
+
         });
     }
 

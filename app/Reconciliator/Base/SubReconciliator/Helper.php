@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 class Helper
 {
@@ -12,6 +12,10 @@ class Helper
      */
     public static function getIntegerFormattedAmount($amount)
     {
+        // We are using filter_var to remove comma and other characters that may come in the amount field
+        // e.g. in Amazonpay recon file, they send amount as 1,700.00
+        $amount = str_replace(',', '', $amount);
+
         $amountToBeFormatted = floatval($amount) * 100;
 
         // We are converting to int after casting to string as PHP randomly

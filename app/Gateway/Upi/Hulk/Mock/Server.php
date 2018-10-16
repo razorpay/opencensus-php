@@ -67,6 +67,77 @@ class Server extends Base\Mock\Server
         return $this->makeJsonResponse($content);
     }
 
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        if (isset($input['grant_type']) === true)
+        {
+            $content = [
+                'access_token'  => '477131df-a649-47a7-aa64-024d1fdbddfd',
+                'token_type'    => 'bearer',
+                'refresh_token' => '4a669b03-3d47-40a6-ab63-15c0efcbb7db',
+                'expires_in'    => 179,
+            ];
+
+            $this->content($content, 'refund_oauth');
+
+            return $this->makeJsonResponse($content);
+        }
+
+        $data = json_decode($input, true);
+        $decrypted = $this->decryptContent($data['data']);
+
+        $content = [
+            'seq_number'         => $data['seq_number'],
+            'pgmerchant_Id'      => $data['pgmerchant_Id'],
+            'error_code'         => '0',
+            'message'            => 'Payment Successful',
+            'bank_rrn'           => '824616262720',
+            'responseCode'       => '00',
+            'transaction_status' => 'S'
+        ];
+
+        $this->content($content, 'refund_decrypted');
+
+        $encrypted = $this->encryptContent($content);
+
+        $content = [
+            'seq_number'    => $data['seq_number'],
+            'data'          => $encrypted,
+            'pgmerchant_Id' => $data['pgmerchant_Id'],
+            'key_id'        => $data['key_id'],
+        ];
+
+        $this->content($content, 'refund');
+
+        return $this->makeJsonResponse($content);
+    }
+
+    protected function encryptContent($content)
+    {
+        $pgp = $this->getGatewayInstance()->getPgpInstance();
+
+        $plainText = json_encode($content);
+
+        $encrypted = $pgp->encryptSign($plainText);
+
+        $encrypted = str_replace("\n", '\n', $encrypted);
+
+        return $encrypted;
+    }
+
+    protected function decryptContent($encrypted)
+    {
+        $encrypted = str_replace('\n', "\n", $encrypted);
+
+        $pgp = $this->getGatewayInstance()->getPgpInstance();
+
+        $plainText = $pgp->decryptVerify($encrypted);
+
+        return $plainText;
+    }
+
     public function verify($input)
     {
         parent::verify($input);
@@ -109,6 +180,63 @@ class Server extends Base\Mock\Server
             'server'   => [
                 'CONTENT_TYPE'          => 'application/json',
                 'HTTP_X-Hulk-Signature' => $this->getHmac($raw),
+            ]
+        ];
+
+        return $request;
+    }
+
+    public function fillBharatQrNotification($qrCode = 'sqswq')
+    {
+        $attributes = [
+            Fields::RECEIVER => [
+                Fields::ID                  => 'vpa_TstMrchtVpaBqr',
+                Fields::ADDRESS             => 'TstMerchantVPA.bqr@hdfcbankrzp',
+            ],
+            Fields::MERCHANT_REFERENCE_ID   => 'RZP' . $qrCode,
+            Fields::TYPE                    => 'push',
+        ];
+
+        $data = $this->getP2pEntity($attributes);
+
+        $content = [
+            'type'      => 'bharat_qr_p2p_notify',
+            'data'      => $data,
+            'timestamp' => Carbon::now()->getTimestamp(),
+        ];
+
+        $raw = json_encode($content);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/upi_hulk',
+            'method'    => 'post',
+            'raw'       => $raw,
+            'server'    => [
+                'CONTENT_TYPE'          => 'application/json',
+                'HTTP_X-Hulk-Signature' => $this->getHmac($raw),
+            ]
+        ];
+
+        return $request;
+    }
+
+    public function getBharatQrValidateData()
+    {
+        $attributes = [
+            Fields::RECEIVER => [
+                Fields::ID                  => 'vpa_TstMrchtVpaBqr',
+                Fields::ADDRESS             => 'TstMerchantVPA.bqr@hdfcbankrzp',
+            ],
+        ];
+
+        $data = $this->getP2pEntity($attributes);
+
+        $request = [
+            'url'       => '/payment/validate/bharatqr/upi_hulk',
+            'method'    => 'post',
+            'content'   => $data,
+            'server'    => [
+                'CONTENT_TYPE'          => 'application/json',
             ]
         ];
 
@@ -164,8 +292,8 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getHmac(string $content)
+    public static function getHmac(string $content)
     {
-        return hash_hmac('sha256', $content, 'hulk_api_password');
+        return hash_hmac('sha256', $content, config('gateway.upi_hulk.gateway_terminal_password'));
     }
 }

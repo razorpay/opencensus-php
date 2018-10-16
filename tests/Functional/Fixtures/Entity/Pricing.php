@@ -142,6 +142,32 @@ class Pricing extends Base
                 'international'       => 0,
             ],
             [
+                'id'                  => '1zD0BXpfOJaqqE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+            ],
+            [
+                'id'                  => '1zD01Xpe3JaqpF',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000,
+                'international'       => 0,
+            ],
+            [
                 'id'                  => '1zE3CYqf1zbyrD',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -153,18 +179,6 @@ class Pricing extends Base
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ],
-            [
-                'id'                  => '1zE3CYqf1zbyaE',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'emi',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 250,
-                'fixed_rate'          => 0,
             ],
             [
                 'id'                  => '1zE3CYqf1zbyaF',
@@ -240,6 +254,19 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
                 'receiver_type'       => 'qr_code',
+            ],
+            [
+                'id'                  => '1zE31zbybabab2',
+                'plan_id'             => 'ArGUUem5z3UADv',
+                'plan_name'           => 'testDefaultEmiPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 100,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
             ],
             [
                 'id'                  => '1zE31zbybacab2',
@@ -425,6 +452,26 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createEmiPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYt';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'emi',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 250,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->addPricingRulesToDb([$row]);
     }
 
     protected function addPricingRulesToDb($rows)

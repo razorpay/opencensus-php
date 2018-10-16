@@ -159,6 +159,16 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
+    'bulk_refund' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+    // TODO: Get own queue
+    // TODO: Test that refund goes to this queue
+    'scrooge_refund' => [
+        'test'      => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'      => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
     'gateway_file' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
@@ -167,7 +177,10 @@ return [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
-
+    'beam_request' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

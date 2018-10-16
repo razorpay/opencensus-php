@@ -72,6 +72,47 @@ return [
         ],
     ],
 
+    'testInvalidCurrency' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'XYZ',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED
+        ],
+    ],
+
+    'testValidCurrencyForConvertSupport' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'USD',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'USD',
+            ],
+        ],
+    ],
+
     'testUniqueReceiptFeatureWithDuplicateReceipt' => [
         'request'   => [
             'content' => [
@@ -206,6 +247,7 @@ return [
             ],
         ],
     ],
+
     'testCreateTPVOrder' => [
         'request' => [
             'content' => [
@@ -225,6 +267,76 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
             ],
+        ],
+    ],
+
+    'testCreateTPVOrderEmptyMethod' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'account_number' => '040304030403040',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateTPVOrderUpiBank' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'account_number' => '040304030403040',
+                'bank'           => 'JSBP',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testCreateTPVOrderInvalidMethod' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'card',
+                'account_number' => '040304030403040',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+         'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected method is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
     'testCreateOrderWithBank' => [
@@ -470,6 +582,47 @@ return [
         ],
     ],
 
+    'testPreferencesForTPVMerchantsEmptyMethod' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'netbanking' => [
+                        'UTIB' => 'Axis Bank',
+                    ],
+                    'upi' => true,
+                ],
+                'order' => [
+                    'bank'           => 'UTIB',
+                    'account_number' => 'XXXXXXXXXXXXX40',
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesForTPVMerchantsEmptyMethodInvalidBank' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'upi' => true,
+                ],
+                'order' => [
+                    'bank'           => 'JSBP',
+                    'account_number' => 'XXXXXXXXXXXXX40',
+                ],
+            ],
+        ],
+    ],
+
     'testPreferencesForOrderWithBank' => [
         'request' => [
             'content' => [],
@@ -528,6 +681,58 @@ return [
                 'offer_id'      => null,
                 'offers'        => null,
             ],
+        ],
+    ],
+
+
+    'testCreateOrderWithRepeatedOffers' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => null,
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithOffersAndOfferID' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request should send either offer_id or offers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -775,6 +980,22 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testPartialPaymentExcessAmountManualCaptureFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE'
                 ]
             ],
             'status_code' => 400

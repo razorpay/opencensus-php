@@ -9,7 +9,9 @@ use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -464,11 +466,132 @@ class Repository extends Base\Repository
         $model->__unset(Entity::MERCHANT_DETAIL);
     }
 
-    public function getMerchantUserMapping(string $merchantId, string $userId)
+    public function getMerchantUserMapping(string $merchantId, string $userId, string $role = null)
     {
-        return $this->find($merchantId)
-                    ->users()
-                    ->where('id', $userId)
-                    ->first();
+        $query = $this->newQuery()
+                      ->find($merchantId)
+                      ->users()
+                      ->where(Entity::ID, $userId);
+
+        if (empty($role) === false)
+        {
+            $query->where(Entity::ROLE, $role);
+        }
+
+        return $query->first();
+    }
+
+    public function findByIdAndOrgId(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->findOrFailPublic($id);
+    }
+
+    /**
+     * If the submerchant belongs to a pure platform type partner,
+     *      $appId should be one of the oauth apps created by the partner.
+     * If the submerchant belongs to a non pure platform type partner,
+     *      $appId should be the id of the internal partner app created.
+     *
+     * @param string $submerchantId
+     * @param string $appId
+     *
+     * @return Entity
+     */
+    public function findSubmerchantByIdAndConnectedAppId(string $submerchantId, string $appId): Entity
+    {
+        //
+        // To make use of existing function (buildQueryToFetchSubmerchantsByAppIds) which uses an array for appIds,
+        // we convert the only app id that we have to an array.
+        //
+        $appIds = [$appId];
+
+        $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $submerchant = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
+                            ->where($accessMapsMerchantId, $submerchantId)
+                            ->firstOrFail();
+
+        return $submerchant;
+    }
+
+    /**
+     * @param array $applicationIds
+     * @param array $params
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = []): Base\PublicCollection
+    {
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds);
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+
+        $submerchants = $query->get();
+
+        return $submerchants;
+    }
+
+    /**
+     * Used to filter the list of submerchants fetched for partners
+     *
+     * @param $query
+     * @param $params
+     *
+     * @return mixed
+     */
+    protected function addQueryParamActivationStatus($query, $params)
+    {
+        $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
+
+        return $query;
+    }
+
+    /**
+     * @param array $applicationIds
+     *
+     * @return Base\BuilderEx
+     */
+    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds)
+    {
+        $accessMapRepo       = $this->repo->merchant_access_map;
+        $merchantDetailsRepo = $this->repo->merchant_detail;
+
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+
+        $accessMapsEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+        $accessMapsDeletedAt  = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
+        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantDetailsColumns    = $merchantDetailsRepo->dbColumn('*');
+        $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $attributes = [
+            $merchantDetailsColumns,
+            $this->dbColumn('*'),
+            $accessMapsEntityId . ' as ' . Constants::APPLICATION_ID,
+        ];
+
+        //
+        // merchantDetail is not fetched as a relation below because
+        // a filter has to be added for merchantDetail.activation_status in the query
+        //
+        $query = $this->newQuery()
+                      ->with(['users', 'owners'])
+                      ->select($attributes)
+                      ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
+                      ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+                      ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+                      ->whereIn($accessMapsEntityId, $applicationIds)
+                      ->whereNull($accessMapsDeletedAt);
+
+        return $query;
     }
 }

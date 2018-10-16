@@ -149,10 +149,6 @@ class Event
         self::INVOICE_PAID,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_EXPIRED,
-        self::VPA_EDITED,
-        self::P2P_CREATED,
-        self::P2P_REJECTED,
-        self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
@@ -214,6 +210,7 @@ class Event
         self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
     ];
 
     /**

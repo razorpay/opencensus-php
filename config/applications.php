@@ -10,12 +10,12 @@ return [
         'cloud'     => true,
     ],
 
-    'subscriptions' => [
-        'secret'    => env('APP_SUBSCRIPTIONS_SECRET'),
-    ],
-
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
+    ],
+
+    'dashboard_internal' => [
+        'secret'   => env('APP_DASHBOARD_INTERNAL_SECRET'),
     ],
 
     'mock_gateways' => [
@@ -74,6 +74,16 @@ return [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'scrooge' => [
+        'mock'              => env('SCROOGE_MOCK', false),
+        'url'               => env('SCROOGE_URL'),
+        'secret'            => env('APP_SCROOGE_SECRET'),
+        // TODO: Rename the key!
+        // Key and secret through which api will call scrooge
+        'scrooge_key'       => env('SCROOGE_KEY'),
+        'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
     'maxmind' => [
@@ -166,12 +176,10 @@ return [
     ],
 
     'reporting' => [
-        'mock' => env('REPORTING_MOCK', false),
-        'url'  => env('REPORTING_BASE_URL'),
-        'auth' => [
-            'username' => 'api',
-            'password' => env('REPORTING_PASSWORD'),
-        ],
+        'mock'   => env('REPORTING_MOCK', false),
+        'url'    => env('REPORTING_BASE_URL'),
+        'username' => 'api',
+        'secret' => env('REPORTING_PASSWORD'),
     ],
 
     'ufh' => [
@@ -209,5 +217,15 @@ return [
         'mock'    => env('OTPELF_MOCK', false),
         'url'     => env('OTPELF_BASE_URL'),
         'api_key' => env('OTPELF_API_KEY'),
+    ],
+
+    'beam' => [
+        'url' => env('BEAM_URL')
+    ],
+
+    'subscriptions' => [
+        'url'      => env('APP_SUBSCRIPTIONS_URL'),
+        'username' => 'rzp',
+        'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 ];

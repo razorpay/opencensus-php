@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
+use Mail;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
+use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
@@ -30,6 +32,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
 {
@@ -49,6 +52,16 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
+    /*
+     * Refactoring entity by entity, will introduce factory method in the future
+    */
+    public function createTransactionForSource(Base\Entity $source)
+    {
+        $txnProcessor = (new TransactionProcessor\Payment($source));
+
+        return $txnProcessor->createTransaction();
+    }
+
     /**
      * This will be called only in case of Non Auth Capture Flow
      * We will create a dummy transaction with no fee split.
@@ -58,11 +71,16 @@ class Core extends Base\Core
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        return $this->createTransactionForSource($payment);
+
+        // old code, will delete port refactoring all entites
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
             [
                 'payment_id' => $payment->getId()
             ]);
+
+        $merchant = $payment->merchant;
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
@@ -104,6 +122,11 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
+        return $this->createTransactionForSource($payment);
+
+        // old code, will delete it post refactoring of all the entities
+        $merchant = $payment->merchant;
+
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
@@ -172,23 +195,29 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
+            $this->repo->fee_breakup->deleteFeeBreakupForTransactionId($txn->getId());
+
             list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($txn);
 
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            $payment->setServiceTax($serviceTax);
-
             if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
+            }
+
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
             }
 
             $this->repo->saveOrFail($payment);
@@ -197,6 +226,11 @@ class Core extends Base\Core
 
             (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
         });
+    }
+
+    public function markTransactionPostpaid(Entity $txn)
+    {
+        $this->markGratisTransactionPostpaid($txn, $txn->merchant);
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -990,6 +1024,8 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
+        $feeCreditsThreshold = $merchantBalance->merchant->getFeeCreditsThreshold();
+
         $feeCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::FEE);
 
         if ($feeCredits < $fee)
@@ -1016,6 +1052,44 @@ class Core extends Base\Core
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+
+        if ($feeCreditsThreshold !== null)
+        {
+            $this->sendFeeCreditAlertIfNeeded($fee, $feeCredits, $feeCreditsThreshold, $merchantBalance->merchant);
+        }
+    }
+
+
+    private function sendFeeCreditAlertIfNeeded(int $fee, int $feeCredits, int $feeCreditsThreshold, Merchant\Entity $merchant)
+    {
+        $alertRatios = [1, 0.75, 0.5, 0.25, 0.1];
+
+        sort($alertRatios);
+
+        foreach ($alertRatios as $alertRatio)
+        {
+            if (($feeCredits >= ($alertRatio * $feeCreditsThreshold)) and
+                (($feeCredits - $fee) < ($alertRatio * $feeCreditsThreshold)))
+            {
+                $data = [
+                    'alert_ratio'  => $alertRatio,
+                    'email'        => $merchant->getTransactionReportEmail(),
+                    'merchant_id'  => $merchant->getId(),
+                    'merchant_dba'  => $merchant->getBillingLabel(),
+                    'fee_credits'  => '₹ '.(($feeCredits - $fee)/100),
+                    'org_hostname' => $merchant->org->getPrimaryHostName(),
+                    'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                ];
+
+                $this->trace->info(TraceCode::FEE_CREDITS_THRESHOLD_ALERT, $data);
+
+                $createAlertMail = new FeeCreditsAlert($data);
+
+                Mail::queue($createAlertMail);
+
+                break;
+            }
+        }
     }
 
     public function updateRefundCredits(Transaction\Entity $txn)
@@ -1097,11 +1171,13 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    protected function getSettledAtTimestamp($payment)
+    protected function getSettledAtTimestamp(Payment\Entity $payment)
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
 
         $merchant = $payment->merchant;
+
+        $ignoreBankHolidays = $merchant->isMerchantWith24x7SettlementFeature();
 
         $returnTime = null;
 
@@ -1114,12 +1190,23 @@ class Core extends Base\Core
 
             $nextRunAt = $scheduleTask->getNextRunAt();
 
-            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
+            $returnTime = ScheduleLibrary::getNextApplicableTime(
+                                                        $capturedAt,
+                                                        $schedule,
+                                                        $nextRunAt,
+                                                        $ignoreBankHolidays);
         }
         else
         {
+            // Unused as there wont be any merchant without schedule.
+            // TODO: fix test cases as this condition will run while runnig test. remove condition once tests fixed
             $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
+            //
+            // Not handling 24x7 settlements for daily schedules.
+            // And since this else block is only for 3 days schedule,
+            // we will not be handling it here as of now.
+            //
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
         }
 

@@ -4,21 +4,21 @@ namespace RZP\Models\Plan\Subscription;
 
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
 
 use RZP\Models\Base;
-use RZP\Models\Plan;
 use RZP\Models\Item;
+use RZP\Models\Plan;
 use RZP\Models\Invoice;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
-use RZP\Models\Schedule\Period;
+use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Customer\Token;
 use RZP\Models\Schedule\Anchor;
+use RZP\Models\Schedule\Period;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
@@ -32,33 +32,39 @@ use RZP\Models\Base\Traits\NotesTrait;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use NotesTrait, ExternalOwner;
 
-    const PLAN_ID           = 'plan_id';
-    const CUSTOMER_ID       = 'customer_id';
-    const CURRENT_START     = 'current_start';
-    const CURRENT_END       = 'current_end';
-    const STATUS            = 'status';
-    const ENDED_AT          = 'ended_at';
-    const ACTIVATED_AT      = 'activated_at';
-    const QUANTITY          = 'quantity';
-    const TOKEN_ID          = 'token_id';
-    const NOTES             = 'notes';
-    const CHARGE_AT         = 'charge_at';
-    const START_AT          = 'start_at';
-    const END_AT            = 'end_at';
-    const TOTAL_COUNT       = 'total_count';
-    const PAID_COUNT        = 'paid_count';
-    const AUTH_ATTEMPTS     = 'auth_attempts';
-    const ERROR_STATUS      = 'error_status';
-    const SCHEDULE_ID       = 'schedule_id';
-    const CUSTOMER_NOTIFY   = 'customer_notify';
-    const TYPE              = 'type';
-    const CANCEL_AT         = 'cancel_at';
+    const PLAN_ID                = 'plan_id';
+    const CUSTOMER_ID            = 'customer_id';
+    const GLOBAL_CUSTOMER        = 'global_customer';
+    const CURRENT_PAYMENT_ID     = 'current_payment_id';
+    const CURRENT_INVOICE_ID     = 'current_invoice_id';
+    const CURRENT_INVOICE_AMOUNT = 'current_invoice_amount';
+    const ISSUED_INVOICES_COUNT  = 'issued_invoices_count';
+    const CURRENT_START          = 'current_start';
+    const CURRENT_END            = 'current_end';
+    const STATUS                 = 'status';
+    const ENDED_AT               = 'ended_at';
+    const ACTIVATED_AT           = 'activated_at';
+    const QUANTITY               = 'quantity';
+    const TOKEN_ID               = 'token_id';
+    const NOTES                  = 'notes';
+    const CHARGE_AT              = 'charge_at';
+    const START_AT               = 'start_at';
+    const END_AT                 = 'end_at';
+    const TOTAL_COUNT            = 'total_count';
+    const PAID_COUNT             = 'paid_count';
+    const AUTH_ATTEMPTS          = 'auth_attempts';
+    const ERROR_STATUS           = 'error_status';
+    const SCHEDULE_ID            = 'schedule_id';
+    const CUSTOMER_NOTIFY        = 'customer_notify';
+    const TYPE                   = 'type';
+    const CANCEL_AT              = 'cancel_at';
 
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
     const CANCELLED_AT      = 'cancelled_at';
+
 
     // Input Keys
 
@@ -86,6 +92,12 @@ class Entity extends Base\PublicEntity
     const HOSTED_URL = 'hosted_url';
 
     /**
+     * Stores the current recurring type for the subscription.
+     * Temporarily required for the subserv flow.
+     */
+    const RECURRING_TYPE = 'recurring_type';
+
+    /**
      * We throw exceptions in the following cases
      * - In preferences, if the subscription has been authenticated and card_change = false in the input.
      * - In preferences, if card_change = true in the input and it's not card change status.
@@ -105,6 +117,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::GLOBAL_CUSTOMER       => 1,
+        self::CUSTOMER_EMAIL        => null,
         self::TYPE                  => 0,
         self::NOTES                 => [],
         self::QUANTITY              => 1,
@@ -121,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::START_AT              => null,
         self::END_AT                => null,
         self::CUSTOMER_NOTIFY       => true,
+        self::ISSUED_INVOICES_COUNT => 0,
     ];
 
     protected static $generators = [
@@ -179,15 +194,16 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::START_AT              => 'int',
-        self::END_AT                => 'int',
-        self::QUANTITY              => 'int',
-        self::CURRENT_START         => 'int',
-        self::CURRENT_END           => 'int',
-        self::TOTAL_COUNT           => 'int',
-        self::PAID_COUNT            => 'int',
-        self::AUTH_ATTEMPTS         => 'int',
-        self::CUSTOMER_NOTIFY       => 'bool',
+        self::START_AT        => 'int',
+        self::END_AT          => 'int',
+        self::QUANTITY        => 'int',
+        self::CURRENT_START   => 'int',
+        self::CURRENT_END     => 'int',
+        self::TOTAL_COUNT     => 'int',
+        self::PAID_COUNT      => 'int',
+        self::AUTH_ATTEMPTS   => 'int',
+        self::CUSTOMER_NOTIFY => 'bool',
+        self::GLOBAL_CUSTOMER => 'bool',
     ];
 
     protected $publicSetters = [
@@ -305,7 +321,7 @@ class Entity extends Base\PublicEntity
         if (($this->hadUpfrontAmount() === true) and
             ($this->wasImmediate() === false))
         {
-            $invoiceCount = $invoiceCount - 1;
+            $invoiceCount--;
         }
 
         if ($invoiceCount > $this->getTotalCount())
@@ -392,9 +408,43 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getCurrentPaymentId()
+    {
+        return $this->getAttribute(self::CURRENT_PAYMENT_ID);
+    }
+
+    public function getCurrentInvoiceId()
+    {
+        return $this->getAttribute(self::CURRENT_INVOICE_ID);
+    }
+
+    public function getCurrentInvoiceAmount()
+    {
+        return $this->getAttribute(self::CURRENT_INVOICE_AMOUNT);
+    }
+
+    public function getRecurringType()
+    {
+        assert($this->isExternal() === true);
+
+        return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
     public function hasBeenAuthenticated()
     {
         return $this->isAttributeNotNull(self::AUTHENTICATED_AT);
+    }
+
+    public function hasCurrentInvoice()
+    {
+        assert($this->isExternal() === true);
+
+        return $this->isAttributeNotNull(self::CURRENT_INVOICE_ID);
+    }
+
+    public function isGlobalCustomer()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER) === true;
     }
 
     public function isCreated()
@@ -557,7 +607,14 @@ class Entity extends Base\PublicEntity
         // create a local customer which has global customer
         // associated with it.
         //
-        if ($this->customer === null)
+
+        if (($this->isExternal() === true) and
+            ($this->isGlobalCustomer() === true))
+        {
+            return true;
+        }
+
+        if ($this->hasCustomer() === false)
         {
             return true;
         }
@@ -626,6 +683,16 @@ class Entity extends Base\PublicEntity
     // --------------------- END ACCESSORS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setGlobalCustomer(bool $isGlobalCustomer)
+    {
+        $this->setAttribute(self::GLOBAL_CUSTOMER, $isGlobalCustomer);
+    }
+
+    public function setCustomerEmail(string $customerEmail = null)
+    {
+        $this->setAttribute(self::CUSTOMER_EMAIL, $customerEmail);
+    }
 
     public function setStartAt($startAt)
     {

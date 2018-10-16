@@ -1,28 +1,258 @@
 pipeline:
-  test:
-    group: A
+  restore_cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - .composer/cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: push
+  prepare_test:
     image: razorpay/pithos:rzp-php7.1
+    pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=livedb
-      - DB_TEST_HOST=testdb
-      - DB_AUTH_HOST=authdb
-      - REDIS_HOST=redis
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
     commands:
       - cp ./environment/.env.drone ./environment/.env.testing
       - touch /etc/php7/conf.d/assertion.ini
       - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
       - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
-      - cp scripts/nanotime.* /usr/lib/php7/modules
-      - touch /etc/php7/conf.d/nanotime.ini
-      - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
+      - export COMPOSER_CACHE_DIR=".composer/cache"
+      - mkdir -p $COMPOSER_CACHE_DIR
+      - chmod 777 -R storage
       - composer config --global github-oauth.github.com $GIT_TOKEN
+      - composer global require hirak/prestissimo
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+# This suite is supposed to use default ES index
+  application_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_application
+      - DB_TEST_DATABASE=api_test_application
+      - DB_AUTH_DATABASE=api_auth_applicaiton
+      - REDIS_HOST=redis
+      - REDIS_LABS_HOST=redis
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  features_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_1
+      - DB_TEST_DATABASE=api_test_feature_1
+      - DB_AUTH_DATABASE=api_auth_feature_1
+      - REDIS_HOST=redis2
+      - REDIS_LABS_HOST=redis2
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_1_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_1_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_2_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_2
+      - DB_TEST_DATABASE=api_test_feature_2
+      - DB_AUTH_DATABASE=api_auth_feature_2
+      - REDIS_HOST=redis3
+      - REDIS_LABS_HOST=redis3
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_2_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_2_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_3_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_3
+      - DB_TEST_DATABASE=api_test_feature_3
+      - DB_AUTH_DATABASE=api_auth_feature_3
+      - REDIS_HOST=redis4
+      - REDIS_LABS_HOST=redis4
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_3_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_3_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_4_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_4
+      - DB_TEST_DATABASE=api_test_feature_4
+      - DB_AUTH_DATABASE=api_auth_feature_4
+      - REDIS_HOST=redis5
+      - REDIS_LABS_HOST=redis5
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_4_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_4_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_5_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_5
+      - DB_TEST_DATABASE=api_test_feature_5
+      - DB_AUTH_DATABASE=api_auth_feature_5
+      - REDIS_HOST=redis6
+      - REDIS_LABS_HOST=redis6
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_5_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_5_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-5 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  payment_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_payment
+      - DB_TEST_DATABASE=api_test_payment
+      - DB_AUTH_DATABASE=api_auth_payment
+      - REDIS_HOST=redis7
+      - REDIS_LABS_HOST=redis7
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_payments_
+      - ES_ENTITY_TYPE_PREFIX=testing_payments_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  gateway_1_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_gateway1
+      - DB_TEST_DATABASE=api_test_gateway1
+      - DB_AUTH_DATABASE=api_auth_gateway1
+      - REDIS_HOST=redis8
+      - REDIS_LABS_HOST=redis8
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
+      - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  gateway_2_test_suite:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_gateway2
+      - DB_TEST_DATABASE=api_test_gateway2
+      - DB_AUTH_DATABASE=api_auth_gateway2
+      - REDIS_HOST=redis9
+      - REDIS_LABS_HOST=redis9
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
+      - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
+    commands:
+      - sleep 10
+      - php  -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -41,6 +271,19 @@ pipeline:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  rebuild-cache:
+      image: razorpay/containers:drone-s3-cache
+      endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+      path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+      secrets:
+        - aws_region
+        - aws_access_key_id
+        - aws_secret_access_key
+      rebuild: true
+      mount:
+        - .composer/cache
+      when:
+        event: push
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
@@ -64,8 +307,8 @@ pipeline:
       event:
         include: [push]
 services:
-  livedb:
-    image: mysql:5.7
+  mysql:
+    image: razorpay/onggi:mysqlmysql-5.7
     environment:
       - MYSQL_DATABASE=api
       - MYSQL_ROOT_PASSWORD=root
@@ -73,32 +316,82 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
-  testdb:
-    image: mysql:5.7
-    environment:
-      - MYSQL_DATABASE=api_test
-      - MYSQL_ROOT_PASSWORD=root
-    when:
-      event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  authdb:
-    image: mysql:5.7
-    environment:
-      - MYSQL_DATABASE=auth
-      - MYSQL_ROOT_PASSWORD=root
-    when:
-      event:
-        exclude: [deployment, pull_request]
-        include: [push]
+  mysql2:
+      image: razorpay/onggi:mysqlmysql-5.7
+      environment:
+        - MYSQL_DATABASE=api
+        - MYSQL_ROOT_PASSWORD=root
+      when:
+        event:
+          exclude: [deployment, pull_request]
+          include: [push]
+  mysql3:
+      image: razorpay/onggi:mysqlmysql-5.7
+      environment:
+        - MYSQL_DATABASE=api
+        - MYSQL_ROOT_PASSWORD=root
+      when:
+        event:
+          exclude: [deployment, pull_request]
+          include: [push]
   redis:
     image: redis
     when:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  redis2:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis3:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis4:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis5:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis6:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis7:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis8:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  redis9:
+      image: redis
+      when:
+        event:
+          exclude: [deployment, pull_request]
+          include: [push]
   elasticsearch:
     image: elasticsearch:5.2-alpine
+    environment:
+     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     when:
       event:
         exclude: [deployment, pull_request]
@@ -153,15 +446,39 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    deployment:
+    kind: daemonset
+    daemonset:
       - api-web
-      - api-sqs-batch
-      - api-sqs-emails
+    repo: razorpay/api
+    namespace: echo
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
       - api-sqs-es-sync
-      - api-sqs-gen-live
       - api-sqs-gen-test
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
@@ -173,6 +490,268 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-delta
+      branch: hdfc_vas
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-delta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-charlie
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-charlie
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-beta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: beta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-beta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-beta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: beta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-beta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api
+      branch: master
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-prod-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api
+      branch: master
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod-dark-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: deployment
+    deployment:
+      - api-dark
+    repo: razorpay/api
+    namespace: api-dark
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api-dark
+      branch: [master, dark]
       event:
         exclude: [push]
         include: [deployment]

@@ -25,6 +25,7 @@
         border-top: 4px solid #5cb85c;
         position: absolute;
         left: 0;
+        display: block;
     }
 
 
@@ -38,13 +39,20 @@
         animation: appear 0.4s forwards cubic-bezier(0.54, 1.29, 0.8, 1.18);
     }
 
+    // Vertical position fix for cicles in IE
+    .animoo .circle{
+        display:flex;
+        align-items:center;
+    }
+    .animoo .circle::after{
+        content:'';
+        min-height:inherit;
+        font-size:0;
+    }
+
     .animoo, .circle.circle-1 {
         height: 164px;
         width: 164px;
-    }
-
-    .circle.spring {
-        animation: appear 0.4s forwards cubic-bezier(0.54, 1.29, 0.8, 1.18), appear-spring 2s forwards 0.85s infinite;
     }
 
     .circle.circle-2 {
@@ -59,6 +67,46 @@
         width: 104px;
         animation-delay: 0.35s;
         animation-duration: 0.5s;
+    }
+
+    @supports not (-ms-high-contrast: none) {
+       /* Non-IE styles here */
+
+       .circle.spring {
+           animation: appear 0.4s forwards cubic-bezier(0.54, 1.29, 0.8, 1.18), appear-spring 2s forwards 0.85s infinite;
+       }
+    }
+
+
+    @media screen and (min-width:0\0) and (min-resolution: .001dpcm) {
+        /* IE-9 only styles */
+
+        .animoo .circle, .animoo .checkmark {
+            left: 0;
+            top: 0;
+        }
+
+        .animoo .checkmark {
+            margin-top: 58px;
+            margin-left: 72px;
+        }
+
+        .animoo .checkmark::after {
+            height: 2.3em;
+            width: 1em;
+            opacity: 1;
+            -ms-transform: scaleX(-1) rotate(135deg);
+        }
+
+        .animoo .circle-2 {
+            margin-top: 15px;
+            margin-left: 15px;
+        }
+
+        .animoo .circle-3 {
+            margin-top: 30px;
+            margin-left: 30px;
+        }
     }
 
     @keyframes appear {

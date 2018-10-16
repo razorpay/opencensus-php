@@ -4,6 +4,7 @@ namespace RZP\Gateway\Hdfc\Payment;
 
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
@@ -77,7 +78,7 @@ trait Enroll
         {
             $this->persistAfterEnroll();
 
-            $this->throwException($this->enrollResponse['error'], true);
+            $this->throwException($this->enrollResponse['error'], true, Base\Action::AUTHENTICATE);
         }
 
         //
@@ -445,7 +446,7 @@ trait Enroll
             case Payment\Result::FSS0001_ENROLLED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
-                    Hdfc\ErrorCode::FSS0001);
+                    Hdfc\ErrorCodes\ErrorCodes::FSS0001);
                 break;
 
             case Payment\Result::UNKNOWN_ERROR_ENROLLED:
@@ -461,13 +462,13 @@ trait Enroll
             case Payment\Result::AUTH_ERROR:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
-                    Hdfc\ErrorCode::RP00010);
+                    Hdfc\ErrorCodes\ErrorCodes::RP00010);
                 break;
 
             case Payment\Result::NOT_SUPPORTED:
                 Hdfc\ErrorHandler::setErrorInResponse(
                     $this->enrollResponse,
-                    Hdfc\ErrorCode::RP00012);
+                    Hdfc\ErrorCodes\ErrorCodes::RP00012);
                 break;
 
             default:

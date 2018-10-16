@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
@@ -17,7 +18,7 @@ use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Foundation\SubReconciliate
+class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
@@ -28,6 +29,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_INDUSIND,
         RequestProcessor\Base::NETBANKING_CORPORATION,
         RequestProcessor\Base::NETBANKING_CANARA,
+        RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -37,7 +39,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_OBC,
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::NETBANKING_EQUITAS,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::AIRTEL,
     ];
 
     /**
@@ -50,7 +56,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     const GATEWAY_FEES_MISSING_GATEWAYS = [
         // For HDFC, record gateway fees of payments before 7th Nov
-        RequestProcessor\Base::HDFC => 1509993000
+        RequestProcessor\Base::HDFC         => 1509993000,
+
+        // For CardFssBob, record gateway fees of payments before 15th Oct 2018 00:00
+        RequestProcessor\Base::CARD_FSS_BOB => 1539541800,
     ];
 
     /*******************
@@ -103,7 +112,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return $this->handleUnprocessedRow($row);
+            $this->handleUnprocessedRow($row);
+
+            return;
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
@@ -195,12 +206,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->setPaymentAcquirerData($rowDetails);
 
         //
-        // Persisting reference number in Pre Reconciled-At check to identify duplicate row.
+        // Persisting gateway data in Pre Reconciled-At check to identify duplicate row.
         // If reference number is already set, identify for duplicate row or data mismatch.
         //
-        $this->persistReferenceNumber($rowDetails);
-
-        $this->persistGatewayTransactionId($rowDetails);
+        $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
@@ -572,10 +581,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->setPaymentAndTransaction($row, $paymentId);
 
         //
-        // Setting allowForceAuthorization after setting payment instance
-        // because this attribute can be dependent on payment instance's attributes. For eg. payment's created_at
+        // Have to set allowForceAuthorization AFTER setting payment instance because this
+        // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
         //
-        $this->setAllowForceAuthorization();
+        $this->setAllowForceAuthorization($this->payment);
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -600,7 +609,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
             BaseReconciliate::GATEWAY_FEE            => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
-            BaseReconciliate::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+            BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
             BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
             BaseReconciliate::GATEWAY_PAYMENT_DATE   => trim($gatewayPaymentDate),
             BaseReconciliate::AUTH_CODE              => trim($authCode),
@@ -785,6 +794,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * Saving Gateway Data into DB
      *
+     * Calling this again because payment status can change after verify.
+     * Gateway payment can be in failed state earlier and hence gateway data won't be set
+     * in preReconciledAtCheckRecon method. After verification, it may have changed to success
+     * and now we can set gateway data.
+     *
      * @param array $rowDetails
      */
     protected function persistGatewayData(array $rowDetails)
@@ -796,17 +810,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        //
-        // Calling this again because payment status can change after verify.
-        // Gateway payment can be in failed state earlier and hence reference number won't be set
-        // in preReconciledAtCheckRecon method. After verification, it may have changed to success
-        // and now we can set reference number. For the same reason we are calling persistGatewayTransactionId
-        // also twice
-        $this->persistReferenceNumber($rowDetails);
+        $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
         $this->persistAccountDetails($rowDetails, $gatewayPayment);
 
-        $this->persistGatewayTransactionId($rowDetails);
+        $this->persistGatewayTransactionId($rowDetails, $gatewayPayment);
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
@@ -831,16 +839,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Saving the Bank Payment Id from reconciliator file
      *
      * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails)
+    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        $gatewayPayment = $this->updateAndFetchGatewayPayment();
-
-        if ($gatewayPayment === null)
-        {
-            return;
-        }
-
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
             return;
@@ -856,16 +858,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Replacing existing value or adding it to the DB
      *
      * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistGatewayTransactionId(array $rowDetails)
+    protected function persistGatewayTransactionId(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        $gatewayPayment = $this->updateAndFetchGatewayPayment();
-
-        if ($gatewayPayment === null)
-        {
-            return;
-        }
-
         if (empty($rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID]) === true)
         {
             return;
@@ -1383,8 +1379,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /*
      * Record gateway fee and service tax for already reconciled
      * payments.
-     * Happening only for HDFC currently : Because of code bug, fee and service tax of
+     * HDFC : Because of code bug, fee and service tax of
      * payments reconciled before 7th Nov,17 are not filled.
+     *
+     * CardFssBob : Due to code bug, fee and service tax of payments
+     * reconciled before 15th Oct 18 00:00:00 are filled with incorrect values.
+     * so need to record them again with correct values.
      */
     protected function recordMissingGatewayFeeAndServiceTax(array $rowDetails)
     {
@@ -1395,7 +1395,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             //
             // Check if payment is created after the given date for current gateway, don't proceed
-            // Payment must have gateway fee already recorded
+            // Payment must have gateway fee already recorded with correct values
             //
             $paymentMaxCreatedAt = self::GATEWAY_FEES_MISSING_GATEWAYS[$this->gateway];
 
@@ -1619,22 +1619,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * @param array $row
-     * @param string $columnName
-     */
-    protected function reportMissingColumn(array $row, string $columnName)
-    {
-        $this->trace->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'message'           => 'Unable to get the expected column.',
-                'column_name'       => $columnName,
-                'row'               => $row,
-                'gateway'           => $this->gateway
-            ]);
-    }
-
-    /**
      * For wallets and netbanking, there will be no card, hence we
      * send an empty array for these payment methods.
      *
@@ -1769,13 +1753,42 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * This function should be implemented in the child class
-     * It tells whether we should attempt force authorize on
-     * the gateway. Default is false.
+     * This function should be implemented in the child class if we ALWAYS
+     * want to force authorize or NEVER want to force authorize or if there
+     * are any custom requirements for force authorization like in nb_icici
+     *
+     * This base function will be used if we want to force authorize
+     * only specific payments. This will be used only for the gateways
+     * where force_authorize has been implemented already.
+     *
+     * @param Payment\Entity $payment
      */
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = false;
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true)
+        {
+            $this->allowForceAuthorization = $this->shouldForceAuthorize($payment);
+        }
+        else
+        {
+            $this->allowForceAuthorization = false;
+        }
+    }
+
+    /**
+     * Checks if given payment id is in input array of force authorize payments
+     *
+     * @param PaymentEntity $payment
+     *
+     * @return bool
+     */
+    protected function shouldForceAuthorize(Payment\Entity $payment) : bool
+    {
+        $forceAuthorizePayments = $this->extraDetails
+            [RequestProcessor\Base::INPUT_DETAILS]
+            [RequestProcessor\Base::FORCE_AUTHORIZE] ?? [];
+
+        return in_array($payment->getPublicId(), $forceAuthorizePayments, true);
     }
 
     /**
@@ -1828,7 +1841,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
-        $dbReferenceNumber = $gatewayPayment->getBankPaymentId();
+        $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
 
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
@@ -1862,7 +1875,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
     {
-        $dbGatewayTransactionId = $gatewayPayment->getGatewayTransactionId();
+        $dbGatewayTransactionId = trim($gatewayPayment->getGatewayTransactionId());
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))

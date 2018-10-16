@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -26,12 +27,6 @@ class Validator extends Base\Validator
         Entity::REFERENCE1      => 'sometimes|string|max:255',
     ];
 
-    protected static $createValidators = [
-        'paymentStatus',
-        'paymentRefundStatus',
-        'refundAmount'
-    ];
-
     protected static $directRules = [
         'payment_id'    => 'required',
         'amount'        => 'sometimes|integer|min:100',
@@ -41,6 +36,35 @@ class Validator extends Base\Validator
 
     protected static $retryRules = [
         'bank_account' => 'sometimes|array',
+    ];
+
+    protected static $createValidators = [
+        'paymentStatus',
+        'paymentRefundStatus',
+        'refundAmount'
+    ];
+
+    protected static $retryBulkRules = [
+        'refund_ids'    => 'required|sequential_array|max:1000',
+        'refund_ids.*'  => 'required|public_id'
+    ];
+
+    protected static $directRetryBulkRules = [
+        'refund_ids'    => 'required|sequential_array|max:1000',
+        'refund_ids.*'  => 'required|public_id'
+    ];
+
+    protected static $markProcessedBulkRules = [
+        'refund_ids'    => 'required|sequential_array|max:1000',
+        'refund_ids.*'  => 'required|public_id',
+    ];
+
+    protected static $customerRefundDetailsRules = [
+        'refund_id'         => 'required_without_all:payment_id,reservation_id|public_id',
+        'payment_id'        => 'required_without_all:refund_id,reservation_id|public_id',
+        'reservation_id'    => 'required_without_all:payment_id,refund_id|string|max:50',
+        'mode'              => 'sometimes|in:live,test',
+        'captcha'           => 'required|string|custom',
     ];
 
     protected static $verifyInternalRefundGateways = [
@@ -54,11 +78,63 @@ class Validator extends Base\Validator
         Payment\Gateway::AXIS_MIGS,
     ];
 
+    protected static $scroogeGatewayRefundRules = [
+        'id'                    => 'required|unsigned_id',
+        'merchant_id'           => 'required|unsigned_id',
+        'payment_id'            => 'required|unsigned_id',
+        'currency'              => 'required|string|size:3',
+        'gateway'               => 'required|string',
+        'amount'                => 'required|integer|min:100',
+        'base_amount'           => 'required|integer|min:100',
+        'method'                => 'required|string',
+        'payment_amount'        => 'required|integer|min:100',
+        'payment_base_amount'   => 'required|integer|min:100',
+        'payment_created_at'    => 'required|epoch',
+    ];
+
     protected $payment;
 
     public function setPayment($payment)
     {
         $this->payment = $payment;
+    }
+
+    protected function validateCaptcha($attribute, $captchaResponse)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $app['request']->ip();
+
+        $noCaptchaSecret = config('app.customer_refund_details.nocaptcha_secret');
+
+        $input = [
+            'secret'   => $noCaptchaSecret,
+            'response' => $captchaResponse,
+            'remoteip' => $clientIpAddress,
+        ];
+
+        $captchaQuery = http_build_query($input);
+
+        $url = "https://www.google.com/recaptcha/api/siteverify?". $captchaQuery;
+
+        $response = \Requests::get($url);
+
+        $output = json_decode($response->body);
+
+        if ($output->success !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'captcha' => $captchaResponse
+                ]);
+        }
     }
 
     protected function validateStatus($attribute, $value)
@@ -72,7 +148,7 @@ class Validator extends Base\Validator
 
         $validStatus = in_array($value, Status::REFUND_STATUS, true);
 
-        if($validStatus === false)
+        if ($validStatus === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The selected status is invalid.');
@@ -224,6 +300,77 @@ class Validator extends Base\Validator
                 [
                     'transfer_count' => $transferCount,
                     'refund_type'    => $refundType,
+                ]);
+        }
+    }
+
+    public function validateMarkProcessed()
+    {
+        $refund = $this->entity;
+
+        //
+        // Checking if refund is already processed, as scrooge can call API to mark processed again
+        // even if refund has been already updated by some other process (eg. recon)
+        //
+        if (($refund->isCreated() === false) and ($refund->isProcessed() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
+                Entity::STATUS,
+                [
+                    'refund_id' => $refund->getId(),
+                    'status'    => $refund->getStatus(),
+                ]);
+        }
+    }
+
+    public function validateScroogeGatewayRefund(Payment\Entity $payment)
+    {
+        $refund = $this->entity;
+
+        //
+        // If it's already marked as processed on API side, there's no reason
+        // for us to call the gateway again to make the refund call.
+        //
+        if ($refund->isProcessed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_ALREADY_PROCESSED,
+                Entity::STATUS,
+                [
+                    'refund_id' => $refund->getId(),
+                    'status'    => $refund->getStatus()
+                ]);
+        }
+
+        //
+        // Scrooge should be calling gateway refund only if the refund is still
+        // in created state. On refund failure, Scrooge will call the gateway
+        // refund again, but in that case refund would still be in created state.
+        //
+        if ($refund->isCreated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_NOT_IN_CREATED,
+                Entity::STATUS,
+                [
+                    'refund_id' => $refund->getId(),
+                    'status'    => $refund->getStatus()
+                ]);
+        }
+
+        $gateway = $refund->getGateway();
+        $merchantId = $refund->merchant->getId();
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_NOT_SCROOGE,
+                Entity::STATUS,
+                [
+                    'refund_id'     => $refund->getId(),
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $gateway,
                 ]);
         }
     }

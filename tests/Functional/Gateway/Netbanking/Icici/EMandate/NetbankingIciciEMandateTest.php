@@ -8,10 +8,10 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
-use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -71,6 +71,30 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->doAuthPayment($payment);
 
         $this->assertEMandateEntities();
+    }
+
+    public function testEMandateInitialPaymentTamperedPayment()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'auth')
+            {
+                $content['PAID'] = 'N';
+                $content['AMT'] = '2000';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testEMandateInitialPaymentLateAuth()
@@ -313,9 +337,16 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->mockSiRecurringStatusNotSet();
 
-        $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
 
-        $this->assertEMandateStrangeStatus();
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $this-> assertEMandateStrangeStatus();
     }
 
     /**
@@ -811,7 +842,16 @@ class NetbankingIciciEMandateTest extends TestCase
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $gatewayToken2 = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
 
-        $this->assertEquals('failed', $payment[Payment::STATUS]);
+        $this->assertArraySelectiveEquals(
+            [
+                'status'              => 'failed',
+                'method'              => 'emandate',
+                'recurring_type'      => 'auto',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER',
+                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER
+            ],
+            $payment
+        );
 
         // Asserting that the failed second recurring payment was
         // made with the same token id as above
@@ -848,15 +888,15 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // Since recurring status is not set, the token entity will not contain recurring fields
         $this->assertEquals(false, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
-        $this->assertEquals('Failure', $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('C', $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
 
         // Assert gateway token was created
-        $this->assertNotNull($gatewayToken);
+        $this->assertNull($gatewayToken);
     }
 
     protected function mockEmptySecondRecurringResponse()
@@ -956,7 +996,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 if ($action === 'second_recurring')
                 {
                     $content['PAID'] = 'N';
-                    $content['STATUS'] = 'FAILURE';
+                    $content['STATUS'] = 'PaymentStoppedByCustomer';
                 }
             });
     }

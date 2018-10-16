@@ -3,12 +3,16 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Razorpay\IFSC\IFSC;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -40,9 +44,11 @@ class Entity extends Base\PublicEntity
     const IFSC                      = 'ifsc';
 
     // Mobile Banking Enabled
-    const MPIN_SET              = 'mpin_set';
+    const MPIN_SET                  = 'mpin_set';
 
-    const IFSC_CODE_LENGTH      = 11;
+    const IFSC_CODE_LENGTH          = 11;
+
+    const ACCOUNT_NUMBER_LENGTH     = 16;
 
     const SPECIAL_IFSC_CODE     = 'RZPB0000000';
 
@@ -50,7 +56,9 @@ class Entity extends Base\PublicEntity
     // Beneficiary registration constants
     //
     const ON                = 'on';
+    const ALL               = 'all';
     const RECIPIENT_EMAILS  = 'recipient_emails';
+    const DURATION          = 'duration';
 
     protected static $sign      = 'ba';
 
@@ -299,6 +307,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::IFSC_CODE, $ifsc);
     }
 
+    public function setBeneficiaryName(string $name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
     protected function setIfscCodeAttribute($code)
     {
         if ($code !== null)
@@ -397,11 +410,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
 
-    public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
+    public function associateSource(Base\Entity $entity, string $type)
     {
-        $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
+        Type::validateType($type);
 
-        $this->source()->associate($virtualAccount);
+        $this->attributes[self::TYPE] = $type;
+
+        $this->source()->associate($entity);
     }
 
     public function getRedactedAccountNumber()

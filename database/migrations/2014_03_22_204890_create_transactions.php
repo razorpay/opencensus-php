@@ -42,6 +42,10 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::FEE)
                   ->unsigned();
 
+            $table->integer(Transaction::MDR)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Transaction::TAX)
                   ->unsigned()
                   ->nullable();
@@ -58,7 +62,6 @@ class CreateTransactions extends Migration
             $table->char(Transaction::CURRENCY, 3);
 
             $table->bigInteger(Transaction::BALANCE)
-                  ->unsigned()
                   ->nullable();
 
             $table->integer(Transaction::GATEWAY_AMOUNT)
@@ -117,6 +120,40 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::RECONCILED_AT)
                   ->nullable();
 
+            $table->string(Transaction::REFERENCE1)
+                  ->nullable();
+
+            $table->char(Transaction::REFERENCE2, Transaction::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Transaction::REFERENCE3, Transaction::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Transaction::REFERENCE4, Transaction::ID_LENGTH)
+                  ->nullable();
+
+            $table->tinyInteger(Transaction::REFERENCE5)
+                  ->nullable();
+
+            $table->tinyInteger(Transaction::REFERENCE6)
+                  ->nullable();
+
+            $table->bigInteger(Transaction::REFERENCE7)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->bigInteger(Transaction::REFERENCE8)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->bigInteger(Transaction::REFERENCE9)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->bigInteger(Transaction::REFERENCE10)
+                  ->unsigned()
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Transaction::CREATED_AT);
             $table->integer(Transaction::UPDATED_AT);
@@ -141,7 +178,7 @@ class CreateTransactions extends Migration
 
             $table->index([Transaction::MERCHANT_ID, Transaction::CREATED_AT]);
 
-            $table->index([Transaction::SETTLED, Transaction::CHANNEL, Transaction::ON_HOLD]);
+            $table->index([Transaction::SETTLED, Transaction::CHANNEL, Transaction::ON_HOLD, Transaction::MERCHANT_ID]);
 
             $table->index([Transaction::SETTLED_AT, Transaction::MERCHANT_ID]);
 

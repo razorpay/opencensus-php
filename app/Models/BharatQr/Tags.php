@@ -8,7 +8,7 @@ class Tags
     const POINT_OF_INITIATION   = '01';
     const VISA                  = '02';
     const MASTERCARD            = '04';
-    // const MERCHANT_ACCOUNT      = '08';
+    //const MERCHANT_ACCOUNT       = '08';
     // const AMEX                  = '11';
     const RUPAY                 = '06';
     const UPI_VPA               = '26';
@@ -29,5 +29,6 @@ class Tags
     const ADDITIONAL_DETAIL     = '62';
     // Under 62
     const ADDITIONAL_DETAIL_ID  = '05';
+    const TERMINAL_ID           = '07';
     const CRC                   = '63';
 }

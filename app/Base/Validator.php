@@ -3,6 +3,7 @@
 namespace RZP\Base;
 
 use App;
+use Razorpay\Trace\Logger;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -47,5 +48,15 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         $this->strict = false;
 
         return $this;
+    }
+
+    /**
+     * @return Logger
+     */
+    protected function getTrace(): Logger
+    {
+        $app = App::getFacadeRoot();
+
+        return $app['trace'];
     }
 }

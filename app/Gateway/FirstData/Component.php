@@ -17,5 +17,6 @@ class Component
         Action::PURCHASE       => self::API,
         Action::VERIFY_REFUND  => self::API,
         Action::VERIFY_REVERSE => self::API,
+        Action::CALLBACK       => self::API,
     ];
 }

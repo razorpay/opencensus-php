@@ -65,7 +65,6 @@ class Table
     const APP_TOKEN             = 'customer_apps';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
-    const DISPUTE_FILE          = 'dispute_files';
     const METHODS               = 'merchant_banks';
     const BANK_TRANSFER         = 'bank_transfers';
     const GATEWAY_TOKEN         = 'gateway_tokens';
@@ -77,15 +76,16 @@ class Table
     const VIRTUAL_ACCOUNT       = 'virtual_accounts';
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
-    const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const MERCHANT_REQUEST      = 'merchant_requests';
-    const MERCHANT_PROMOTION    = 'merchant_promotion';
     const MERCHANT_INVOICE      = 'merchant_invoice';
+    const MERCHANT_REQUEST      = 'merchant_requests';
+    const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const NODAL_BENEFICIARY     = 'nodal_beneficiaries';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
-    const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
+    const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
@@ -146,12 +146,15 @@ class Table
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
     const CARD_FSS              = 'card_fss';
+    const ISG                   = 'isg';
 
     // Sessions table
     const SESSION               = 'sessions';
 
     // Internal Purposes
     const CREDITS               = 'credits';
+
+    const NODAL_BENEFICIARIES    = 'nodal_beneficiaries';
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';

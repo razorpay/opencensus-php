@@ -5,9 +5,12 @@ namespace RZP\Models\BankTransfer;
 use App;
 use Razorpay\IFSC\IFSC;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Bank\BankCodes;
 
 class PayerBankAccount extends Base\Core
 {
@@ -85,30 +88,23 @@ class PayerBankAccount extends Base\Core
     }
 
     /**
-     * We don't get valid IFSCs from Kotak for IMPS payments, only a
-     * bank code. To create the payer bank account anyway, we derive
-     * the bank from the code, and use a random IFSC. Later, IMPS refunds
-     * should go through, as IFSC isn't validated by Kotak for payments.
+     * We don't get valid IFSCs for IMPS payments, only a bank code
+     * in case of Kotak and NBIN in case of YES BANK. To create the
+     * payer bank account anyway, we derive the bank from the code,
+     * and use a random IFSC. Later, IMPS refunds should go through,
+     * as IFSC isn't validated by Banks for payments.
      *
      * It's also possible to receive an invalid (or revoked) IFSC
      * for NEFT/RTGS payments, eg. UTIB0000001 for Axis. Since this
-     * would cause refunds to fail, we replace the IFSC with a valid one.
-     *
+     * would cause refunds to fail, we replace the IFSC with a valid
+     * one.
      * @param Entity $bankTransfer
      *
      * @return mixed|null
      */
     public static function getPayerIfsc(Entity $bankTransfer)
     {
-        $ifsc = $bankTransfer->getPayerIfsc();
-
-        if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
-            ($bankTransfer->getMode() === Mode::IMPS))
-        {
-            $impsBankCode = substr($ifsc, 0, 3);
-
-            $ifsc = BankCodes::getIfscForImpsBankCode($impsBankCode);
-        }
+        $ifsc = $bankTransfer->getMappedPayerIfsc();
 
         if (IFSC::validate($ifsc) === false)
         {

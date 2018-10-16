@@ -78,11 +78,9 @@ class Service extends Base\Service
                     return $existingVirtualAccount->toArrayPublic();
                 }
 
-                $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
-
                 $createArray = [
                     Entity::ORDER_ID        => $order->getPublicId(),
-                    Entity::AMOUNT_EXPECTED => $amountExpected,
+                    Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $input[Entity::NOTES] ?? [],
                     Entity::RECEIVERS       => [
                         Entity::TYPES => [
@@ -91,7 +89,16 @@ class Service extends Base\Service
                     ],
                 ];
 
-                return $this->create($createArray);
+                $virtualAccount = $this->create($createArray);
+
+                if ($order->merchant->isFeeBearerCustomer() === true)
+                {
+                    $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
+
+                    $virtualAccount[Entity::AMOUNT_EXPECTED] = $amountExpected;
+                }
+
+                return $virtualAccount;
             },
             60,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
@@ -101,10 +108,6 @@ class Service extends Base\Service
 
     protected function getExpectedAmountForVirtualAccount(Order\Entity $order)
     {
-        if ($order->merchant->isFeeBearerCustomer() === false)
-        {
-            return $order->getAmountDue();
-        }
 
         $fee = (new BankTransfer\Core)->getFeesForOrder($order);
 
@@ -142,6 +145,17 @@ class Service extends Base\Service
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
+
+        return $virtualAccount->toArrayPublic();
+    }
+
+    public function closeVirtualAccount(string $id)
+    {
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
 
         return $virtualAccount->toArrayPublic();
     }
@@ -358,38 +372,6 @@ class Service extends Base\Service
         $input[Entity::RECEIVERS] = [
             Entity::TYPES => $types,
         ];
-
-        // Bank Account is the only type of receiver being used right now
-        if (in_array(Receiver::BANK_ACCOUNT, $types, true) === true)
-        {
-            $bankAccount = [
-                // Default behaviour of old API format should generally not
-                // change. Give alphanumeric accounts to those using old format.
-                Entity::NUMERIC    => false,
-            ];
-
-            // But if merchant isn't using vanity accounts, then
-            // the account number is wholly determined by us anyway.
-            // So we might as well upgrade them all to numeric account number.
-            if ($this->merchant->getHandle() === null)
-            {
-                $bankAccount[Entity::NUMERIC] = true;
-            }
-
-            // Descriptor isn't always set, allowing for random account numbers
-            if (isset($input[Entity::DESCRIPTOR]) === true)
-            {
-                $bankAccount[Entity::DESCRIPTOR] = $input[Entity::DESCRIPTOR];
-            }
-
-            $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = $bankAccount;
-
-            // Descriptor should ideally be unset here, as its use is complete
-            // But we are currently using it as an attribute of the VA entity,
-            // and it is needed to query for active VAs with the same descriptor.
-            // TODO: This will have to be refactored later.
-            // unset($input[Entity::DESCRIPTOR]);
-        }
     }
 
     protected function isOldFormat(array $input): bool

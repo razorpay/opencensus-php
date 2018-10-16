@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -338,6 +339,203 @@ return [
         ],
     ],
 
+    'testDeleteRelatedEntitiesOnUnmarkingPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'merchant_id' => '10000000000009',
+                'entity_type' => 'application',
+            ],
+        ],
+    ],
+
+    'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testAddAccessMapWithoutPartnerContext' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddAccessMapToPurePlatform' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAddAccessMapToNonPartner' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAddPartnerAccessMapAgain' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRemovePartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ]
+    ],
+
+    'testRemoveNonExistingPartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+    ],
+
+    'testRemovePartnerAccessMapAgain' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+    ],
+
     'testApprovingPurePlatformDeactivationRequest' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',
@@ -390,5 +588,429 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
+
+    'testPartnerSubmerchantsBatch' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidId' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 1,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => '',
+            Header::SUBMERCHANT_ID       => '10000000000001',
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidIdFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '1NonExistentId',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+    ],
+
+    'testNoSubmerchantAccountAccessForReseller' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access' => false,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                     => 'acc_10000000000009',
+                'entity'                 => 'merchant',
+                'user'                   => [],
+                'details'                => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access'       => false,
+                'application'            => [
+                    'id'   => '10000RandomApp',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformNoApps' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformMissingAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MISSING_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformInvalidAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => 'NotExistentApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuth' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'dashboard_access' => true,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuthSellerApp' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchants' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsDeleted' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ]
+                    ],
+                    [
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'user@example.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'name'             => 'random_name_1',
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPurePlatformFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPaginationFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsEmptyList' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testAddPartnerAccessMapForLinkedAccountSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+        ],
+    ],
+
 ];
 

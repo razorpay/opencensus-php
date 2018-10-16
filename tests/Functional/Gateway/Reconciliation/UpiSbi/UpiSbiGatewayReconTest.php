@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbiGatewayReconTest;
+namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbi;
 
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -9,15 +9,18 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiSbiGatewayReconTest extends TestCase
 {
-    use PaymentTrait;
     use ReconTrait;
+    use BatchTestTrait;
+
 
     /**
      * @var array
@@ -51,11 +54,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiSbi');
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['success_count']);
+        $this->reconcile($uploadedFile, 'UpiSbi');
 
         $payments = $this->getEntities('payment', [], true);
 
@@ -71,6 +70,9 @@ class UpiSbiGatewayReconTest extends TestCase
         // We assert that the entity's values have changed since recon -
         // as recon persists recon data into the DB
         $this->assertUpiEntityChanged();
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
     }
 
     public function testFailedUpiSbiReconciliation()
@@ -89,11 +91,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiSbi');
-
-        // We assert that the payment was not reconciled
-        $this->assertEquals(1, $response['total_count']);
-        $this->assertEquals(1, $response['failure_count']);
+        $this->reconcile($uploadedFile, 'UpiSbi');
 
         $payments = $this->getEntities('payment', [], true);
 
@@ -106,9 +104,7 @@ class UpiSbiGatewayReconTest extends TestCase
             $this->assertNull($transaction['reconciled_at']);
         }
 
-        // We assert that the entity's values remain the same as before
-        // This is because the payment is failed, and we do not reconcile failed payments
-        $this->assertUpiEntityNotChanged();
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     private function assertUpiEntityChanged()
@@ -116,13 +112,6 @@ class UpiSbiGatewayReconTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals(12345, $upiEntity['npci_reference_id']);
-    }
-
-    private function assertUpiEntityNotChanged()
-    {
-        $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals(99999, $upiEntity['npci_reference_id']);
     }
 
     private function createUploadedFile($file)

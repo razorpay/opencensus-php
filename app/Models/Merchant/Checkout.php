@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Emi;
+use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -19,6 +20,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
@@ -103,7 +105,7 @@ class Checkout
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data, $order);
+        $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
 
     protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
@@ -113,12 +115,13 @@ class Checkout
 
     protected function resetMethodsIfValidBanksPresent(
         array & $data,
-        Order\Entity $order)
+        Order\Entity $order,
+        Merchant\Entity $merchant)
     {
-        if($order->getBank() !== null)
-        {
-            $bankCode = $order->getBank();
+        $bankCode = $order->getBank();
 
+        if ($bankCode !== null)
+        {
             // Order bank should be present in the list of netbanking banks.
             if (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === true)
             {
@@ -128,6 +131,23 @@ class Checkout
                     $bankCode => $bankName,
                 ];
             }
+        }
+
+        if (($merchant->isTPVRequired() === true) and
+            (empty($data['order']['method']) === true))
+        {
+            $methods = [
+                Payment\Method::NETBANKING => $data['methods'][Payment\Method::NETBANKING],
+                Payment\Method::UPI        => $data['methods'][Payment\Method::UPI],
+            ];
+
+            if (($bankCode !== null) and
+                (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === false))
+            {
+                unset($methods[Payment\Method::NETBANKING]);
+            }
+
+            $data['methods'] = $methods;
         }
     }
 
@@ -508,8 +528,14 @@ class Checkout
 
         $data['version'] = 1;
 
-        // Magic checkout is displayed for the merchant based on true or false
-        $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
+        //
+        // When using Keyless auth, checkout has no way to identify the request mode
+        // Adding mode to the preferences response for this
+        //
+        $data['mode'] = $mode;
+
+        // Magic is displayed true.
+        $data['magic'] = true;
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();
 
@@ -551,7 +577,7 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($merchant, $order, $data);
+            $this->checkAndFillOrderOffers($order, $data);
         }
         else
         {
@@ -559,11 +585,18 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Merchant\Entity $merchant, Order\Entity $order, array & $data)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
     {
         $offers = $order->offers;
 
         $orderAmount = $order->getAmount();
+
+        if ($offers->isEmpty() === true)
+        {
+            return;
+        }
+
+        $verbose = true;
 
         //
         // If there's a single forced offer, we only put those
@@ -574,8 +607,20 @@ class Checkout
         {
             $offer = $offers->first();
 
-            $this->updateMethodsToEnableOnCheckout($merchant, $offer, $data);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkValidityOnOrder($order) === true)
+            {
+                $this->updateMethodsToEnableOnCheckout($offer, $data);
+            }
+
+            //
+            // If offer is forced, checkout handles it by displaying it without list of choices
+            //
+            $data['force_offer'] = true;
         }
+
+        $this->updateEmiOptionsUsingOffers($offers, $data);
 
         //
         // For multiple offers, we show all methods,
@@ -583,7 +628,12 @@ class Checkout
         //
         foreach ($offers as $offer)
         {
-            $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkValidityOnOrder($order) === true)
+            {
+                $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            }
         }
     }
 
@@ -597,7 +647,12 @@ class Checkout
         }
     }
 
-    protected function updateMethodsToEnableOnCheckout(Merchant\Entity $merchant, Offer\Entity $offer, array & $data)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data)
+    {
+        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers);
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
     {
         $offerMethod = $offer->getPaymentMethod();
 
@@ -619,16 +674,7 @@ class Checkout
         {
             case Payment\Method::CARD:
             case Payment\Method::EMI:
-
-                $offerMethodType = $offer->getPaymentMethodType();
-
-                $emiSubvention = $merchant->getEmiSubvention();
-
-                $this->updateMethodsForCardOrEmiOffer(
-                    $data,
-                    $emiSubvention,
-                    $offerMethod,
-                    $offerMethodType);
+                $this->updateMethodsForCardOrEmiOffer($data, $offer);
 
                 break;
 
@@ -662,7 +708,7 @@ class Checkout
                     $wallet = $offer->getIssuer();
 
                     $data['methods']['wallet'] = [
-                        $wallet
+                        $wallet => true,
                     ];
                 }
 
@@ -677,12 +723,12 @@ class Checkout
         }
     }
 
-    protected function updateMethodsForCardOrEmiOffer(
-        array & $data,
-        string $emiSubvention,
-        string $offerMethod,
-        string $offerMethodType = null)
+    protected function updateMethodsForCardOrEmiOffer(array & $data, Offer\Entity $offer)
     {
+        $offerMethod = $offer->getPaymentMethod();
+
+        $offerMethodType = $offer->getPaymentMethodType();
+
         $data['methods'][Payment\Method::CARD] = true;
 
         if ($offerMethod === Payment\Method::EMI)
@@ -691,11 +737,7 @@ class Checkout
 
             $data['methods'][Payment\Method::EMI] = true;
 
-            $data['methods']['emi_subvention']    = $emiSubvention;
-
             $data['methods']['emi_plans']         = $emiService->all();
-
-            $data['methods']['emi_options']       = $emiService->getEmiOptions();
         }
 
         switch ($offerMethodType)
@@ -715,6 +757,11 @@ class Checkout
                 $data['methods'][Methods\Entity::DEBIT_CARD]  = true;
                 $data['methods'][Methods\Entity::CREDIT_CARD] = true;
         }
+
+        $offerNetwork = $offer->getPaymentNetwork();
+
+        $data['methods'][Merchant\Methods\Entity::AMEX] = (($offerNetwork === null) or
+                                                           ($offerNetwork === Card\Network::AMEX));
     }
 
     public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)

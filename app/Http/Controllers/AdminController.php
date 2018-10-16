@@ -7,6 +7,7 @@ use App;
 use Redirect;
 use Request;
 use RZP\Models\Admin;
+use RZP\Models\Report;
 
 class AdminController extends Controller
 {
@@ -100,6 +101,42 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setEarlySettlementPricingKeys()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setEarlySettlementPricingKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getConfigKeys()
     {
         $data = $this->service()->getConfigKeys();
@@ -161,6 +198,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMdr()
+    {
+        $data = $this->service()->updateMdr();
+
+        return ApiResponse::json($data);
+    }
+
     public function dbMetaDataQuery()
     {
         $input = Request::all();
@@ -184,6 +228,24 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = $this->service()->createBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOpsReportTypes()
+    {
+        $report = new Report\Types\OpsReport;
+
+        $data = $report->getOpsReportTypes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOpsReport($type)
+    {
+        $report = new Report\Types\OpsReport;
+
+        $data = $report->getOpsReport($type);
 
         return ApiResponse::json($data);
     }

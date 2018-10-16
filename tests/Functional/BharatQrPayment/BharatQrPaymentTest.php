@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\QrPayment;
 
-use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -19,6 +18,8 @@ class BharatQrPaymentTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 

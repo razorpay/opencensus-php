@@ -104,7 +104,7 @@ class CardTest extends TestCase
 
         $payment['card']['number'] = '4532111111175901';
 
-        $this->fixtures->create( 'iin', ['iin' => '453211', 'country' => 'US']);
+        $this->fixtures->create( 'iin', ['iin' => '453211', 'country' => 'US', 'enabled' => 0]);
 
         $this->ba->publicAuth();
 
@@ -297,6 +297,31 @@ class CardTest extends TestCase
         $content = $this->startTest($testData);
 
         $this->fixtures->merchant->enableCreditCard('10000000000000');
+    }
+
+    public function testBinValidationWithFeature()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
+
+        parent::startTest();
+    }
+
+    public function testBinValidationWithOutFeature()
+    {
+        $this->ba->publicAuth();
+
+        parent::startTest();
+    }
+
+    public function testBinValidation()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
+
+        parent::startTest();
     }
 
     public function startTest($testDataToReplace = [])

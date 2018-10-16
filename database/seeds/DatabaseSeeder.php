@@ -908,6 +908,25 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25f6uN5S1Z7c',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_hdfc',
+                'gateway_terminal_id'   => 'test_terminal_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 65,
+            )
+        );
+
+
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1BjhC5CJAqNF7R',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::ATOM,
@@ -1125,12 +1144,14 @@ class DatabaseSeeder extends Seeder
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
+        $this->createNetbankingIdfcTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingCanaraTerminal();
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
@@ -1146,7 +1167,9 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingRblTerminal();
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
+        $this->createEnachRblTerminal();
         $this->createAepsTerminal();
+        $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
     }
 
@@ -1180,6 +1203,38 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
+
+    protected function createNetbankingIdfcTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco2',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_IDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_idfc',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_IDFC_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_IDFC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_idfc',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
 
     protected function createNetbankingHdfcTerminals()
     {
@@ -1525,6 +1580,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingEquitasTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_ESFB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_EQUITAS,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_equitas',
+                'gateway_secure_secret' => Crypt::encrypt('test_equitas_terminal_salt'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1712,6 +1784,20 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'       => '1234',
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_mindgate_terminal_pass'),
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_AXIS_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_AXIS,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id'       => 'TSTMERCHI',
+            'gateway_merchant_id2'      => 'TSTMERCHIAPP',
+            'vpa'                       => 'a@axis',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
@@ -2064,6 +2150,47 @@ class DatabaseSeeder extends Seeder
                 'aeps'                  => '1',
                 'gateway_merchant_id'   => 'abcd',
                 'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+   protected function createHitachiGatewayMotoTerminal()
+   {
+       DB::table(Table::TERMINAL)->insert([
+           'id'                        => Terminal\Shared::HITACHI_MOTO_TERMINAL,
+           'merchant_id'               => Account::TEST_ACCOUNT,
+           'gateway'                   => Gateway::HITACHI,
+           'gateway_acquirer'          => 'rbl',
+           'card'                      => 1,
+           'type'                      => 512,
+           'gateway_merchant_id'       => 'test_merchant_hitachi',
+           'gateway_secure_secret'     => Crypt::encrypt('test_hitachi_secure_secret'),
+           'gateway_terminal_password' => Crypt::encrypt('test_hitachi_secure_secret2'),
+           'recurring'                 => 1,
+           'created_at'                => time(),
+           'updated_at'                => time()
+       ]);
+   }
+    protected function createEnachRblTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::ENACH_RBL,
+                'gateway_acquirer'      => 'ratn',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '1',
+                'emandate'              => '1',
+                'gateway_access_code'   => 'RATN0TESTER',
+                'gateway_merchant_id'   => 'NACH00000000001981',
+                'gateway_merchant_id2'  => 'Test Merchant',
+                'gateway_terminal_id'   => 'RATNTestr',
+                'category'              => '6012',
+                'type'                  => 6,
                 'created_at'            => time(),
                 'updated_at'            => time()
             ]

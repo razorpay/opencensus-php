@@ -1,10 +1,10 @@
 <?php
 
-use RZP\Gateway\Hdfc;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Terminal;
 
 return [
     'testAssignTerminal' => [
@@ -84,6 +84,241 @@ return [
                 'enabled'             => true
             ]
         ]
+    ],
+
+    'testAssignBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '00',
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '00',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testBankAccountTerminalValidationRules' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '00',
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING    => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '0',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected bank transfer is invalid.',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testEditUsedBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '00',
+                'type'    => [
+                    'non_recurring'              => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => true,
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Editing not defined for used terminal of gateway: '.Gateway::BT_YESBANK,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222334',
+                'gateway_merchant_id2' => '01',
+                'type'    => [
+                    'non_recurring'                         => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT    => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT          => '0',
+                ],
+                'bank_transfer'             => true,
+            ],
+            'method' => 'PUT'
+        ],
+        'response' =>  [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222334',
+                'gateway_merchant_id2' => '01',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ],
+    ],
+
+    'testCreateSameRootBankAccountTerminalWithDifferentMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '01',
+                'type'                      => [
+                    'non_recurring'               => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '01',
+                'merchant_id'          => '100002Razorpay',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testAssignDifferentTypeBankAccountTerminalForSameMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => 'ABCDEF',
+                'gateway_merchant_id2'      => 'RZ',
+                'type'                      => [
+                    'non_recurring'               => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => 'ABCDEF',
+                'gateway_merchant_id2' => 'RZ',
+                'merchant_id'          => '100001Razorpay',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testAssignSameTypeBankAccountTerminalForSameMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222334',
+                'gateway_merchant_id2'      => '01',
+                'type'                      => [
+                    'non_recurring'         => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+                'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+        ],
+    ],
+
+    'testAssignSameRootAndSameTypeBankAccountTerminalAfterSharedTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '00',
+                'type'                      => [
+                    'non_recurring'         => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
     ],
 
     'testAssignHitachiTerminalWithInvalidGatewayAcquirer' => [
@@ -359,6 +594,7 @@ return [
                 'gateway_terminal_id' => '12345678',
                 'category'            => 4567,
                 'enabled'             => true,
+                'enabled_banks'       => ['KKBK'],
             ]
         ]
     ],
@@ -419,6 +655,30 @@ return [
                     'recurring_3ds',
                     'recurring_non_3ds',
                     'debit_recurring',
+                ],
+                'enabled' => true,
+            ],
+        ],
+    ],
+
+    'testCreateUpiCollectTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'             => 'upi_icici',
+                'upi'                 => 1,
+                'type'                => [
+                    'collect' => '1',
+                ],
+                'gateway_merchant_id'       => 'razorpay upi',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'upi_icici',
+                'upi'    => true,
+                'type'    => [
+                    'collect'
                 ],
                 'enabled' => true,
             ],
@@ -815,5 +1075,351 @@ return [
                 'enabled'                   => true
             ]
         ]
+    ],
+
+    'testAssignIsgBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'random',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => 'random',
+                'gateway_terminal_id' => '12345678',
+                'mc_mpan'             => '1234567880123456',
+                'visa_mpan'           => '1234567890123456',
+                'rupay_mpan'          => '1234567890123456',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAddIsgBharatQrTerminalFailed' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'random',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'type'                      => [
+                    'bharat_qr'     => '1',
+                ],
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The type.non recurring field is required.',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testAddHulkTerminalWithAppAuth' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => 'app',
+                'upi'                       => true,
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testGetTerminalBanks' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'ANDB'   => "Andhra Bank",
+                    'BKID'   => "Bank of India",
+                    'MAHB'   => "Bank of Maharashtra",
+                    'CNRB'   => "Canara Bank",
+                    'CBIN'   => "Central Bank of India",
+                    'CIUB'   => "City Union Bank",
+                    'CORP'   => "Corporation Bank",
+                    'DCBL'   =>"DCB Bank",
+                    'DEUT'   => "Deutsche Bank",
+                    'DLXB'   => "Dhanlaxmi Bank",
+                    'ESFB'   => "Equitas Small Finance Bank",
+                    'IBKL'   =>"IDBI",
+                    'IDIB'   => "Indian Bank",
+                    'IOBA'   => "Indian Overseas Bank",
+                    'JAKA'   => "Jammu and Kashmir Bank",
+                    'KARB'   => "Karnataka Bank",
+                    'KVBL'   => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PSIB'   => "Punjab & Sind Bank",
+                    'PUNB_R' => "Punjab National Bank - Retail Banking",
+                    'SRCB'   => "Saraswat Co-operative Bank",
+                    'SIBL'   => "South Indian Bank",
+                    'SCBL'   => "Standard Chartered Bank",
+                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
+                    'SBHY'   => "State Bank of Hyderabad",
+                    'SBIN'   => "State Bank of India",
+                    'SBMY'   => "State Bank of Mysore",
+                    'STBP'   => "State Bank of Patiala",
+                    'SBTR'   => "State Bank of Travancore",
+                    'TMBL'   => "Tamilnadu Mercantile Bank",
+                    'UCBA'   =>"UCO Bank",
+                    'UBIN'   => "Union Bank of India",
+                    'UTBI'   => "United Bank of India",
+                    'VIJB'   => "Vijaya Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTpvTerminalBanks' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'MAHB' => "Bank of Maharashtra",
+                    'CIUB' => "City Union Bank",
+                    'DCBL' => "DCB Bank",
+                    'DEUT' => "Deutsche Bank",
+                    'DLXB' => "Dhanlaxmi Bank",
+                    'IBKL' => "IDBI",
+                    'IDIB' => "Indian Bank",
+                    'JAKA' => "Jammu and Kashmir Bank",
+                    'KVBL' => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'SRCB' => "Saraswat Co-operative Bank",
+                    'SBIN' => "State Bank of India",
+                    'TMBL' => "Tamilnadu Mercantile Bank",
+                    'YESB' => "Yes Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpTerminalBanks' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'UTIB_C' => "Axis Bank - Corporate Banking",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTerminalBanksForNonNetbankingTerminal' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Banks available only for netbanking gateways',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksForTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['SBIN'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'SBIN'   => "State Bank of India",
+                ],
+                'disabled' => [
+                    'ANDB'   => "Andhra Bank",
+                    'BKID'   => "Bank of India",
+                    'MAHB'   => "Bank of Maharashtra",
+                    'CNRB'   => "Canara Bank",
+                    'CBIN'   => "Central Bank of India",
+                    'CIUB'   => "City Union Bank",
+                    'CORP'   => "Corporation Bank",
+                    'DCBL'   =>"DCB Bank",
+                    'DEUT'   => "Deutsche Bank",
+                    'DLXB'   => "Dhanlaxmi Bank",
+                    'ESFB'   => "Equitas Small Finance Bank",
+                    'IBKL'   =>"IDBI",
+                    'IDIB'   => "Indian Bank",
+                    'IOBA'   => "Indian Overseas Bank",
+                    'JAKA'   => "Jammu and Kashmir Bank",
+                    'KARB'   => "Karnataka Bank",
+                    'KVBL'   => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PSIB'   => "Punjab & Sind Bank",
+                    'PUNB_R' => "Punjab National Bank - Retail Banking",
+                    'SRCB'   => "Saraswat Co-operative Bank",
+                    'SIBL'   => "South Indian Bank",
+                    'SCBL'   => "Standard Chartered Bank",
+                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
+                    'SBHY'   => "State Bank of Hyderabad",
+                    'SBMY'   => "State Bank of Mysore",
+                    'STBP'   => "State Bank of Patiala",
+                    'SBTR'   => "State Bank of Travancore",
+                    'TMBL'   => "Tamilnadu Mercantile Bank",
+                    'UCBA'   =>"UCO Bank",
+                    'UBIN'   => "Union Bank of India",
+                    'UTBI'   => "United Bank of India",
+                    'VIJB'   => "Vijaya Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testSetUnsupportedBankForTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['FDRL'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'banks not supported by gateway',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksForNonNetbankingGateway' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['SBIN'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Banks available only for netbanking gateways',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksWithIncorrectInput' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => 'SBIN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'enabled_banks should be an array',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetTerminalBanksForDirectNetbankingTerminal' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'HDFC' => "HDFC Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testSetBanksForDirectNetbankingTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['HDFC'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC'   => "HDFC Bank",
+                ],
+                'disabled' => [
+                ],
+            ],
+        ],
     ],
 ];

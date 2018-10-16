@@ -101,7 +101,7 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         if ($shouldProcess === true)
         {
@@ -320,6 +320,8 @@ class Processor extends Base\Core
     protected function fetchRequiredEntities(
         int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [])
     {
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
+
         $txns = $this->repo->transaction->fetchUnsettledTransactions(
                     $settledAtCutOff, $channel, $inMids, $notInMids);
 
@@ -337,6 +339,8 @@ class Processor extends Base\Core
                                         MerchantModel\Entity::PARENT_ID
                                     ])
                                 ->keyBy(MerchantModel\Entity::ID);
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHED_ENTITIES);
 
         return $txns;
     }
@@ -367,8 +371,10 @@ class Processor extends Base\Core
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
 
-        foreach ($groupedTxns as $key => $txns)
+        foreach ($groupedTxns as $merchantId => $txns)
         {
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START);
+
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
 
             if ($setl !== null)
@@ -384,13 +390,33 @@ class Processor extends Base\Core
 
                 $this->updateSettlementIdInTransfer($txns);
             }
+
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END);
         }
 
-        return [
+        $response = [
             'settlement_count'  => $settlements->count(),
             'attempt_count'     => $setlAttempts->count(),
             'txn_count'         => $txnsSettledCount,
         ];
+
+        $this->trace->count(
+            Metric::SETTLEMENTS_CREATED_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['settlement_count']
+        );
+
+        $this->trace->count(
+            Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['txn_count']
+        );
+
+        return $response;
     }
 
     protected function groupTransactionsByDay($txns): array
@@ -475,11 +501,18 @@ class Processor extends Base\Core
         $this->input = $input;
     }
 
-    protected function shouldProcessSettlements($input)
+    protected function shouldProcessSettlements($input, string $channel = null)
     {
         $isTestMode = $this->isTestMode();
 
         if ($isTestMode === true)
+        {
+            return [true, null];
+        }
+
+        $channelWith24x7Settlement = Channel::get24x7Channels();
+
+        if (in_array($channel, $channelWith24x7Settlement, true) === true)
         {
             return [true, null];
         }
@@ -541,8 +574,7 @@ class Processor extends Base\Core
      */
     protected function isTestMode(): bool
     {
-        if (($this->mode === Mode::TEST) or
-            (in_array($this->env, ['testing', 'perf', 'func'], true) === true))
+        if (in_array($this->env, ['testing', 'perf', 'func'], true) === true)
         {
             return true;
         }

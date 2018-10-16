@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
@@ -25,17 +27,32 @@ class RowProcessor extends BaseRowProcessor
             self::SETTLEMENT_DATE       => $this->getNullOnEmpty(Headings::SETTLEMENT_DATE),
         ];
 
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
+
         $this->reconEntityId = $this->parsedData[self::ATTEMPT_REFERENCE];
     }
 
     protected function updateReconEntity()
     {
-        $utr = $this->getUtrToUpdate();
-        $this->reconEntity->setUtr($utr);
+        $this->updateUtrOnReconEntity();
+
+        $currentBankStatusCode = $this->reconEntity->getBankStatusCode();
+
+        $newBankStatusCode = $this->parsedData[self::BANK_STATUS_CODE];
+
+        $successStatus = Status::EXECUTED;
+
+        $flipStatus = Status::getFlipStatus();
+
+        if (($currentBankStatusCode === $successStatus) and
+            (in_array($newBankStatusCode, $flipStatus, true) === true))
+        {
+            $this->reconEntity->setStatus(Attempt\Status::INITIATED);
+        }
 
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $this->reconEntity->setBankStatusCode($newBankStatusCode);
 
         $this->reconEntity->setDateTime($this->parsedData[self::SETTLEMENT_DATE]);
 
@@ -44,19 +61,17 @@ class RowProcessor extends BaseRowProcessor
 
     protected function getUtrToUpdate()
     {
-        $currentUtr = $this->reconEntity->getUtr();
+        $utr = $this->reconEntity->getUtr();
 
         $utrFromFile = $this->parsedData[self::UTR];
-
-        $newUtr = $currentUtr;
 
         // Update UTR to the value from file only if it is not empty
         if (empty($utrFromFile) === false)
         {
-            $newUtr = $utrFromFile;
+            $utr = $utrFromFile;
         }
 
-        return $newUtr;
+        return $utr;
     }
 
     protected function getAttemptReference()

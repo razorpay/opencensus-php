@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Base\Validator;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Base\Validator;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -98,6 +99,13 @@ class Server extends Base\Core
     protected function verify($input)
     {
         $this->action = Action::VERIFY;
+
+        $this->input = $input;
+    }
+
+    protected function validatePush($input)
+    {
+        $this->action = Action::VALIDATE_PUSH;
 
         $this->input = $input;
     }

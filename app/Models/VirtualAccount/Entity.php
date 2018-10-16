@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo('RZP\Models\BankAccount\Entity');
+        return $this->belongsTo('RZP\Models\BankAccount\Entity')->withTrashed();
     }
 
     public function qrCode()
@@ -137,16 +137,6 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
-    }
-
-    public function associateOrder($order)
-    {
-        if ($order !== null)
-        {
-            $this->attributes[self::ENTITY_ID] = $order->getId();
-
-            $this->attributes[self::ENTITY_TYPE] = Type::ORDER;
-        }
     }
 
     // ----------------------- Modifiers ---------------------------------------
@@ -280,9 +270,10 @@ class Entity extends Base\PublicEntity
      */
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
     {
-        $this->incrementAmountPaid($bankTransfer->getAmount());
+        $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
 
-        $this->incrementAmountReceived($bankTransfer->getAmount());
+        $this->incrementAmountPaid($paidAmount);
+        $this->incrementAmountReceived($paidAmount);
     }
 
     public function setStatus(string $status)
@@ -312,12 +303,6 @@ class Entity extends Base\PublicEntity
     public function incrementAmountPaid(int $amount)
     {
         $this->increment(self::AMOUNT_PAID, $amount);
-
-        if (($this->hasAmountExpected() === true) and
-            ($this->getAmountPaid() >= $this->getAmountExpected()))
-        {
-            $this->setStatus(Status::PAID);
-        }
     }
 
     public function incrementAmountReceived(int $amount)

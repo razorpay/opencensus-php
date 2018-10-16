@@ -183,25 +183,33 @@ return array(
         ],
 
         'throttle' => [
-            'host'               => env('REDIS_HOST'),
-            'port'               => env('REDIS_PORT'),
-            'database'           => env('THROTTLE_REDIS_DB'),
+            'host'               => env('REDIS_LABS_HOST'),
+            'port'               => env('REDIS_LABS_PORT'),
             'timeout'            => 5,
             'read_write_timeout' => 5,
+            'options'            => [
+                'prefix'             => 'throttle:',
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ],
+
         ],
 
         'query_cache_test' => [
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('QUERY_CACHE_TEST_REDIS_DB'),
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
             'timeout'  => 30,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
         ],
 
         'query_cache_live' => [
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('QUERY_CACHE_LIVE_REDIS_DB'),
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
             'timeout'  => 30,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
         ],
     ],
 
@@ -213,6 +221,7 @@ return array(
 
     'es_audit' => [
         'live' => env('ES_AUDIT_LIVE_INDEX'),
+
         'test' => env('ES_AUDIT_TEST_INDEX')
     ],
 

@@ -12,12 +12,11 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
-        Entity::DESCRIPTOR                      => 'sometimes|nullable|alpha_num',
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
         Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
         Entity::ORDER_ID                        => 'filled|public_id|size:20',
-        Entity::RECEIVERS                       => 'required|array|custom',
+        Entity::RECEIVERS                       => 'bail|required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
     ];
@@ -34,35 +33,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
     ];
 
-    public function validateDescriptor($descriptor)
-    {
-        if ($descriptor === null)
-        {
-            return;
-        }
-
-        $handle = $this->entity->merchant->getHandle();
-
-        $descriptorLength = strlen($descriptor);
-
-        $handleLength = strlen($handle);
-
-        $rootLength = Receiver::ROOT_LENGTH;
-
-        if (($descriptorLength + $handleLength + $rootLength) > Receiver::ACCOUNT_NUMBER_LENGTH)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
-                'descriptor',
-                [
-                    'descriptor' => $descriptor,
-                ]);
-        }
-    }
-
     protected function validateReceivers(string $key, array $value, array $data)
     {
         if ((isset($value[Entity::TYPES]) === true) and
+            (is_array($value[Entity::TYPES]) === true) and
             (Receiver::areTypesValid($value[Entity::TYPES]) === false))
         {
             throw new Exception\BadRequestException(
