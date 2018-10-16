@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Action;
@@ -159,7 +160,13 @@ class Gateway extends Base\Gateway
 
         $content = http_build_query($content);
 
-        $request['url'] .= '?' . $content;
+        $checksum = $this->getChecksum($content);
+
+        $queryString = $content . '&checksum=' . $checksum;
+
+        $encrypted = $this->encryptString($queryString);
+
+        $request['url'] .= '?' . '&' . RequestFields::ENCRYPTED_DATA . '=' . $encrypted;
 
         return $request;
     }
@@ -183,6 +190,18 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
+    }
+
+    protected function getChecksum($content)
+    {
+        return strtoupper(hash(HashAlgo::SHA256, $content));
+    }
+
+    protected function encryptString($content)
+    {
+        $encryptor = new AESCrypto(Constants::MODE_CBC, 'vgdai3wlncw&*bai', 'd7bjew^nkwqj*jRH');
+
+        return $encryptor->encryptString($content);
     }
 
     // -------------------------- Callback helper methods ------------------------------
