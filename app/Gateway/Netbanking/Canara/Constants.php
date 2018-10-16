@@ -12,4 +12,6 @@ class Constants
 
     const SAMPLE_FAILURE_CODE               = 10;  // this is only a sample value. Failure return code is non-zero
     const SAMPLE_FAILURE_VERIFY_STATUS      = 10;  // this is only a sample value. Failure return code is non-zero
+
+    const MODE_CBC                          = 2;
 }
