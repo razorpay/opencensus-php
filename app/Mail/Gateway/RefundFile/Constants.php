@@ -91,7 +91,7 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => 'emails.message',
         Gateway::WALLET_AIRTELMONEY     => 'emails.message',
         Gateway::WALLET_PAYUMONEY       => 'emails.message',
-        GATEWAY::NETBANKING_CANARA      => 'emails.message'
+        GATEWAY::NETBANKING_CANARA      => 'emails.message',
         Gateway::ISG                    => 'emails.message',
     ];
 }
