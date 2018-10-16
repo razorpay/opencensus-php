@@ -76,6 +76,7 @@ class Base extends Core
     const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';
+    const UPI_HULK               = 'UpiHulk';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -121,6 +122,7 @@ class Base extends Core
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
+        self::UPI_HULK               => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

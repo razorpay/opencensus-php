@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'upiHulk' => [
+        'TRANSACTION_TYPE'      => 'MERCHANT TRANSACTIONS',
+        'MERCHANT_NAME'         => 'RAZORPAY',
+        'MCC'                   => '7299',
+        'NPCI_RESPONSE_CODE'    => '0',
+        'PAYEE_AC_NO'           => '50200030495052',
+        'PAYEE_IFSC_CODE'       => 'HDFC0000240',
+        'PAYEE_VIRTUAL_ADDR'    => 'testbook.razorpay@hdfcbankrzp',
+        'TRANS_REF_NO'          => '721221612',
+        'UPI_TRANSACTION_ID'    => 'HDF2C7C5024685744BA853232CDB2C2B277',
+        'TRANS_TYPE'            => 'CREDIT',
+        'PAY_TYPE'              => 'P2M',
+        'DRCRFLAG'              => 'CREDIT',
+        'TRANSACTIONAMOUNT'     => '500',
+        'TRANSACTION_REQ_DATE'  => '26-SEP-2018 11:45:36',
+        'TRANSACTION_REMARKS'   => 'Testbook Edu Solutions Private Limited RRB Group D',
+        'ORDER_NO'              => '',
+        'CUSTOMER_REF_NO'       => '826911656395',
+        'CURRENCY'              => 'INR',
+        'EXPIRY_VALUE'          => 'MINS',
+        'PAYMENT_REF_NO'        => '1953089070',
+        'PAYER_AC_NAME'         => 'Mrs SABITA  DEVI',
+        'PAYER_AC_NO'           => '',
+        'PAYER_AC_TYPE'         => 'SAVINGS',
+        'PAYER_IFSC_CODE'       => 'CBIN0281697',
+        'PAYER_VIRTUAL_ADDR'    => 'vishnu@icici',
+        'TRN_STATUS_DESC'       => 'SUCCESS',
+        'SETTLEMANT_DATE'       => '26-09-18 20:52:01',
+    ],
+];
