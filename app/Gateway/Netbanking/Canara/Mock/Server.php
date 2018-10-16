@@ -7,6 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Canara\RequestFields;
 use RZP\Gateway\Netbanking\Canara\ResponseFields;
 use RZP\Gateway\Netbanking\Canara\Constants;
+use RZP\Gateway\Netbanking\Canara\AESCrypto;
 
 
 class Server extends Base\Mock\Server
@@ -18,6 +19,10 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         parent::authorize($input);
+
+        $input = $this->decryptString($input[RequestFields::ENCRYPTED_DATA]);
+
+        $input = $this->getInputData($input);
 
         $this->validateAuthorizeInput($input);
 
@@ -108,4 +113,19 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function decryptString(string $encryptedString): string
+    {
+        $aes = new AESCrypto(Constants::MODE_CBC, 'vgdai3wlncw&*bai', 'd7bjew^nkwqj*jRH');
+
+        return $aes->decryptString($encryptedString);
+    }
+
+    protected function getInputData($input)
+    {
+        $inputArray = [];
+
+        parse_str($input, $inputArray);
+
+        return $inputArray;
+    }
 }
