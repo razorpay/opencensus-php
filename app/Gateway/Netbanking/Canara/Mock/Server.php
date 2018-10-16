@@ -2,12 +2,14 @@
 
 namespace RZP\Gateway\Netbanking\Canara\Mock;
 
-use RZP\Gateway\Netbanking\Canara\TransactionType;
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Canara\RequestFields;
-use RZP\Gateway\Netbanking\Canara\ResponseFields;
+use RZP\Constants\Mode;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Netbanking\Canara\Constants;
 use RZP\Gateway\Netbanking\Canara\AESCrypto;
+use RZP\Gateway\Netbanking\Canara\RequestFields;
+use RZP\Gateway\Netbanking\Canara\ResponseFields;
+use RZP\Gateway\Netbanking\Canara\TransactionType;
 
 
 class Server extends Base\Mock\Server
@@ -26,13 +28,23 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        //$this->validateChecksum($input);
+
         $content = $this->getCallbackResponseData($input);
 
         $this->content($content, 'authorize');
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_canara_get');
 
-        $callbackUrl .= '?' . http_build_query($content);
+        $content = http_build_query($content);
+
+        $checksum = $this->getChecksum($content);
+
+        $queryString = $content . '&checksum=' . $checksum;
+
+        $encrypted = $this->encryptString($queryString);
+
+        $callbackUrl .= '?' . RequestFields::ENCRYPTED_DATA . '=' . $encrypted;
 
         $request = [
             'url'     => $callbackUrl,
@@ -41,7 +53,6 @@ class Server extends Base\Mock\Server
         ];
 
         return $this->makePostResponse($request);
-
     }
 
     public function callback($input)
@@ -115,7 +126,9 @@ class Server extends Base\Mock\Server
 
     public function decryptString(string $encryptedString): string
     {
-        $aes = new AESCrypto(Constants::MODE_CBC, 'vgdai3wlncw&*bai', 'd7bjew^nkwqj*jRH');
+        $config = $this->app['config']['gateway']['netbanking_canara'];
+
+        $aes = new AESCrypto(Mode::TEST, $config);
 
         return $aes->decryptString($encryptedString);
     }
@@ -127,5 +140,43 @@ class Server extends Base\Mock\Server
         parse_str($input, $inputArray);
 
         return $inputArray;
+    }
+
+    /*protected function validateChecksum($content)
+    {
+        $receivedChecksum = $content[RequestFields::CHECKSUM];
+
+        unset($content[RequestFields::CHECKSUM]);
+
+        $content = http_build_query($content);
+
+        $calculatedChecksum = $this->getChecksum($content);
+
+        //$calculatedChecksum = $this->generateHash($content);
+
+        if ($receivedChecksum !== $calculatedChecksum)
+        {
+
+        }
+        else
+        {
+
+        }
+
+        return $responseCode;
+    }*/
+
+    protected function getChecksum($content)
+    {
+        return strtoupper(hash(HashAlgo::SHA256, $content));
+    }
+
+    protected function encryptString($content)
+    {
+        $config = $this->app['config']['gateway']['netbanking_canara'];
+
+        $encryptor = new AESCrypto(Mode::TEST, $config);
+
+        return $encryptor->encryptString($content);
     }
 }

@@ -450,7 +450,9 @@ return [
     ],
 
     'netbanking_canara' => [
-        'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID')
+        'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
+        'test_master_key'        => env('NETBANKING_CANARA_GATEWAY_TEST_MASTER_KEY'),
+        'test_IV'                => env('NETBANKING_CANARA_GATEWAY_TEST_IV')
     ],
 
     'netbanking_obc' => [

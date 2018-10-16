@@ -305,6 +305,20 @@ class GatewayController extends Controller
             [ 'input' => $input ]
         );
 
+        $encryptedString = $input[Canara\RequestFields::ENCRYPTED_DATA];
+
+        $mode = $this->app['rzp.mode'];
+
+        $config = $this->config['gateway']['netbanking_canara'];
+
+        $aes = new Canara\AESCrypto($mode, $config);
+
+        $decryptedString = $aes->decryptString($encryptedString);
+
+        $input = [];
+
+        parse_str($decryptedString, $input);
+
         $paymentId = $input[Canara\ResponseFields::PAYMENT_ID];
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');

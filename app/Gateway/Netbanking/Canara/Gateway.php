@@ -166,7 +166,7 @@ class Gateway extends Base\Gateway
 
         $encrypted = $this->encryptString($queryString);
 
-        $request['url'] .= '?' . '&' . RequestFields::ENCRYPTED_DATA . '=' . $encrypted;
+        $request['url'] .= '?' . RequestFields::ENCRYPTED_DATA . '=' . $encrypted;
 
         return $request;
     }
@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
 
     protected function encryptString($content)
     {
-        $encryptor = new AESCrypto(Constants::MODE_CBC, 'vgdai3wlncw&*bai', 'd7bjew^nkwqj*jRH');
+        $encryptor = new AESCrypto($this->mode, $this->config);
 
         return $encryptor->encryptString($content);
     }
