@@ -145,7 +145,7 @@ class Activate extends Base\Core
 
         (new Core)->createBalance($merchant, 'live');
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant)
         {
             $this->repo->saveOrFail($merchant);
 
@@ -154,7 +154,7 @@ class Activate extends Base\Core
 
         $this->trace->info(
             TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED,
-            ['merchant_id' => $merchant->getId()]);
+            [Entity::MERCHANT_ID => $merchant->getId()]);
 
         $detailCore = new Detail\Core;
 

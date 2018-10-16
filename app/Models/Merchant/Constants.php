@@ -143,6 +143,7 @@ final class Constants
         Entity::CATEGORY,
         Entity::BILLING_LABEL,
     ];
+
     const INSTANT_ACTIVATION_MANDATORY_FIELDS = [
         Entity::CATEGORY,
         Entity::CATEGORY2,

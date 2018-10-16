@@ -951,7 +951,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testPostInstantActivationLinkedAccount' => [
+    'testUpdateActivationFlow' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1001,8 +1001,8 @@ return [
         'status_code' => 200,
     ],
 
-    'testUpdateActivationFlow' => [
-        'request'     => [
+    'testPostInstantActivationLinkedAccount' => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
             'content' => [
@@ -1017,9 +1017,9 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
-                ]
+                ],
             ],
-            'status_code' => 400
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
