@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
+    const TYPE                   = 'type';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -51,6 +52,10 @@ class Entity extends Base\PublicEntity
     const MIN_AMOUNT             = 'min_amount';
     const MODULO                 = 'modulo';
     const BUFFER_AMOUNT          = 'buffer_amount';
+
+    //Constants for payout types
+    const DEFAULT   = 'default';
+    const ON_DEMAND = 'on_demand';
 
     protected $entity = 'payout';
 
@@ -74,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+        self::TYPE
     ];
 
     protected $visible = [
@@ -98,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -131,7 +138,8 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
-        self::ATTEMPTS          => 1
+        self::ATTEMPTS          => 1,
+        self::TYPE              => self::DEFAULT
     ];
 
     protected $amounts = [
@@ -288,6 +296,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESTINATION_ID);
     }
 
+    public function getPayoutType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
@@ -338,6 +351,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_ON, $date);
     }
 
+    public function setType($onDemand)
+    {
+        $this->setAttribute(self::TYPE, $onDemand);
+    }
+
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
@@ -376,5 +394,10 @@ class Entity extends Base\PublicEntity
     public function getPricingFeatures()
     {
         return [];
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 }

@@ -779,6 +779,7 @@ final class Route
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+        'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
 
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -1415,6 +1416,7 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        'on_demand_settlement',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'merchant_instant_activation_post',
@@ -2424,6 +2426,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
     ];
 
     /*
@@ -2819,7 +2822,6 @@ final class Route
     public function getCurrentRouteFeatures(): array
     {
         $currentRoute = $this->getCurrentRouteName();
-
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route

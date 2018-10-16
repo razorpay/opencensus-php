@@ -474,6 +474,26 @@ class Pricing extends Base
         $this->addPricingRulesToDb([$row]);
     }
 
+    public function createPayoutPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYz';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 50,
+            'fixed_rate'          => 80,
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
     protected function addPricingRulesToDb($rows)
     {
         $repo = new Models\Pricing\Repository;

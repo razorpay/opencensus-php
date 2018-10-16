@@ -660,6 +660,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
+    const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
@@ -671,6 +672,7 @@ class PublicErrorDescription
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                 = 'Verification of older refunds is disabled';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'Refund is marked unprocessed manually';
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
+    const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
