@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 use phpseclib\Crypt\AES;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
@@ -55,18 +56,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $response = $input['gateway'];
-
-        $this->trace->info(
-            TraceCode::GATEWAY_RESPONSE,
-            [
-                'gateway'          => $this->gateway,
-                'gateway_response' => $response,
-                'payment_id'       => $input['payment']['id']
-            ]
-        );
-
-        $content = $this->getEncryptor()->decryptData($response[ResponseFields::ENCRYPTED_DATA], '=', '&');
+        $content = $input['gateway'];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -391,9 +381,12 @@ class Gateway extends Base\Gateway
 
     // -------------------------- General helper methods --------------------------
 
-    public function getEncryptor()
+    public function getEncryptor($secret = null)
     {
-        $secret = $this->getSecret();
+        if ($secret === null)
+        {
+            $secret = $this->getSecret();
+        }
 
         return new Encryptor(AES::MODE_CBC, $secret, $secret);
     }
@@ -413,6 +406,33 @@ class Gateway extends Base\Gateway
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    public function preProcessServerCallback($encryptedData): array
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_RESPONSE,
+            [
+                'gateway'          => $this->gateway,
+                'gateway_response' => $encryptedData
+            ]
+        );
+
+        $secret = $this->getTestSecret();
+
+        if ($this->app['config']->get('app.env') === Environment::PRODUCTION)
+        {
+            $secret = $this->getLiveSecret();
+        }
+
+        $data = $this->getEncryptor($secret)->decryptData($encryptedData, '=', '&');
+
+        return $data;
+    }
+
+    public function getPaymentIdFromServerCallback($data)
+    {
+        return $data[ResponseFields::PAYMENT_ID];
     }
 
     // -------------------------- General helper methods end ----------------------

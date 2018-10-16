@@ -255,45 +255,11 @@ class GatewayController extends Controller
 
     public function callbackCorporation()
     {
-        $input = Request::all();
+        $input = $_SERVER["QUERY_STRING"];
 
-        $this->app['trace']->info(
-            TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [ 'input' => $input ]
-        );
+        $data = $this->processServerCallback($input, 'netbanking_corporation');
 
-        $paymentId = $input[Corporation\ResponseFields::PAYMENT_ID];
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-        $this->app['config']->set('database.default', $mode);
-
-        $netbanking = $this->app['repo']->netbanking->findByPaymentIdAndAction(
-            $paymentId,
-            \RZP\Gateway\Base\Action::AUTHORIZE
-        );
-
-        if ($netbanking === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed to find requisite payment id: ' . $paymentId);
-        }
-
-        $publicPaymentId = $netbanking->getPublicPaymentId();
-
-        $payment = $this->repo->payment->findOrFailPublic($paymentId);
-
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
-
-        $inputMsg = http_build_query($input);
-
-        $url = $url . '?' . $inputMsg;
-
-        return Redirect::to($url);
+        return ApiResponse::json($data);
     }
 
     public function callbackAmazonpay($responseFormat = 'html')
