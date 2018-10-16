@@ -259,6 +259,13 @@
   &--after
     padding-right: 48px
 
+  &[type=number]
+    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button
+      -webkit-appearance: none
+      -moz-appearance: none
+      appearance: none
+      margin: 0
+
 .Input:not(.Input--disabled) .Input-el
     &:hover
       border-color: #c1c1c1

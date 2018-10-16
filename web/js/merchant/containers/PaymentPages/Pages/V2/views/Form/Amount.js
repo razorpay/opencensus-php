@@ -82,6 +82,15 @@ export class AmountCreator extends React.PureComponent {
         hasStock: value == 1 ? true : false,
       });
     }
+
+    setTimeout(() => {
+      const form = document.getElementsByName('form_creator_amount')[0];
+      if (form.querySelectorAll('.is-invalid').length) {
+        this.setState({ disableSubmit: true });
+      } else {
+        this.setState({ disableSubmit: false });
+      }
+    });
   };
 
   render() {
@@ -91,18 +100,23 @@ export class AmountCreator extends React.PureComponent {
       isDynamicAmount,
       hasQuantityPerPerson,
       hasStock,
+      disableSubmit,
     } = this.state;
 
     return (
-      <Form onChange={this.onChange} onSubmit={onSubmit}>
+      <Form
+        name="form_creator_amount"
+        onChange={this.onChange}
+        onSubmit={onSubmit}
+      >
         <div class="section section-1">
           <Input
             label="Amount"
             name="amount"
-            type="number"
             placeholder="Enter Amount"
             addonBefore="₹"
             autoFocus
+            pattern="^[1-9]+(.([0-9]){1,2})?$"
             disabled={isDynamicAmount}
           />
           <Input.Check
@@ -129,7 +143,13 @@ export class AmountCreator extends React.PureComponent {
                 {!!hasStock && (
                   <React.Fragment>
                     of{' '}
-                    <Input name="quantity" class="checkbox-Input" autoFocus />{' '}
+                    <Input
+                      name="quantity"
+                      class="checkbox-Input"
+                      autoFocus
+                      step="1"
+                      pattern="\d+"
+                    />{' '}
                     units available
                   </React.Fragment>
                 )}
@@ -141,7 +161,9 @@ export class AmountCreator extends React.PureComponent {
           <button type="button" class="btn-link" onClick={onClose}>
             Cancel
           </button>
-          <Button.Primary type="submit">Add</Button.Primary>
+          <Button.Primary type="submit" disabled={disableSubmit}>
+            Add
+          </Button.Primary>
         </footer>
       </Form>
     );
