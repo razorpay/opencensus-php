@@ -2763,6 +2763,25 @@ class MerchantTest extends TestCase
         $this->assertEquals(null, $scheduleTask['method']);
     }
 
+    public function testAssignScheduleBulk()
+    {
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'daily',
+                'interval' => 1,
+                'delay'    => 2,
+                'name'     => 'Basic T2',
+            ]);
+
+        $this->createMerchant(['id' => '1000000000test']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantWithAdmin()
     {
         $adminId = 'admin_' . Org::SUPER_ADMIN;
