@@ -38,21 +38,30 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
 };
 
 export class GenericCreator extends React.PureComponent {
-  state = { isDynamicAmount: false, hasStock: false };
+  state = {
+    isDynamicAmount: false,
+    hasStock: false,
+    disableSubmit: !this.props.label,
+  };
 
-  typeOptions = Object.keys(TYPES).map(i => {
-    return {
-      name: TYPES[i].label,
-      label: TYPES[i].label,
-    };
-  });
+  typeOptions = ['--Select--'].concat(
+    Object.keys(TYPES).map(i => {
+      return {
+        name: TYPES[i].label,
+        label: TYPES[i].label,
+      };
+    })
+  );
 
   onChange = ({ target }) => {
     const { name, value } = target;
 
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_generic')[0];
-      if (form.querySelectorAll('.is-invalid').length) {
+      const title = document.getElementsByName('title')[0].value;
+      const type = document.getElementsByName('type')[0].value;
+
+      if (form.querySelectorAll('.is-invalid').length || !title || !type) {
         this.setState({ disableSubmit: true });
       } else {
         this.setState({ disableSubmit: false });
@@ -73,8 +82,9 @@ export class GenericCreator extends React.PureComponent {
         <div class="section section-1">
           <Input
             label="What is this field called?"
-            name="label"
+            name="title"
             placeholder="Enter field title"
+            pattern="^[a-zA-Z0-9 ]+$"
             autoFocus
           />
           {/*<input name="name" hidden value={} />*/}

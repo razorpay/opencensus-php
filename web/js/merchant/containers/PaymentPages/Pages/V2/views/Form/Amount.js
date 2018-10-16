@@ -61,7 +61,11 @@ export const FormFooter = ({ amountToPay }) => (
 );
 
 export class AmountCreator extends React.PureComponent {
-  state = { isDynamicAmount: false, hasStock: false };
+  state = {
+    isDynamicAmount: false,
+    hasStock: false,
+    disableSubmit: !this.props.amount && !this.props.isDynamicAmount,
+  };
 
   onChange = ({ target }) => {
     const { name, value } = target;
@@ -85,7 +89,12 @@ export class AmountCreator extends React.PureComponent {
 
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_amount')[0];
-      if (form.querySelectorAll('.is-invalid').length) {
+      const amount = document.getElementsByName('amount')[0].value;
+
+      if (
+        form.querySelectorAll('.is-invalid').length ||
+        (!amount && !this.state.isDynamicAmount)
+      ) {
         this.setState({ disableSubmit: true });
       } else {
         this.setState({ disableSubmit: false });
@@ -96,7 +105,6 @@ export class AmountCreator extends React.PureComponent {
   render() {
     const { onClose, onSubmit } = this.props;
     const {
-      amount,
       isDynamicAmount,
       hasQuantityPerPerson,
       hasStock,

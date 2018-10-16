@@ -47,8 +47,10 @@ export default class View extends React.PureComponent {
     this.setState({ activeCreatorType: false });
   };
 
-  onCreatorSubmit = _ => {
-    // Add / Update FORM_SCHEMA
+  onGenericCreatorSubmit = formData => {
+    console.log('FORM DATA.....', formData);
+
+    return false;
     this.setState({ activeCreatorType: false });
   };
 
@@ -62,11 +64,6 @@ export default class View extends React.PureComponent {
       // Add / Update FORM_SCHEMA
       this.setState({ activeCreatorType: false });
     }
-  };
-
-  onGenericCreatorSubmit = _ => {
-    // Add / Update FORM_SCHEMA
-    this.setState({ activeCreatorType: false });
   };
 
   render() {
