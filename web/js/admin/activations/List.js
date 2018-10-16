@@ -289,7 +289,14 @@ export default class MerchantList extends Component {
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
 
-            <SelectField name="account_status" label="Activation Status">
+            <SelectField
+              name="account_status"
+              label="Activation Status"
+              defaultValue={defaultFilters.account_status}
+            >
+              {this.props.instantActivation && (
+                <option value="instantly_activated">Instantly Activated</option>
+              )}
               <option value="pending_under_review">Under Review</option>
               <option value="pending_needs_clarification">
                 Needs Clarification
