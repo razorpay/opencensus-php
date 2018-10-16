@@ -10,7 +10,6 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Payment Page - XXXXXXX</title>
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
@@ -143,7 +142,8 @@
                   },
                 },
                 context: {
-                  title: 'Payment Details',
+                  page_title: 'Invoice and Bill Payments',
+                  form_title: 'Payment Details',
                   isEditMode: false, // should be true for dashboard
                 },
               };

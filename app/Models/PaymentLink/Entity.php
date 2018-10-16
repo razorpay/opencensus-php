@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const ALLOW_SOCIAL_SHARE           = 'allow_social_share';
     const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
     const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
+
     const SETTINGS_KEYS                = [
         self::UDF_SCHEMA,
         self::ALLOW_MULTIPLE_UNITS,

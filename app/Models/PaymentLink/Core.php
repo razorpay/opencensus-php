@@ -405,10 +405,10 @@ class Core extends Base\Core
             return true;
         }
 
-        $succeedingPayments      = $this->repo->payment_link->getSucceedingPayments($paymentLink);
-        $succeedingPaymentsCount = $succeedingPayments->sum(function ($p) { return (int) ($p->getNotes()[Entity::UNITS] ?? 1); });
+        $succeedingPayments     = $this->repo->payment_link->getSucceedingPayments($paymentLink);
+        $succeedingPaymentUnits = $succeedingPayments->sum(function ($p) { return (int) ($p->getNotes()[Entity::UNITS] ?? 1); });
 
-        $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentsCount;
+        $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentUnits;
 
         return ($slotsAvailable >= $paymentUnits);
     }
