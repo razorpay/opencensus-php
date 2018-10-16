@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingCanara;
+namespace RZP\Reconciliator\NetbankingCanara\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
