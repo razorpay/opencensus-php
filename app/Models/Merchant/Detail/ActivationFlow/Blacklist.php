@@ -18,9 +18,17 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Blacklist implements ActivationFlowInterface
 {
+    /**
+     * in blacklist  activation flow , merchant won't get activated from basic(L1) activation form
+     * these are unsupported category
+     *
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
     public function process(Entity $merchantDetails)
     {
-        // TODO: Implement process() method.
+        return;
     }
 
     /**

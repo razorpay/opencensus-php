@@ -1029,4 +1029,57 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
         ]
     ],
+
+    'testBlacklistInstantActivation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'betting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'promoter_pan_name'                => "John Doe",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "betting",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
+    'testGreylistInstantActivation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'utilities',
+                'business_subcategory' => 'bill_and_recharge_aggregators',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'promoter_pan_name'                => "John Doe",
+                'business_category'                => "utilities",
+                'business_subcategory'             => "bill_and_recharge_aggregators",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];
