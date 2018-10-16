@@ -68,6 +68,11 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
+        if (isset(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]) === true)
+        {
+            $merchant->setPricingPlan(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]);
+        }
+
         $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
@@ -1527,7 +1532,7 @@ class Core extends Base\Core
     public function autoUpdateCategoryDetails(
         Entity $merchant,
         string $category,
-        ?string $subcategory): Entity
+        string $subcategory = null): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 

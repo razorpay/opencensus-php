@@ -56,6 +56,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'gateway'    => $this->gateway
                 ]);
 
+            //
+            // Setting this unprocessed row as success as we receive such direct settlements daily.
+            // And as these payments are expected, not counting them as failure.
+            //
+            $this->setFailUnprocessedRow(false);
+
             return null;
         }
 

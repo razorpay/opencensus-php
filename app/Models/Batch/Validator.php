@@ -5,8 +5,8 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
@@ -115,6 +115,15 @@ class Validator extends Base\Validator
         Entity::NAME   => 'filled|string|max:255',
         Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::CONFIG => 'filled|array',
+    ];
+
+    protected static $entityMappingCreateRules = [
+        Entity::TYPE                         => 'required|in:entity_mapping',
+        Entity::NAME                         => 'filled|string|max:255',
+        Entity::FILE                         => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG                       => 'required|array',
+        Entity::CONFIG . '.entity_from_type' => 'required|string',
+        Entity::CONFIG . '.entity_to_type'   => 'required|string',
     ];
 
     /**

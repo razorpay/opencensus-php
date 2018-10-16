@@ -188,8 +188,6 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        // Asserts that the registration date got updated once the payment got authorized
-        $this->assertTrue($enach['registration_date'] > $enachInitialRegistrationDate);
         $this->assertNotEmpty($enach['signed_xml']);
     }
 

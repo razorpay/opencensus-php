@@ -8,7 +8,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 class Authorization
 {
     protected $test;
-    protected $auth  = array();
+    protected $auth  = [];
     protected $type;
     protected $proxy = false;
 

@@ -357,6 +357,13 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicCustomer = [
+        self::ID,
+        self::STATUS,
+        self::AMOUNT,
+        self::CREATED_AT,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -2305,7 +2312,15 @@ class Entity extends Base\PublicEntity
 
         $this->setGateway($terminal->getGateway());
 
-        $this->setSettledBy("Razorpay");
+        $this->setSettledBy('Razorpay');
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $gateway = $this->getGateway();
+
+            $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+            $this->setSettledBy($settledBy);
+        }
 
         $this->setRelation('terminal', $terminal);
     }
