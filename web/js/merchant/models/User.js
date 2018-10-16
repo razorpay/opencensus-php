@@ -159,6 +159,10 @@ export default class User {
     };
   }
 
+  get isAccepted() {
+    return this.activation_status === 'activated';
+  }
+
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }

@@ -18,6 +18,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchant/modules/session';
+import Announcement from 'merchant/components/Announcements/Instant';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -100,6 +101,7 @@ class AnalyticsDesktop extends Component {
   render() {
     const {
       mode,
+      user,
       current_balance,
       tabsMeta,
       isAdmin,
@@ -167,6 +169,10 @@ class AnalyticsDesktop extends Component {
                 </div>
               )}
             </div>
+          )}
+
+          {showInstantActivation && (
+            <Announcement mode={mode} user={user} payments={payments} />
           )}
 
           <EarlySettlementAnnouncement

@@ -3,56 +3,14 @@ import Button from 'component/Button';
 import { classList } from 'common/util';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { connect } from 'react-redux';
+import AnnouncementBanner from 'rzp/ui/AnnouncementBanner';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import RequestEarlyAccessForm from './EarlySettlementsModal';
 import trackESAnnouncements from './ga';
+import Announcement from 'merchant/components/Announcement';
 
-export default class Announcement extends Component {
-  constructor(props) {
-    super();
-    this.state = {
-      hidden: false,
-    };
-  }
-
-  handleClose = () => {
-    if (this.props.bannerKey) {
-      LocalStorageService.setItem(this.props.bannerKey, 1);
-    }
-
-    if (this.props.handleClose) {
-      this.props.handleClose();
-    }
-
-    this.setState({
-      hidden: true,
-    });
-  };
-
-  render() {
-    return (
-      <div
-        class={classList(
-          'Announcement_Banner',
-          this.props.className,
-          (this.props.hidden || this.state.hidden) &&
-            'Announcement_Banner--hide'
-        )}
-      >
-        {this.props.children}
-        <Button.Transparent class="close-btn" onClick={this.handleClose}>
-          ×
-        </Button.Transparent>
-      </div>
-    );
-  }
-}
-
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();
