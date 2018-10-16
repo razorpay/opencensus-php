@@ -106,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
         self::SETTLED_BY,
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::PROCESSED_AT      => null,
         self::RECEIPT           => null,
     ];
 
@@ -168,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
     ];
 
     public function payment()
