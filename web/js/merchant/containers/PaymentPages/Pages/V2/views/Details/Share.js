@@ -6,9 +6,9 @@ export default class extends React.PureComponent {
 
     const Icons = (
       <React.Fragment>
-        <img src="/img/social-media/fb.png" alt="Facebook share" />
-        <img src="/img/social-media/twitter.png" alt="Twitter share" />
-        <img src="/img/social-media/whatsapp.png" alt="Whatsapp share" />
+        <span class="facebook" />
+        <span class="twitter" />
+        <span class="whatsapp" />
       </React.Fragment>
     );
 
