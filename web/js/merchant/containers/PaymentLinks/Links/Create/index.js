@@ -431,24 +431,23 @@ export default class CreateNewContainer extends React.Component {
 
   onFormAbruptClose = e => {
     const curDirty = this.state.dirty;
-    const formTabs = Object.keys(curDirty);
+    const dirtyFields = Object.keys(curDirty);
 
     let formUnsaved = false;
 
-    if (formTabs.length) {
-      formTabs.forEach(tabId => {
-        const tab = this.state.dirty[tabId];
-
-        /*
-        * If >2 fields are touched in any one form, close-confirmation is asked before closing
-        * */
-        if (Object.keys(tab).length > 2) {
-          formUnsaved = true;
-
-          return false;
-        }
-      });
-    }
+    let count = 0;
+    dirtyFields.forEach(k => {
+      if (typeof curDirty[k] !== 'undefined') {
+        count++;
+      }
+      /*
+       * If >2 fields are touched in the form, close-confirmation is asked before closing
+       * */
+      if (count > 2) {
+        formUnsaved = true;
+        return false;
+      }
+    });
 
     if (formUnsaved) {
       this.context
