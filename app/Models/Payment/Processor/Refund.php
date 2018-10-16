@@ -14,10 +14,8 @@ use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Models\Merchant\RefundSource;
-use RZP\Models\Customer;
 use RZP\Models\BankAccount;
-use RZP\Models\Customer\Token;
-use RZP\Models\Card\NetworkName;
+use RZP\Jobs\ScroogeRefundRetry;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -1169,12 +1167,41 @@ trait Refund
         // retried. This is done to provide support for older refunds which were not processed via scrooge and are in
         // failed state. As scrooge doesn't mark refund as failed, new refunds will never be retried via this flow.
         //
-        if (($refund->isProcessed() === true) or
-            ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
-             ($refund->isCreated() === true)))
+        if ($refund->isProcessed() === true)
         {
             return $refund->getStatus();
         }
+
+        if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
+            ($refund->isCreated() === true))
+        {
+            $this->callRefundRetryFunctionOnScrooge($refund);
+        }
+        else if ($refund->isStatusFailed() === true)
+        {
+            $this->callRefundRetryFunctionOnApi($refund, $data);
+        }
+
+        return $refund->getStatus();
+    }
+
+    public function callRefundRetryFunctionOnScrooge($refund)
+    {
+        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment);
+
+        $data['mode'] = $this->mode;
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_QUEUE_SCROOGE_DISPATCH,
+            $data
+        );
+
+        ScroogeRefundRetry::dispatch($data);
+    }
+
+    public function callRefundRetryFunctionOnApi($refund, $data)
+    {
+        $payment = $refund->payment;
 
         $refundedOnGateway = $this->verifyRefund($refund);
 
@@ -1209,8 +1236,6 @@ trait Refund
         $refund->setGatewayRefunded($refundedOnGateway);
 
         $this->repo->saveOrFail($refund);
-
-        return $refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)

@@ -4,6 +4,8 @@ namespace RZP\Reconciliator\ReconSummary;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as ConstantEntity;
+
 
 class Helpers
 {
@@ -43,9 +45,17 @@ class Helpers
         return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
     }
 
-    public static function formatSheetColumns(& $entry)
+    public static function formatSheetColumns(& $entry, $entityName)
     {
-        $entry['created_at']                = self::getFormattedDate($entry['created_at'],'jS F, Y H:m:s');
+        if ($entityName === ConstantEntity::PAYMENT)
+        {
+            $entry['created_at'] = self::getFormattedDate($entry['created_at'], 'jS F, Y H:m:s');
+        }
+        else
+        {
+            $entry['processed_at'] = self::getFormattedDate($entry['processed_at'], 'jS F, Y H:m:s');
+
+        }
         $entry['payment_amount']            = $entry['payment_amount']/100;
         $entry['payment_captured_at']       = $entry['payment_captured_at'] ? self::getFormattedDate($entry['payment_captured_at'],'jS F, Y H:m:s') : '';
         $entry['payment_authorized_at']     = $entry['payment_authorized_at'] ? self::getFormattedDate($entry['payment_authorized_at'],'jS F, Y H:m:s') : '';

@@ -935,6 +935,13 @@ class Entity extends Base\PublicEntity
         return $value ?: $this->getBillingLabel();
     }
 
+    public function getDbaName()
+    {
+        $value = optional($this->merchantDetail)->getAttribute(Detail\Entity::BUSINESS_DBA);
+
+        return $value ?: $this->getName();
+    }
+
     public function getAutoCaptureLateAuth()
     {
         return $this->getAttribute(self::AUTO_CAPTURE_LATE_AUTH);

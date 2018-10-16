@@ -77,4 +77,11 @@ class Repository extends Base\Repository
                     ->where('merchant_reference', '=', $merchantReference)
                     ->first();
     }
+
+    public function findAllByNpciTxnId(string $npciTxnId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
+                    ->get();
+    }
 }

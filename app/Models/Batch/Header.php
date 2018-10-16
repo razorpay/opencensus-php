@@ -321,6 +321,13 @@ class Header
     const SUBMERCHANT_ID       = 'submerchant_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
 
+    // Entity Mapping headers
+    const ENTITY_FROM_ID       = 'entity_from_id';
+    const ENTITY_TO_ID         = 'entity_to_id';
+    const ENTITY_TO_IDS        = 'entity_to_ids';
+    const ENTITY_FROM_TYPE     = 'entity_from_type';
+    const ENTITY_TO_TYPE       = 'entity_to_type';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -964,6 +971,21 @@ class Header
                 self::PARTNER_MERCHANT_ID,
                 self::PARTNER_TYPE,
                 self::SUBMERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::ENTITY_MAPPING => [
+            self::INPUT => [
+                self::ENTITY_FROM_ID,
+                self::ENTITY_TO_ID,
+            ],
+
+            self::OUTPUT => [
+                self::ENTITY_FROM_ID,
+                self::ENTITY_TO_IDS,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

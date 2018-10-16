@@ -42,6 +42,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::UPI_HULK,
         RequestProcessor\Base::AIRTEL,
     ];
 
@@ -55,7 +56,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     const GATEWAY_FEES_MISSING_GATEWAYS = [
         // For HDFC, record gateway fees of payments before 7th Nov
-        RequestProcessor\Base::HDFC => 1509993000
+        RequestProcessor\Base::HDFC         => 1509993000,
+
+        // For CardFssBob, record gateway fees of payments before 15th Oct 2018 00:00
+        RequestProcessor\Base::CARD_FSS_BOB => 1539541800,
     ];
 
     /*******************
@@ -1388,8 +1392,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     /*
      * Record gateway fee and service tax for already reconciled
      * payments.
-     * Happening only for HDFC currently : Because of code bug, fee and service tax of
+     * HDFC : Because of code bug, fee and service tax of
      * payments reconciled before 7th Nov,17 are not filled.
+     *
+     * CardFssBob : Due to code bug, fee and service tax of payments
+     * reconciled before 15th Oct 18 00:00:00 are filled with incorrect values.
+     * so need to record them again with correct values.
      */
     protected function recordMissingGatewayFeeAndServiceTax(array $rowDetails)
     {
@@ -1400,7 +1408,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             //
             // Check if payment is created after the given date for current gateway, don't proceed
-            // Payment must have gateway fee already recorded
+            // Payment must have gateway fee already recorded with correct values
             //
             $paymentMaxCreatedAt = self::GATEWAY_FEES_MISSING_GATEWAYS[$this->gateway];
 

@@ -34,6 +34,8 @@ class Type
 
     const DIRECT_DEBIT          = 'direct_debit';
 
+    const ENTITY_MAPPING        = 'entity_mapping';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -59,6 +61,7 @@ class Type
         self::RECONCILIATION,
         self::EMANDATE,
         self::BANK_TRANSFER,
+        self::ENTITY_MAPPING,
     ];
 
     /**
@@ -91,6 +94,7 @@ class Type
         self::ELFIN,
         self::OAUTH_MIGRATION_TOKEN,
         self::PARTNER_SUBMERCHANTS,
+        self::ENTITY_MAPPING,
     ];
 
     public static function exists(string $type)
