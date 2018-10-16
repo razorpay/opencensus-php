@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         RequestFields::DATE                           => 'required|date_format:"d/m/Y\+H:i:s"',
         RequestFields::MODE_OF_TRANSACTION            => 'required|in:PUR',
         RequestFields::CLIENT_ACCOUNT                 => 'sometimes',
+        RequestFields::CHECKSUM                       => 'required'
     ];
 
     protected static $verifyRules = [
