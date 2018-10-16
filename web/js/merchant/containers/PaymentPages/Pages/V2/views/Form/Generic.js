@@ -1,7 +1,9 @@
 import Form from 'component/Form';
+import Input from 'component/Input';
 import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList } from 'common/util';
+import { TYPES } from './Fields/helpers';
 
 export const GenericField = ({ field, onEditField, infoTxt }) => {
   return (
@@ -36,21 +38,77 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
 };
 
 export class GenericCreator extends React.PureComponent {
+  state = { isDynamicAmount: false, hasStock: false };
+
+  typeOptions = Object.keys(TYPES).map(i => {
+    return {
+      name: TYPES[i].label,
+      label: TYPES[i].label,
+    };
+  });
+
   onChange = ({ target }) => {
     const { name, value } = target;
-    console.log(name, value);
+
+    setTimeout(() => {
+      const form = document.getElementsByName('form_creator_generic')[0];
+      if (form.querySelectorAll('.is-invalid').length) {
+        this.setState({ disableSubmit: true });
+      } else {
+        this.setState({ disableSubmit: false });
+      }
+    });
   };
 
   render() {
     const { onClose, onSubmit } = this.props;
+    const { hasDescription, disableSubmit } = this.state;
 
     return (
-      <Form onChange={this.onChange}>
+      <Form
+        name="form_creator_generic"
+        onChange={this.onChange}
+        onSubmit={onSubmit}
+      >
+        <div class="section section-1">
+          <Input
+            label="What is this field called?"
+            name="label"
+            placeholder="Enter field title"
+            autoFocus
+          />
+          {/*<input name="name" hidden value={} />*/}
+          <Input.Select
+            name="type"
+            label="What type of field is this?"
+            placeholder="Select Type"
+            options={this.typeOptions}
+          />
+        </div>
+        <div class="section section-2">
+          <Input.Check
+            name="required"
+            fieldLabel="It is mandatory for the customer to fill this field"
+          />
+          <Input.Check
+            onClick={e =>
+              this.setState({
+                hasDescription: e.target.checked,
+              })
+            }
+            fieldLabel="I want to add a help text for this field"
+          />
+          {hasDescription && (
+            <Input name="description" class="Input--description" />
+          )}
+        </div>
         <footer>
           <button type="button" class="btn-link" onClick={onClose}>
             Cancel
           </button>
-          <Button.Primary onClick={onSubmit}>Add</Button.Primary>
+          <Button.Primary type="submit" disabled={disableSubmit}>
+            Add
+          </Button.Primary>
         </footer>
       </Form>
     );

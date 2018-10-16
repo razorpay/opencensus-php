@@ -232,6 +232,12 @@
       white-space: nowrap
       font-size: 13px
 
+    .Input-elWrapper.Select-elWrapper::before
+      top: 3px
+
+    .Input-el:not([type=checkbox])
+      height: 32px
+
   .section-1
     border-bottom: 1px solid #efefef
 
@@ -241,28 +247,54 @@
       padding: 0
       margin: 0
 
-      .Input-addons
-        width: 32px
-        line-height: 32px
-        background: transparent !important
+  form[name="form_creator_generic"]
+    .Input:not(.Input--checkbox) .Input-content
+      margin-top: 8px
 
-      .Input-el
-        padding-left: 32px
-
-      .Input-content, .Input-label
-        display: inline-block
-
-      .Input-content
-        vertical-align: middle
-
+    .section-1
       .Input-label
-        top: 8px
-        margin-right: 16px
-        float: left
+        top: 0
+
+      .Input
+        padding-right: 44px
 
       .Input-el:not([type=checkbox])
-        width: 160px
+        min-width: 200px
+
+    .section-2
+      .Input--description
+        margin: 0 0 0 24px
+
+
+  form[name="form_creator_amount"] .section-1
+    .Input-addons
+      width: 32px
+      line-height: 32px
+      background: transparent !important
+
+    .Input-el
+      padding-left: 32px
+
+    .Input-content, .Input-label
+      display: inline-block
+
+    .Input-content
+      vertical-align: middle
+
+    .Input-label
+      top: 8px
+      margin-right: 16px
+      float: left
+
+    .Input-el:not([type=checkbox])
+      width: 160px
+
+    .section-2
+      .Input-el:not([type=checkbox])
         height: 32px
+        width: 80px
+        padding: 0 8px
+
 
   .section-2
     > .Input:nth-of-type(1)
@@ -270,13 +302,6 @@
 
     .Input .Input
       display: inline-block
-
-    .Input-el:not([type=checkbox])
-      height: 32px
-      width: 80px
-      padding: 0 8px
-
-
     .checkbox-Input
       margin: -8px 4px
 
