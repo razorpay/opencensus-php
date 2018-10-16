@@ -47,12 +47,12 @@ class Entity extends Base\PublicEntity
     const REFERENCE2             = 'reference2';
     const REFERENCE3             = 'reference3';
     const REFERENCE4             = 'reference4';
-    const REFERENCE5             = 'reference5';
     const REFERENCE6             = 'reference6';
     const REFERENCE9             = 'reference9';
 
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
+    const PROCESSED_AT           = 'processed_at';
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
@@ -360,6 +360,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_ATTEMPTED_AT);
     }
 
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     public function getChannel()
     {
         return $this->merchant->getChannel();
@@ -466,7 +471,18 @@ class Entity extends Base\PublicEntity
     {
         $this->setStatus(Status::PROCESSED);
 
+        if ($this->getProcessedAt() === null)
+        {
+            $timestamp = time();
+            $this->setProcessedAt($timestamp);
+        }
+
         $this->setErrorNull();
+    }
+
+    public function setProcessedAt($timestamp)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $timestamp);
     }
 
     public function setBaseAmount()

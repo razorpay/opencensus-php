@@ -4358,6 +4358,11 @@ ALTER TABLE upi
 ALTER TABLE merchant_details
     ADD COLUMN activation_flow VARCHAR (255) AFTER activation_status;
 
+# adds processedAt column for refunds (renaming the existing column 'reference5')
+ALTER TABLE refunds
+    CHANGE COLUMN reference5 processed_at INT DEFAULT NULL AFTER last_attempted_at,
+    ADD INDEX refunds_processed_at_index (`processed_at`);
+    
 Alter table refunds
     CHANGE reference7 settled_by VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
@@ -4368,3 +4373,8 @@ UPDATE atom SET gateway_payment_id = null , bank_payment_id = null,updated_at=UN
     2235804,2245768,2248176,2249290,2252273,2252498,2254442,2256992,2257155,2258621,2258758,2258842,2259076,2260116,2260190,
     2268489,2268785,2270611,2271555)
 LIMIT 20;
+
+ALTER TABLE pricing
+    ADD COLUMN org_id VARCHAR(14) DEFAULT NULL AFTER max_fee,
+    ADD INDEX `pricing_org_id_plan_id_index`   (`org_id`, `plan_id`),
+    ADD INDEX `pricing_org_id_plan_name_index` (`org_id`, `plan_name`);

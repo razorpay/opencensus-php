@@ -1038,16 +1038,19 @@ return [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'betting',
                 'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
             ],
         ],
         'response' => [
             'content' => [
                 'contact_email'                    => "test@razorpay.com",
                 'promoter_pan'                     => "ABCDE0000Z",
-                'promoter_pan_name'                => "John Doe",
                 'business_category'                => "financial_services",
                 'business_subcategory'             => "betting",
+                'activation_flow'                  => 'blacklist',
                 'activation_progress'              => 0,
                 'archived'                         => 0,
                 'allowed_next_activation_statuses' => [],
@@ -1057,27 +1060,60 @@ return [
     ],
 
     'testGreylistInstantActivation' => [
-        'request'     => [
+        'request'  => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
             'content' => [
-                'business_category'    => 'utilities',
-                'business_subcategory' => 'bill_and_recharge_aggregators',
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
                 'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
             ],
         ],
-        'response'    => [
+        'response' => [
             'content' => [
                 'contact_email'                    => "test@razorpay.com",
                 'promoter_pan'                     => "ABCDE0000Z",
-                'promoter_pan_name'                => "John Doe",
-                'business_category'                => "utilities",
-                'business_subcategory'             => "bill_and_recharge_aggregators",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "mutual_fund",
+                'activation_flow'                  => 'greylist',
                 'activation_progress'              => 0,
                 'archived'                         => 0,
                 'allowed_next_activation_statuses' => [],
                 'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
+    'testL1ResubmissionForBlacklist' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                     => "ABCDE0000Z",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+                'activation_flow'                  => 'whitelist',
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "accounting",
+                'can_submit'                       => false,
+                //'activated'            => 1,
             ],
         ],
         'status_code' => 200,

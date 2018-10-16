@@ -1095,4 +1095,31 @@ class Service extends Base\Service
 
         return $refund;
     }
+
+    public function updateProcessedAt(array $input)
+    {
+        if (isset($input['limit']) === true)
+        {
+            $limit = intval($input['limit']);
+        }
+        else
+        {
+            $limit = 5000;
+        }
+
+        if (isset($input['created_at']) === true)
+        {
+            $createdAt = $input['created_at'];
+        }
+        else
+        {
+            $createdAt = now()->subHour(6)->getTimestamp();
+        }
+
+        $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
+
+        return [
+                'success_count'   => $successCount
+        ];
+    }
 }

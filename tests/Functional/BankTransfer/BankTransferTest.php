@@ -673,7 +673,7 @@ class BankTransferTest extends TestCase
         // Only failed refunds can be retried
         $this->fixtures->refund->edit($refund['id'], ['status' => 'failed']);
 
-        $response = $this->retryFailedRefund($refund['id'], [
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [
             'bank_account' => [
                 'account_number'   => '1234567890987654321',
                 'ifsc_code'        => 'HDFC0000002',

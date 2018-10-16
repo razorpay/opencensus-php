@@ -959,7 +959,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [])
     {
         $this->ba->adminAuth();
 
@@ -970,6 +970,15 @@ trait PaymentTrait
         );
 
         $response = $this->makeRequestAndGetContent($request);
+
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        {
+            $response['id'] = $response['refund_id'];
+            $response['payment_id'] = $paymentId;
+
+            $this->scroogeRefund($response);
+        }
 
         return $response;
     }
@@ -1021,7 +1030,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
         {
-            $this->scroogeRefund($refund);
+            $this->scroogeRefund($data);
         }
 
         return $data;
