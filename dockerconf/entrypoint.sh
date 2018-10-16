@@ -68,6 +68,12 @@ function main {
     configure_dark
     echo "Starting web app"
     start_apache
+  elif [[ "${app_type}" == "batch-job" ]]; then
+    echo "Starting K8s Job"
+    command=$2
+    batch_id=$3
+    mode=$4
+    php artisan ${command} ${batch_id} ${mode}
   elif [[ "${app_type}" == "sqs" ]]; then
     sleep_time=$2
     #['sqs', '10']

@@ -965,6 +965,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
     const IRCTC_BATCH_JOB_RECEIVED                      = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
+    const KUBERNETES_BATCH_JOB_CREATED                  = 'KUBERNETES_BATCH_JOB_CREATED';
+    const KUBERNETES_BATCH_JOB_EXISTS                   = 'KUBERNETES_BATCH_JOB_EXISTS';
+    const KUBERNETES_BATCH_JOB_ERROR                    = 'KUBERNETES_BATCH_JOB_ERROR';
+    const KUBERNETES_BATCH_JOB_RECEIVED                 = 'KUBERNETES_BATCH_JOB_RECEIVED';
+    const KUBERNETES_BATCH_JOB_HANDLED                  = 'KUBERNETES_BATCH_JOB_HANDLED';
+    const KUBERNETES_BATCH_NAMESPACE                    = 'KUBERNETES_BATCH_NAMESPACE';
+    const KUBERNETES_BATCH_JOB_DEBUG                    = 'KUBERNETES_BATCH_JOB_DEBUG';
     const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
     const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
     const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
