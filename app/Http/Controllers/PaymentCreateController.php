@@ -86,6 +86,14 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+            (isset($input['fee']) === false))
+        {
+            $input['view'] = 'html';
+
+            return $this->createFeeBearerCustomerPayment($input);
+        }
+
         if ($this->app['basicauth']->isPrivateAuth())
         {
             $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
@@ -200,6 +208,13 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        return $this->createFeeBearerCustomerPayment($input);
+    }
+
+    protected function createFeeBearerCustomerPayment($input)
+    {
         $retHtml = false;
 
         if (isset($input['view']) === true)
@@ -211,8 +226,6 @@ class PaymentCreateController extends Controller
 
             unset($input['view']);
         }
-
-        $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
