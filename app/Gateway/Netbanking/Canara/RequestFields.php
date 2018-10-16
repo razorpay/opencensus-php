@@ -16,6 +16,8 @@ class RequestFields
     const FAILURE_STATIC_FLAG           = 'fldFailStatFlg';
     const DATE                          = 'fldDatTimeTxn';
 
+    const CHECKSUM                      = 'checksum';
+    const ENCRYPTED_DATA                = 'encdata';
 
     const VER_DATE                      = 'fldDatTimeTxn';       // verify start date
     const PUR_DATE                      = 'fldOrgDatTimeTxn';    // date of original payment entity
