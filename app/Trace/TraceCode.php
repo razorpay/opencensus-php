@@ -73,6 +73,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_MARK_PROCESSED_REQUEST                 = 'REFUND_MARK_PROCESSED_REQUEST';
     const REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY     = 'REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY';
     const REFUND_AUTOREFUNDED_ON_GATEWAY                = 'REFUND_AUTOREFUNDED_ON_GATEWAY';
+    const REFUND_PROCESSED_AT_UPDATED                   = 'REFUND_PROCESSED_AT_UPDATED';
+    const REFUND_PROCESSED_AT_UPDATE_FAILURE            = 'REFUND_PROCESSED_AT_UPDATE_FAILURE';
     const PAYMENT_TIMED_OUT                             = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                         = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                                = 'PAYMENT_FAILED';
