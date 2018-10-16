@@ -74,9 +74,8 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
-        RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
-
-
+        RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
+        RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -117,6 +116,8 @@ class Validator extends Base\Core
                                                             "/Please find attached All transaction Report & Settlement Report "
                                                             . "for transactions done/"
                                                           ],
+        RequestProcessor\Base::UPI_HULK                => ["/PFA transaction details for the date "
+                                                            . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"]
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
