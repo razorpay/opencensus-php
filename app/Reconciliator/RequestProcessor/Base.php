@@ -37,46 +37,46 @@ class Base extends Core
      * Gateway constants
      ******************/
 
-    const HDFC                     = 'HDFC';
-    const AXIS                     = 'Axis';
-    const KOTAK                    = 'Kotak';
-    const AIRTEL                   = 'Airtel';
-    const BILLDESK                 = 'BillDesk';
-    const PAYZAPP                  = 'PayZapp';
-    const MPESA                    = 'Mpesa';
-    const MOBIKWIK                 = 'Mobikwik';
-    const AMAZONPAY                = 'Amazonpay';
-    const PAYTM                    = 'Paytm';
-    const OLAMONEY                 = 'Olamoney';
-    const FREECHARGE               = 'Freecharge';
-    const NETBANKING_AXIS          = 'NetbankingAxis';
-    const NETBANKING_AXIS_EMANDATE = 'EmandateAxis';
-    const NETBANKING_ICICI         = 'NetbankingIcici';
-    const NETBANKING_FEDERAL       = 'NetbankingFederal';
-    const NETBANKING_CORPORATION   = 'NetbankingCorporation';
-    const NETBANKING_RBL           = 'NetbankingRbl';
-    const NETBANKING_CSB           = 'NetbankingCsb';
-    const NETBANKING_IDFC          = 'NetbankingIdfc';
-    const NETBANKING_INDUSIND      = 'NetbankingIndusind';
-    const NETBANKING_PNB           = 'NetbankingPnb';
-    const NETBANKING_BOB           = 'NetbankingBob';
-    const NETBANKING_OBC           = 'NetbankingObc';
-    const NETBANKING_EQUITAS       = 'NetbankingEquitas';
-    const NETBANKING_HDFC          = 'NetbankingHdfc';
-    const VIRTUAL_ACC_KOTAK        = 'VirtualAccKotak';
-    const VIRTUAL_ACC_YESBANK      = 'VirtualAccYesBank';
-    const JIOMONEY                 = 'Jiomoney';
-    const UPI_SBI                  = 'UpiSbi';
-    const PAYUMONEY                = 'PayuMoney';
-    const EBS                      = 'Ebs';
-    const FIRST_DATA               = 'FirstData';
-    const UPI_ICICI                = 'UpiIcici';
-    const ADMIN                    = 'admin';
-    const HITACHI                  = 'Hitachi';
-    const CARD_FSS_HDFC            = 'CardFssHdfc';
-    const CARD_FSS_BOB             = 'CardFssBob';
-    const ATOM                     = 'Atom';
-    const UPI_HDFC                 = 'UpiHdfc';
+    const HDFC                   = 'HDFC';
+    const AXIS                   = 'Axis';
+    const KOTAK                  = 'Kotak';
+    const AIRTEL                 = 'Airtel';
+    const BILLDESK               = 'BillDesk';
+    const PAYZAPP                = 'PayZapp';
+    const MPESA                  = 'Mpesa';
+    const MOBIKWIK               = 'Mobikwik';
+    const AMAZONPAY              = 'Amazonpay';
+    const PAYTM                  = 'Paytm';
+    const OLAMONEY               = 'Olamoney';
+    const FREECHARGE             = 'Freecharge';
+    const EMANDATE_AXIS          = 'EmandateAxis';
+    const NETBANKING_AXIS        = 'NetbankingAxis';
+    const NETBANKING_ICICI       = 'NetbankingIcici';
+    const NETBANKING_FEDERAL     = 'NetbankingFederal';
+    const NETBANKING_CORPORATION = 'NetbankingCorporation';
+    const NETBANKING_RBL         = 'NetbankingRbl';
+    const NETBANKING_CSB         = 'NetbankingCsb';
+    const NETBANKING_IDFC        = 'NetbankingIdfc';
+    const NETBANKING_INDUSIND    = 'NetbankingIndusind';
+    const NETBANKING_PNB         = 'NetbankingPnb';
+    const NETBANKING_BOB         = 'NetbankingBob';
+    const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_EQUITAS     = 'NetbankingEquitas';
+    const NETBANKING_HDFC        = 'NetbankingHdfc';
+    const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
+    const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
+    const JIOMONEY               = 'Jiomoney';
+    const UPI_SBI                = 'UpiSbi';
+    const PAYUMONEY              = 'PayuMoney';
+    const EBS                    = 'Ebs';
+    const FIRST_DATA             = 'FirstData';
+    const UPI_ICICI              = 'UpiIcici';
+    const ADMIN                  = 'admin';
+    const HITACHI                = 'Hitachi';
+    const CARD_FSS_HDFC          = 'CardFssHdfc';
+    const CARD_FSS_BOB           = 'CardFssBob';
+    const ATOM                   = 'Atom';
+    const UPI_HDFC               = 'UpiHdfc';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -97,7 +97,7 @@ class Base extends Core
         self::FREECHARGE               => ['noreply@fcemail.in'],
         self::NETBANKING_AXIS          => ['ibanking@axisbank.com'],
         // Todo: Fix this later
-        self::NETBANKING_AXIS_EMANDATE => ['albin.george@razorpay.com'],
+        self::EMANDATE_AXIS            => ['albin.george@razorpay.com'],
         self::NETBANKING_ICICI         => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL       => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL           => ['internetbanking@rblbank.com'],
