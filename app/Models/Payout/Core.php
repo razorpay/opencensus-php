@@ -14,6 +14,7 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
@@ -233,7 +234,8 @@ class Core extends Base\Core
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        $payout->setChannel($merchant->getChannel());
+        // $payout->setChannel($merchant->getChannel());
+        $payout->setChannel(Settlement\Channel::YESBANK);
 
         $payout->merchant()->associate($merchant);
 

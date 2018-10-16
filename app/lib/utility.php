@@ -345,6 +345,13 @@ function upi_uuid($prefix = true)
     return $uuid;
 }
 
+function get_human_readable_size($size)
+{
+    $unit= ['b', 'kb', 'mb', 'gb', 'tb', 'pb'];
+
+    return round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
+}
+
 function upi_ts() {
     return date('c');
 }

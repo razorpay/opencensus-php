@@ -1853,9 +1853,7 @@ class Processor
             return false;
         }
 
-        if (($payment->isNetbanking() === true) and
-            ($payment->hasTerminal() === true) and
-            ($payment->terminal->isDirectSettlement() === true))
+        if ($payment->isDirectSettlement() === true)
         {
             return true;
         }

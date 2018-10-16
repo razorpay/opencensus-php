@@ -110,22 +110,22 @@ class CreditsTest extends TestCase
     public function testPartialCredits()
     {
         $this->fixtures->create('credits', [
-                       'type'        => 'amount',
-                       'value'       => 100000,
-                   ]);
+            'type'  => 'amount',
+            'value' => 100000,
+        ]);
 
-         $this->fixtures->create('credits', [
-                       'type'        => 'amount',
-                       'value'       => 100000,
-                       'merchant_id' => '10NodalAccount',
-                   ]);
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10NodalAccount',
+        ]);
 
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
         $this->fixtures->merchant->editCreditsforNodalAccount('1000000');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment           = $this->getDefaultNetbankingPaymentArray();
         $payment['amount'] = '500000';
         $this->doAuthAndCapturePayment($payment);
 

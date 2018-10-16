@@ -71,6 +71,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -244,6 +245,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('bt_kotak', $payment['gateway']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
@@ -316,6 +318,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
@@ -670,7 +673,7 @@ class BankTransferTest extends TestCase
         // Only failed refunds can be retried
         $this->fixtures->refund->edit($refund['id'], ['status' => 'failed']);
 
-        $response = $this->retryFailedRefund($refund['id'], [
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [
             'bank_account' => [
                 'account_number'   => '1234567890987654321',
                 'ifsc_code'        => 'HDFC0000002',

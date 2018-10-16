@@ -698,6 +698,15 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function bulkCreateMerchantCredits(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->bulkCreateCredits($input);
+
+        return ApiResponse::json($response);
+    }
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
@@ -862,6 +871,13 @@ class MerchantController extends Controller
         $response = $this->service()->getTags($id);
 
         return ApiResponse::json($response);
+    }
+
+    public function getAssociatedAccounts(string $merchantId)
+    {
+        $data = $this->service()->fetchAssociatedAccounts($merchantId);
+
+        return ApiResponse::json($data);
     }
 
     public function addTags($id)

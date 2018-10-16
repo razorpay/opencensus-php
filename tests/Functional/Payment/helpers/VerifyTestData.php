@@ -5,6 +5,26 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testVerifyMultipleFailedPaymentsByVerifyAt' => [
+        'request' => [
+            'url'    => '/payments/verify/all',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'not_applicable' => 1,
+                'locked_count'   => 0,
+                'authorized'     => 0,
+                'success'        => 2,
+                'timeout'        => 0,
+                'error'          => 0,
+                'unknown'        => 0
+            ],
+        ],
+    ],
+
     'testTimeoutPaymentVerify' => [
         'response'  => [
             'content'     => [

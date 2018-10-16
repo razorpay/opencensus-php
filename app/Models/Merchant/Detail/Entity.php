@@ -290,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::ACTIVATION_FLOW,
     ];
 
     protected $defaults = [
@@ -552,6 +553,16 @@ class Entity extends Base\PublicEntity
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
+    }
+
+    public function setActivationFlow(string $activationFlow)
+    {
+        $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function getActivationFlow()
+    {
+        return $this->getAttribute(self::ACTIVATION_FLOW);
     }
 
     public function setActivationProgress($activationProgress)

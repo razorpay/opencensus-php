@@ -618,22 +618,59 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function postPendingGatewayCapture($input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_REQUEST,
+            $input
+        );
+
+        (new Payment\Validator)->validateInput('bulk_capture', $input);
+
+        if (isset($input['payment_ids']) === true)
+        {
+            $paymentIds = $input['payment_ids'];
+
+            Entity::verifyIdAndStripSignMultiple($paymentIds);
+
+            $payments = $this->repo->payment->findMany($paymentIds);
+        }
+        else
+        {
+            $from = Carbon::today(Timezone::IST)->subDays(8);
+            $to = Carbon::today(Timezone::IST)->subDays(3);
+
+            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to);
+        }
+
+        $total = $payments->count();
+        $success = 0;
+
+        foreach ($payments as $payment)
+        {
+            $result = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+
+            $success += intval($result);
+        }
+
+        return [
+            'total'   => $total,
+            'success' => $success
+        ];
+    }
+
     public function manualGatewayCapture($paymentId)
     {
         Entity::verifyIdAndSilentlyStripSign($paymentId);
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
-        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+        $result = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
 
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
-            [
-                'payment_id'    => $paymentId,
-                'data'          => $data
-            ]);
-
-        return $data;
+        return [
+            'payment_id' => $payment->getId(),
+            'result'     => $result
+        ];
     }
 
     /**
@@ -1152,6 +1189,21 @@ class Service extends Base\Service
         }
 
         return ['payments_count' => $count, 'emails_count' => $emailCount];
+    }
+
+    public function verifyAllPayments(array $input)
+    {
+        (new Payment\Validator)->validateInput('verify_all', $input);
+
+        $gateway = $input['gateway'] ?? null;
+
+        $delay = $input['delay'] ?? 0;
+
+        $count = $input['count'] ?? 200;
+
+        $timestamp = Carbon::now(Timezone::IST)->subHours($delay)->getTimestamp();
+
+        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
 
     public function verifyPaymentsInBulk(array $input)

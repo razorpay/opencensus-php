@@ -1789,7 +1789,10 @@ class AdminFetch
 
             Entity::NODAL_BENEFICIARY => [
                 'merchant_id'     => Fetch::FIELD_MERCHANT_ID,
-                'bank_account_id' => Fetch::TYPE_STRING,
+                'bank_account_id' =>  [
+                    Fetch::LABEL => 'Bank Account Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
                 'channel' => [
                     Fetch::LABEL  => 'Channel',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,

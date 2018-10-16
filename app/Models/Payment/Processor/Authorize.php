@@ -352,7 +352,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getName(),
+            'merchant'   => $payment->merchant->getDbaName(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -1321,7 +1321,7 @@ trait Authorize
                     // here to check if the auth method is aadhaar.
                     //
 
-                    $eSignerGateway = Payment\Gateway::ESIGNER_DIGIO;
+                    $eSignerGateway = Payment\Gateway::DEFAULT_ESIGNER_GATEWAY;
 
                     $key = ConfigKey::MERCHANT_ENACH_CONFIGS;
 
@@ -1345,9 +1345,15 @@ trait Authorize
                         );
                     }
 
-                    $esignerConfigs = json_decode($esignerConfigs, true);
-
-                    if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
+                    /*
+                     * If we want to override all the merchant's esigner configs to use
+                     * a particular esigner gateway, we use this
+                     */
+                    if (isset($esignerConfigs['auth_gateway']['override']) === true)
+                    {
+                        $eSignerGateway = $esignerConfigs['auth_gateway']['override'];
+                    }
+                    else if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
                     {
                         $eSignerGateway = $esignerConfigs['auth_gateway'][$merchantId];
                     }
@@ -4339,6 +4345,8 @@ trait Authorize
             }
 
             $payment->setErrorNull();
+
+            $payment->setNonVerifiable();
 
             $payment->setAmountAuthorized();
 

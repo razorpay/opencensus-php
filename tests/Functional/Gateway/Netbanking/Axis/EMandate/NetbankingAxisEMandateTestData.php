@@ -19,7 +19,7 @@ return [
         'entity'          => 'netbanking',
     ],
 
-    'testEMandateInitialPaymentLateAuth' => [
+    'testEmandateInitialPaymentLateAuth' => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -46,7 +46,7 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         ],
     ],
 

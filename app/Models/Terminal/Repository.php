@@ -95,7 +95,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByGatewayAndTerminalData(array $terminalData, string $gateway)
+    public function findByGatewayAndTerminalData(array $terminalData, string $gateway, bool $withTrashed = false)
     {
         $query =  $this->newQuery()
                        ->where(Entity::GATEWAY, '=', $gateway);
@@ -104,7 +104,12 @@ class Repository extends Base\Repository
             $query->where($key, $value);
         }
 
-        return $query->withTrashed()->first();
+        if ($withTrashed === true)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->first();
     }
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)

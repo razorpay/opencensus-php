@@ -80,6 +80,6 @@ class Axis extends Base
     {
         $errorDescription = $content[self::GATEWAY_ERROR_MESSAGE];
 
-        return StatusCode::getEmandateErrorCodeMap($errorDescription);
+        return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
 }

@@ -97,7 +97,13 @@ class EnachRblGatewayTest extends TestCase
 
     public function testSuccessfulEsignGenerationOnLegaldesk()
     {
-        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+        $config = [
+            'auth_gateway' => [
+                '10000000000000' => 'esigner_legaldesk'
+            ]
+        ];
+
+        Cache::put('merchant_enach_configs', $config, 2);
 
         $enach = $this->testSuccessfulEsignGeneration();
 
@@ -106,7 +112,13 @@ class EnachRblGatewayTest extends TestCase
 
     public function testEsignVerifyOnLegaldesk()
     {
-        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+        $config = [
+            'auth_gateway' => [
+                '10000000000000' => 'esigner_legaldesk'
+            ]
+        ];
+
+        Cache::put('merchant_enach_configs', $config, 2);
 
         $this->testSuccessfulEsignGeneration();
 
@@ -124,7 +136,13 @@ class EnachRblGatewayTest extends TestCase
 
     public function testFailedPaymentVerifyOnLegaldesk()
     {
-        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+        $config = [
+            'auth_gateway' => [
+                '10000000000000' => 'esigner_legaldesk'
+            ]
+        ];
+
+        Cache::put('merchant_enach_configs', $config, 2);
 
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
 
@@ -149,6 +167,8 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->getDbLastEntityToArray('enach');
 
+        $enachInitialRegistrationDate = $enach['registration_date'];
+        $this->assertNotNull($enach['registration_date']);
         $this->assertNull($enach['signed_xml']);
         $this->assertEquals('created', $payment['status']);
 
@@ -786,6 +806,22 @@ class EnachRblGatewayTest extends TestCase
             ],
             $enach
         );
+    }
+
+    public function testDebitVerify()
+    {
+        $this->testDebitFileReconciliation();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $verify = $this->verifyPayment('pay_' . $payment['id']);
+            });
     }
 
     public function testDebitFileReconciliationFailure()

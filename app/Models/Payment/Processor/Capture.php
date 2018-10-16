@@ -185,16 +185,11 @@ trait Capture
     {
         $this->setPayment($payment);
 
-        // Currently doing it for only Cybersource. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        assert ($payment->getGateway() === Payment\Gateway::CYBERSOURCE);
-
-        assert ($payment->getStatus() === Payment\Status::CAPTURED);
-
-        // Just making sure that the payment has the transaction id.
-        assert ($payment->getTransactionId() !== null);
-
-        assert ($payment->hasBeenCaptured());
+        // skip if payment is not via card
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
 
         $data = $this->getGatewayDataForCapture($payment);
 
@@ -203,49 +198,53 @@ trait Capture
             $data['card'] = $payment->card->toArray();
         }
 
-        // The reason for NOT using verifyCapture Gateway function is because in ManualCapture, we want to add
-        // more checks and validations in the gateway function. VerifyCapture takes care of the checks specific
-        // to verifyCapture only. Since manualCapture is a very exceptional case and hopefully a one-time execution,
-        // we want to add more asserts around it.
-        $manualGatewayCaptureResult = $this->callGatewayForManualCapture($data);
+        $result = $this->callGatewayForManualCapture($data);
 
-        // Here, $manualGatewayCaptureResult=true means that the payment is captured on the gateway side.
-        if ($manualGatewayCaptureResult === true)
-        {
-            $msg = 'Successfully created a capture on gateway';
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $payment->getId(),
+                'result'        => $result,
+            ]);
 
-            $payment->setGatewayCaptured(true);
-
-            $this->repo->saveOrFail($payment);
-        }
-        else if ($manualGatewayCaptureResult === false)
-        {
-            $msg = 'DID NOT CREATE A CAPTURE ON GATEWAY. ISSUE!';
-        }
-        else
-        {
-            $msg = 'THIS IS UNEXPECTED!';
-        }
-
-        return [
-            'manual_gateway_capture' => $msg,
-            'payment_id'             => $payment->getId(),
-        ];
+        return $result;
     }
 
     protected function callGatewayForManualCapture($data)
     {
-        $manualGatewayCaptureResult = null;
-
-        $this->trace->info(
-            TraceCode::MANUAL_GATEWAY_CAPTURE_INITIATED,
-            [
-                'payment_id'    => $data['payment']['id'],
-            ]);
-
         try
         {
-            $manualGatewayCaptureResult = $this->callGatewayFunction(Payment\Action::MANUAL_GATEWAY_CAPTURE, $data);
+            $this->trace->info(
+                TraceCode::MANUAL_GATEWAY_CAPTURE_INITIATED,
+                [
+                    'payment_id' => $this->payment->getId(),
+                ]);
+
+
+            return $this->mutex->acquireAndRelease(
+                $this->payment->getId(),
+                function() use ($data)
+                {
+                    $this->repo->reload($this->payment);
+
+                    // Just making sure that the payment has the transaction id.
+                    if (($this->payment->getTransactionId() === null) or
+                        ($this->payment->hasBeenCaptured() === false))
+                    {
+                        return false;
+                    }
+
+                    if ($this->payment->isGatewayCaptured() === false)
+                    {
+                        $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+
+                        $this->payment->setGatewayCaptured(true);
+
+                        $this->repo->saveOrFail($this->payment);
+                    }
+
+                    return true;
+                });
         }
         catch (Exception\BaseException $ex)
         {
@@ -254,10 +253,8 @@ trait Capture
                 TraceCode::MANUAL_GATEWAY_CAPTURE_FAILURE
             );
 
-            throw $ex;
+            return false;
         }
-
-        return $manualGatewayCaptureResult;
     }
 
     protected function getGatewayDataForCapture(Payment\Entity $payment)
@@ -390,7 +387,8 @@ trait Capture
      * If gateway call for capture times out, we catch the exception thrown
      * and push it into a queue. We continue with the normal flow afterwards.
      *
-     * @param $data
+     * @param      $data
+     * @param bool $autoCaptured
      */
     protected function captureOnGateway($data, $autoCaptured = false)
     {
@@ -413,6 +411,8 @@ trait Capture
         $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
+
+        (new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)

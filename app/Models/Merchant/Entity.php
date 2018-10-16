@@ -515,7 +515,7 @@ class Entity extends Base\PublicEntity
 
     public function isExposeARNRefundEnabled(): bool
     {
-       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
     }
 
     public function isExposeARNPaymentEnabled(): bool
@@ -766,7 +766,7 @@ class Entity extends Base\PublicEntity
 
     public function setCategory2($category)
     {
-        return $this->setAttribute(self::CATEGORY2, $category);
+        $this->setAttribute(self::CATEGORY2, $category);
     }
 
     public function getCategory2()
@@ -888,6 +888,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
+    public function setCategory(int $category)
+    {
+        $this->setAttribute(self::CATEGORY, $category);
+    }
+
     public function getMaxPaymentAmount()
     {
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
@@ -928,6 +933,13 @@ class Entity extends Base\PublicEntity
         $value = optional($this->merchantDetail)->getAttribute($field);
 
         return $value ?: $this->getBillingLabel();
+    }
+
+    public function getDbaName()
+    {
+        $value = optional($this->merchantDetail)->getAttribute(Detail\Entity::BUSINESS_DBA);
+
+        return $value ?: $this->getName();
     }
 
     public function getAutoCaptureLateAuth()

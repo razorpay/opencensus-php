@@ -82,6 +82,9 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->char(Pricing::ORG_ID, Pricing::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
 
@@ -92,6 +95,8 @@ class CreatePricing extends Migration
                   ->nullable();
 
             $table->index(Pricing::PLAN_ID);
+            $table->index([Pricing::ORG_ID, Pricing::PLAN_ID]);
+            $table->index([Pricing::ORG_ID, Pricing::PLAN_NAME]);
             $table->index(Pricing::INTERNATIONAL);
             $table->index(Pricing::DELETED_AT);
             $table->index(Pricing::CREATED_AT);

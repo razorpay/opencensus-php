@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Currency\Currency;
@@ -24,10 +25,13 @@ use RZP\Gateway\Base\VerifyResult;
 class Gateway extends Base\Gateway
 {
     use Base\AuthorizeFailed;
+    use Base\CardCacheTrait;
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
+    const CACHE_TTL                  = 20;
+    const CACHE_KEY                  = 'first_data_%s_card_details';
     const PROCESSING                 = 'PROCESSING';
     const SERVICES                   = 'SERVICES';
 
@@ -36,7 +40,24 @@ class Gateway extends Base\Gateway
     const MINIMUM_CARD_NAME_LENGTH   = 3;
     const CARD_NAME_PADDING          = 'X';
 
+    const PRE_AUTH_TRANSACTION_TYPE  = 'PREAUTH';
+    const SALE_TRANSACTION_TYPE      = 'SALE';
+
     protected $gateway = Constants\Entity::FIRST_DATA;
+
+    protected $secureCacheDriver;
+
+    /**
+     * @var boolean
+     */
+    protected $s2sFlowFlag = false;
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->secureCacheDriver = $this->getDriver();
+    }
 
     const TRACE_CODE_MAPPING = [
         Action::PURCHASE  => TraceCode::GATEWAY_PURCHASE_RESPONSE,
@@ -66,9 +87,20 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        $this->setS2sFlowFlag($input);
+
         if ($this->isSecondRecurringPayment($input) === true)
         {
             return $this->secondRecurring($input);
+        }
+
+        // this is a check to decide which flow to go from, once new s2s flow will be merged and tested
+        // we will remove this check.
+        if ($this->isS2sFlowSupported($input) === true)
+        {
+            $response = $this->enroll($input);
+
+            return $this->decideStepAfterEnroll($response, $input);
         }
 
         $requestContent = $this->getPreAuthRequestContentArray($input);
@@ -127,31 +159,40 @@ class Gateway extends Base\Gateway
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['gateway'][ConnectResponseFields::ORDER_ID],
-            Action::AUTHORIZE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->verifySecureHash($input['gateway']);
+        if ($this->isS2sFlow($input['gateway']) === true)
+        {
+            $this->authorizeEnrolled($input, $gatewayPayment);
+        }
+        else
+        {
+            $this->verifySecureHash($input['gateway']);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+            $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
+            $expectedAmount = number_format($input['payment']['amount'] / 100,
+                2, '.', '');
 
-        $this->assertAmount($expectedAmount, $actualAmount);
+            $actualAmount   = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL],
+                2, '.', '');
 
-        $this->mockApprovalCodeIfNeeded($input['gateway']);
+            $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->setApproval($input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
+            $this->mockApprovalCodeIfNeeded($input['gateway']);
 
-        $attributes = $this->getCallbackFields($input['gateway']);
+            $this->setApproval($input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
 
-        $this->runCallbackVerify($input, $gatewayPayment);
+            $attributes = $this->getCallbackFields($input['gateway']);
 
-        $gatewayPayment->fill($attributes);
+            $this->runCallbackVerify($input, $gatewayPayment);
 
-        $this->repo->saveOrFail($gatewayPayment);
+            $gatewayPayment->fill($attributes);
 
-        $this->checkApprovalCode($gatewayPayment);
+            $this->repo->saveOrFail($gatewayPayment);
+
+            $this->checkApprovalCode($gatewayPayment);
+        }
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -429,13 +470,15 @@ class Gateway extends Base\Gateway
 
         $refundFields = $this->getRefundFields($refundResponse, $verify->input['refund']);
 
-        $this->updateOrCreateRefundEntity($refundFields, $verify->input);
+        $refundEntity = $this->updateOrCreateRefundEntity($refundFields, $verify->input);
 
         $refundGatewayStatus = (string) $refundTransactionValue->TransactionState;
 
         assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
+
+        $this->checkApprovalCode($refundEntity, $refundResponse, $refundFields);
 
         return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
     }
@@ -492,7 +535,7 @@ class Gateway extends Base\Gateway
         return $refundTransactionValue;
     }
 
-    protected function updateOrCreateRefundEntity(array $refundFields, array $input)
+    protected function updateOrCreateRefundEntity(array $refundFields, array $input): Entity
     {
         $gatewayRefundEntity = $this->repo->findByRefundId($refundFields['refund_id']);
 
@@ -508,6 +551,8 @@ class Gateway extends Base\Gateway
         $gatewayRefundEntity->fill($refundFields);
 
         $this->repo->saveOrFail($gatewayRefundEntity);
+
+        return $gatewayRefundEntity;
     }
 
     protected function validateVerifyRefundIsPossible(array $input)
@@ -849,7 +894,7 @@ class Gateway extends Base\Gateway
 
         $verifyAuthResponse = null;
 
-        if($verifyResponse === null)
+        if ($verifyResponse === null)
         {
             // Verify request failed, as FirstData API returned successfully flag set to false
             // This is probably because the payment request timed out, or some other unknown
@@ -865,30 +910,41 @@ class Gateway extends Base\Gateway
         }
         else
         {
+            $this->s2sFlowFlag = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW);
+
             foreach ($verifyResponse->children('a1', true) as $transactionValue)
             {
-                // FirstData has several components or services
-                // The auth request is sent to the Connect service,
-                // so here we're only interested in that one.
-                $component = (string) $transactionValue->children('a1', true)->SubmissionComponent;
+                if ($this->isS2sFlowSupported($input) === true)
+                {
+                    // in the new flow all the xml elements will contain submission component as API, so
+                    // checking on the basis of transaction type
+                    $trType   = 'TransactionType';
+                }
+                else
+                {
+                    $trType   = 'SubmissionComponent';
+                }
 
-                if ($component !== Component::CONNECT)
+                $authType = (string) $transactionValue->children('a1', true)->$trType;
+
+                if ($this->isRelevantType($authType) !== true)
                 {
                     continue;
                 }
 
                 $type = (string) $transactionValue->children('v1', true)->CreditCardTxType->Type;
 
-                // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
+                // Verify response contains separate states for all transactions, possibly multiple for
+                // refund/capture.
                 // We're only interested in one transaction state, so loop to that one, and check status.
                 if ($this->isRelevantVerifyType($type) === true)
                 {
-                    $verifyAuthResponse = $transactionValue;
-
                     // This shouldn't be happening, but sometimes FirstData is returning two separate
                     // preauth transactions in a single verify response. In these cases, the second
                     // preauth is usually declined due to the order existing already in an unexpected
                     // state. So we avoid the second transaction, and break after finding the first.
+                    $verifyAuthResponse = $transactionValue;
+
                     break;
                 }
             }
@@ -952,6 +1008,26 @@ class Gateway extends Base\Gateway
             TxnType::AUTH,
             TxnType::SALE,
             TxnType::PERIODIC,
+        ];
+
+        return (in_array($type, $significantTypes, true) === true);
+    }
+
+    protected function isRelevantType(string $type)
+    {
+        // Verify response components contain a component field,
+        // that tells us if the corresponding component is significant.
+        //
+        // For an ordinary payment, we look for the preauth component.
+        // For purchase transaction, we look for the sale component.
+        // For existing connect flow, we look for CONNECT component.
+        //
+        // More than one of these cannot appear in the same verify response.
+        // So we simply loop through components and look for any one of them.
+        $significantTypes = [
+            self::PRE_AUTH_TRANSACTION_TYPE,
+            self::SALE_TRANSACTION_TYPE,
+            Component::CONNECT,
         ];
 
         return (in_array($type, $significantTypes, true) === true);
@@ -1057,6 +1133,81 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
+    protected function decideStepAfterEnroll(SimpleXMLElement $xml, array $input)
+    {
+        $response = $this->parseXmlAndReturnArray(trim($xml->asXML()));
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_ENROLL_RESPONSE);
+
+        if (isset($response[ApiResponseFields::SOAP_ENV_BODY]
+            [ApiResponseFields::IPGAPI_ORDER_RESPONSE]) === true)
+        {
+            $responseBody = $response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE];
+
+            if ($responseBody[ApiResponseFields::IPGAPI_APPROVAL_CODE] === Status::WAITING_3DS_IN_ENROLL)
+            {
+                $this->setApproval($responseBody[ApiResponseFields::IPGAPI_APPROVAL_CODE]);
+
+                $enrollAttributes = $this->getEnrollAttributes($responseBody, $input);
+
+                $gatewayPayment = $this->createGatewayPaymentEntity($enrollAttributes, $input);
+
+                $authenticateRequest = $this->getAcsRequest($responseBody, $input);
+
+                return $authenticateRequest;
+            }
+        }
+
+        // This can be the case if the card is directly authorized ie: not enrolled card. In this case we just
+        // save the response. In cases where firstdata will send an approval code that is not Y,
+        // we will throw an exception and mark payment failed. The below method does that.
+        $this->processAuthorizeResponse($response);
+    }
+
+    protected function getEnrollAttributes(array $responseArray, array $input)
+    {
+        $attributes = [
+            Entity::APPROVAL_CODE           => $this->approvalCode->getFormattedCode(),
+            Entity::GATEWAY_TRANSACTION_ID  => $responseArray[ApiResponseFields::IPGAPI_IPG_TRANSACTION_ID],
+            Entity::TDATE                   => $responseArray[ApiResponseFields::IPGAPI_TDATE],
+            Entity::GATEWAY_PAYMENT_ID      => $responseArray[ApiResponseFields::IPGAPI_ORDER_ID],
+            Entity::RECEIVED                => true,
+            Entity::AMOUNT                  => $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT],
+            Entity::CURRENCY                => Currency::getIsoCode(
+                                                $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY]),
+        ];
+
+        return $attributes;
+    }
+
+    protected function getAcsRequest(array $response, array $input)
+    {
+        $paramArray = $response[ApiResponseFields::IPGAPI_SECURE_3D_RESPONSE]
+                      [ApiResponseFields::V1_VERIFICATION_REDIRECT_RESPONSE]
+                      [ApiResponseFields::V1_SECURE_3D_VERIFICATION_RESPONSE];
+
+        $authorizeRequest = $this->getFieldsForFormSubmitToBankAcs($input, $paramArray);
+
+        return $authorizeRequest;
+    }
+
+    protected function getFieldsForFormSubmitToBankAcs(array $input, array $parameterArray)
+    {
+        $content = [
+            'TermUrl' => $input['callbackUrl'],
+            'MD'      => $parameterArray[ApiResponseFields::V1_MD],
+            'PaReq'   => $parameterArray[ApiResponseFields::V1_PA_REQ],
+        ];
+
+        $request = [
+            'url'     => $parameterArray[ApiResponseFields::V1_ACS_URL],
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        return $request;
+    }
+
     /**
      * Parses response to Capture and Refund requests and converts xml response to an associative array
      * @param  $xml Response received
@@ -1133,7 +1284,18 @@ class Gateway extends Base\Gateway
 
     protected function getRelativeUrl($component)
     {
-        $component = Component::ACTION_MAPPING[$this->action];
+        // For the new s2s flow, a API URL will be picked and not the CONNECT  URL for Firstdata
+        // To support both the flows, we are using s2sFlowFlag, whose value will depend on card network,
+        // whether merchant has s2s feature enabled and whether it is a recurring payment.
+        if (($this->s2sFlowFlag === true) and
+            ($this->action === Action::AUTHORIZE))
+        {
+            $component = Component::API;
+        }
+        else
+        {
+            $component = Component::ACTION_MAPPING[$this->action];
+        }
 
         $ns = $this->getGatewayNamespace();
 
@@ -1143,7 +1305,6 @@ class Gateway extends Base\Gateway
     protected function getStandardRequestArray($content = [], $method = 'post', $options = [])
     {
         $request = parent::getStandardRequestArray($content, $method);
-
         $request['options'] = $options;
 
         return $request;
@@ -1223,14 +1384,7 @@ class Gateway extends Base\Gateway
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
-        $txnType = TxnType::AUTH;
-
-        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
-            (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
-             ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
-        {
-            $txnType = TxnType::SALE;
-        }
+        $txnType = $this->getTransactionType($input);
 
         $content = [
             ConnectRequestFields::TIME_ZONE                 => Timezone::IST,
@@ -1513,9 +1667,24 @@ class Gateway extends Base\Gateway
     {
         unset($request['options']['auth']);
 
+        $this->removeCardDetails($request['content']);
+
         $this->trace->info(
             TraceCode::GATEWAY_SOAP_REQUEST,
             ['gateway_soap_request' => $request]);
+    }
+
+    protected function removeCardDetails(string &$content)
+    {
+        $patternAndReplacement = [
+            '#<v1:CardNumber>[0-9]{12,19}</v1:CardNumber>#'  => '<v1:CardNumber>redacted</v1:CardNumber>',
+            '#<v1:CardCodeValue>[0-9]{3}</v1:CardCodeValue>#' => '<v1:CardCodeValue>redacted</v1:CardCodeValue>'
+        ];
+
+        foreach ($patternAndReplacement as $pattern => $replacement)
+        {
+            $content = preg_replace($pattern, $replacement, $content);
+        }
     }
 
     protected function traceGatewayPaymentRequest(
@@ -1538,13 +1707,36 @@ class Gateway extends Base\Gateway
         );
     }
 
-    protected function scrubCardInfo(array & $content)
+    protected function traceGatewayEnrollRequest(
+        array $request,
+        array $input,
+        $traceCode = TraceCode::GATEWAY_ENROLL_REQUEST)
+    {
+        $this->scrubCardInfoForEnroll($request['v1:Transaction']['v1:CreditCardData']);
+
+        parent::traceGatewayPaymentRequest($request, $input, $traceCode);
+    }
+
+    protected function scrubCardInfo(& $content)
     {
         $scrubFields = [
             ConnectRequestFields::CARD_NUMBER,
             ConnectRequestFields::CVV,
             ConnectRequestFields::EXP_MONTH,
             ConnectRequestFields::EXP_YEAR
+        ];
+
+        foreach ($scrubFields as $scrubField)
+        {
+            unset($content[$scrubField]);
+        }
+    }
+
+    protected function scrubCardInfoForEnroll(array & $content)
+    {
+        $scrubFields = [
+            ApiRequestFields::V1_CARD_NUMBER,
+            ApiRequestFields::V1_CARD_CODE_VALUE,
         ];
 
         foreach ($scrubFields as $scrubField)
@@ -1753,5 +1945,299 @@ class Gateway extends Base\Gateway
         }
 
         return $name;
+    }
+
+    protected function isS2sFlow(array $input)
+    {
+        if ((isset($input[ApiResponseFields::MD]) === true) and
+            (isset($input[ApiResponseFields::PA_RES]) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function authorizeEnrolled(array $input, $gatewayPayment)
+    {
+        $authorizeRequest = $this->getAuthorizeRequest($input, $gatewayPayment);
+
+        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+        $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
+
+        $responseArray = $this->parseXmlAndReturnArray(trim($response->asXML()));
+
+        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
+        $this->processAuthorizeResponse($responseArray, $gatewayPayment);
+    }
+
+    protected function getAuthorizeRequest(array $input, $gatewayPayment)
+    {
+        $txnType = $this->getTransactionType($input);
+
+        $this->setCardCvv($input);
+
+        $gatewayInput = $input['gateway'];
+
+        $requestArray = [
+            ApiRequestFields::V1_TRANSACTION => [
+                ApiRequestFields::V1_CREDIT_CARD_TX_TYPE => [
+                    ApiRequestFields::V1_STORE_ID => $this->getStoreId(),
+                    ApiRequestFields::V1_TYPE     => $txnType,
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_DATA => [
+                    ApiRequestFields::V1_CARD_CODE_VALUE => $input[Constants\Entity::CARD][Card\Entity::CVV]
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_3D_SECURE => [
+                    ApiRequestFields::V1_SECURE_3D_REQUEST => [
+                        ApiRequestFields::V1_SECURE_3D_AUTHENTICATION_REQUEST => [
+                            ApiRequestFields::V1_ACS_RESPONSE => [
+                                ApiRequestFields::V1_MD     => $gatewayInput[ApiResponseFields::MD],
+                                ApiRequestFields::V1_PA_RES => $gatewayInput[ApiResponseFields::PA_RES],
+                            ]
+                        ],
+                    ],
+                ],
+                ApiRequestFields::V1_TRANSACTION_DETAILS => [
+                    ApiRequestFields::V1_IPG_TRANSACTION_ID => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
+                    ApiRequestFields::V1_TRANSACTION_ORIGIN => ApiRequestFields::ECI,
+                ],
+            ]
+        ];
+
+        return $requestArray;
+    }
+
+    protected function getTransactionType(array $input)
+    {
+        $networkCode = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
+
+        $txnType = TxnType::AUTH;
+
+        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
+            (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
+             ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
+        {
+            $txnType = TxnType::SALE;
+        }
+
+        return $txnType;
+    }
+
+    protected function parseXmlAndReturnArray($xml)
+    {
+        $xml = preg_replace("/(<\/?)(\w+-*\w+):([^>]*>)/", "$1$2$3", $xml);
+
+        $formattedXml = simplexml_load_string($xml);
+
+        $responseArray = json_decode(json_encode($formattedXml), true);
+
+        return $responseArray;
+    }
+
+    /*
+     * This method is responsible to process authorize response we are getting from firstdata.
+     * If a status code other that Y(approved) is returned, we throw an exception.
+     * Only when we get status Y, we save the payment and mark payment as authorized.
+     */
+    protected function processAuthorizeResponse(array $response, $gatewayPayment = null)
+    {
+        $currencyCode = Currency::getIsoCode($this->input['payment']['currency']);
+        $content = [];
+
+        // this checks whether firstdata returned a failed xml with fault tag and handles the response accordingly
+        if (isset($response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::SOAP_ENV_FAULT]
+                    [ApiResponseFields::DETAIL][ApiResponseFields::IPGAPI_ORDER_RESPONSE]) === true)
+        {
+            $content = $response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::SOAP_ENV_FAULT]
+                       [ApiResponseFields::DETAIL][ApiResponseFields::IPGAPI_ORDER_RESPONSE];
+        }
+        else if (isset($response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE]) === true)
+        {
+            $content = $response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE];
+        }
+        else
+        {
+            // in this case firstdata has returned a failed xml, but the structure is totally different,
+            // we will throw the exception as it can be anything random
+            $e = new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+
+            $data = [
+                'response'    => $response,
+                'gateway'     => $this->gateway,
+            ];
+
+            $e->setData($data);
+
+            throw $e;
+        }
+
+        $this->mockApprovalCodeForS2s($content);
+
+        $this->setApproval($content[ApiResponseFields::IPGAPI_APPROVAL_CODE]);
+
+        $attributes = $this->getS2sCallbackFields($content);
+
+        $attributes[Entity::CURRENCY] = $currencyCode;
+
+        if ($gatewayPayment === null)
+        {
+            $attributes[Entity::AMOUNT] = $this->input['payment']['amount'];
+
+            $attributes[Entity::GATEWAY_PAYMENT_ID] = $this->input['payment']['id'];
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($attributes, $this->input);
+        }
+        else
+        {
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        $this->checkApprovalCode($gatewayPayment);
+    }
+
+    protected function mockApprovalCodeForS2s(array & $input)
+    {
+        if (empty($input[ApiResponseFields::IPGAPI_APPROVAL_CODE]) === true)
+        {
+            $mockedApprovalCode = implode(':', ['N', Codes::MOCK_FAIL_APPROVAL_CODE]);
+
+            $input[ApiResponseFields::IPGAPI_APPROVAL_CODE] = $mockedApprovalCode;
+        }
+    }
+
+    protected function getS2sCallbackFields(array $callbackBody)
+    {
+        $attributes = [
+            Entity::RECEIVED      => true,
+            Entity::APPROVAL_CODE => $this->approvalCode->getFormattedCode(),
+        ];
+
+        $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
+            ApiResponseFields::IPGAPI_TRANSACTION_RESULT, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TRANSACTION_ID,
+            ApiResponseFields::IPGAPI_IPG_TRANSACTION_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_TERMINAL_ID,
+            ApiResponseFields::IPGAPI_TERMINAL_ID, $callbackBody);
+
+        $this->setFieldIfPresent($attributes, Entity::GATEWAY_PAYMENT_ID,
+            ApiResponseFields::IPGAPI_ORDER_ID, $callbackBody);
+
+        if ($attributes[Entity::TRANSACTION_RESULT] === Status::APPROVED)
+        {
+            $attributes[Entity::STATUS] = Status::AUTHORIZED;
+
+            $attributes[Entity::AUTH_CODE] = $this->approvalCode->getAuthCode();
+
+            $attributes[Entity::TDATE] = $callbackBody[ApiResponseFields::IPGAPI_TDATE];
+        }
+
+        $this->setErrorMessageIfNeeded($attributes);
+
+        return $attributes;
+    }
+
+    public function setS2sFlowFlag($input)
+    {
+        $isS2sFlow = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW) === true;
+
+        $this->s2sFlowFlag = $isS2sFlow;
+    }
+
+    protected function enroll($input)
+    {
+        $request = $this->getEnrollRequest($input);
+
+        $this->traceGatewayEnrollRequest($request, $input);
+
+        $this->getCardCacheKey($input);
+
+        $response = $this->postSoapRequest($request, ApiRequestFields::ORDER_REQUEST);
+
+        return $response;
+    }
+
+    protected function getEnrollRequest(array $input)
+    {
+        $txnType = $this->getTransactionType($input);
+
+        $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
+                    2, '0', STR_PAD_LEFT);
+
+        $request = [
+            ApiRequestFields::V1_TRANSACTION => [
+                ApiRequestFields::V1_CREDIT_CARD_TX_TYPE => [
+                    ApiRequestFields::V1_STORE_ID => $this->getStoreId(),
+                    ApiRequestFields::V1_TYPE     => $txnType,
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_DATA => [
+                    ApiRequestFields::V1_CARD_NUMBER     => $input[Constants\Entity::CARD][Card\Entity::NUMBER],
+                    ApiRequestFields::V1_EXPIRY_MONTH    => $cardMonth,
+                    ApiRequestFields::V1_EXPIRY_YEAR     => substr($input[Constants\Entity::CARD]
+                                                                   [Card\Entity::EXPIRY_YEAR], -2),
+                    ApiRequestFields::V1_CARD_CODE_VALUE => $input[Constants\Entity::CARD][Card\Entity::CVV],
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_3D_SECURE => [
+                    ApiRequestFields::V1_AUTHENTICATE_TRANSACTION => true,
+                ],
+                ApiRequestFields::V1_PAYMENT => [
+                    ApiRequestFields::V1_CHARGE_TOTAL => $input[Constants\Entity::PAYMENT]
+                                                                [Payment\Entity::AMOUNT] / 100,
+                    ApiRequestFields::V1_CURRENCY     => Currency::getIsoCode(
+                                                          $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY]),
+                ],
+                ApiRequestFields::V1_TRANSACTION_DETAILS => [
+                    ApiRequestFields::V1_ORDER_ID => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
+                ],
+            ]
+        ];
+
+        return $request;
+    }
+
+    protected function getCardCacheKey(array $input)
+    {
+        $cvv = $input['card']['cvv'];
+
+        $key = $this->getCacheKey($input['payment']['id']);
+
+        $data = [
+            'cvv' => $this->app['encrypter']->encrypt($cvv),
+        ];
+
+        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+    }
+
+    protected function setCardCvv(array & $input)
+    {
+        //For firstdata we need to send only cvv
+        $data = $this->getCardDetailsFromCache($input);
+
+        $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+    }
+
+    protected function isS2sFlowSupported(array $input)
+    {
+        $cardNetwork = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
+
+        if (($this->s2sFlowFlag === true) and
+            ($cardNetwork !== Card\Network::RUPAY) and
+            ($this->isFirstRecurringPayment($input) === false))
+        {
+            return true;
+        }
+
+        // updating the s2s flag to false as this flag will be used in select the request url
+        // s2s flag true and false point to different urls.
+        $this->s2sFlowFlag = false;
+
+        return false;
     }
 }

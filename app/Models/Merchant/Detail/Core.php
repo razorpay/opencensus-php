@@ -19,10 +19,11 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
@@ -51,6 +52,8 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -102,6 +105,45 @@ class Core extends Base\Core
         });
     }
 
+    /**
+     * fetches activation flow from business category and subcategory and
+     * updates merchant activation flow
+     *
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $category    = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+    }
+
+    /**
+     * on business category or subcategory change updates merchant category and category2 data
+     *
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(
+        Entity $merchantDetails,
+        Merchant\Entity $merchant)
+    {
+        $category    = $merchantDetails->getBusinessCategory();
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+
+        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        {
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+        }
+    }
+
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(
@@ -129,7 +171,15 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+            $this->autoUpdateMerchantActivationFlow($merchantDetails);
+
             $this->repo->saveOrFail($merchantDetails);
+
+            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
+
+            $activationFlowImpl->process($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
 
@@ -826,7 +876,8 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]      = $merchant->isLive();
 
         return $response;
     }
