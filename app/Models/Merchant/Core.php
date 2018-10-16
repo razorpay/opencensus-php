@@ -1524,7 +1524,10 @@ class Core extends Base\Core
      * @return \RZP\Models\Merchant\Entity
      * @throws \RZP\Exception\BadRequestException
      */
-    public function autoUpdateCategoryDetails(Entity $merchant, string $category, ?string $subcategory): Entity
+    public function autoUpdateCategoryDetails(
+        Entity $merchant,
+        string $category,
+        string $subcategory = null): Entity
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 

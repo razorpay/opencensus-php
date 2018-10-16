@@ -741,6 +741,10 @@ trait RepositoryFetch
         {
             $query->whereNull($attribute);
         }
+        else if ((is_array($value) === true) and (is_sequential_array($value) === true))
+        {
+            $query->whereIn($attribute, $value);
+        }
         else
         {
             $query->where($attribute, $value);

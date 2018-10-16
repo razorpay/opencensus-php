@@ -119,7 +119,7 @@ class Payment extends Base
     {
         $amount = $this->txn->getAmount();
 
-        if ($this->isDirectSettlement() === true)
+        if ($this->source->isDirectSettlement() === true)
         {
             $amount = 0;
         }
@@ -168,12 +168,5 @@ class Payment extends Base
         }
 
         return $returnTime;
-    }
-
-
-    protected function isDirectSettlement()
-    {
-        return (($this->source->hasTerminal() === true) and
-                ($this->source->terminal->isDirectSettlement() === true));
     }
 }

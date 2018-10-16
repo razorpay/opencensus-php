@@ -23,6 +23,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Models\Merchant\Detail\ActivationFlow\Whitelist as WhitelistActivationFlow;
@@ -104,10 +105,30 @@ class Core extends Base\Core
     }
 
     /**
+     * fetches activation flow from business category and subcategory and
+     * updates merchant activation flow
+     *
+     * @param Entity $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function autoUpdateMerchantActivationFlow(Entity $merchantDetails)
+    {
+        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $category    = $merchantDetails->getBusinessCategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+    }
+
+    /**
      * on business category or subcategory change updates merchant category and category2 data
      *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function autoUpdateMerchantCategoryDetailsIfApplicable(
         Entity $merchantDetails,
@@ -140,6 +161,8 @@ class Core extends Base\Core
         {
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+
+            $this->autoUpdateMerchantActivationFlow($merchantDetails);
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -875,7 +898,8 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]      = $merchant->isLive();
 
         return $response;
     }

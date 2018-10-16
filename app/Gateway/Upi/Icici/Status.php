@@ -18,6 +18,8 @@ class Status
 
     const FAILURE    = 'FAILURE';
 
+    const FAIL       = 'FAIL';
+
     const REJECT     = 'REJECT';
 
     const DEEMED     = 'DEEMED';
