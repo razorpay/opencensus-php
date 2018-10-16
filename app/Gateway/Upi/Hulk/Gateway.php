@@ -809,6 +809,10 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED, null,
+            'Refund Blocked');
+
         $repo = $this->getRepository();
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
