@@ -396,7 +396,6 @@ final class Route
         'gateway_payment_callback_corporation'     => ['get',      'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
         'gateway_payment_callback_canara_post'     => ['post',     'gateway/netbanking_canara/callback',             'GatewayController@callbackCanara'                                  ],
         'gateway_payment_callback_canara_get'      => ['get',      'gateway/netbanking_canara/callback',             'GatewayController@callbackCanara'                                  ],
-        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback',              'GatewayController@callbackAmazonpay'                               ],
         'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
