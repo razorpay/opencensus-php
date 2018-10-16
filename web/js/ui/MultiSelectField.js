@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { PowerSelectMultiple } from 'react-power-select';
-
+import { classList } from 'common/util';
 /*
   Definition: Select dropdown  where you can select multiple values. It can also display pre-selected values
   Example: See "Edit Merchant" modal in merchant details
@@ -65,6 +65,7 @@ export default class MultiSelectField extends Component {
       options,
       keys,
       CustomOptionComponent,
+      className,
     } = this.props;
 
     let selectedValue = this.state.selectedOptions.map(
@@ -85,7 +86,7 @@ export default class MultiSelectField extends Component {
 
         <PowerSelectMultiple
           options={options}
-          class="multi-select"
+          class={classList('multi-select', className)}
           selected={this.state.selectedOptions}
           optionLabelPath="name"
           optionComponent={
