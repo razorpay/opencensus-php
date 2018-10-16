@@ -203,7 +203,7 @@ export default class EditMerchant extends Component {
             name="max_payment_amount"
             defaultValue={details.max_payment_amount / 100}
           />
-          {isOrgHDFC() && (
+          {!isOrgHDFC() && (
             <SwitchField
               label="Marketplace Linked Account KYC"
               name="linked_account_kyc"
