@@ -38,7 +38,7 @@ class BusinessSubcategory
     const COWORKING                       = 'coworking';
     const CROWDFUNDING                    = 'crowdfunding';
     const CRYPTOCURRENCY                  = 'cryptocurrency';
-    const CRYPTO_MACHINERY                = 'crypto_machinery ';
+    const CRYPTO_MACHINERY                = 'crypto_machinery';
 
     const DAY_CARE                        = 'day_care';
     const DEVELOPER                       = 'developer';

@@ -17,8 +17,8 @@ use RZP\Models\Merchant\Detail\Entity;
 class Greylist implements ActivationFlowInterface
 {
     /**
-     * in greylist  activation flow , merchant won't get activated from basic activation form
-     * full activation form need to be filled for activation
+     * In greylist  activation flow , merchant won't get activated from basic activation form
+     * Full activation form need to be filled for activation
      *
      * @param Entity $merchantDetails
      */

@@ -497,7 +497,7 @@ return [
                             'category2'       => 'ecommerce',
                             'activation_flow' => 'greylist',
                         ],
-                        'crypto_machinery '         => [
+                        'crypto_machinery'          => [
                             'category'        => 5999,
                             'description'     => 'Crypto Machinery',
                             'category2'       => 'ecommerce',

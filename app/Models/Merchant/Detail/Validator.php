@@ -471,9 +471,6 @@ class Validator extends Base\Validator
      * contains validation for full activation form(L2 activation form)
      * L1 and L2 activation form have different validations
      *
-     * For example in L1 form for Blacklist flow -> merchant can fill and submit L1 form ,
-     * details will be saved in Db and exception will be thrown
-     *
      * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
      * no detail will be save in db and validation exception will be thrown
      *
