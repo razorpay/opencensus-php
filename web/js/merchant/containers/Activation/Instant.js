@@ -225,8 +225,15 @@ export default class ActivationWizard extends React.Component {
     const { dirty } = this.state;
     const { data } = this.props;
 
-    if (stateName === 'has_url' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['business_website'] = '';
+    if (stateName === 'has_url') {
+      if (fieldValue === '1') {
+        this.prevBusinessWebsiteVal = dirty.business_website;
+        sideEffectFieldsToUpdate['business_website'] = '';
+      } else {
+        sideEffectFieldsToUpdate[
+          'business_website'
+        ] = this.prevBusinessWebsiteVal;
+      }
     }
 
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */

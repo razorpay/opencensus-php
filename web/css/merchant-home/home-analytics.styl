@@ -276,17 +276,17 @@ body.show-hotjar-poll #_hj_poll_container {
     background-position: top right;
     background-repeat: no-repeat;
     background-size: contain;
-    padding: 56px;
 
     .welcome-modal-content {
 
+      padding: 56px 50% 56px 56px;
       position: relative;
-      padding-right: 50%;
     
       .welcome-title {
 
         margin: 0;
         font-size: 24px;
+        font-weight: 600;
 
         &.welcome-subtitle {
 
@@ -298,11 +298,49 @@ body.show-hotjar-poll #_hj_poll_container {
 
         margin-top: 40px;
       }
+
+      @media(max-width: 812px) {
+
+        background-color: rgba(255, 255, 255, 0.8);    
+        padding-right: 30%;    
+      }
+
+      @media(max-width: 580px) {
+
+        padding: 40px !important;
+      }
+
+      @media(max-width: 425px) { 
+
+        padding: 20px !important;
+      } 
+    }
+
+    @media(max-width: 386px) {
+
+      background-image: none;
+
+      .welcome-modal-content {
+
+        text-align: center;
+
+        .welcome-modal-actions span.btn-link {
+
+          display: block;
+          margin-top: 16px;
+          margin-left: 0;
+        }
+      }
     }
 
     .Modal-close {
 
       color: white;
+
+      @media(max-width: 812px) {
+
+        color: currentColor;
+      }
     }
   }
 }

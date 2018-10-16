@@ -177,13 +177,16 @@ export default class HomeContainer extends Component {
           ...this.state,
           showOnboardingBanner: true,
           showOnboardingBannerFirstStep: user.showInstantActivation
-            ? !user.isActivated
+            ? !user.instantActivation.isL1Submitted
             : true,
           expandOnboardingBanner: true,
         };
 
         LocalStorageService.setItem(this.onboardingBannerToken, 'true');
-        LocalStorageService.setItem(this.firstStepToken, 'true');
+
+        if (this.state.showOnboardingBannerFirstStep) {
+          LocalStorageService.setItem(this.firstStepToken, 'true');
+        }
       } else if (mode !== 'live') {
         this.props.fetchPayments({ mode: 'live' }).then(data => {
           data = data.data;
@@ -491,7 +494,7 @@ export default class HomeContainer extends Component {
   setShowOnboardingBanner() {
     const { user } = this.props,
       showOnboardingBannerFirstStep = user.showInstantActivation
-        ? !user.isActivated
+        ? !user.instantActivation.isL1Submitted
         : true;
 
     this.setState(
@@ -610,7 +613,7 @@ export default class HomeContainer extends Component {
       payments,
       // Handling first step in a different way if its instant activations
       showOnboardingBanner: showOnboardingBannerFirstStep
-        ? !user.showInstantActivation
+        ? !user.showInstantActivation || user.instantActivation.isL1Submitted
         : showOnboardingBanner,
       isMobile,
       showInstantActivation: user.showInstantActivation,
@@ -632,6 +635,7 @@ export default class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         {user.showInstantActivation &&
+          !user.instantActivation.isL1Submitted &&
           showOnboardingBannerFirstStep && (
             <ModalMask>
               <Modal className="welcome-modal" onClose={onFirstStepClose}>

@@ -26,7 +26,7 @@ export default ({
     if (!isL1Submitted) {
       content = 'Fill the Activation Form in order to unlock Live Payments';
     } else if (isGraylistFlow) {
-      status = possibleStatuses.pending;
+      status = possibleStatuses.progress;
 
       if (!isSubmitted) {
         content = 'Fill the KYC Form in order to unlock Live Payments';

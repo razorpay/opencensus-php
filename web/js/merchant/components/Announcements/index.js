@@ -3,7 +3,6 @@ import Button from 'component/Button';
 import { classList } from 'common/util';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { connect } from 'react-redux';
-import AnnouncementBanner from 'rzp/ui/AnnouncementBanner';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import RequestEarlyAccessForm from './EarlySettlementsModal';
@@ -89,6 +88,7 @@ export class EarlySettlementAnnouncement extends Component {
           hidden={this.state.isHidden}
           handleClose={this.handleCloseButton}
           bannerKey={this.state.bannerKey}
+          theme="primary"
         >
           <div>
             <div class="title">
