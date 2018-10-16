@@ -53,22 +53,35 @@ export default function ajax(params = {}) {
           message = 'Unauthorized';
 
           function continueAjax() {
-            axios(params).then(({ data }) => {
-              if (data.success) {
-                resolve(data);
-              } else {
-                reject(
-                  Object.assign(
-                    {
-                      code: 'UNKNOWN_ERROR_CODE',
-                    },
-                    data
-                  )
-                );
-              }
-            });
-
-            // Not calling error section Again. The catch block is left on component this time
+            if (!params.method || params.method.toLowerCase() === 'get') {
+              axios(params).then(({ data }) => {
+                if (data.success) {
+                  resolve(data);
+                } else {
+                  reject(
+                    Object.assign(
+                      {
+                        code: 'UNKNOWN_ERROR_CODE',
+                      },
+                      data
+                    )
+                  );
+                }
+              });
+              // Not calling error section Again, the catch block is upto the component to handle
+            } else {
+              reject(
+                Object.assign(
+                  {
+                    code: err.status,
+                    errors: [
+                      'Your recent action was not completed. Please Try again',
+                    ],
+                  },
+                  err.responseJSON
+                )
+              );
+            }
           }
 
           document.body.dispatchEvent(

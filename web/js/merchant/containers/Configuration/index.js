@@ -45,7 +45,7 @@ export default class CongfigurationContainer extends Component {
       })
       .catch(err => {
         this.props.showNotification({
-          type: 'danger',
+          type: 'error',
           message: err.errors,
         });
       });

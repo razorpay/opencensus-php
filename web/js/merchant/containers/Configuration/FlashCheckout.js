@@ -40,9 +40,9 @@ export default class FlashCheckout extends Component {
   analytics = action => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
-      eventAction: `${action} - Flash Checkout`
+      eventAction: `${action} - Flash Checkout`,
     });
-  }
+  };
 
   toggleFc = () => {
     let fcEnabled = this.state.fcEnabled;
@@ -72,7 +72,7 @@ export default class FlashCheckout extends Component {
       })
       .catch(err => {
         this.props.showNotification({
-          type: 'danger',
+          type: 'error',
           message: err.errors,
         });
       });
