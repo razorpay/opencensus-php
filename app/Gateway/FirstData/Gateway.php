@@ -96,8 +96,7 @@ class Gateway extends Base\Gateway
 
         // this is a check to decide which flow to go from, once new s2s flow will be merged and tested
         // we will remove this check.
-        if (($this->s2sFlowFlag === true) and
-            ($this->isFirstRecurringPayment($input) === false))
+        if ($this->isS2sFlowSupported($input) === true)
         {
             $response = $this->enroll($input);
 
@@ -911,12 +910,11 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $isS2s = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW);
+            $this->s2sFlowFlag = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW);
 
             foreach ($verifyResponse->children('a1', true) as $transactionValue)
             {
-                if (($isS2s === true) and
-                    ($input['payment']['recurring'] === false))
+                if ($this->isS2sFlowSupported($input) === true)
                 {
                     // in the new flow all the xml elements will contain submission component as API, so
                     // checking on the basis of transaction type
@@ -1286,6 +1284,9 @@ class Gateway extends Base\Gateway
 
     protected function getRelativeUrl($component)
     {
+        // For the new s2s flow, a API URL will be picked and not the CONNECT  URL for Firstdata
+        // To support both the flows, we are using s2sFlowFlag, whose value will depend on card network,
+        // whether merchant has s2s feature enabled and whether it is a recurring payment.
         if (($this->s2sFlowFlag === true) and
             ($this->action === Action::AUTHORIZE))
         {
@@ -1716,7 +1717,7 @@ class Gateway extends Base\Gateway
         parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
 
-    protected function scrubCardInfo(array & $content)
+    protected function scrubCardInfo(& $content)
     {
         $scrubFields = [
             ConnectRequestFields::CARD_NUMBER,
@@ -1961,9 +1962,13 @@ class Gateway extends Base\Gateway
     {
         $authorizeRequest = $this->getAuthorizeRequest($input, $gatewayPayment);
 
+        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
 
         $responseArray = $this->parseXmlAndReturnArray(trim($response->asXML()));
+
+        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $this->processAuthorizeResponse($responseArray, $gatewayPayment);
     }
@@ -2216,5 +2221,23 @@ class Gateway extends Base\Gateway
         $data = $this->getCardDetailsFromCache($input);
 
         $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+    }
+
+    protected function isS2sFlowSupported(array $input)
+    {
+        $cardNetwork = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
+
+        if (($this->s2sFlowFlag === true) and
+            ($cardNetwork !== Card\Network::RUPAY) and
+            ($this->isFirstRecurringPayment($input) === false))
+        {
+            return true;
+        }
+
+        // updating the s2s flag to false as this flag will be used in select the request url
+        // s2s flag true and false point to different urls.
+        $this->s2sFlowFlag = false;
+
+        return false;
     }
 }
