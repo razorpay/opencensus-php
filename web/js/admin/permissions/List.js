@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { isOrgHDFC } from 'admin/user';
+import ShowWhen, { showWhenUtil } from 'admin/components/ShowWhen';
 
 import { adminFetch } from 'common/fetch';
 import { openRoleModal } from './RoleModal';
@@ -33,17 +33,21 @@ export default class PermissionsList extends Component {
         <div class="box">
           <header>
             Permissions
-            {!isOrgHDFC() && (
+            <ShowWhen permission="edit_permission">
               <div class="btn pull-right" onClick={this.showEntity}>
                 Add a Permission
               </div>
-            )}
+            </ShowWhen>
           </header>
         </div>
         <PageTable
           model={this.collection}
           fields={getFields(this.collection)}
-          onClick={showEntity}
+          onClick={
+            showWhenUtil({ permission: 'edit_permission' })
+              ? showEntity
+              : undefined
+          }
           searchFilters={['name', 'description', 'category']}
         />
       </div>
@@ -67,7 +71,7 @@ const Actions = ({ item, collection }) => (
     <div class="link m-r" onClick={item::openRoleModal}>
       Roles
     </div>
-    {!isOrgHDFC() && (
+    <ShowWhen permission="delete_permission">
       <AsyncButton
         class="link danger m-l"
         pendingClass="link danger-faded m-l btn-pending"
@@ -77,6 +81,6 @@ const Actions = ({ item, collection }) => (
         Delete
         <span class="dot-loader">.</span>
       </AsyncButton>
-    )}
+    </ShowWhen>
   </div>
 );
