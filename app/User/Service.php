@@ -354,6 +354,7 @@ class Service extends Base\Service
         // with the user account
         $data['pre_signup'] = [];
         $data['pre_signup_complete'] = true;
+        $data['experiments'] = [];
 
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
@@ -389,6 +390,7 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
+                    $data['experiments']['instant_activations'] = (new Merchant\Service)->getTreatment('instant_activations');
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
