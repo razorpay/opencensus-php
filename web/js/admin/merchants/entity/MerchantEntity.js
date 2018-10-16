@@ -654,7 +654,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}
+              {merchant.details.suspended_at === null
+                ? 'Suspend '
+                : 'Unsuspend '}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />

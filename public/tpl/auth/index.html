@@ -4,7 +4,7 @@
     <div class="auth-header">
       <div class="rzp-logo">
         <img class="logo" src="{{login_logo}}" alt='Logo' height="">
-        <div class="pull-right">
+        <div class="pull-right" ng-if="isOrgRZP">
           <span ng-if="!rightLayout || isLoggedIn" class="auth-header-text">Already a user?</span>
           <span ng-if="rightLayout && !isLoggedIn && !lockme" class="auth-header-text">New to Razorpay?</span>
           <button ng-if="!rightLayout && !isLoggedIn" class="btn btn-layout-change" ng-click="goToSigninLayout()">Login</button>
@@ -35,7 +35,7 @@
             <div class="text-center">For any help or assistance, feel free to <a href="https://razorpay.com/contact/" target="_blank" ng-click="trackContactUsClick()"><u>Contact us</u></a></div>
           </div>
         </div>
-        <div class="login-messaging">
+        <div class="login-messaging" ng-if="isOrgRZP">
           <img src="img/signup-early-access.svg" alt="Early access products" style="margin-bottom: 4px" />
 
           <div class="messaging-text">
@@ -54,6 +54,19 @@
 
           <a href="https://razorpay.com/invoices/" target="_blank" class="messaging-link">Learn More <span>→</span></a>
 
+        </div>
+        <div class="login-messaging" ng-if="!isOrgRZP">
+          <div class="messaging-heading" style="margin-top: 8px">
+            Powered by Razorpay and {{organization.business_name}}
+          </div>
+
+          <div class="messaging-text" style="margin-top: 16px">
+            This join initiative between {{organization.business_name}} and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.
+          </div>
+          <div class="messaging-text" style="margin-top: 28px;">
+            Let’s simplify payments together!
+          </div>
+          <img src="img/branding/powered-by-razorpay-login.png" alt="Powered by Razorpay" width="160px" style="margin-top: 20px" />
         </div>
       </div>
       <div class="auth-main-container" ng-class="{'right-align': rightLayout}">
