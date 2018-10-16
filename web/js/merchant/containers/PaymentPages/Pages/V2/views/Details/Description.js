@@ -34,7 +34,10 @@ export default class extends React.PureComponent {
               style={{ height: this.elHeight }}
               name="description"
               placeholder="Enter page description"
-              info="Describe what the purpose of this page is and mention any additional details that might help the customer.\n\nNote:\nAll URLs will convert to links."
+              info={`Describe what the purpose of this page is and mention any additional details that might help the customer.
+
+Note:
+All URLs will convert to links.`}
               defaultValue={this.props.description}
               onInput={this.handleOnInput}
               onBlur={e => {
