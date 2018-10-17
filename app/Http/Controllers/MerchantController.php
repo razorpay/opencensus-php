@@ -1142,4 +1142,25 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * Input JSON sample:
+     * {
+     *   "schedule": {
+     *     "schedule_id": "40000000000000",
+     *     "type": "settlement"
+     *   },
+     *   "merchant_ids": ["10000000000000", "ACIg0vIkvgCALm"]
+     * }
+     *
+     * @return mixed
+     */
+    public function bulkAssignSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignSchedule($input);
+
+        return ApiResponse::json($response);
+    }
 }

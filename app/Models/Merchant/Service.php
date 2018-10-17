@@ -499,13 +499,55 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $scheduleTask->toArrayPublic();
+    }
+
+    public function bulkAssignSchedule(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_schedule', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        $schedule    = $input['schedule'];
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $schedule)
+                {
+                    $this->assignSettlementSchedule($merchantId, $schedule);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_SCHEDULE_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $schedule,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
     }
 
     public function migrateMerchantToSettlementSchedules($input)
