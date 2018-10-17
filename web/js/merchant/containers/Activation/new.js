@@ -44,7 +44,7 @@ export default class ActivationContainer extends React.Component {
   constructor(props) {
     super(props);
 
-    const { data } = props;
+    const { data, user } = props;
 
     if (this.props.setOnCloseCb) {
       this.props.setOnCloseCb(this.saveDirtyState);
@@ -63,6 +63,10 @@ export default class ActivationContainer extends React.Component {
     this.state = {
       isFormTouched: someDetailsFilled,
     };
+
+    this.activationFormName = user.showInstantActivation
+      ? 'KYC Form'
+      : 'Activation Form';
   }
 
   preloadWelcomeAsset() {
@@ -329,8 +333,6 @@ export default class ActivationContainer extends React.Component {
           data.business_category || (data.business_model ? 'others' : null),
       };
 
-      this.props.setAdditionalModalClass(modalClass);
-
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
@@ -347,6 +349,7 @@ export default class ActivationContainer extends React.Component {
       );
     }
 
+    this.props.setAdditionalModalClass(modalClass);
     return content;
   }
 }
@@ -356,7 +359,7 @@ ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
-const SuccessScreen = _ => {
+const SuccessScreen = ({ formName }) => {
   function clickConfig(e) {
     trackGoToConfig();
   }
@@ -364,11 +367,11 @@ const SuccessScreen = _ => {
   return (
     <div class="Activation--success">
       <div class="Activation-title">
-        <side-title>Activation Form submitted Successfully!</side-title>
+        <side-title>{formName} submitted Successfully!</side-title>
         <img src={successImg} class="submit-illustration" />
       </div>
       <div class="Activation-info">
-        <i class="i i-check" /> Activation Form Submitted
+        <i class="i i-check" /> {formName} Submitted
         <p class="desc">
           Our team will review the form and submitted documents. We will reach
           out on your contact email for all updates.
