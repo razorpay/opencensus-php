@@ -280,6 +280,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
     public function isGatewayRefunded()
     {
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
