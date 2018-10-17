@@ -2,9 +2,21 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
+import EditLayer from '../EditLayer';
 
-export const AmountField = ({ amountToPay, onAddAmount }) => {
+export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
+  console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
   const cls = 'Field Field--disabled Field--required';
+
+  const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
+
+  let amountToDisplay;
+  if (isAmountEntitySet) {
+    amountToDisplay = getFormattedAmount(
+      Number(paymentPageEntity.amount || 0) * 100
+    );
+  }
+
   const content = (
     <React.Fragment>
       <div class="Field-label">
@@ -13,23 +25,60 @@ export const AmountField = ({ amountToPay, onAddAmount }) => {
       </div>
       <div class="Field-content">
         <div class="Field-wrapper">
-          {amountToPay ? (
-            <input class="Field-el" disabled />
-          ) : (
-            <Button.Transparent
-              onClick={onAddAmount}
-              style={{ display: 'inline-block' }}
-            >
-              <span class="btn-link">+ Add Amount</span>
-            </Button.Transparent>
-          )}
+          {do {
+            if (isAmountEntitySet) {
+              if (paymentPageEntity.amount) {
+                <React.Fragment>
+                  <b>₹ {amountToDisplay.split('.')[0]}</b>.{
+                    amountToDisplay.split('.')[1]
+                  }
+                  {paymentPageEntity.allow_multiple_units && (
+                    <React.Fragment>
+                      <span style={{ margin: '0 24px' }}>×</span>
+                      <div
+                        class="Field-wrapper Field-wrapper--counter"
+                        style={{
+                          display: 'inline-block',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        <button type="button" disabled>
+                          -
+                        </button>
+                        <input
+                          class="Field-el counter-value"
+                          name="field_1"
+                          defaultValue="1"
+                          disabled
+                        />
+                        <button type="button" disabled>
+                          +
+                        </button>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </React.Fragment>;
+              } else {
+                <input class="Field-el" placeholder="Enter Amount" disabled />;
+              }
+            } else {
+              <Button.Transparent
+                onClick={onAddAmount}
+                style={{ display: 'inline-block' }}
+              >
+                <span class="btn-link">+ Add Amount</span>
+              </Button.Transparent>;
+            }
+          }}
         </div>
       </div>
     </React.Fragment>
   );
 
-  return amountToPay ? (
-    <EditLayer class={cls}>{content}</EditLayer>
+  return isAmountEntitySet ? (
+    <EditLayer class={cls} onClick={onAddAmount}>
+      {content}
+    </EditLayer>
   ) : (
     <div class={cls}>{content}</div>
   );
@@ -44,7 +93,7 @@ export const FormFooter = ({ amountToPay }) => (
     />
     <div class="btn" type="submit" disabled>
       <div>
-        <span>Pay ₹{getFormattedAmount(amountToPay)}</span>
+        <span>Pay ₹{getFormattedAmount(Number(amountToPay || 0) * 100)}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -60,27 +109,43 @@ export const FormFooter = ({ amountToPay }) => (
 );
 
 export class AmountCreator extends React.PureComponent {
-  state = {
-    isDynamicAmount: false,
-    hasStock: false,
-    disableSubmit: !this.props.amount && !this.props.isDynamicAmount,
-  };
+  constructor(props) {
+    super(props);
+    const paymentPageEntity = props.paymentPageEntity;
+    const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
+
+    this.state = {
+      hasDynamicAmount: isAmountEntitySet ? !paymentPageEntity.amount : false,
+      stock: isAmountEntitySet ? paymentPageEntity.stock : '',
+      hasStock: isAmountEntitySet ? !!paymentPageEntity.stock | 0 : false,
+      disableSubmit: !isAmountEntitySet,
+      allowMultipleUnits: isAmountEntitySet
+        ? paymentPageEntity.allow_multiple_units
+        : false,
+    };
+
+    this.defaults = {
+      amount: isAmountEntitySet ? paymentPageEntity.amount : '',
+    };
+  }
 
   onChange = ({ target }) => {
     const { name, value } = target;
-    if (name === 'dynamic_amount') {
+    let stateName = target.getAttribute('data-name');
+
+    if (stateName === 'has_dynamic_amount') {
       this.setState({
-        isDynamicAmount: value == 1 ? true : false,
-        hasQuantityPerPerson: 0,
+        hasDynamicAmount: value == 1 ? true : false,
+        allowMultipleUnits: 0,
         hasStock: 0,
       });
 
       document.getElementsByName('amount')[0].value = '';
-    } else if (name === 'quantity') {
+    } else if (name === 'allow_multiple_units') {
       this.setState({
-        hasQuantityPerPerson: target.checked ? 1 : 0,
+        allowMultipleUnits: target.checked ? 1 : 0,
       });
-    } else if (name === 'stock') {
+    } else if (stateName === 'has_stock') {
       this.setState({
         hasStock: value == 1 ? true : false,
       });
@@ -92,7 +157,7 @@ export class AmountCreator extends React.PureComponent {
 
       if (
         form.querySelectorAll('.is-invalid').length ||
-        (!amount && !this.state.isDynamicAmount)
+        (!amount && !this.state.hasDynamicAmount)
       ) {
         this.setState({ disableSubmit: true });
       } else {
@@ -104,8 +169,8 @@ export class AmountCreator extends React.PureComponent {
   render() {
     const { onClose, onSubmit } = this.props;
     const {
-      isDynamicAmount,
-      hasQuantityPerPerson,
+      hasDynamicAmount,
+      allowMultipleUnits,
       hasStock,
       disableSubmit,
     } = this.state;
@@ -121,28 +186,30 @@ export class AmountCreator extends React.PureComponent {
             label="Amount"
             name="amount"
             placeholder="Enter Amount"
+            defaultValue={this.defaults.amount}
             addonBefore="₹"
             autoFocus
             pattern="^[1-9]+(.([0-9]){1,2})?$"
-            disabled={isDynamicAmount}
+            disabled={hasDynamicAmount}
           />
           <Input.Check
-            name="dynamic_amount"
+            data-name="has_dynamic_amount"
             fieldLabel="Customer decides this while paying"
+            defaultValue={!!this.state.hasDynamicAmount | 0}
           />
         </div>
         <div class="section section-2">
           <Input.Check
-            name="quantity"
+            name="allow_multiple_units"
             fieldLabel="Allow multiple purchases per customer"
-            disabled={isDynamicAmount}
-            checked={Boolean(hasQuantityPerPerson)}
+            disabled={hasDynamicAmount}
+            checked={Boolean(allowMultipleUnits)}
             autoRender
           />
           <Input.Check
-            name="stock"
+            data-name="has_stock"
             autoRender={true}
-            disabled={isDynamicAmount}
+            disabled={hasDynamicAmount}
             checked={Boolean(hasStock)}
             fieldLabel={() => (
               <span>
@@ -151,7 +218,8 @@ export class AmountCreator extends React.PureComponent {
                   <React.Fragment>
                     of{' '}
                     <Input
-                      name="quantity"
+                      name="stock"
+                      defaultValue={this.state.stock}
                       class="checkbox-Input"
                       autoFocus
                       step="1"

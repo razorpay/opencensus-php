@@ -19,9 +19,14 @@ export const updateInSchema = ({ index, field }) => ({
   payload: { index, field },
 });
 
-export const addInSchema = field => ({
+export const updateAmount = amountObj => ({
+  type: 'UPDATE_DATA',
+  fields: amountObj,
+});
+
+export const addInSchema = fields => ({
   type: 'ADD_IN_SCHEMA',
-  field,
+  fields,
 });
 
 let initialState = {
@@ -34,7 +39,7 @@ export default function(state = initialState, action) {
     case 'UPDATE_DATA':
       return set(state, 'paymentPageEntity', {
         ...state.paymentPageEntity,
-        ...action.field,
+        ...action.fields,
       });
 
     case 'DELETE_IN_SCHEMA':

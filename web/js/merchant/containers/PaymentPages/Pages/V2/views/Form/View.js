@@ -5,6 +5,7 @@ import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
 import {
+  updateAmount,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -22,7 +23,8 @@ const CreatorType = {
   GENERIC: 'GENERIC',
 };
 
-@connect(state => ({ FORM_SCHEMA: state.wysiwyg.FORM_SCHEMA }), {
+@connect(state => ({ ...state.wysiwyg }), {
+  updateAmount,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -55,15 +57,15 @@ export default class View extends React.PureComponent {
   };
 
   onAmountCreatorSubmit = formData => {
-    console.log('FORM DATA.....', formData);
+    const { amount, stock, allow_multiple_units } = formData;
 
-    return false;
+    this.props.updateAmount({
+      amount: amount || null,
+      stock: stock || null,
+      allow_multiple_units: !!allow_multiple_units,
+    });
 
-    // If all fields valid, then
-    if (true) {
-      // Add / Update FORM_SCHEMA
-      this.setState({ activeCreatorType: false });
-    }
+    this.setState({ activeCreatorType: false });
   };
 
   render() {
@@ -79,6 +81,7 @@ export default class View extends React.PureComponent {
         editorContent = (
           <AmountCreator
             field={field}
+            paymentPageEntity={this.props.paymentPageEntity}
             onClose={this.onCreatorClose}
             onSubmit={this.onAmountCreatorSubmit}
           />
@@ -103,6 +106,7 @@ export default class View extends React.PureComponent {
         )}
         <div class="UI-form">
           <AmountField
+            paymentPageEntity={this.props.paymentPageEntity}
             onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
           />
 
@@ -136,7 +140,7 @@ export default class View extends React.PureComponent {
             + Add new field
           </Button.Transparent>
 
-          <FormFooter amountToPay={340 * 100} />
+          <FormFooter amountToPay={this.props.paymentPageEntity.amount} />
         </div>
       </React.Fragment>
     );
