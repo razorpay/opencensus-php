@@ -7,10 +7,11 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 
 import { titleCase } from 'common/util';
-
 import { fetchTokens as fetchAll } from 'merchant/modules/collection';
 
 import { tokenId, createdAt, status } from 'rzp/ui/item/pair';
+
+import ListFilter from './ListFilter';
 
 const method = {
   title: 'Method',
@@ -45,6 +46,12 @@ export default class TokensList extends ListContainer {
             </NavLink>
           </div>
         </HeaderAction>
+
+        <ListFilter
+          form="tokensListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
         <DataTable
           title="Tokens"
