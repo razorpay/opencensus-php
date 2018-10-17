@@ -6,6 +6,11 @@ const DESC_LIMIT = {
   MOBILE: 125,
 };
 
+const infoTxt = `Describe what the purpose of this page is and mention any additional details that might help the customer.
+
+Note:
+All URLs will convert to links.`;
+
 export default class extends React.PureComponent {
   state = { isEditable: false };
 
@@ -30,10 +35,7 @@ export default class extends React.PureComponent {
               style={{ height: this.elHeight }}
               name="description"
               placeholder="Enter page description"
-              info={`Describe what the purpose of this page is and mention any additional details that might help the customer.
-
-Note:
-All URLs will convert to links.`}
+              info={infoTxt}
               defaultValue={this.props.description}
               onInput={this.handleOnInput}
               onBlur={e => {
