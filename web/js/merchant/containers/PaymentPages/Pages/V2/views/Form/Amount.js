@@ -1,7 +1,6 @@
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
-import EditLayer from '../EditLayer';
 import { classList, getFormattedAmount } from 'common/util';
 
 export const AmountField = ({ amountToPay, onAddAmount }) => {
@@ -17,12 +16,12 @@ export const AmountField = ({ amountToPay, onAddAmount }) => {
           {amountToPay ? (
             <input class="Field-el" disabled />
           ) : (
-            <EditLayer
+            <Button.Transparent
               onClick={onAddAmount}
               style={{ display: 'inline-block' }}
             >
               <span class="btn-link">+ Add Amount</span>
-            </EditLayer>
+            </Button.Transparent>
           )}
         </div>
       </div>

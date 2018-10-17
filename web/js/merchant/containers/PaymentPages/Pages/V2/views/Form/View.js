@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import EditLayer from '../EditLayer';
+import Button from 'component/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
@@ -128,12 +128,13 @@ export default class View extends React.PureComponent {
               />
             );
           })}
-          <EditLayer
+          <Button.Transparent
+            class="btn-link"
             onClick={e => this.openCreator(e, CreatorType.GENERIC)}
             style={{ marginTop: 32, display: 'inline-block' }}
           >
-            <span class="btn-link">+ Add new field</span>
-          </EditLayer>
+            + Add new field
+          </Button.Transparent>
 
           <FormFooter amountToPay={340 * 100} />
         </div>
