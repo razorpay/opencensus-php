@@ -9,14 +9,12 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Netbanking\Corporation;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
@@ -257,9 +255,42 @@ class GatewayController extends Controller
     {
         $input = $_SERVER["QUERY_STRING"];
 
-        $data = $this->processServerCallback($input, 'netbanking_corporation');
+        $gateway = $this->app['gateway']->gateway('netbanking_corporation');
 
-        return ApiResponse::json($data);
+        $input = $gateway->preProcessServerCallback($input);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $netbanking = $this->app['repo']->netbanking->findByPaymentIdAndAction(
+            $paymentId,
+            Action::AUTHORIZE
+        );
+
+        if ($netbanking === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to find requisite payment id: ' . $paymentId);
+        }
+
+        $publicPaymentId = $netbanking->getPublicPaymentId();
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $inputMsg = http_build_query($input);
+
+        $url = $url . '?' . $inputMsg;
+
+        return Redirect::to($url);
     }
 
     public function callbackAmazonpay($responseFormat = 'html')
@@ -337,7 +368,7 @@ class GatewayController extends Controller
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
+        $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -345,7 +376,7 @@ class GatewayController extends Controller
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
+            $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];
