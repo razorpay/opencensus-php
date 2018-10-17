@@ -34,6 +34,7 @@ import {
 import submerchantReducer from 'merchant/modules/submerchant';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
+import tokenReducer from 'merchant/modules/token';
 
 import {
   refundBatchesReducer,
@@ -119,4 +120,5 @@ export default combineReducers({
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
   tokens: tokensReducer,
+  token: tokenReducer,
 });
