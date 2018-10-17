@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -69,7 +70,7 @@ class EmandateDebitReconciliationTest extends TestCase
                 if ($action === 'row_data' and $content[0] === $debitPaymentIds[1])
                 {
                     $content[10] = 'Rejected';
-                    $content[11] = 'Not enough balance';
+                    $content[11] = 'No Funds Available';
                 }
             },
             null,
@@ -321,6 +322,7 @@ class EmandateDebitReconciliationTest extends TestCase
         // Assert netbanking entity updates
         $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
             ->toArray();
+
         $this->assertEquals('Success', $gatewayPayment['status']);
     }
 
@@ -328,11 +330,23 @@ class EmandateDebitReconciliationTest extends TestCase
     {
         $debitPayment = $this->getDbEntityById('payment', $debitPaymentId)->toArray();
 
+        $this->assertArraySelectiveEquals(
+            [
+                'status'              => 'failed',
+                'amount'              => 3500,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
+                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE
+            ],
+            $debitPayment
+        );
+
         // Assert debit payment entity
         $this->assertEquals('failed', $debitPayment['status']);
 
         // Asserts that the transaction is reconciled
         $transaction = $this->getDbEntity('transaction', ['entity_id' => $debitPaymentId]);
+
         $this->assertNull($transaction);
 
         $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
