@@ -340,7 +340,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
-            RequestFields::ENCRYPTED_DATA       => $encryptedString,
+            RequestFields::VERIFY_DATA          => $encryptedString,
         ];
 
         $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
