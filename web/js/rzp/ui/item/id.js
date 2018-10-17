@@ -10,6 +10,7 @@ const baseUrl = {
   trf: '/route/transfers/',
   disp: '/disputes/',
   acc: '/submerchants/',
+  token: '/tokens/',
   // rvrsl: '/route/reversals/',
 };
 
@@ -54,6 +55,7 @@ export const batch = item => idItem(item.id);
 export const settlement = makeIdLink('settlement');
 export const order = makeIdLink('order');
 export const dispute = makeIdLink('dispute');
+export const token = makeIdLink('token');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
