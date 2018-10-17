@@ -3405,4 +3405,25 @@ return [
             ],
         ],
     ],
+
+    'testAssignScheduleBulk' => [
+        'request'  => [
+            'url'     => '/merchants/schedules/bulk',
+            'method'  => 'post',
+            'content' => [
+                'schedule' => [
+                    'schedule_id' => '100001schedule',
+                    'type' => 'settlement',
+                ],
+                'merchant_ids' => ['10000000000000', '1000000000test', '1000000000000x'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 3,
+                'failed_count' => 1,
+                'failed_ids'   => ['1000000000000x']
+            ],
+        ],
+    ],
 ];

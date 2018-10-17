@@ -213,6 +213,7 @@ final class Route
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
+        'merchant_schedule_bulk'                   => ['post',     'merchants/schedules/bulk',                       'MerchantController@bulkAssignSchedule'                             ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -861,6 +862,8 @@ final class Route
         'ufh_get_file_signed_url_admin'            => ['get',      'admin-ufh/file/{fileId}/get-signed-url',         'UfhController@getSignedUrl'                                        ],
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
+        'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -1331,6 +1334,7 @@ final class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_razorx_evaluate',
         'offer_create',
         'offer_update',
         'offer_fetch_multiple',
@@ -1741,6 +1745,7 @@ final class Route
         'terminal_set_banks',
 
         'merchant_details_patch',
+        'merchant_schedule_bulk',
     ];
 
     public static $routePermission = [
@@ -2101,6 +2106,7 @@ final class Route
         'terminal_get_banks'                       => '*',
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
+        'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
     ];
 
     public static $direct = [

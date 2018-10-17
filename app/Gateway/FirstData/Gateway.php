@@ -2275,6 +2275,9 @@ class Gateway extends Base\Gateway
                 {
                     $responseArray = $this->parseXmlAndReturnArray($responseBody);
 
+                    $this->traceGatewayPaymentResponse($responseArray, $this->input,
+                        TraceCode::GATEWAY_RESPONSE);
+
                     $this->processAuthorizeResponse($responseArray);
                 }
             }
