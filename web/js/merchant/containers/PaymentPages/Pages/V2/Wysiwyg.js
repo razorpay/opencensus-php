@@ -63,6 +63,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   render() {
     const { isPageReady } = this.state;
+    const { paymentPageEntity } = this.props;
 
     const merchantData = {
       name: this.props.user.name,
@@ -72,9 +73,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         this.props.user.logo_url,
     };
 
+    const isAllowedToCreate =
+      paymentPageEntity.hasOwnProperty('amount') && paymentPageEntity.title;
     const actionBtns = (
       <React.Fragment>
-        <Button.Primary onClick={this.handleCreate}>
+        <Button.Primary
+          onClick={this.handleCreate}
+          disabled={!isAllowedToCreate}
+        >
           Create and Publish Page
         </Button.Primary>
       </React.Fragment>

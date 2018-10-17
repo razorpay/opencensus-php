@@ -6,7 +6,7 @@ import {
 
 export const updateData = field => ({
   type: 'UPDATE_DATA',
-  field,
+  fields: field,
 });
 
 export const deleteInSchema = index => ({
