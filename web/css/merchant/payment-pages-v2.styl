@@ -100,6 +100,19 @@
     label
       display: inherit
 
+    .remove-btn
+      display: inline-block
+      vertical-align: middle
+      margin-left: 16px
+      visibility: hidden
+      opacity: 0
+      transition: 0.08s
+
+    > div:hover
+      .remove-btn
+        opacity: 1
+        visibility: visible
+
     .Input-elWrapper
       font-size: inherit
 
@@ -128,6 +141,9 @@
 
   #share-details, #support-details
     .share-icons
+      span
+        vertical-align: middle
+
       span:not(:nth-last-child(1))
         margin-right: -8px
 
@@ -185,9 +201,6 @@
     &:hover
       .close-btn
         opacity: 0.5
-
-      .share-icons.icons--grayscale
-        opacity: 0.2
 
       .Input-info
         transform: translateY(-50%)

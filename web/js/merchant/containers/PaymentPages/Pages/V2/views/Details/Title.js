@@ -3,22 +3,19 @@ import EditLayer from '../EditLayer';
 
 export default class extends React.PureComponent {
   state = { isEditable: !this.props.title };
-  allowAutoFocus = !this.props.title;
 
   toggleEditMode = e => {
     const toEdit = !this.state.isEditable;
     this.setState({ isEditable: toEdit });
 
-    if (!this.allowAutoFocus) {
-      setTimeout(function() {
-        if (toEdit) {
-          const titleEle = document.querySelector(
-            '#details-section input[name="title"]'
-          );
-          titleEle && titleEle.focus();
-        }
-      });
-    }
+    setTimeout(function() {
+      if (toEdit) {
+        const titleEle = document.querySelector(
+          '#details-section input[name="title"]'
+        );
+        titleEle && titleEle.focus();
+      }
+    }, 10);
   };
 
   render() {
@@ -36,7 +33,6 @@ export default class extends React.PureComponent {
               this.toggleEditMode();
               this.props.updateData(e);
             }}
-            autoFocus={this.allowAutoFocus}
           />
         ) : (
           <div onClick={this.toggleEditMode}>{this.props.title}</div>

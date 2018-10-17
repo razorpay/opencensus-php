@@ -1,12 +1,13 @@
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
+import RemoveBtn from '../RemoveBtn';
 
 export default class extends React.PureComponent {
-  onUpdate = () => {
+  onUpdate = hasSocialShare => {
     this.props.updateData({
       target: {
         name: 'social_share',
-        value: true,
+        value: hasSocialShare,
       },
     });
   };
@@ -27,11 +28,17 @@ export default class extends React.PureComponent {
         {hasSocialShare ? (
           <React.Fragment>
             <label>Share this on:</label>
-            <div class="share-icons">{Icons}</div>
+            <div class="share-icons">
+              {Icons}
+              <RemoveBtn onClick={() => this.onUpdate(false)} />
+            </div>
           </React.Fragment>
         ) : (
           <span class="help-content">
-            <Button.Transparent class="btn-link" onClick={this.onUpdate}>
+            <Button.Transparent
+              class="btn-link"
+              onClick={() => this.onUpdate(true)}
+            >
               + Add social media share icons
             </Button.Transparent>
             <Popover align="right" theme="dark">
