@@ -665,14 +665,16 @@ return [
                     'edit_methods',
                     'capture_queue',
                     'transaction_v2',
+                    'es_on_demand',
                     'es_automatic',
                     'headless',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
+                    'offer_private_auth',
                     'terminal_banks_filter',
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ],
 
     'bulkUpdateFeatureActivationStatus' => [
