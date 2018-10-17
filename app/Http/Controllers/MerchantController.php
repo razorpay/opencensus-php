@@ -217,13 +217,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postActivate($id)
-    {
-        $data = $this->service()->activate($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSendActivationMail()
     {
         $input = Request::all();

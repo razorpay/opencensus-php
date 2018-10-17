@@ -34,14 +34,12 @@ class Activate extends Base\Core
     /**
      * This function is used for activating merchant
      * @param Entity $merchant
-     * @param bool $activateByStatus which is by default false, it determines
-     * if the activation is done by the new activation status `activated`.
      *
      * @throws Exception\BadRequestException
      *
      * @return array
      */
-    public function activate(Entity $merchant, bool $activateByStatus = false): array
+    public function activate(Entity $merchant): array
     {
         $merchant->getValidator()->validateBeforeActivate();
 
@@ -56,18 +54,7 @@ class Activate extends Base\Core
 
         (new Methods\Core)->checkPricing($merchant, $methods, true);
 
-        // $terminal = (new Terminal\Repository)->getByMerchantId($id);
-
-        // if ($terminal === null)
-        // {
-        //     throw new Exception\BadRequestException(
-        //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
-        // }
-
-        if ($activateByStatus === true)
-        {
-            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
-        }
+        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
         $ba = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -110,19 +97,9 @@ class Activate extends Base\Core
             $merchant->setHasKeyAccess(true);
         }
 
-        if ($activateByStatus === true)
-        {
-            // Triggering workflow for the activation_status change in merchantDetail entity
-            $workflow = $this->app['workflow']
-                             ->handle();
-        }
-        else
-        {
-            // Triggering
-            $workflow = $this->app['workflow']
-                             ->setEntity($merchant->getEntity())
-                             ->handle($oldMerchant, $merchant);
-        }
+        // Triggering workflow for the activation_status change in merchantDetail entity
+        $workflow = $this->app['workflow']
+                         ->handle();
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
@@ -143,14 +120,11 @@ class Activate extends Base\Core
 
         $this->sendMerchantActivatedEvents($merchant);
 
-        if ($activateByStatus === true)
-        {
-            $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
 
-            (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
 
-            $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
-        }
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
 
         return $merchant->toArrayPublic();
     }

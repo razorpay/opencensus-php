@@ -596,7 +596,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchantDetails->merchant, true);
+                (new Merchant\Activate)->activate($merchantDetails->merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
