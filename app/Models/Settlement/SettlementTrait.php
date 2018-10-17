@@ -9,11 +9,13 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payout\Core as PayoutCore;
 
 trait SettlementTrait
 {
@@ -27,6 +29,8 @@ trait SettlementTrait
     protected function filterTransactionsForSettlement($txns): array
     {
         $filterGroupedTxns = [];
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
 
         foreach ($txns as $txn)
         {
@@ -77,6 +81,8 @@ trait SettlementTrait
 
             $filterGroupedTxns[$merchantId]->push($txn);
         }
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }
@@ -515,6 +521,19 @@ trait SettlementTrait
         }
     }
 
+    /**
+     * Used payout mutex to block merchant from creating a
+     * settlement when payout is in process for the same merchant.
+     *
+     * @param $merchant
+     * @param $channel
+     * @param $setlTxns
+     * @param $setlAmount
+     * @param $setlFee
+     * @param $setlApiFee
+     * @param $tax
+     * @return array
+     */
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
@@ -529,20 +548,32 @@ trait SettlementTrait
 
             $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-            $this->traceSettlementDelayOfTransactions($setlTxns);
+            $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-            $settlement = $merchantSettler->settle(
-                                $setlTxns,
-                                $setlAmount,
-                                $setlFee,
-                                $setlApiFee,
-                                $tax,
-                                $this->setlTime,
-                                $setlDetailAmounts);
+            return $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use(
+                    $merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlDetailAmounts) {
 
-            $merchantSettler->createTransaction($settlement);
+                    $this->traceSettlementDelayOfTransactions($setlTxns);
 
-            $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+                    $settlement = $merchantSettler->settle(
+                        $setlTxns,
+                        $setlAmount,
+                        $setlFee,
+                        $setlApiFee,
+                        $tax,
+                        $this->setlTime,
+                        $setlDetailAmounts);
+
+                    $merchantSettler->createTransaction($settlement);
+
+                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+
+                    return [$settlement, $bankTransferAtpt];
+
+                    },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
         }
         catch (\Throwable $ex)
         {
@@ -572,7 +603,7 @@ trait SettlementTrait
             (new SlackNotification)->send('setl_skipped', $traceData, $ex);
         }
 
-        return [$settlement, $bankTransferAtpt];
+        return [null, null];
     }
 
     protected function traceSettlementDelayOfTransactions($setlTxns)
@@ -737,7 +768,7 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('3072M');
+        RuntimeManager::setMemoryLimit('6144M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
@@ -800,5 +831,22 @@ trait SettlementTrait
         }
 
         return false;
+    }
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+               'memory_allocated'               => $memoryAllocated,
+               'memory_used'                    => $memoryUsed,
+               'memory_peak_usage'              => $memoryPeakUsage,
+               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

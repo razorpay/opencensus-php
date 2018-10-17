@@ -44,7 +44,11 @@ class Core extends Base\Core
      */
     public function credit(Entity $balance, int $amount, bool $isRefund = false) : Entity
     {
-        $balance->getValidator()->validateBalanceForCredit($amount);
+        //
+        // 11/10/2018: Decided to stop all validation on wallet max balance, since we will only
+        // support closed PPI wallets for the foreseeable future.
+        //
+        // $balance->getValidator()->validateBalanceForCredit($amount);
 
         $balance->addBalance($amount);
 

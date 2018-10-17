@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
+        Entity::TYPE            => 'required|string|max:30|in:default,on_demand'
     ];
 
     protected static $merchantRules = [
@@ -35,6 +36,11 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+    ];
+
+    protected static $merchantPayoutOnDemandRules = [
+        Entity::AMOUNT   => 'required|integer|min:100',
+        Entity::CURRENCY => 'required|size:3',
     ];
 
     protected static $payoutRetryRules = [

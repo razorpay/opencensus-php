@@ -49,4 +49,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postMerchantPayoutOnDemand()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantPayoutOnDemand($input);
+
+        return ApiResponse::json($data);
+    }
 }

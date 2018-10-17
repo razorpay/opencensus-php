@@ -13,6 +13,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
@@ -52,7 +53,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentAmount($row)
     {
-        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
+        return Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
@@ -247,7 +248,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $tax = $gstTax + $csfTax;
 
-        return SubReconciliator\Helper::getIntegerFormattedAmount($tax);
+        return Helper::getIntegerFormattedAmount($tax);
     }
 
     /**
@@ -264,7 +265,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if (isset($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) === true)
         {
-            $lateSettlementFee = abs($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]);
+            $lateSettlementFee = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]));
         }
 
         else
@@ -274,7 +275,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if (isset($row[ReconciliationFields::RRF_AMOUNT]) === true)
         {
-            $rrfAmount = abs($row[ReconciliationFields::RRF_AMOUNT]);
+            $rrfAmount = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::RRF_AMOUNT]));
         }
 
         else
@@ -282,13 +283,14 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $rrfAmount = 0;
         }
 
-        $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
+        $msfAmount = abs(Helper::getIntegerFormattedAmount($row[ReconciliationFields::MSF_AMOUNT]));
 
+        // This $tax is already in paisa
         $tax = $this->getGatewayServiceTax($row);
 
         $fee = $lateSettlementFee + $rrfAmount + $msfAmount + $tax;
 
-        return SubReconciliator\Helper::getIntegerFormattedAmount($fee);
+        return $fee;
     }
 
     /**

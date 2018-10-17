@@ -14,6 +14,7 @@ use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
 use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
@@ -1400,6 +1401,15 @@ class ReconciliationFileTest extends TestCase
         $paymentEnity = $this->getDbLastEntity('payment');
         $this->assertNotNull($paymentEnity['reference2']);
         $this->assertNotNull($paymentEnity['reference1']);
+
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MSF Amount']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+
+        // Test that the gateway fee and tax sum is as expected
+        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
+
+        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
         $this->assertBatchStatus(Status::PROCESSED);
     }
 

@@ -80,14 +80,14 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
-    const SPECIAL_IFSC_CODE  = 'RAZR0000001';
-
-    const MAX_DESCRIPTION_LENGTH = 255;
-
     // Input keys
     const REFUND_ID          = 'refund_id';
-
     const GATEWAY            = 'gateway';
+
+    const INVALID_ACC_CREDIT_NARRATION  = 'ACC DOESNT EXIST';
+    const MAX_NARRATION_LENGTH          = 39;
+    const SPECIAL_IFSC_CODE             = 'RAZR0000001';
+    const MAX_DESCRIPTION_LENGTH        = 255;
 
     protected $fillable = [
         self::PAYER_NAME,
@@ -444,5 +444,25 @@ class Entity extends Base\PublicEntity
     public function setGateway(string $gateway)
     {
         $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
+    public function getRefundNarration()
+    {
+        $utr = $this->getUtr();
+
+        $availableLength = self::MAX_NARRATION_LENGTH - strlen($utr) - 1;
+
+        if ($this->isExpected() === true)
+        {
+            $billingLabel = $this->merchant->getBillingLabel();
+
+            $label = substr($billingLabel, 0, $availableLength);
+        }
+        else
+        {
+            $label = self::INVALID_ACC_CREDIT_NARRATION;
+        }
+
+        return $label . '-' . $utr;
     }
 }
