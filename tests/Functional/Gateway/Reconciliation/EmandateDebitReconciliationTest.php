@@ -128,9 +128,9 @@ class EmandateDebitReconciliationTest extends TestCase
         );
 
         // Generate and upload the same file twice
-//        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
-//
-//        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'EmandateAxis');
 
@@ -186,7 +186,7 @@ class EmandateDebitReconciliationTest extends TestCase
     {
         $this->bank = 'UTIB';
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2500])->toArray();
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $amount])->toArray();
 
         $token = $this->getDbLastEntity('token')->toArray();
 
