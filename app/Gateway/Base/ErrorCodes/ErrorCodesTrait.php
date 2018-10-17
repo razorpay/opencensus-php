@@ -36,7 +36,7 @@ trait ErrorCodesTrait
             // cases we can override this method.
             $gatewayErrorCode = static::getRelevantGatewayErrorCode($gatewayFieldName, $content);
 
-            // Returns the error code/description mapp array
+            // Returns the error code/description map array
             // errorType is just to know that this is an errorCodeMap or errorDescriptionMap
             $internalErrorMap = $errorFieldsClass::$$errorType[$fieldName];
 

@@ -544,6 +544,7 @@ class Gateway extends Base\Gateway
         $this->checkTpv($input, $content);
 
         $content[AuthRequestFields::SIGNATURE] = $this->getHashOfArray($content);
+
         return $content;
     }
 
