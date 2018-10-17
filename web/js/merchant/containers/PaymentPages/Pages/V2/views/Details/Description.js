@@ -9,10 +9,6 @@ const DESC_LIMIT = {
 export default class extends React.PureComponent {
   state = { isEditable: false };
 
-  toggleEditMode = e => {
-    this.setState({ isEditable: !this.state.isEditable });
-  };
-
   handleOnInput = ({ target }) => {
     const content = target.value;
     const fakeEle = window.document.querySelector('#description .fakeTextArea');
@@ -23,7 +19,7 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const isEditable = this.state.isEditable;
+    const isEditable = this.state.isEditable || this.props.description;
 
     return (
       <div id="description" class="text-wrap">
@@ -41,7 +37,7 @@ All URLs will convert to links.`}
               defaultValue={this.props.description}
               onInput={this.handleOnInput}
               onBlur={e => {
-                this.toggleEditMode();
+                this.setState({ isEditable: false });
                 this.props.updateData(e);
               }}
               autoFocus
@@ -49,7 +45,10 @@ All URLs will convert to links.`}
           </React.Fragment>
         ) : (
           this.props.description || (
-            <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+            <Button.Transparent
+              class="btn-link"
+              onClick={() => this.setState({ isEditable: true })}
+            >
               + Add page description
             </Button.Transparent>
           )

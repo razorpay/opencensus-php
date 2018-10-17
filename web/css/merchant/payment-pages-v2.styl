@@ -108,10 +108,24 @@
       opacity: 0
       transition: 0.08s
 
-    > div:hover
-      .remove-btn
-        opacity: 1
-        visibility: visible
+    > div
+        &:hover
+          .remove-btn
+            opacity: 1
+            visibility: visible
+
+        .Input-el
+          background: transparent
+          border: none
+          resize: none
+
+          &:hover
+            border: 1px solid #e2e2e2
+
+          &:focus
+            background: #fff
+            border: 1px solid $primary-color
+            resize: vertical
 
     .Input-elWrapper
       font-size: inherit
@@ -124,7 +138,8 @@
         font-weight: 600
 
     textarea.Input-el
-      min-height: 72px
+      min-height: 28px
+      height: 28px
       max-height: 230px // Supports 720 char on desktop
 
     .Input
@@ -159,9 +174,6 @@
         height: 28px
         background: transparent
         color: #0D2366 // Same as in customer-facing view
-
-      &:nth-of-type(n+2)
-        margin-top: 8px
 
   .title--big .Input-el
     padding: 1px 5px 2px // 1px less cuz of border

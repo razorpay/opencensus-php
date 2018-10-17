@@ -5,10 +5,6 @@ import Button from 'component/Button';
 export default class extends React.PureComponent {
   state = { isEditable: false };
 
-  toggleEditMode = e => {
-    this.setState({ isEditable: !this.state.isEditable });
-  };
-
   handleOnInput = ({ target }) => {
     const content = target.value;
     const fakeEle = window.document.querySelector(
@@ -21,7 +17,7 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const isEditable = this.state.isEditable;
+    const isEditable = this.state.isEditable || this.props.terms;
 
     return (
       <div id="terms-details" class="text-wrap">
@@ -36,20 +32,20 @@ export default class extends React.PureComponent {
               defaultValue={this.props.terms}
               onInput={this.handleOnInput}
               onBlur={e => {
-                this.toggleEditMode();
+                this.setState({ isEditable: false });
                 this.props.updateData(e);
               }}
               autoFocus
             />
           </React.Fragment>
-        ) : this.props.terms ? (
-          <React.Fragment>
-            <label>Terms & Conditions:</label>
-            <div>{this.props.terms}</div>
-          </React.Fragment>
         ) : (
           <span class="help-content">
-            <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+            <Button.Transparent
+              class="btn-link"
+              onClick={() => {
+                this.setState({ isEditable: true });
+              }}
+            >
               + Add Terms & Conditions
             </Button.Transparent>
             <Popover align="right" theme="dark">
