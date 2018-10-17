@@ -94,14 +94,39 @@ class Core extends Base\Core
         return true;
     }
 
-    /**
-     * Shell method, real refund logic is in the Refund helper class.
-     *
-     * @param array $data
-     */
-    public function refund(array $data)
+    public function getAccountForRefund(Entity $bankTransfer)
     {
-        (new Refund)->process($data);
+        $payerAccount = $this->updateAndFetchPayerAccount($bankTransfer);
+
+        return [
+            BankAccount\Entity::IFSC_CODE        => $payerAccount->getIfscCode(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
+            BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
+        ];
+    }
+
+     /*
+     * This exists for older bank transfer payments. For new payments, we
+     * create the payer bank account with the mapped IFSC. For older ones,
+     * if the bank account has no IFSC, we set it to the mapped IFSC now.
+     *
+     * @param array  $input
+     * @param Entity $bankTransfer
+     */
+    protected function updateAndFetchPayerAccount(Entity $bankTransfer): BankAccount\Entity
+    {
+        $payerAccount = $bankTransfer->payerBankAccount;
+
+        if ($payerAccount->getIfscCode() === null)
+        {
+            $ifsc = PayerBankAccount::getPayerIfsc($bankTransfer);
+
+            $payerAccount->setIfsc($ifsc);
+
+            $this->repo->saveOrFail($payerAccount);
+        }
+
+        return $payerAccount;
     }
 
     /**

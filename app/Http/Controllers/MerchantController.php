@@ -1135,4 +1135,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getRazorxTreatment($featureFlag)
+    {
+        $response = $this->service(E::MERCHANT)->getRazorxTreatment($featureFlag);
+
+        return ApiResponse::json($response);
+    }
 }

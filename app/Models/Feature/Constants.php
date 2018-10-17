@@ -87,6 +87,7 @@ class Constants
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
     const CAPTURE_QUEUE                   = 'capture_queue';
     const TRANSACTION_V2                  = 'transaction_v2';
+    const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS                        = 'headless';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
@@ -213,6 +214,7 @@ class Constants
         self::EDIT_METHODS                    => true,
         self::CAPTURE_QUEUE                   => true,
         self::TRANSACTION_V2                  => true,
+        self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
         self::HEADLESS                        => true,
         self::FIRST_DATA_S2S_FLOW             => true,
@@ -256,8 +258,7 @@ class Constants
     ];
 
     /**
-     * Features that are exposed to the merchant and can be
-     * enabled/disabled
+     * Features that are exposed to the merchant on the dashboard
      *
      * @var array
      */
@@ -265,7 +266,7 @@ class Constants
         self::NOFLASHCHECKOUT  => [
             'feature'       => self::NOFLASHCHECKOUT,
             'display_name'  => 'No Flash Checkout',
-            'documentation' => ''
+            'documentation' => '',
         ],
         self::MARKETPLACE      => [
             'feature'       => self::MARKETPLACE,
@@ -287,6 +288,24 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
+        self::ES_ON_DEMAND => [
+            'feature'       => self::ES_ON_DEMAND,
+            'display_name'  => 'On demand Payout',
+            'documentation' => ''
+        ],
+    ];
+
+    /**
+     * Features that merchants can enable/disable
+     * Must be defined in the visibleFeaturesMap
+     *
+     * @var array
+     */
+    public static $merchantEditableFeatures = [
+        self::NOFLASHCHECKOUT,
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS,
     ];
 
     /*

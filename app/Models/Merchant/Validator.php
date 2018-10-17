@@ -561,10 +561,13 @@ class Validator extends Base\Validator
         $featureNames = array_keys($input['features']);
 
         $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+        $editableFeature = Feature\Constants::$merchantEditableFeatures;
 
         foreach ($featureNames as $feature)
         {
-            if (in_array($feature, $visibleFeatures, true) === false)
+            // Feature must be a "visible feature" and editable by the merchant
+            if ((in_array($feature, $visibleFeatures, true) === false) or
+                (in_array($feature, $editableFeature, true) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,

@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
+
 use Carbon\Carbon;
 use Config;
 use DB;
@@ -9,7 +11,8 @@ use Hash;
 
 class Org extends Base
 {
-    const HDFC_ORG                  = 'HDFCbankOrgnId';
+    const SBIN_ORG                  = 'SBINbankOrgnId';
+    const HDFC_ORG                  = '6dLbNSpv5XbCOG';
     const RZP_ORG                   = '100000razorpay';
     const RZP_ORG_SIGNED            = 'org_100000razorpay';
     const DEFAULT_GRP               = '1RazorpayGrpId';
@@ -49,14 +52,78 @@ class Org extends Base
     {
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
-            'id'            => self::HDFC_ORG,
-            'email'         => 'test@hdfcbank.com',
-            'email_domains' => 'hdfcbank.com'
+            'id'            => self::SBIN_ORG,
+            'email'         => 'test@sbi.com',
+            'email_domains' => 'sbi.com'
         ]);
 
         $orgHost = $this->fixtures->create('org_hostname', [
+            'org_id'    => self::SBIN_ORG,
+            'hostname'  => 'sbi.com',
+        ]);
+
+        return $org;
+    }
+
+    public function createHdfcOrg()
+    {
+        $now = Carbon::now()->getTimestamp();
+
+        $permissions = (new PermissionEntity)->getAllPermissions();
+        // Default organisation to be used for tests
+        $org = $this->fixtures->create('org', [
+            'id'               => self::HDFC_ORG,
+            'email'            => 'admin@hdfc.com',
+            'cross_org_access' => true,
+        ]);
+
+        $org->permissions()->attach($permissions);
+
+        $this->fixtures->create('org_hostname', [
             'org_id'    => self::HDFC_ORG,
-            'hostname'  => 'hdfcbank.com',
+            'hostname'  => 'hdfcbank.com'
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => self::HDFC_ORG,
+            'hostname'  => 'hdfcbank.in'
+        ]);
+
+        $this->fixtures->create('group', [
+            'id'     => '1HdfcbankGrpId',
+            'name'   => 'hdfc_group',
+            'org_id' => self::HDFC_ORG,
+        ]);
+
+        $adminRole = $this->fixtures->create('role', [
+            'id'     => 'HdfAdminRoleId',
+            'org_id' => self::HDFC_ORG,
+            'name'   => Config::get('heimdall.default_role_name'),
+        ]);
+
+        $this->fixtures->create('role', [
+            'id'     => 'HdfMngerRoleId',
+            'org_id' => self::HDFC_ORG,
+            'name'   => 'Admin',
+        ]);
+
+        $adminRole->permissions()->attach($permissions);
+
+        $admin = $this->fixtures->create('admin', [
+            'id'     => 'HdfcbSprAdmnId',
+            'org_id' => self::HDFC_ORG,
+            'email'  => 'superadmin@hdfc.com'
+        ]);
+
+        $admin->roles()->attach($adminRole);
+
+        $this->fixtures->create('admin_token', [
+            // 'id'         => 'SuperSecretTokenForHdfcbank' . self::DEFAULT_TOKEN_PRINCIPAL,
+            'id'         => 'SuprHdfcbToken',
+            'admin_id'   => 'HdfcbSprAdmnId',
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYears(10)->timestamp,
         ]);
 
         return $org;
