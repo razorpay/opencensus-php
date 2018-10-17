@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
+use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
@@ -578,5 +579,10 @@ class GatewayController extends Controller
         $data = $service->update($id, $input);
 
         return ApiResponse::json($data);
+    }
+
+    public function updateNetbankingUrlInStatusCake()
+    {
+        DynamicNetBankingUrlUpdater::dispatch();
     }
 }

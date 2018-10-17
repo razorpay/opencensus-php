@@ -53,6 +53,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        $this->updateUrlInRedis($input, $request['url']);
+
         return $request;
     }
 

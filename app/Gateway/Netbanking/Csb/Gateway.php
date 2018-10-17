@@ -56,6 +56,8 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount']]);
 
+        $this->updateUrlInCacheAndPushMetric($input, $request['url']);
+
         return $request;
     }
 

@@ -152,8 +152,10 @@ return [
 
     'gateway_downtime' => [
         'statuscake' => [
-            'username' => env('STATUSCAKE_USERNAME'),
-            'api_key'  => env('STATUSCAKE_API_KEY')
+            'username'   => env('STATUSCAKE_USERNAME'),
+            'api_key'    => env('STATUSCAKE_API_KEY'),
+            'tests_url'  => env('STATUSCAKE_TESTS_URL'),
+            'update_url' => env('STATUSCAKE_UPDATE_URL'),
         ]
     ],
 

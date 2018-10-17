@@ -140,6 +140,8 @@ add_cron "0 1 * * *"        "dsp_report_yesterday"           GET  "$BASE_URL/rep
 # Daily Recon Summary
 add_cron "30 22 * * *"        "daily_recon_summary"            GET "$BASE_URL/daily_recon_summary"                         ""                              $LIVE_AUTH
 
+# Daily: Dynamic netbanking URL update in status cake
+add_cron "0 0 * * *"        "dynamic_netbanking_url_update"  POST "$BASE_URL/payment/netbanking/statuscake/urlsync"      ""                              $LIVE_AUTH
 
 # Install the generated crontab
 crontab $TMP_CRONTAB
