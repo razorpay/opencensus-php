@@ -64,8 +64,6 @@ class Activate extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
-        $oldMerchant = clone $merchant;
-
         $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
 
         $merchantPromotionCore = (new Merchant\Promotion\Core);
