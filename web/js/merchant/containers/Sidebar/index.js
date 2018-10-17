@@ -264,7 +264,9 @@ export default class Sidebar extends Component {
                     label="Route"
                     icon="i i-store text-success"
                     to={routes.marketplace}
-                    additionalCondition={user => user.isAllowedView('home')}
+                    additionalCondition={user =>
+                      user.isAllowedView('marketplace')
+                    }
                   />
                   <MainNavLink
                     label="Subscriptions"
