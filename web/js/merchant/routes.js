@@ -21,6 +21,8 @@ import DisputeDetails from 'merchant/containers/Disputes/Details';
 import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 
+import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
+
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
 
@@ -75,6 +77,8 @@ const entityDetailsMap = {
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
+
+  '/tokens/:id(token_.+)': { component: Token },
 
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,
