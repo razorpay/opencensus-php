@@ -65,3 +65,7 @@ export default class TokensList extends ListContainer {
     );
   }
 }
+
+export function getTokenStatus(token) {
+  return token.method === 'card' ? 'confirmed' : token.recurring_details.status;
+}
