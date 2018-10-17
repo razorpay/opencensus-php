@@ -1,6 +1,7 @@
 import Input from 'component/Input';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
+import RemoveBtn from '../RemoveBtn';
 
 const phoneIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -23,9 +24,17 @@ export default class extends React.PureComponent {
     this.setState({ isEditable: !this.state.isEditable });
   };
 
+  removeField = fieldName => {
+    const removeEle = document.querySelector(
+      `#support-details input[name="${fieldName}"]`
+    );
+    removeEle.value = '';
+    removeEle.dispatchEvent(new window.Event('change', { bubbles: true }));
+  };
+
   render() {
-    const { support } = this.props,
-      hasSupportInfo = support && (support.email || support.phone),
+    let { support = {} } = this.props,
+      hasSupportInfo = support.email || support.phone,
       isEditable = this.state.isEditable;
 
     let content = '';
@@ -39,23 +48,26 @@ export default class extends React.PureComponent {
             <Input
               name="support[email]"
               placeholder="Enter support email"
-              defaultValue={support && support.email}
+              defaultValue={support.email}
+              autoFocus={!support.email}
               onBlur={e => {
                 this.props.updateData(e);
               }}
-              autoFocus
             />
+            <RemoveBtn onClick={() => this.removeField('support[email]')} />
           </div>
           <div class="sub-detail">
             {phoneIcon}
             <Input
               name="support[phone]"
               placeholder="Enter support phone"
-              defaultValue={support && support.phone}
+              defaultValue={support.phone}
+              autoFocus={support.email && !support.phone}
               onBlur={e => {
                 this.props.updateData(e);
               }}
             />
+            <RemoveBtn onClick={() => this.removeField('support[phone]')} />
           </div>
         </React.Fragment>
       );
