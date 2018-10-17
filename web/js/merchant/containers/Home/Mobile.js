@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -17,6 +17,7 @@ import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
+import Announcement from 'merchant/components/Announcements/Instant';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -58,12 +59,14 @@ class AnalyticsMobile extends Component {
       endDate,
       oldestTransactionDate,
       mode,
+      user,
       showGroupingByPtfm,
       tabsMeta,
       analyticsFetch,
       onFilterChange,
       expandOnboardingBanner,
       showOnboardingBanner,
+      showInstantActivation,
       payments,
       onHideOnboardingBanner,
       onFirstStepClose,
@@ -83,6 +86,10 @@ class AnalyticsMobile extends Component {
         />
 
         <div ref={node => onExtraContentMount(node)} className="extra-content">
+          {showInstantActivation && (
+            <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -94,6 +101,7 @@ class AnalyticsMobile extends Component {
                 onClose={onHideOnboardingBanner}
                 onFirstStepClose={onFirstStepClose}
                 isFirstStep={showOnboardingBannerFirstStep}
+                showInstantActivation={showInstantActivation}
               />
             )}
           </div>
@@ -165,9 +173,7 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360
-                        ? 40
-                        : 57
+                      : windowWidth > 360 ? 40 : 57
                     : 0
                 }
               />

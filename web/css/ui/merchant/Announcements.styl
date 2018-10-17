@@ -1,4 +1,5 @@
 .Announcement_Banner
+
   background: #ffffff
   height: 50px
   position: relative
@@ -7,10 +8,22 @@
   display: table;
   width: 100%;
 
-  .title, .content {
+  .title, .content, .close-btn {
 
     display: table-cell;
     vertical-align: middle;
+  }
+
+  .title, .close-btn {
+
+    width: 0;
+  }
+
+  .close-btn {
+
+    color: currentColor;
+    font-size: 28px;
+    padding-right: 15px;
   }
 
   .title
@@ -21,7 +34,6 @@
     color: white
     border-radius: 2px 0 0 2px;
     padding-right: 50px;
-    width: 0;
 
     .title-content {
 
@@ -29,8 +41,8 @@
       font-size: 15px;
       line-height: 18px;
       height: 100%;
-      padding: 15px 0 15px 15px
       z-index: 1;
+      padding-left: 15px;
       color: #fff;
       white-space: nowrap;
       display: table;
@@ -89,14 +101,6 @@
       background-color: currentColor;
       border-radius: 50%;
     }
-  
-  .close-btn
-    color: #58666D
-    font-size: 26px
-    position: absolute
-    top: 4px
-    right: 12px
-    padding: 4px 8px
 
   .btn-link 
     font-weight: bold
@@ -106,6 +110,53 @@
       top: 2px
       left: 0
       position: relative
+
+  @media (max-width: 1020px) {
+
+    position: relative;
+
+    .title, .content, .close-btn {
+
+      display: block;
+    }
+
+    .title {
+
+       width: 100%;
+       padding-right: 0;
+       height: auto;
+
+       &:before, &:after {
+
+         display: none;
+       }
+
+       .title-content {
+
+         display: block;
+         padding: 12px 37px 12px 12px;
+
+         .title-content-wrapper {
+
+           display: block;
+         }
+       }
+     }
+
+     .content {
+
+       padding: 15px;
+     }
+
+     .close-btn {
+
+       position: absolute;
+       top: 0;
+       right: 12px;
+       z-index: 1;
+       color: #fff;
+     }
+  }
 
 .Modal .modal-body.rzp-early-stl-modal
   color: #58666E
@@ -233,9 +284,6 @@
     .help-block
       width: 57%
       margin: 0 auto
-
-    .close-btn
-      margin-top: 15px 
     
     .banner-footer
       width: 100%
@@ -272,49 +320,6 @@
 
 .Announcement_Banner.with-tour
   margin-top: 20px
-
-@media only screen and (max-width: 1190px) and (min-width: 1021px)
-  .Announcement_Banner
-    height: 68px
-
-    .title
-      font-size: 68px
-
-      .title-content {
-
-        padding: 24px 0 15px 15px
-      }
-    
-    .content
-      width: 65%
-
-    .corner
-      border-width: 68px 40px 0 0
-
-    .close-btn
-      top: 12px
-
-@media only screen and (max-width: 1020px)
-  .Announcement_Banner
-    height: auto  
-
-    .title
-      float: none
-      height 48px
-      padding: 12px
-      border-radius: 2px 2px 0 0
-    
-    .corner
-      display: none
-    
-    .content
-      float: none
-      width: 100%
-      padding: 12px
-    
-    .close-btn
-      color: #ffffff
-      top: 2px
 
 .Announcement_Banner--hide
   display: none

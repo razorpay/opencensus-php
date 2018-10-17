@@ -8,7 +8,11 @@ import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
 
-@connect(state => ({ ...state.session, config: state.config.config }))
+@connect(state => ({
+  ...state.session,
+  config: state.config.config,
+  windowWidth: state.app.windowWidth,
+}))
 export default class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);
@@ -16,6 +20,7 @@ export default class OnboardingCardInstant extends Component {
     this.state = {
       showProducts: false,
       showTransactionsHelper: false,
+      contentWidth: null,
     };
 
     this.onCloseProductsModal = null;
@@ -24,6 +29,24 @@ export default class OnboardingCardInstant extends Component {
     this.showTransactionsModal = this.showTransactionsModal.bind(this);
     this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
     this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
+  }
+
+  setContentWidth(width) {
+    this.setState({
+      contentWidth: width,
+    });
+  }
+
+  componentDidMount() {
+    if (this.content) {
+      this.setContentWidth(this.content.innerWidth);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.content && nextProps.windowWidth !== this.props.windowWidth) {
+      this.setContentWidth(this.content.innerWidth);
+    }
   }
 
   showProductsModal(onCloseCb) {
@@ -79,7 +102,12 @@ export default class OnboardingCardInstant extends Component {
         isRejected,
         needsClarification,
       } = user,
-      { showProducts, showTransactionsHelper, isKLA } = this.state,
+      {
+        showProducts,
+        showTransactionsHelper,
+        isKLA,
+        contentWidth,
+      } = this.state,
       commonModeCardProps = {
         mode,
         integration,
@@ -110,7 +138,10 @@ export default class OnboardingCardInstant extends Component {
             showTransactionsModal={this.showTransactionsModal}
           />
         )}
-        <div className="onboarding-card-instant-content">
+        <div
+          className="onboarding-card-instant-content"
+          ref={node => (this.content = node)}
+        >
           <div className="onboarding-steps">
             <TestModeCard {...commonModeCardProps} />
             <ActivationStatusCard {...activationCardProps} />
