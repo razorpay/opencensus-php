@@ -63,6 +63,19 @@ class EmandateDebitReconciliationTest extends TestCase
 
         $this->generateDebitFile($content);
 
+        $this->mockReconContentFunction(
+            function (&$content, $action = null) use ($debitPaymentIds)
+            {
+                if ($action === 'row_data' and $content[0] === $debitPaymentIds[1])
+                {
+                    $content[10] = 'Rejected';
+                    $content[11] = 'Not enough balance';
+                }
+            },
+            null,
+            ['type' => 'emandate_debit']
+        );
+
         $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -85,77 +98,60 @@ class EmandateDebitReconciliationTest extends TestCase
         $this->assertAxisEntities($debitPaymentIds);
     }
 
-//    public function testAxisNbEmandateDebitReconFailedPayment()
-//    {
-//        $this->bank = 'UTIB';
-//
-//        $this->gateway = 'netbanking_axis';
-//
-//        $this->createAxisInitialPaymentViaFixtures();
-//
-//        // Failure payment
-//        $failureDebitPayment = $this->createAxisDebitPaymentViaFixtures(2500);
-//
-//        // Success payment
-//        $successDebitPayment = $this->createAxisDebitPaymentViaFixtures(3500);
-//
-//        $this->mockReconContentFunction(
-//            function (&$content, $action = null) use ($failureDebitPayment)
-//            {
-//                if ($action === 'row_data' and $content[0] === $failureDebitPayment['id'])
-//                {
-//                    $content[10] = 'Rejected';
-//                    $content[11] = 'Not enough balance';
-//                }
-//            },
-//            null,
-//            ['type' => 'emandate_debit']
-//        );
-//
+    public function testAxisNbEmandateDebitReconDuplicateUpload()
+    {
+        $this->bank = 'UTIB';
+
+        $this->gateway = 'netbanking_axis';
+
+        $this->createAxisInitialPaymentViaFixtures();
+
+        $successDebitPayment = $this->createAxisDebitPaymentViaFixtures(3500);
+
+        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'EmandateAxis');
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'          => 'reconciliation',
+                'sub_type'      => 'emandate_debit',
+                'gateway'       => 'EmandateAxis',
+                'status'        => 'processed',
+                'success_count' => 1,
+            ],
+            $batch
+        );
+
+        // Generate and upload the same file twice
 //        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
 //
 //        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-//
-//        $response = $this->reconcile($uploadedFile, 'NetbankingAxisEmandate');
-//
-//        $this->assertSuccessDebitPayment($successDebitPayment['id']);
-//        $this->assertFailureDebitPayment($failureDebitPayment['id']);
-//
-//        $this->assertEquals(1, $response['failure_count']);
-//        $this->assertEquals(2, $response['total_count']);
-//        $this->assertEquals($failureDebitPayment['id'], $response['failures'][0]);
-//    }
-//
-//    public function testAxisNbEmandateDebitReconDuplicateUpload()
-//    {
-//        $this->bank = 'UTIB';
-//
-//        $this->gateway = 'netbanking_axis';
-//
-//        $this->createAxisInitialPaymentViaFixtures();
-//
-//        $successDebitPayment = $this->createAxisDebitPaymentViaFixtures(3500);
-//
-//        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
-//
-//        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-//
-//        $this->reconcile($uploadedFile, 'NetbankingAxisEmandate');
-//
-//        // Generate and upload the same file twice
-//        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
-//
-//        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-//
-//        $this->reconcile($uploadedFile, 'NetbankingAxisEmandate');
-//
-//        $transactions = $this->getDbEntities('transaction', ['entity_id' => $successDebitPayment['id']]);
-//
-//        // Assert that only one transaction is created
-//        // and thus the payment is not authorized twice if the same file is
-//        // uploaded twice
-//        $this->assertCount(1, $transactions);
-//    }
+
+        $this->reconcile($uploadedFile, 'EmandateAxis');
+
+        $transactions = $this->getDbEntities('transaction', ['entity_id' => $successDebitPayment['id']]);
+
+        // Assert that only one transaction is created
+        // and thus the payment is not authorized twice if the same file is
+        // uploaded twice
+        $this->assertCount(1, $transactions);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'          => 'reconciliation',
+                'sub_type'      => 'emandate_debit',
+                'gateway'       => 'EmandateAxis',
+                'status'        => 'processed',
+                'success_count' => 1,
+            ],
+            $batch
+        );
+    }
 
     protected function createAxisInitialPaymentViaFixtures()
     {
@@ -303,12 +299,10 @@ class EmandateDebitReconciliationTest extends TestCase
         return $uploadedFile;
     }
 
-    protected function assertAxisEntities($registrationPaymentId, array $debitPaymentIds)
+    protected function assertAxisEntities(array $debitPaymentIds)
     {
-        foreach ($debitPaymentIds as $debitPaymentId)
-        {
-            $this->assertSuccessDebitPayment($debitPaymentId);
-        }
+        $this->assertSuccessDebitPayment($debitPaymentIds[0]);
+        $this->assertFailureDebitPayment($debitPaymentIds[1]);
     }
 
     protected function assertSuccessDebitPayment($debitPaymentId)
@@ -324,13 +318,10 @@ class EmandateDebitReconciliationTest extends TestCase
 
         $this->assertEquals($debitPayment['amount'], $transaction['amount']);
 
-        // Assert netbanking entity values
+        // Assert netbanking entity updates
         $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
             ->toArray();
-
-        $this->assertEquals(true, $gatewayPayment['received']);
-        $this->assertEquals('1234567890', $gatewayPayment['account_number']);
-        $this->assertEquals($this->bank, $gatewayPayment['bank']);
+        $this->assertEquals('Success', $gatewayPayment['status']);
     }
 
     protected function assertFailureDebitPayment($debitPaymentId)
@@ -343,5 +334,10 @@ class EmandateDebitReconciliationTest extends TestCase
         // Asserts that the transaction is reconciled
         $transaction = $this->getDbEntity('transaction', ['entity_id' => $debitPaymentId]);
         $this->assertNull($transaction);
+
+        $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
+            ->toArray();
+
+        $this->assertEquals('Rejected', $gatewayPayment['status']);
     }
 }
