@@ -499,7 +499,7 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 

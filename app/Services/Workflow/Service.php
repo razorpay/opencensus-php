@@ -3,15 +3,15 @@
 namespace RZP\Services\Workflow;
 
 use RZP\Exception;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Differ\EntityValidator;
-use RZP\Models\Workflow\Action\MakerType;
 
 class Service
 {
