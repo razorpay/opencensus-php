@@ -54,14 +54,10 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates FundTransferAttempt entity for enach payments. Channel is default to YESBANK
      * @param Base\Entity $source - currently refund entity
-     * @param $channel = Settlement\Channel::YESBANK
+     * @param $values Attributes of the created FTA
     */
-    public function createFundTransferAttempt(
-        Base\Entity $source,
-        string $channel = Settlement\Channel::YESBANK,
-        string $purpose = Purpose::REFUND)
+    public function create(Base\Entity $source, array $values = [])
     {
         $fundTransferAttempt = new Entity;
 
@@ -71,17 +67,21 @@ class Core extends Base\Core
 
         $fundTransferAttempt->bankAccount()->associate($source->bankAccount);
 
-        $values = [
-            Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
-            Entity::CHANNEL         => $channel,
-            Entity::VERSION         => Version::V3,
-            Entity::STATUS          => Status::CREATED,
-            Entity::PURPOSE         => $purpose,
+        $defaultValues = [
+            Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            Entity::CHANNEL     => Settlement\Channel::YESBANK,
+            Entity::VERSION     => Version::V3,
+            Entity::STATUS      => Status::CREATED,
+            Entity::PURPOSE     => Purpose::REFUND,
         ];
+
+        $values = array_merge($defaultValues, $values);
 
         $fundTransferAttempt->fillAndGenerateId($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
     }
 
     /**
