@@ -24,6 +24,14 @@ trait DbEntityFetchTrait
                     ->get();
     }
 
+    protected function getDbEntity(string $entity, array $input = array(), $mode = 'test')
+    {
+        return $this->getEntityObjectForMode($entity, $mode)
+            ->where($input)
+            ->get()
+            ->last();
+    }
+
     protected function getDbLastEntity($entity, $mode = 'test')
     {
         $entities = $this->getDbEntities($entity, [], $mode);

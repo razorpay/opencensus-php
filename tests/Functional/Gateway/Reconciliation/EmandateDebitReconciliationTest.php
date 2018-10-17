@@ -11,7 +11,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
-class NetbankingEmandateDebitReconciliationTest extends TestCase
+class EmandateDebitReconciliationTest extends TestCase
 {
     use ReconTrait;
     use PaymentTrait;
@@ -48,9 +48,7 @@ class NetbankingEmandateDebitReconciliationTest extends TestCase
 
         $this->gateway = 'netbanking_axis';
 
-        $response = $this->createInitialPayment($this->bank);
-
-        $regPaymentId = $response['razorpay_payment_id'];
+        $this->createInitialPayment($this->bank);
 
         $debitPaymentIds = [];
 
@@ -69,11 +67,22 @@ class NetbankingEmandateDebitReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'EmandateAxis');
-        sd($response);
-        $this->assertEquals(2, $response['success_count']);
+        $this->reconcile($uploadedFile, 'EmandateAxis');
 
-        $this->assertAxisEntities($regPaymentId, $debitPaymentIds);
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'          => 'reconciliation',
+                'sub_type'      => 'emandate_debit',
+                'gateway'       => 'EmandateAxis',
+                'status'        => 'processed',
+                'success_count' => 2,
+            ],
+            $batch
+        );
+
+        $this->assertAxisEntities($debitPaymentIds);
     }
 
 //    public function testAxisNbEmandateDebitReconFailedPayment()
@@ -296,14 +305,6 @@ class NetbankingEmandateDebitReconciliationTest extends TestCase
 
     protected function assertAxisEntities($registrationPaymentId, array $debitPaymentIds)
     {
-        $registrationPayment = $this->getDbEntityById('payment', $registrationPaymentId)->toArray();
-
-        $this->assertEquals('captured', $registrationPayment['status']);
-        $this->assertEquals(0, $registrationPayment['amount']);
-        $this->assertEquals('UTIB', $registrationPayment['bank']);
-        $this->assertEquals(true, $registrationPayment['recurring']);
-        $this->assertEquals('initial', $registrationPayment['recurring_type']);
-
         foreach ($debitPaymentIds as $debitPaymentId)
         {
             $this->assertSuccessDebitPayment($debitPaymentId);
@@ -322,7 +323,6 @@ class NetbankingEmandateDebitReconciliationTest extends TestCase
             ->toArray();
 
         $this->assertEquals($debitPayment['amount'], $transaction['amount']);
-        $this->assertNotNull($transaction['reconciled_at']);
 
         // Assert netbanking entity values
         $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
