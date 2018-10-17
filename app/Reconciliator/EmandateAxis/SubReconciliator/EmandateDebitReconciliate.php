@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 
 class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitReconciliate
@@ -50,6 +52,13 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return null;
     }
 
+    protected function getGatewayPayment($paymentId)
+    {
+        return $this->repo
+                    ->netbanking
+                    ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+    }
+
     protected function getGatewayToken(array $row)
     {
         if (empty($row[self::COLUMN_GATEWAY_TOKEN]) === false)
@@ -74,6 +83,16 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         if (empty($row[self::COLUMN_REASON]) === false)
         {
             return $row[self::COLUMN_REASON];
+        }
+
+        return null;
+    }
+
+    protected function getGatewayStatusCode(array $row)
+    {
+        if (empty($row[self::COLUMN_STATUS]) === false)
+        {
+            return $row[self::COLUMN_STATUS];
         }
 
         return null;
@@ -109,6 +128,10 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return $this->getApiErrorCodeFromDescription($rowDetails);
     }
 
+    /**
+     * @param $status
+     * @throws Exception\GatewayErrorException
+     */
     protected function checkValidStatus($status)
     {
         if (in_array($status, $this->allowedStatuses, true) === false)

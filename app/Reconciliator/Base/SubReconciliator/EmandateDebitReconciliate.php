@@ -57,6 +57,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     {
         $rowDetails = parent::getRowDetailsStructured($row);
 
+        $gatewayStatusCode = $this->getGatewayStatusCode($row);
+
         $gatewayToken = $this->getGatewayToken($row);
 
         $gatewayErrorCode = $this->getGatewayErrorCode($row);
@@ -66,9 +68,10 @@ class EmandateDebitReconciliate extends PaymentReconciliate
         $rowDetails = array_merge(
             $rowDetails,
             [
-                BaseReconciliate::GATEWAY_TOKEN      => $gatewayToken,
-                BaseReconciliate::GATEWAY_ERROR_CODE => $gatewayErrorCode,
-                BaseReconciliate::GATEWAY_ERROR_DESC => $gatewayErrorDescription,
+                BaseReconciliate::GATEWAY_TOKEN       => $gatewayToken,
+                BaseReconciliate::GATEWAY_ERROR_CODE  => $gatewayErrorCode,
+                BaseReconciliate::GATEWAY_ERROR_DESC  => $gatewayErrorDescription,
+                BaseReconciliate::GATEWAY_STATUS_CODE => $gatewayStatusCode,
             ]
         );
 
@@ -84,6 +87,18 @@ class EmandateDebitReconciliate extends PaymentReconciliate
      * @return null
      */
     protected function getGatewayToken(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * Gateway status code would be stored in the gateway payment entity
+     * if this is used in child class.
+     *
+     * @param array $row
+     * @return null
+     */
+    protected function getGatewayStatusCode(array $row)
     {
         return null;
     }
@@ -266,6 +281,54 @@ class EmandateDebitReconciliate extends PaymentReconciliate
 
         // Update payment status failed and send the corresponding events
         $processor->updatePaymentAuthFailed($exception);
+    }
+
+    /**
+     * Overriden to set the gateway payment status as well
+     *
+     * @param array $rowDetails
+     */
+    protected function persistGatewayData(array $rowDetails)
+    {
+        $gatewayPayment = $this->updateAndFetchGatewayPayment();
+
+        if ($gatewayPayment === null)
+        {
+            return;
+        }
+
+        $this->persistReferenceNumber($rowDetails, $gatewayPayment);
+
+        $this->persistAccountDetails($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayTransactionId($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
+
+        $this->persistCustomerDetails($rowDetails, $gatewayPayment);
+
+        $this->persistGatewayStatusCode($rowDetails, $gatewayPayment);
+
+        $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    /**
+     * Child implementation classes can override this to set gateway specific
+     * gateway payment data
+     *
+     * @param $rowDetails
+     * @param $gatewayPayment
+     */
+    protected function persistGatewayStatusCode($rowDetails, $gatewayPayment)
+    {
+        if (empty($rowDetails[BaseReconciliate::GATEWAY_STATUS_CODE]) === true)
+        {
+            return;
+        }
+
+        $gatewayStatusCode = $rowDetails[BaseReconciliate::GATEWAY_STATUS_CODE];
+
+        $gatewayPayment->setStatus($gatewayStatusCode);
     }
 
     /**
