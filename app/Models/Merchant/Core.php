@@ -1059,11 +1059,7 @@ class Core extends Base\Core
     {
         $refTag = 'ref-' . $aggregratorMerchant->getId();
 
-        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, ['tags' => [$refTag]]);
-
-        $account->tag($refTag);
-
-        $this->repo->merchant->syncToEsLiveAndTest($account, EsRepository::UPDATE);
+        $this->appendTag();
     }
 
     /**
@@ -1132,6 +1128,21 @@ class Core extends Base\Core
         }
 
         return $merchant->tagNames();
+    }
+
+    /**
+     * Adds a new tag to the merchant
+     *
+     * @param Entity $merchant
+     * @param string $tagName
+     */
+    public function appendTag(Entity $merchant, string $tagName)
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_APPEND, ['tag' => $tagName]);
+
+        $merchant->tag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($account, EsRepository::UPDATE);
     }
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
