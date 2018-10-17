@@ -1064,7 +1064,7 @@ class Core extends Base\Core
     {
         $refTag = 'ref-' . $aggregratorMerchant->getId();
 
-        $this->appendTag();
+        $this->appendTag($account, $refTag);
     }
 
     /**
@@ -1147,7 +1147,7 @@ class Core extends Base\Core
 
         $merchant->tag($tagName);
 
-        $this->repo->merchant->syncToEsLiveAndTest($account, EsRepository::UPDATE);
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
