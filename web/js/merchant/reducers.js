@@ -53,6 +53,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
+  tokensReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -117,4 +118,5 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  tokens: tokensReducer,
 });
