@@ -24,8 +24,6 @@ class Server extends Base\Mock\Server
 
         $response = $this->getCallbackResponseData($input);
 
-//        $this->content($response, 'authorize');
-
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
         $url = $callbackUrl . '?' . $response;
