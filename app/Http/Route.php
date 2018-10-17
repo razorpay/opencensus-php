@@ -1137,6 +1137,10 @@ final class Route
         'payment_acknowledge',
         'bharat_qr_pay_test',
         'payment_get_flows_private',
+        'offer_create',
+        'offer_update',
+        'offer_fetch_multiple',
+        'offer_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -1335,10 +1339,6 @@ final class Route
         'merchant_one_time_token',
         'merchant_activation_business_categories',
         'merchant_razorx_evaluate',
-        'offer_create',
-        'offer_update',
-        'offer_fetch_multiple',
-        'offer_fetch_by_id',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',
