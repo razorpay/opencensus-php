@@ -109,6 +109,12 @@ class Validator extends Base\Validator
         'merchant_ids.*' => 'required|string|filled|max:14'
     ];
 
+    protected static $bulkAssignScheduleRules = [
+        'schedule'       => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14',
+    ];
+
     protected static $oauthMailRules = [
         'client_id'    => 'required|alpha_num|size:14',
         'user_id'      => 'required|alpha_num|size:14',
@@ -561,10 +567,13 @@ class Validator extends Base\Validator
         $featureNames = array_keys($input['features']);
 
         $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+        $editableFeature = Feature\Constants::$merchantEditableFeatures;
 
         foreach ($featureNames as $feature)
         {
-            if (in_array($feature, $visibleFeatures, true) === false)
+            // Feature must be a "visible feature" and editable by the merchant
+            if ((in_array($feature, $visibleFeatures, true) === false) or
+                (in_array($feature, $editableFeature, true) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,

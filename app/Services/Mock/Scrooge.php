@@ -14,6 +14,14 @@ class Scrooge extends BaseScrooge
             ];
     }
 
+    public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
+    {
+        return
+            [
+                "status" => "Processed"
+            ];
+    }
+
     public function getReports(array $input): array
     {
         return json_decode('{"data": [

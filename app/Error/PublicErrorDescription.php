@@ -280,6 +280,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
+    const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -435,6 +436,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
     const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                = 'Shared terminal merchant cannot be changed';
+    const BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT          = 'No terminal gateway mapping for direct settlement';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
     const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
 
@@ -659,6 +661,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
+    const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
@@ -670,6 +673,7 @@ class PublicErrorDescription
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                 = 'Verification of older refunds is disabled';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'Refund is marked unprocessed manually';
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
+    const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';

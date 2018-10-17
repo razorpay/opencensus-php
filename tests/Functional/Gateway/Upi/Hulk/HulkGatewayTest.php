@@ -191,7 +191,7 @@ class HulkGatewayTest extends TestCase
         $this->assertSame('Payment processing failed due to error at bank or wallet gateway',
                           $payment->getErrorDescription());
 
-        $this->assertSame('initiated', $upi['status_code']);
+        $this->assertSame('failed', $upi['status_code']);
     }
 
     public function testPaymentFailedCallbackInvalidError()
@@ -241,7 +241,7 @@ class HulkGatewayTest extends TestCase
         $this->assertSame('Payment processing failed due to error at bank or wallet gateway',
                           $payment->getErrorDescription());
 
-        $this->assertSame('initiated', $upi['status_code']);
+        $this->assertSame('failed', $upi['status_code']);
     }
 
     public function testPaymentCallbackFailed()
@@ -371,13 +371,7 @@ class HulkGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('processed', $refund['status']);
-
-        $upi = $this->getLastEntity('upi', true);
-
-        $this->assertEquals($refund['id'], 'rfnd_' . $upi['refund_id']);
-        $this->assertEquals(5000, $upi['amount']);
-        $this->assertEquals('00', $upi['status_code']);
+        $this->assertEquals('failed', $refund['status']);
     }
 
     public function testVerifyPayment()

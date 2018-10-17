@@ -499,13 +499,55 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $scheduleTask->toArrayPublic();
+    }
+
+    public function bulkAssignSchedule(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_schedule', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        $schedule    = $input['schedule'];
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $schedule)
+                {
+                    $this->assignSettlementSchedule($merchantId, $schedule);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_SCHEDULE_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $schedule,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
     }
 
     public function migrateMerchantToSettlementSchedules($input)
@@ -1277,7 +1319,7 @@ class Service extends Base\Service
 
         return [
             $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.3
+            $key2 => Cache::get($key2) ?? 0.2
         ];
     }
 
@@ -2459,5 +2501,25 @@ class Service extends Base\Service
         }
 
         return ['associated_accounts' => array_unique($associatedAccounts)];
+    }
+
+    /**
+     * Takes Merchant from auth context and sends it to razorx.
+     *
+     * @param string $featureFlag
+     *
+     * @return array
+     */
+    public function getRazorxTreatment(string $featureFlag)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $mode = $this->mode ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment($merchantId, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
     }
 }

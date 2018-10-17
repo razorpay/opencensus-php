@@ -290,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::ACTIVATION_FLOW,
     ];
 
     protected $defaults = [

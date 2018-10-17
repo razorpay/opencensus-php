@@ -25,6 +25,7 @@ class Limit
         'emandate_register_enach_rbl' => 5000,
         Type::ELFIN                   => 5000,
         Type::PARTNER_SUBMERCHANTS    => 5000,
+        Type::ENTITY_MAPPING          => 10000,
     ];
 
     /**

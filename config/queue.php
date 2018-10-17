@@ -159,6 +159,10 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
+    'bulk_refund' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
     // TODO: Get own queue
     // TODO: Test that refund goes to this queue
     'scrooge_refund' => [

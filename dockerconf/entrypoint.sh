@@ -1,4 +1,4 @@
-#!/usr/bin/dumb-init /bin/sh
+#!/bin/sh
 set -euo pipefail
 
 fix_permissions(){
@@ -94,5 +94,4 @@ function main {
   fi
 
 }
-
 main $@

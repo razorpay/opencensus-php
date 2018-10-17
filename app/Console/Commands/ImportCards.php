@@ -90,7 +90,9 @@ class ImportCards extends Command
 
             if ($customer === null)
             {
-                throw new Exception\RuntimeException("No customer found for fyndUserId: $fyndUserId");
+                $this->error("No customer found for fyndUserId: $fyndUserId");
+
+                continue;
             }
 
             $cardDetails   =   [
