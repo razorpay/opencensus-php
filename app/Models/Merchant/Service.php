@@ -2460,4 +2460,24 @@ class Service extends Base\Service
 
         return ['associated_accounts' => array_unique($associatedAccounts)];
     }
+
+    /**
+     * Takes Merchant from auth context and sends it to razorx.
+     *
+     * @param string $featureFlag
+     *
+     * @return array
+     */
+    public function getRazorxTreatment(string $featureFlag)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $mode = $this->mode ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment($merchantId, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
+    }
 }
