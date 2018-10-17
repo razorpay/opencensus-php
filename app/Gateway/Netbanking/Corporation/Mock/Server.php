@@ -24,13 +24,15 @@ class Server extends Base\Mock\Server
 
         $response = $this->getCallbackResponseData($input);
 
-        $this->content($response, 'authorize');
+//        $this->content($response, 'authorize');
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
+        $url = $callbackUrl . '?' . $response;
+
         $request = [
-            'url'     => $callbackUrl,
-            'content' => $response,
+            'url'     => $url,
+            'content' => [$response => ''],
             'method'  => 'get',
         ];
 
@@ -56,6 +58,15 @@ class Server extends Base\Mock\Server
 
     protected function getCallbackResponseData(array $input)
     {
+        $qs = $input[RequestFields::QUERY_STRING];
+
+        // The encrypted data is not url encoded when sending to the bank
+        // But when you get the request in mock server, it gets url decoded and hence "+"s
+        // are converted to " ". So, we revert this manually before decrypting the data.
+        $encrypted = str_replace(" ", '+', $qs);
+
+        $input = $this->getGatewayInstance()->getEncryptor()->decryptData($encrypted, '=', '&');
+
         $data = [
             ResponseFields::MODE_OF_TRANSACTION => 'P',
             ResponseFields::MERCHANT_CODE       => $input[RequestFields::MERCHANT_CODE],
@@ -69,7 +80,9 @@ class Server extends Base\Mock\Server
 
         $this->content($data, Base\Action::CALLBACK);
 
-        return $data;
+        $encrypted = $this->getGatewayInstance()->getEncryptor()->encryptData($data, '=', '&');
+
+        return $encrypted;
     }
 
     protected function getVerifyResponseData(array $input)

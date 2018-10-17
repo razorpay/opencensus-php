@@ -253,7 +253,14 @@ class GatewayController extends Controller
 
     public function callbackCorporation()
     {
-        $input = $_SERVER["QUERY_STRING"];
+        $input = Request::all();
+
+        foreach ($input as $key => $value)
+        {
+            $input = $key;
+        }
+
+        $input = str_replace('_', '+', $input);
 
         $gateway = $this->app['gateway']->gateway('netbanking_corporation');
 
