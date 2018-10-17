@@ -2775,6 +2775,12 @@ class MerchantTest extends TestCase
                 'name'     => 'Basic T2',
             ]);
 
+        $this->setAdminForInternalAuth();
+
+        $perm = $this->fixtures->create('permission', ['name' => 'schedule_assign_bulk']);
+
+        $this->org->permissions()->sync($perm);
+
         $this->createMerchant(['id' => '1000000000test']);
 
         $this->ba->adminAuth();

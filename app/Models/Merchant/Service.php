@@ -515,7 +515,7 @@ class Service extends Base\Service
         (new Validator)->validateInput('bulk_assign_schedule', $input);
 
         $merchantIds = $input['merchant_ids'];
-        $input       = $input['input'];
+        $schedule    = $input['schedule'];
 
         $failedIds = [];
 
@@ -523,9 +523,9 @@ class Service extends Base\Service
         {
             try
             {
-                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $schedule)
                 {
-                    $this->assignSettlementSchedule($merchantId, $input);
+                    $this->assignSettlementSchedule($merchantId, $schedule);
                 });
             }
             catch (\Throwable $t)
@@ -533,10 +533,10 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $t,
                     \Razorpay\Trace\Logger::ERROR,
-                    TraceCode::MERCHANT_CREDITS_BULK_EXCEPTION,
+                    TraceCode::MERCHANT_SCHEDULE_BULK_EXCEPTION,
                     [
                         'merchant_id' => $merchantId,
-                        'input'       => $input,
+                        'input'       => $schedule,
                     ]);
 
                 $failedIds[] = $merchantId;

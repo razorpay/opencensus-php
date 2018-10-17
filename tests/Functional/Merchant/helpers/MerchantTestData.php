@@ -3411,7 +3411,7 @@ return [
             'url'     => '/merchants/schedules/bulk',
             'method'  => 'post',
             'content' => [
-                'input' => [
+                'schedule' => [
                     'schedule_id' => '100001schedule',
                     'type' => 'settlement',
                 ],

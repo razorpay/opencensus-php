@@ -1146,7 +1146,7 @@ class MerchantController extends Controller
     /**
      * Input JSON sample:
      * {
-     *   "input": {
+     *   "schedule": {
      *     "schedule_id": "40000000000000",
      *     "type": "settlement"
      *   },

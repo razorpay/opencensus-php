@@ -2106,7 +2106,7 @@ final class Route
         'terminal_get_banks'                       => '*',
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
-        'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN,
+        'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
     ];
 
     public static $direct = [

@@ -110,7 +110,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkAssignScheduleRules = [
-        'input'          => 'required|array',
+        'schedule'       => 'required|array',
         'merchant_ids'   => 'required|array',
         'merchant_ids.*' => 'required|string|filled|max:14',
     ];
