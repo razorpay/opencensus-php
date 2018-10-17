@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -45,6 +46,8 @@ class Entity extends Base\PublicEntity
     // Input key for array of rules
     const RULES                = 'rules';
 
+    const ORG_ID               = 'org_id';
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
@@ -70,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::MIN_FEE,
         self::MAX_FEE,
         self::EMI_DURATION,
+        self::ORG_ID,
     ];
 
     protected $entity = 'pricing';
@@ -85,7 +89,7 @@ class Entity extends Base\PublicEntity
      */
     protected static $modifiers = ['inputRemoveBlanks', 'inputProvideDefaults'];
 
-    protected static $generators = ['plan_id'];
+    protected static $generators = ['plan_id', 'org_id'];
 
     protected $defaults = [
         self::FEATURE             => Feature::PAYMENT,
@@ -187,6 +191,16 @@ class Entity extends Base\PublicEntity
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
+    }
+
+    protected function generateOrgId()
+    {
+        $app = \App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getOrgId();
+        $orgId = Org\Entity::stripDefaultSign($orgId);
+
+        $this->setAttribute(self::ORG_ID, $orgId);
     }
 
     /**

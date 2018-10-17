@@ -135,6 +135,8 @@ final class Route
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
+        // TODO: Add rate limiting on this route!
+        'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
         'card_check_recurring'                     => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                         => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                      => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -211,6 +213,7 @@ final class Route
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
+        'merchant_schedule_bulk'                   => ['post',     'merchants/schedules/bulk',                       'MerchantController@bulkAssignSchedule'                             ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -243,6 +246,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
+        'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
@@ -776,6 +780,7 @@ final class Route
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+        'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
 
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -841,7 +846,7 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
-        'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                       ],
+        'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                         ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
@@ -849,7 +854,7 @@ final class Route
         'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
         'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
         'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
-        'reporting_proxy_admin'                    => ['any',      'admin-reporting/{path?}',                        'ReportingController@proxy'                                       ],
+        'reporting_proxy_admin'                    => ['any',      'admin-reporting/{path?}',                        'ReportingController@proxy'                                         ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -857,6 +862,8 @@ final class Route
         'ufh_get_file_signed_url_admin'            => ['get',      'admin-ufh/file/{fileId}/get-signed-url',         'UfhController@getSignedUrl'                                        ],
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
+        'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -896,6 +903,7 @@ final class Route
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
+        'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
 
         // Webhook Api Wrapper
         'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookController@processWebhook'                                  ],
@@ -1174,6 +1182,7 @@ final class Route
         'merchant_payout_mail',
         'merchant_post_beneficiary_file',
         'merchant_secret',
+        'merchant_associated_accounts_fetch',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_enroll',
         'mock_hdfc_payment',
@@ -1228,6 +1237,7 @@ final class Route
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
+        'refund_processed_at_backfill',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
         'setl_verify',
@@ -1324,6 +1334,7 @@ final class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_razorx_evaluate',
         'offer_create',
         'offer_update',
         'offer_fetch_multiple',
@@ -1409,6 +1420,7 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        'on_demand_settlement',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'merchant_instant_activation_post',
@@ -1733,6 +1745,7 @@ final class Route
         'terminal_set_banks',
 
         'merchant_details_patch',
+        'merchant_schedule_bulk',
     ];
 
     public static $routePermission = [
@@ -2087,11 +2100,13 @@ final class Route
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
+        'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
+        'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
     ];
 
     public static $direct = [
@@ -2140,7 +2155,8 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
-        'gateway_payment_validate_bharatqr'
+        'gateway_payment_validate_bharatqr',
+        'refund_fetch_for_customer',
     ];
 
     /**
@@ -2266,6 +2282,7 @@ final class Route
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
+            'refund_processed_at_backfill',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'setcronjob_webhook',
@@ -2275,6 +2292,7 @@ final class Route
         ],
 
         'subscriptions' => [
+            'payment_fetch_multiple',
             'invoice_create',
             'invoice_fetch',
             'customer_fetch_by_id',
@@ -2335,6 +2353,10 @@ final class Route
             'oauth_merchant_notify',
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
+        ],
+
+        'reporting' => [
+            'merchant_associated_accounts_fetch',
         ],
     ];
 
@@ -2410,6 +2432,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
     ];
 
     /*
@@ -2805,7 +2828,6 @@ final class Route
     public function getCurrentRouteFeatures(): array
     {
         $currentRoute = $this->getCurrentRouteName();
-
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route

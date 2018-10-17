@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
     protected $authEnrolledResponse = [
         'fields'    => [
             'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid',
-            'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'
+            'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text', 'authRespCode'
             ],
         'type'      => 'auth_enrolled',
         'xml'       => '',
@@ -173,7 +173,7 @@ class Gateway extends Base\Gateway
     protected $authNotEnrolledResponse = [
         'fields' => [
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text', 'authRespCode'
             ],
         'type' => 'auth_not_enrolled',
         'xml' => '',
@@ -258,7 +258,7 @@ class Gateway extends Base\Gateway
 
     protected $supportPaymentResponse = [
         'fields'    => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
-                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'],
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text', 'authRespCode'],
         'type'      => '',
         'xml'       => '',
         'data'      => [],
@@ -382,14 +382,14 @@ class Gateway extends Base\Gateway
         $shouldRetry = function ($e)
         {
             $errorCodes =[
-                ErrorCode::CM00030,
-                ErrorCode::CM90000,
-                ErrorCode::CM90001,
-                ErrorCode::CM90002,
-                ErrorCode::CM90003,
-                ErrorCode::CM90004,
-                ErrorCode::CM90005,
-                ErrorCode::CM900000,
+                Hdfc\ErrorCodes\ErrorCodes::CM00030,
+                Hdfc\ErrorCodes\ErrorCodes::CM90000,
+                Hdfc\ErrorCodes\ErrorCodes::CM90001,
+                Hdfc\ErrorCodes\ErrorCodes::CM90002,
+                Hdfc\ErrorCodes\ErrorCodes::CM90003,
+                Hdfc\ErrorCodes\ErrorCodes::CM90004,
+                Hdfc\ErrorCodes\ErrorCodes::CM90005,
+                Hdfc\ErrorCodes\ErrorCodes::CM900000,
             ];
 
             if ($e instanceof Exception\BaseException)
@@ -961,32 +961,10 @@ class Gateway extends Base\Gateway
         $this->error = false;
 
         $gatewayErrorCode = $error['code'];
-        $gatewayErrorDesc = $error['text'];
 
-        if (Hdfc\ErrorHandler::isValidErrorCode($gatewayErrorCode))
-        {
-            $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
+        $apiErrorCode = Hdfc\ErrorCodes\ErrorCodes::getInternalErrorCode($error);
 
-            //
-            // For error codes returned by gateway, the error messages are in a format
-            // which we don't parse. So get the standard messages for those from here.
-            //
-            $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
-        }
-        else
-        {
-            $apiErrorCode = Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
-
-            $this->trace->error(
-                TraceCode::GATEWAY_UNKNOWN_ERROR,
-                [
-                    'action' => $this->action,
-                    'gateway_error_code' => $gatewayErrorCode,
-                    'gateway_error_description' => $gatewayErrorDesc,
-                    'gateway' => $this->gateway,
-                    'time' => time()
-                ]);
-        }
+        $gatewayErrorDesc = Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($error);
 
         $exception = null;
 

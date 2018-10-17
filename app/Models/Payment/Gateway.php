@@ -29,6 +29,10 @@ class Gateway
     const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
+    const ICICI                  = 'icici';
+    const KOTAK                  = 'kotak';
+    const RBL                    = 'rbl';
+    const AXIS                   = 'axis';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
@@ -152,6 +156,14 @@ class Gateway
         self::BILLDESK,
     ];
 
+    const DIRECT_SETTLEMENT_GATEWAYS = [
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_RBL    => self::RBL,
+        self::NETBANKING_AXIS   => self::AXIS,
+    ];
+
     /**
     * Gateways for which we can validate the refunds
     * if they are successful after they are 'initiated'
@@ -241,11 +253,13 @@ class Gateway
         IFSC::BCBM,
         IFSC::BGBX,
         IFSC::BHSX,
+        IFSC::BHUX,
         IFSC::BKDN,
         IFSC::BKID,
         IFSC::BNPA,
         IFSC::BURX,
         IFSC::CBIN,
+        IFSC::CHAS,
         IFSC::CHAX,
         IFSC::CHDX,
         IFSC::CHSX,
@@ -268,6 +282,7 @@ class Gateway
         IFSC::DICX,
         IFSC::DSPX,
         IFSC::ESFB,
+        IFSC::EUCX,
         IFSC::FDRL,
         IFSC::FGCB,
         IFSC::GCBX,
@@ -362,9 +377,11 @@ class Gateway
         IFSC::TBCX,
         IFSC::TCUB,
         IFSC::TDIX,
+        IFSC::TDMX,
         IFSC::TECX,
         IFSC::TEHX,
         IFSC::TGMB,
+        IFSC::TJSB,
         IFSC::TKUX,
         IFSC::TMBL,
         IFSC::TPDX,
@@ -383,6 +400,7 @@ class Gateway
         IFSC::USFB,
         IFSC::UTIB,
         IFSC::UTZX,
+        IFSC::UUCX,
         IFSC::VARA,
         IFSC::VCCX,
         IFSC::VEDX,
@@ -608,6 +626,15 @@ class Gateway
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
         Provider::DASHBOARD => self::BT_DASHBOARD,
+    ];
+
+    //
+    // Temporary, since bank transfers will be refactored to use terminals too
+    // TODO: Remove when above refactor is done
+    protected static $nonTerminalGateways = [
+        self::BT_YESBANK,
+        self::BT_KOTAK,
+        self::BT_DASHBOARD,
     ];
 
     /**
@@ -1179,6 +1206,11 @@ class Gateway
             Gateway::SHARP,
         ],
     ];
+
+    public static function isNonTerminalGateway(string $gateway)
+    {
+        return in_array($gateway, self::$nonTerminalGateways, true);
+    }
 
     public static function getAcquirerName(string $acquirer)
     {

@@ -446,8 +446,7 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    kind: daemonset
-    daemonset:
+    deployment:
       - api-web
     repo: razorpay/api
     namespace: echo
@@ -506,8 +505,7 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    kind: daemonset
-    daemonset:
+    deployment:
       - api-web
     repo: razorpay/api
     namespace: delta
@@ -567,8 +565,7 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    kind: daemonset
-    daemonset:
+    deployment:
       - api-web
     repo: razorpay/api
     namespace: charlie
@@ -627,8 +624,7 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    kind: daemonset
-    daemonset:
+    deployment:
       - api-web
     repo: razorpay/api
     namespace: beta

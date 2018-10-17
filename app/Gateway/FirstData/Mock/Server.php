@@ -10,7 +10,10 @@ use RZP\Gateway\Base;
 use RZP\Gateway\FirstData;
 use RZP\Gateway\FirstData\Action;
 use RZP\Models\Card;
+use Requests_Response;
 use RZP\Models\Payment;
+use RZP\Gateway\FirstData\ApiRequestFields;
+use RZP\Gateway\FirstData\ApiResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -19,6 +22,21 @@ class Server extends Base\Mock\Server
         parent::__construct();
 
         $this->repo = new FirstData\Repository;
+    }
+
+    public function acs(array $input)
+    {
+        $this->validateAuthenticateInput($input);
+
+        $response = [
+            ApiResponseFields::MD       => $input[ApiResponseFields::MD],
+            ApiResponseFields::PA_RES   => base64_encode($input[ApiResponseFields::PA_REQ]),
+            ApiResponseFields::TERM_URL => $input[ApiResponseFields::TERM_URL]
+        ];
+
+        $this->content($response, Action::AUTHENTICATE);
+
+        return $response;
     }
 
     public function purchase($input)
@@ -34,74 +52,121 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $this->request($input);
-
-        $this->validateAuthorizeInput($input);
-
-        $dateTime = Carbon::now(Timezone::IST);
-
-        $tdate = $dateTime->getTimestamp() . random_integer(5);
-
-        $txnDateProcessed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
-
-        $approvalCode = $this->getApprovalCode();
-
-        $txnDateTime = $input[FirstData\ConnectRequestFields::TXN_DATE_TIME];
-
-        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
-
-        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
-
-        $cardNumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
-
-        $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
-
-        $scrubbedCardNumber = $this->scrub($cardNumber, $paymentMethod);
-
-        $oid = $this->generateId('ORD0000');
-
-        if (isset($input['oid']) === true)
+        if ($this->isS2sFlow($input) === true)
         {
-            $oid = $input['oid'];
+            $request = $this->parseRequest($input);
+
+            $this->validateEnrollInput($request);
+
+            $this->request($input);
+
+            if ($request['Transaction']['CreditCardData']['CardNumber'] ===
+                Constants::DOMESTIC_NOT_ENROLLED_CARD)
+            {
+                $response = $this->getNotEnrolledResponse($request);
+            }
+            else if ($request['Transaction']['CreditCardData']['CardNumber'] ===
+                Constants::DOMESTIC_CARD_INSUFFICIENT_BALCANCE)
+            {
+                $response = $this->getDirectAuthorizeResponse($request);
+
+                $response['ipgapi:ApprovalCode'] = 'random';
+                $response['ipgapi:TransactionResult'] = 'declined';
+
+                $response = $this->buildS2sResponse($response);
+            }
+            else if ($request['Transaction']['CreditCardData']['CardNumber'] ===
+                Constants::INTERNATIONAL_CARD)
+            {
+                $response = $this->getDirectAuthorizeResponse($request);
+
+                $response = $this->buildS2sResponse($response);
+            }
+            else
+            {
+                $response = $this->getEnrollResponse($request);
+            }
+
+            return $this->prepareResponse($response);
         }
+        else
+        {
+            $this->request($input);
 
-        $content = [
-            FirstData\ConnectResponseFields::APPROVAL_CODE           => $approvalCode,
-            FirstData\ConnectResponseFields::BNAME                   => $input[FirstData\ConnectRequestFields::NAME],
-            FirstData\ConnectResponseFields::CARD_NUMBER             => $scrubbedCardNumber,
-            FirstData\ConnectResponseFields::CC_BIN                  => '',
-            FirstData\ConnectResponseFields::CC_BRAND                => '',
-            FirstData\ConnectResponseFields::CC_COUNTRY              => '',
-            FirstData\ConnectResponseFields::CHARGE_TOTAL            => $chargeTotal,
-            FirstData\ConnectResponseFields::CURRENCY                => $currencyCode,
-            FirstData\ConnectResponseFields::ENDPOINT_TRANSACTION_ID => '',
-            FirstData\ConnectResponseFields::EXP_MONTH               => $input[FirstData\ConnectRequestFields::EXP_MONTH],
-            FirstData\ConnectResponseFields::EXP_YEAR                => $input[FirstData\ConnectRequestFields::EXP_YEAR],
-            FirstData\ConnectResponseFields::HASH_ALGORITHM          => $input[FirstData\ConnectRequestFields::HASH_ALGORITHM],
-            FirstData\ConnectResponseFields::INVOICE_NUMBER          => $input[FirstData\ConnectRequestFields::INVOICE_NUMBER],
-            FirstData\ConnectResponseFields::IPG_TRANSACTION_ID      => $this->generateId(),
-            FirstData\ConnectResponseFields::ORDER_ID                => $oid,
-            FirstData\ConnectResponseFields::PAYMENT_METHOD          => '',
-            FirstData\ConnectResponseFields::PROCESSOR_RESPONSE_CODE => 00,
-            FirstData\ConnectResponseFields::RESPONSE_CODE_3DSECURE  => '',
-            FirstData\ConnectResponseFields::STATUS                  => FirstData\Status::APPROVED,
-            FirstData\ConnectResponseFields::TDATE                   => $tdate,
-            FirstData\ConnectResponseFields::TERMINAL_ID             => $this->generateId(),
-            FirstData\ConnectResponseFields::TIMEZONE                => $input[FirstData\ConnectRequestFields::TIME_ZONE],
-            FirstData\ConnectResponseFields::TXN_DATE_TIME           => $txnDateTime,
-            FirstData\ConnectResponseFields::TXNDATE_PROCESSED       => $txnDateProcessed,
-            FirstData\ConnectResponseFields::TXN_TYPE                => $input[FirstData\ConnectRequestFields::TXN_TYPE],
-        ];
+            $this->validateAuthorizeInput($input);
 
-        $this->content($content);
+            $dateTime = Carbon::now(Timezone::IST);
 
-        $this->setResponseHash($input, $content);
+            $tdate = $dateTime->getTimestamp() . random_integer(5);
 
-        $url = $input['responseSuccessURL'];
+            $txnDateProcessed = $dateTime->format(FirstData\Codes::DATE_TIME_FORMAT);
 
-        $url .= '?' . http_build_query($content);
+            $approvalCode = $this->getApprovalCode();
 
-        return $url;
+            $txnDateTime = $input[FirstData\ConnectRequestFields::TXN_DATE_TIME];
+
+            $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+
+            $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
+
+            $cardNumber = $input[FirstData\ConnectRequestFields::CARD_NUMBER];
+
+            $paymentMethod = $input[FirstData\ConnectRequestFields::PAYMENT_METHOD];
+
+            $scrubbedCardNumber = $this->scrub($cardNumber, $paymentMethod);
+
+            $oid = $this->generateId('ORD0000');
+
+            if (isset($input['oid']) === true)
+            {
+                $oid = $input['oid'];
+            }
+
+            $content = [
+                FirstData\ConnectResponseFields::APPROVAL_CODE           => $approvalCode,
+                FirstData\ConnectResponseFields::BNAME                   => $input
+                                                                            [FirstData\ConnectRequestFields::NAME],
+                FirstData\ConnectResponseFields::CARD_NUMBER             => $scrubbedCardNumber,
+                FirstData\ConnectResponseFields::CC_BIN                  => '',
+                FirstData\ConnectResponseFields::CC_BRAND                => '',
+                FirstData\ConnectResponseFields::CC_COUNTRY              => '',
+                FirstData\ConnectResponseFields::CHARGE_TOTAL            => $chargeTotal,
+                FirstData\ConnectResponseFields::CURRENCY                => $currencyCode,
+                FirstData\ConnectResponseFields::ENDPOINT_TRANSACTION_ID => '',
+                FirstData\ConnectResponseFields::EXP_MONTH               => $input
+                                                                            [FirstData\ConnectRequestFields::EXP_MONTH],
+                FirstData\ConnectResponseFields::EXP_YEAR                => $input
+                                                                            [FirstData\ConnectRequestFields::EXP_YEAR],
+                FirstData\ConnectResponseFields::HASH_ALGORITHM          => $input
+                                                                       [FirstData\ConnectRequestFields::HASH_ALGORITHM],
+                FirstData\ConnectResponseFields::INVOICE_NUMBER          => $input
+                                                                       [FirstData\ConnectRequestFields::INVOICE_NUMBER],
+                FirstData\ConnectResponseFields::IPG_TRANSACTION_ID      => $this->generateId(),
+                FirstData\ConnectResponseFields::ORDER_ID                => $oid,
+                FirstData\ConnectResponseFields::PAYMENT_METHOD          => '',
+                FirstData\ConnectResponseFields::PROCESSOR_RESPONSE_CODE => 00,
+                FirstData\ConnectResponseFields::RESPONSE_CODE_3DSECURE  => '',
+                FirstData\ConnectResponseFields::STATUS                  => FirstData\Status::APPROVED,
+                FirstData\ConnectResponseFields::TDATE                   => $tdate,
+                FirstData\ConnectResponseFields::TERMINAL_ID             => $this->generateId(),
+                FirstData\ConnectResponseFields::TIMEZONE                => $input
+                                                                            [FirstData\ConnectRequestFields::TIME_ZONE],
+                FirstData\ConnectResponseFields::TXN_DATE_TIME           => $txnDateTime,
+                FirstData\ConnectResponseFields::TXNDATE_PROCESSED       => $txnDateProcessed,
+                FirstData\ConnectResponseFields::TXN_TYPE                => $input
+                                                                            [FirstData\ConnectRequestFields::TXN_TYPE],
+            ];
+
+            $this->content($content, Action::CALLBACK);
+
+            $this->setResponseHash($input, $content);
+
+            $url = $input['responseSuccessURL'];
+
+            $url .= '?' . http_build_query($content);
+
+            return $url;
+        }
     }
 
     public function capture($input)
@@ -230,6 +295,34 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($soapContent);
     }
 
+    public function callback($input)
+    {
+        $authorizeRequest = $this->parseRequest($input);
+
+        $this->validateActionInput($authorizeRequest, 'authorize');
+
+        $this->content($content, Action::CALLBACK);
+
+        $shouldFailAuthorize = $this->checkForFailedAuthorize($content);
+
+        if ($shouldFailAuthorize === true)
+        {
+            $response = $this->getFailedAuthorizeResponse();
+
+            $response = $this->buildFailedS2sResponse($response);
+
+            return $this->prepareResponse($response, '500');
+        }
+        else
+        {
+            $content = $this->getAuthorizeResponse($authorizeRequest);
+
+            $response = $this->buildS2sResponse($content);
+
+            return $this->prepareResponse($response);
+        }
+    }
+
     public function verifyRefund($input)
     {
         $this->action = Action::VERIFY_REFUND;
@@ -252,6 +345,48 @@ class Server extends Base\Mock\Server
         $soapContent = FirstData\SoapWrapper::verifyReverseResponseWrapper($merchantTxnId);
 
         return $this->prepareResponse($soapContent);
+    }
+
+    protected function getAuthorizeResponse($request)
+    {
+        $dateTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txnDateProcessed = Carbon::now(Timezone::IST)->format(FirstData\Codes::DATE_TIME_FORMAT);
+
+        $transactionId =  $request['Transaction']['TransactionDetails']['IpgTransactionId'] ?? 'random';
+
+        $content = [
+            Constants::XML_IPGAPI_APPROVAL_CODE                => $this->getApprovalCode(),
+            Constants::XML_AVS_RESPONSE                        => 'PPX',
+            Constants::XML_IPGAPI_BRAND                        => 'VISA',
+            Constants::XML_IPGAPI_COUNTRY                      => 'IND',
+            Constants::XML_IPGAPI_COMMERCIAL_SERVICE_PROVIDER  => 'IMS',
+            Constants::XML_IPGAPI_TRANSACTION_ID               => $transactionId,
+            Constants::XML_IPGAPI_ORDER_ID                     => 'razorpay_payment_id',
+            Constants::XML_IPGAPI_PAYMENT_TYPE                 => 'CREDITCARD',
+            Constants::XML_PROCESSOR_RESPONSE_CODE             => '00',
+            Constants::XML_PROCESSOR_APPROVAL_CODE             => '001088',
+            Constants::XML_PROCESSOR_RESPONSE_MESSAGE          => 'Function performed error-free',
+            Constants::XML_IPGAPI_TDATE                        => $dateTime,
+            Constants::XML_IPGAPI_TERMINAL_ID                  => random_integer(8),
+            Constants::XML_IPGAPI_TDATE_FORMATTED              => $txnDateProcessed,
+            Constants::XML_TRANSACTION_RESULT                  => 'APPROVED',
+            Constants::XML_IPGAPI_TRANSACTION_TIME             => $dateTime,
+            Constants::XML_IPGAPI_SECURE_3D_RESPONSE           => [
+                Constants::XML_V1_RESPONSE_CODE_3D_SECURE  => '1',
+            ],
+        ];
+
+        $this->content($content, Action::CALLBACK);
+
+        return $content;
+    }
+
+    protected function getDirectAuthorizeResponse($input)
+    {
+        $response = $this->getAuthorizeResponse($input);
+
+        return $response;
     }
 
     protected function parseRequest(string $input)
@@ -365,5 +500,167 @@ class Server extends Base\Mock\Server
     protected function generateId($prefix = '')
     {
         return $prefix . random_integer(5);
+    }
+
+    protected function buildS2sResponse($content)
+    {
+        $xml = $this->arrayToXml($content);
+
+        $response = FirstData\SoapWrapper::defaultWrapper($xml,Constants::IPGAPI_ORDER_RESPONSE);
+
+        return $response;
+    }
+
+    protected function buildFailedS2sResponse($content)
+    {
+        $xml = $this->arrayToXml($content);
+
+        $response = FirstData\SoapWrapper::errorWrapper($xml);
+
+        return $response;
+    }
+
+    protected function arrayToXml(array $array, string $wrap = null)
+    {
+        // set initial value for XML string
+        $xml = '';
+
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                $xml .= $this->arrayToXml($value, $key);
+            }
+            else
+            {
+                $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
+            }
+        }
+
+        // wrap XML with $wrap TAG
+        if ($wrap !== null)
+        {
+            $xml = "<$wrap>".$xml."</$wrap>";
+        }
+
+        return $xml;
+    }
+
+    protected function isS2sFlow($input)
+    {
+        return (is_array($input) === false);
+    }
+
+    protected function getNotEnrolledResponse(array $request)
+    {
+        $dateTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txnDateProcessed = Carbon::now(Timezone::IST)->format(FirstData\Codes::DATE_TIME_FORMAT);
+
+        $content = [
+            Constants::XML_IPGAPI_APPROVAL_CODE                => 'N:87:Bad Track Data',
+            Constants::XML_AVS_RESPONSE                        => 'PPX',
+            Constants::XML_IPGAPI_BRAND                        => 'VISA',
+            Constants::XML_IPGAPI_COMMERCIAL_SERVICE_PROVIDER  => 'random',
+            Constants::XML_IPGAPI_ORDER_ID                     => $request['Transaction']['TransactionDetails']
+                                                                          ['OrderId'],
+            Constants::XML_PROCESSOR_APPROVAL_CODE             => '000000',
+            Constants::XML_PROCESSOR_RESPONSE_CODE             => '87',
+            Constants::XML_PROCESSOR_RESPONSE_MESSAGE          => 'Bad Track Data',
+            Constants::XML_ERROR_MESSAGE                       => 'SGS-070087: Bad Track Data',
+            Constants::XML_IPGAPI_TERMINAL_ID                  => '44000400',
+            Constants::XML_TRANSACTION_RESULT                  => 'DECLINED',
+            Constants::XML_IPGAPI_SECURE_3D_RESPONSE           => [
+                Constants::XML_V1_RESPONSE_CODE_3D_SECURE => '7',
+            ],
+            Constants::TRANSACTION_ID                          => 'gatewayId',
+            Constants::XML_IPGAPI_PAYMENT_TYPE                 => 'randomPaymentType',
+            Constants::XML_IPGAPI_TDATE                        => $dateTime,
+            Constants::XML_IPGAPI_TDATE_FORMATTED              => $txnDateProcessed,
+            Constants::XML_IPGAPI_TRANSACTION_TIME             => $dateTime,
+        ];
+
+        $this->content($content, Action::AUTHORIZE);
+
+        $response = $this->buildFailedS2sResponse($content);
+
+        return $response;
+    }
+
+    protected function getEnrollResponse(array $request)
+    {
+        $dateTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txnDateProcessed = Carbon::now(Timezone::IST)->format(FirstData\Codes::DATE_TIME_FORMAT);
+
+        $this->acsUrl = $this->route->getUrl('mock_acs', ['gateway' => 'first_data']);
+
+        $content = [
+            Constants::XML_IPGAPI_APPROVAL_CODE                     => '?:waiting 3dsecure',
+            Constants::XML_IPGAPI_BRAND                             => 'VISA',
+            Constants::XML_IPGAPI_COUNTRY                           => 'IND',
+            Constants::XML_IPGAPI_COMMERCIAL_SERVICE_PROVIDER       => 'random',
+            Constants::XML_IPGAPI_ORDER_ID                          => $request['Transaction']
+                                                                               ['TransactionDetails']['OrderId'],
+            Constants::XML_IPGAPI_TRANSACTION_ID                    => 'gatewayId',
+            Constants::XML_IPGAPI_PAYMENT_TYPE                      => 'randomPaymentType',
+            Constants::XML_IPGAPI_TDATE                             => $dateTime,
+            Constants::XML_IPGAPI_TDATE_FORMATTED                   => $txnDateProcessed,
+            Constants::XML_IPGAPI_TRANSACTION_TIME                  => $dateTime,
+            Constants::XML_IPGAPI_SECURE_3D_RESPONSE                => [
+                Constants::XML_V1_SECURE_3D_VERIFICATION_RESPONSE   => [
+                    Constants::XML_VERIFICATION_REDIRECT_RESPONSE   => [
+                        Constants::XML_V1_ACS      => $this->acsUrl,
+                        Constants::XML_V1_PA_REQ   => base64_encode($this->acsUrl),
+                        Constants::XML_V1_MD       => 'gatewayPayment',
+                        Constants::XML_V1_TERM_URL => 'random url'
+                    ],
+                ]
+            ],
+        ];
+
+        $this->content($content, Action::AUTHORIZE);
+
+        $response = $this->buildS2sResponse($content);
+
+        return $response;
+    }
+
+    protected function getFailedAuthorizeResponse()
+    {
+        $dateTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txnDateProcessed = Carbon::now(Timezone::IST)->format(FirstData\Codes::DATE_TIME_FORMAT);
+
+        $content = [
+            Constants::XML_IPGAPI_APPROVAL_CODE                     => 'N:-5101:3D Secure authentication failed',
+            Constants::XML_IPGAPI_BRAND                             => 'VISA',
+            Constants::XML_IPGAPI_COUNTRY                           => 'IND',
+            Constants::XML_IPGAPI_COMMERCIAL_SERVICE_PROVIDER       => 'random',
+            Constants::XML_IPGAPI_ORDER_ID                          => random_integer(14),
+            Constants::XML_IPGAPI_TRANSACTION_ID                    => 'gatewayId',
+            Constants::XML_IPGAPI_PAYMENT_TYPE                      => 'randomPaymentType',
+            Constants::XML_ERROR_MESSAGE                            => 'SGS-005101: Transaction declined.'
+                                                                        .'3D Secure authentication failed.',
+            Constants::XML_IPGAPI_TRANSACTION_RESULT                => 'FAILED',
+            Constants::XML_IPGAPI_TDATE                             => $dateTime,
+            Constants::XML_IPGAPI_TDATE_FORMATTED                   => $txnDateProcessed,
+            Constants::XML_IPGAPI_TRANSACTION_TIME                  => $dateTime,
+            Constants::XML_IPGAPI_SECURE_3D_RESPONSE           => [
+            Constants::XML_V1_RESPONSE_CODE_3D_SECURE  => '3',
+            ],
+        ];
+
+        return $content;
+    }
+
+    protected function checkForFailedAuthorize($response)
+    {
+        if ((isset($response['status']) === true) and ($response['status'] === 'DECLINED'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

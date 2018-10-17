@@ -53,6 +53,8 @@ class Job implements ShouldQueue
 
     protected $taskId;
 
+    protected $cache;
+
     /**
      * Default timeout value for a job is 60s.
      * @var integer
@@ -114,6 +116,8 @@ class Job implements ShouldQueue
         $app['request']->setTaskId($this->taskId);
 
         $this->trace = $app['trace'];
+
+        $this->cache = $app['cache'];
 
         // Task Id needs to be set in trace
         $this->trace->processor('web')->setTaskId($this->taskId);

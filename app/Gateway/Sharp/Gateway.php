@@ -537,7 +537,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function getVerifyGatewayResponse(int $amount)
+    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded)
     {
         $response = [
             'amount'                => $amount,
@@ -556,10 +556,17 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            // Hard failure
-            case ($amount === 4444):
+            // Hard failure. Added amount check to mock the case when refund for amount 5000 of payment 5000
+            // will be failed at first time but if full 5000 is refunded, it will be successful
+            case (($amount === 4444) and ($amount === $amountRefunded)):
                 $response['result']         = 'Payment failed because of risk score.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK;
+
+                break;
+
+            case (($amount === 4444) and ($amount !== $amountRefunded)):
+                $response['result']         = 'REFUND_SUCCESSFUL';
+                $response['status_code']    = 'REFUND_SUCCESSFUL';
 
                 break;
 
@@ -569,7 +576,9 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case (($amount === 6666) or ($amount === 9999)):
+            // Soft failure. Added amount check to mock the case when verify for refund of 6666 of payment 7000
+            // will be failed at first time but if full 7000 is refunded, it will be successful
+            case (($amount === 6666) and ($amount !== $amountRefunded)):
                 $response['result']         = 'REFUND_SUCCESSFUL';
                 $response['status_code']    = 'REFUND_SUCCESSFUL';
 
@@ -591,7 +600,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount']);
+            $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount'], $input['payment']['amount_refunded']);
         }
 
         if (($action === 'refund') and ($gatewayResponse['status_code'] !== 'REFUND_SUCCESSFUL'))

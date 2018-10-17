@@ -16,8 +16,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Pricing\FeeCalculator;
-use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Constants\Entity as ConstantEntity;
 
 class Repository extends Base\Repository
 {
@@ -619,10 +618,10 @@ class Repository extends Base\Repository
                     ->where('transactions.service_tax', '>', 0)
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNotIn("transactions.id", function($query)
-                        {
-                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
-                                  ->from(Table::FEE_BREAKUP);
-                        });
+                    {
+                        $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                              ->from(Table::FEE_BREAKUP);
+                    });
 
         return $query->limit(1000)->get();
     }
@@ -761,15 +760,20 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
-        $query = $this->getSelectParamsQueryForReconSummary();
+        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::PAYMENT);
 
         //
         // Adding join with payment and terminal
         //
-        $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
-              ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+        $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn);
 
-        $this->getQueryClausesForReconSummary($query, $from, $to);
+        //
+        // Doing a left join because bank_transfer payments currently don't have terminal
+        // TODO: Remove this when bank_transfers use terminals in payment flow
+        //
+        $query->leftJoin(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+
+        $this->getQueryClausesForReconSummary($query, $from, $to, ConstantEntity::PAYMENT);
 
         $reconciledPaymentsSummary = $query->get()
                                            ->toArray();
@@ -827,7 +831,7 @@ class Repository extends Base\Repository
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
-        $query = $this->getSelectParamsQueryForReconSummary();
+        $query = $this->getSelectParamsQueryForReconSummary(ConstantEntity::REFUND);
 
         $this->addRefundJoinForReconSummary($query);
 
@@ -837,7 +841,7 @@ class Repository extends Base\Repository
         $query->join(Table::PAYMENT, $paymentIdColumn, '=', Refund\Entity::PAYMENT_ID)
               ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
 
-        $this->getQueryClausesForReconSummary($query, $from, $to);
+        $this->getQueryClausesForReconSummary($query, $from, $to, ConstantEntity::REFUND);
 
         $reconciledRefundsSummary = $query->get()
                                           ->toArray();
@@ -845,7 +849,7 @@ class Repository extends Base\Repository
         return $reconciledRefundsSummary;
     }
 
-    protected function getSelectParamsQueryForReconSummary()
+    protected function getSelectParamsQueryForReconSummary(string $entityName)
     {
         $transactionPaymentIdColumn = $this->dbColumn(Entity::ENTITY_ID);
 
@@ -861,7 +865,18 @@ class Repository extends Base\Repository
 
         $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
 
-        $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+        $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        //
+        // For refunds : use 'processedAt' instead of txn createdAt
+        // Bcoz some refunds got success recently which were created
+        // 1-2 months ago and thus we do not get these in recon summary
+        // report if we use txn createdAt.
+        //
+        if ($entityName === ConstantEntity::REFUND)
+        {
+            $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
 
         $params =  'COUNT('.$transactionPaymentIdColumn.') AS total_count'. ','.
             'SUM('.$transactionAmountColumn.')/100 AS total_amount'.','.
@@ -890,9 +905,10 @@ class Repository extends Base\Repository
                     ELSE '. $terminalGatewayColumn . '
                   END) gateway, '. $paymentMethodColumn;
 
+        $dateCol = 'STRAIGHT_JOIN FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
+
         $query = $this->newQuery()
-                      ->selectRaw('STRAIGHT_JOIN FROM_UNIXTIME('. $transactionsCreatedAtColumn .' + 19800,"%D %M, %Y") AS date' . ',' .
-                                    $params);
+                      ->selectRaw($dateCol . ',' . $params);
 
         return $query;
     }
@@ -989,18 +1005,35 @@ class Repository extends Base\Repository
 
             if (empty($refundParams) === false)
             {
+                $entityName = ConstantEntity::REFUND;
+
                 $this->addRefundJoinForReconSummary($query);
 
                 $query->join(Table::PAYMENT, $paymentIdColumn, '=', Refund\Entity::PAYMENT_ID);
             }
             else
             {
+                $entityName = ConstantEntity::PAYMENT;
+
                 $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn);
             }
 
-            $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            if (Payment\Gateway::isNonTerminalGateway($gateway) === false)
+            {
+                $query->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            }
+            else
+            {
+                //
+                // Still need to join because there are columns being selected from there and
+                // removing those is to significant a change for a temporary hack like this
+                //
+                // TODO: Remove this when bank_transfers use terminals in payment flow
+                //
+                $query->leftJoin(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+            }
 
-            $this->getQueryClausesForUnreconciledEntities($query, $from, $to, $gateway, $limit);
+            $this->getQueryClausesForUnreconciledEntities($query, $from, $to, $gateway, $limit, $entityName);
 
             $unionQueries[] = $query;
         }
@@ -1030,6 +1063,8 @@ class Repository extends Base\Repository
     {
         $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
+        $refundProcessedAtColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
         $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
@@ -1038,18 +1073,27 @@ class Repository extends Base\Repository
 
         $terminalGatewayAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
-        $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAtColumn . ',';
-
         if (empty($refundParams) === false)
         {
+            $selectParams = 'STRAIGHT_JOIN ' . $refundProcessedAtColumn . ',';
             $selectParams .= (implode(',', $refundParams)) . ',';
         }
+        else
+        {
+            $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAtColumn . ',';
+        }
 
-        $selectParams .= (implode(',', $paymentParams)) . ','
-                         . '(Case WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
-                                THEN '. $terminalGatewayAcquirerColumn . '
-                                ELSE '. $terminalGatewayColumn . '
-                            END) gateway ,'. $gatewayTerminalIdColumn;
+        $paymentParams = implode(',', $paymentParams);
+
+        $gatewayCol = '('.
+            'CASE '.
+            'WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")' .
+                'THEN '. $terminalGatewayAcquirerColumn .
+                'ELSE '. $terminalGatewayColumn .
+            'END' .
+        ') gateway';
+
+        $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
 
         $query = $this->newQuery()
                       ->selectRaw($selectParams);
@@ -1057,38 +1101,69 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    protected function getQueryClausesForUnreconciledEntities($query, int $from, int $to, string $gateway, int $limit)
+    protected function getQueryClausesForUnreconciledEntities($query, int $from, int $to, string $gateway, int $limit, $entityName)
     {
         $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
 
-        $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
-
         $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        //
+        // This '$timestampColumn' holds transactions.createdAt column
+        // for payments and refunds.processedAt column for refunds.
+        //
+        // Reason : For refunds, use 'processedAt' instead of txn createdAt
+        // Bcoz some refunds got success recently which were created
+        // 1-2 months ago and thus xwe do not get these in recon summary
+        // report if we use txn createdAt.
+        //
+        if ($entityName === ConstantEntity::PAYMENT)
+        {
+            $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+        }
+        else
+        {
+            $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
 
         $query->where($paymentGatewayColumn, $gateway)
 
               // To exclude e-mandate transactions
               ->where($transactionAmountColumn, '>', 0)
-
               ->whereNull(Transaction\Entity::RECONCILED_AT)
-              ->betweenTime($from, $to)
-              ->orderBy($transactionsCreatedAtColumn)
+              ->whereBetween($timestampColumn, [$from, $to])
+              ->orderBy($timestampColumn)
               ->limit($limit);
     }
 
-    protected function getQueryClausesForReconSummary($query, $from, $to)
+    protected function getQueryClausesForReconSummary($query, $from, $to, string $entityName)
     {
         $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
 
-        $gatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
-
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        //
+        // This '$timestampColumn' holds transactions.createdAt column
+        // for payments and refunds.processedAt column for refunds.
+        //
+        // Reason : For refunds, use 'processedAt' instead of txn createdAt
+        // Bcoz some refunds got success recently which were created
+        // 1-2 months ago and thus xwe do not get these in recon summary
+        // report if we use txn createdAt.
+        //
+        if ($entityName === ConstantEntity::PAYMENT)
+        {
+            $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+        }
+        else
+        {
+            $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
 
         // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
         $query->where($transactionAmountColumn, '>', 0)
-            ->betweenTime($from, $to)
-            ->groupBy('date', 'gateway', $paymentMethodColumn)
-            ->orderBy('date', 'desc');
+              ->whereBetween($timestampColumn, [$from, $to])
+              ->groupBy('date', 'gateway', $paymentMethodColumn)
+              ->orderBy('date', 'desc');
     }
 
     protected function addRefundJoinForReconSummary($query)

@@ -650,6 +650,20 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
+    public function testPaymentSettledBy()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('Razorpay', $payment['settled_by']);
     }
 
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
