@@ -33,8 +33,8 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    let { support = {} } = this.props,
-      hasSupportInfo = support.email || support.phone,
+    let { support_email, support_phone } = this.props,
+      hasSupportInfo = support_email || support_phone,
       isEditable = this.state.isEditable;
 
     let content = '';
@@ -46,28 +46,28 @@ export default class extends React.PureComponent {
           <div class="sub-detail">
             {emailIcon}
             <Input
-              name="support[email]"
+              name="support_email"
               placeholder="Enter support email"
-              defaultValue={support.email}
-              autoFocus={!support.email}
+              defaultValue={support_email}
+              autoFocus={!support_email}
               onBlur={e => {
                 this.props.updateData(e);
               }}
             />
-            <RemoveBtn onClick={() => this.removeField('support[email]')} />
+            <RemoveBtn onClick={() => this.removeField('support_email')} />
           </div>
           <div class="sub-detail">
             {phoneIcon}
             <Input
-              name="support[phone]"
+              name="support_phone"
               placeholder="Enter support phone"
-              defaultValue={support.phone}
-              autoFocus={support.email && !support.phone}
+              defaultValue={support_phone}
+              autoFocus={support_email && !support_phone}
               onBlur={e => {
                 this.props.updateData(e);
               }}
             />
-            <RemoveBtn onClick={() => this.removeField('support[phone]')} />
+            <RemoveBtn onClick={() => this.removeField('support_phone')} />
           </div>
         </React.Fragment>
       );

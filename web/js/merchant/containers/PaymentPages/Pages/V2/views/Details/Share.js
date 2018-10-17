@@ -3,17 +3,17 @@ import Button from 'component/Button';
 import RemoveBtn from '../RemoveBtn';
 
 export default class extends React.PureComponent {
-  onUpdate = hasSocialShare => {
+  onUpdate = allowSocialShare => {
     this.props.updateData({
       target: {
-        name: 'social_share',
-        value: hasSocialShare,
+        name: 'allow_social_share',
+        value: allowSocialShare,
       },
     });
   };
 
   render() {
-    const hasSocialShare = this.props.hasSocialShare;
+    const allowSocialShare = this.props.allowSocialShare;
 
     const Icons = (
       <React.Fragment>
@@ -25,7 +25,7 @@ export default class extends React.PureComponent {
 
     return (
       <div id="share-details">
-        {hasSocialShare ? (
+        {allowSocialShare ? (
           <React.Fragment>
             <label>Share this on:</label>
             <div class="share-icons">
