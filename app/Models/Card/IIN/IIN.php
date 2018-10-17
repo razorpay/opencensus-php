@@ -11,6 +11,7 @@ class IIN
     protected static $emiBanks = array(
         Bank\IFSC::UTIB,
         Bank\IFSC::INDB,
+        Bank\IFSC::SBIN,
     );
 
     protected static $emiIins = array(
@@ -135,6 +136,9 @@ class IIN
             "52686102",
             "52686110",
             "53765210",
+        ],
+        Bank\IFSC::SBIN => [
+            "47264268",
         ],
     );
 

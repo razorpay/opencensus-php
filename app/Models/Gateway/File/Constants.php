@@ -30,6 +30,7 @@ class Constants
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
     const ISG              = 'isg';
+    const SBI              = 'sbi';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -50,6 +51,7 @@ class Constants
             self::AXIS,
             self::RBL,
             self::SCBL,
+            self::SBI,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -134,6 +136,7 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
+            self::SBI      => ['sbi.emi@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [

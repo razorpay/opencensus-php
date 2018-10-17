@@ -1,35 +1,21 @@
 <?php
 
-namespace RZP\Models\Emi\Banks\Sbin;
+namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
-use RZP\Models\Emi\Banks\Base;
 use RZP\Models\Merchant\Detail\Entity as E;
 
-class EmiFile extends Base\EmiFile
+class Sbi extends Base
 {
-    protected static $fileToWriteName = '';
+    const BANK_CODE   = IFSC::SBIN;
+    const EXTENSION   = FileStore\Format::TXT;
+    const FILE_TYPE   = FileStore\Type::SBI_EMI_FILE;
+    const FILE_NAME   = 'Sbi_Emi_File';
 
-    protected $emailIdsToSendTo = ['sbicards.emi@razorpay.com'];
-
-    protected $bankName = 'Sbi';
-
-    protected $type = FileStore\Type::SBI_EMI_FILE_SFTP;
-
-    protected $totalAmount;
-
-    protected $totalTransactions;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->transferMode = Base\EmiMode::SFTP;
-    }
-
-    protected function getEmiData($input)
+    protected function formatDataForFile($data)
     {
         $body = '';
 
@@ -41,13 +27,13 @@ class EmiFile extends Base\EmiFile
         //mmddyy
         $uniqueReferenceNum =intval(Carbon::now()->format('mdyHi') . '0000');
 
-        foreach ($input as $emiPayment)
+        foreach ($data['items'] as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
 
             $merchant = $emiPayment->merchant;
 
-            $merchantDetail = $merchant->merchantDetail->toArray();
+            $merchantDetail = $merchant->merchantDetail;
 
             $totalTransactions++;
 
@@ -69,11 +55,11 @@ class EmiFile extends Base\EmiFile
                 $this->numpad($principalAmount, 17) .
                 $this->numpad($tenure, 3) .
                 $this->strpad($this->getAuthCode($emiPayment), 6) .
-                Carbon::createFromTimestamp($emiPayment->getAuthorisedAt())->format('dmY') .
+                Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                 $this->strpad('Razor Pay', 40) .
-                $merchantDetail[E::SBI_MID] .       // TODO: fix this
+//                $merchantDetail[E::SBI_MID] .       // TODO: fix this
                 $this->strpad($merchantDetail[E::BUSINESS_NAME], 40) .
-                $this->strpad('TERMINAL TID', 8) .  // TODO: fill in the TID
+                $this->strpad('38R01105', 8) .  // TODO: fill in the TID
                 $this->formatRate($rate) .
                 $this->strpad('', 40) .
                 $this->numpad($principalAmount, 17) .
@@ -81,15 +67,11 @@ class EmiFile extends Base\EmiFile
                 '0/1' .                               // TODO: ask priyanshu
                 ' ' .                                 // TODO: ask priyanshu
                 $this->numpad('0', 7) .
-                $this->getSkuId($merchantDetail[E::SBI_MID]) .
+//                $this->getSkuId($merchantDetail[E::SBI_MID]) . // TODO: fix this
                 $this->numpad('0', 17) .
                 $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
                 $this->strpad('', 108) .
                 '\n';
-
-            $this->totalTransactions = $totalTransactions;
-
-            $this->totalAmount = $totalAmount;
         }
 
         $header =
@@ -105,55 +87,6 @@ class EmiFile extends Base\EmiFile
         $data = $header . $body;
 
         return $data;
-    }
-
-    protected function generateEmiFile(array $emiData, array $metadata = [])
-    {
-        $fileData = null;
-
-        // for sftp file is uploaded to
-        if ($this->transferMode === Base\EmiMode::SFTP)
-        {
-            $metadata = $this->getH2HMetadata();
-        }
-        else
-        {
-            $this->type = FileStore\Type::ICICI_EMI_FILE_MAIL;
-        }
-
-        $fileData = parent::generateEmiFile($emiData, $metadata);
-
-        return $fileData;
-    }
-
-    // TODO:  fix this
-    protected function getH2HMetadata()
-    {
-        return [
-            'gid'   => '10000',
-            'uid'   => '10004',
-            'mtime' => Carbon::now()->getTimestamp(),
-            'mode'  => '33188'
-        ];
-    }
-
-    protected function getFileToWriteName(array $data)
-    {
-        $count = $this->totalTransactions;
-
-        $date = Carbon::now(Timezone::IST)->format('dmY');
-
-        static::$fileToWriteName = 'Razorpay_SBIEMI_' . $date . '_' . $count;
-
-        $filePath = '';
-
-        // for sftp we put the file in a H2H path
-        if ($this->transferMode === Base\EmiMode::SFTP)
-        {
-            $filePath = 'sbin/outgoing/';
-        }
-
-        return $filePath . static::$fileToWriteName;
     }
 
     private function getSkuId($mid)

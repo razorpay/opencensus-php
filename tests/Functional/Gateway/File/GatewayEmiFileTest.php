@@ -227,6 +227,57 @@ class GatewayEmiFileTest extends TestCase
         Mail::assertQueued(EmiMail\File::class);
     }
 
+    public function testGenerateEmiFileForSbi()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail:valid_fields');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '472642',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
+    }
+
     public function testGenerateEmiFileForScbl()
     {
         Mail::fake();
