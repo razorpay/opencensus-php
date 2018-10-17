@@ -86,6 +86,38 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $this->fixtures->merchant->enableConvenienceFeeModel();
     }
 
+    public function testPaymentCreateRouteOnCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayFeesForm');
+        $response->assertViewHas(['data', 'input', 'url']);
+    }
+
+    public function testPaymentCreateRouteOnPlatformFeeBearer()
+    {
+        $this->fixtures->merchant->disableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayPostForm');
+        $response->assertViewHas(['data']);
+    }
+
     public function testPaymentWithConvenienceFees()
     {
         $payment   = $this->getDefaultPaymentArray();

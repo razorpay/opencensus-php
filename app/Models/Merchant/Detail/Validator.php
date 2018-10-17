@@ -227,6 +227,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15',
         Entity::BUSINESS_CATEGORY          => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL             => 'sometimes|max:255',
     ];
 
     protected static $bulkAssignReviewerRules = [

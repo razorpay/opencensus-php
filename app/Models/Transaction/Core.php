@@ -883,10 +883,40 @@ class Core extends Base\Core
 
         $amount = $payout->getAmount();
 
-        $payoutAmount = abs($amount + $fee);
+        if ($payout->getPayoutType() === Payout\Entity::ON_DEMAND)
+        {
+            $payoutAmount = $amount - $fee;
+
+            if ($payoutAmount < 100)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
+                    null,
+                    [
+                      'amount' => $amount,
+                      'fee'    => $fee
+                    ]);
+            }
+
+            $debitAmount = $amount;
+
+            // Here, payout amount is the amount requested by merchant for payout and fees is
+            // levied over it.Also, this fees is deducted from merchant balance.This happens for
+            // merchants which do not have 'es_on_demand' feature enabled.In case of 'es_on_demand'
+            // merchants, payout fees will be deducted from payout amount requested by the merchant.
+            // This is done allow a merchant to do a payout on requested amount , rather then
+            // calculating fees over it and failing a transaction if merchant does not have enough balance.
+            $payout->setAmount($payoutAmount);
+        }
+        else
+        {
+            $payoutAmount = $amount + $fee;
+
+            $debitAmount = $payoutAmount;
+        }
 
         $values = [
-            Transaction\Entity::DEBIT               => $payoutAmount,
+            Transaction\Entity::DEBIT               => $debitAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
             Transaction\Entity::GATEWAY_FEE         => 0,

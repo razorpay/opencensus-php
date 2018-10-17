@@ -52,4 +52,16 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function merchantPayoutOnDemand(array $input)
+    {
+        (new Validator)->validateInput('merchant_payout_on_demand', $input);
+
+        //Here value true specifies payout on demand mode enabled
+        $input[Entity::TYPE] = Entity::ON_DEMAND;
+
+        $payout = (new Payout\Core)->merchantPayout($input, $this->merchant);
+
+        return $payout;
+    }
 }
