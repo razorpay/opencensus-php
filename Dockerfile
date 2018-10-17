@@ -13,7 +13,9 @@ WORKDIR /app
 
 # A single character change in this command will trigger a new
 # composer install
-RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts && rm -rf /root/.composer
+RUN composer global require hirak/prestissimo \
+    && composer install --no-dev --no-interaction --no-autoloader --no-scripts \
+    && rm -rf /root/.composer
 
 # This is the final production image
 # Define these late so as to improve docker caching
