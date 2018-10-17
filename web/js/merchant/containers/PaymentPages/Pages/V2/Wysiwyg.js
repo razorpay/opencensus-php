@@ -2,8 +2,8 @@ import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
 import Button from 'component/Button';
+import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
-
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
@@ -18,7 +18,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     confirm: PropTypes.func,
   };
 
-  state = { isPageReady: false };
+  state = { isPageReady: false, isIntroOpened: true }; // isIntroOpened = true only when it's a paymentpages is NEW
 
   componentDidMount() {
     // Insert script in local
@@ -50,6 +50,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     console.log('Handle Create..', this.props.paymentPageEntity);
   };
 
+  handleIntroClose = () => {
+    this.setState({ isIntroOpened: false });
+
+    setTimeout(function() {
+      const titleEle = document.querySelector(
+        '#description-details input[name="title"]'
+      );
+      titleEle && titleEle.focus();
+    }, 100);
+  };
+
   render() {
     const { isPageReady } = this.state;
 
@@ -71,6 +82,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     return (
       <div class="payment-pages-v2">
+        {this.state.isIntroOpened && (
+          <IntroMask onClose={this.handleIntroClose} />
+        )}
+
         <Header
           title="Create New Payment Page"
           actionBtns={actionBtns}
@@ -106,5 +121,27 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
           )}
       </div>
     </div>
+  );
+};
+
+const IntroMask = ({ onClose }) => {
+  return (
+    <ModalMask
+      maskClosable={false}
+      class="payment-pages-v2-intro"
+      isBlur={true}
+    >
+      <Modal showCloseBtn={false}>
+        <ModalContent>
+          <div class="heading">Create New Payment Page</div>
+          <p>
+            This is how the page will appear to your customers.
+            <br />
+            You can preview and edit the page at the same time!
+          </p>
+          <Button.Primary onClick={onClose}>Let's Go!</Button.Primary>
+        </ModalContent>
+      </Modal>
+    </ModalMask>
   );
 };

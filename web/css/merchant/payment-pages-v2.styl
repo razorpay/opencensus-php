@@ -1,4 +1,32 @@
-.Modal-mask--payment-pages-v2
+.Modal-mask.Modal-mask--payment-pages-v2-intro
+  background-color: rgba(17,30,60,0.8);
+  text-align: center
+  z-index: 999999 // Has to be highest
+
+  .Modal-container
+    top: 40%
+
+  .heading
+    font-size: 24px
+    font-weight: 600
+    color: #fff
+
+  button
+    height: 40px
+    padding: 10px 60px
+    margin: 12px auto 0
+    font-weight: 600
+
+  p
+    color: #fff
+    line-height: 24px
+    font-size: 16px
+    margin: 12px 0 16px
+
+  .Modal-container
+    background: transparent
+
+.Modal-mask--payment-pages-v2-creator
   footer
     padding: 16px
     background: #f6f6f6
@@ -12,6 +40,10 @@
       margin-right: 0
       padding: 8px 32px
 
+
+
+#wysiwyg-root
+  animation: 0.3s fadein ease-in
 
 .payment-pages-v2
   .page-nav

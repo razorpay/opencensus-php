@@ -144,7 +144,7 @@ export default class View extends React.PureComponent {
 
 const Creator = ({ children, creatorStructure }) => {
   return (
-    <ModalMask maskClosable={false} class="payment-pages-v2">
+    <ModalMask maskClosable={false} class="payment-pages-v2-creator">
       <Modal
         class="animate-appear"
         showCloseBtn={false}

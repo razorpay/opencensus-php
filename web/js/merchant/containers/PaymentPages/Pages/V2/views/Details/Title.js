@@ -23,7 +23,6 @@ export default class extends React.PureComponent {
               this.toggleEditMode();
               this.props.updateData(e);
             }}
-            autoFocus
           />
         ) : (
           <EditLayer onClick={this.toggleEditMode}>
