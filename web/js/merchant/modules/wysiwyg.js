@@ -14,19 +14,25 @@ export const deleteInSchema = index => ({
   index,
 });
 
-export const updateInSchema = ({ index, field }) => ({
-  type: 'UPDATE_IN_SCHEMA',
-  payload: { index, field },
-});
+export const updateInSchema = ({ field, index }) => {
+  if (!index) {
+    return addInSchema(field);
+  }
+
+  return {
+    type: 'UPDATE_IN_SCHEMA',
+    payload: { index, field },
+  };
+};
 
 export const updateAmount = amountObj => ({
   type: 'UPDATE_DATA',
   fields: amountObj,
 });
 
-export const addInSchema = fields => ({
+export const addInSchema = field => ({
   type: 'ADD_IN_SCHEMA',
-  fields,
+  field,
 });
 
 let initialState = {

@@ -32,7 +32,7 @@ const CreatorType = {
 export default class View extends React.PureComponent {
   state = { activeCreatorType: null };
 
-  openCreator = (e, activeCreatorType) => {
+  openCreator = (e, activeCreatorType, activeSchemaIndex) => {
     const parent = document.getElementById('form-section');
     const width = parent.clientWidth + 44 * 2;
 
@@ -42,17 +42,33 @@ export default class View extends React.PureComponent {
       left: offset(parent).left - 44,
     };
 
-    this.setState({ activeCreatorType });
+    this.setState({ activeCreatorType, activeSchemaIndex });
   };
 
   onCreatorClose = _ => {
-    this.setState({ activeCreatorType: false });
+    this.setState({ activeCreatorType: false, activeSchemaIndex: null });
   };
 
   onGenericCreatorSubmit = formData => {
     console.log('FORM DATA.....', formData);
 
-    return false;
+    const { title, type, required, description } = formData;
+
+    this.props.updateInSchema({
+      field: {
+        name: title
+          .trim()
+          .toLowerCase()
+          .split(' ')
+          .join('_'),
+        title,
+        type,
+        required,
+        description,
+      },
+      index: this.state.activeSchemaIndex,
+    });
+
     this.setState({ activeCreatorType: false });
   };
 
@@ -75,13 +91,10 @@ export default class View extends React.PureComponent {
     let editorContent;
 
     if (activeCreatorType) {
-      const field = {}; // Get data from FORM_SCHEMA if available
-
       if (activeCreatorType === CreatorType.AMOUNT) {
         editorContent = (
           <AmountCreator
-            field={field}
-            paymentPageEntity={this.props.paymentPageEntity}
+            field={this.props.paymentPageEntity}
             onClose={this.onCreatorClose}
             onSubmit={this.onAmountCreatorSubmit}
           />
@@ -89,7 +102,7 @@ export default class View extends React.PureComponent {
       } else if (activeCreatorType === CreatorType.GENERIC) {
         editorContent = (
           <GenericCreator
-            field={field}
+            field={FORM_SCHEMA[this.state.activeSchemaIndex]}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
           />
@@ -126,7 +139,7 @@ export default class View extends React.PureComponent {
                 infoTxt={infoTxt}
                 onEditField={
                   !isDisabled
-                    ? e => this.openCreator(e, CreatorType.GENERIC)
+                    ? e => this.openCreator(e, CreatorType.GENERIC, idx)
                     : undefined
                 }
               />

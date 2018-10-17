@@ -55,6 +55,11 @@ export class GenericCreator extends React.PureComponent {
 
   onChange = ({ target }) => {
     const { name, value } = target;
+    const stateName = target.getAttribute('data-name');
+
+    if (stateName === 'has_description') {
+      this.setState({ hasDescription: target.checked });
+    }
 
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_generic')[0];
@@ -70,7 +75,7 @@ export class GenericCreator extends React.PureComponent {
   };
 
   render() {
-    const { onClose, onSubmit } = this.props;
+    const { onClose, onSubmit, field = {} } = this.props;
     const { hasDescription, disableSubmit } = this.state;
 
     return (
@@ -83,14 +88,16 @@ export class GenericCreator extends React.PureComponent {
           <Input
             label="What is this field called?"
             name="title"
+            defaultValue={field.title}
             placeholder="Enter field title"
-            pattern="^[a-zA-Z0-9 ]+$"
+            pattern="^[0-9a-zA-Z]+(?: [0-9a-zA-Z]+)*$"
             autoFocus
           />
           {/*<input name="name" hidden value={} />*/}
           <Input.Select
             name="type"
             label="What type of field is this?"
+            defaultValue={field.type}
             placeholder="Select Type"
             options={this.typeOptions}
           />
@@ -99,17 +106,19 @@ export class GenericCreator extends React.PureComponent {
           <Input.Check
             name="required"
             fieldLabel="It is mandatory for the customer to fill this field"
+            defaultValue={!!field.required | 0}
           />
           <Input.Check
-            onClick={e =>
-              this.setState({
-                hasDescription: e.target.checked,
-              })
-            }
+            data-name="has_description"
+            defaultValue={!!field.description | 0}
             fieldLabel="I want to add a help text for this field"
           />
           {hasDescription && (
-            <Input name="description" class="Input--description" />
+            <Input
+              name="description"
+              class="Input--description"
+              defaultValue={field.description}
+            />
           )}
         </div>
         <footer>

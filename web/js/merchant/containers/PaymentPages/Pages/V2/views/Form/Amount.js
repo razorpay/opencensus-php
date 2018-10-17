@@ -111,27 +111,27 @@ export const FormFooter = ({ amountToPay }) => (
 export class AmountCreator extends React.PureComponent {
   constructor(props) {
     super(props);
-    const paymentPageEntity = props.paymentPageEntity;
-    const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
+    const field = props.field;
+    const isAmountEntitySet = field.hasOwnProperty('amount');
 
     this.state = {
-      hasDynamicAmount: isAmountEntitySet ? !paymentPageEntity.amount : false,
-      stock: isAmountEntitySet ? paymentPageEntity.stock : '',
-      hasStock: isAmountEntitySet ? !!paymentPageEntity.stock | 0 : false,
+      hasDynamicAmount: isAmountEntitySet ? !field.amount : false,
+      stock: isAmountEntitySet ? field.stock : '',
+      hasStock: isAmountEntitySet ? !!field.stock | 0 : false,
       disableSubmit: !isAmountEntitySet,
       allowMultipleUnits: isAmountEntitySet
-        ? paymentPageEntity.allow_multiple_units
+        ? field.allow_multiple_units
         : false,
     };
 
     this.defaults = {
-      amount: isAmountEntitySet ? paymentPageEntity.amount : '',
+      amount: isAmountEntitySet ? field.amount : '',
     };
   }
 
   onChange = ({ target }) => {
     const { name, value } = target;
-    let stateName = target.getAttribute('data-name');
+    const stateName = target.getAttribute('data-name');
 
     if (stateName === 'has_dynamic_amount') {
       this.setState({
