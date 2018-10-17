@@ -113,12 +113,12 @@ class RazorXClient
         {
             $variantArray = json_decode($variant, true);
 
-            $variant = $variantArray[$featureFlag] ?? null;
-        }
+            $variantResult = $variantArray[$featureFlag] ?? null;
 
-        if (empty($variant) === false)
-        {
-            $this->setVariant($variant);
+            if (empty($variantResult) === false)
+            {
+                $this->setVariant($variantResult);
+            }
         }
     }
 
