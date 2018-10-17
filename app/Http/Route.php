@@ -245,6 +245,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
+        'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
@@ -778,6 +779,7 @@ final class Route
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+        'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
 
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -1232,6 +1234,7 @@ final class Route
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
+        'refund_processed_at_backfill',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
         'setl_verify',
@@ -1413,6 +1416,7 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        'on_demand_settlement',
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'merchant_instant_activation_post',
@@ -2272,6 +2276,7 @@ final class Route
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
+            'refund_processed_at_backfill',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'setcronjob_webhook',
@@ -2421,6 +2426,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
     ];
 
     /*
@@ -2816,7 +2822,6 @@ final class Route
     public function getCurrentRouteFeatures(): array
     {
         $currentRoute = $this->getCurrentRouteName();
-
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route

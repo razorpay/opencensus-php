@@ -1055,7 +1055,8 @@ class Gateway extends Base\Gateway
         {
             $apiStatus = true;
 
-            if ($gatewayPayment['status'] !== Status::AUTHORIZED)
+            if (($gatewayPayment['status'] !== Status::AUTHORIZED) and
+                ($gatewayPayment['status'] !== Status::CAPTURED))
             {
                 $this->trace->info(
                     TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
@@ -1095,8 +1096,10 @@ class Gateway extends Base\Gateway
         {
             $response = $this->sendGatewayRequest($request);
         }
-        catch (Exception\GatewayRequestException $e)
+        catch (Exception\GatewayErrorException $e)
         {
+            $this->traceAndHandleRequestErrorIfApplicable($e);
+
             $this->traceCurlErrorIfApplicable();
 
             throw $e;
@@ -2187,17 +2190,27 @@ class Gateway extends Base\Gateway
                 ApiRequestFields::V1_CREDIT_CARD_3D_SECURE => [
                     ApiRequestFields::V1_AUTHENTICATE_TRANSACTION => true,
                 ],
-                ApiRequestFields::V1_PAYMENT => [
-                    ApiRequestFields::V1_CHARGE_TOTAL => $input[Constants\Entity::PAYMENT]
-                                                                [Payment\Entity::AMOUNT] / 100,
-                    ApiRequestFields::V1_CURRENCY     => Currency::getIsoCode(
-                                                          $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY]),
-                ],
-                ApiRequestFields::V1_TRANSACTION_DETAILS => [
-                    ApiRequestFields::V1_ORDER_ID => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
-                ],
-            ]
+            ],
         ];
+
+        // first data is validating the order of the xml, we are sending them. In case of recurring payments we
+        // need to pass HostedDataId before other fields in payment tag
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $request[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_PAYMENT]
+            [ApiRequestFields::V1_HOSTED_DATA_ID]   = $input['token']->getId();
+        }
+
+        $request[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_PAYMENT]
+        [ApiRequestFields::V1_CHARGE_TOTAL]         = $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT] / 100;
+
+        $request[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_PAYMENT]
+        [ApiRequestFields::V1_CURRENCY]             = Currency::getIsoCode($input[Constants\Entity::PAYMENT]
+                                                        [Payment\Entity::CURRENCY]);
+
+        $request[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+                    ApiRequestFields::V1_ORDER_ID => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
+                ];
 
         return $request;
     }
@@ -2228,8 +2241,7 @@ class Gateway extends Base\Gateway
         $cardNetwork = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
 
         if (($this->s2sFlowFlag === true) and
-            ($cardNetwork !== Card\Network::RUPAY) and
-            ($this->isFirstRecurringPayment($input) === false))
+            ($cardNetwork !== Card\Network::RUPAY))
         {
             return true;
         }
@@ -2239,5 +2251,50 @@ class Gateway extends Base\Gateway
         $this->s2sFlowFlag = false;
 
         return false;
+    }
+
+    /*
+     * In case a user cancels payment on ACES page or the user is not authorized for some reason
+     * Firstdata is returning 500 http status code. This method ensure payments failed with proper
+     * error code
+     */
+    protected function traceAndHandleRequestErrorIfApplicable($e)
+    {
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            $data = $e->getData();
+
+            if ((isset($data['body']) === true) and
+                (isset($data['status_code']) === true))
+            {
+                $responseBody = $data['body'];
+
+                $responseCode = $data['status_code'];
+
+                if ($responseCode >= 500)
+                {
+                    $responseArray = $this->parseXmlAndReturnArray($responseBody);
+
+                    $this->processAuthorizeResponse($responseArray);
+                }
+            }
+        }
+    }
+
+    protected function getPaymentToVerify(Base\Verify $verify)
+    {
+        $action = Action::AUTHORIZE;
+
+        if ($this->isSecondRecurringPayment($verify->input) === true)
+        {
+           $action = Action::PURCHASE;
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $verify->input['payment']['id'], $action);
+
+        $verify->payment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 }
