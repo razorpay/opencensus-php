@@ -1,5 +1,6 @@
 import Input from 'component/Input';
-import EditLayer from '../EditLayer';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Button from 'component/Button';
 
 const phoneIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -60,16 +61,16 @@ export default class extends React.PureComponent {
       );
     } else {
       content = (
-        <EditLayer
-          onClick={this.toggleEditMode}
-          infoTxt="Provide your contact information so your customers can reach out"
-        >
-          <span class="btn-link">+ Add your contact information</span>
-          <div class="share-icons icons--grayscale">
-            {emailIcon}
-            {phoneIcon}
-          </div>
-        </EditLayer>
+        <span class="help-content">
+          <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+            + Add your contact information
+          </Button.Transparent>
+          <Popover align="right" theme="dark">
+            <PopoverBody>
+              Provide your contact information so your customers can reach out
+            </PopoverBody>
+          </Popover>
+        </span>
       );
     }
 

@@ -1,5 +1,6 @@
 import Input from 'component/Input';
-import EditLayer from '../EditLayer';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Button from 'component/Button';
 
 export default class extends React.PureComponent {
   state = { isEditable: false };
@@ -32,7 +33,6 @@ export default class extends React.PureComponent {
               style={{ height: this.elHeight }}
               name="terms"
               placeholder="Enter Terms & Conditions"
-              info="You can add Terms and conditions to your payment page"
               defaultValue={this.props.terms}
               onInput={this.handleOnInput}
               onBlur={e => {
@@ -42,17 +42,20 @@ export default class extends React.PureComponent {
               autoFocus
             />
           </React.Fragment>
+        ) : this.props.terms ? (
+          <React.Fragment>
+            <label>Terms & Conditions:</label>
+            <div>{this.props.terms}</div>
+          </React.Fragment>
         ) : (
-          <EditLayer onClick={this.toggleEditMode}>
-            {this.props.terms ? (
-              <React.Fragment>
-                <label>Terms & Conditions:</label>
-                <div>{this.props.terms}</div>
-              </React.Fragment>
-            ) : (
-              <span class="btn-link">+ Add Terms & Conditions</span>
-            )}
-          </EditLayer>
+          <span class="help-content">
+            <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+              + Add Terms & Conditions
+            </Button.Transparent>
+            <Popover align="right" theme="dark">
+              <PopoverBody>Add Terms & Conditions if any</PopoverBody>
+            </Popover>
+          </span>
         )}
       </div>
     );

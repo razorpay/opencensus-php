@@ -1,6 +1,16 @@
-import EditLayer from '../EditLayer';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import Button from 'component/Button';
 
 export default class extends React.PureComponent {
+  onUpdate = () => {
+    this.props.updateData({
+      target: {
+        name: 'social_share',
+        value: true,
+      },
+    });
+  };
+
   render() {
     const hasSocialShare = this.props.hasSocialShare;
 
@@ -14,25 +24,23 @@ export default class extends React.PureComponent {
 
     return (
       <div id="share-details">
-        <EditLayer infoTxt="This lets your customers share this page on their social media">
-          <input
-            name="social_share"
-            type="checkbox"
-            hidden
-            onClick={this.props.updateData}
-          />
-          {hasSocialShare ? (
-            <React.Fragment>
-              <label>Share this on:</label>
-              <div class="share-icons">{Icons}</div>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <span class="btn-link">+ Add social media share icons</span>
-              <div class="share-icons icons--grayscale">{Icons}</div>
-            </React.Fragment>
-          )}
-        </EditLayer>
+        {hasSocialShare ? (
+          <React.Fragment>
+            <label>Share this on:</label>
+            <div class="share-icons">{Icons}</div>
+          </React.Fragment>
+        ) : (
+          <span class="help-content">
+            <Button.Transparent class="btn-link" onClick={this.onUpdate}>
+              + Add social media share icons
+            </Button.Transparent>
+            <Popover align="right" theme="dark">
+              <PopoverBody>
+                This lets your customers share this page on their social media
+              </PopoverBody>
+            </Popover>
+          </span>
+        )}
       </div>
     );
   }

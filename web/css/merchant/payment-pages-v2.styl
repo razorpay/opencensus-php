@@ -95,12 +95,11 @@
   .btn-link
     padding-left: 0
 
-    &:hover
-      color: $primary-color
-      text-decoration: none
-
 
   #details-section
+    label
+      display: inherit
+
     .Input-elWrapper
       font-size: inherit
 
@@ -115,6 +114,13 @@
       min-height: 72px
       max-height: 230px // Supports 720 char on desktop
 
+    .Input
+      margin: -4px -6px
+
+      .Input-el
+        padding: 3px 5px
+        position: relative
+
 
   #share-details, #support-details, #terms-details
     .wysiwyg-edit-layer
@@ -124,11 +130,6 @@
     .share-icons
       span:not(:nth-last-child(1))
         margin-right: -8px
-
-    .icons--grayscale
-      float: right
-      filter: grayscale()
-      opacity: 0
 
   #share-details
     input
@@ -156,15 +157,6 @@
         border: none
         background: transparent
         color: #0D2366 // Same as in customer-facing view
-
-
-  #details-section
-    .Input
-      margin: -4px -6px
-
-      .Input-el
-        padding: 3px 5px
-        position: relative
 
 
   .title--big .Input-el
@@ -204,6 +196,11 @@
         @media (max-width: 1024px)
           transform: none
 
+  .help-content
+    position: relative
+
+    .rzp-popover
+      white-space: normal
 
   //Override Styles
   .Input-info

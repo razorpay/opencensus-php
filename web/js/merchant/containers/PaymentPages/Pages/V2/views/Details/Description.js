@@ -1,5 +1,5 @@
 import Input from 'component/Input';
-import EditLayer from '../EditLayer';
+import Button from 'component/Button';
 
 const DESC_LIMIT = {
   DESKTOP: 720,
@@ -48,11 +48,11 @@ All URLs will convert to links.`}
             />
           </React.Fragment>
         ) : (
-          <EditLayer onClick={this.toggleEditMode}>
-            {this.props.description || (
-              <span class="btn-link">+ Add page description</span>
-            )}
-          </EditLayer>
+          this.props.description || (
+            <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+              + Add page description
+            </Button.Transparent>
+          )
         )}
       </div>
     );
