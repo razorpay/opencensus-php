@@ -2344,9 +2344,13 @@ final class Route
             'apspdcl_bridge',
         ],
 
+        //
+        // Here by h2h, we mean routes which are hit by AWS lambda triggers
+        //
         'h2h' => [
             'setl_reconcile_h2h',
-            'lambda_post_h2h'
+            'lambda_post_h2h',
+            'reconciliate',
         ],
 
         'auth_service' => [

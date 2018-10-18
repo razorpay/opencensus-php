@@ -1121,11 +1121,6 @@ class ReconciliationFileTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    private function setFileToRequest($filename, $callee)
-    {
-        $this->testData[$callee]['request']['files']['attachment-1'] = $this->createUploadedFile($filename);
-    }
-
     public function createUploadedFile(string $url): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
