@@ -435,5 +435,10 @@ class Gateway extends Base\Gateway
         return $data[ResponseFields::PAYMENT_ID];
     }
 
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
+    }
+
     // -------------------------- General helper methods end ----------------------
 }
