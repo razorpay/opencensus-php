@@ -115,7 +115,7 @@ t.oninput = () => {
 }
 
 $('#keys').onclick = t.onkeypress = e => {
-  var source = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0 ? 'stage-checkout.razorpay.in' : 'checkout.razorpay.com';
+  var source = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0 ? 'checkout.stage.razorpay.in' : 'checkout.razorpay.com';
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
     i.className = 'open';
     i.contentDocument.write(`
