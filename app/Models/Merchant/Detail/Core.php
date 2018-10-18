@@ -223,6 +223,8 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
+       $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
+
         $this->repo->saveOrFail($merchantDetails);
 
         return $merchantDetails;

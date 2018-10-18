@@ -714,4 +714,25 @@ class MerchantDetailTest extends TestCase
         
         $this->startTest();
     }
+
+    /**
+     * Asserts the category and category2 are populated on business category or business subcategory change
+     */
+    public function testMerchantDetailsPatchCategoryAutoPopulation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
+    }
 }
