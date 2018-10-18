@@ -10,6 +10,9 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
+
+import EmandatePayments from './EmandatePayments/List';
+
 import ActivationBanner from 'merchant/components/ActivationBanner';
 import AddOnsList from 'merchant/containers/AddOns/List';
 
@@ -100,6 +103,8 @@ export default class SubscriptionsController extends Component {
           <header id="subscriptions-header">
             <NavLink to="/subscriptions">Subscriptions</NavLink>
             <NavLink to="/plans">Plans</NavLink>
+
+            <NavLink to="/emandates">Payments</NavLink>
             {/* <NavLink to="/addons">Add Ons</NavLink> */}
           </header>
           <TestModeBanner />
@@ -107,6 +112,8 @@ export default class SubscriptionsController extends Component {
             <Switch>
               <Route path="/subscriptions" component={SubscriptionsList} />
               <Route path="/plans" component={PlansList} />
+
+              <Route path="/emandates" component={EmandatePayments} />
               {/* <Route path="/addons" component={AddOnsList} /> */}
             </Switch>
           </content>

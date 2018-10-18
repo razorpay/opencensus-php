@@ -20,6 +20,7 @@ const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accoun
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
 
+
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
 const BASE_ROUTES = {
