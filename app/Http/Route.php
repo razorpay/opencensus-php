@@ -764,9 +764,9 @@ final class Route
         'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
         // Scrooge Routes
-        'scrooge_reports_get_multiple'             => ['get',       'scrooge/reports',                               'ScroogeController@listReports'                                     ],
-        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkUpdate'                                     ],
-        'scrooge_refunds_get_multiple'             => ['get',       'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
+        'scrooge_reports_get_multiple'             => ['post',      'scrooge/reports',                               'ScroogeController@listReports'                                     ],
+        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',            'ScroogeController@bulkUpdate'                                     ],
+        'scrooge_refunds_get_multiple'             => ['post',      'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',       'scrooge/refunds/{id}',                          'ScroogeController@get'                                             ],
 
         // Dispute routes
