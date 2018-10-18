@@ -29,9 +29,11 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
             if (isAmountEntitySet) {
               if (paymentPageEntity.amount) {
                 <React.Fragment>
-                  <b>₹ {amountToDisplay.split('.')[0]}</b>.{
-                    amountToDisplay.split('.')[1]
-                  }
+                  <span>
+                    <b>₹ {amountToDisplay.split('.')[0]}</b>.{
+                      amountToDisplay.split('.')[1]
+                    }
+                  </span>
                   {paymentPageEntity.allow_multiple_units && (
                     <React.Fragment>
                       <span style={{ margin: '0 24px' }}>×</span>

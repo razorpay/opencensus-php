@@ -17,7 +17,7 @@ const email = {
   schema: {
     type: 'string',
     pattern: 'email',
-    _options: {
+    options: {
       keydown_restrictive: false,
     },
   },
@@ -29,7 +29,7 @@ const phone = {
     type: 'number',
     pattern: 'phone',
     minLength: '8',
-    _options: {
+    options: {
       keydown_restrictive: false,
       icon: {
         before: 'i-phone',
@@ -43,7 +43,7 @@ const url = {
   schema: {
     type: 'string',
     pattern: 'url',
-    _options: {
+    options: {
       keydown_restrictive: false,
     },
   },
@@ -52,7 +52,7 @@ const url = {
 const textarea = {
   label: 'Large text area',
   type: 'string',
-  _options: {
+  options: {
     cmp: 'textarea',
   },
 };
@@ -62,7 +62,7 @@ const dropdown = {
   schema: {
     type: 'string',
     enum: [],
-    _options: {
+    options: {
       cmp: 'select', // Default field for type:enum is Select
       enum_labels: [],
     },
