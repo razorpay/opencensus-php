@@ -16,9 +16,9 @@ interface ActivationFlowInterface
     public function process(Entity $merchantDetails);
 
     /**
-     * contains validation specific to  activation flow(L2 activation form)
+     * Contains validation specific to the activation flow (L2 activation form)
      *
-     * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
+     * @param Entity $merchantDetails
      */
     public function validateFullActivationForm(Entity $merchantDetails);
 }

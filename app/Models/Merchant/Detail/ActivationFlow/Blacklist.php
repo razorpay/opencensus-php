@@ -23,7 +23,6 @@ class Blacklist implements ActivationFlowInterface
      * These are unsupported category
      *
      * @param Entity $merchantDetails
-     *
      */
     public function process(Entity $merchantDetails)
     {
@@ -41,6 +40,8 @@ class Blacklist implements ActivationFlowInterface
     public function validateFullActivationForm(Entity $merchantDetails)
     {
         throw new BadRequestValidationFailureException(
-            ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY);
+            ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+            Entity::BUSINESS_SUBCATEGORY,
+            [Entity::BUSINESS_SUBCATEGORY => $merchantDetails->getBusinessSubcategory(),]);
     }
 }

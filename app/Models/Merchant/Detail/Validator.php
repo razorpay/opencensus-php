@@ -469,7 +469,7 @@ class Validator extends Base\Validator
     }
 
     /**
-     * contains validation for full activation form(L2 activation form)
+     * Contains validations for full activation form (L2 activation form)
      * L1 and L2 activation form have different validations
      *
      * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,

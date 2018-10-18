@@ -24,7 +24,7 @@ class Whitelist implements ActivationFlowInterface
     /**
      * validation specific to whitelist activation flow
      *
-     * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
+     * @param Entity $merchantDetails
      */
     public function validateFullActivationForm(Entity $merchantDetails)
     {
