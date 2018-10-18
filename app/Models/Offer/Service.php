@@ -2,16 +2,30 @@
 
 namespace RZP\Models\Offer;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
 {
+    const PROXY_ROUTES = [
+        'offer_create',
+        'offer_update',
+        'offer_fetch_multiple',
+        'offer_fetch_by_id',
+    ];
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->route = $this->app['api.route'];
+
+        $this->validateAccess();
     }
 
     public function create(array $input)
@@ -53,5 +67,36 @@ class Service extends Base\Service
         $disabledOffers = $this->core->deactivate();
 
         return $disabledOffers;
+    }
+
+    protected function validateAccess()
+    {
+        $route = $this->route->getCurrentRouteName();
+
+        //
+        // Applying this check only on offers CRU
+        //
+        if (in_array($route, self::PROXY_ROUTES, true) === false)
+        {
+            return;
+        }
+
+        //
+        // All merchants have access to offer routes over proxy auth
+        //
+        if ($this->auth->isProxyAuth() === true)
+        {
+            return;
+        }
+
+        //
+        // Merchants with this feature can also access and create offers over private auth
+        //
+        if ($this->auth->getMerchant()->isFeatureEnabled(Feature::OFFER_PRIVATE_AUTH) === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 }

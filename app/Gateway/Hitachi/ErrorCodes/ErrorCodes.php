@@ -50,4 +50,9 @@ class ErrorCodes extends Cards\ErrorCodes
         'Z3' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'IC' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
     ];
+
+    public static function getErrorFieldName($fieldName)
+    {
+        return 'pRespCode';
+    }
 }

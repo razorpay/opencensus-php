@@ -417,6 +417,30 @@ return [
         ],
     ],
 
+    'testMerchantDetailsPatchBusinessModel' => [
+        'request'  => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030',
+                'business_category'          => 'others',
+                'business_model'             => 'Acme corp',
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'business_operation_address' => 'Test address',
+                'business_operation_state'   => 'Karnataka',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560030',
+                'business_model'             => 'Acme corp',
+            ],
+        ],
+    ],
+
     'testMerchantUpdateWebsiteDetails' => [
         'request' => [
             'content' => [
@@ -778,6 +802,49 @@ return [
                 ],
                 'can_submit'   => false,
             ],
+        ],
+    ],
+
+    'testSupportedActivationFlow' => [
+        'request'  => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUnsupportedActivationFlow' => [
+        'request'   => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];
