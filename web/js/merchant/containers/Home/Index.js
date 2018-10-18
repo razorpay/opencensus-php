@@ -58,6 +58,15 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
+const KycFormSuccess = ({ onClose }) => (
+  <InstantActivationSuccess
+    title="KYC Form submitted"
+    subtitle="Great! We will get back to you soon."
+    content="The process usually takes 2-3 working days* (which may vary depending on our partner bank).\nWe will reach out on your contact email for further clarifications  if needed."
+    onClose={onClose}
+  />
+);
+
 const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA
@@ -74,6 +83,8 @@ const keymetricsSectionTitle = 'Transactions Overview',
       current_balance: state.home.current_balance,
       showInstantActivationSuccess:
         state.home.instantActivations.showInstantActivationSuccess,
+      showKYCActivationSuccess:
+        state.home.instantActivations.showKYCActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
     };
   },
@@ -568,6 +579,7 @@ export default class HomeContainer extends Component {
       analyticsFetch,
       onFilterChange,
       showInstantActivationSuccess,
+      showKYCActivationSuccess,
       showKYCDetails,
       hideKYCDetailsModal,
     } = this.props;
@@ -647,6 +659,9 @@ export default class HomeContainer extends Component {
           )}
         {showInstantActivationSuccess && (
           <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
+        )}
+        {showKYCActivationSuccess && (
+          <KycFormSuccess onClose={this.props.hideKYCActivationSuccessModal} />
         )}
         {showKYCDetails && <KycDetailsModal onClose={hideKYCDetailsModal} />}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}

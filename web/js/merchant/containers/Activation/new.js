@@ -13,6 +13,7 @@ import Button from 'component/Button';
 
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+import { showKYCActivationSuccessModal } from 'merchant/modules/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
@@ -30,6 +31,7 @@ const successImg = '/img/activation/submit-success.svg';
 * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
 * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
 * */
+@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -38,6 +40,7 @@ const successImg = '/img/activation/submit-success.svg';
   {
     showNotification,
     updateSession,
+    showKYCActivationSuccessModal,
   }
 )
 export default class ActivationContainer extends React.Component {
@@ -300,6 +303,10 @@ export default class ActivationContainer extends React.Component {
     this.wizard && this.wizard.goto(null); // To save existing tab in Activation Wizard
   };
 
+  goToDashboard = () => {
+    this.props.history.replace(`/`);
+  };
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -311,8 +318,14 @@ export default class ActivationContainer extends React.Component {
     let content, spinner, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
-      modalClass = 'Activation--success';
-      content = <SuccessScreen />;
+      if (!this.props.user.showInstantActivation) {
+        modalClass = 'Activation--success';
+        content = <SuccessScreen />;
+      } else {
+        this.props.showKYCActivationSuccessModal();
+        this.props.history.replace(`/`);
+        content = null;
+      }
     } else if (
       !accountId &&
       !this.state.isFormTouched &&
@@ -349,7 +362,10 @@ export default class ActivationContainer extends React.Component {
       );
     }
 
-    this.props.setAdditionalModalClass(modalClass);
+    if (modalClass) {
+      this.props.setAdditionalModalClass(modalClass);
+    }
+
     return content;
   }
 }
@@ -359,7 +375,7 @@ ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
-const SuccessScreen = ({ formName }) => {
+const SuccessScreen = ({ formName = 'Activation Form' }) => {
   function clickConfig(e) {
     trackGoToConfig();
   }

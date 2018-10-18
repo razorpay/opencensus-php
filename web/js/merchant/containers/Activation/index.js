@@ -79,7 +79,10 @@ export default class ActivationContainer extends Component {
       },
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-      isModal = !!this.props.onClose;
+      isModal = !!this.props.onClose,
+      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
+      showL1Modal =
+        user.showInstantActivation && (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
       modalClasses = ['animate-down'];
@@ -98,9 +101,7 @@ export default class ActivationContainer extends Component {
         </div>
       );
     } else {
-      const { isL1Submitted, isBlacklistFlow } = user.instantActivation;
-
-      if (user.showInstantActivation && (!isL1Submitted || isBlacklistFlow)) {
+      if (showL1Modal) {
         modalClasses = modalClasses.concat([
           'Activation--wizard',
           'Activation--wizard--Instant',
@@ -122,13 +123,15 @@ export default class ActivationContainer extends Component {
     }
 
     return isModal ? (
-      <Modal
-        class={classList(...modalClasses)}
-        onClose={this.props.onClose}
-        onCloseCB={this.saveDirtyState}
-      >
-        <ModalContent>{content || spinner}</ModalContent>
-      </Modal>
+      <div className={showL1Modal ? 'instant-activations-modal-container' : ''}>
+        <Modal
+          class={classList(...modalClasses)}
+          onClose={this.props.onClose}
+          onCloseCB={this.saveDirtyState}
+        >
+          <ModalContent>{content || spinner}</ModalContent>
+        </Modal>
+      </div>
     ) : (
       <div class="ActivationContainer">{content || spinner}</div>
     );
