@@ -180,6 +180,9 @@ export default class ActivationWizard extends React.Component {
   submitForm = () => {
     const data = this.formData;
 
+    this.props.showInstantActivationSuccessModal();
+    return this.props.history.replace(`/`);
+
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
@@ -314,8 +317,16 @@ export default class ActivationWizard extends React.Component {
             <div className="form-footer Input">
               <div className="Input-content">
                 <p>
-                  By submitting this form you agree to our{' '}
-                  <span className="text-primary">Terms and Conditions</span>
+                  <small>
+                    By submitting this form you agree to our{' '}
+                    <a
+                      className="text-primary"
+                      target="_blank"
+                      href="https://razorpay.com/terms/"
+                    >
+                      Terms and Conditions
+                    </a>
+                  </small>
                 </p>
                 <div className="text-right">
                   <AsyncButton

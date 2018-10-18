@@ -8,6 +8,7 @@ export default ({
   isSubmitted,
   needsClarification,
   isActivated,
+  isRejected,
 }) => {
   let status = possibleStatuses.active,
     content = null,
@@ -51,6 +52,9 @@ export default ({
       if (needsClarification) {
         status = possibleStatuses.blocked;
         content = 'Check your email ID to complete clarification of KYC';
+      } else if (isRejected) {
+        status = possibleStatuses.blocked;
+        content = 'Your KYC form has been rejected.';
       } else {
         status = possibleStatuses.progress;
         content =

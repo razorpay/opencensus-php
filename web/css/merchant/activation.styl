@@ -269,11 +269,15 @@ $side-width = 240px
       height: auto;
       max-height: none;
       overflow: visible;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      min-height: 0;
 
       .Activation--wizard {
 
         height: auto;
         max-height: none;
+        min-height: 0;
 
         main {
 
@@ -303,8 +307,14 @@ $side-width = 240px
 
             .Input-content {
 
-              border-top: 1px solid #838383;
-              padding-top: 8px;
+              border-top: 1px solid #E2E2E2;
+              margin-top: 18px;
+              
+              small {
+
+                color: #838383;
+                line-height: 20px;
+              }
 
               div.submit-btn {
 

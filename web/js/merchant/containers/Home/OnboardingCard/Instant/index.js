@@ -120,6 +120,7 @@ export default class OnboardingCardInstant extends Component {
         isSubmitted,
         needsClarification,
         isActivated,
+        isRejected,
       };
 
     return (

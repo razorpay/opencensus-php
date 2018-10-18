@@ -159,6 +159,16 @@ export default [
         'Website/App',
         {
           label: 'We do not have either',
+          description: (
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
+          ),
         },
       ],
     },
