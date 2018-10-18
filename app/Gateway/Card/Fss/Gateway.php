@@ -1056,11 +1056,11 @@ class Gateway extends Base\Gateway
         if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
         {
             $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+        }
 
-            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
-            {
-                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
-            }
+        if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
+        {
+            $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
         }
     }
 
