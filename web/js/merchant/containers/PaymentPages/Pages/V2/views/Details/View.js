@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
 import { updateData } from 'merchant/modules/wysiwyg';
-
 import Title from './Title';
 import Description from './Description';
 import Share from './Share';
@@ -27,8 +26,26 @@ export default class View extends React.PureComponent {
   updateData = this.updateData.bind(this);
 
   render() {
-    const paymentPageEntity = this.props.paymentPageEntity;
+    const { paymentPageEntity, payment_page_id } = this.props;
     const self = this;
+
+    if (
+      payment_page_id &&
+      paymentPageEntity &&
+      !Object.keys(paymentPageEntity).length
+    ) {
+      return (
+        <div class="spinner-container">
+          <div class="spin-btn large visible" />
+        </div>
+      );
+    } else if (payment_page_id && !paymentPageEntity) {
+      return (
+        <div class="spinner-container">
+          <b>{payment_page_id}</b> ID doesn't exist
+        </div>
+      );
+    }
 
     return (
       <React.Fragment>

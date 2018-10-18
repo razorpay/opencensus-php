@@ -1,8 +1,18 @@
 import { set, merge, removeItem, updateItem, push } from 'rzp/utils/immutable';
+import { fetchPaymentPageEntity } from 'merchant/containers/paymentpages/Pages/model';
 import {
   createEmailField,
   createPhoneField,
 } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+
+const FETCH_ENTITY = 'FETCH_ENTITY';
+
+export const fetchPaymentPage = id => {
+  return {
+    type: FETCH_ENTITY,
+    payload: fetchPaymentPageEntity(id),
+  };
+};
 
 export const updateData = field => ({
   type: 'UPDATE_DATA',
@@ -42,6 +52,16 @@ let initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
+    case `${FETCH_ENTITY}::PENDING`:
+      return set(state, 'paymentPageEntity', {});
+
+    case `${FETCH_ENTITY}::SUCCESS`:
+      const entityData = action.payload.data;
+      return set(state, 'paymentPageEntity', entityData);
+
+    case `${FETCH_ENTITY}::ERROR`:
+      return set(state, 'paymentPageEntity', null);
+
     case 'UPDATE_DATA':
       return set(state, 'paymentPageEntity', {
         ...state.paymentPageEntity,
@@ -73,16 +93,3 @@ export default function(state = initialState, action) {
       return state;
   }
 }
-
-/* This is just dummy data. To be  from API call + taken from props */
-const dummy_paymentPageEntity = {
-  title: 'Invoice and Bill Payments',
-  description:
-    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, A when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type a A  And scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I. Lorem Ipsum is simply dummy text of the printing and  A  A typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.  AIt has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. I",
-  social_share: 1,
-  support: {
-    email: 'support@savethewhales.org',
-    phone: '1800-1234-1323 (Timings: 9AM to 6PM)',
-  },
-  terms: 'If payment fails, we give free even ticket within 4 days. Enjoy!',
-};

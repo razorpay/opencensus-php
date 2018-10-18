@@ -10,6 +10,7 @@ import FormView from './views/Form/index';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, sendLink } from '../model';
 
+import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -21,6 +22,7 @@ import { showNotification } from 'rzp/modules/notifications';
     ...state.wysiwyg,
   }),
   {
+    fetchPaymentPage,
     showNotification,
     closeModal,
     openModal,
@@ -32,6 +34,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
+
+  componentWillMount() {
+    if (this.props.id) {
+      this.props.fetchPaymentPage(this.props.id);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchPaymentPage(nextProps.id);
+    }
+  }
 
   componentDidMount() {
     // Insert script in local
@@ -54,10 +68,16 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     console.log('Handle close button');
   };
 
-  initSubApps() {
-    render(<DetailsView />, document.getElementById('details-section'));
-    render(<FormView />, document.getElementById('form-section'));
-  }
+  initSubApps = () => {
+    render(
+      <DetailsView payment_page_id={this.props.id} />,
+      document.getElementById('details-section')
+    );
+    render(
+      <FormView payment_page_id={this.props.id} />,
+      document.getElementById('form-section')
+    );
+  };
 
   openPPShareView = (id, shortUrl, title, description) => {
     this.props.openModal({
@@ -164,13 +184,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         this.props.user.logo_url,
     };
 
-    const isAllowedToCreate =
-      paymentPageEntity.hasOwnProperty('amount') && paymentPageEntity.title;
+    const isAllowedToSubmit =
+      paymentPageEntity &&
+      paymentPageEntity.hasOwnProperty('amount') &&
+      paymentPageEntity.title;
     const actionBtns = (
       <React.Fragment>
         <Button.Primary
           onClick={this.handleCreate}
-          disabled={!isAllowedToCreate}
+          disabled={!isAllowedToSubmit}
         >
           Create and Publish Page
         </Button.Primary>

@@ -87,6 +87,25 @@ export default class View extends React.PureComponent {
   render() {
     const FORM_SCHEMA = this.props.FORM_SCHEMA;
     const activeCreatorType = this.state.activeCreatorType;
+    const { paymentPageEntity, payment_page_id } = this.props;
+
+    if (
+      payment_page_id &&
+      paymentPageEntity &&
+      !Object.keys(paymentPageEntity).length
+    ) {
+      return (
+        <div class="spinner-container">
+          <div class="spin-btn large visible" />
+        </div>
+      );
+    } else if (payment_page_id && !paymentPageEntity) {
+      return (
+        <div class="spinner-container">
+          <b>{payment_page_id}</b> ID doesn't exist
+        </div>
+      );
+    }
 
     let editorContent;
 
@@ -94,7 +113,7 @@ export default class View extends React.PureComponent {
       if (activeCreatorType === CreatorType.AMOUNT) {
         editorContent = (
           <AmountCreator
-            field={this.props.paymentPageEntity}
+            field={paymentPageEntity}
             onClose={this.onCreatorClose}
             onSubmit={this.onAmountCreatorSubmit}
           />
@@ -110,7 +129,11 @@ export default class View extends React.PureComponent {
       }
     }
 
-    return (
+    return payment_page_id && !paymentPageEntity.title ? (
+      <div class="spinner-container">
+        <div class="spin-btn large visible" />
+      </div>
+    ) : (
       <React.Fragment>
         {activeCreatorType && (
           <Creator creatorStructure={this.creatorStructure}>
@@ -119,7 +142,7 @@ export default class View extends React.PureComponent {
         )}
         <div class="UI-form">
           <AmountField
-            paymentPageEntity={this.props.paymentPageEntity}
+            paymentPageEntity={paymentPageEntity}
             onAddAmount={e => this.openCreator(e, CreatorType.AMOUNT)}
           />
 
@@ -153,7 +176,7 @@ export default class View extends React.PureComponent {
             + Add new field
           </Button.Transparent>
 
-          <FormFooter amountToPay={this.props.paymentPageEntity.amount} />
+          <FormFooter amountToPay={paymentPageEntity.amount} />
         </div>
       </React.Fragment>
     );
