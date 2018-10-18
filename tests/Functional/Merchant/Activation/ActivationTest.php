@@ -99,6 +99,23 @@ class ActivationTest extends TestCase
     }
 
     /**
+     * for blacklist activation flow
+     */
+    public function testBlacklistInstantActivation()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGreylistInstantActivation()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
      * Blacklist merchant should be able to resubmit L1 activation form (basic activation form)
      */
     public function testL1ResubmissionForBlacklist()

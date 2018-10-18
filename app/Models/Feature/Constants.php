@@ -92,6 +92,7 @@ class Constants
     const HEADLESS                        = 'headless';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
+    const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -219,6 +220,7 @@ class Constants
         self::HEADLESS                        => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
+        self::OFFER_PRIVATE_AUTH              => true,
     ];
 
     // Entity type constants

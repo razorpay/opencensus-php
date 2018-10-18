@@ -778,6 +778,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATE_WEBSITE_DETAILS           = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
     const MERCHANT_UPDATE_KEY_ACCESS                = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
+    const MERCHANT_TAGS_APPEND                      = 'MERCHANT_TAGS_APPEND';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST      = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST              = 'MERCHANT_LIVE_ENABLE_REQUEST';
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
@@ -821,6 +822,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILES_FETCH                           = 'AWS_FILES_FETCH';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const AWS_FILE_DOWNLOAD_ERROR                   = 'AWS_FILE_DOWNLOAD_ERROR';
+    const AWS_FILE_DELETE_ERROR                     = 'AWS_FILE_DELETE_ERROR';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
