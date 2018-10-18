@@ -764,4 +764,47 @@ return [
             ],
         ],
     ],
+
+    'testSupportedActivationFlow' => [
+        'request'  => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUnsupportedActivationFlow' => [
+        'request'   => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

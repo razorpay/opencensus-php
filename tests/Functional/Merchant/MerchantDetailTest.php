@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
@@ -651,5 +652,33 @@ class MerchantDetailTest extends TestCase
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
         $this->assertSame(5399, $testMerchant->getCategory());
         $this->assertSame('others', $testMerchant->getCategory2());
+    }
+    
+    /**
+     * blacklist activation flow should not be allowed to submit full activation form
+     */
+    public function testUnsupportedActivationFlow()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
+        ]);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+        
+        $this->startTest();
+    }
+    
+    /**
+     * whitelist and greylist activation flow should be allowed to fill full activation form
+     */
+    public function testSupportedActivationFlow()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::WHITELIST
+        ]);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+        
+        $this->startTest();
     }
 }

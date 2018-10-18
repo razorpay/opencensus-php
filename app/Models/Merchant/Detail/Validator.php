@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
@@ -464,6 +465,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Contains validations for full activation form (L2 activation form)
+     * L1 and L2 activation form have different validations
+     *
+     * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
+     * no detail will be save in db and validation exception will be thrown
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function validateFullActivationForm()
+    {
+        $this->validateIsNotLocked();
+
+        if ($this->entity->getActivationFlow() !== null)
+        {
+            $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
+
+            $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }
 }
