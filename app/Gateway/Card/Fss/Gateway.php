@@ -904,8 +904,8 @@ class Gateway extends Base\Gateway
     protected function checkErrorMessage($gatewayPayment, $gatewayContent)
     {
         // FSS sends just cancelled in the error instead of error code + desc.
-        if (empty($gatewayPayment->getErrorMessage()) === false and
-            $gatewayPayment->getErrorMessage() !== Constants::CANCELLED)
+        if ((empty($gatewayPayment->getErrorMessage()) === false) and
+            ($gatewayPayment->getErrorMessage() !== Constants::CANCELLED))
         {
             $gatewayCode = $this->getErrorCode($gatewayPayment->getErrorMessage());
 
