@@ -725,6 +725,46 @@ return [
         ],
     ],
 
+    'testUpdateCriticalFieldsPostActivation' => [
+        'request'  => [
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'lending',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateNonCriticalFieldsPostActivation' => [
+        'request'  => [
+            'content' => [
+                'promoter_pan_name' => 'John Doe',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'promoter_pan_name' => 'John Doe',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCategoryDetailsSetOnSubCategoryChange' => [
         'request'  => [
             'content' => [
