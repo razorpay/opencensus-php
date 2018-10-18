@@ -807,4 +807,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testMerchantDetailsPatchCategoryAutoPopulation' => [
+        'request'  => [
+            'content' => [
+                "business_category"    => "financial_services",
+                "business_subcategory" => "mutual_fund",
+            ],
+            'url'     => '/merchants/details',
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                "business_category"    => "financial_services",
+                "business_subcategory" => "mutual_fund",
+            ],
+        ],
+    ],
 ];
