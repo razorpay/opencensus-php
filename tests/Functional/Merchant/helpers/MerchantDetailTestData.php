@@ -855,7 +855,7 @@ return [
                 "business_subcategory" => "mutual_fund",
             ],
             'url'     => '/merchants/details',
-            'method'  => 'PATCH' ,
+            'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
