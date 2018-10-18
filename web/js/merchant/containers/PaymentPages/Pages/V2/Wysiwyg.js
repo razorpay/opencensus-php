@@ -31,7 +31,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     confirm: PropTypes.func,
   };
 
-  state = { isPageReady: false, isIntroOpened: true }; // isIntroOpened = true only when it's a paymentpages is NEW
+  state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
 
   componentDidMount() {
     // Insert script in local
@@ -154,7 +154,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   render() {
     const { isPageReady } = this.state;
-    const { paymentPageEntity } = this.props;
+    const { paymentPageEntity, id } = this.props;
 
     const merchantData = {
       name: this.props.user.name,
@@ -177,6 +177,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       </React.Fragment>
     );
 
+    const pageNavTitle = id ? (
+      <>
+        Edit Payment Page{' '}
+        <span style={{ opacity: 0.35, fontWeight: 400 }}> - {id}</span>
+      </>
+    ) : (
+      'Create New Payment Page'
+    );
+
     return (
       <div class="payment-pages-v2">
         {this.state.isIntroOpened && (
@@ -184,13 +193,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         )}
 
         <Header
-          title="Create New Payment Page"
+          title={pageNavTitle}
           actionBtns={actionBtns}
           handleClose={this.handleClose}
           isPageReady={isPageReady}
         />
         {isPageReady && (
           <Svelte
+            payment_page_id={id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
             merchantData={merchantData}
             onMount={this.initSubApps}

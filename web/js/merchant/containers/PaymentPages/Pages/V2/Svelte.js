@@ -8,6 +8,8 @@ export default class Svelte extends React.Component {
   initialize = node => {
     if (!node) return;
 
+    const { payment_page_id } = this.props;
+
     this.templateData = {
       data: {
         is_test_mode: this.props.isTestMode,
@@ -15,7 +17,9 @@ export default class Svelte extends React.Component {
       },
 
       context: {
-        page_title: 'Create New Payment Page',
+        page_title: payment_page_id
+          ? 'Edit Payment Page - ' + payment_page_id
+          : 'Create New Payment Page',
         form_title: 'Payment Details',
         isWYSIWYGMode: true,
         DESC_LIMIT: {
