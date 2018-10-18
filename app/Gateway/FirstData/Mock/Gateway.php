@@ -14,8 +14,7 @@ class Gateway extends FirstData\Gateway
     {
         $this->setS2sFlowFlag($input);
 
-        if (($this->s2sFlowFlag === false) or
-            ($this->isFirstRecurringPayment($input) === true))
+        if ($this->s2sFlowFlag === false)
         {
             return $this->authorizeMock($input);
         }

@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
+        self::MODE,
         self::NARRATION,
         self::BANK_STATUS_CODE,
         self::STATUS,

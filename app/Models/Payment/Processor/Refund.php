@@ -10,14 +10,16 @@ use RZP\Models\Payment;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Models\Merchant\RefundSource;
-use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Card\NetworkName;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Jobs\ScroogeRefundRetry;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -410,8 +412,7 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        if (($payment->isBankTransfer() === true) or
-            ($this->isFundTransferAttemptRefund($payment) === true))
+        if ($this->isFundTransferAttemptRefund($payment) === true)
         {
             $verifyRefundResult = $this->prepareScroogeRefundResponse([], false);
         }
@@ -879,8 +880,9 @@ trait Refund
             // TODO: Remove for Scrooge
             // For refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
             //
-            // Marking refund as processed always in case of retry because for older refunds of scrooge gateways,
-            // scrooge will not call API to mark processed as older refunds are retried via API admin dashboard not via scrooge.
+            // Marking refund as processed always in case of retry because for older
+            // refunds of scrooge gateways, scrooge will not call API to mark processed
+            // as older refunds are retried via API admin dashboard not via scrooge.
             //
             if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false)
                 or ($retry === true))
@@ -1078,26 +1080,18 @@ trait Refund
     {
         // TODO: Handle FTAs, Bank Transfers in Scrooge enabled gateways
 
-        if ($this->isFundTransferAttemptRefund($payment) === true)
+        $gateway = $payment->getGateway();
+
+        $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $payment->getMerchantId());
+
+        if (($isScroogeGateway === false) and
+            ($this->isFundTransferAttemptRefund($payment, $data) === true))
         {
-            return $this->refundEmandateRblOrTpvPayment($payment);
-        }
-        else if ($this->shouldHitGatewayForRefund($payment) === true)
-        {
-            return $this->callGatewayRefundFunction($payment, $data, $retry);
-        }
-        else if ($payment->isBankTransfer() === true)
-        {
-            return $this->refundBankTransfer($payment, $data);
+            return $this->refundViaFundTransfer($payment, $data);
         }
         else
         {
-            throw new Exception\LogicException(
-                'Should not have reached here',
-                null,
-                [
-                    'payment_id'    => $payment->getId(),
-                ]);
+            return $this->callGatewayRefundFunction($payment, $data, $retry);
         }
     }
 
@@ -1169,12 +1163,41 @@ trait Refund
         // retried. This is done to provide support for older refunds which were not processed via scrooge and are in
         // failed state. As scrooge doesn't mark refund as failed, new refunds will never be retried via this flow.
         //
-        if (($refund->isProcessed() === true) or
-            ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
-             ($refund->isCreated() === true)))
+        if ($refund->isProcessed() === true)
         {
             return $refund->getStatus();
         }
+
+        if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
+            ($refund->isCreated() === true))
+        {
+            $this->callRefundRetryFunctionOnScrooge($refund);
+        }
+        else if ($refund->isStatusFailed() === true)
+        {
+            $this->callRefundRetryFunctionOnApi($refund, $data);
+        }
+
+        return $refund->getStatus();
+    }
+
+    public function callRefundRetryFunctionOnScrooge($refund)
+    {
+        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment);
+
+        $data['mode'] = $this->mode;
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_QUEUE_SCROOGE_DISPATCH,
+            $data
+        );
+
+        ScroogeRefundRetry::dispatch($data);
+    }
+
+    public function callRefundRetryFunctionOnApi($refund, $data)
+    {
+        $payment = $refund->payment;
 
         $refundedOnGateway = $this->verifyRefund($refund);
 
@@ -1209,8 +1232,6 @@ trait Refund
         $refund->setGatewayRefunded($refundedOnGateway);
 
         $this->repo->saveOrFail($refund);
-
-        return $refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
@@ -1223,17 +1244,11 @@ trait Refund
     protected function updatePaymentRefunded()
     {
         //
-        // Indicates inverse of buggy case where
-        // refund entity is already present
-        // Need to check against false only, since
-        // it can be `null` also. In case of `null`
-        // or `true`, it should go to the else block.
+        // Indicates inverse of buggy case where refund entity is already present
+        // Need to check against false only, since it can be `null` also.
+        // In case of `null` or `true` values we update payment amounts
         //
-        if ($this->verifyRefundStatus === false)
-        {
-            ;
-        }
-        else
+        if ($this->verifyRefundStatus !== false)
         {
             $amount = $this->refund->getAmount();
 
@@ -1566,38 +1581,7 @@ trait Refund
         return $this->callGatewayForRefundValidation($data);
     }
 
-    protected function refundBankTransfer(Payment\Entity $payment, array $data)
-    {
-        $refunded = false;
-
-        try
-        {
-            (new BankTransfer\Core)->refund($data);
-
-            $this->refund->setStatus(Payment\Refund\Status::CREATED);
-
-            $this->refund->setBatchFundTransferId(null);
-
-            $refunded = true;
-        }
-        catch (Exception\BaseException $e)
-        {
-            $this->app['segment']->trackPayment(
-                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
-
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_REFUND_FAILURE);
-
-            $this->refund->setStatus(Payment\Refund\Status::FAILED);
-
-            $this->updateRefundFailed($e);
-        }
-
-        return [Payment\Gateway::SUCCESS => $refunded];
-    }
-
-    protected function refundEmandateRblOrTpvPayment(Payment\Entity $payment)
+    protected function refundViaFundTransfer(Payment\Entity $payment, $data = []): array
     {
         if ($this->refund->getAmount() === 0)
         {
@@ -1610,20 +1594,25 @@ trait Refund
 
         try
         {
-            if ($this->refund->bankAccount === null)
-            {
-                $input = $this->getBankAccountInput($payment);
+            $input = $this->getBankAccountInput($payment, $data);
 
-                $this->createBankAccountForRefund($input);
+            $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment);
+
+            if (($this->refund->hasBankAccount() === false) or
+                ($this->refund->bankAccount->matches($input) === false))
+            {
+               $this->createAndAssociateBankAccount($input);
             }
 
-            (new FundTransferAttempt\Core)->createFundTransferAttempt($this->refund);
+            $fta = (new FundTransferAttempt\Core)->create($this->refund, $fundTransferAttemptInput);
+
+            $refundGateway = Settlement\Channel::getNodalGatewayFromChannel($fta->getChannel());
 
             $this->refund->setStatus(Payment\Refund\Status::INITIATED);
 
             $this->refund->setBatchFundTransferId(null);
 
-            $this->refund->setGateway(Payment\Gateway::NODAL_YESBANK);
+            $this->refund->setGateway($refundGateway);
 
             $refunded = true;
         }
@@ -1639,12 +1628,22 @@ trait Refund
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
 
-        return [Payment\Gateway::SUCCESS => $refunded];
+        return [
+            Payment\Gateway::SUCCESS => $refunded
+        ];
     }
 
-    protected function isFundTransferAttemptRefund(Payment\Entity $payment)
+    protected function isFundTransferAttemptRefund(Payment\Entity $payment, array $data = []): bool
     {
-        if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
+        // Refund is explicitly being attempted towards a new bank account
+        if (isset($data['bank_account']) === true)
+        {
+            return true;
+        }
+
+        // Certain types of payments have refunds routed via bank transfers
+        if (($payment->isBankTransfer() === true) or
+            ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
         {
             return true;
@@ -1653,11 +1652,64 @@ trait Refund
         return false;
     }
 
-    protected function getBankAccountInput(Payment\Entity $payment)
+    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment): bool
+    {
+        if (($payment->isEmandate() === true) and
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment): bool
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isTpvMethod() === true) and
+            ($this->merchant->isTPVRequired() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getBankAccountInput(Payment\Entity $payment, array $data = [])
     {
         $input = [];
 
-        if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
+        if (isset($data['bank_account']) === true)
+        {
+            $input = $data['bank_account'];
+        }
+        else if ($payment->isBankTransfer() === true)
+        {
+            $paymentId = $payment->getId();
+
+            $haystack = [
+                'A0DbFSFMubDEAy',
+                'AEYsLhL8DAQAeh',
+                'AFG1ItI8zwijGP',
+                'AGsXWuKUv6XiVU',
+                'AMqpPrSMsxKKPc',
+                'AQNG7kHM5tfk4G',
+                'ATCKgAcp7cswbo'
+            ];
+
+            if (in_array($paymentId, $haystack, true) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $input);
+            }
+
+            $bankTransfer = $this->repo->bank_transfer->findByPaymentId($paymentId);
+
+            $input = (new BankTransfer\Core)->getAccountForRefund($bankTransfer);
+        }
+        else if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
         {
             $order = $payment->order;
 
@@ -1669,8 +1721,7 @@ trait Refund
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = ($beneficiaryName === null) ? '' : $beneficiaryName;
         }
-
-        if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
+        else if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
         {
             $customer = $payment->customer;
             $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
@@ -1694,7 +1745,27 @@ trait Refund
         return $input;
     }
 
-    protected function createBankAccountForRefund(array $bankAccountInput)
+    protected function getFundTransferAttemptInput(Payment\Entity $payment): array
+    {
+        $input = [
+            FundTransferAttempt\Entity::NARRATION => null,
+            FundTransferAttempt\Entity::MODE      => null,
+        ];
+
+        if ($payment->isBankTransfer() === true)
+        {
+            $bankTransfer = $this->repo->bank_transfer->findByPayment($payment);
+
+            $input = [
+                FundTransferAttempt\Entity::NARRATION => $bankTransfer->getRefundNarration(),
+                FundTransferAttempt\Entity::MODE      => strtoupper($bankTransfer->getMode()),
+            ];
+        }
+
+        return $input;
+    }
+
+    protected function createAndAssociateBankAccount(array $bankAccountInput)
     {
         $bankAccount = (new BankAccount\Core)->createBankAccountForSource(
                     $bankAccountInput,

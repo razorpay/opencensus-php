@@ -47,12 +47,12 @@ class Entity extends Base\PublicEntity
     const REFERENCE2             = 'reference2';
     const REFERENCE3             = 'reference3';
     const REFERENCE4             = 'reference4';
-    const REFERENCE5             = 'reference5';
     const REFERENCE6             = 'reference6';
     const REFERENCE9             = 'reference9';
 
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
+    const PROCESSED_AT           = 'processed_at';
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
@@ -106,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
         self::SETTLED_BY,
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::PROCESSED_AT      => null,
         self::RECEIPT           => null,
     ];
 
@@ -168,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
     ];
 
     public function payment()
@@ -277,6 +280,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
     public function isGatewayRefunded()
     {
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
@@ -358,6 +366,11 @@ class Entity extends Base\PublicEntity
     public function getLastAttemptedAt()
     {
         return $this->getAttribute(self::LAST_ATTEMPTED_AT);
+    }
+
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
     }
 
     public function getChannel()
@@ -466,7 +479,18 @@ class Entity extends Base\PublicEntity
     {
         $this->setStatus(Status::PROCESSED);
 
+        if ($this->getProcessedAt() === null)
+        {
+            $timestamp = time();
+            $this->setProcessedAt($timestamp);
+        }
+
         $this->setErrorNull();
+    }
+
+    public function setProcessedAt($timestamp)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $timestamp);
     }
 
     public function setBaseAmount()

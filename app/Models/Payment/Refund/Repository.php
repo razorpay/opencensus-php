@@ -840,6 +840,32 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * update `refunds` set `processed_at` = refunds.last_attempted_at
+     * where `processed_at` is null and `last_attempted_at` is not null
+     * and `status` = 'processed' and `created_at` <= $createdAt
+     * order by `created_at` asc limit $limit
+     *
+     * @param $limit
+     * @param $createdAt
+     * @return int Numbers of rows affected
+     */
+    public function updateProcessedAt($limit, $createdAt)
+    {
+        $count = $this->newQueryWithoutTimestamps()
+                      ->whereNull(Refund\Entity::PROCESSED_AT)
+                      ->whereNotNull(Refund\Entity::LAST_ATTEMPTED_AT)
+                      ->where(Refund\Entity::STATUS, Refund\Status::PROCESSED)
+                      ->where(Refund\Entity::CREATED_AT, '<=', $createdAt)
+                      ->orderBy(Refund\Entity::CREATED_AT)
+                      ->limit($limit)
+                      ->update([
+                            Refund\Entity::PROCESSED_AT => DB::raw('refunds.last_attempted_at'),
+                        ]);
+
+        return $count;
+    }
+
     public function findByReceiptAndMerchant(string $receipt, string $merchantId)
     {
         return $this->newQuery()
