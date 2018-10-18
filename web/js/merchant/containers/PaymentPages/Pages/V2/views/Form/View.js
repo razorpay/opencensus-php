@@ -87,22 +87,18 @@ export default class View extends React.PureComponent {
   render() {
     const FORM_SCHEMA = this.props.FORM_SCHEMA;
     const activeCreatorType = this.state.activeCreatorType;
-    const { paymentPageEntity, payment_page_id } = this.props;
+    const { paymentPageEntity } = this.props;
 
-    if (
-      payment_page_id &&
-      paymentPageEntity &&
-      !Object.keys(paymentPageEntity).length
-    ) {
+    if (paymentPageEntity.id && !paymentPageEntity.title) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
         </div>
       );
-    } else if (payment_page_id && !paymentPageEntity) {
+    } else if (paymentPageEntity.id && !paymentPageEntity) {
       return (
         <div class="spinner-container">
-          <b>{payment_page_id}</b> ID doesn't exist
+          <b>{paymentPageEntity.id}</b> ID doesn't exist
         </div>
       );
     }
@@ -121,7 +117,7 @@ export default class View extends React.PureComponent {
       } else if (activeCreatorType === CreatorType.GENERIC) {
         editorContent = (
           <GenericCreator
-            field={FORM_SCHEMA[this.state.activeSchemaIndex]}
+            field={FORM_SCHEMA[this.state.activeSchemaIndex] || {}}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
           />
@@ -129,11 +125,7 @@ export default class View extends React.PureComponent {
       }
     }
 
-    return payment_page_id && !paymentPageEntity.title ? (
-      <div class="spinner-container">
-        <div class="spin-btn large visible" />
-      </div>
-    ) : (
+    return (
       <React.Fragment>
         {activeCreatorType && (
           <Creator creatorStructure={this.creatorStructure}>

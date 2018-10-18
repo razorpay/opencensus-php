@@ -26,23 +26,19 @@ export default class View extends React.PureComponent {
   updateData = this.updateData.bind(this);
 
   render() {
-    const { paymentPageEntity, payment_page_id } = this.props;
+    const { paymentPageEntity } = this.props;
     const self = this;
 
-    if (
-      payment_page_id &&
-      paymentPageEntity &&
-      !Object.keys(paymentPageEntity).length
-    ) {
+    if (paymentPageEntity.id && !paymentPageEntity.title) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
         </div>
       );
-    } else if (payment_page_id && !paymentPageEntity) {
+    } else if (paymentPageEntity.id && !paymentPageEntity) {
       return (
         <div class="spinner-container">
-          <b>{payment_page_id}</b> ID doesn't exist
+          <b>{paymentPageEntity.id}</b> ID doesn't exist
         </div>
       );
     }
@@ -50,7 +46,11 @@ export default class View extends React.PureComponent {
     return (
       <React.Fragment>
         <div id="description-details">
-          <Title title={paymentPageEntity.title} updateData={this.updateData} />
+          <Title
+            title={paymentPageEntity.title}
+            key={paymentPageEntity.id + '-title' || 'title'}
+            updateData={this.updateData}
+          />
           <Description
             description={paymentPageEntity.description}
             updateData={this.updateData}
@@ -58,7 +58,7 @@ export default class View extends React.PureComponent {
         </div>
 
         <Share
-          hasSocialShare={paymentPageEntity.social_share}
+          allowSocialShare={paymentPageEntity.allow_social_share}
           updateData={this.updateData}
         />
 

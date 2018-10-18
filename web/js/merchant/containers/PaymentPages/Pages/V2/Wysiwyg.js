@@ -36,9 +36,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
 
   componentWillMount() {
-    if (this.props.id) {
-      this.props.fetchPaymentPage(this.props.id);
-    }
+    this.props.fetchPaymentPage(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -69,14 +67,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
-    render(
-      <DetailsView payment_page_id={this.props.id} />,
-      document.getElementById('details-section')
-    );
-    render(
-      <FormView payment_page_id={this.props.id} />,
-      document.getElementById('form-section')
-    );
+    render(<DetailsView />, document.getElementById('details-section'));
+    render(<FormView />, document.getElementById('form-section'));
   };
 
   openPPShareView = (id, shortUrl, title, description) => {
@@ -175,6 +167,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   render() {
     const { isPageReady } = this.state;
     const { paymentPageEntity, id } = this.props;
+
+    console.log('paymentPageEntity.....', paymentPageEntity);
 
     const merchantData = {
       name: this.props.user.name,

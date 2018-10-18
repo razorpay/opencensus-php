@@ -41,7 +41,8 @@ export class GenericCreator extends React.PureComponent {
   state = {
     isDynamicAmount: false,
     hasStock: false,
-    disableSubmit: !this.props.label,
+    disableSubmit: !this.props.field.label,
+    hasDescription: !!this.props.field.description,
   };
 
   typeOptions = ['--Select--'].concat(
@@ -75,7 +76,7 @@ export class GenericCreator extends React.PureComponent {
   };
 
   render() {
-    const { onClose, onSubmit, field = {} } = this.props;
+    const { onClose, onSubmit, field } = this.props;
     const { hasDescription, disableSubmit } = this.state;
 
     return (

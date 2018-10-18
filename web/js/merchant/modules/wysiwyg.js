@@ -8,10 +8,20 @@ import {
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
 export const fetchPaymentPage = id => {
-  return {
-    type: FETCH_ENTITY,
-    payload: fetchPaymentPageEntity(id),
-  };
+  if (!id) {
+    return {
+      type: 'UPDATE_DATA',
+      fields: {
+        id: null,
+      },
+    };
+  } else {
+    return {
+      type: FETCH_ENTITY,
+      payload: fetchPaymentPageEntity(id),
+      id,
+    };
+  }
 };
 
 export const updateData = field => ({
@@ -47,13 +57,14 @@ export const addInSchema = field => ({
 
 let initialState = {
   paymentPageEntity: {},
+  payment_page_id: null,
   FORM_SCHEMA: [createEmailField(), createPhoneField()],
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_ENTITY}::PENDING`:
-      return set(state, 'paymentPageEntity', {});
+      return set(state, 'paymentPageEntity', { id: action.id });
 
     case `${FETCH_ENTITY}::SUCCESS`:
       const entityData = action.payload.data;
@@ -63,10 +74,14 @@ export default function(state = initialState, action) {
       return set(state, 'paymentPageEntity', null);
 
     case 'UPDATE_DATA':
-      return set(state, 'paymentPageEntity', {
-        ...state.paymentPageEntity,
-        ...action.fields,
-      });
+      if (action.fields.hasOwnProperty('id')) {
+        return set(state, 'paymentPageEntity', { id: action.id });
+      } else {
+        return set(state, 'paymentPageEntity', {
+          ...state.paymentPageEntity,
+          ...action.fields,
+        });
+      }
 
     case 'DELETE_IN_SCHEMA':
       return set(

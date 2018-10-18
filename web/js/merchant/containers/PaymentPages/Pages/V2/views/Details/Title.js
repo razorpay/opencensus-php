@@ -1,7 +1,7 @@
 import Input from 'component/Input';
 import EditLayer from '../EditLayer';
 
-export default class extends React.PureComponent {
+export default class extends React.Component {
   render() {
     return (
       <div class="title title--big">
