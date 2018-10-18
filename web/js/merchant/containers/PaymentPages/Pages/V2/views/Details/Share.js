@@ -12,6 +12,12 @@ export default class extends React.PureComponent {
     });
   };
 
+  componentDidMount() {
+    const socialMediaIcons = new Image();
+    socialMediaIcons.src =
+      'https://cdn.razorpay.com/static/assets/social-share/icons.png';
+  }
+
   render() {
     const allowSocialShare = this.props.allowSocialShare;
 

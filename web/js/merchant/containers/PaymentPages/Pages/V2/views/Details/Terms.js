@@ -20,7 +20,7 @@ export default class extends React.PureComponent {
     const isEditable = this.state.isEditable || this.props.terms;
 
     return (
-      <div id="terms-details" class="text-wrap">
+      <div id="terms-details">
         {isEditable ? (
           <React.Fragment>
             <div class="fakeTextArea" />
