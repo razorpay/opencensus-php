@@ -15,7 +15,8 @@ export default class Svelte extends React.Component {
       },
 
       context: {
-        title: 'Payment Details',
+        page_title: 'Create New Payment Page',
+        form_title: 'Payment Details',
         isWYSIWYGMode: true,
         DESC_LIMIT: {
           DESKTOP: DESC_LIMIT.DESKTOP,

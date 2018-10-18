@@ -7,12 +7,25 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-  config: state.config.config,
-  ...state.wysiwyg,
-}))
+import PPShareView from '../Modals/Share';
+import { createPaymentPage, sendLink } from '../model';
+
+import { closeModal, openModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+
+@connect(
+  state => ({
+    user: state.session.user,
+    mode: state.session.mode,
+    config: state.config.config,
+    ...state.wysiwyg,
+  }),
+  {
+    showNotification,
+    closeModal,
+    openModal,
+  }
+)
 export default class PaymentPagesWysiwyg extends React.PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -46,8 +59,86 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormView />, document.getElementById('form-section'));
   }
 
+  openPPShareView = (id, shortUrl, title, description) => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PPShareView
+          handleClose={this.props.closeModal}
+          handleAction={sendLink.bind(null, id)}
+          isNew={true}
+          showNotification={this.props.showNotification}
+          url={shortUrl}
+          title={title}
+          description={description}
+          trackerFn={function() {}}
+        />
+      ),
+    });
+  };
+
   handleCreate = () => {
     console.log('Handle Create..', this.props.paymentPageEntity);
+
+    const {
+      amount,
+      title,
+      description,
+      stock,
+      allow_multiple_units,
+      allow_social_share,
+    } = this.props.paymentPageEntity;
+    const reqPayload = {
+      amount,
+      title,
+      description: description || undefined,
+      times_payable: stock || undefined,
+      settings: {
+        allow_multiple_units: allow_multiple_units | 0,
+        allow_social_share: allow_social_share | 0,
+      },
+    };
+
+    return createPaymentPage(reqPayload)
+      .then(resp => {
+        if (resp.data) {
+          const entityId = resp.data.id;
+
+          this.openPPShareView(
+            entityId,
+            resp.data.short_url,
+            resp.data.title,
+            resp.data.description
+          );
+        } else {
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some network error has occured`;
+        }
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
   };
 
   handleIntroClose = () => {
@@ -145,7 +236,9 @@ const IntroMask = ({ onClose }) => {
             <br />
             You can preview and edit the page at the same time!
           </p>
-          <Button.Primary onClick={onClose}>Let's Go!</Button.Primary>
+          <Button.Primary onClick={onClose} autoFocus>
+            Let's Go!
+          </Button.Primary>
         </ModalContent>
       </Modal>
     </ModalMask>
