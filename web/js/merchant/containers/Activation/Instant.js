@@ -180,9 +180,6 @@ export default class ActivationWizard extends React.Component {
   submitForm = () => {
     const data = this.formData;
 
-    this.props.showInstantActivationSuccessModal();
-    return this.props.history.replace(`/`);
-
     return merchantFetch({
       url: 'merchant/instant_activation',
       method: 'POST',
