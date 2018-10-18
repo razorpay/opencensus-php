@@ -4,20 +4,29 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
+use RZP\Models\Gateway\File\Status;
+use RZP\Exception\GatewayFileException;
 use RZP\Models\Merchant\Detail\Entity as E;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class Sbi extends Base
 {
-    const BANK_CODE   = IFSC::SBIN;
-    const EXTENSION   = FileStore\Format::TXT;
-    const FILE_TYPE   = FileStore\Type::SBI_EMI_FILE;
-    const FILE_NAME   = 'Sbi_Emi_File';
+    const BANK_CODE         = IFSC::SBIN;
+    const EXTENSION         = FileStore\Format::TXT;
+    const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
+    const FILE_NAME         = 'Sbi_Emi_File';
+    const BEAM_FILE_TYPE    = 'emi';
+
+    protected $file;
 
     protected function formatDataForFile($data)
     {
-        $body = '';
+        $body = [];
 
         $totalAmount = 0;
 
@@ -25,7 +34,7 @@ class Sbi extends Base
 
         // date 6 chars + time 4 chars + 4 seq numbers
         //mmddyy
-        $uniqueReferenceNum =intval(Carbon::now()->format('mdyHi') . '0000');
+        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
 
         foreach ($data['items'] as $emiPayment)
         {
@@ -47,9 +56,9 @@ class Sbi extends Base
 
             $tenure = $emiPlan->getDuration();
 
-            $body = $body .
+            $body[] =
                 'DD' .    // record type always DD
-                'R' . strval($uniqueReferenceNum) .
+                'R' . $this->numpad($uniqueReferenceNum, 14) .
                 $this->strpad('Razor Pay', 40) .
                 $this->numpad($this->getCardNumber($emiPayment->card), 19) .
                 $this->numpad($principalAmount, 17) .
@@ -57,41 +66,103 @@ class Sbi extends Base
                 $this->strpad($this->getAuthCode($emiPayment), 6) .
                 Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                 $this->strpad('Razor Pay', 40) .
-//                $merchantDetail[E::SBI_MID] .       // TODO: fix this
+                $this->strpad($merchantDetail[E::SBI_MID], 16) .
                 $this->strpad($merchantDetail[E::BUSINESS_NAME], 40) .
-                $this->strpad('38R01105', 8) .  // TODO: fill in the TID
+                $this->strpad('38R00001', 8) .
                 $this->formatRate($rate) .
                 $this->strpad('', 40) .
                 $this->numpad($principalAmount, 17) .
                 'F' .
-                '0/1' .                               // TODO: ask priyanshu
-                ' ' .                                 // TODO: ask priyanshu
+                '0' .
+                ' ' .
                 $this->numpad('0', 7) .
-//                $this->getSkuId($merchantDetail[E::SBI_MID]) . // TODO: fix this
+                $this->strpad('GG0001' . substr($merchantDetail[E::SBI_MID], -4), 20) .
                 $this->numpad('0', 17) .
                 $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
-                $this->strpad('', 108) .
-                '\n';
+                $this->strpad('', 108);
         }
 
-        $header =
+        $header = [
             'HH' .
             Carbon::now()->format('dmY') .
-            Carbon::now()->format('HiS') .
+            Carbon::now()->format('His') .
             $this->numpad($totalTransactions, 5) .
             $this->numpad($totalAmount, 17) .
             'F' .
-            $this->strpad('', 411) .
-            '\n';
+            $this->strpad('', 411)
+        ];
 
-        $data = $header . $body;
+        $textRows = array_merge($header, $body);
 
-        return $data;
+        return $this->getTxtFromRows($textRows);
     }
 
-    private function getSkuId($mid)
+    public function createFile($data)
     {
-        return $this->strpad('GG0001' . substr($mid, -4), 20);
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $fileData = $this->formatDataForFile($data);
+
+            $fileName = $this->getFileToWriteName();
+
+            $metadata = $this->getH2HMetadata();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(static::EXTENSION)
+                ->content($fileData)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(static::FILE_TYPE)
+                ->entity($this->gatewayFile)
+                ->metadata($metadata);
+
+            $creator->save();
+
+            $this->file = $creator->getFileInstance();
+
+            $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
+
+            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
+                'id'        => $this->gatewayFile->getId(),
+            ],
+                $e);
+        }
+    }
+
+    protected function sendEmiFile($data)
+    {
+        $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fileInfo = [$fullFileName];
+
+        $data =  [
+            Service::BEAM_PUSH_FILES   => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME
+        ];
+
+        // In seconds
+        $timelines = [];
+
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => '',
+            'filetype'  => self::BEAM_FILE_TYPE,
+            'subject'   => 'File Send failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+        ];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 
     private function numpad($num, $count)
@@ -112,5 +183,38 @@ class Sbi extends Base
         }
 
         return str_pad($rate, 7, '0', STR_PAD_RIGHT);
+    }
+
+    private function getTxtFromRows(array $rows): string
+    {
+        $txt = '';
+
+        $totalElements = count($rows);
+
+        foreach ($rows as $index => $row)
+        {
+            $txt .= $row;
+
+            // Don't add newline for the last line
+            if ($index < $totalElements - 1)
+            {
+                //
+                // Double quote is required to suggest new line
+                // Single quote will NOT work
+                //
+                $txt .= "\r\n";
+            }
+        }
+        return $txt;
+    }
+
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10002',
+            'mtime' => Carbon::now()->getTimestamp(),
+            'mode'  => '33188'
+        ];
     }
 }

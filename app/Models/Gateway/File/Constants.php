@@ -136,7 +136,7 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
-            self::SBI      => ['sbi.emi@razorpay.com'],
+            self::SBI      => [''],
         ],
 
         Type::REFUND_FAILED => [

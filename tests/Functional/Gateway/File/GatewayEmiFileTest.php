@@ -4,7 +4,10 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Excel;
+use Queue;
+
 use Carbon\Carbon;
+use RZP\Jobs\BeamJob;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Tests\Functional\TestCase;
@@ -231,7 +234,13 @@ class GatewayEmiFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->create('merchant_detail:valid_fields');
+        Queue::fake();
+
+        $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+
+        $this->fixtures->edit('merchant_detail', $merchantId,[
+            'merchant_id' => '10000000000000',
+        ]);
 
         $this->fixtures->merchant->enableEmi();
 
@@ -252,6 +261,8 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4726426854804947', 9);
 
+        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
@@ -269,13 +280,14 @@ class GatewayEmiFileTest extends TestCase
             'type'        => 'sbi_emi_file',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'zip',
+            'extension'   => 'txt',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertQueued(EmiMail\Password::class);
-        Mail::assertQueued(EmiMail\File::class);
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForScbl()

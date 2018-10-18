@@ -131,6 +131,14 @@ class EmiPlan extends Base
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
         ],
+        [
+            'id'                => '40101010101011',
+            'duration'          => '12',
+            'rate'              => '900',
+            'methods'           => 'creditcard',
+            'bank'              => 'SBIN',
+            'min_amount'        => '300000',
+        ],
     ];
 
     public function createDefaultEmiPlans()

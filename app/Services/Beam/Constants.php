@@ -11,4 +11,6 @@ class Constants
     const ICICI_SETTLEMENT_JOB_NAME  = 'icici_settlement_beneficiary';
 
     const ICICI_BENEFICIARY_JOB_NAME = 'icici_settlement_beneficiary';
+
+    const SBI_EMI_FILE_JOB_NAME      = 'sbi_emi';
 }
