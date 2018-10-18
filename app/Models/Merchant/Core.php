@@ -1572,4 +1572,29 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    public function editPreSignupFields(array $input): Entity
+    {
+        (new Validator)->validateInput('edit_pre_signup', $input);
+
+        $merchant = $this->merchant;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $merchant->getId(),
+                'input'       => $input,
+            ]);
+
+
+        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
+        {
+            $merchant = $this->edit($merchant, $input);
+
+            return $merchant;
+
+        });
+
+        return $merchant;
+    }
 }

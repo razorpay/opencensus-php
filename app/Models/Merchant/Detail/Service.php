@@ -591,10 +591,7 @@ class Service extends Base\Service
 
             $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $businessWebsite];
 
-            // Validate Input Name for merchant
-            (new Merchant\Validator)->validateInput('edit_pre_signup', $inputDetails);
-
-            (new Merchant\Service)->edit($this->merchant->id, $inputDetails);
+            (new Merchant\Core)->editPreSignupFields($inputDetails);
 
             // Save User Information of contact name nad contact Email.
 
