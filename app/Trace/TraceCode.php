@@ -823,6 +823,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILES_FETCH                           = 'AWS_FILES_FETCH';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const AWS_FILE_DOWNLOAD_ERROR                   = 'AWS_FILE_DOWNLOAD_ERROR';
+    const AWS_FILE_DELETE_ERROR                     = 'AWS_FILE_DELETE_ERROR';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';

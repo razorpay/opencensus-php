@@ -44,7 +44,8 @@ class Service extends Base\Service
         }
         catch (\Throwable $e)
         {
-            if ($this->isManualRequest($input) === true)
+            if (($this->isManualRequest($input) === true) or
+                ($this->isLambdaRequest() === true))
             {
                 $this->trace->traceException(
                     $e, Trace::ERROR, TraceCode::RECON_ALERT);
@@ -60,7 +61,17 @@ class Service extends Base\Service
             return [];
         }
 
+        $this->postReconciliationProcess($input);
+
         return $summary;
+    }
+
+    protected function postReconciliationProcess(array $input)
+    {
+        if ($this->isLambdaRequest() === true)
+        {
+            (new RequestProcessor\Lambda)->deleteFromAws($input[RequestProcessor\Lambda::KEY]);
+        }
     }
 
     public function reconciliateCancelledTransactions($gateway)
@@ -112,12 +123,18 @@ class Service extends Base\Service
 
     protected function getRequestSource(array $input): string
     {
-        if ($this->isManualRequest($input) === true)
+        if ($this->isManualRequest($input))
         {
             return RequestProcessor\Base::MANUAL;
         }
-
-        return RequestProcessor\Base::MAILGUN;
+        else if ($this->isLambdaRequest())
+        {
+            return RequestProcessor\Base::LAMBDA;
+        }
+        else
+        {
+            return RequestProcessor\Base::MAILGUN;
+        }
     }
 
     /**
@@ -180,11 +197,11 @@ class Service extends Base\Service
      */
     protected function traceReconRequest(array $input)
     {
-        unset($input['body-html']);
-        unset($input['body-plain']);
-        unset($input['stripped-html']);
-        unset($input['stripped-text']);
-        unset($input['message-headers']);
+        unset($input[RequestProcessor\Mailgun::BODY_HTML]);
+        unset($input[RequestProcessor\Mailgun::BODY_PLAIN]);
+        unset($input[RequestProcessor\Mailgun::STRIPPED_HTML]);
+        unset($input[RequestProcessor\Mailgun::STRIPPED_TEXT]);
+        unset($input[RequestProcessor\Mailgun::MESSAGE_HEADERS]);
 
         $this->trace->info(
             TraceCode::RECON_REQUEST,
@@ -193,7 +210,7 @@ class Service extends Base\Service
 
     /**
      * Initializes the request processor to be used to handle the request
-     * based on the source of the request i.e manual | mailgun
+     * based on the source of the request i.e manual | lambda | mailgun
      *
      * @param string $source
      *
@@ -209,14 +226,15 @@ class Service extends Base\Service
     }
 
     /**
-     * Checks if request is manual or via Mailgun.
+     * Checks if request is a manual file upload
      *
      * @param array $input The input received from the route.
      * @return boolean Flag to indicate manual request
      */
-    protected function isManualRequest(array $input)
+    protected function isManualRequest(array $input): bool
     {
-        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        if ((isset($input[RequestProcessor\Base::MANUAL]) === true) and
+            ($input[RequestProcessor\Base::MANUAL] === '1'))
         {
             return true;
         }
@@ -224,4 +242,13 @@ class Service extends Base\Service
         return false;
     }
 
+    /**
+     * Checks if the request originated via an aws lambda trigger
+     *
+     * @return boolean
+     */
+    protected function isLambdaRequest(): bool
+    {
+        return ($this->auth->isLambda() === true);
+    }
 }
