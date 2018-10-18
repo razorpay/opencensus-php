@@ -18,9 +18,9 @@ class AESCrypto extends Base\AESCrypto
         else
         {
             //TODO : Find out if this should be accessed directly from terminal check getSecret()
-            $masterKey = $config['live_netbanking_canara_master_key'];
+            $masterKey = $config['live_master_key'];
 
-            $iv = $config['live_netbanking_canara_IV'];
+            $iv = $config['live_IV'];
         }
 
         parent::__construct(Constants::MODE_CBC, $masterKey, $iv);

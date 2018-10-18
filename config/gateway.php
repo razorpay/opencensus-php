@@ -452,7 +452,10 @@ return [
     'netbanking_canara' => [
         'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
         'test_master_key'        => env('NETBANKING_CANARA_GATEWAY_TEST_MASTER_KEY'),
-        'test_IV'                => env('NETBANKING_CANARA_GATEWAY_TEST_IV')
+        'test_IV'                => env('NETBANKING_CANARA_GATEWAY_TEST_IV'),
+        //TODO : Add these creds
+        'live_master_key'        => env('NETBANKING_CANARA_GATEWAY_LIVE_MASTER_KEY'),
+        'live_IV'                => env('NETBANKING_CANARA_GATEWAY_LIVE_IV')
     ],
 
     'netbanking_obc' => [
