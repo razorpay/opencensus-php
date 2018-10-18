@@ -6,10 +6,12 @@ import ListContainer from 'merchant/containers/ListContainer';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 
+import { TokenStatusLabel } from 'merchant/components/StatusLabel';
+
 import { titleCase } from 'common/util';
 import { fetchTokens as fetchAll } from 'merchant/modules/collection';
 
-import { tokenId, createdAt, status } from 'rzp/ui/item/pair';
+import { tokenId, createdAt } from 'rzp/ui/item/pair';
 
 import ListFilter from './ListFilter';
 
@@ -26,6 +28,11 @@ const email = {
 const contact = {
   title: 'Contact',
   value: item => (item.customer ? item.customer.contact : '--'),
+};
+
+const status = {
+  title: 'Status',
+  value: item => <TokenStatusLabel status={getTokenStatus(item)} />,
 };
 
 @connect(
