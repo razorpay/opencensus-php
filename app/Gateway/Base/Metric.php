@@ -6,6 +6,7 @@ use App;
 
 use RZP\Gateway\Upi;
 use RZP\Models\Card;
+use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet;
 use RZP\Models\Terminal;
@@ -52,7 +53,13 @@ class Metric
         Payment\Action::AUTHORIZE,
         Payment\Action::CALLBACK,
         Payment\Action::CAPTURE,
-        Payment\Action::REFUND
+        Payment\Action::REFUND,
+        Payment\Action::OTP_GENERATE,
+        Payment\Action::REVERSE,
+        Payment\Action::AUTHORIZE_PUSH,
+        Payment\Action::DEBIT,
+        Payment\Action::VALIDATE_VPA,
+        Base\Action::OTP_RESEND,
     ];
 
     protected $trace;
@@ -64,8 +71,13 @@ class Metric
         $this->trace = $this->app['trace'];
     }
 
-    public function getDimensions($action, $input)
+    public function getDimensions($action, $input, $gateway)
     {
+        if ($action === Payment\Action::VALIDATE_VPA)
+        {
+            return $this->getValidateVpaDimensions($action, $input, $gateway);
+        }
+
         $gateway = $this->getGateway($input);
 
         $method = $this->getMethod($input);
@@ -289,7 +301,7 @@ class Metric
         return $input[Entity::TERMINAL][Terminal\Entity::ID];
     }
 
-    public function pushGatewayDimensions($action, $input, $status)
+    public function pushGatewayDimensions($action, $input, $status, $gateway = null)
     {
         try
         {
@@ -297,7 +309,7 @@ class Metric
 
             if (in_array($action, self::ACTIONS_TO_ALLOW, true) === true)
             {
-                $dimensions = $this->getDimensions($action, $input);
+                $dimensions = $this->getDimensions($action, $input, $gateway);
 
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
@@ -314,5 +326,37 @@ class Metric
                 TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
                 [$action]);
         }
+    }
+
+    public function getValidateVpaDimensions($action, $input, $gateway)
+    {
+        if (isset($input[Upi\Base\Entity::VPA]) === true)
+        {
+            $array = explode('@', $input[Upi\Base\Entity::VPA]);
+
+            if (count($array) > 1)
+            {
+                $upiPsp = $array[1];
+            }
+        }
+
+        return [
+            Metric::DIMENSION_GATEWAY              => $gateway,
+            Metric::DIMENSION_PAYMENT_METHOD       => '',
+            Metric::DIMENSION_ACTION               => $action,
+            Metric::DIMENSION_CARD_TYPE            => '',
+            Metric::DIMENSION_CARD_NETWORK         => '',
+            Metric::DIMENSION_CARD_COUNTRY         => '',
+            Metric::DIMENSION_PAYMENT_RECURRING    => '',
+            Metric::DIMENSION_INSTRUMENT_TYPE      => '',
+            Metric::DIMENSION_TPV                  => '',
+            Metric::DIMENSION_ISSUER               => '',
+            Metric::DIMENSION_UPI_PSP              => $upiPsp,
+            Metric::DIMENSION_CARD_INTERNATIONAL   => '',
+            Metric::DIMENSION_BHARAT_QR            => '',
+            Metric::DIMENSION_AUTH_TYPE            => '',
+            Metric::DIMENSION_TERMINAL_ID          => '',
+            Metric::DIMENSION_MERCHANT_CATEGORY    => ''
+        ];
     }
 }
