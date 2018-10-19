@@ -253,13 +253,23 @@ class GatewayController extends Controller
 
     public function callbackCorporation()
     {
-        $input = Request::all();
+        $input = Request::keys();
 
-        foreach ($input as $key => $value)
-        {
-            $input = $key;
-        }
+        /**
+         * They send the data in the below format:
+         * https://api.razorpay.com/v1/gateway/netbanking_corporation/callback?6T9sZxc9z5XCQKsT3\
+         * HdxWY+pj6wAIUp3tsrgEBjH5SM39o5QI3S9mTygY/ABkXtBtOdBsuImxJB91xz8K/bDxT9CcsOpjvT69XkK/uO\
+         * xud6mk9KllE4ryN0v/DcO5xn/
+         *
+         * Since there is no value and just a key, we have to get the first key and use it as
+         * the input to gateway
+         */
+        $input = $input[0];
 
+        /**
+         * For the input "xWY+pj6w" (say), the $input value would be "xWY_pj6w".
+         * So, we convert this manually back to the correct input which was received in the URL.
+         */
         $input = str_replace('_', '+', $input);
 
         $gateway = $this->app['gateway']->gateway('netbanking_corporation');
