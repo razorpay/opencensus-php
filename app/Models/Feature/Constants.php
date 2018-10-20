@@ -130,6 +130,7 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
+    const UNIVERSAL_OTP_AUTH              = 'universal_otp_auth';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
@@ -271,6 +272,7 @@ class Constants
         self::IIN_LISTING                     => true,
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
+        self::UNIVERSAL_OTP_AUTH              => true,
     ];
 
     // Entity type constants

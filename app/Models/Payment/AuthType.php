@@ -37,7 +37,7 @@ class AuthType
 
     public static $featureToAuthMap = [
         self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
-        self::OTP  => [Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
+        self::OTP  => [Feature\Constants::UNIVERSAL_OTP_AUTH, Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
         self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
