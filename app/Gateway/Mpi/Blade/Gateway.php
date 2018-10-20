@@ -112,9 +112,14 @@ class Gateway extends Base\Gateway
         switch ($enrolled)
         {
             case Base\Enrolled::Y:
-                if (($input['payment']['auth_type'] === 'otp') and
-                    (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === false))
+                if ($input['payment']['auth_type'] === 'otp')
                 {
+                    if (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === false)
+                    {
+                        throw new Exception\GatewayErrorException(
+                            ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE);
+                    }
+
                     return $this->getOtpSubmitRequest($input, $response);
                 }
 
