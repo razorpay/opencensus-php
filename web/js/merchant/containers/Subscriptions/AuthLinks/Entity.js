@@ -14,6 +14,7 @@ import Time from 'rzp/ui/Time';
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -101,6 +102,8 @@ export default class AuthLinkEntityContainer extends Component {
                   <EntityDetailRow label="Expires By">
                     <Time value={invoice.expire_by} />
                   </EntityDetailRow>
+
+                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
                 </div>
               </div>
             </div>

@@ -1,6 +1,9 @@
 import { Field } from 'redux-form';
 
 import ListFilter from 'merchant/components/ListFilter';
+import { snakeToTitleCase as titleCase } from 'common/util';
+
+const statuses = ['issued', 'paid', 'expired'];
 
 export default props => (
   <ListFilter {...props}>
@@ -35,6 +38,18 @@ export default props => (
         component="input"
         class="form-control input-sm"
       />
+    </div>
+
+    <div className="form-group list-filter-item">
+      <label>Status</label>
+      <Field name="status" component="select" class="form-control input-sm">
+        <option value="">All</option>
+        {statuses.map(status => (
+          <option key={status} value={status}>
+            {titleCase(status)}
+          </option>
+        ))}
+      </Field>
     </div>
 
     <div class="form-group list-filter-item">
