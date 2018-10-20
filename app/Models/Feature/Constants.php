@@ -130,6 +130,7 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
+    const UNIVERSAL_OTP_AUTH              = 'universal_otp_auth';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';

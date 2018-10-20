@@ -203,7 +203,8 @@ trait Authorize
 
                 $retry = false;
 
-                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                if (($this->canRunHeadlessOtpFlow($payment) === true) and
+                    ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false))
                 {
                     $request = $this->openHeadlessBrowser($payment, $request);
                 }
@@ -1022,6 +1023,11 @@ trait Authorize
                 break;
 
             case Payment\AuthType::OTP:
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true)
+                {
+                    break;
+                }
+
                 // We support OTP flow with native supports from the gateway, headless_otp
                 // flow is something which is a hack and not natively supported by the gateway
                 if (($payment->card->iinRelation === null) or
@@ -1502,7 +1508,8 @@ trait Authorize
                         {
                             $authGateway = Payment\Gateway::MPI_BLADE;
 
-                            if ($this->canRunAxisExpressPay($payment) === true)
+                            if (($this->canRunAxisExpressPay($payment) === true) and
+                                ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false))
                             {
                                 $authGateway = Payment\Gateway::MPI_ENSTAGE;
                             }
@@ -4067,6 +4074,12 @@ trait Authorize
         // we render the otp submission page to the user
         if ($payment->isMethodCardOrEmi() === true)
         {
+            if (($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true) and
+                ($payment->getGateway() === Payment\Gateway::HITACHI))
+            {
+                return true;
+            }
+
             if ($payment->card->iinRelation !== null)
             {
                 //
