@@ -41,6 +41,8 @@ const mandatoryFields = [
   'mandateMethod',
   'customerContact',
   'customerEmail',
+  'mandateAuthType',
+  'mandateBankAccountType',
 ];
 
 @withRouter
@@ -83,6 +85,14 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   handleNotesChange = notes => {
     this.setState({ notes });
+  };
+
+  handleAuthTypeChange = event => {
+    let mandateBankAccountType = '';
+    if (event.target.value === 'netbanking') {
+      mandateBankAccountType = 'savings';
+    }
+    this.setState({ mandateBankAccountType });
   };
 
   onCreate = () => {
@@ -303,13 +313,18 @@ export default class CreateNewAuthLinkContainer extends Component {
                   </div>
                 </Input.Group>
 
-                <Input.Group label="Authentication" class="InputGroup--inline">
+                <Input.Group
+                  label="Authentication"
+                  class="InputGroup--inline"
+                  required
+                >
                   <div class="Input-content">
                     <Input.Select
                       name="mandateAuthType"
                       options={authTypes}
                       size="half_big"
                       description="Preferred Authentication Method"
+                      onChange={this.handleAuthTypeChange}
                     />
 
                     <Input.Select
@@ -318,18 +333,14 @@ export default class CreateNewAuthLinkContainer extends Component {
                       size="half_big"
                       disabled={this.state.mandateAuthType !== 'aadhar'}
                       description="Type of Bank Account"
-                      value={
-                        this.state.mandateAuthType === 'netbanking'
-                          ? 'savings'
-                          : this.state.mandateBankAccountType || ''
-                      }
+                      value={this.state.mandateBankAccountType}
                     />
                   </div>
                 </Input.Group>
 
                 <Input.Group label="Token Expiry" class="InputGroup--vTop">
                   <Input.Check
-                    fieldLabel="No Token Expiry"
+                    fieldLabel="Until cancelled"
                     data-name="tokenHasNoExpiry"
                     defaultValue="1"
                   />
