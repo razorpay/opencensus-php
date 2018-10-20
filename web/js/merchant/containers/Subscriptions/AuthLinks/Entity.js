@@ -11,6 +11,8 @@ import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
 import Time from 'rzp/ui/Time';
 
+import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
+import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -107,33 +109,4 @@ export default class AuthLinkEntityContainer extends Component {
       </div>
     );
   }
-}
-
-function CustomerDetails({ customer }) {
-  return (
-    <Definition>
-      {customer.name}
-      <Fragment>{customer.email || null}</Fragment>
-      <Fragment>{customer.contact || null}</Fragment>
-      <Fragment> {customer.id} </Fragment>
-    </Definition>
-  );
-}
-
-function PaymentMethod({ mandate }) {
-  return (
-    <Definition>
-      <span class="text-primary">{titleCase(mandate.method)}</span>
-      {mandate.expiry && (
-        <Fragment>
-          Token Expiry - <Time value={mandate.expiry} />{' '}
-        </Fragment>
-      )}
-      {mandate.max_amount && (
-        <Fragment>
-          Max Amount - <Amount value={mandate.max_amount} />{' '}
-        </Fragment>
-      )}
-    </Definition>
-  );
 }
