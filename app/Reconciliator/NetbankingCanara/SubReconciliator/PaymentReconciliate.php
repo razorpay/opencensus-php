@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\NetbankingCanara\SubReconciliator;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\NetbankingCanara\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -66,7 +67,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
     }
 }
 
