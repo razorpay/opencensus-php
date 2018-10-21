@@ -187,12 +187,12 @@ return [
                 'count' => 2,
                 'items' => [
                     [
-                        'id' => 'org_HDFCbankOrgnId',
+                        'id' => 'org_SBINbankOrgnId',
                         'display_name' => 'Razorpay',
                         'business_name' => 'Razorpay Software Pvt Ltd',
-                        'email' => 'test@hdfcbank.com',
+                        'email' => 'test@sbi.com',
                         'email_domains' => [
-                            'hdfcbank.com',
+                            'sbi.com',
                         ],
                         'allow_sign_up' => false,
                         'login_logo_url' => null,

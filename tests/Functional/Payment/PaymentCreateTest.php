@@ -650,6 +650,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('hdfc', $payment['settled_by']);
     }
 
     public function testPaymentSettledBy()

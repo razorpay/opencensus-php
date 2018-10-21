@@ -7,6 +7,7 @@ use RZP\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
+use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 
 class Service

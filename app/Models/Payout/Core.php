@@ -24,11 +24,15 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
+    const PAYOUT_RETRY          = 'payout_retry_%s';
+
+    const MUTEX_RESOURCE        = 'ES_PROCESSING_%s_%s';
+
     const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
 
-    const PAYOUT_RETRY       = 'payout_retry_%s';
+    const MUTEX_LOCK_TIMEOUT    = 300;
 
-    const MUTEX_LOCK_TIMEOUT = 300;
+    const ES_MUTEX_LOCK_TIMEOUT = 180;
 
     /**
      * @var Mutex
@@ -45,7 +49,7 @@ class Core extends Base\Core
     /**
      * Create a direct payout - source from merchant balance
      *
-     * @param  array           $input
+     * @param  array $input
      * @param  Merchant\Entity $merchant
      *
      * @return Entity
@@ -65,8 +69,8 @@ class Core extends Base\Core
     /**
      * Create a payment payout - from a source payment
      *
-     * @param  array           $input
-     * @param  Payment\Entity  $payment
+     * @param  array $input
+     * @param  Payment\Entity $payment
      * @param  Merchant\Entity $merchant
      *
      * @return Entity
@@ -85,35 +89,50 @@ class Core extends Base\Core
     }
 
     /**
-     * Called for cron or API to
-     * create a payout for a merchant
+     * Here, onDemand is used to do payout calculation for
+     * merchant with es_on_demand feature enabled
      *
-     * @param  array          $input
+     * @param array $input
      * @param Merchant\Entity $merchant
-     *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function merchantPayout(array $input, Merchant\Entity $merchant): array
     {
-        $amount = $this->getMerchantPayoutAmount($input, $merchant);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        $payoutInput = [
-            Entity::PURPOSE        => FundTransferAttempt\Purpose::SETTLEMENT,
-            Entity::AMOUNT         => $amount,
-            Entity::CURRENCY       => Currency::INR,
-            Entity::METHOD         => Method::FUND_TRANSFER,
-        ];
+        $payout = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use ($input, $merchant)
+            {
+                $amount = $this->getMerchantPayoutAmount($input, $merchant);
 
-        $payout = $this->repo->transaction(function () use ($payoutInput, $merchant)
-        {
-            $payout = $this->createMerchantPayout($payoutInput, $merchant);
+                $currency = $this->getCurrency($input);
 
-            $this->repo->saveOrFail($payout);
+                $onDemand = $this->getOnDemandStatus($input);
 
-            return $payout;
-        });
+                $payoutInput = [
+                    Entity::PURPOSE   => FundTransferAttempt\Purpose::SETTLEMENT,
+                    Entity::AMOUNT    => $amount,
+                    Entity::CURRENCY  => $currency,
+                    Entity::METHOD    => Method::FUND_TRANSFER,
+                    Entity::TYPE      => $onDemand,
+                ];
 
-        return $payout->toArrayPublic();
+                return $this->repo->transaction(function () use ($payoutInput, $merchant) {
+                    $payout = $this->createMerchantPayout($payoutInput, $merchant);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
+
+                    return $payout->toArrayPublic();
+                });
+            },
+            self::ES_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+        return $payout;
     }
 
     public function retryFailedPayouts(array $input): array
@@ -419,5 +438,20 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
+    }
+
+    protected function getCurrency(array $input): string
+    {
+        if (isset($input[Entity::CURRENCY]) === true)
+        {
+             return $input[Entity::CURRENCY];
+        }
+
+        return Currency::INR;
+    }
+
+    protected function getOnDemandStatus(array $input): string
+    {
+        return ($input[Entity::TYPE] ?? Entity::DEFAULT);
     }
 }

@@ -29,6 +29,10 @@ class Gateway
     const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
+    const ICICI                  = 'icici';
+    const KOTAK                  = 'kotak';
+    const RBL                    = 'rbl';
+    const AXIS                   = 'axis';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
@@ -151,6 +155,14 @@ class Gateway
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
         self::BILLDESK,
+    ];
+
+    const DIRECT_SETTLEMENT_GATEWAYS = [
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_RBL    => self::RBL,
+        self::NETBANKING_AXIS   => self::AXIS,
     ];
 
     /**

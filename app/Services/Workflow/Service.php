@@ -6,12 +6,12 @@ use RZP\Exception;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Differ\EntityValidator;
-use RZP\Models\Workflow\Action\MakerType;
-use RZP\Constants\Entity as ConstantsEntity;
 
 class Service
 {
@@ -36,6 +36,16 @@ class Service
     protected $originalData;
 
     protected $dirtyData;
+
+    /**
+     * @var bool
+     */
+    protected $skipWorkflow = false;
+
+    /**
+     * @var BasicAuth
+     */
+    protected $ba;
 
     public function __construct($app)
     {
@@ -260,20 +270,31 @@ class Service
         return $permissionHasWorkflow;
     }
 
-    /*
-        In case of an edit operation both $originalData
-        and $dirtyData should be set.
-
-        In case of an "add" operation pass an empty stdClass
-        object as $originalData.
-
-        In case of a "delete" operation pass an empty stdClass
-        object as $dirtyData.
-
-        Allowed types for both: object, array
-    */
+    /**
+     * In case of an edit operation both $originalData
+     * and $dirtyData should be set.
+     *
+     * In case of an "add" operation pass an empty stdClass
+     * object as $originalData.
+     *
+     * In case of a "delete" operation pass an empty stdClass
+     * object as $dirtyData.
+     *
+     * Allowed types for both: object, array
+     *
+     * @param null $originalData
+     * @param null $dirtyData
+     *
+     * @throws Exception\BadRequestException
+     */
     public function handle($originalData = null, $dirtyData = null)
     {
+        // 0. If workflows need to be skipped for some reason, skip
+        if ($this->skipWorkflow === true)
+        {
+            return;
+        }
+
         // 1. If the permission has no workflow
         $permissionHasWorkflow = $this->permissionHasWorkflow();
 
@@ -431,5 +452,23 @@ class Service
         }
 
         return MakerType::MERCHANT;
+    }
+
+    /**
+     * Execute the callable while skipping defined workflows
+     *
+     * @param callable $callback
+     *
+     * @return mixed
+     */
+    public function skipWorkflows(callable $callback)
+    {
+        $this->skipWorkflow = true;
+
+        $result = $callback();
+
+        $this->skipWorkflow = false;
+
+        return $result;
     }
 }
