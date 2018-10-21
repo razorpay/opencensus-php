@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Canara\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
@@ -30,7 +31,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        //$this->validateChecksum($input);
+        $this->validateChecksum($input);
 
         $content = $this->getCallbackResponseData($input);
 
@@ -146,7 +147,7 @@ class Server extends Base\Mock\Server
         return $inputArray;
     }
 
-    /*protected function validateChecksum($content)
+    protected function validateChecksum($content)
     {
         $receivedChecksum = $content[RequestFields::CHECKSUM];
 
@@ -156,19 +157,11 @@ class Server extends Base\Mock\Server
 
         $calculatedChecksum = $this->getChecksum($content);
 
-        //$calculatedChecksum = $this->generateHash($content);
-
         if ($receivedChecksum !== $calculatedChecksum)
         {
-
+            throw new Exception\RuntimeException('Failed checksum verification');
         }
-        else
-        {
-
-        }
-
-        return $responseCode;
-    }*/
+    }
 
     protected function getChecksum($content)
     {
