@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         RequestFields::SUCCESS_STATIC_FLAG            => 'required|in:N',
         RequestFields::FAILURE_STATIC_FLAG            => 'required|in:N',
         RequestFields::DATE                           => 'required|date_format:"d/m/Y\+H:i:s"',
-        RequestFields::MODE_OF_TRANSACTION            => 'required|in:PUR',
+        RequestFields::MODE_OF_TRANSACTION            => 'required|in:PER',
         RequestFields::CLIENT_ACCOUNT                 => 'sometimes',
         RequestFields::CHECKSUM                       => 'required'
     ];
