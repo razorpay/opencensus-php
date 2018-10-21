@@ -37,7 +37,7 @@ return [
         'amount'                  => 50000,
         'bank'                    => 'CNRB',
         'received'                => true,
-        'client_code'             => 'abcom',
+        'client_code'             => 'CLIENTCODE',
         'merchant_code'           => 'test_merchant_id',
         'entity'                  => 'netbanking',
         'bank_payment_id'         => 'AB1234',
