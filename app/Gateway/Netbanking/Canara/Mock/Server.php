@@ -58,11 +58,6 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    public function callback($input)
-    {
-        return $this->verify($input);
-    }
-
     public function verify($input)
     {
         $data = $this->getVerifyResponseData($input);
