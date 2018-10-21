@@ -141,10 +141,13 @@ class Gateway extends Base\Gateway
     protected function getRequestData($input)
     {
         $paymentEntity = $input['payment'];
+
+        $date = $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
-            RequestFields::CLIENT_ACCOUNT                => '',
+            RequestFields::CLIENT_ACCOUNT                => '', //keeping this blank as specified in the Doc
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
             RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
@@ -152,7 +155,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
-            RequestFields::DATE                          => $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]),
+            RequestFields::DATE                          => $date,
         ];
 
         return $data;
@@ -256,6 +259,8 @@ class Gateway extends Base\Gateway
 
         $paymentEntity = $input['payment'];
 
+        $date = $this->getFormatedDate($paymentEntity[PaymentEntity::CREATED_AT]);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::VERIFY,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
@@ -268,7 +273,7 @@ class Gateway extends Base\Gateway
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
-            RequestFields::PUR_DATE                      => $this->getFormatedDate($paymentEntity[PaymentEntity::CREATED_AT]),
+            RequestFields::PUR_DATE                      => $date,
         ];
 
         if(isset($bankRefNumber) === true)
