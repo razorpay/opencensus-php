@@ -305,7 +305,7 @@ class GatewayController extends Controller
             [ 'input' => $input ]
         );
 
-        $encryptedString = $input[Canara\RequestFields::ENCRYPTED_DATA];
+        $encryptedString = $input[Canara\ResponseFields::ENCRYPTED_DATA];
 
         $mode = $this->app['rzp.mode'];
 
