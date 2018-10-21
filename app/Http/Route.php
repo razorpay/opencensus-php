@@ -2843,7 +2843,6 @@ final class Route
         return self::getFeaturesForRoute($currentRoute);
     }
 
-    // @codingStandardsIgnoreLine
     public function isS2SPaymentRoute(): bool
     {
         $currentRoute = $this->getCurrentRouteName();

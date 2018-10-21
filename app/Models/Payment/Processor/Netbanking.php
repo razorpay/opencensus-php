@@ -538,7 +538,6 @@ class Netbanking
                                             self::$selfCorp)));
     }
 
-    // @codingStandardsIgnoreLine
     public static function getSupportedBanksForTPV()
     {
         return array_values(array_unique(array_merge(
@@ -559,7 +558,6 @@ class Netbanking
         return self::$functionName($bank);
     }
 
-    // @codingStandardsIgnoreLine
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately

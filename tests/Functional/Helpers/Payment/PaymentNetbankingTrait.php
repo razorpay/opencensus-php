@@ -20,7 +20,6 @@ trait PaymentNetbankingTrait
         }
         else
         {
-            // @codingStandardsIgnoreLine
             ;
         }
 
