@@ -2,16 +2,15 @@
 
 namespace RZP\Gateway\Netbanking\Canara;
 
-use Carbon\Carbon;
 use Mail;
 use Config;
+use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
