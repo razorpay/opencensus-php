@@ -266,13 +266,13 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
-            RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
+            RequestFields::AMOUNT                        => $paymentEntity[PaymentEntity::AMOUNT], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
-            RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
+            RequestFields::PAYMENT_ID                    => $paymentEntity[PaymentEntity::ID],
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
-            RequestFields::PUR_DATE                      => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
+            RequestFields::PUR_DATE                      => $this->getDate($paymentEntity[PaymentEntity::CREATED_AT]),
         ];
 
         if(isset($bankRefNumber) === true)
@@ -293,7 +293,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway'           => $this->gateway,
                 'request'           => $request,
-                'payment_id'        => $paymentEntity['id'],
+                'payment_id'        => $paymentEntity[PaymentEntity::ID],
                 'content'           => $data,
             ]
         );
