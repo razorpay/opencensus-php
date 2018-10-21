@@ -152,7 +152,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
-            RequestFields::DATE                          => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
+            RequestFields::DATE                          => $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]),
         ];
 
         return $data;
@@ -268,7 +268,7 @@ class Gateway extends Base\Gateway
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
-            RequestFields::PUR_DATE                      => $this->getDate($paymentEntity[PaymentEntity::CREATED_AT]),
+            RequestFields::PUR_DATE                      => $this->getFormatedDate($paymentEntity[PaymentEntity::CREATED_AT]),
         ];
 
         if(isset($bankRefNumber) === true)
@@ -388,9 +388,9 @@ class Gateway extends Base\Gateway
         return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
     }
 
-    public function getDate($createdat)
+    public function getFormatedDate($created_at)
     {
-        return $date = Carbon::createFromTimestamp($createdat, Timezone::IST)
+        return $date = Carbon::createFromTimestamp($created_at, Timezone::IST)
                              ->format('d/m/Y+H:i:s');
     }
 
