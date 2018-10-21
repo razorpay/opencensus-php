@@ -122,9 +122,6 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
 
-        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
-
-        $this->assertEquals(Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS, $netbanking[Netbanking::STATUS]);
         $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
         $this->assertEquals(VerifyStatus::SUCCESS, $payment[Payment\Entity::VERIFIED]);
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
