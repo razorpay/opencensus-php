@@ -49,25 +49,6 @@ class NetbankingCanaraGatewayTest extends TestCase
             $this->testData['testPaymentNetbankingEntity'], $netbankingentity);
     }
 
-    public function testTamperedPayment()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->mockFailedVerifyResponse();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
-            });
-
-        // Assert that we don't save any information into the netbanking entity
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
-    }
-
     public function testAmountTampering()
     {
         $this->mockamountTampering();
