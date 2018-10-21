@@ -84,7 +84,7 @@ class Server extends Base\Mock\Server
             ResponseFields::SERVICE_CHARGE         => $input[RequestFields::SERVICE_CHARGE],
             ResponseFields::BANK_REFERENCE_NUMBER  => $this->bank_ref_no,
             ResponseFields::CLIENT_ACCOUNT         => $input[RequestFields::CLIENT_ACCOUNT],
-            ResponseFields::MESSAGE                => Constants::MESSAGE,
+            ResponseFields::MESSAGE                => Constants::DEFAULT_MESSAGE,
         ];
 
         $this->content($data, Base\Action::CALLBACK);
