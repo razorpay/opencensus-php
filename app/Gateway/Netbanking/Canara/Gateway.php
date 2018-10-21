@@ -71,8 +71,6 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
-        $this->verifyCallback($input);
-
         $gatewayPayment = $this->saveCallbackResponse($content, $input['payment']);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
@@ -243,15 +241,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        if ($this->action === Action::VERIFY and isset($verify->payment['bank_payment_id']))
-        {
-
-            $bankRefNumber = $verify->payment['bank_payment_id'];
-        }
-        elseif($this->action === Action::CALLBACK)
-        {
-            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
-        }
+        $bankRefNumber = $verify->payment['bank_payment_id'];
 
         $paymentEntity = $input['payment'];
 
