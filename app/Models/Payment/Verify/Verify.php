@@ -925,14 +925,7 @@ class Verify extends Base\Core
         {
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
-            if ($nextVerifyBucket > count(self::$failureStartBoundary))
-            {
-                $verifyAt = null;
-            }
-            else
-            {
-                $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
-            }
+            $verifyAt = $this->getPaymentVerifyAt($payment, $nextVerifyBucket);
 
             $payment->setVerifyAt($verifyAt);
 
@@ -1092,6 +1085,27 @@ class Verify extends Base\Core
         $nextVerifyBucket = $currentVerifyBucket + 1;
 
         return $nextVerifyBucket;
+    }
+
+    protected function getPaymentVerifyAt(Payment\Entity $payment, int $nextVerifyBucket)
+    {
+        $verifyAt = null;
+
+        if ($nextVerifyBucket > count(self::$failureStartBoundary))
+        {
+            $verifyAt = null;
+        }
+        else if ($nextVerifyBucket === $payment->getVerifyBucket())
+        {
+            // if verify bucket is not changing, verify after few mins.
+            $verifyAt = time() + 600;
+        }
+        else
+        {
+            $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
+        }
+
+        return $verifyAt;
     }
 
 //    protected function getPaymentVerifyBucket(
