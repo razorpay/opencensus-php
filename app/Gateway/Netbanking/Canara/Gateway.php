@@ -24,7 +24,11 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'netbanking_canara';
 
+    protected $sortRequestContent = false;
+
     protected $bank = 'canara';
+
+    const CHECKSUM_ATTRIBUTE = ResponseFields::CHECKSUM;
 
     protected $map = [
         RequestFields::CLIENT_CODE             => NetbankingEntity::CLIENT_CODE,
@@ -68,6 +72,8 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PAYMENT_ID]);
 
         $this->assertAmount($input['payment']['amount'], (int) $content[ResponseFields::AMOUNT]);
+
+        $this->verifySecureHash($content);
 
         $this->checkCallbackStatus($content);
 
@@ -156,9 +162,9 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getStandardRequestArray();
 
-        $content = http_build_query($content);
+        $checksum = $this->generateHash($content);
 
-        $checksum = $this->getChecksum($content);
+        $content = http_build_query($content);
 
         $queryString = $content . '&checksum=' . $checksum;
 
@@ -181,9 +187,14 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
-    protected function getChecksum($content)
+    protected function getStringToHash($content, $glue = '')
     {
-        return strtoupper(hash(HashAlgo::SHA256, $content));
+        return http_build_query($content);
+    }
+
+    protected function getHashOfString($str)
+    {
+        return strtoupper(hash(HashAlgo::SHA256, $str));
     }
 
     protected function encryptString($content)

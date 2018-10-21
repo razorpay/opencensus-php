@@ -17,6 +17,8 @@ class ResponseFields
     const DATE                          = 'fldDatTimeTxn';
     const BANK_REFERENCE_NUMBER         = 'fldBankRefNo';
     const MESSAGE                       = 'Message';
+    const CHECKSUM                      = 'checksum';
+    const ENCRYPTED_DATA                = 'encdata';
 
     const VER_CLIENT_ACCOUNT            = 'ClientAccount';
     const PUR_DATE                      = 'fldOrgDatTimeTxn';    // date of original payment entity
