@@ -139,7 +139,7 @@ class Gateway extends Base\Gateway
         $paymentEntity = $input['payment'];
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
-            RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
+            RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
@@ -169,15 +169,6 @@ class Gateway extends Base\Gateway
         $request['url'] .= '?' . RequestFields::ENCRYPTED_DATA . '=' . $encrypted;
 
         return $request;
-    }
-
-    protected function getClientCode($email)
-    {
-        $email = $email ?: Constants::CLIENT_CODE;
-
-        $clientCode = $this->stripEmailSpecialChars($email);
-
-        return $clientCode;
     }
 
     public function getMerchantId()  // TODO:: Merchant id has to be added, MID not recieeved from bank
@@ -271,7 +262,7 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::VERIFY,
-            RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
+            RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
