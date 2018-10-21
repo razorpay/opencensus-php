@@ -26,7 +26,6 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'netbanking_canara',
-        'reference1'        => 'AB1234',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
@@ -40,11 +39,9 @@ return [
         'client_code'             => 'CLIENTCODE',
         'merchant_code'           => 'test_merchant_id',
         'entity'                  => 'netbanking',
-        'bank_payment_id'         => 'AB1234',
     ],
 
     'testPaymentVerifySuccessEntity' => [
-        'bank_payment_id'            => Server::BANK_REFERENCE_NUMBER,
         'received'                   => true,
         'bank'                       => 'CNRB',
     ],

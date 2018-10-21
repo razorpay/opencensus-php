@@ -18,6 +18,8 @@ class Server extends Base\Mock\Server
 
     const BANK_REFERENCE_NUMBER = 'AB1234';
 
+    private $bank_ref_no;
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -71,6 +73,8 @@ class Server extends Base\Mock\Server
 
     protected function getCallbackResponseData(array $input)
     {
+        $this->bank_ref_no = Base\Entity::generateUniqueId();
+
         $data = [
             ResponseFields::ACTION                 => TransactionType::AUTHORIZE,
             ResponseFields::MERCHANT_CODE          => $input[RequestFields::MERCHANT_CODE],
@@ -82,7 +86,7 @@ class Server extends Base\Mock\Server
             ResponseFields::FAILURE_STATIC_FLAG    => $input[RequestFields::FAILURE_STATIC_FLAG],
             ResponseFields::DATE                   => $input[RequestFields::DATE],
             ResponseFields::SERVICE_CHARGE         => $input[RequestFields::SERVICE_CHARGE],
-            ResponseFields::BANK_REFERENCE_NUMBER  => self::BANK_REFERENCE_NUMBER,
+            ResponseFields::BANK_REFERENCE_NUMBER  => $this->bank_ref_no,
             ResponseFields::CLIENT_ACCOUNT         => $input[RequestFields::CLIENT_ACCOUNT],
             ResponseFields::MESSAGE                => Constants::MESSAGE,
         ];
@@ -98,7 +102,7 @@ class Server extends Base\Mock\Server
             ResponseFields::VER_CLIENT_ACCOUNT                => '',
             ResponseFields::VER_PAYMENT_ID                    => $input[ResponseFields::PAYMENT_ID],
             ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
-            ResponseFields::VER_BANK_REFERENCE_NUMBER         => self::BANK_REFERENCE_NUMBER,
+            ResponseFields::VER_BANK_REFERENCE_NUMBER         => $this->bank_ref_no,
             ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
             ResponseFields::RETURN_CODE                       => Constants::SUCCESS,
             ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
