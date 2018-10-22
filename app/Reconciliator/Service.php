@@ -19,7 +19,6 @@ class Service extends Base\Service
      */
     const NON_BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::ADMIN,
-        RequestProcessor\Base::EBS,
         RequestProcessor\Base::PAYTM,
         RequestProcessor\Base::PAYUMONEY,
     ];

@@ -12,6 +12,7 @@ use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
+use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
@@ -30,6 +31,7 @@ class ReconciliationFileTest extends TestCase
 {
     use BatchTestTrait;
     use VirtualAccountTrait;
+    use TestTraits\EbsReconTestTrait;
 
     protected $payment;
     protected $recurringPayment;
