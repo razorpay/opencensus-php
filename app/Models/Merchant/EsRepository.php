@@ -314,11 +314,11 @@ class EsRepository extends Base\EsRepository
         {
             $this->sortByPendingBalance = true;
 
-            $this->addMust($query, $this->getTermQuery($attribute, ActivationFlow::WHITELIST));
+            $this->addTermFilter($query, $attribute, ActivationFlow::WHITELIST);
         }
         else
         {
-            $this->addMustNot($query, $this->getTermQuery($attribute, ActivationFlow::WHITELIST));
+            $this->addNegativeTermFilter($query, $attribute, ActivationFlow::WHITELIST);
         }
     }
 
