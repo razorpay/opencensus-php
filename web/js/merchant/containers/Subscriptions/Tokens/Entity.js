@@ -9,6 +9,9 @@ import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
+import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
 import { fetchToken } from 'merchant/modules/token';
@@ -48,18 +51,26 @@ export default class TokenEntityContainer extends Component {
                     <TokenStatusLabel status={getTokenStatus(entity)} />
                   </EntityDetailRow>
 
+                  <EntityDetailRow label="Failure Reason">
+                    {entity.recurring_details && entity.recurring_details
+                      ? entity.recurring_details
+                      : '--'}
+                  </EntityDetailRow>
+
                   {/*  */}
                   <EntityDetailRow label="Payment Method">
-                    {entity.method}
+                    <PaymentMethod mandate={entity} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Customer Details">
-                    <span>Customer Details not coming from api</span>
+                    <CustomerDetails customer={entity.customer} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Created At">
                     <TimeStamps token={entity} />
                   </EntityDetailRow>
+
+                  <NestedEntityDetailRow label="Notes" value={entity.notes} />
                 </div>
               </div>
             </div>
