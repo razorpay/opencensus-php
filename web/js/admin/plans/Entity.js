@@ -45,7 +45,9 @@ export default class PlanEntity extends Component {
           props.id && props.name ? (
             <div>
               <span>{props.name}</span>
-              {!isLoading && (
+              {pending ? (
+                ''
+              ) : (
                 <button class="btn" onClick={this.copyPlan}>
                   Clone Plan
                 </button>
