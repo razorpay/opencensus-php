@@ -31,6 +31,14 @@ export default class TokenEntityContainer extends Component {
     }
   }
 
+  handleChargeNow = () => {
+    // code to make api call
+  };
+
+  handleDeleteToken = () => {
+    // code to make api call
+  };
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
     return (
@@ -41,7 +49,17 @@ export default class TokenEntityContainer extends Component {
           </div>
         ) : (
           <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">{entity.id}</div>
+            <div class="panel-heading">
+              {entity.id}
+              <div class="btn-toolbar pull-right">
+                <button
+                  class="btn btn-primary btn-sm"
+                  onClick={this.handleChargeNow}
+                >
+                  Charge Now
+                </button>
+              </div>
+            </div>
             <Alert type="error" message={error} />
             <div class="SliderPanel__Body">
               <div class="panel-body">
@@ -71,6 +89,15 @@ export default class TokenEntityContainer extends Component {
                   </EntityDetailRow>
 
                   <NestedEntityDetailRow label="Notes" value={entity.notes} />
+
+                  <div class="pair-group-item">
+                    <button
+                      class="btn btn-default"
+                      onClick={this.handleDeleteToken}
+                    >
+                      Delete Token
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
