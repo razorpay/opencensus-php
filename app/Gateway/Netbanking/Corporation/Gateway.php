@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($content)
     {
-        return $this->getEncryptor()->decryptData($content);
+        return $this->getEncryptor()->decryptAndFormatData($content);
     }
 
     /**
@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
             $secret = $this->getLiveSecret();
         }
 
-        $data = $this->getEncryptor($secret)->decryptData($encryptedData, '=', '&');
+        $data = $this->getEncryptor($secret)->decryptAndFormatData($encryptedData, '=', '&');
 
         return $data;
     }

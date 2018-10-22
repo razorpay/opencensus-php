@@ -38,7 +38,7 @@ class Encryptor extends AESCrypto
         return base64_encode($this->aes->encrypt($encoded));
     }
 
-    public function decryptData(
+    public function decryptAndFormatData(
         string $encryptedString,
         $keyValueSeparator = self::KEY_VALUE_SEPARATOR,
         $pairsSeparator = self::PAIRS_SEPARATOR

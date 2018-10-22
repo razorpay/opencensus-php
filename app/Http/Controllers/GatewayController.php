@@ -268,7 +268,13 @@ class GatewayController extends Controller
 
         /**
          * For the input "xWY+pj6w" (say), the $input value would be "xWY_pj6w".
-         * So, we convert this manually back to the correct input which was received in the URL.
+         * This is done internally by PHP. Refer: http://ca.php.net/variables.external
+         *
+         * > Dots and spaces in variable names are converted to underscores.
+         * > For example <input name="a.b" /> becomes $_REQUEST["a_b"].
+         *
+         * The above applies for '+' as well. So, we convert this manually back to
+         * the correct input which was received in the URL.
          */
         $input = str_replace('_', '+', $input);
 

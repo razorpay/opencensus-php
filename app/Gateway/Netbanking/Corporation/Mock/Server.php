@@ -63,7 +63,7 @@ class Server extends Base\Mock\Server
         // are converted to " ". So, we revert this manually before decrypting the data.
         $encrypted = str_replace(" ", '+', $qs);
 
-        $input = $this->getGatewayInstance()->getEncryptor()->decryptData($encrypted, '=', '&');
+        $input = $this->getGatewayInstance()->getEncryptor()->decryptAndFormatData($encrypted, '=', '&');
 
         $data = [
             ResponseFields::MODE_OF_TRANSACTION => 'P',
@@ -85,7 +85,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseData(array $input)
     {
-        $data = $this->getGatewayInstance()->getEncryptor()->decryptData(
+        $data = $this->getGatewayInstance()->getEncryptor()->decryptAndFormatData(
             $input[RequestFields::VERIFY_DATA]
         );
 
