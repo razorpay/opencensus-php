@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { fetchKeys } from 'merchant/modules/keys';
 
+import { LIVE_MODE } from './data';
 import InstantActivationsCard from './Instant';
 import RegularActivationsCard from './Regular';
 
@@ -40,14 +41,14 @@ export default class OnboardingCard extends Component {
   componentWillMount() {
     let params = {};
 
-    const { user } = this.props,
+    const { user, mode } = this.props,
       isKLA = !user.has_key_access;
 
     params.mode = this.props.mode;
 
     Promise.all([
       //(isKLA && Promise.resolve(false)) ||
-      (isKLA && Promise.resolve(false)) ||
+      (mode === LIVE_MODE && isKLA && Promise.resolve(false)) ||
         this.props.fetchKeys(params).then(({ data }) => {
           return !!data.items.length;
         }),

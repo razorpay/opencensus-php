@@ -16,9 +16,9 @@ export default ({ onClose, title, subtitle, content }) => {
             <p>{content}</p>
           ) : (
             <p>
-              Now you can start accepting domestic payments from your customers.
-              However, your payments will be settled only after completing the
-              KYC.
+              Now you can start accepting payments from your customers. However,
+              your payments will be settled to your account only after KYC
+              verification.
             </p>
           )}
           <button className="btn btn-primary" onClick={onClose}>
