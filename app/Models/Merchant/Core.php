@@ -68,6 +68,11 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
+        if (isset(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]) === true)
+        {
+            $merchant->setPricingPlan(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]);
+        }
+
         $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
@@ -1057,11 +1062,9 @@ class Core extends Base\Core
 
     public function addSubMerchantReferral($aggregratorMerchant, $account)
     {
-        $tagInputData = [
-            'tags' => ['ref-' . $aggregratorMerchant->id],
-        ];
+        $refTag = 'ref-' . $aggregratorMerchant->getId();
 
-        $this->addTags($account->id, $tagInputData);
+        $this->appendTag($account, $refTag);
     }
 
     /**
@@ -1130,6 +1133,21 @@ class Core extends Base\Core
         }
 
         return $merchant->tagNames();
+    }
+
+    /**
+     * Adds a new tag to the merchant
+     *
+     * @param Entity $merchant
+     * @param string $tagName
+     */
+    public function appendTag(Entity $merchant, string $tagName)
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_APPEND, ['tag' => $tagName]);
+
+        $merchant->tag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array

@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         'Transaction.Payment'                                    => 'required',
         'Transaction.Payment.Currency'                           => 'required|size:3',
         'Transaction.Payment.ChargeTotal'                        => 'required',
+        'Transaction.Payment.HostedDataID'                       => 'sometimes',
         'Transaction.TransactionDetails'                         => 'required',
         'Transaction.TransactionDetails.OrderId'                 => 'required'
      ];

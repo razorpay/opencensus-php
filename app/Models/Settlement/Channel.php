@@ -44,6 +44,10 @@ class Channel
         ],
     ];
 
+    public static $channelToNodalGatewayMap = [
+        self::YESBANK => Payment\Gateway::NODAL_YESBANK,
+    ];
+
     public static function getChannels()
     {
         return [
@@ -126,6 +130,11 @@ class Channel
     public static function getGateways($channel)
     {
         return self::$gateways[$channel];
+    }
+
+    public static function getNodalGatewayFromChannel(string $channel): string
+    {
+        return self::$channelToNodalGatewayMap[$channel];
     }
 
     public static function getChannelFromGateway(string $gateway): string

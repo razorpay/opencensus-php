@@ -697,6 +697,15 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Different communication emails for various purposes that are stored
+     * in merchant_emails table against the merchant.
+     */
+    public function emails()
+    {
+        return $this->hasMany(Email\Entity::class);
+    }
+
+    /**
      * This used to be a hasOne relation but with the introduction of entity_type
      * and entity_id columns and webhooks being created for different entites for
      * a merchant, this changed to hasMany. But this is not a correct representation

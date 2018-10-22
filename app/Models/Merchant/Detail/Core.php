@@ -45,7 +45,9 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateIsNotLocked();
+        $merchantDetails->getValidator()->validateFullActivationForm();
+
+        $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
         $merchantDetails->edit($input);
 
@@ -230,6 +232,8 @@ class Core extends Base\Core
         $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
 
         $merchantDetails->edit($input, 'patchMerchantDetails');
+
+       $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -606,7 +610,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchantDetails->merchant, true);
+                (new Merchant\Activate)->activate($merchantDetails->merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -886,6 +890,7 @@ class Core extends Base\Core
 
         $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]      = $merchant->isLive();
+        $response[Entity::ACTIVATION_FLOW]    = $merchantDetails->getActivationFlow();
 
         return $response;
     }

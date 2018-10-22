@@ -59,7 +59,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
         if ($row[self::REFUND_TXN_CLM] !== 0.0)
         {
-            return BaseReconciliate::REFUND;
+            return self::NA;
         }
 
         if ($row[self::CAPTURE_TXN_CLM] !== 0.0)
@@ -94,7 +94,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
             case self::TXN_REFUND:
 
-                return BaseReconciliate::REFUND;
+                return self::NA;
 
             default:
 

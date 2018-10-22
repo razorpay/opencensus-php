@@ -1116,10 +1116,34 @@ class Service extends Base\Service
             $createdAt = now()->subHour(6)->getTimestamp();
         }
 
+        $start = microtime(true);
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
+            [
+                'start_time' => $start,
+                'limit'      => $limit,
+                'created_at' => $createdAt,
+            ]);
+
         $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
 
+        $end = microtime(true);
+
+        $processingTime = $end - $start;
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_PROCESSED_AT_SUMMARY,
+            [
+                'end_time'      => $end,
+                'time_taken'    => $processingTime,
+                'success_count' => $successCount
+            ]
+        );
+
         return [
-                'success_count'   => $successCount
+                'success_count' => $successCount,
+                'time_taken'    => $processingTime,
         ];
     }
 }

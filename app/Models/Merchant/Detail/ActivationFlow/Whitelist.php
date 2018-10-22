@@ -31,4 +31,14 @@ class Whitelist implements ActivationFlowInterface
 
         (new Merchant\Activate)->instantlyActivate($merchant);
     }
+
+    /**
+     * validation specific to whitelist activation flow
+     *
+     * @param Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails)
+    {
+        return;
+    }
 }

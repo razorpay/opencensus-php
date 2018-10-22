@@ -735,6 +735,61 @@ return [
         ]
     ],
 
+    'testCreateDirectSettlemtTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_kotak',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'type'                      => [
+                    'non_recurring'     => '1',
+                    'direct_settlement' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateDirectSettlemtTerminalFailure' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'tpv'                       => '2',
+                'type'                      => [
+                    'non_recurring'     => '1',
+                    'direct_settlement' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No terminal gateway mapping for direct settlement',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT,
+        ],
+    ],
+
     'testToggleTerminal' => [
         'request' => [
             'content' => [

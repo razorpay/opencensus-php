@@ -497,7 +497,7 @@ return [
                             'category2'       => 'ecommerce',
                             'activation_flow' => 'greylist',
                         ],
-                        'crypto_machinery '         => [
+                        'crypto_machinery'          => [
                             'category'        => 5999,
                             'description'     => 'Crypto Machinery',
                             'category2'       => 'ecommerce',
@@ -1059,6 +1059,64 @@ return [
         ]
     ],
 
+    'testBlacklistInstantActivation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'betting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "betting",
+                'activation_flow'                  => 'blacklist',
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
+    'testGreylistInstantActivation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "mutual_fund",
+                'activation_flow'                  => 'greylist',
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
     'testL1ResubmissionForBlacklist' => [
         'request'     => [
             'method'  => 'POST',
@@ -1075,10 +1133,15 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => "ABCDE0000Z",
-                'business_category'    => "financial_services",
-                'business_subcategory' => "accounting",
-                'can_submit'           => false,
+                'promoter_pan'                     => "ABCDE0000Z",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+                'activation_flow'                  => 'whitelist',
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "accounting",
+                'can_submit'                       => false,
                 //'activated'            => 1,
             ],
         ],
