@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -7,12 +7,17 @@ import { fetchAuthLinks as fetchAll } from 'merchant/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { authLink as id, amount, receipt, status } from 'rzp/ui/item/pair';
+import { amount, receipt, status } from 'rzp/ui/item/pair';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
 import ListFilter from './ListFilter';
 
 const customerDetail = prop => item => item.customer_details[prop] || '--';
+
+const id = {
+  title: 'Link ID',
+  value: item => <Link to={'/authlinks/' + item.id}>{item.id}</Link>,
+};
 
 const customerEmail = {
   title: 'Email',
