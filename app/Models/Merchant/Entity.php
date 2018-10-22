@@ -1444,6 +1444,11 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    public function kycVerified()
+    {
+        $this->releaseFunds();
+    }
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant

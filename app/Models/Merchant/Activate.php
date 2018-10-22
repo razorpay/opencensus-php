@@ -41,19 +41,33 @@ class Activate extends Base\Core
      */
     public function activate(Entity $merchant): array
     {
+        // Merchants who have been activated (instantly activated whitelisted merchants)
+        if ($merchant->isActivated() === true)
+        {
+            return $this->markKycVerified($merchant);
+        }
+
+        //
+        // For merchants who never went through the instant activations flow, and,
+        // who went through the instant activations flow and got greylisted
+        //
+        return $this->activateAndMarkKycVerified($merchant);
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function activateAndMarkKycVerified(Entity $merchant)
+    {
         $merchant->getValidator()->validateBeforeActivate();
 
         $this->validateMethodsAndPricing($merchant);
 
         (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
+        $this->validateHasBankAccount($merchant);
 
         $this->activateMerchantPromotions($merchant);
 
@@ -69,8 +83,8 @@ class Activate extends Base\Core
         }
 
         // Triggering workflow for the activation_status change in merchantDetail entity
-        $workflow = $this->app['workflow']
-                         ->handle();
+        $this->app['workflow']
+            ->handle();
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
@@ -85,9 +99,7 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
-            ['merchant_id' => $merchant->getId()]);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED, [Entity::MERCHANT_ID => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
 
@@ -155,6 +167,53 @@ class Activate extends Base\Core
 
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function markKycVerified(Entity $merchant): array
+    {
+        // add a check - should be through an instantly_activated state
+        $merchant->getValidator()->validateBeforeKycVerified();
+
+        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+
+        $this->validateHasBankAccount($merchant);
+
+        // releases funds on hold
+        $merchant->kycVerified();
+
+        // Triggering workflow for the activation_status change in merchantDetail entity
+        $this->app['workflow']
+            ->handle();
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED,
+            ['merchant_id' => $merchant->getId()]);
+
+        $this->sendMerchantActivatedEvents($merchant);
+
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
 
         return $merchant->toArrayPublic();
     }
@@ -511,5 +570,16 @@ class Activate extends Base\Core
         }
 
         return $returnRules;
+    }
+
+    protected function validateHasBankAccount(Entity $merchant)
+    {
+        $ba = $this->repo->bank_account->getBankAccount($merchant);
+
+        if ($ba === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
     }
 }

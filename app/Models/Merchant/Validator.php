@@ -934,4 +934,32 @@ class Validator extends Base\Validator
                 Entity::ACTIVATED);
         }
     }
+
+    public function validateBeforeKycVerified()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
+
+        $this->validateIsActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                Entity::ACTIVATED);
+        }
+    }
 }
