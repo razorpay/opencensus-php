@@ -186,7 +186,6 @@ final class Route
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
-        'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                    => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
@@ -1617,7 +1616,6 @@ final class Route
         'iin_upload',
         'internal_dummy_account_test',
         'merchant_actions',
-        'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
         'merchant_beneficiary_file',
@@ -1829,7 +1827,6 @@ final class Route
         'merchant_edit'                            => '*', // permission handled in code
         'adj_add'                                  => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'                => Permission::EDIT_MERCHANT_BANK_DETAIL,
-        'merchant_activate'                        => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'               => '*',
         'merchants_update_bulk'                    => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
