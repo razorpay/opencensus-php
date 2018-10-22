@@ -232,6 +232,28 @@ class ActivationTest extends TestCase
         $this->assertFalse($merchant->getHoldFunds());
     }
 
+    /**
+     * Asserts that the funds cannot be released if the bank account entity is not specified
+     */
+    public function testReleaseFundsWithoutBankAccount()
+    {
+        $merchantId = $this->fixtures->create('merchant')->getId();
+
+        $data = $this->getInstantlyActivatedMerchantDetailData($merchantId);
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/merchants/' . $merchantId . '/action';
+
+        $data = $this->getInstantlyActivatedMerchantData();
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $this->startTest();
+    }
+
     protected function changeActivationStatusFromUnderReviewToActivated(& $requestContent, & $responseContent)
     {
         $requestContent['activation_status'] = 'activated';

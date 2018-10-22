@@ -1220,4 +1220,26 @@ return [
             ],
         ],
     ],
+
+    'testReleaseFundsWithoutBankAccount' => [
+        'request' => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method' => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
 ];
