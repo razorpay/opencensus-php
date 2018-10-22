@@ -1147,4 +1147,77 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testKycSubmissionForInstantlyActivatedMerchant' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '1',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testKYCVerificationForInstantlyActivatedMerchant' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+    'submitKyc' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
 ];
