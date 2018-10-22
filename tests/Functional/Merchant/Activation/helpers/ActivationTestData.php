@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Merchant\helpers;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-
+use RZP\Exception\BadRequestException;
 
 return [
     'testMerchantActivationCategoriesResponseForAdminAuth' => [
@@ -1009,7 +1009,10 @@ return [
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
                 'promoter_pan'         => 'ABCDE0000Z',
-                'promoter_pan_name'    => 'John Doe',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
             ],
         ],
         'response'  => [
@@ -1022,7 +1025,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
+            'class'               => BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
         ],
     ],

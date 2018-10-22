@@ -1536,16 +1536,13 @@ class Core extends Base\Core
         $oldData = [
             Entity::CATEGORY2              => $merchant->getCategory2(),
             Entity::CATEGORY               => $merchant->getCategory(),
-            Detail\Entity::ACTIVATION_FLOW => $merchantDetail->getActivationFlow(),
         ];
 
         $category       = $subcategoryMetaData[Entity::CATEGORY];
         $category2      = $subcategoryMetaData[Entity::CATEGORY2];
-        $activationFlow = $subcategoryMetaData[Detail\Entity::ACTIVATION_FLOW];
 
         $merchant->setCategory2($category2);
         $merchant->setCategory($category);
-        $merchantDetail->setActivationFlow($activationFlow);
 
         $this->repo->saveOrFail($merchant);
         $this->repo->saveOrFail($merchantDetail);
@@ -1553,7 +1550,6 @@ class Core extends Base\Core
         $newData = [
             Entity::CATEGORY2              => $merchant->getCategory2(),
             Entity::CATEGORY               => $merchant->getCategory(),
-            Detail\Entity::ACTIVATION_FLOW => $merchantDetail->getActivationFlow(),
         ];
 
         $this->trace->info(

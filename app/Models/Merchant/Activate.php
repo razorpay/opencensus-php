@@ -128,6 +128,13 @@ class Activate extends Base\Core
         return $merchant->toArrayPublic();
     }
 
+    /**
+     * Instantly activates a merchant with funds on hold
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     */
     public function instantlyActivate(Entity $merchant): array
     {
         $merchant->getValidator()->validateBeforeInstantlyActivate();
@@ -196,6 +203,9 @@ class Activate extends Base\Core
         $methodCore->checkPricing($merchant, $methods, true);
     }
 
+    /**
+     * @param Entity $merchant
+     */
     protected function activateMerchantPromotions(Entity $merchant)
     {
         $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());

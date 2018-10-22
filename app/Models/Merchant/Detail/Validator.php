@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -478,7 +479,8 @@ class Validator extends Base\Validator
         if ($merchantDetail->isSubmitted() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED,
+                Entity::SUBMITTED);
         }
     }
 
@@ -494,7 +496,31 @@ class Validator extends Base\Validator
         if ($merchantDetail->isArchived() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION,
+                Entity::ARCHIVED_AT);
         }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function performInstantActivationValidations(array $input)
+    {
+        $merchantDetails = $this->entity;
+
+        $this->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $this->validateBusinessSubcategoryForCategory($input);
+
+        $merchantValidator = new Merchant\Validator;
+
+        $merchant = $merchantDetails->merchant;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchant);
     }
 }

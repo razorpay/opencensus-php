@@ -153,7 +153,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $this->performInstantActivationValidations($merchantDetails, $input);
+        $merchantDetails->getValidator()->performInstantActivationValidations($input);
 
         $merchantDetails->edit($input, 'instant_activation');
 
@@ -167,7 +167,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchantDetails);
 
             // $activationFlow will be an instance of the ActivationFlowInterface
-            $activationFlow = (new ActivationFlow\Factory)->getActivationFlowImpl($merchantDetails);
+            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
             $activationFlow->process($merchantDetails);
 
             // Reload the merchant and merchant details to create a response with the updated values
@@ -181,7 +181,7 @@ class Core extends Base\Core
             $merchantDetails->setActivationProgress($activationProgress);
             $this->repo->saveOrFail($merchantDetails);
 
-            $this->trackActivationProgressEvents($merchantDetails, $activationProgress);
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
 
             $response['auto_activated'] = false;
 
@@ -189,31 +189,17 @@ class Core extends Base\Core
         });
     }
 
-    protected function trackActivationProgressEvents(Entity $merchantDetails, $activationProgress)
+    /**
+     * @param Merchant\Entity $merchant
+     * @param                 $activationProgress
+     */
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
     {
-        $merchant = $merchantDetails->merchant;
-
-        $eventAttributes = $merchantDetails->merchant->toArrayEvent();
+        $eventAttributes = $merchant->toArrayEvent();
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
-    }
-
-    public function performInstantActivationValidations(Entity $merchantDetails, array $input)
-    {
-        $merchantDetails->getValidator()->validateIsNotLocked();
-
-        // validates if the business subcategory belongs to the business category
-        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
-
-        $merchantValidator = new Merchant\Validator;
-
-        //
-        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
-        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
-        //
-        $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity

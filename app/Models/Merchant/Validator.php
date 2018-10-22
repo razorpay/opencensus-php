@@ -584,7 +584,11 @@ class Validator extends Base\Validator
         if ($merchant->isLinkedAccount() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED);
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+                Entity::PARENT_ID,
+                [
+                    Entity::PARENT_ID => $merchant->getParentId(),
+                ]);
         }
 
         $this->validateInstantActivationMandatoryAttributes();
