@@ -126,14 +126,15 @@ export default class TerminalForm extends Component {
     }
 
     if (body.type) {
-      let temp = {};
-      body.type.split(',').forEach(elem => {
-        temp[elem] = '1';
-      });
-      body.type = temp;
-    }
-    if (!Object.keys(body.type).length) {
-      delete body.type;
+      if (!Object.keys(body.type).length) {
+        delete body.type;
+      } else {
+        let temp = {};
+        body.type.split(',').forEach(elem => {
+          temp[elem] = '1';
+        });
+        body.type = temp;
+      }
     }
 
     if (body.file) {
