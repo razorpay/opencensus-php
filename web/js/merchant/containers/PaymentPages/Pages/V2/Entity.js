@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
@@ -11,7 +11,7 @@ import {
   activatePaymentPage,
   deactivatePaymentPage,
   sendLink,
-} from './model';
+} from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'rzp/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -19,29 +19,24 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import ShowWhen from 'merchant/components/ShowWhen';
 import StatsInfo from 'ui/StatsTable';
-import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { trackDetailViewEdits, trackShareActions } from './ga';
+import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import EditPaymentFor from './Edit/EditPaymentFor';
-import EditTimesPayable from './Edit/EditTimesPayable';
+import EditStocks from '../Edit/EditStocks';
 
 import NoEntityResultsFound from 'common/NoEntityResultsFound';
-
-import PaymentPagesV2Entity from './V2/Entity';
 
 import {
   EditExpiry,
   EditNotes,
   EditReceipt,
-} from '../../PaymentLinks/Edit/index';
-import ActivateAgain from './Modals/ActivateAgain';
-import ShareView from './Modals/Share';
+} from '../../../PaymentLinks/Edit/index';
+import ActivateAgain from '../Modals/ActivateAgain';
+import ShareView from '../Modals/Share';
 
 import Button from 'component/Button';
 
@@ -60,7 +55,7 @@ const inActiveStatusReasonMap = {
   openModal,
   closeModal,
 })
-export class PaymentPagesEntity extends React.Component {
+export default class PaymentPagesV2Entity extends React.Component {
   state = {
     paymentPageEntity: {},
     paymentPagePayments: [],
@@ -120,9 +115,12 @@ export class PaymentPagesEntity extends React.Component {
   getStatsTable(paymentPageEntity) {
     return [
       [
-        { title: 'Payments Made', value: paymentPageEntity.times_paid },
         {
-          title: 'Total Sales',
+          title: 'Number of Payments made',
+          value: paymentPageEntity.times_paid,
+        },
+        {
+          title: 'Total revenue in sales',
           value: (
             <Amount
               value={paymentPageEntity.total_amount_paid}
@@ -462,19 +460,28 @@ export class PaymentPagesEntity extends React.Component {
       paymentPageEntity.email_status === 'sent';
 
     return (
-      <div class="content-wrapper content-sm txn-details Entity--paymentpage">
+      <div class="content-wrapper content-sm txn-details Entity--paymentpage Entity--paymentpage-v2">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <i class="i i-payment-pages text-primary icon--formal" />{' '}
             <div class="text">{paymentPageEntity.title}</div>
             <div class="btn-toolbar pull-right">
+              {isRoleAllowedEdit && (
+                <Link
+                  class="btn Button Button--primary--invert btn-sm"
+                  to={`/paymentpages/${paymentPageEntity.id}/edit`}
+                  target="_blank"
+                >
+                  Edit
+                </Link>
+              )}
               {isRoleAllowedEdit &&
                 isActive && (
                   <button
                     class="btn btn-primary btn-sm"
                     onClick={this.openShareView}
                   >
-                    Share URL
+                    Share
                   </button>
                 )}
             </div>
@@ -484,10 +491,22 @@ export class PaymentPagesEntity extends React.Component {
             <div class="panel-body">
               <div class="list-group details-row-container">
                 <StatsInfo stats={this.getStatsTable(paymentPageEntity)} />
+                <div class="stats-info-footer">
+                  <Link
+                    target="_blank"
+                    to={`/payments?payment_link_id=${
+                      paymentPageEntity.id
+                    }&count=${MAX_API_COUNT}&ref=paymentpages`}
+                  >
+                    View payments for this page <i class="i i-chevron-right" />
+                  </Link>
+                </div>
+
                 <EntityDetailRow
-                  label="Payment Page Id"
-                  value={paymentPageEntity.id}
+                  label="Payment Page title"
+                  value={paymentPageEntity.title}
                 />
+
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
@@ -497,6 +516,20 @@ export class PaymentPagesEntity extends React.Component {
                     />
                   )}
                 />
+                <EntityDetailRow
+                  label="Available Stock"
+                  value={() => (
+                    <EditStocks
+                      value={paymentPageEntity.times_payable}
+                      timesPaid={paymentPageEntity.times_paid}
+                      editFn={this.editPaymentPage}
+                      entityId={paymentPageEntity.id}
+                      trackerFn={trackDetailViewEdits}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
+                    />
+                  )}
+                />
+
                 <EntityDetailRow
                   label="Page URL"
                   value={() => (
@@ -509,7 +542,7 @@ export class PaymentPagesEntity extends React.Component {
                   )}
                 />
                 <EntityDetailRow
-                  label="Status"
+                  label="Page Status"
                   value={() => (
                     <div>
                       <PaymentPagesStatusLabel status={status} />
@@ -532,34 +565,10 @@ export class PaymentPagesEntity extends React.Component {
                     </div>
                   )}
                 />
-                <EntityDetailRow
-                  label="Payment For"
-                  pairClass="description"
-                  value={() => (
-                    <EditPaymentFor
-                      value={{
-                        title: paymentPageEntity.title,
-                        description: paymentPageEntity.description,
-                      }}
-                      entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
 
                 <EntityDetailRow
-                  label="Receipt No."
-                  value={() => (
-                    <EditReceipt
-                      value={paymentPageEntity.receipt}
-                      entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
+                  label="Payment Page Id"
+                  value={paymentPageEntity.id}
                 />
 
                 <EntityDetailRow label="Created by">
@@ -591,12 +600,12 @@ export class PaymentPagesEntity extends React.Component {
                 />
 
                 <EntityDetailRow
-                  label="Times Payable"
+                  label="Receipt No."
                   value={() => (
-                    <EditTimesPayable
-                      value={paymentPageEntity.times_payable}
-                      editFn={this.editPaymentPage}
+                    <EditReceipt
+                      value={paymentPageEntity.receipt}
                       entityId={paymentPageEntity.id}
+                      editFn={this.editPaymentPage}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -615,88 +624,11 @@ export class PaymentPagesEntity extends React.Component {
                     />
                   )}
                 />
-
-                <GroupDetailsTable
-                  title="Successful Payments"
-                  subTitle={
-                    <React.Fragment>
-                      <Amount
-                        value={paymentPageEntity.total_amount_paid}
-                        currency={paymentPageEntity.currency}
-                      />{' '}
-                      total sales
-                    </React.Fragment>
-                  }
-                  class="paymentpage-link-payments-table"
-                  loading={paymentsListLoading}
-                  items={paymentPagePayments}
-                  footer={
-                    paymentPagePayments.length <
-                    paymentPageEntity.times_paid ? (
-                      <NavLink
-                        target="_blank"
-                        to={`/payments?payment_link_id=${
-                          paymentPageEntity.id
-                        }&count=${
-                          paymentPageEntity.times_paid > MAX_API_COUNT
-                            ? MAX_API_COUNT
-                            : paymentPageEntity.times_paid
-                        }&ref=paymentpages`}
-                      >
-                        View all {paymentPageEntity.times_paid} payments
-                      </NavLink>
-                    ) : null
-                  }
-                  rowConfig={[
-                    [
-                      data => (
-                        <span class="label--primary">{data.contact}</span>
-                      ),
-                      data => (
-                        <NavLink
-                          class="btn-link no-padding"
-                          to={`/payments/${data.id}`}
-                          target="_blank"
-                        >
-                          {data.id}
-                        </NavLink>
-                      ),
-                    ],
-                    [
-                      data => (
-                        <span class="label--secondary">{data.email}</span>
-                      ),
-                      data => (
-                        <span class="label--secondary">
-                          <Time
-                            value={data.created_at}
-                            format="DD MMM YYYY, hh:mm:ss a"
-                          />
-                        </span>
-                      ),
-                    ],
-                  ]}
-                  loaderConfig={[
-                    [{ width: '70%' }, { width: '45%' }],
-                    [{ width: '60%', height: '10px' }, { width: '30%' }],
-                  ]}
-                />
               </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
-
-@connect(state => ({ user: state.session.user }))
-export default class extends React.Component {
-  render() {
-    return this.props.user.isPaymentPagesV2 ? (
-      <PaymentPagesV2Entity {...this.props} />
-    ) : (
-      <PaymentPagesEntity {...this.props} />
     );
   }
 }

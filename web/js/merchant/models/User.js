@@ -199,6 +199,10 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
+  get isPaymentPagesV2() {
+    return this.findTag('paymentpagesv2');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
