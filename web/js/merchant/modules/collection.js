@@ -9,6 +9,11 @@ import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
+<<<<<<< HEAD
+=======
+import Token from 'merchant/models/Token';
+import AuthLink from 'merchant/models/AuthLink';
+>>>>>>> eaacffef9... [AL]: created separated model for AuthLinks
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -146,3 +151,7 @@ export const disputesReducer = makeCollectionReducer('DISPUTES');
 export const fetchSubmerchants = params =>
   fetchAll(params, Submerchant, 'SUB_MERCHANTS');
 export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
+
+export const fetchAuthLinks = params =>
+  fetchAll(params, AuthLink, 'AUTH_LINKS');
+export const authLinksReducer = makeActionCollectionReducer('AUTH_LINKS');

@@ -53,6 +53,11 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
+<<<<<<< HEAD
+=======
+  tokensReducer,
+  authLinksReducer,
+>>>>>>> eaacffef9... [AL]: created separated model for AuthLinks
 } from 'merchant/modules/collection';
 
 import {
@@ -117,4 +122,5 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  authLinks: authLinksReducer,
 });

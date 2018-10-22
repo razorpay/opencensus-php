@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchInvoices } from 'merchant/modules/invoices/list';
+import { fetchAuthLinks as fetchAll } from 'merchant/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
@@ -31,17 +31,11 @@ const link = {
 
 @connect(
   state => ({
-    ...state.invoices,
-    items: state.invoices.invoices,
+    ...state.authLinks,
   }),
-  { fetchInvoices }
+  { fetchAll }
 )
 export default class AuthLinksList extends ListContainer {
-  fetchEntityList(params) {
-    params.type = 'auth_link';
-    return this.props.fetchInvoices(params);
-  }
-
   render() {
     return (
       <div class="content-wrapper">
