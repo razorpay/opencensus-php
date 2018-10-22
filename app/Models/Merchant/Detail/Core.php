@@ -178,9 +178,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchantDetails);
 
             // Sync few input fields to merchant entity
-            $businessWebsite = $input[Entity::BUSINESS_WEBSITE] ?? null;
-            $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $businessWebsite];
-            (new Merchant\Core)->editPreSignupFields($inputDetails);
+            (new Merchant\Core)->editPreSignupFields($input);
 
             $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
 

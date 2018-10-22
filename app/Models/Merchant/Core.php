@@ -1575,7 +1575,14 @@ class Core extends Base\Core
 
     public function editPreSignupFields(array $input): Entity
     {
-        (new Validator)->validateInput('edit_pre_signup', $input);
+        $businessWebsite = $input[Detail\Entity::BUSINESS_WEBSITE] ?? null;
+
+        $preSignupInput = [
+            Entity::NAME    => $input[Detail\Entity::BUSINESS_NAME],
+            Entity::WEBSITE => $businessWebsite,
+        ];
+
+        (new Validator)->validateInput('edit_pre_signup', $preSignupInput);
 
         $merchant = $this->merchant;
 
@@ -1583,16 +1590,14 @@ class Core extends Base\Core
             TraceCode::MERCHANT_EDIT,
             [
                 'merchant_id' => $merchant->getId(),
-                'input'       => $input,
+                'input'       => $preSignupInput,
             ]);
 
-
-        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
+        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $preSignupInput)
         {
-            $merchant = $this->edit($merchant, $input);
+            $merchant = $this->edit($merchant, $preSignupInput);
 
             return $merchant;
-
         });
 
         return $merchant;
