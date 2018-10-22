@@ -72,12 +72,10 @@ class ActivationTest extends TestCase
         $this->startTest();
 
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
-
-        $this->assertNotNull($merchant->getWebsite());
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', self::DEFAULT_MERCHANT_ID);
-
-        $this->assertNotNull($merchantDetails->getWebsite());
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
     public function testUpdateActivationFlow()

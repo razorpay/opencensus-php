@@ -1573,6 +1573,14 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * Extracts a few fields like business name and website from the input
+     * and saves it to merchants as well as merchant details table.
+     *
+     * @param array $input
+     *
+     * @return Entity
+     */
     public function editPreSignupFields(array $input): Entity
     {
         $businessWebsite = $input[Detail\Entity::BUSINESS_WEBSITE] ?? null;
@@ -1586,19 +1594,9 @@ class Core extends Base\Core
 
         $merchant = $this->merchant;
 
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $preSignupInput,
-            ]);
+        $this->trace->info(TraceCode::MERCHANT_EDIT, ['input' => $preSignupInput]);
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $preSignupInput)
-        {
-            $merchant = $this->edit($merchant, $preSignupInput);
-
-            return $merchant;
-        });
+        $merchant = $this->edit($merchant, $preSignupInput);
 
         return $merchant;
     }
