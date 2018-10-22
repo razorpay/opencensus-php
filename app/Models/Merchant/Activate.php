@@ -67,7 +67,7 @@ class Activate extends Base\Core
 
         (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
-        $this->validateHasBankAccount($merchant);
+        $merchant->getValidator()->validateHasBankAccount();
 
         $this->activateMerchantPromotions($merchant);
 
@@ -183,7 +183,7 @@ class Activate extends Base\Core
 
         (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
-        $this->validateHasBankAccount($merchant);
+        $merchant->getValidator()->validateHasBankAccount();
 
         // releases funds on hold
         $merchant->kycVerified();
@@ -570,16 +570,5 @@ class Activate extends Base\Core
         }
 
         return $returnRules;
-    }
-
-    protected function validateHasBankAccount(Entity $merchant)
-    {
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
     }
 }
