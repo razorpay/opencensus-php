@@ -909,9 +909,9 @@ class Gateway extends Base\Gateway
         {
             $gatewayCode = $this->getErrorCode($gatewayPayment->getErrorMessage());
 
-            $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
+            $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode(['code' => $gatewayCode]);
 
-            $errorCode = ErrorCodes::getMappedCode($gatewayCode);
+            $errorDesc = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription(['code' => $gatewayCode]);
 
             throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $gatewayContent);
         }
