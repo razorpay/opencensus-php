@@ -12,7 +12,6 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchant/modules/session';
-import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
@@ -39,12 +38,6 @@ export default class ProfileDropdown extends Component {
       .then(() => {
         window.location.reload();
       });
-  };
-
-  submitFeedback = () => {
-    this.props.openModal({
-      component: <SubmitFeedback analytics={this.props.analytics} />,
-    });
   };
 
   openTicketModal = () => {
@@ -176,10 +169,6 @@ export default class ProfileDropdown extends Component {
               <Link to="#request" className="media-body">
                 Raise a request
               </Link>
-            </div>
-
-            <div className="media media-action" onClick={this.submitFeedback}>
-              <div className="media-body">Give feedback or suggestions</div>
             </div>
 
             {mode === 'live' &&
