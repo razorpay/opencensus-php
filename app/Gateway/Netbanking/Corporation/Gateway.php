@@ -420,7 +420,7 @@ class Gateway extends Base\Gateway
 
         $secret = $this->getTestSecret();
 
-        if ($this->app['config']->get('app.env') === Environment::PRODUCTION)
+        if ($this->app->environment() === Environment::PRODUCTION)
         {
             $secret = $this->getLiveSecret();
         }
