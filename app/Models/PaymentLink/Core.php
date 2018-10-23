@@ -405,8 +405,7 @@ class Core extends Base\Core
             return true;
         }
 
-        $succeedingPayments     = $this->repo->payment_link->getSucceedingPayments($paymentLink);
-        $succeedingPaymentUnits = $succeedingPayments->sum(function ($p) { return (int) ($p->getNotes()[Entity::UNITS] ?? 1); });
+        $succeedingPaymentUnits = $this->repo->payment_link->getSucceedingPaymentUnits($paymentLink);
 
         $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentUnits;
 
@@ -664,10 +663,12 @@ class Core extends Base\Core
     /**
      * Every payment link could have set of setting associated. Ref: Model\Settings.
      * @param  Entity $paymentLink
-     * @param  array  $settings
+     * @param  array  $input
      */
-    protected function upsertSettings(Entity $paymentLink, array $settings)
+    protected function upsertSettings(Entity $paymentLink, array $input)
     {
+        $settings = $input[Entity::SETTINGS] ?? [];
+
         if (empty($settings) === false)
         {
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();

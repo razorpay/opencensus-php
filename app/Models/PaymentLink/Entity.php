@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     const ERROR              = 'error';
     const REQUEST_PARAMS     = 'request_params';
 
+    const CAPTURED_PAYMENTS_COUNT = 'captured_payments_count';
+
     // List of keys stored against entity's settings.
     const SETTINGS                     = 'settings';
     const UDF_SCHEMA                   = 'udf_schema';
@@ -348,6 +350,11 @@ class Entity extends Base\PublicEntity
     public function getHostedViewUrl(string $plHostedBaseUrl, string $slug = null): string
     {
         return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
+    }
+
+    public function getCapturedPaymentsCount(): int
+    {
+        return $this->payments()->whereNotNull(Payment\Entity::CAPTURED_AT)->count();
     }
 
     /**

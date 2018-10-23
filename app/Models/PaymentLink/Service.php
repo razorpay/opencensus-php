@@ -32,6 +32,18 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
+    public function fetchWithDetailsForDashboard(string $id, array $input)
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        $extra = [
+            Entity::CAPTURED_PAYMENTS_COUNT => $entity->getCapturedPaymentsCount(),
+            Entity::SETTINGS                => $entity->getSettings()->toArray(),
+        ];
+
+        return $entity->toArrayPublic() + $extra;
+    }
+
     public function create(array $input): array
     {
         $entity = $this->core->create($input, $this->merchant, $this->user);

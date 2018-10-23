@@ -29,13 +29,13 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns payments which are succeeding (i.e. either created, authorized) for given payment link.
+     * Returns count of units purchased of which payments are still succeeding (i.e. created or authorized).
      * This method gets used in determining if enough slots are available to initiate a payment.
      *
      * @param  Entity $paymentLink
-     * @return Base\PublicCollection
+     * @return int
      */
-    public function getSucceedingPayments(Entity $paymentLink): Base\PublicCollection
+    public function getSucceedingPaymentUnits(Entity $paymentLink): int
     {
         return $paymentLink->payments()
                            ->whereIn(
@@ -44,6 +44,10 @@ class Repository extends Base\Repository
                                    Payment\Status::CREATED,
                                    Payment\Status::AUTHORIZED,
                                ])
-                           ->get();
+                           ->get()
+                           ->sum(function (Payment\Entity $p)
+                              {
+                                  return (int) ($p->getNotes()[Entity::UNITS] ?? 1);
+                              });
     }
 }
