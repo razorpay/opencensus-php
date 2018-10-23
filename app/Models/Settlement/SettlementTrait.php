@@ -28,15 +28,29 @@ trait SettlementTrait
      */
     protected function filterTransactionsForSettlement($txns): array
     {
-        $filterGroupedTxns = [];
+        $filterGroupedTxns    = [];
+
+        $transactionSkipCount    = 0;
+
+        $transactionsSettleCount = 0;
+
+        $esMerchants = $this->repo->feature
+                            ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC])
+                            ->pluck(Feature\Entity::ENTITY_ID)
+                            ->toArray();
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
 
+         // Here we are fetch each transaction using a reference.
+         // This avoids loading the entire transaction entity from
+         // Public Collection preventing extra memory consumption.
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
             if ($this->shouldSettle($txn) === false)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -44,13 +58,17 @@ trait SettlementTrait
 
             if ($skipForRefundAuthTxn === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
-            $skipForEarlySettlement = $this->skipForEarlySettlement($txn);
+            $skipForEarlySettlement = $this->skipForEarlySettlement($txn, $esMerchants);
 
             if ($skipForEarlySettlement === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -58,6 +76,8 @@ trait SettlementTrait
 
             if ($skipForDsp === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -65,6 +85,8 @@ trait SettlementTrait
 
             if ($skipForMutualFundsMarketplace === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -72,15 +94,29 @@ trait SettlementTrait
 
             if ($skipForKarvy === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
+
+            $transactionsSettleCount++;
 
             $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
             $filterGroupedTxns[$merchantId]->push($txn);
+
+            $txn = null;
         }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTIONS_SKIPPED,
+            [
+                'transactions_skip_count'   => $transactionSkipCount,
+                'transactions_settle_count' => $transactionsSettleCount
+            ]
+        );
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
@@ -135,17 +171,15 @@ trait SettlementTrait
      * Early settlement timing check added
      *
      * @param $txn
+     * @param $esMerchants
      * @return bool
      */
-    protected function skipForEarlySettlement($txn): bool
+    protected function skipForEarlySettlement($txn, $esMerchants): bool
     {
         $mid = $txn->getMerchantId();
 
-        $merchant = $this->merchants[$mid];
 
-        $isEarlySettlementEnabled = $merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC);
-
-        if ($isEarlySettlementEnabled === false)
+        if (in_array($mid, $esMerchants, true) === false)
         {
             return false;
         }
@@ -782,8 +816,10 @@ trait SettlementTrait
      */
     protected function skipForKarvy($txn): bool
     {
+        $merchant = $this->merchants[$txn->getMerchantId()];
+
         // Karvy wants settlements only at 1 pm and 3 pm ¯\_(ツ)_/¯
-        if ($txn->merchant->getParentId() === Preferences::MID_KARVY)
+        if ($merchant->getParentId() === Preferences::MID_KARVY)
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
