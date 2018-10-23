@@ -10,6 +10,7 @@ use RZP\Constants\Es;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
@@ -313,11 +314,11 @@ class EsRepository extends Base\EsRepository
         {
             $this->sortByPendingBalance = true;
 
-            $this->addNotNullFilterForField($query, $attribute);
+            $this->addTermFilter($query, $attribute, ActivationFlow::WHITELIST);
         }
         else
         {
-            $this->addNullFilterForField($query, $attribute);
+            $this->addNegativeTermFilter($query, $attribute, ActivationFlow::WHITELIST);
         }
     }
 
