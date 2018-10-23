@@ -186,7 +186,6 @@ final class Route
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
-        'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                    => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
@@ -1246,6 +1245,7 @@ final class Route
         'merchant_post_beneficiary_api',
         'setl_verify',
         'apspdcl_bridge',
+        'billdesk_reconcile_cancelled',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1573,7 +1573,6 @@ final class Route
         'bank_transfer_strip_payer_accounts',
         'batch_process_by_id',
         'batch_retry_output_file',
-        'billdesk_reconcile_cancelled',
         'coupon_apply',
         'coupon_create',
         'coupon_delete',
@@ -1617,7 +1616,6 @@ final class Route
         'iin_upload',
         'internal_dummy_account_test',
         'merchant_actions',
-        'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
         'merchant_beneficiary_file',
@@ -1829,7 +1827,6 @@ final class Route
         'merchant_edit'                            => '*', // permission handled in code
         'adj_add'                                  => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'                => Permission::EDIT_MERCHANT_BANK_DETAIL,
-        'merchant_activate'                        => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'               => '*',
         'merchants_update_bulk'                    => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
@@ -2107,6 +2104,7 @@ final class Route
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
+        'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
     ];
 
     public static $direct = [
@@ -2289,6 +2287,7 @@ final class Route
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
             'setl_verify',
+            'billdesk_reconcile_cancelled',
         ],
 
         'subscriptions' => [

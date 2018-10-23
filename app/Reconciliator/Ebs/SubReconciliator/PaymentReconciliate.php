@@ -2,9 +2,12 @@
 
 namespace RZP\Reconciliator\Ebs\SubReconciliator;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
-use RZP\Exception\ReconciliationException;
+use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -14,8 +17,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_KK_CESS            = 'krishi_kalyan_cess';
     const COLUMN_SB_CESS            = 'swachh_bharat_cess';
     const COLUMN_SERVICE_TAX        = 'service_tax';
-    const COLUMN_BANK_REFERENCE_NO  = 'bank_reference';
 
+    const COLUMN_SETTLED_AT         = ['settlement_date'];
+    const COLUMN_PAYMENT_DATE       = ['txn_date'];
+    const COLUMN_TRANSACTION_ID     = ['transactionid'];
+    const COLUMN_GATEWAY_PAYMENT_ID = ['paymentid'];
     const COLUMN_FEE                = ['tdr', 'tdr_amt'];
     const COLUMN_PAYMENT_AMOUNT     = ['captured', 'credit'];
     const COLUMN_PAYMENT_ID         = ['merchant_ref_no', 'merchant_refno'];
@@ -28,15 +34,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        foreach (self::COLUMN_PAYMENT_ID as $cpi)
-        {
-            if (empty($row[$cpi]) === false)
-            {
-                $paymentId = $row[$cpi];
+        $paymentId = Helper::getArrayFirstValue($row, self::COLUMN_PAYMENT_ID);
 
-                return $paymentId;
-            }
-        }
+        return $paymentId;
+    }
+
+    protected function getGatewayPayment($paymentId)
+    {
+        return $this->repo->ebs->findBypaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }
 
     /**
@@ -49,38 +54,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *
      * @param $row array
      *
-     * @return float|int $paymentAmount integer
-     * @throws ReconciliationException
+     * @return int $paymentAmount integer
      */
     protected function getReconPaymentAmount($row)
     {
-        $columnPaymentAmount = null;
+        $paymentAmount = Helper::getArrayFirstValue($row, self::COLUMN_PAYMENT_AMOUNT);
 
-        foreach (self::COLUMN_PAYMENT_AMOUNT as $cpa)
-        {
-            if (empty($row[$cpa]) === false)
-            {
-                $columnPaymentAmount = $cpa;
-                break;
-            }
-        }
+        $paymentAmount = Helper::getIntegerFormattedAmount(abs($paymentAmount));
 
-        if ($columnPaymentAmount === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_FAILURE,
-                    'message'         => 'Unable to get payment amount!',
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
-                ]);
-
-            throw new ReconciliationException('Unable to get payment amount for EBS from the recon file.');
-        }
-
-        $paymentAmount = floatval($row[$columnPaymentAmount]) * 100;
-
-        return abs($paymentAmount);
+        return $paymentAmount;
     }
 
     /**
@@ -96,24 +78,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = $row[self::COLUMN_SERVICE_TAX];
 
         // Check for SB & KK Cess
         if (isset($row[self::COLUMN_SB_CESS]) === true)
         {
-            $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+            $sbCess = $row[self::COLUMN_SB_CESS];
 
             $serviceTax += $sbCess;
         }
 
         if (isset($row[self::COLUMN_KK_CESS]) === true)
         {
-            $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
+            $kkCess = $row[self::COLUMN_KK_CESS];
 
             $serviceTax += $kkCess;
         }
 
-        return abs(round($serviceTax));
+        return Helper::getIntegerFormattedAmount(abs($serviceTax));
     }
 
     /**
@@ -124,36 +106,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getGatewayFee($row)
     {
-        $fee = null;
-
-        foreach (self::COLUMN_FEE as $cf)
-        {
-            if (empty($row[$cf]) === false)
-            {
-                $fee = $row[$cf];
-                break;
-            }
-        }
+        $fee = Helper::getArrayFirstValue($row, self::COLUMN_FEE);
 
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = abs(floatval($fee)) * 100;
+        $fee = Helper::getIntegerFormattedAmount($fee);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
 
         $fee += $serviceTax;
 
-        return round($fee);
-    }
-
-    protected function getReferenceNumber($row)
-    {
-        if (isset($row[self::COLUMN_BANK_REFERENCE_NO]) === true)
-        {
-            $referenceNumber = $row[self::COLUMN_BANK_REFERENCE_NO];
-
-            return $referenceNumber;
-        }
+        return $fee;
     }
 
     /**
@@ -182,5 +145,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return true;
+    }
+
+    protected function getGatewaySettledAt(array $row)
+    {
+        $settledAt = Helper::getArrayFirstValue($row, self::COLUMN_SETTLED_AT);
+
+        return Carbon::createFromFormat('d/m/Y', $settledAt, Timezone::IST)->getTimestamp();
+    }
+
+    protected function getGatewayTransactionId(array $row)
+    {
+        $gatewayTransactionId = Helper::getArrayFirstValue($row, self::COLUMN_TRANSACTION_ID);
+
+        return $gatewayTransactionId;
+    }
+
+    protected function getGatewayPaymentId(array $row)
+    {
+        $gatewayTransactionId = Helper::getArrayFirstValue($row, self::COLUMN_GATEWAY_PAYMENT_ID);
+
+        return $gatewayTransactionId;
     }
 }

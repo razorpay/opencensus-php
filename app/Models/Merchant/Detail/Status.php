@@ -11,6 +11,7 @@ class Status
     const NEEDS_CLARIFICATION = 'needs_clarification';
     const ACTIVATED           = 'activated';
     const REJECTED            = 'rejected';
+    const INSTANTLY_ACTIVATED = 'instantly_activated';
 
     /*
      * Allowed next activation statuses mapping

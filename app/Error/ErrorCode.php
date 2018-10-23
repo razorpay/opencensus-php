@@ -23,6 +23,7 @@ class ErrorCode
      */
     const GATEWAY_ERROR_FATAL_ERROR                                                 = 'GATEWAY_ERROR_FATAL_ERROR';
     const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
+    const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
 
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
@@ -40,7 +41,10 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED';
     const GATEWAY_ERROR_PARES_NOT_SUCCESSFUL                                        = 'GATEWAY_ERROR_PARES_NOT_SUCCESSFUL';
     const GATEWAY_ERROR_INVALID_PARES_XML                                           = 'GATEWAY_ERROR_INVALID_PARES_XML';
+    const GATEWAY_ERROR_INVALID_PARES_FORMAT                                        = 'GATEWAY_ERROR_INVALID_PARES_FORMAT';
     const GATEWAY_ERROR_PARES_DATA_MISMATCH                                         = 'GATEWAY_ERROR_PARES_DATA_MISMATCH';
+    const GATEWAY_ERROR_DATA_MISMATCH                                               = 'GATEWAY_ERROR_DATA_MISMATCH';
+    const GATEWAY_ERROR_CARD_NUMBER_MISMATCH                                        = 'GATEWAY_ERROR_CARD_NUMBER_MISMATCH';
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
@@ -66,6 +70,8 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CONFIGURATION                                       = 'GATEWAY_ERROR_INVALID_CONFIGURATION';
     const GATEWAY_ERROR_USER_INACTIVE                                               = 'GATEWAY_ERROR_USER_INACTIVE';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                           = 'GATEWAY_ERROR_CARD_NOT_ENROLLED';
+    const GATEWAY_ERROR_ENROLL_STATUS_EMPTY                                         = 'GATEWAY_ERROR_ENROLL_STATUS_EMPTY';
+    const GATEWAY_ERROR_ENROLL_STATUS_INVALID                                       = 'GATEWAY_ERROR_ENROLL_STATUS_INVALID';
     const GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED                              = 'GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED';
     const GATEWAY_ERROR_SOAP_ERROR                                                  = 'GATEWAY_ERROR_SOAP_ERROR';
     const GATEWAY_ERROR_DECRYPTION_FAILED                                           = 'GATEWAY_ERROR_DECRYPTION_FAILED';
@@ -87,6 +93,45 @@ class ErrorCode
     const GATEWAY_ERROR_TRANSACTION_NOT_PRESENT                                     = 'GATEWAY_ERROR_TRANSACTION_NOT_PRESENT';
     const GATEWAY_ERROR_PIN_CHANGE_FAILED                                           = 'GATEWAY_ERROR_PIN_CHANGE_FAILED';
     const GATEWAY_ERROR_SWITCH_UNOPERATIVE                                          = 'GATEWAY_ERROR_SWITCH_UNOPERATIVE';
+    const GATEWAY_ERROR_AGGREGATOR_DOWN                                             = 'GATEWAY_ERROR_AGGREGATOR_DOWN';
+    const GATEWAY_ERROR_AGGREGATOR_ERROR                                            = 'GATEWAY_ERROR_AGGREGATOR_ERROR';
+    const GATEWAY_ERROR_BANK_ID_NOT_ENABLED_AGGREGATOR_TERMINAL                     = 'GATEWAY_ERROR_BANK_ID_NOT_ENABLED_AGGREGATOR_TERMINAL';
+    const GATEWAY_ERROR_ENSTAGE_ERROR                                               = 'GATEWAY_ERROR_ENSTAGE_ERROR';
+    const GATEWAY_ERROR_CAF_STATUS_ERROR                                            = 'GATEWAY_ERROR_CAF_STATUS_ERROR';
+    const GATEWAY_ERROR_ISO_MESSAGE_NULL                                            = 'GATEWAY_ERROR_ISO_MESSAGE_NULL';
+    const GATEWAY_ERROR_ISO_MESSAGE_SEND_OR_RECEIVE_FAILURE                         = 'GATEWAY_ERROR_ISO_MESSAGE_SEND_OR_RECEIVE_FAILURE';
+    const GATEWAY_ERROR_RESERVED_PRIVATE_USE                                        = 'GATEWAY_ERROR_RESERVED_PRIVATE_USE';
+    const GATEWAY_ERROR_ECI_INVALID                                                 = 'GATEWAY_ERROR_ECI_INVALID';
+    const GATEWAY_ERROR_LOADING_PAYMENT_PAGE_FAILED                                 = 'GATEWAY_ERROR_LOADING_PAYMENT_PAGE_FAILED';
+    const GATEWAY_ERROR_PAYMENT_INSTRUMENT_ERROR                                    = 'GATEWAY_ERROR_PAYMENT_INSTRUMENT_ERROR';
+    const GATEWAY_ERROR_PAYMENT_INSTRUMENT_NOT_ENABLED                              = 'GATEWAY_ERROR_PAYMENT_INSTRUMENT_NOT_ENABLED';
+    const GATEWAY_ERROR_INSTITUTION_IMPS_NOT_ACTIVE                                 = 'GATEWAY_ERROR_INSTITUTION_IMPS_NOT_ACTIVE';
+    const GATEWAY_ERROR_INVALID_INSTITUTION                                         = 'GATEWAY_ERROR_INVALID_INSTITUTION';
+    const GATEWAY_ERROR_TERMINAL_IMPS_NOT_ACTIVE                                    = 'GATEWAY_ERROR_TERMINAL_IMPS_NOT_ACTIVE';
+    const GATEWAY_ERROR_DUPLICATE_RECORD                                            = 'GATEWAY_ERROR_DUPLICATE_RECORD';
+    const GATEWAY_ERROR_PREVIOUS_VOID_CHECK_FAILURE                                 = 'GATEWAY_ERROR_PREVIOUS_VOID_CHECK_FAILURE';
+    const GATEWAY_ERROR_FORMATTING_FAILED                                           = 'GATEWAY_ERROR_FORMATTING_FAILED';
+    const GATEWAY_ERROR_HASH_GENERATION_ERROR                                       = 'GATEWAY_ERROR_HASH_GENERATION_ERROR';
+    const GATEWAY_ERROR_INVALID_CAVV                                                = 'GATEWAY_ERROR_INVALID_CAVV';
+    const GATEWAY_ERROR_INVALID_MERCHANT                                            = 'GATEWAY_ERROR_INVALID_MERCHANT';
+    const GATEWAY_ERROR_MERCHANT_NOT_ALLOWED_FOR_ENCRYPTION                         = 'GATEWAY_ERROR_MERCHANT_NOT_ALLOWED_FOR_ENCRYPTION';
+    const GATEWAY_ERROR_MERCHANT_NOT_ENABLED                                        = 'GATEWAY_ERROR_MERCHANT_NOT_ENABLED';
+    const GATEWAY_ERROR_RC_UNAVAILABLE                                              = 'GATEWAY_ERROR_RC_UNAVAILABLE';
+    const GATEWAY_ERROR_PAYMENT_OPTION_NOT_ENABLED                                  = 'GATEWAY_ERROR_PAYMENT_OPTION_NOT_ENABLED';
+    const GATEWAY_ERROR_LOADING_DATA_ERROR                                          = 'GATEWAY_ERROR_LOADING_DATA_ERROR';
+    const GATEWAY_ERROR_LOADING_INSTITUTION_CONFIG_FAILURE                          = 'GATEWAY_ERROR_LOADING_INSTITUTION_CONFIG_FAILURE';
+    const GATEWAY_ERROR_PROBLEM_IN_UPDATION                                         = 'GATEWAY_ERROR_PROBLEM_IN_UPDATION';
+    const GATEWAY_ERROR_LOG_UPDATE_FAILURE                                          = 'GATEWAY_ERROR_LOG_UPDATE_FAILURE';
+    const GATEWAY_ERROR_RISK_UPDATE_FAILURE                                         = 'GATEWAY_ERROR_RISK_UPDATE_FAILURE';
+    const GATEWAY_ERROR_VPAS_DETAILS_UPDATE_FAILURE                                 = 'GATEWAY_ERROR_VPAS_DETAILS_UPDATE_FAILURE';
+    const GATEWAY_ERROR_INTERNAL_DATA_FETCH_ERROR                                   = 'GATEWAY_ERROR_INTERNAL_DATA_FETCH_ERROR';
+    const GATEWAY_ERROR_RISK_PROFILE_FETCH_FAILURE                                  = 'GATEWAY_ERROR_RISK_PROFILE_FETCH_FAILURE';
+    const GATEWAY_ERROR_PASSWORD_RULES_FETCH_FAILURE                                = 'GATEWAY_ERROR_PASSWORD_RULES_FETCH_FAILURE';
+    const GATEWAY_ERROR_BLOCKED_IP_LIST_FETCH_FAILURE                               = 'GATEWAY_ERROR_BLOCKED_IP_LIST_FETCH_FAILURE';
+    const GATEWAY_ERROR_INSTITUTION_CONFIG_FETCH_FAILURE                            = 'GATEWAY_ERROR_INSTITUTION_CONFIG_FETCH_FAILURE';
+    const GATEWAY_ERROR_TRANSACTION_LOG_RETRIEVAL_FAILURE                           = 'GATEWAY_ERROR_TRANSACTION_LOG_RETRIEVAL_FAILURE';
+    const GATEWAY_ERROR_VPAS_LOG_RETRIEVAL_FAILURE                                  = 'GATEWAY_ERROR_VPAS_LOG_RETRIEVAL_FAILURE';
+    const GATEWAY_ERROR_PAYMENT_LOG_DETAILS_UNAVAILABLE                             = 'GATEWAY_ERROR_PAYMENT_LOG_DETAILS_UNAVAILABLE';
 
     const GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST                                   = 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST';
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                    = 'GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST';
@@ -128,6 +173,8 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
     const GATEWAY_ERROR_INVALID_PAYMENT_DATA                                        = 'GATEWAY_ERROR_INVALID_PAYMENT_DATA';
 
+    const GATEWAY_ERROR_BLOCKED_IP                                                  = 'GATEWAY_ERROR_BLOCKED_IP';
+
     const GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND                                 = 'GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND                               = 'GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND';
 
@@ -140,8 +187,10 @@ class ErrorCode
 
     const GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED                              = 'GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED';
     const GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED                                  = 'GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED';
+    const GATEWAY_ERROR_PAYMENT_ENCRYPTION_FAILED                                   = 'GATEWAY_ERROR_PAYMENT_ENCRYPTION_FAILED';
 
     const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE';
+    const GATEWAY_ERROR_ISSUER_ACS_INVALID_RESPONSE                                 = 'GATEWAY_ERROR_ISSUER_ACS_INVALID_RESPONSE';
 
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
@@ -570,6 +619,7 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE                             = 'BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE';
     const BAD_REQUEST_INVALID_SUBCATEGORY                                           = 'BAD_REQUEST_INVALID_SUBCATEGORY';
     const INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW                                  = 'INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW';
     const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';

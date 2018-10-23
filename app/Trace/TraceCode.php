@@ -272,6 +272,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
+    const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
@@ -780,7 +781,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
     const MERCHANT_TAGS_APPEND                      = 'MERCHANT_TAGS_APPEND';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST      = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
-    const MERCHANT_ACTIVATE_REQUEST                 = 'MERCHANT_ACTIVATE_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST              = 'MERCHANT_LIVE_ENABLE_REQUEST';
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_REQUEST      = 'MERCHANT_PAYOUT_NOTIFICATION_REQUEST';
@@ -1157,6 +1157,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_TRACE             = 'MERCHANT_INVOICE_CORRECTION_TRACE';
     const MERCHANT_INVOICE_CORRECTION_OLD_AMOUNT        = 'MERCHANT_INVOICE_CORRECTION_OLD_AMOUNT';
     const MERCHANT_INVOICE_CORRECTION_PARAMS            = 'MERCHANT_INVOICE_CORRECTION_PARAMS';
+
+    const MERCHANT_EMAIL_ADD_REQUEST                    = 'MERCHANT_EMAIL_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';

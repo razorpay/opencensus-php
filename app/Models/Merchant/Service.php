@@ -620,23 +620,6 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
-    public function activate($id)
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_ACTIVATE_REQUEST,
-            [
-                'merchant_id' => $id,
-            ]);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $act = new Activate($this->app);
-
-        $act->activate($merchant);
-
-        return $merchant->toArrayPublic();
-    }
-
     public function sendActivationEmail(array $input)
     {
         $act = new Activate($this->app);
