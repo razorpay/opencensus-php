@@ -199,7 +199,7 @@ export function copyPricingEntity(rules) {
     } = rule;
 
     plan_id = rule.plan_id;
-    delete rule.plan_id;
+    delete data.plan_id;
 
     data.international = data.international | 0;
     ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'].forEach(elem => {
