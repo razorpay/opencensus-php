@@ -18,33 +18,41 @@ class Encryptor extends AESCrypto
         $this->aes->setBlockLength(256);
     }
 
-    public function encryptData(array $data)
+    public function encryptData(
+        array $data,
+        $keyValueSeparator = self::KEY_VALUE_SEPARATOR,
+        $pairsSeparator = self::PAIRS_SEPARATOR
+    )
     {
         $encoded = [];
 
         foreach ($data as $key => $value)
         {
-            $pair = $key . self::KEY_VALUE_SEPARATOR . $value;
+            $pair = $key . $keyValueSeparator . $value;
 
             array_push($encoded, $pair);
         }
 
-        $encoded = implode(self::PAIRS_SEPARATOR, $encoded);
+        $encoded = implode($pairsSeparator, $encoded);
 
         return base64_encode($this->aes->encrypt($encoded));
     }
 
-    public function decryptData(string $encryptedString)
+    public function decryptAndFormatData(
+        string $encryptedString,
+        $keyValueSeparator = self::KEY_VALUE_SEPARATOR,
+        $pairsSeparator = self::PAIRS_SEPARATOR
+    )
     {
         $decryptedString = $this->aes->decrypt(base64_decode($encryptedString));
 
-        $encoded = explode(self::PAIRS_SEPARATOR, $decryptedString);
+        $encoded = explode($pairsSeparator, $decryptedString);
 
         $data = [];
 
         foreach ($encoded as $value)
         {
-            $pair = explode(self::KEY_VALUE_SEPARATOR, $value);
+            $pair = explode($keyValueSeparator, $value);
 
             $data[$pair[0]] = $pair[1];
         }
