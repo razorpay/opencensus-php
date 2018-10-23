@@ -43,7 +43,7 @@ let initialState = {
   },
   instantActivations: {
     showKYCActivationSuccess: false,
-    showInstantActivationSuccess: false,
+    showInstantActivationSuccess: true,
     showKYCDetails: false,
   },
 };

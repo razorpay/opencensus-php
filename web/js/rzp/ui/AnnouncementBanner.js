@@ -84,7 +84,7 @@ export default class Announcement extends Component {
         color: light,
       },
       titleContentStyle = {
-        backgroundImage: `linear-gradient(90deg, ${dark} 0%, ${light} 100%)`,
+        backgroundImage: `linear-gradient(90deg, ${dark} 0%, ${dark} 50%, ${light} 100%)`,
       };
 
     return (

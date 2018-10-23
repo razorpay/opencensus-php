@@ -7,7 +7,9 @@ import { LIVE_MODE } from './data';
 import InstantActivationsCard from './Instant';
 import RegularActivationsCard from './Regular';
 
-@connect(state => ({ user: state.session.user }), { fetchKeys })
+@connect(state => ({ user: state.session.user, mode: state.session.mode }), {
+  fetchKeys,
+})
 export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);

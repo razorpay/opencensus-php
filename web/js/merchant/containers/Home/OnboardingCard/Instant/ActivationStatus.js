@@ -39,7 +39,7 @@ export default class ActivationCard extends Component {
         <div>
           Give a few details to start transacting immediately
           <div>
-            <Link to="/activation" className="btn btn-primary m-t">
+            <Link to="/activation" className="btn btn-primary">
               Activate Account
             </Link>
           </div>
@@ -57,7 +57,7 @@ export default class ActivationCard extends Component {
             <div>
               For your business model, we need a few more details for activation
             </div>
-            <Link to="/activation" className="btn btn-primary m-t">
+            <Link to="/activation" className="btn btn-primary">
               Fill KYC Form
             </Link>
           </div>

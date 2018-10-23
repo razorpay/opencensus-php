@@ -64,7 +64,7 @@ export default class InstantActivationSuccess extends Component {
               <GroupItem>
                 <p>
                   {/* <img src="/dist/css/assets/symbols/sc.svg" /> */}
-                  <img className="m-l" src="/dist/css/assets/symbols/pl.svg" />
+                  <img src="/dist/css/assets/symbols/pl.svg" />
                   <img className="m-l" src="/dist/css/assets/symbols/inv.svg" />
                 </p>
                 <p>

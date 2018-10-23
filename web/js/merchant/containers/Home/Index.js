@@ -58,11 +58,21 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const KycFormSuccess = ({ onClose }) => (
+const KycFormSuccess = ({ onClose, isWhitelistFlow }) => (
   <InstantActivationSuccess
-    title="KYC Form submitted"
-    subtitle="Great! We will get back to you soon."
-    content="The process usually takes 2-3 working days* (which may vary depending on our partner bank).\nWe will reach out on your contact email for further clarifications  if needed."
+    title="KYC under review"
+    subtitle="Your KYC Form has been submitted"
+    content={
+      <div>
+        {isWhitelistFlow && (
+          <p>Meanwhile, you can continue to accept payments using Razorpay.</p>
+        )}
+        <div>
+          We will reach out on your contact email for further clarifications if
+          needed. The review process usually takes 2-3 working days.
+        </div>
+      </div>
+    }
     onClose={onClose}
   />
 );
@@ -661,7 +671,10 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
         )}
         {showKYCActivationSuccess && (
-          <KycFormSuccess onClose={this.props.hideKYCActivationSuccessModal} />
+          <KycFormSuccess
+            onClose={this.props.hideKYCActivationSuccessModal}
+            isWhitelistFlow={user.instantActivation.isWhitelistFlow}
+          />
         )}
         {showKYCDetails && <KycDetailsModal onClose={hideKYCDetailsModal} />}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}

@@ -34,14 +34,14 @@ export default class InstantActivationAnnouncements extends Component {
         theme = 'success';
         title = 'Settlements Enabled';
         content =
-          'KYC verification successful. Your payments will now be settled';
+          'KYC verification successful. Payments collected by you will now be settled in your bank account in the next immediate settlement cycle.';
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
 
         if (user.isRejected) {
-          title = 'Account Blocked';
+          title = 'Account Suspended';
           content =
-            'Due to certain anomalies in your submitted KYC Form, your account has been blocked';
+            'Due to irregularities with your account or the documents submitted by you, your account has been suspended.';
         } else {
           title = 'KYC Clarification';
           content =
@@ -49,7 +49,8 @@ export default class InstantActivationAnnouncements extends Component {
         }
       } else {
         title = 'KYC under review';
-        content = 'We are reviewing your form. Expect confirmation in 2-3 days';
+        content =
+          'We are reviewing your KYC details. This process usually takes 2-3 working days.';
       }
     }
 

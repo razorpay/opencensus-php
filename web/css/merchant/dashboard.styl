@@ -1602,8 +1602,8 @@ $stepIndicatorSize = 36px;
           left: 0;
           transform: translate(-50%, 0);
           width: 100%;
-          padding-left: 22px;
-          padding-right: 22px;
+          padding-left: 26px;
+          padding-right: 26px;
           height: 4px;
 
           .step-connector-content {
@@ -1614,16 +1614,19 @@ $stepIndicatorSize = 36px;
           }
         }
 
-        &.status-active .step-connector {
+        &.status-active {
 
           .step-indicator {
 
             padding: 0;
           }
 
-          .step-connector-content {
+          .step-connector {
 
-            background-image: url('assets/onboarding/active_connector.png');
+            .step-connector-content {
+
+              background-image: url('assets/onboarding/active_connector.png');
+            }
           }
         }
 
@@ -1663,6 +1666,11 @@ $stepIndicatorSize = 36px;
             font-size: 16px;
             line-height: 19px;
             margin-bottom: 12px;
+          }
+
+          .btn {
+
+            margin-top: 18px;
           }
         }
       }
@@ -2014,6 +2022,12 @@ $stepIndicatorSize = 36px;
   width: 90%;
   max-width: 328px;
   padding: 30px 24px 24px 24px;
+
+  b {
+
+    font-size: 18px;
+    line-height: 22px;
+  }
 
   > a {
 

@@ -154,7 +154,7 @@ export default [
       label: 'Website/App URL',
       _cmp: Input.Radio,
       _name: 'has_url',
-      className: 'Input--vTop',
+      className: 'Input--vTop Input---Website',
       options: [
         'Website/App',
         {

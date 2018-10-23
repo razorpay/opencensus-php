@@ -40,17 +40,30 @@ export default class LiveMode extends Component {
 
     if (!isActivated) {
       if (!isL1Submitted) {
-        content = 'Fill the Activation Form in order to unlock Live Payments';
+        content = (
+          <span>
+            <Link to="/activation" className="btn-link">
+              Fill the Activation Form
+            </Link>{' '}
+            in order to unlock Live Payments
+          </span>
+        );
       } else if (isGraylistFlow) {
         if (!isSubmitted) {
-          content = 'Fill the KYC Form in order to unlock Live Payments';
+          content = (
+            <span>
+              <Link to="/activation" className="btn-link">
+                Fill the KYC Form
+              </Link>{' '}
+              in order to unlock Live Payments
+            </span>
+          );
         } else {
           content =
             'Live payments will be enabled after your KYC form is verified';
         }
       } else if (isBlacklistFlow) {
         status = possibleStatuses.blocked;
-        title += ' (Locked)';
         content = 'We currently do not support your business model';
       }
     } else {
@@ -72,7 +85,7 @@ export default class LiveMode extends Component {
         if (isRejected) {
           status = possibleStatuses.blocked;
           content =
-            'Transactions are not allowed as your account has been blocked';
+            'Transactions are not allowed as your account has been suspended';
         } else {
           if (isLoading) {
             status = possibleStatuses.loading;
@@ -98,16 +111,11 @@ export default class LiveMode extends Component {
               status = possibleStatuses.done;
               content = (
                 <div>
-                  View payments in{' '}
+                  Track live payments in the{' '}
                   <Link to="/payments" className="btn-link">
                     Transactions
                   </Link>{' '}
-                  tab, or keep using products.
-                  <div className="m-t">
-                    <Button.Secondary onClick={() => showProductsModal()}>
-                      View Products
-                    </Button.Secondary>
-                  </div>
+                  tab
                 </div>
               );
             }
