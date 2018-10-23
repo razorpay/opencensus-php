@@ -965,6 +965,9 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function validateHasBankAccount()
     {
         $merchant = $this->entity;

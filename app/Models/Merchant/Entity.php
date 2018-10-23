@@ -1444,6 +1444,9 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    /**
+     * Releases the funds
+     */
     public function kycVerified()
     {
         $this->releaseFunds();

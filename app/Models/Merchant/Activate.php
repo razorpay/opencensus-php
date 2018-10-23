@@ -84,7 +84,7 @@ class Activate extends Base\Core
 
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']
-            ->handle();
+             ->handle();
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
@@ -102,12 +102,6 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED, [Entity::MERCHANT_ID => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
-
-        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
 
         return $merchant->toArrayPublic();
     }
@@ -178,19 +172,19 @@ class Activate extends Base\Core
      */
     public function markKycVerified(Entity $merchant): array
     {
-        // add a check - should be through an instantly_activated state
+        // @todo: add a check - should be through an instantly_activated state
         $merchant->getValidator()->validateBeforeKycVerified();
 
         (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
         $merchant->getValidator()->validateHasBankAccount();
 
-        // releases funds on hold
+        // releases held funds
         $merchant->kycVerified();
 
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']
-            ->handle();
+             ->handle();
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
@@ -203,17 +197,9 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED,
-            ['merchant_id' => $merchant->getId()]);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED, ['merchant_id' => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
-
-        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
 
         return $merchant->toArrayPublic();
     }
@@ -275,6 +261,12 @@ class Activate extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
 
         $this->sendActivationEmail($merchant);
+
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**
