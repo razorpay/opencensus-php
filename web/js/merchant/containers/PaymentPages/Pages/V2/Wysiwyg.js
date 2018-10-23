@@ -104,6 +104,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       allow_social_share,
     } = this.props.paymentPageEntity;
 
+    // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
     const reqPayload = {
       amount: amount || undefined,
       title,
@@ -112,6 +113,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       settings: {
         allow_multiple_units: allow_multiple_units | 0,
         allow_social_share: allow_social_share | 0,
+        udf_schema: JSON.stringify(this.props.FORM_SCHEMA),
       },
     };
 

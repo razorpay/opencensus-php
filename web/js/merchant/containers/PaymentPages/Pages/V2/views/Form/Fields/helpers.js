@@ -39,7 +39,7 @@ export function createEmailField() {
     name: 'email',
     required: true,
     title: 'Email',
-    ...fUnits.email,
+    ...fUnits.email.schema,
   };
 }
 
@@ -48,6 +48,6 @@ export function createPhoneField() {
     name: 'phone',
     title: 'Phone',
     required: true,
-    ...fUnits.phone,
+    ...fUnits.phone.schema,
   };
 }
