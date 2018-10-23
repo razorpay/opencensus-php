@@ -1,9 +1,13 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 
-export function createPaymentPage(reqPayload) {
-  reqPayload.currency = 'INR'; // TODO: Get is dynamically
+export function createPaymentPage(params) {
+  const reqPayload = { ...params };
 
-  reqPayload.amount *= 100;
+  if (reqPayload.amount) {
+    reqPayload.currency = 'INR'; // TODO: Get is dynamically
+    reqPayload.amount *= 100;
+  }
+
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 

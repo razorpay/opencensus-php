@@ -103,8 +103,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       allow_multiple_units,
       allow_social_share,
     } = this.props.paymentPageEntity;
+
     const reqPayload = {
-      amount,
+      amount: amount || undefined,
       title,
       description: description || undefined,
       times_payable: stock || undefined,
