@@ -39,7 +39,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getAuthRequestData($input);
+        $content = $this->getAuthRequestDataAndCreateGatewayPayment($input);
 
         $content = urldecode(http_build_query($content));
 
@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Auth helper methods ------------------------------
 
-    protected function getAuthRequestData($input)
+    protected function getAuthRequestDataAndCreateGatewayPayment($input)
     {
         $data = [
             // Setting this as the merchant code shared with us

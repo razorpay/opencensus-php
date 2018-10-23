@@ -61,7 +61,7 @@ class Server extends Base\Mock\Server
         // The encrypted data is not url encoded when sending to the bank
         // But when you get the request in mock server, it gets url decoded and hence "+"s
         // are converted to " ". So, we revert this manually before decrypting the data.
-        $encrypted = str_replace(" ", '+', $qs);
+        $encrypted = str_replace(' ', '+', $qs);
 
         $input = $this->getGatewayInstance()->getEncryptor()->decryptAndFormatData($encrypted, '=', '&');
 
