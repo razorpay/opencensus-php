@@ -2,16 +2,16 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    name: api-sqs-invoice-reports
-  name: api-sqs-invoice-reports
+    name: api-sqs-main
+  name: api-sqs-main
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 6
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: api-sqs-invoice-reports
+      name: api-sqs-main
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,12 +23,11 @@ spec:
         iam.amazonaws.com/role: kube-prod-api
       creationTimestamp: null
       labels:
-        name: api-sqs-invoice-reports
+        name: api-sqs-main
     spec:
       containers:
       - args:
-        - sqs_multi_default
-        - api-invoice-reports
+        - sqs
         - "10"
         env:
         - name: APP_MODE
@@ -45,7 +44,7 @@ spec:
               - /usr/bin/php
               - artisan
               - queue:restart
-        name: sqs-invoice-reports
+        name: sqs-main
         ports:
         - containerPort: 80
           protocol: TCP
@@ -66,6 +65,6 @@ spec:
       terminationGracePeriodSeconds: 300
       volumes:
       - hostPath:
-          path: /var/log/fluentd/api/sqs-invoice-reports/trace
+          path: /var/log/fluentd/api/sqs-main/trace
           type: ""
         name: trace
