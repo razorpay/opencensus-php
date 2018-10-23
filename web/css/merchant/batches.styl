@@ -9,6 +9,15 @@ $stats-border = #eaeff0
     display: inline-block
     margin-left: 5px
     animation: infinite-spin-anti 2s linear infinite
+  .header-btns
+    position: absolute
+    top: -44px
+    right: 12px
+    .MultiBatch
+      &--popover
+        margin-left: -15px
+        width: 350px
+        margin-top: 10px
 
 .batch-upload-modal
   background: #fff
@@ -154,23 +163,3 @@ $stats-border = #eaeff0
 @media (max-width: $screen-sm-max)
   .modal-file
     width: 100% !important
-
-/* hosted emandate batch upload */
-.batch-upload-modal
-  &.hosted-emandate-batch-upload
-    .panel
-      cursor: pointer
-      .panel-body
-        display: flex
-        .description
-          flex-grow: 1
-        .logo
-          background-size: contain
-          background-repeat: no-repeat
-          width: 30px
-      &.auth-link
-        .logo
-          background-image: url('assets/symbols/sub.svg')
-      &.recurring-charge
-        .logo
-          background-image: url('assets/symbols/sub.svg')

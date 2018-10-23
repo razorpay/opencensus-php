@@ -1,8 +1,7 @@
-import { Component, Fragment } from 'react';
+import { Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import DataTable from 'rzp/ui/Table/DataTable';
-import HeaderAction from 'rzp/ui/HeaderAction';
 import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { EmptyComponent } from 'merchant/components/BatchNew/ListAddons';
@@ -13,6 +12,7 @@ import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 import { batchDownload } from 'merchant/modules/batches';
+import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';
 
 const batchStatus = {
   ...status,
@@ -57,10 +57,10 @@ export default class BatchList extends ListContainer {
       });
   };
 
-  openUploadModal = () => {
+  openUploadModal = renderUploadModal => () => {
     this.props.openModal({
       size: 'large',
-      component: this.props.renderUploadModal(),
+      component: renderUploadModal(),
     });
   };
 
@@ -73,32 +73,44 @@ export default class BatchList extends ListContainer {
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link hidden-xs"
-              href={sampleUrl}
-              onClick={this.props.gaEvents.trackSampleFileDownload(
-                'From List View'
-              )}
-            >
-              Download Sample File
-            </a>
-            {docUrl && (
-              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
-                Documentation &nbsp;
-                <i class="i i-external-link" />
-              </a>
+        <div class="btn-toolbar pull-right header-btns">
+          <a
+            class="btn btn-link hidden-xs"
+            href={sampleUrl}
+            onClick={this.props.gaEvents.trackSampleFileDownload(
+              'From List View'
             )}
+          >
+            Download Sample File
+          </a>
+          {docUrl && (
+            <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
+              Documentation &nbsp;
+              <i class="i i-external-link" />
+            </a>
+          )}
 
+          {this.props.multiBatch ? (
+            <div class="pull-right MultiBatch--action">
+              <div class="btn btn-primary">Upload New Batch</div>
+              <Popover align="bottom" class="MultiBatch--popover">
+                <PopoverTitle>
+                  <h3>Upload New Batch</h3>
+                </PopoverTitle>
+                <PopoverBody>
+                  {this.props.renderBatchOptions(this.openUploadModal)}
+                </PopoverBody>
+              </Popover>
+            </div>
+          ) : (
             <button
               class="btn btn-primary pull-right"
-              onClick={this.openUploadModal}
+              onClick={this.openUploadModal(this.props.renderUploadModal)}
             >
               Click here to upload
             </button>
-          </div>
-        </HeaderAction>
+          )}
+        </div>
 
         <BatchListFilter
           form="batchListFilter"

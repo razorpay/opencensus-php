@@ -38,7 +38,7 @@ const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
 const fetchBatchAjax = id => merchantFetch(`batches/${id}`);
 
 const fetchBatchesAjax = (params, type) => {
-  params.type = type;
+  params[Array.isArray(type) ? 'types' : 'type'] = type;
   return merchantFetch({
     url: 'batches',
     params: params,
