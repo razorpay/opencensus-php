@@ -208,8 +208,7 @@ export default class AddGST extends Component {
               <div class="help-block">
                 <span>
                   GSTIN once submitted cannot be updated via dashboard. To
-                  update it, write to us at{' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+                  update it, please <Link to="#ticket">write to support</Link>
                 </span>
               </div>
 
