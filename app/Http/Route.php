@@ -2104,6 +2104,7 @@ final class Route
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
+        'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
     ];
 
     public static $direct = [
