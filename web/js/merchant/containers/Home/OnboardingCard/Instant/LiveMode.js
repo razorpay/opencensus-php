@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import Button from 'component/Button';
+import { LIVE_MODE } from 'merchant/containers/Home/OnboardingCard/data';
+import { switchToLive } from 'merchant/containers/Home/OnboardingCard/SwitchToLive';
 
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
@@ -16,10 +18,12 @@ export default class LiveMode extends Component {
     super(props);
 
     this.state = initialState;
+    this.switchToLive = () => switchToLive(props.merchantId);
   }
 
   componentWillReceiveProps(nextProps) {
     const {
+        mode,
         instantActivation,
         isActivated,
         isSubmitted,
@@ -50,46 +54,63 @@ export default class LiveMode extends Component {
         content = 'We currently do not support your business model';
       }
     } else {
-      if (isRejected) {
-        status = possibleStatuses.blocked;
-        content =
-          'Transactions are not allowed as your account has been blocked';
+      if (mode !== LIVE_MODE) {
+        title = 'Accept Live Payments';
+        status = possibleStatuses.active;
+        content = (
+          <div>
+            <div>
+              Accept payments in Live mode by integrating or using other
+              products
+            </div>
+            <button className="btn btn-primary m-t" onClick={this.switchToLive}>
+              Take me to live mode
+            </button>
+          </div>
+        );
       } else {
-        if (isLoading) {
-          status = possibleStatuses.loading;
+        if (isRejected) {
+          status = possibleStatuses.blocked;
+          content =
+            'Transactions are not allowed as your account has been blocked';
         } else {
-          if (!paymentsMade) {
-            status = possibleStatuses.active;
-            title = 'Transact in Live Mode';
-            content = (
-              <div>
-                <div>
-                  Receive payments by integrating in Live mode or view products
-                </div>
-                <button
-                  className="btn btn-primary m-t"
-                  onClick={() => showTransactionsModal(isKLA)}
-                >
-                  How do I accept payments?
-                </button>
-              </div>
-            );
+          if (isLoading) {
+            status = possibleStatuses.loading;
           } else {
-            status = possibleStatuses.done;
-            content = (
-              <div>
-                View payments in{' '}
-                <Link to="/payments" className="btn-link">
-                  Transactions
-                </Link>{' '}
-                tab, or keep using products.
-                <div className="m-t">
-                  <Button.Secondary onClick={() => showProductsModal()}>
-                    View Products
-                  </Button.Secondary>
+            if (!paymentsMade) {
+              status = possibleStatuses.active;
+              title = 'Transact in Live Mode';
+              content = (
+                <div>
+                  <div>
+                    Receive payments by integrating in Live mode or view
+                    products
+                  </div>
+                  <button
+                    className="btn btn-primary m-t"
+                    onClick={() => showTransactionsModal(isKLA)}
+                  >
+                    How do I accept payments?
+                  </button>
                 </div>
-              </div>
-            );
+              );
+            } else {
+              status = possibleStatuses.done;
+              content = (
+                <div>
+                  View payments in{' '}
+                  <Link to="/payments" className="btn-link">
+                    Transactions
+                  </Link>{' '}
+                  tab, or keep using products.
+                  <div className="m-t">
+                    <Button.Secondary onClick={() => showProductsModal()}>
+                      View Products
+                    </Button.Secondary>
+                  </div>
+                </div>
+              );
+            }
           }
         }
       }
@@ -98,7 +119,7 @@ export default class LiveMode extends Component {
     if (
       onActive &&
       status !== this.state.status &&
-      status === possibleStatuses.active
+      (status === possibleStatuses.active || status === possibleStatuses.done)
     ) {
       onActive();
     }

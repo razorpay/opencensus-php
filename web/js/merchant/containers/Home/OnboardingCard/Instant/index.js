@@ -169,6 +169,7 @@ export default class OnboardingCardInstant extends Component {
               isSubmitted={user.isSubmitted}
               showTransactionsModal={this.showTransactionsModal}
               onActive={() => this.setActiveStep(2)}
+              merchantId={user.current}
               {...commonModeCardProps}
             />
           </div>

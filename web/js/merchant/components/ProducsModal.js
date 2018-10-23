@@ -17,6 +17,7 @@ export default ({ onClose, onBack }) => {
             products
           </p>
           <ul className="nav">
+            {/*
             <li>
               <Link to="/virtualaccounts">
                 <img src="/dist/css/assets/symbols/sc.svg" />
@@ -25,6 +26,7 @@ export default ({ onClose, onBack }) => {
                 <i className="i i-chevron-right" />
               </Link>
             </li>
+            */}
             <li>
               <Link to="/paymentlinks">
                 <img src="/dist/css/assets/symbols/pl.svg" />
