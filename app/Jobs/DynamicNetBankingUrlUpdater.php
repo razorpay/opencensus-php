@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Requests;
 use Illuminate\Support\Facades\Redis;
 
@@ -40,6 +41,8 @@ class DynamicNetBankingUrlUpdater extends Job
     public function __construct(string $mode = null)
     {
         parent::__construct($mode);
+
+        $this->app = App::getFacadeRoot();
 
         list($this->username, $this->apiKey, $this->statusCakeUrl, $this->statusCakeUpdateUrl) =
             $this->fetchStatusCakeCredentials();
@@ -104,7 +107,7 @@ class DynamicNetBankingUrlUpdater extends Job
 
     protected function getResponseData($response)
     {
-        $array = Utility::jsonToArray($response);
+        $array = Utility::jsonToArray($response->body);
 
         if (empty($array) === true)
         {

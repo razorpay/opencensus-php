@@ -21,6 +21,7 @@ use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
+use Illuminate\Support\Facades\Redis;
 
 class Gateway
 {
@@ -1339,7 +1340,7 @@ class Gateway
 
         if ($result === false)
         {
-            $cache->put($cacheKey, $urlInRequest);
+            $cache->set($cacheKey, $urlInRequest);
 
             $this->pushNetbankingDynamicUrlMetric($input, $cacheValue, $urlInRequest);
         }
