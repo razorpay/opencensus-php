@@ -60,7 +60,7 @@ app
       $scope.isLoggedIn = false;
 
       // Less restrictive url regex
-      $scope.websiteRegex = /^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/gi;
+      $scope.websiteRegex = /^((http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))?$/gi;
 
       // signup state container
       $scope.signup = {
@@ -351,7 +351,10 @@ app
       };
 
       $scope.sendDetails = function() {
-        if (!$scope.forms.detailsForm.business_website.$error.pattern) {
+        if (
+          !$scope.forms.detailsForm.business_website.$error.pattern &&
+          $scope.signup.merchantData.business_website
+        ) {
           return;
         } else if ($scope.signup.merchantData.business_website) {
           $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
