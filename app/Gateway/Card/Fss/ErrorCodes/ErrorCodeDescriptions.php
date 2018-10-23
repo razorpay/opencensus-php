@@ -1,13 +1,59 @@
 <?php
 
-namespace RZP\Gateway\Card\Fss;
+namespace RZP\Gateway\Card\Fss\ErrorCodes;
 
-use RZP\Error\Error;
-use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\ErrorCodes\Cards;
 
-class ErrorCodes
+class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 {
-    protected static $reasonCodes = [
+    const AGGREGATOR_DOWN                  = 'Aggregator is down';
+    const BANK_ID_NOT_ENABLED_AGGREGATOR   = 'Bank ID is not enabled in Aggregator Terminal';
+    const CAF_STATUS                       = 'CAF status= 0 or 9';
+    const ERROR_CONNECTION_PAYMENT_GATEWAY = 'Error while connecting Payment Gateway';
+    const FAILURE                          = 'FAILURE';
+    const HOST_TIMEOUT                     = 'HOST TIMEOUT';
+    const INVALID_EXPIRY_DATE              = 'Invalid expiration date';
+    const NOT_CAPTURED                     = 'NOT CAPTURED';
+    const TRANSACTION_TIME_LIMIT_EXCEED    = 'Transaction time limit exceeds.';
+    const UNSUPPORTED_CARD                 = 'card not supported';
+    const WITHDRAWAL_LIMIT_EXCEEDED        = 'exceeds withdrawal frequency';
+    const INCORRECT_PIN                    = 'incorrect PIN';
+    const ISSUER_DOWN                      = 'issuer down';
+    const LOST_CARD                        = 'lost card';
+    const NO_CARD_RECORD                   = 'no card record';
+    const NOT_SUFFICIENT_FUND              = 'not sufficient fund';
+    const OVER_DAILY_LIMIT                 = 'over daily limit';
+    const PIN_TRIES_EXCEEDED               = 'pin tries exceeded';
+    const RESERVED_PRIVATE_USE             = 'reserved for private use';
+    const SUSPECT_FRAUD                    = 'suspect fraud';
+    const TRANSACTION_NOT_PERMITTED        = 'tran not permitted';
+
+    public static $resultToErrorCodeMap = array(
+        self::AGGREGATOR_DOWN                     => 'RP00001',
+        self::BANK_ID_NOT_ENABLED_AGGREGATOR      => 'RP00002',
+        self::CAF_STATUS                          => 'RP00003',
+        self::NOT_CAPTURED                        => 'RP00004',
+        self::ERROR_CONNECTION_PAYMENT_GATEWAY    => 'RP00005',
+        self::FAILURE                             => 'RP00006',
+        self::HOST_TIMEOUT                        => 'RP00007',
+        self::INVALID_EXPIRY_DATE                 => 'RP00008',
+        self::NOT_CAPTURED                        => 'RP00009',
+        self::TRANSACTION_TIME_LIMIT_EXCEED       => 'RP00010',
+        self::UNSUPPORTED_CARD                    => 'RP00011',
+        self::WITHDRAWAL_LIMIT_EXCEEDED           => 'RP00012',
+        self::INCORRECT_PIN                       => 'RP00013',
+        self::ISSUER_DOWN                         => 'RP00014',
+        self::LOST_CARD                           => 'RP00015',
+        self::NO_CARD_RECORD                      => 'RP00016',
+        self::NOT_SUFFICIENT_FUND                 => 'RP00017',
+        self::OVER_DAILY_LIMIT                    => 'RP00018',
+        self::PIN_TRIES_EXCEEDED                  => 'RP00019',
+        self::RESERVED_PRIVATE_USE                => 'RP00020',
+        self::SUSPECT_FRAUD                       => 'RP00021',
+        self::TRANSACTION_NOT_PERMITTED           => 'RP00022',
+    );
+
+    public static $errorDescMap = [
         'IPAY0100001' => 'Missing error url.',
         'IPAY0100002' => 'Invalid error url.',
         'IPAY0100003' => 'Missing response url.',
@@ -388,160 +434,48 @@ class ErrorCodes
         'GW00183'     => 'Card Verification Digit Required',
         'GW00258'     => 'Transaction denied: Negative BIN',
         'GW00259'     => 'Transaction denied: Declined Card',
+        'GW00458'     => 'Invalid transaction data.',
         'GV00005'     => 'Certificate chain validation failed',
         'GV00006'     => 'Certificate chain validation error',
         'GV00011'     => 'Invalid expiration date',
         'PY20006'     => 'Invalid Brand',
         'PY20001'     => 'Invalid Action Type',
         'PY20002'     => 'Invalid amount',
+
+        //Defined by us
+        'RP00001' => 'Aggregator is down',
+        'RP00002' => 'Bank ID is not enabled in Aggregator Terminal',
+        'RP00003' => 'CAF status= 0 or 9',
+        'RP00004' => 'NOT CAPTURED',
+        'RP00005' => 'Error while connecting Payment Gateway',
+        'RP00006' => 'FAILURE',
+        'RP00007' => 'HOST TIMEOUT',
+        'RP00008' => 'Invalid expiration date',
+        'RP00009' => 'NOT CAPTURED',
+        'RP00010' => 'Transaction time limit exceeds.',
+        'RP00011' => 'card not supported',
+        'RP00012' => 'exceeds withdrawal frequency',
+        'RP00013' => 'incorrect PIN',
+        'RP00014' => 'issuer down',
+        'RP00015' => 'lost card',
+        'RP00016' => 'no card record',
+        'RP00017' => 'not sufficient fund',
+        'RP00018' => 'over daily limit',
+        'RP00019' => 'pin tries exceeded',
+        'RP00020' => 'reserved for private use',
+        'RP00021' => 'suspect fraud',
+        'RP00022' => 'tran not permitted',
     ];
 
-    protected static $errorCodeMap = [
-        'IPAY0100001' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100002' => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
-        'IPAY0100003' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100004' => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
-        'IPAY0100005' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100006' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        'IPAY0100007' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100008' => ErrorCode::GATEWAY_ERROR_TERMINAL_NOT_ENABLED,
-        'IPAY0100009' => ErrorCode::GATEWAY_ERROR_INSTITUTION_NOT_ENABLED,
-        'IPAY0100010' => ErrorCode::GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED,
-        'IPAY0100011' => ErrorCode::GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED,
-        'IPAY0100013' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100014' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
-        'IPAY0100015' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_SECRET,
-        'IPAY0100016' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_SECRET,
-        'IPAY0100017' => ErrorCode::GATEWAY_ERROR_TERMINAL_NOT_ENABLED,
-        'IPAY0100018' => ErrorCode::GATEWAY_ERROR_TERMINAL_SECRET_EXPIRED,
-        'IPAY0100019' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
-        'IPAY0100020' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        'IPAY0100021' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100022' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
-        'IPAY0100023' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100024' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        'IPAY0100025' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100026' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100027' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100028' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100029' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100030' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100031' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100032' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100033' => ErrorCode::GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED,
-        'IPAY0100034' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
-        'IPAY0100035' => ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
-        'IPAY0100036' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF,
-        'IPAY0100045' => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
-        'IPAY0100037' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100038' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        'IPAY0100039' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100041' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100042' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
-        'IPAY0100043' => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
-        'IPAY0100044' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        'IPAY0100046' => ErrorCode::GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED,
-        'IPAY0100048' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
-        'IPAY0100049' => ErrorCode::BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,
-        'IPAY0100050' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        'IPAY0100051' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100052' => ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED,
-        'IPAY0100053' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-        'IPAY0100054' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100056' => ErrorCode::GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED,
-        'IPAY0100057' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        'IPAY0100058' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100059' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
-        'IPAY0100060' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100061' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        'IPAY0100062' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        'IPAY0100063' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100064' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100065' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100066' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100067' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100068' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100069' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100070' => ErrorCode::GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED,
-        'IPAY0100071' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100072' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'IPAY0100073' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
-        'IPAY0100074' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
-        'IPAY0100075' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
-        'IPAY0100076' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
-        'IPAY0100077' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
-        'IPAY0100078' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
-        'IPAY0100079' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
-        'IPAY0100080' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
-        'IPAY0100081' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100082' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100083' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'IPAY0100084' => ErrorCode::BAD_REQUEST_CARD_AVS_FAILED,
-        'IPAY0100254' => ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED,
-
-        // Fss ErrorCodes
-        'GW00150' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-        'GW00151' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        'GW00152' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-        'GW00153' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
-        'GW00154' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        'GW00181' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_GREATER_THAN_DEBIT,
-        'GW00205' => ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT,
-        'GW00157' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'GW00165' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'GW00166' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
-        'GW00167' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
-        'GW00168' => ErrorCode::GATEWAY_ERROR_INSTITUTION_ID_MISMATCH,
-        'GW00169' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'GW00170' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
-        'GW00171' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'GW00160' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
-        'GW00161' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NAME,
-        'GW00162' => ErrorCode::GATEWAY_ERROR_INVALID_PAYMENT_DATA,
-        'GW00163' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_ADDRESS,
-        'GW00164' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_ZIP,
-        'GW00183' => ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
-        'GW00258' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
-        'GW00259' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        'GV00005' => ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
-        'GV00006' => ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
-        'GV00011' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
-        'PY20006' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
-        'PY20001' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        'PY20002' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
-    ];
-
-    /**
-     * Gets RZP mapped errorcode.
-     *
-     * @param string $code
-     *
-     * @return mixed|string
-     */
-    public static function getMappedCode($code = null): string
+    public static function getRelevantGatewayErrorCode($errorFieldName, $content)
     {
-        if (isset(self::$errorCodeMap[$code]))
+        $error = $content[$errorFieldName];
+
+        if (in_array($error, array_keys(self::$resultToErrorCodeMap)))
         {
-            return self::$errorCodeMap[$code];
+            return self::$resultToErrorCodeMap[$error];
         }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-    }
-
-    /**
-     * Gets RZP Errorcode description
-     *
-     * @param string $code
-     *
-     * @return mixed|string
-     */
-    public static function getErrorDesc($code = null)
-    {
-        if (isset(self::$reasonCodes[$code]))
-        {
-            return self::$reasonCodes[$code];
-        }
-
-        return 'General Error';
+        return $error;
     }
 }

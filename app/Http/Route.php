@@ -186,7 +186,6 @@ final class Route
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
-        'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                    => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
@@ -764,9 +763,9 @@ final class Route
         'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
         // Scrooge Routes
-        'scrooge_reports_get_multiple'             => ['get',       'scrooge/reports',                               'ScroogeController@listReports'                                     ],
-        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkUpdate'                                     ],
-        'scrooge_refunds_get_multiple'             => ['get',       'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
+        'scrooge_reports_get_multiple'             => ['post',      'scrooge/reports',                               'ScroogeController@listReports'                                     ],
+        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',            'ScroogeController@bulkUpdate'                                     ],
+        'scrooge_refunds_get_multiple'             => ['post',      'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',       'scrooge/refunds/{id}',                          'ScroogeController@get'                                             ],
 
         // Dispute routes
@@ -1137,6 +1136,10 @@ final class Route
         'payment_acknowledge',
         'bharat_qr_pay_test',
         'payment_get_flows_private',
+        'offer_create',
+        'offer_update',
+        'offer_fetch_multiple',
+        'offer_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -1242,6 +1245,7 @@ final class Route
         'merchant_post_beneficiary_api',
         'setl_verify',
         'apspdcl_bridge',
+        'billdesk_reconcile_cancelled',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1335,10 +1339,6 @@ final class Route
         'merchant_one_time_token',
         'merchant_activation_business_categories',
         'merchant_razorx_evaluate',
-        'offer_create',
-        'offer_update',
-        'offer_fetch_multiple',
-        'offer_fetch_by_id',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
         'file_get_signed_url',
@@ -1573,7 +1573,6 @@ final class Route
         'bank_transfer_strip_payer_accounts',
         'batch_process_by_id',
         'batch_retry_output_file',
-        'billdesk_reconcile_cancelled',
         'coupon_apply',
         'coupon_create',
         'coupon_delete',
@@ -1617,7 +1616,6 @@ final class Route
         'iin_upload',
         'internal_dummy_account_test',
         'merchant_actions',
-        'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
         'merchant_beneficiary_file',
@@ -1829,7 +1827,6 @@ final class Route
         'merchant_edit'                            => '*', // permission handled in code
         'adj_add'                                  => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'                => Permission::EDIT_MERCHANT_BANK_DETAIL,
-        'merchant_activate'                        => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'               => '*',
         'merchants_update_bulk'                    => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
@@ -2107,6 +2104,7 @@ final class Route
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
+        'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
     ];
 
     public static $direct = [
@@ -2289,6 +2287,7 @@ final class Route
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
             'setl_verify',
+            'billdesk_reconcile_cancelled',
         ],
 
         'subscriptions' => [
@@ -2344,9 +2343,13 @@ final class Route
             'apspdcl_bridge',
         ],
 
+        //
+        // Here by h2h, we mean routes which are hit by AWS lambda triggers
+        //
         'h2h' => [
             'setl_reconcile_h2h',
-            'lambda_post_h2h'
+            'lambda_post_h2h',
+            'reconciliate',
         ],
 
         'auth_service' => [

@@ -46,6 +46,7 @@ class Constants
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
+    const TERMINAL_BANKS_FILTER           = 'terminal_banks_filter';
     const TPV                             = 'tpv';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
@@ -92,6 +93,7 @@ class Constants
     const HEADLESS                        = 'headless';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
+    const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -219,6 +221,8 @@ class Constants
         self::HEADLESS                        => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
+        self::OFFER_PRIVATE_AUTH              => true,
+        self::TERMINAL_BANKS_FILTER           => true,
     ];
 
     // Entity type constants
