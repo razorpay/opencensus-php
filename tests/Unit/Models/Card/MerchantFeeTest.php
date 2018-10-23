@@ -67,6 +67,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -677,6 +680,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -735,8 +741,10 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
-            });
 
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
+            });
         return $mock;
     }
 

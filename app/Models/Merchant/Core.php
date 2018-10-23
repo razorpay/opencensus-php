@@ -229,7 +229,7 @@ class Core extends Base\Core
 
         $merchant->edit($input);
 
-        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+        $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
@@ -421,7 +421,7 @@ class Core extends Base\Core
 
         if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
         {
-            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
             (new Methods\Core)->validatePricingForInternational($merchant, $plan);
         }
