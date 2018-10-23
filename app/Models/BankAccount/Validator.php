@@ -36,7 +36,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::BENEFICIARY_NAME    => 'required|between:4,120|string|custom',
+        Entity::ACCOUNT_NUMBER      => 'sometimes|alpha_num|between:5,22',
+        Entity::BENEFICIARY_NAME    => 'sometimes|between:4,120|string|custom',
     ];
 
     protected static $addVirtualBankAccountRules = [
@@ -87,7 +88,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $beneficiaryRegisterApiRules = [
-        Entity::DURATION                => 'required|integer',
+        Entity::ALL                     => 'sometimes|boolean',
+        Entity::DURATION                => 'sometimes|integer',
+        'failed_response'               => 'sometimes|int'
     ];
 
     protected function validateBeneficiaryState($input)

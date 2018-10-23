@@ -69,13 +69,14 @@ class Verify extends Base\Core
      */
     protected static $updateWaitBoundaries = [
         0 => 600,       // 10 Minutes
-        1 => 1200,      // 20 Minutes
-        2 => 3600,      // 60 Minutes
-        3 => 14400,     // 4 Hours
-        4 => 43200,     // 10 Hours
+        1 => 600,       // 10 Minutes
+        2 => 900,       // 15 Minutes
+        3 => 2700,      // 45 Minutes
+        4 => 7200,      // 2 Hours
         5 => 57600,     // 16 Hours
         6 => 86400,     // 24 Hours
-        7 => 129600,    // 36 Hours
+        7 => 86400,     // 24 Hours
+        8 => 86400,     // 24 Hours
     ];
 
     /**
@@ -284,7 +285,119 @@ class Verify extends Base\Core
         return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
+    public function verifyAllPayments($timestamp, $gateway, $count)
+    {
+        $verifyFetchStartTime = time();
 
+        $disabledGateways = $this->getBlockedGateways();
+
+        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways);
+
+        $verifyFetchEndTime = time();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        list($summary, $resultSet) = $this->verifyFilteredPayments($payments);
+
+        $summary['fetch_time'] = $verifyFetchTime;
+
+        $summary = array_merge($summary, $resultSet);
+
+        $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
+
+        $this->notifyInSlack($resultSet, $summary);
+
+        return $summary;
+    }
+
+    protected function verifyFilteredPayments($payments)
+    {
+        $resultSet = [
+            Result::AUTHORIZED    => 0,
+            Result::SUCCESS       => 0,
+            Result::TIMEOUT       => 0,
+            Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
+        ];
+
+        $notApplicable = $locked = 0;
+
+        $totalAuthTimeDiff = $avgAuthTime = 0;
+
+        $verifyStart = time();
+
+        foreach ($payments as $payment)
+        {
+            $gateway = $payment->getGateway();
+
+            if ($this->isGatewayBlocked($gateway) === true)
+            {
+                $notApplicable++;
+
+                continue;
+            }
+
+            $lock = $this->lockPaymentForVerify($payment);
+
+            if ($lock === false)
+            {
+                $locked++;
+
+                continue;
+            }
+
+            $this->repo->reload($payment);
+
+            // for now dont verify authorized/captured/refunded payments via cron
+            if ($payment->hasBeenAuthorized() === true)
+            {
+                $payment->setNonVerifiable();
+
+                $this->repo->saveOrFail($payment);
+
+                $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
+
+                continue;
+            }
+
+            $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+
+            $verifyResult = $this->verifyPayment($payment, $filter);
+
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
+            }
+            else
+            {
+                $notApplicable++;
+            }
+
+            if ($verifyResult === Result::AUTHORIZED)
+            {
+                $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
+
+                $avgAuthTime = $totalAuthTimeDiff/$resultSet[Result::AUTHORIZED];
+            }
+
+            $this->releasePaymentAfterVerify($payment);
+        }
+
+        $verifyEnd = time();
+
+        $totalVerifyTime = $verifyEnd - $verifyStart;
+
+        $summary = [
+            'total_time'     => $totalVerifyTime,
+            'authorize_time' => $avgAuthTime,
+            'not_applicable' => $notApplicable,
+            'locked_count'   => $locked
+        ];
+
+        return [$summary, $resultSet];
+    }
 
     public function verifyPaymentsWithIds(array $paymentIds)
     {
@@ -508,6 +621,15 @@ class Verify extends Base\Core
 
         // Return final locked payments
         return $lockedPayments;
+    }
+
+    protected function lockPaymentForVerify(Payment\Entity $payment)
+    {
+        $resourceWithSuffix = $payment->getId() . self::KEY_SUFFIX;
+
+        $isLockAcquired = $this->mutex->acquire($resourceWithSuffix, self::DEFAULT_LOCK_TIME);
+
+        return $isLockAcquired;
     }
 
     protected function releasePaymentAfterVerify(Payment\Entity $payment)
@@ -803,14 +925,7 @@ class Verify extends Base\Core
         {
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
-            if ($nextVerifyBucket >= count(self::$failureStartBoundary))
-            {
-                $verifyAt = null;
-            }
-            else
-            {
-                $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
-            }
+            $verifyAt = $this->getPaymentVerifyAt($payment, $nextVerifyBucket);
 
             $payment->setVerifyAt($verifyAt);
 
@@ -833,7 +948,7 @@ class Verify extends Base\Core
         // Don't update VERIFY_BUCKET, in that case
         //
         if (($cron === true) and
-            ($this->route === 'payment_verify_multiple'))
+            (in_array($this->route, ['payment_verify_multiple', 'payment_verify_all'], true) === true))
         {
             return true;
         }
@@ -970,6 +1085,27 @@ class Verify extends Base\Core
         $nextVerifyBucket = $currentVerifyBucket + 1;
 
         return $nextVerifyBucket;
+    }
+
+    protected function getPaymentVerifyAt(Payment\Entity $payment, int $nextVerifyBucket)
+    {
+        $verifyAt = null;
+
+        if ($nextVerifyBucket > count(self::$failureStartBoundary))
+        {
+            $verifyAt = null;
+        }
+        else if ($nextVerifyBucket === $payment->getVerifyBucket())
+        {
+            // if verify bucket is not changing, verify after few mins.
+            $verifyAt = time() + 600;
+        }
+        else
+        {
+            $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
+        }
+
+        return $verifyAt;
     }
 
 //    protected function getPaymentVerifyBucket(

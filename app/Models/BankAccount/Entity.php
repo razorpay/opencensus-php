@@ -44,9 +44,11 @@ class Entity extends Base\PublicEntity
     const IFSC                      = 'ifsc';
 
     // Mobile Banking Enabled
-    const MPIN_SET              = 'mpin_set';
+    const MPIN_SET                  = 'mpin_set';
 
-    const IFSC_CODE_LENGTH      = 11;
+    const IFSC_CODE_LENGTH          = 11;
+
+    const ACCOUNT_NUMBER_LENGTH     = 16;
 
     const SPECIAL_IFSC_CODE     = 'RZPB0000000';
 
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
     // Beneficiary registration constants
     //
     const ON                = 'on';
+    const ALL               = 'all';
     const RECIPIENT_EMAILS  = 'recipient_emails';
     const DURATION          = 'duration';
 
@@ -407,13 +410,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
 
-    public function associateVirtualAccount(VirtualAccount\Entity $virtualAccount)
-    {
-        $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
-
-        $this->source()->associate($virtualAccount);
-    }
-
     public function associateSource(Base\Entity $entity, string $type)
     {
         Type::validateType($type);
@@ -440,5 +436,14 @@ class Entity extends Base\PublicEntity
         // repeat this section $repeat times
         // and then just append the original last 4 digits
         return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+    }
+
+    public function matches(array $input)
+    {
+        $new = (new Entity)->build($input, 'addBankTransfer');
+
+        return (($this->getAccountNumber() === $new->getAccountNumber()) and
+                ($this->getIfscCode() === $new->getIfscCode()) and
+                ($this->getName() === $new->getName()));
     }
 }

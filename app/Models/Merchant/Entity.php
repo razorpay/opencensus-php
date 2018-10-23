@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use Config;
 use Conner\Tagging\Taggable;
 
@@ -15,6 +16,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\Workflow\Action;
@@ -78,10 +80,8 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
-    const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
-
     // Coupon Related Data for display only
-    const COUPON_CODE               = 'coupon_code';
+    const COUPON_CODE              = 'coupon_code';
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -149,6 +149,7 @@ class Entity extends Base\PublicEntity
     const USER                      = 'user';
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
+    const APPLICATION               = 'application';
 
     protected $entity = 'merchant';
 
@@ -362,6 +363,7 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
         self::USER,
         self::DASHBOARD_ACCESS,
+        self::APPLICATION,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -513,7 +515,7 @@ class Entity extends Base\PublicEntity
 
     public function isExposeARNRefundEnabled(): bool
     {
-       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
     }
 
     public function isExposeARNPaymentEnabled(): bool
@@ -661,6 +663,21 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
+     /*
+      * Because we didn't do the data migration for old Merchants.
+      * We are doing that as we try to access the methods.
+      */
+    public function getMethods()
+    {
+        if ($this->hasRelation('methods') === false)
+        {
+            $app = App::getFacadeRoot();
+            return $app['repo']->methods->getMethodsForMerchant($this);
+        }
+
+        return $this->methods;
+    }
+
     public function terminals()
     {
         return $this->hasMany(
@@ -677,6 +694,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'RZP\Models\Transaction\Entity');
+    }
+
+    /**
+     * Different communication emails for various purposes that are stored
+     * in merchant_emails table against the merchant.
+     */
+    public function emails()
+    {
+        return $this->hasMany(Email\Entity::class);
     }
 
     /**
@@ -749,7 +775,7 @@ class Entity extends Base\PublicEntity
 
     public function setCategory2($category)
     {
-        return $this->setAttribute(self::CATEGORY2, $category);
+        $this->setAttribute(self::CATEGORY2, $category);
     }
 
     public function getCategory2()
@@ -871,6 +897,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
+    public function setCategory(int $category)
+    {
+        $this->setAttribute(self::CATEGORY, $category);
+    }
+
     public function getMaxPaymentAmount()
     {
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
@@ -911,6 +942,13 @@ class Entity extends Base\PublicEntity
         $value = optional($this->merchantDetail)->getAttribute($field);
 
         return $value ?: $this->getBillingLabel();
+    }
+
+    public function getDbaName()
+    {
+        $value = optional($this->merchantDetail)->getAttribute(Detail\Entity::BUSINESS_DBA);
+
+        return $value ?: $this->getName();
     }
 
     public function getAutoCaptureLateAuth()
@@ -965,11 +1003,6 @@ class Entity extends Base\PublicEntity
     public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
     {
         return $this->getBrandColor() ?: $default;
-    }
-
-    public function getHandle()
-    {
-        return $this->getAttribute(self::HANDLE);
     }
 
     public function getChannel()
@@ -1591,10 +1624,24 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::PIN] = $iin->isDebitPin();
         }
 
-        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        $headless   = false;
+        $expressPay = false;
+
+        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
         {
-            $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
-                                         ($iin->isOtp()));
+            $headless = $iin->isHeadLessOtp();
+        }
+
+        if (($this->isAxisExpressPayEnabled() === true) and
+            ($iin->getIssuer() === IFSC::UTIB))
+        {
+            $expressPay = $iin->isOtp();
+        }
+
+        if (($headless === true) or
+            ($expressPay === true))
+        {
+            $data[IIN\Constants::OTP] = true;
         }
 
         return $data;

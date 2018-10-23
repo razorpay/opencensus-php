@@ -1048,42 +1048,6 @@ return [
         ],
     ],
 
-    'testActivateMerchantWithoutBankAccount' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-        ]
-    ],
-
-    'testActivateMerchant' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'merchant',
-                'activated' => true,
-                'live' => true,
-            ],
-        ],
-    ],
-
     'testMerchantEnableLive' => [
         'request' => [
             'content' => [],
@@ -1501,6 +1465,72 @@ return [
         ],
     ],
 
+
+    'testGetCheckoutPreferencesForPaidOrder' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCancelledInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in cancelled status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForExpiredInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1706,7 +1736,7 @@ return [
                         'methods' => [
                             'entity'     => 'methods',
                             'wallet' => [
-                                'airtelmoney'
+                                'airtelmoney' => true,
                             ]
                         ],
                         'offers' => [
@@ -1950,7 +1980,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1985,13 +2015,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2063,7 +2086,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2105,13 +2128,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2368,7 +2384,6 @@ return [
                                 'BKDN',
                                 'COSB',
                                 'DBSS',
-                                'IDFB',
                                 'JSBP',
                                 'NKGS',
                                 'SVCB',
@@ -3351,6 +3366,27 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testAssignScheduleBulk' => [
+        'request'  => [
+            'url'     => '/merchants/schedules/bulk',
+            'method'  => 'post',
+            'content' => [
+                'schedule' => [
+                    'schedule_id' => '100001schedule',
+                    'type' => 'settlement',
+                ],
+                'merchant_ids' => ['10000000000000', '1000000000test', '1000000000000x'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 3,
+                'failed_count' => 1,
+                'failed_ids'   => ['1000000000000x']
             ],
         ],
     ],

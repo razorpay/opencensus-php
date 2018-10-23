@@ -12,8 +12,10 @@ use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
+use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
 use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
@@ -29,6 +31,7 @@ class ReconciliationFileTest extends TestCase
 {
     use BatchTestTrait;
     use VirtualAccountTrait;
+    use TestTraits\EbsReconTestTrait;
 
     protected $payment;
     protected $recurringPayment;
@@ -462,6 +465,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFile()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -501,6 +506,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFileWithWrongValues()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -1116,11 +1123,6 @@ class ReconciliationFileTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    private function setFileToRequest($filename, $callee)
-    {
-        $this->testData[$callee]['request']['files']['attachment-1'] = $this->createUploadedFile($filename);
-    }
-
     public function createUploadedFile(string $url): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -1179,6 +1181,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testHitachiBharatQrRecon()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -1394,6 +1398,15 @@ class ReconciliationFileTest extends TestCase
         $paymentEnity = $this->getDbLastEntity('payment');
         $this->assertNotNull($paymentEnity['reference2']);
         $this->assertNotNull($paymentEnity['reference1']);
+
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MSF Amount']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+
+        // Test that the gateway fee and tax sum is as expected
+        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
+
+        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
@@ -1449,7 +1462,7 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = $entityId;
+        $facade['Merchant Track ID'] = "''". $entityId;
 
         $facade['Transaction Type'] =  $transactionType;
 

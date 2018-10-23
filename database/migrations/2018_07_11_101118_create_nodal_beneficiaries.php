@@ -28,8 +28,7 @@ class CreateNodalBeneficiaries extends Migration
             $table->string(NodalBeneficiaries::CHANNEL, 8);
 
             $table->string(NodalBeneficiaries::BENEFICIARY_CODE, 30)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->string(NodalBeneficiaries::REGISTRATION_STATUS, 40)
                   ->nullable();
@@ -57,6 +56,7 @@ class CreateNodalBeneficiaries extends Migration
 
             $table->unique([NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::CHANNEL]);
 
+            $table->unique([NodalBeneficiaries::BENEFICIARY_CODE, NodalBeneficiaries::CHANNEL]);
         });
     }
 

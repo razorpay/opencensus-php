@@ -47,19 +47,19 @@ class Entity extends Base\PublicEntity
     const REFERENCE2             = 'reference2';
     const REFERENCE3             = 'reference3';
     const REFERENCE4             = 'reference4';
-    const REFERENCE5             = 'reference5';
     const REFERENCE6             = 'reference6';
-    const REFERENCE7             = 'reference7';
     const REFERENCE9             = 'reference9';
 
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
+    const PROCESSED_AT           = 'processed_at';
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const SETTLED_BY             = 'settled_by';
 
     protected static $sign = 'rfnd';
 
@@ -71,7 +71,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::GATEWAY
+        self::GATEWAY,
+        self::SETTLED_BY,
     ];
 
     protected $fillable = [
@@ -105,10 +106,12 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
+        self::SETTLED_BY,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -124,6 +127,14 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicCustomer = [
+        self::ID,
+        self::AMOUNT,
+        self::PAYMENT_ID,
+        self::ACQUIRER_DATA,
+        self::CREATED_AT,
+    ];
+
     protected $hiddenInReport = [self::ACQUIRER_DATA];
 
     protected $defaults = [
@@ -132,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::PROCESSED_AT      => null,
         self::RECEIPT           => null,
     ];
 
@@ -158,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LAST_ATTEMPTED_AT,
+        self::PROCESSED_AT,
     ];
 
     public function payment()
@@ -242,6 +255,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY, $this->payment->getGateway());
     }
 
+    protected function generateSettledBy($input)
+    {
+        $this->setAttribute(self::SETTLED_BY, $this->payment->getSettledBy());
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -260,6 +278,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
     }
 
     public function isGatewayRefunded()
@@ -322,6 +345,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+
+    public function getSettledBy()
+    {
+        $settledBy = $this->getAttribute(self::SETTLED_BY);
+
+        if ($settledBy === null)
+        {
+            $settledBy = "Razorpay";
+        }
+
+        return $settledBy;
+    }
+
     public function getAcquirerData()
     {
         return $this->getAttribute(self::ACQUIRER_DATA);
@@ -330,6 +366,11 @@ class Entity extends Base\PublicEntity
     public function getLastAttemptedAt()
     {
         return $this->getAttribute(self::LAST_ATTEMPTED_AT);
+    }
+
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
     }
 
     public function getChannel()
@@ -390,6 +431,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setSettledBy($settledBy)
+    {
+        $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
     public function pushStatusChangeMetrics($statusToChange)
     {
         if (Status::isStatusTrackedForMetrics($statusToChange) === false)
@@ -433,7 +479,18 @@ class Entity extends Base\PublicEntity
     {
         $this->setStatus(Status::PROCESSED);
 
+        if ($this->getProcessedAt() === null)
+        {
+            $timestamp = time();
+            $this->setProcessedAt($timestamp);
+        }
+
         $this->setErrorNull();
+    }
+
+    public function setProcessedAt($timestamp)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $timestamp);
     }
 
     public function setBaseAmount()
@@ -484,8 +541,6 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
-        // We are hardcoding the merchant ids for now.
-        // Will move this to feature flag.
         if (($auth->isAdminAuth() === true) or
             (($auth->getMerchant() !== null) and
              ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
@@ -578,6 +633,17 @@ class Entity extends Base\PublicEntity
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
+
+        return $data;
+    }
+
+    public function toArrayPublicCustomer(): array
+    {
+        $data = parent::toArrayPublicCustomer();
+
+        $data['merchant_name'] = $this->merchant->getBillingLabel();
+
+        $data[self::STATUS] = (($this->isProcessed() === true) ? Status::PROCESSED : Status::INITIATED);
 
         return $data;
     }

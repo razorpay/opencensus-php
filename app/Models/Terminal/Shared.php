@@ -7,6 +7,7 @@ use RZP\Models\Terminal;
 
 class Shared
 {
+    const NETBANKING_IDFC_TERMINAL           = '100NbIdfcTrmnl';
     const AMEX_RAZORPAY_TERMINAL             = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL             = '1000AtomShared';
     const ATOM_RAZORPAY_TPV_TERMINAL         = '1000AtomTpvtml';
@@ -15,6 +16,7 @@ class Shared
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
     const BLADE_RAZORPAY_TERMINAL            = '1000BladeTrmnl';
     const DIGIO_RAZORPAY_TERMINAL            = '1000DigioTrmnl';
+    const LEGALDESK_RAZORPAY_TERMINAL        = '1000LegalDskTl';
     const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
@@ -42,6 +44,7 @@ class Shared
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
+    const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL          = '100PayzappTmnl';
@@ -81,12 +84,14 @@ class Shared
         self::BILLDESK_RAZORPAY_TERMINAL,
         self::BLADE_RAZORPAY_TERMINAL,
         self::DIGIO_RAZORPAY_TERMINAL,
+        self::LEGALDESK_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
         self::ENACH_RBL_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
+        self::NETBANKING_IDFC_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_BOB_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
@@ -97,6 +102,7 @@ class Shared
         self::NETBANKING_RBL_TERMINAL,
         self::NETBANKING_INDUSIND_TERMINAL,
         self::NETBANKING_PNB_TERMINAL,
+        self::NETBANKING_ESFB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -128,6 +134,7 @@ class Shared
         self::AMEX_RAZORPAY_TERMINAL             => Gateway::AMEX,
         self::BLADE_RAZORPAY_TERMINAL            => Gateway::MPI_BLADE,
         self::DIGIO_RAZORPAY_TERMINAL            => Gateway::ESIGNER_DIGIO,
+        self::LEGALDESK_RAZORPAY_TERMINAL        => Gateway::ESIGNER_LEGALDESK,
         self::ATOM_RAZORPAY_TERMINAL             => Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL      => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL        => Gateway::AXIS_MIGS,
@@ -137,6 +144,7 @@ class Shared
         self::HDFC_RAZORPAY_TERMINAL             => Gateway::HDFC,
         self::HITACHI_TERMINAL                   => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
+        self::NETBANKING_IDFC_TERMINAL           => Gateway::NETBANKING_IDFC,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,
@@ -148,6 +156,7 @@ class Shared
         self::NETBANKING_RBL_TERMINAL            => Gateway::NETBANKING_RBL,
         self::NETBANKING_INDUSIND_TERMINAL       => Gateway::NETBANKING_INDUSIND,
         self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB,
+        self::NETBANKING_ESFB_TERMINAL           => Gateway::NETBANKING_EQUITAS,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,

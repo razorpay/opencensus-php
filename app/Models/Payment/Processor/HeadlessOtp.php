@@ -42,9 +42,10 @@ trait HeadlessOtp
     {
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
-            (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
+            ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
+                ($payment->card->iinRelation !== null) and
                 ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
             {
                 return true;
@@ -157,7 +158,8 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
 
-        if ($response['success'] === true)
+        if ((isset($response['success']) === true) and
+            ($response['success'] === true))
         {
             switch ($response['data']['action'])
             {

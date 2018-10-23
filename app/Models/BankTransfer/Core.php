@@ -81,28 +81,52 @@ class Core extends Base\Core
                     $processor->process($bankTransfer);
                 },
                 60,
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
-
-            $valid = true;
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                10,
+                200,
+                400);
         }
         catch (\Throwable $ex)
         {
             $this->alertException($ex, $input);
-
-            $valid = false;
         }
 
-        return $valid;
+        return true;
     }
 
-    /**
-     * Shell method, real refund logic is in the Refund helper class.
-     *
-     * @param array $data
-     */
-    public function refund(array $data)
+    public function getAccountForRefund(Entity $bankTransfer)
     {
-        (new Refund)->process($data);
+        $payerAccount = $this->updateAndFetchPayerAccount($bankTransfer);
+
+        return [
+            BankAccount\Entity::IFSC_CODE        => $payerAccount->getIfscCode(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
+            BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
+        ];
+    }
+
+     /*
+     * This exists for older bank transfer payments. For new payments, we
+     * create the payer bank account with the mapped IFSC. For older ones,
+     * if the bank account has no IFSC, we set it to the mapped IFSC now.
+     *
+     * @param array  $input
+     * @param Entity $bankTransfer
+     */
+    protected function updateAndFetchPayerAccount(Entity $bankTransfer): BankAccount\Entity
+    {
+        $payerAccount = $bankTransfer->payerBankAccount;
+
+        if ($payerAccount->getIfscCode() === null)
+        {
+            $ifsc = PayerBankAccount::getPayerIfsc($bankTransfer);
+
+            $payerAccount->setIfsc($ifsc);
+
+            $this->repo->saveOrFail($payerAccount);
+        }
+
+        return $payerAccount;
     }
 
     /**
@@ -154,28 +178,35 @@ class Core extends Base\Core
      */
     public function notify(array $input, string $provider)
     {
-        // Bank Transfer core does not save to DB in this step.
-        // This is effectively just a modify-and-validate.
-        $this->create($input, $provider);
-
-        $bankTransfer = $this->repo
-                             ->bank_transfer
-                             ->findByUtrAndPayerIfsc(
-                                $input[Entity::REQ_UTR],
-                                $input[Entity::PAYER_IFSC]);
-
-        if ($bankTransfer !== null)
+        try
         {
-            $this->notifyIfApplicable($bankTransfer);
+            // Bank Transfer core does not save to DB in this step.
+            // This is effectively just a modify-and-validate.
+            $this->create($input, $provider);
+
+            $bankTransfer = $this->repo
+                                 ->bank_transfer
+                                 ->findByUtrAndPayerIfsc(
+                                    $input[Entity::REQ_UTR],
+                                    $input[Entity::PAYER_IFSC]);
+
+            if ($bankTransfer !== null)
+            {
+                $this->notifyIfApplicable($bankTransfer);
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
+                    [
+                        'input' => $input,
+                    ]
+                );
+            }
         }
-        else
+        catch (\Throwable $ex)
         {
-            $this->trace->error(
-                TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
-                [
-                    'input' => $input,
-                ]
-            );
+            $this->alertException($ex, $input);
         }
 
         return true;
@@ -378,7 +409,7 @@ class Core extends Base\Core
 
         $bankAccount->merchant()->associate($bankTransfer->merchant);
 
-        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+        $bankAccount->source()->associate($bankTransfer->virtualAccount);
 
         return $bankAccount;
     }

@@ -44,17 +44,24 @@ class Creator extends Base\Core
                 //
                 $subscription->associateEntities($plan, $customer);
 
-                if ($customer !== null)
-                {
-                    $subscription->setGlobalCustomer(false);
-                }
-
                 //
                 // This needs to be done after associating the entities
                 // since create validations need to access the
                 // corresponding plan's attributes.
                 //
                 $subscription->build($input);
+
+                //
+                // This should be after build because any of these
+                // keys have defaults present in the entity class
+                // then build will override any previously set values
+                //
+                if ($customer !== null)
+                {
+                    $subscription->setGlobalCustomer(false);
+
+                    $subscription->setCustomerEmail($customer->getEmail());
+                }
 
                 //
                 // This should be called before filling end_at and total_count,

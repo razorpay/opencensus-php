@@ -57,6 +57,23 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantAndRelationsHdfcOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $testData = $this->testData['testCreateMerchant'];
+
+        $testData['request']['content']['org_id'] = $org->getPublicId();
+
+        $testData['response']['content']['pricing_plan_id'] = 'BAJq6FJDNJ4ZqD';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateMerchantAndRelations()
     {
         $this->ba->adminAuth();
@@ -543,10 +560,6 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
@@ -655,10 +668,6 @@ class MerchantCreateTest extends TestCase
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->ba->proxyAuth();
 
@@ -840,10 +849,6 @@ class MerchantCreateTest extends TestCase
 
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find('10000000000000');
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -851,7 +856,7 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
-        
+
         $this->startTest();
 
         Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail) use ($account)
@@ -864,14 +869,10 @@ class MerchantCreateTest extends TestCase
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000',
-                                                                 'email' => $merchant->getEmail()]);
+                                                                 'email' => 'test@razorpay.com']);
 
         $this->ba->proxyAuth();
 
@@ -883,10 +884,6 @@ class MerchantCreateTest extends TestCase
     public function testCreateLinkedAccountDashboardAccessRevoke()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -917,10 +914,6 @@ class MerchantCreateTest extends TestCase
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -945,10 +938,6 @@ class MerchantCreateTest extends TestCase
     public function testLinkedAccountDashboardAccessRevokeNoUsers()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 

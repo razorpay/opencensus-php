@@ -6,6 +6,8 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
@@ -170,8 +172,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
-        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,6',
-        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
+        Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
@@ -204,6 +206,17 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $instantActivationRules = [
+        Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY => 'sometimes|max:255|custom',
+        Entity::PROMOTER_PAN         => 'required|alpha_num|max:15',
+        Entity::BUSINESS_NAME        => 'required|string|max:255',
+        Entity::BUSINESS_MODEL       => 'sometimes|max:255',
+        Entity::BUSINESS_WEBSITE     => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_DBA         => 'required|string|max:255',
+        Entity::BUSINESS_TYPE        => 'required|numeric|digits_between:1,10',
+    ];
+
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
@@ -212,7 +225,10 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_OPERATION_STATE   => 'filled|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY    => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15'
+        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15',
+        Entity::BUSINESS_CATEGORY          => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL             => 'sometimes|max:255',
     ];
 
     protected static $bulkAssignReviewerRules = [
@@ -352,13 +368,13 @@ class Validator extends Base\Validator
 
         $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
-        $validSubcategories = array_keys($subcategoryMap[$category][BusinessCategory::SUBCATEGORIES]);
+        $validSubcategories = $subcategoryMap[$category] ?? [];
 
         $isError            = false;
 
         // If category is `others` and subcategory is not `null`
         if (($category === BusinessCategory::OTHERS) and
-            (isset($subcategory) === true))
+            (empty($subcategory) === false))
         {
             $isError = true;
         }
@@ -450,6 +466,50 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function blockInstantActivationCriticalFields(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
+
+        if (($merchant->isActivated() === true) and (empty($criticalInput) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
+                null,
+                $criticalInput);
+        }
+    }
+
+    /**
+     * Contains validations for full activation form (L2 activation form)
+     * L1 and L2 activation form have different validations
+     *
+     * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
+     * no detail will be save in db and validation exception will be thrown
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function validateFullActivationForm()
+    {
+        $this->validateIsNotLocked();
+
+        if ($this->entity->getActivationFlow() !== null)
+        {
+            $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
+
+            $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }
 }

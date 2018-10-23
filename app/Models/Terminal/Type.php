@@ -5,37 +5,46 @@ namespace RZP\Models\Terminal;
 class Type
 {
     // Terminal to be used for non recurring payments
-    const NON_RECURRING     = 'non_recurring';
+    const NON_RECURRING                 = 'non_recurring';
 
     // Terminal to be used for first recurring transaction
-    const RECURRING_3DS     = 'recurring_3ds';
+    const RECURRING_3DS                 = 'recurring_3ds';
 
     // Terminal to be used for non-3DS transactions after first successful payment
-    const RECURRING_NON_3DS = 'recurring_non_3ds';
+    const RECURRING_NON_3DS             = 'recurring_non_3ds';
 
     // Terminal to be used for IVR transactions
-    const IVR               = 'ivr';
+    const IVR                           = 'ivr';
 
     // Terminal to be used to create second recurring payments without 2fa
-    const NO_2FA            = 'no_2fa';
+    const NO_2FA                        = 'no_2fa';
 
     // Terminal to be used for UPI pay
-    const PAY               = 'pay';
+    const PAY                           = 'pay';
 
     // Terminal to be used for ATM PIN transactions
-    const PIN               = 'pin';
+    const PIN                           = 'pin';
 
     // Terminals For Bharat Qr payments
-    const BHARAT_QR         = 'bharat_qr';
+    const BHARAT_QR                     = 'bharat_qr';
 
     // Terminals to be used for Debit recurring
-    const DEBIT_RECURRING   = 'debit_recurring';
+    const DEBIT_RECURRING               = 'debit_recurring';
 
     // Terminals to be used for Moto payments
-    const MOTO              = 'moto';
+    const MOTO                          = 'moto';
 
     // Terminal to be used for Collect UPI payments
-    const COLLECT           = 'collect';
+    const COLLECT                       = 'collect';
+
+    // Terminal to be used for generating Numeric Bank Account
+    const NUMERIC_ACCOUNT               = 'numeric_account';
+
+    // Terminal to be used for generating Alpha Numeric Bank Account
+    const ALPHA_NUMERIC_ACCOUNT         = 'alpha_numeric_account';
+
+    // Terminal to be used for direct settlements
+    const DIRECT_SETTLEMENT             = 'direct_settlement';
 
     protected static $types = [
         self::NON_RECURRING,
@@ -49,20 +58,26 @@ class Type
         self::DEBIT_RECURRING,
         self::MOTO,
         self::COLLECT,
+        self::DIRECT_SETTLEMENT,
+        self::NUMERIC_ACCOUNT,
+        self::ALPHA_NUMERIC_ACCOUNT,
     ];
 
     protected static $bitPosition = [
-        self::NON_RECURRING     => 1,
-        self::RECURRING_3DS     => 2,
-        self::RECURRING_NON_3DS => 3,
-        self::IVR               => 4,
-        self::NO_2FA            => 5,
-        self::PAY               => 6,
-        self::PIN               => 7,
-        self::BHARAT_QR         => 8,
-        self::DEBIT_RECURRING   => 9,
-        self::MOTO              => 10,
-        self::COLLECT           => 11,
+        self::NON_RECURRING                 => 1,
+        self::RECURRING_3DS                 => 2,
+        self::RECURRING_NON_3DS             => 3,
+        self::IVR                           => 4,
+        self::NO_2FA                        => 5,
+        self::PAY                           => 6,
+        self::PIN                           => 7,
+        self::BHARAT_QR                     => 8,
+        self::DEBIT_RECURRING               => 9,
+        self::MOTO                          => 10,
+        self::COLLECT                       => 11,
+        self::DIRECT_SETTLEMENT             => 12,
+        self::NUMERIC_ACCOUNT               => 13,
+        self::ALPHA_NUMERIC_ACCOUNT         => 14,
     ];
 
     /**

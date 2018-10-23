@@ -39,6 +39,19 @@ trait BatchTestTrait
                         true);
     }
 
+    public function createUploadedFileCsv(string $url): UploadedFile
+    {
+        $mime = 'text/csv';
+
+        return new UploadedFile(
+            $url,
+            'file.csv',
+            $mime,
+            filesize($url),
+            null,
+            true);
+    }
+
     public function assertInputFileExistsForBatch(string $id)
     {
         return $this->assertFileExistsForBatchOfType($id, FileStore\Type::BATCH_INPUT);

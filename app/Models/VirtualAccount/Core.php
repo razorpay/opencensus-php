@@ -39,24 +39,35 @@ class Core extends Base\Core
         //
         // For now, we're simply adding a global lock on VA creation to avoid duplicates being created.
         //
-        $virtualAccount = $this->mutex->acquireAndRelease(
-            self::VA_BANK_ACCOUNT_GENERATION,
-            function() use ($input, $merchant, $customer, $order)
-            {
-                $virtualAccount = $this->createEntityAndAssociate($merchant);
+        try
+        {
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION,
+                function() use ($input, $merchant, $customer, $order)
+                {
+                    $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-                return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
-            },
-            // The entire VA creation process inside this lock actually takes
-            // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-            // A process will generally not need to do multiple retries at all,
-            // since the retry times are adequate for the previous process to complete.
-            2,
-            // 2x and 4x of avg response time for this entire route (not just the process within the lock)
-            200,
-            400);
+                    return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                },
+                // The entire VA creation process inside this lock actually takes
+                // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+                10,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                // A process will generally not need to do multiple retries at all,
+                // since the retry times are adequate for the previous process to complete.
+                2,
+                // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+                200,
+                400);
+        }
+        catch (\Throwable $e)
+        {
+            (new Metric)->pushFailedMetrics($input, $e);
+
+            throw $e;
+        }
+
+        (new Metric)->pushCreateMetrics($input);
 
         return $virtualAccount;
     }
@@ -88,11 +99,9 @@ class Core extends Base\Core
         {
             $virtualAccount->build($input);
 
-            $this->validateDescriptor($virtualAccount);
-
             $virtualAccount->customer()->associate($customer);
 
-            $virtualAccount->associateOrder($order);
+            $virtualAccount->entity()->associate($order);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
@@ -220,47 +229,9 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function validateDescriptor(Entity $virtualAccount)
-    {
-        if ($virtualAccount->getDescriptor() === null)
-        {
-            return;
-        }
-
-        if ($virtualAccount->merchant->getHandle() === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
-        }
-
-        // Removing the below check for crypto merchants so that they can
-        // create new VAs with the same descriptor, using a different provider.
-        // Default provider for crypto merchants has already been changed.
-        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
-        {
-            return;
-        }
-
-        $existingVirtualAccounts = $this->repo->virtual_account
-                                        ->findActiveByDescriptorAndMerchant(
-                                            $virtualAccount->getDescriptor(),
-                                            $virtualAccount->merchant);
-
-        if ($existingVirtualAccounts->count() > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
-                'descriptor',
-                [
-                    'existing_ids' => $existingVirtualAccounts->getIds(),
-                    'descriptor'   => $virtualAccount->getDescriptor(),
-                ]);
-        }
-    }
-
     protected function verifyBankTransferEnabled(Merchant $merchant)
     {
-        $merchantMethods = $this->getMethodsForMerchant($merchant);
+        $merchantMethods = $merchant->getMethods();
 
         if (($merchantMethods === null) or
             ($merchantMethods->isBankTransferEnabled() === false))
@@ -280,16 +251,6 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
         }
 
-    }
-
-    protected function getMethodsForMerchant(Merchant $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     public function eventVirtualAccountCredited(Payment $payment)

@@ -75,6 +75,10 @@ class BasicAuth
     const PUBLIC_KEY              = 'public_key';
     const AUTH_TYPE               = 'auth_type';
 
+    // Used in requestContext for request metrics
+    const OAUTH                 = 'oauth';
+    const PARTNER               = 'partner';
+
     /**
      * The application instance.
      *
@@ -1268,6 +1272,16 @@ class BasicAuth
     public function getOAuthApplicationId()
     {
         return $this->applicationId;
+    }
+
+    /**
+     * Checks if request is coming via a lambda trigger
+     *
+     * @return boolean
+     */
+    public function isLambda(): bool
+    {
+        return ($this->internalApp === 'h2h');
     }
 
 // --------------------- Getters Ends ------------------------------------------

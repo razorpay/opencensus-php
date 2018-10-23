@@ -904,6 +904,25 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25f6uN5S1Z7c',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_hdfc',
+                'gateway_terminal_id'   => 'test_terminal_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 65,
+            )
+        );
+
+
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1BjhC5CJAqNF7R',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::ATOM,
@@ -1121,11 +1140,13 @@ class DatabaseSeeder extends Seeder
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
+        $this->createNetbankingIdfcTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingEquitasTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
@@ -1177,6 +1198,38 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
+
+    protected function createNetbankingIdfcTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco2',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_IDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_idfc',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_IDFC_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_IDFC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_idfc',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
 
     protected function createNetbankingHdfcTerminals()
     {
@@ -1505,6 +1558,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingEquitasTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_ESFB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_EQUITAS,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_equitas',
+                'gateway_secure_secret' => Crypt::encrypt('test_equitas_terminal_salt'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1703,10 +1773,9 @@ class DatabaseSeeder extends Seeder
             'card'                      => '0',
             'netbanking'                => '0',
             'upi'                       => '1',
-            'gateway_merchant_id'       => 'RAZAORPAY',
-            'gateway_terminal_id'       => '1234',
-            'gateway_merchant_id2'      => 'razaorpay@axis',
-            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_axis_terminal_pass'),
+            'gateway_merchant_id'       => 'TSTMERCHI',
+            'gateway_merchant_id2'      => 'TSTMERCHIAPP',
+            'vpa'                       => 'a@axis',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);

@@ -13,13 +13,19 @@ use RZP\Trace\TraceCode;
 
 class Base extends Core
 {
-    const GATEWAY                   = 'gateway';
-    const ATTACHMENT_COUNT          = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT   = 'attachment-count';
-    const FORCE_UPDATE              = 'force_update';
-    const FORCE_AUTHORIZE           = 'force_authorize';
+    const GATEWAY                 = 'gateway';
+    const ATTACHMENT_COUNT        = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
+    const ATTACHMENT_HYPHEN_ONE   = 'attachment-1';
+    const FORCE_UPDATE            = 'force_update';
+    const FORCE_AUTHORIZE         = 'force_authorize';
 
     const SOURCE                  = 'source';
+
+    /**
+     * Type of request processor
+     */
+    const LAMBDA                  = 'lambda';
     const MAILGUN                 = 'mailgun';
     const MANUAL                  = 'manual';
 
@@ -43,7 +49,9 @@ class Base extends Core
     const AIRTEL                 = 'Airtel';
     const BILLDESK               = 'BillDesk';
     const PAYZAPP                = 'PayZapp';
+    const MPESA                  = 'Mpesa';
     const MOBIKWIK               = 'Mobikwik';
+    const AMAZONPAY              = 'Amazonpay';
     const PAYTM                  = 'Paytm';
     const OLAMONEY               = 'Olamoney';
     const FREECHARGE             = 'Freecharge';
@@ -53,10 +61,12 @@ class Base extends Core
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
+    const NETBANKING_IDFC        = 'NetbankingIdfc';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
@@ -72,6 +82,7 @@ class Base extends Core
     const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';
+    const UPI_HULK               = 'UpiHulk';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -82,23 +93,27 @@ class Base extends Core
         self::HDFC                   => ['payoutreport@hdfcbank.com'],
         self::AXIS                   => ['pg.estatements@axisbank.com'],
         self::BILLDESK               => [],
-        self::PAYZAPP                => [],
+        self::PAYZAPP                => ['donotreply@enstage.com'],
         self::MOBIKWIK               => [],
+        self::AMAZONPAY              => [],
+        self::MPESA                  => [],
         self::PAYTM                  => [],
         self::KOTAK                  => ['bankalerts@kotak.com'],
         self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE             => ['noreply@fcemail.in'],
+        self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::NETBANKING_EQUITAS     => [],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
+        self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
-        self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_CORPORATION => ['webcenter@corpbank.co.in'],
+        self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],
@@ -113,6 +128,7 @@ class Base extends Core
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
+        self::UPI_HULK               => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -161,7 +177,8 @@ class Base extends Core
     protected function setGatewayReconciliatorObject()
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
-            $this->gateway . '\\' . 'Reconciliate';
+                                         $this->gateway . '\\' .
+                                         'Reconciliate';
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName($this->gateway);
     }
@@ -295,9 +312,81 @@ class Base extends Core
                 $allExtractedFilesDetails[] = $this->fileProcessor
                                                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
+
+            //
+            // If not a file, check for directory.
+            // isDot() returns true for the hidden default directories '.' and '..' , so we
+            // have put a 'false' condition here as we want to go into actual directories only.
+            //
+            else if (($unzippedFile->isDir() === true) and ($unzippedFile->isDot() === false))
+            {
+                $dirFiles = $this->getFilesFromDirectory($unzippedFile);
+
+                $allExtractedFilesDetails = array_merge($allExtractedFilesDetails, $dirFiles);
+            }
         }
 
         return $allExtractedFilesDetails;
+    }
+
+    /**
+     * Get all the files from this directory.
+     * This does not go inside nested sub-directories.
+     *
+     * @param \SplFileInfo $dir
+     * @return array List of files
+     */
+    protected function getFilesFromDirectory(\SplFileInfo $dir)
+    {
+        $dirFiles = [];
+
+        $unzippedFiles = new DirectoryIterator($dir->getPathname());
+
+        foreach ($unzippedFiles as $unzippedFile)
+        {
+            if ($unzippedFile->isFile() === true)
+            {
+                $dirFiles[] = $this->fileProcessor
+                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+            }
+        }
+
+        return $dirFiles;
+    }
+
+    /**
+     * Get all the files from the directory recursively.
+     * This goes inside nested sub-directories.
+     *
+     * @param \SplFileInfo $dir
+     * @return array List of files
+     */
+    protected function getFilesFromDirectoryRecursively(\SplFileInfo $dir)
+    {
+        $dirFiles = [];
+
+        $unzippedFiles = new DirectoryIterator($dir->getPathname());
+
+        foreach ($unzippedFiles as $unzippedFile)
+        {
+            if ($unzippedFile->isFile() === true)
+            {
+                $dirFiles[] = $this->fileProcessor
+                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+            }
+
+            //
+            // If not a file, check for directory.
+            // isDot() returns true for the hidden default directories '.' and '..' , so we
+            // have put a 'false' condition here as we want to go into actual directories only.
+            //
+            else if (($unzippedFile->isDir() === true) and ($unzippedFile->isDot() === false))
+            {
+                $dirFiles = array_merge($dirFiles, $this->getFilesFromDirectoryRecursively($unzippedFile));
+            }
+        }
+
+        return $dirFiles;
     }
 
     protected function getFileDetailsFromAllZipFiles(array $zipFileDetails)
@@ -348,9 +437,9 @@ class Base extends Core
      */
     protected function fetchAndStoreLinkDocuments(array & $input)
     {
-        if (empty($input['attachment-count']) === true)
+        if (empty($input[self::ATTACHMENT_HYPHEN_COUNT]) === true)
         {
-            $input['attachment-count'] = 0;
+            $input[self::ATTACHMENT_HYPHEN_COUNT] = 0;
         }
 
         $link = $this->gatewayReconciliator->getSettlementFileLink($input['body-html']);
@@ -380,10 +469,10 @@ class Base extends Core
 
         $file = $this->fileProcessor->getAndStoreFileFromLink($link);
 
-        $attachmentCount = (string) ((int) $input['attachment-count'] + 1);
+        $attachmentCount = (string) ((int) $input[self::ATTACHMENT_HYPHEN_COUNT] + 1);
 
         $input['attachment-' . $attachmentCount] = $file;
-        $input['attachment-count'] = $attachmentCount;
+        $input[self::ATTACHMENT_HYPHEN_COUNT] = $attachmentCount;
     }
 
     /**

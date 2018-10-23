@@ -23,12 +23,37 @@ class Scrooge
 
     protected $proxy;
 
+    protected $request;
+
+    protected $headers;
+
+    protected $auth;
+
+    const BaseUrl = 'refund';
+
     const URLS = [
-        'initiate'      => 'refund',
+        'initiate'      => '',
+        'retry'         => 'retry',
+        'reports'       => 'list/reports',
+        'bulkupdate'    => 'bulk-status-update',
+        'refunds'       => 'list/refunds',
+        'refund'        => '',
     ];
+
+    // Headers
+    const ACCEPT        = 'Accept';
+    const X_MODE        = 'X-Mode';
+    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const CONTENT_TYPE  = 'Content-Type';
+    const X_REQUEST_ID  = 'X-Request-ID';
 
     const REQUEST_TIMEOUT = 60;
 
+    /**
+     * Scrooge constructor.
+     *
+     * @param $app
+     */
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -40,57 +65,98 @@ class Scrooge
         // Refer: https://github.com/razorpay/api/issues/6385
         $this->mode = $app['rzp.mode'];
 
+        $this->request = $app['request'];
+
         $this->key = $this->config['scrooge_key'];
 
         $this->secret = $this->config['scrooge_secret'];
+
+        $this->auth = $app['basicauth'];
+
+        $this->setHeaders();
     }
 
-    public function initiateRefund($input)
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function initiateRefund(array $input, bool $throwExceptionOnFailure = false): array
     {
-        $response = $this->sendRequest(self::URLS['initiate'], 'POST', json_encode($input));
-
-        $code = $response->status_code;
-
-        if (in_array($code, [200, 201, 204], true) === true)
-        {
-            return [];
-        }
-
-        throw new Exception\RuntimeException(
-            'Unexpected response code received from Scrooge service.',
-            [
-                'status_code'   => $code,
-                'response_body' => $response->body,
-            ]);
+        return $this->sendRequest(self::BaseUrl, 'POST', $input, $throwExceptionOnFailure);
     }
 
-    public function sendRequest($url, $method, $data = null)
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
     {
-        $url = $this->baseUrl . $url;
+        $retryUrl = self::BaseUrl . '/' . $input['id'] . '/' . self::URLS['retry'];
 
-        if ($data === null)
-        {
-            $data = '';
-        }
+        return $this->sendRequest($retryUrl, 'POST', $input, $throwExceptionOnFailure);
+    }
 
-        $headers['Accept'] = 'application/json';
-        $headers['X-Mode'] = $this->mode;
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getReports(array $input): array
+    {
+        return $this->sendRequest(self::URLS['reports'], 'POST', $input);
+    }
 
-        $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => [
-                $this->key,
-                $this->secret
-            ],
-        ];
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkUpdateRefundStatus(array $input): array
+    {
+        $bulkUpdateUrl = self::BaseUrl . '/' . self::URLS['bulkupdate'];
 
-        $request = [
-            'url'       => $url,
-            'method'    => $method,
-            'headers'   => $headers,
-            'options'   => $options,
-            'content'   => $data
-        ];
+        return $this->sendRequest($bulkUpdateUrl, 'PUT', $input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getRefunds(array $input): array
+    {
+        return $this->sendRequest(self::URLS['refunds'], 'POST', $input);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return array
+     */
+    public function getRefund(string $id): array
+    {
+        return $this->sendRequest(self::BaseUrl . '/' . $id, 'GET');
+    }
+
+    /**
+     * @param string $endpoint
+     * @param string $method
+     * @param array  $data
+     * @param bool   $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    protected function sendRequest(
+        string $endpoint,
+        string $method,
+        array $data = [],
+        bool $throwExceptionOnFailure = false): array
+    {
+        $request = $this->generateRequest($endpoint, $method, $data);
 
         $response = $this->sendScroogeRequest($request);
 
@@ -102,15 +168,32 @@ class Scrooge
 
         $this->trace->info(TraceCode::SCROOGE_RESPONSE, $decodedResponse ?? []);
 
-        return $response;
+        return $this->parseResponse($response, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $request
+     * Function used to set headers for the request
+     */
+    protected function setHeaders()
+    {
+        $headers = [];
+
+        $headers[self::ACCEPT]        = 'application/json';
+        $headers[self::CONTENT_TYPE]  = 'application/json';
+        $headers[self::X_MODE]        = $this->mode;
+        $headers[self::ADMIN_EMAIL]   = $this->getAdminEmail();
+        $headers[self::X_REQUEST_ID]  = $this->request->getId();
+
+        $this->headers = $headers;
+    }
+
+    /**
+     * @param array $request
+     *
      * @return \Requests_Response
      * @throws \Requests_Exception
      */
-    protected function sendScroogeRequest($request)
+    protected function sendScroogeRequest(array $request): \Requests_Response
     {
         $this->traceRequest($request);
 
@@ -140,10 +223,84 @@ class Scrooge
         return $response;
     }
 
-    protected function traceRequest($request)
+    /**
+     * @param array $request
+     */
+    protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
 
         $this->trace->info(TraceCode::SCROOGE_REQUEST, $request);
+    }
+
+    /**
+     * @param \Requests_Response $response
+     * @param bool               $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     */
+    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    {
+        $code = $response->status_code;
+
+        if (($throwExceptionOnFailure === true) and
+            (in_array($code, [200, 201, 204], true) === false))
+        {
+
+            throw new Exception\RuntimeException(
+                'Unexpected response code received from Scrooge service.',
+                [
+                    'status_code' => $code,
+                    'response_body' => json_decode($response->body),
+                ]);
+        }
+
+        return [
+            'body' => json_decode($response->body),
+            'code' => $code,
+        ];
+    }
+
+    /**
+     * @param string $endpoint
+     * @param string $method
+     * @param array  $data
+     *
+     * @return array
+     */
+    protected function generateRequest(string $endpoint, string $method, array $data): array
+    {
+        $url = $this->baseUrl . $endpoint;
+
+        // json encode if data is must, else ignore.
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        {
+            $data = (empty($data) === false) ? json_encode($data) : null;
+        }
+
+        $options = [
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => [
+                $this->key,
+                $this->secret
+            ],
+        ];
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'headers'   => $this->headers,
+            'options'   => $options,
+            'content'   => $data
+        ];
+    }
+
+    /**
+     * @return string
+     */
+    protected function getAdminEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()['admin_email'] ?? '';
     }
 }

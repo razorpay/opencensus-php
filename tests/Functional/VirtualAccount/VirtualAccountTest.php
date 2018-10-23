@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
-use Closure;
 use Mockery;
+use Closure;
+use RZP\Models\Terminal\Type;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\VirtualAccount\Status;
@@ -41,9 +43,11 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
-
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
 
@@ -67,11 +71,7 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $response = $this->createVirtualAccountForOrder($order, [
-            'notes' => [
-                'a' => 'b',
-            ],
-        ]);
+        $response = $this->createVirtualAccountForOrder($order);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -121,7 +121,7 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(1000000, $virtualAccount['amount_expected']);
+        $this->assertEquals($order->getAmount(), $virtualAccount['amount_expected']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
     }
 
@@ -130,8 +130,17 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountValidationFailure()
+    {
+        // This is to check that validation rules on receiver attribute should stop after the first validation failure.
+        // In this specific case custom validation will not run. Validation will bail after array validation failure.
+        // If custom validation was still running then 2nd argument passed to it would have been invalid.
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountCrypto()
     {
+        // Currently BharatQR generation is also blocked in the same flow.
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
 
         $data = $this->testData[__FUNCTION__];
@@ -379,48 +388,69 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is unset so default root is used with default handle
+        // Root and handle from numeric shared terminal will be used.
         $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
 
-        $this->fixtures->merchant->setHandle('hand');
-
-        $this->createVirtualAccount([], false, 'desc1234');
+        $this->createVirtualAccount([], false);
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given descriptor
-        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+        // Root and handle from alpha numeric shared terminal will be used.
+        $this->assertStringStartsWith("RZRPRPAY", $vba['account_number']);
+
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'ROHI',
+            'gateway_merchant_id2'  => 'TKES',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->createVirtualAccount([], false, 'hwani123');
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Terminal is associated so root from there and given descriptor will be used.
+        $this->assertEquals("ROHITKESHWANI123", $vba['account_number']);
 
         $this->createVirtualAccount([], true);
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set, but numeric accounts can still be created
+        // Alpha Numeric terminal is associated, but numeric accounts can still be created using shared terminal
         $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
     {
-        // Without handle
+        // With shared terminal
         $response = $this->createVirtualAccountOldFormat();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is not set so default root is used with given descriptor
+        // No Terminal is associated so default shared terminal root is used with random descriptor
         $this->assertStringStartsWith('11122200', $vba['account_number']);
 
-        // With handle
-        $this->fixtures->merchant->setHandle('hand');
+        // With shared terminal
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '222333',
+            'gateway_merchant_id2'  => '01',
+            'type'                  => [
+                Type::NON_RECURRING       => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $response = $this->createVirtualAccountOldFormat([
-            'descriptor' => 'desc1234'
-        ]);
+        // Terminal is associated so this terminal's root is used with random descriptor
+        $response = $this->createVirtualAccountOldFormat();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given descriptor
-        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+        $this->assertStringStartsWith("22233301", $vba['account_number']);
 
-        $response = $this->createVirtualAccountOldFormat([]);
-        $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with random descriptor
-        $this->assertStringStartsWith("RZRPHAND", $vba['account_number']);
+        // Note: Custom descriptor is not supported anymore in old format and only Numeric bank accounts can be created.
     }
 
     public function testVirtualAccountCreateRequestUpdate()
@@ -429,101 +459,31 @@ class VirtualAccountTest extends TestCase
 
         // New format
         // receivers[types][]=bank_account
-        $response = $this->createVirtualAccount([]);
+        $this->createVirtualAccount();
         $vba = $this->getLastEntity('bank_account', true);
         $this->assertStringStartsWith('11122200', $vba['account_number']);
 
-        // Sending descriptor throws error, can't use with numeric
-        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        // Sending descriptor throws error, can only be used with direct terminal.
         $this->runRequestResponseFlow($data['descriptorWithNumeric'], function() {
-            $response = $this->createVirtualAccount([], true, "desc");
+            $this->createVirtualAccount([], true, "12345678");
         });
-
-        // Alphanumeric succeeds
-        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0
-        $response = $this->createVirtualAccount([], false);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('RAZORPAY', $vba['account_number']);
-
-        // Alphanumeric fails with descriptor, as handle isn't set
-        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0&descriptor=desc
-        $this->runRequestResponseFlow($data['descriptorWithAlphaWithoutHandle'], function() {
-            $response = $this->createVirtualAccount([], false, 'desc');
-        });
-
-        // With handle
-        $this->fixtures->merchant->setHandle('hand');
-
-        // New format with handle
-        // receivers[types][]=bank_account
-        $response = $this->createVirtualAccount([]);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11122200', $vba['account_number']);
-
-        // Sending descriptor throws error, can't use with numeric
-        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
-        $this->runRequestResponseFlow($data['descriptorWithNumericWithHandle'], function() {
-            $response = $this->createVirtualAccount([], true, 'desc');
-        });
-
-        // Numeric false, without descriptor, gives random descriptor
-        $response = $this->createVirtualAccount([], false);
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('RZRPHAND', $vba['account_number']);
-
-        // Numeric false, with descriptor
-        $response = $this->createVirtualAccount([], false, 'desc');
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertEquals('RZRPHANDDESC', $vba['account_number']);
-    }
-
-    public function testCreateVirtualAccountDescriptorLengths()
-    {
-        // Descriptor lengths are only relevant
-        // (i.e. configurable) for alphanumeric accounts
-        $this->markTestSkipped('Alphanumeric account are no longer supported');
-
-        $this->fixtures->merchant->setHandle('hand');
-
-        $this->createVirtualAccount([], false, '9chardesc');
-
-        $vba = $this->getLastEntity('bank_account', true);
-        $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
-
-        // Only upto nine chars allows in descriptor
-        $data = $this->testData[__FUNCTION__];
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount([], false, '10chardesc');
-        });
-
-        // Shortening handle to 3 characters
-        $this->fixtures->merchant->setHandle('han');
-
-        // Now 10 characters are allows
-        $this->createVirtualAccount([], false, '10chardesc');
-
-        $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
-        $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
-    }
-
-    public function testCreateVirtualAccountBpcl()
-    {
-        $this->fixtures->merchant->setHandle('BPC');
-
-        $this->createVirtualAccount([], true, '0987654321');
-
-        $vba = $this->getLastEntity('bank_account', true);
-
-        $this->assertEquals("5432100987654321", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountDescriptorInvalidLength()
     {
-        $this->fixtures->merchant->setHandle('hand');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        // 10 char descriptors only allowed
-        // for previleged merchants.
+        // passed descriptor length is wrong as root + handle + descriptor should be 16
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {
@@ -533,26 +493,46 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()
     {
-        $this->fixtures->merchant->setHandle('hand');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $this->createVirtualAccount([],false, 'samedesc');
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => 'samedesc']);
+            $this->createVirtualAccount([],false, 'samedesc');
         });
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptorAfterClosing()
     {
-        $this->fixtures->merchant->setHandle('hand');
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_DASHBOARD,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'RZRP',
+            'gateway_merchant_id2'  => 'hand',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::ALPHA_NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
 
-        $virtualAccount = $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $virtualAccount =  $this->createVirtualAccount([],false, 'samedesc');
 
         $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+        $this->createVirtualAccount([],false, 'samedesc');
     }
 
     public function testFetchVirtualAccount()
@@ -909,7 +889,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         $refund =  $this->getLastEntity('refund', true);
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
         // Make a payment with right order amount
@@ -957,7 +937,7 @@ class VirtualAccountTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
         $this->assertEquals(1000, $refund['amount']);
     }
 

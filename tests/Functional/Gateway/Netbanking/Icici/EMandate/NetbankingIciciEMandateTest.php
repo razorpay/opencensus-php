@@ -8,10 +8,10 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
-use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -842,7 +842,16 @@ class NetbankingIciciEMandateTest extends TestCase
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $gatewayToken2 = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
 
-        $this->assertEquals('failed', $payment[Payment::STATUS]);
+        $this->assertArraySelectiveEquals(
+            [
+                'status'              => 'failed',
+                'method'              => 'emandate',
+                'recurring_type'      => 'auto',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER',
+                'error_description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER
+            ],
+            $payment
+        );
 
         // Asserting that the failed second recurring payment was
         // made with the same token id as above
@@ -987,7 +996,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 if ($action === 'second_recurring')
                 {
                     $content['PAID'] = 'N';
-                    $content['STATUS'] = 'FAILURE';
+                    $content['STATUS'] = 'PaymentStoppedByCustomer';
                 }
             });
     }

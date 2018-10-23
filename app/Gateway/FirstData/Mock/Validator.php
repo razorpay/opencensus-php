@@ -14,6 +14,32 @@ use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
+    protected static $enrollRules = [
+        'Transaction'                                            => 'required',
+        'Transaction.CreditCardTxType'                           => 'required',
+        'Transaction.CreditCardTxType.StoreId'                   => 'required',
+        'Transaction.CreditCardTxType.Type'                      => 'required|in:sale,preauth|string',
+        'Transaction.CreditCardData'                             => 'required',
+        'Transaction.CreditCardData.CardNumber'                  => 'required|numeric|digits_between:12,19',
+        'Transaction.CreditCardData.ExpMonth'                    => 'required|size:2',
+        'Transaction.CreditCardData.ExpYear'                     => 'required|size:2',
+        'Transaction.CreditCardData.CardCodeValue'               => 'required|numeric',
+        'Transaction.CreditCard3DSecure'                         => 'required',
+        'Transaction.CreditCard3DSecure.AuthenticateTransaction' => 'required|boolean',
+        'Transaction.Payment'                                    => 'required',
+        'Transaction.Payment.Currency'                           => 'required|size:3',
+        'Transaction.Payment.ChargeTotal'                        => 'required',
+        'Transaction.Payment.HostedDataID'                       => 'sometimes',
+        'Transaction.TransactionDetails'                         => 'required',
+        'Transaction.TransactionDetails.OrderId'                 => 'required'
+     ];
+
+    protected static $authenticateRules = [
+        'PaReq'   => 'required|string',
+        'MD'      => 'required|string',
+        'TermUrl' => 'required|url'
+    ];
+
     protected static $authRules = [
         ConnectRequestFields::CARD_FUNCTION             => 'sometimes|in:credit,debit|string',
         ConnectRequestFields::CARD_NUMBER               => 'required|numeric|digits_between:12,19',
@@ -100,4 +126,26 @@ class Validator extends Base\Validator
                 'Unsupported hash_algorithm');
         }
     }
+
+    protected static $authorizeRules = [
+        'Transaction'                                                                   => 'required',
+        'Transaction.CreditCardTxType'                                                  => 'required',
+        'Transaction.CreditCardTxType.StoreId'                                          => 'required',
+        'Transaction.CreditCardTxType.Type'                                             => 'required|in:preauth,sale',
+        'Transaction.CreditCardData'                                                    => 'required',
+        'Transaction.CreditCardData.CardCodeValue'                                      => 'required|numeric',
+        'Transaction.CreditCard3DSecure'                                                => 'required',
+        'Transaction.CreditCard3DSecure.Secure3DRequest'                                => 'required',
+        'Transaction.CreditCard3DSecure.Secure3DRequest.Secure3DAuthenticationRequest'
+                                                                                        => 'required|array',
+        'Transaction.CreditCard3DSecure.Secure3DRequest.Secure3DAuthenticationRequest.AcsResponse'
+                                                                                        => 'required',
+        'Transaction.CreditCard3DSecure.Secure3DRequest.Secure3DAuthenticationRequest.AcsResponse.MD'
+                                                                                        => 'required|string',
+        'Transaction.CreditCard3DSecure.Secure3DRequest.Secure3DAuthenticationRequest.AcsResponse.PaRes'
+                                                                                        => 'required|string',
+        'Transaction.TransactionDetails'                                                => 'required',
+        'Transaction.TransactionDetails.IpgTransactionId'                               => 'required|string',
+        'Transaction.TransactionDetails.TransactionOrigin'                              => 'required|in:ECI',
+    ];
 }

@@ -19,9 +19,9 @@ class BaseException extends Exception
      * Constructor for base exception of the
      * application
      *
-     * @param string    $message
-     * @param string    $code
-     * @param Exception $previous
+     * @param string     $message
+     * @param string     $code
+     * @param \Throwable $previous
      */
     public function __construct(
         $message,

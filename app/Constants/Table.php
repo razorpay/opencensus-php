@@ -65,7 +65,6 @@ class Table
     const APP_TOKEN             = 'customer_apps';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
-    const DISPUTE_FILE          = 'dispute_files';
     const METHODS               = 'merchant_banks';
     const BANK_TRANSFER         = 'bank_transfers';
     const GATEWAY_TOKEN         = 'gateway_tokens';
@@ -74,6 +73,7 @@ class Table
     const MERCHANT_OFFER        = 'merchant_offer';
     const LINE_ITEM_TAX         = 'line_item_taxes';
     const DISPUTE_REASON        = 'dispute_reasons';
+    const MERCHANT_EMAIL        = 'merchant_emails';
     const VIRTUAL_ACCOUNT       = 'virtual_accounts';
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';

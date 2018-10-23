@@ -789,7 +789,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 16,
+                        'count' => 18,
                         'rules' => [
                             [],
                         ],
@@ -824,7 +824,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 16,
+                    'rules_count' => 18,
                 ],
             ],
         ],
@@ -1333,6 +1333,38 @@ return [
                 'amount_range_min' => null,
                 'amount_range_max' => null,
                 'feature' => 'recurring',
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleWithFeatureESAutomatic' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'feature' => 'esautomatic',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'feature' => 'esautomatic',
             ],
         ],
     ],

@@ -50,6 +50,7 @@ class Processor
     use Reversal;
     use Transfer;
     use Vpa;
+    use AuthorizePush;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -168,7 +169,7 @@ class Processor
         $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $this->getMethodsForMerchant($merchant);
+        $this->methods = $merchant->getMethods();
 
         $this->checkMerchantPermissions();
 
@@ -240,7 +241,12 @@ class Processor
                 $attributes = $e->getError()->getAttributes();
             }
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = false;
+
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -248,9 +254,15 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $attributes = [Metric::LABEL_TRACE_CODE => $e->getCode()];
+            $attributes = [
+                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+                Metric::LABEL_PAYMENT_IS_CREATED => false,
+            ];
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -543,6 +555,8 @@ class Processor
                 // It's not going to be saved in the database.
                 //
                 $payment = $this->buildPaymentEntity($input);
+
+                $payment->setMetadata($input);
 
                 $payment->receiver()->associate($receiver);
 
@@ -1664,7 +1678,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable($payment);
+        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -1848,6 +1862,11 @@ class Processor
         if ($payment->hasPaymentLink() === true)
         {
             return false;
+        }
+
+        if ($payment->isDirectSettlement() === true)
+        {
+            return true;
         }
 
         //
@@ -2042,7 +2061,7 @@ class Processor
 
         $createdAt = $payment->getCreatedAt();
 
-        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;;
+        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
         $merchantRefundAt = $createdAt + $autoRefundDelay;
 
         $refundAt = max($minRefundAt, $merchantRefundAt);
@@ -2229,28 +2248,14 @@ class Processor
 
     }
 
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
-    }
-
-    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
-    {
-        if ($payment->isBankTransfer() === true)
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
+            ($gatewayInput["skip_gateway_call"] === true))
         {
             return false;
         }
 
-        return true;
-    }
-
-    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
-    {
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             //
@@ -2395,29 +2400,5 @@ class Processor
                 Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
             ]
         );
-    }
-
-    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
-    {
-        if (($payment->isEmandate() === true) and
-            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
-    {
-        if (($payment->hasOrder() === true) and
-            ($payment->isTpvMethod() === true) and
-            ($this->merchant->isTPVRequired() === true) and
-            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

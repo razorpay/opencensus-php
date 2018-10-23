@@ -110,6 +110,16 @@ class Core extends Base\Core
         Entity $order,
         Merchant\Entity $merchant): array
     {
+        if ($order->getStatus() === Status::PAID)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
+        }
+
         $data = [
             Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT          => $order->getAmount(),
@@ -122,8 +132,14 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
-                Entity::METHOD         => $order->getMethod(),
             ];
+
+            $orderMethod = $order->getMethod();
+
+            if ($orderMethod !== null)
+            {
+                $data += [Entity::METHOD => $orderMethod];
+            }
         }
         else if ($order->getBank() !== null)
         {

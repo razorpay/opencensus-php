@@ -11,13 +11,19 @@ class Mailgun extends Base
     /**************************
      * Email details constants
      **************************/
-    const EMAIL_DETAILS    = 'email_details';
-    const FROM             = 'from';
-    const TO               = 'to';
-    const SUBJECT          = 'subject';
-    const TIMESTAMP        = 'timestamp';
-    const BODY             = 'body';
-    const BODY_HTML_TEXT   = 'body_html_text';
+    const EMAIL_DETAILS   = 'email_details';
+    const FROM            = 'from';
+    const TO              = 'to';
+    const SUBJECT         = 'subject';
+    const RECIPIENT       = 'recipient';
+    const TIMESTAMP       = 'timestamp';
+    const BODY            = 'body';
+    const BODY_HTML_TEXT  = 'body_html_text';
+    const BODY_HTML       = 'body-html';
+    const BODY_PLAIN      = 'body-plain';
+    const STRIPPED_HTML   = 'stripped-html';
+    const STRIPPED_TEXT   = 'stripped-text';
+    const MESSAGE_HEADERS = 'message-headers';
 
     /**
      * Gateways for which we run validations on email content
@@ -27,9 +33,11 @@ class Mailgun extends Base
         self::AXIS,
         self::KOTAK,
         self::AIRTEL,
+        self::PAYZAPP,
         self::HITACHI,
         self::OLAMONEY,
         self::UPI_HDFC,
+        self::UPI_HULK,
         self::CARD_FSS_HDFC,
         self::UPI_ICICI,
         self::FREECHARGE,
@@ -82,7 +90,7 @@ class Mailgun extends Base
             //
             $this->validator->validateAttachments($input);
 
-            $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+            $this->inputDetails[self::ATTACHMENT_COUNT] = $input[self::ATTACHMENT_HYPHEN_COUNT];
         }
 
         $this->inputDetails[self::SOURCE] = self::MAILGUN;
@@ -111,11 +119,11 @@ class Mailgun extends Base
 
         $inputDetails = [
             self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
-            self::SUBJECT        => $input['subject'],
-            self::TO             => $input['recipient'],
-            self::TIMESTAMP      => $input['timestamp'],
-            self::BODY           => $input['stripped-text'],
-            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
+            self::SUBJECT        => $input[self::SUBJECT],
+            self::TO             => $input[self::RECIPIENT],
+            self::TIMESTAMP      => $input[self::TIMESTAMP],
+            self::BODY           => $input[self::STRIPPED_TEXT],
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input[self::STRIPPED_HTML])),
         ];
 
         //
@@ -126,7 +134,7 @@ class Mailgun extends Base
         //
         $this->validator->validateAttachments($input, true);
 
-        $inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+        $inputDetails[self::ATTACHMENT_COUNT] = $input[self::ATTACHMENT_HYPHEN_COUNT];
 
         return $inputDetails;
     }
@@ -137,7 +145,6 @@ class Mailgun extends Base
      * it uses the 'subject' to figure out the gateway.
      * It also sets the gateway reconciliator object for the class.
      *
-     * @throws Exception\ReconciliationException
      * @throws Exception\LogicException
      */
     protected function setGatewayFromEmail()

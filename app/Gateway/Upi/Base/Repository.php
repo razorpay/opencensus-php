@@ -12,11 +12,13 @@ class Repository extends Base\Repository
     protected $entity = 'upi';
 
     protected $appFetchParamRules = array(
+        Entity::GATEWAY                 => 'sometimes|string|max:50',
         Entity::BANK                    => 'sometimes|min:4|max:4',
         Entity::GATEWAY_PAYMENT_ID      => 'sometimes|string|max:50',
         Entity::NPCI_REFERENCE_ID       => 'sometimes|string|max:20',
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
         Entity::REFUND_ID               => 'sometimes|string|min:14|max:18',
+        Entity::MERCHANT_REFERENCE      => 'sometimes|string|max:50',
     );
 
     public function fetchGatewayPaymentIdByPaymentId($paymentId)
@@ -69,4 +71,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByMerchantReference(string $merchantReference)
+    {
+        return $this->newQuery()
+                    ->where('merchant_reference', '=', $merchantReference)
+                    ->first();
+    }
+
+    public function findAllByNpciTxnId(string $npciTxnId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_TXN_ID, '=', $npciTxnId)
+                    ->get();
+    }
 }

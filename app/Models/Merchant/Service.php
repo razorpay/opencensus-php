@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use DB;
 use Mail;
+use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
@@ -19,10 +20,8 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\User\Role;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -30,13 +29,11 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
@@ -77,7 +74,8 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->create($input);
+        /** @var Entity $merchant */
+        $merchant = $this->core()->create($input);
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
@@ -148,7 +146,7 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            (new Core)->attachSubMerchantOwner($ownerId, $subMerchant);
+            $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
         }
     }
 
@@ -217,7 +215,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
-            $merchant = (new Merchant\Core)->edit($merchant, $input);
+            $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
             {
@@ -323,11 +321,11 @@ class Service extends Base\Service
 
         $orignalEmail = $merchant->getEmail();
 
-        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+        $merchant = $this->core()->editEmail($merchant, $input);
 
         $newEmail = $merchant->getEmail();
 
-        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
@@ -337,7 +335,7 @@ class Service extends Base\Service
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
 
-        (new Merchant\Core)->editConfig($this->merchant, $input);
+        $this->core()->editConfig($this->merchant, $input);
 
         return $this->merchant->toArrayConfig();
     }
@@ -357,7 +355,7 @@ class Service extends Base\Service
         if (isset($input['logo']))
         {
             // Store the logos in AWS
-            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+            $logoUrl = (new Logo)->setUpMerchantLogo($input);
 
             $input['logo_url'] = $logoUrl;
             unset($input['logo']);
@@ -427,7 +425,7 @@ class Service extends Base\Service
 
     public function editAmountCredits($merchantId, $input)
     {
-        (new Merchant\Validator)->validateInput('edit_credits', $input);
+        (new Validator)->validateInput('edit_credits', $input);
 
         $amountCredits = $input['credits'];
 
@@ -463,7 +461,7 @@ class Service extends Base\Service
 
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
+        (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -501,13 +499,55 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $scheduleTask->toArrayPublic();
+    }
+
+    public function bulkAssignSchedule(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_schedule', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        $schedule    = $input['schedule'];
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $schedule)
+                {
+                    $this->assignSettlementSchedule($merchantId, $schedule);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_SCHEDULE_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $schedule,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
     }
 
     public function migrateMerchantToSettlementSchedules($input)
@@ -578,23 +618,6 @@ class Service extends Base\Service
         $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
 
         return $plan->toArrayPublic();
-    }
-
-    public function activate($id)
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_ACTIVATE_REQUEST,
-            [
-                'merchant_id' => $id,
-            ]);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $act = new Activate($this->app);
-
-        $act->activate($merchant);
-
-        return $merchant->toArrayPublic();
     }
 
     public function sendActivationEmail(array $input)
@@ -721,7 +744,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant = (new Merchant\Core)->action($merchant, $input);
+        $merchant = $this->core()->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -846,7 +869,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
 
         $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
@@ -878,7 +901,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
+        return (new Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function editMethods($input)
@@ -898,7 +921,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('edit_methods', $input);
 
-        return (new Merchant\Methods\Core)->editMethods($input);
+        return (new Methods\Core)->editMethods($input);
     }
 
     public function getMerchantWebhooks($id)
@@ -1048,7 +1071,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
 
-        $response = (new Merchant\HolidayNotification)->send($input);
+        $response = (new HolidayNotification)->send($input);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY, $response);
 
@@ -1270,6 +1293,19 @@ class Service extends Base\Service
         return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
+    public function getEarlySettlementPricingForMerchant(): array
+    {
+        $mid = $this->merchant->getId();
+
+        $key1 = $mid . '_on_demand_es_pricing';
+        $key2 = $mid . '_scheduled_es_pricing';
+
+        return [
+            $key1 => Cache::get($key1) ?? 0.3,
+            $key2 => Cache::get($key2) ?? 0.2
+        ];
+    }
+
     public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
@@ -1430,7 +1466,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+        $merchant = $this->core()->updateKeyAccess($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -1449,7 +1485,7 @@ class Service extends Base\Service
 
         $failedIds = [];
 
-        $merchantCore = (new Merchant\Core);
+        $merchantCore = $this->core();
 
         foreach ($merchantIds as $merchantId)
         {
@@ -1485,7 +1521,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = (new Merchant\Core)->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant);
 
         return $users;
     }
@@ -1494,7 +1530,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+        $batches = $this->core()->createBatches($merchant, $input);
 
         return $batches;
     }
@@ -1792,7 +1828,7 @@ class Service extends Base\Service
      * @param Entity             $merchant
      * @param OAuthClient\Entity $client
      */
-    protected function sendCompetitorAppAuthorizedEmail(Merchant\Entity $merchant, OAuthClient\Entity $client)
+    protected function sendCompetitorAppAuthorizedEmail(Entity $merchant, OAuthClient\Entity $client)
     {
         $application = $client->application;
 
@@ -1827,7 +1863,7 @@ class Service extends Base\Service
      * @return bool
      */
     protected function shouldSendCompetitorAppAuthorizedEmail(
-        Merchant\Entity $merchant,
+        Entity $merchant,
         OAuthApplication\Entity $app): bool
     {
         // Do not send the email if the application is not a competitor to us
@@ -1904,7 +1940,7 @@ class Service extends Base\Service
 
         $this->validateAggregatorSubMerchantRelation($subMerchant, $this->merchant);
 
-        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+        (new Validator)->validateInput('createSubMerchantUser', $input);
 
         unset($input[User\Entity::MERCHANT_ID]);
 
@@ -2007,7 +2043,7 @@ class Service extends Base\Service
             PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER);
     }
 
-    public function formatUserCreationData(string $email, Merchant\Entity $subMerchant)
+    public function formatUserCreationData(string $email, Entity $subMerchant)
     {
         $dummyPass = bin2hex(random_bytes(20));
 
@@ -2056,7 +2092,7 @@ class Service extends Base\Service
 
             unset($input['dashboard_access']);
 
-            $merchantCore = new Merchant\Core;
+            $merchantCore = $this->core();
 
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
 
@@ -2085,12 +2121,17 @@ class Service extends Base\Service
 
             $this->repo->saveOrFail($subMerchant);
 
+            $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
+
+            $dimensions = [Metric::SUB_MERCHANT_ADD_TYPE => $subMerchantAdditionType];
+
+            $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
+
             return [$subMerchant, $newUser, $createdNew];
         });
 
         // Sends email to marketplace LA dashboard enabled users.
-        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
-            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
@@ -2115,7 +2156,10 @@ class Service extends Base\Service
     {
         if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
         {
+            //
             // This gets submerchant for a partner, with extra details required by partner dashboard.
+            // This does not get called for pure platform partners.
+            //
             $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
 
             $subMerchant = $subMerchant->toArrayPartner();
@@ -2133,10 +2177,7 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        $isMarketplaceWithLADashTag = (($merchant->isMarketplace() === true) and
-                                       ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true));
-
-        if ((($merchant->isPartner() === true) or ($isMarketplaceWithLADashTag === true)) and
+        if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
@@ -2155,7 +2196,7 @@ class Service extends Base\Service
 
         try
         {
-            $app = (new Core)->getPartnerApp($merchant);
+            $app = $this->core()->getInternalPartnerApp($merchant);
         }
         catch (\Exception $e)
         {
@@ -2250,13 +2291,13 @@ class Service extends Base\Service
         return $accessMap;
     }
 
-    public function getSubmerchant(string $submerchantId): array
+    public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
 
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, $input);
 
         return $submerchant->toArrayPartner();
     }
@@ -2394,23 +2435,19 @@ class Service extends Base\Service
 
         (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
 
-        if ($dashboardAccess === true)
+        if (($dashboardAccess === true) and ($parentMerchant->isMarketplace() === true))
         {
-            if (($parentMerchant->isMarketplace() === true) and
-                ($parentMerchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+            if ($parentMerchant->getEmail() === $merchant->getEmail())
             {
-                if ($parentMerchant->getEmail() === $merchant->getEmail())
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
+            }
 
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
 
-                if (empty($newUser) === false)
-                {
-                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
-                }
+            if (empty($newUser) === false)
+            {
+                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
             }
         }
         else
@@ -2419,5 +2456,53 @@ class Service extends Base\Service
         }
 
         return ['success' => true];
+    }
+
+    /**
+     * Fetches submerchant / linked / referred accounts for parent account.
+     */
+    public function fetchAssociatedAccounts(string $merchantId)
+    {
+        $associatedAccounts = [];
+
+        $merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        if ($merchant->isMarketplace() === true)
+        {
+            // linked accounts
+            $associatedAccounts = $merchant->accounts()->get()->getIds();
+        }
+        else if ($merchant->isPartner() === true)
+        {
+            // submerchant accounts
+            $associatedAccounts = $this->core()->listSubmerchants($merchant, [])->getIds();
+        }
+        else if ($merchant->hasAggregatorFeature() === true)
+        {
+            // referred accounts
+            $associatedAccounts = $this->repo->merchant->fetchReferredMerchants($merchantId)->getIds();
+        }
+
+        return ['associated_accounts' => array_unique($associatedAccounts)];
+    }
+
+    /**
+     * Takes Merchant from auth context and sends it to razorx.
+     *
+     * @param string $featureFlag
+     *
+     * @return array
+     */
+    public function getRazorxTreatment(string $featureFlag)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $mode = $this->mode ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment($merchantId, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
     }
 }

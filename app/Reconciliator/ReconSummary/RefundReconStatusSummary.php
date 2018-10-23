@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\ReconSummary;
 
+use RZP\Constants\Entity as ConstantEntity;
+
 class RefundReconStatusSummary extends DailyReconStatusSummary
 {
     public function getReconStatusSummary(int $from, int $to): array
@@ -10,8 +12,7 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
                               ->transaction
                               ->fetchRefundReconStatusSummary(
                                   $from,
-                                  $to,
-                                  Constants::GATEWAYS);
+                                  $to);
 
         $formattedSummary = Helpers::getFormattedSummary($refundSummary);
 
@@ -27,7 +28,7 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
                          ->fetchUnreconciledEntitiesBetweenDates(
                             $from,
                             $to,
-                            Constants::GATEWAYS,
+                            config('gateway.available'),
                             Constants::LIMIT,
                             Constants::PAYMENT_PARAMS,
                             Constants::REFUND_PARAMS
@@ -35,9 +36,9 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
 
         foreach ($payments as $entry)
         {
-            $date = Helpers::getFormattedDate($entry['created_at']);
+            $date = Helpers::getFormattedDate($entry['processed_at']);
 
-            Helpers::formatSheetColumns($entry);
+            Helpers::formatSheetColumns($entry, ConstantEntity::REFUND);
 
             $formattedPayments[$date][$entry['gateway']][] = $entry;
         }

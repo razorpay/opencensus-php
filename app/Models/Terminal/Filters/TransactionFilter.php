@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use App;
 
 use RZP\Exception;
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -15,6 +16,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -36,6 +38,8 @@ class TransactionFilter extends Terminal\Filter
         'mcc',
         'auth_type',
         'bharat_qr',
+        'direct_settlement',
+        'bank_account_type',
     ];
 
     public function methodFilter($terminal)
@@ -69,6 +73,9 @@ class TransactionFilter extends Terminal\Filter
 
             case Method::EMANDATE:
                 return $terminal->isEmandateEnabled();
+
+            case Method::BANK_TRANSFER:
+                return $terminal->isBankTransferEnabled();
 
             default:
                 throw new Exception\LogicException(
@@ -476,7 +483,7 @@ class TransactionFilter extends Terminal\Filter
             else if ($terminal->getId() === '76lEBqibDvhOzY')
             {
                  $network = $this->input['payment']->card->getNetworkCode();
-                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 if ($network !== Network::RUPAY)
                  {
                     return false;
                  }
@@ -710,5 +717,52 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
+    }
+
+    public function directSettlementFilter($terminal, $applicableTerminals)
+    {
+       if ($this->input['payment']->isNetbanking() === false)
+       {
+            return true;
+       }
+
+       $directSettlementTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return ($terminal->isDirectSettlement() === true);
+                                    });
+
+        // if no direct settlement terminals found, return true.
+        if (empty($directSettlementTerminals) === true)
+        {
+            return true;
+        }
+
+        if (in_array($terminal, $directSettlementTerminals, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function bankAccountTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isBankTransfer() === false)
+        {
+            return true;
+        }
+
+        $input = $payment->getMetadata();
+
+        if ($input[Generator::NUMERIC] === true)
+        {
+            return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
+        }
+
+        return $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT);
     }
 }

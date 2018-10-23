@@ -74,7 +74,7 @@ class UserRolesScope
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
-            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN, Role::SELLERAPP],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'            => Role::allExceptPaymentLinkRoles(),
@@ -108,13 +108,14 @@ class UserRolesScope
             'invoice_issue_by_batch'            => Role::WRITER_ROLES,
 
             // Payment link routes
-            'payment_link_get'        => Role::WRITER_ROLES,
-            'payment_link_list'       => Role::WRITER_ROLES,
-            'payment_link_create'     => Role::WRITER_ROLES,
-            'payment_link_update'     => Role::WRITER_ROLES,
-            'payment_link_notify'     => Role::WRITER_ROLES,
-            'payment_link_deactivate' => Role::WRITER_ROLES,
-            'payment_link_activate'   => Role::WRITER_ROLES,
+            'payment_link_get'         => Role::WRITER_ROLES,
+            'payment_link_list'        => Role::WRITER_ROLES,
+            'payment_link_create'      => Role::WRITER_ROLES,
+            'payment_link_update'      => Role::WRITER_ROLES,
+            'payment_link_notify'      => Role::WRITER_ROLES,
+            'payment_link_deactivate'  => Role::WRITER_ROLES,
+            'payment_link_activate'    => Role::WRITER_ROLES,
+            'payment_link_slug_exists' => Role::WRITER_ROLES,
 
             // customer routes
             'customer_fetch_multiple' => Role::allExceptPaymentLinkRoles(),

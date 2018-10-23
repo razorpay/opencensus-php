@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -57,9 +59,9 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
-        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
         Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
     ];
@@ -105,6 +107,12 @@ class Validator extends Base\Validator
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
         'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
+    protected static $bulkAssignScheduleRules = [
+        'schedule'       => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14',
     ];
 
     protected static $oauthMailRules = [
@@ -195,6 +203,7 @@ class Validator extends Base\Validator
         Entity::NAME                     => 'sometimes|string',
         Entity::ID                       => 'sometimes|alpha_num|size:14',
         Entity::EMAIL                    => 'sometimes|email',
+        Constants::APPLICATION_ID        => 'sometimes|string|size:14',
         Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
         Constants::FROM                  => 'integer',
         Constants::TO                    => 'integer',
@@ -510,11 +519,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
         }
 
-        if ($merchant->isActivated() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
+        $this->validateIsNotActivated($merchant);
 
         if ($merchant->merchantDetail->isArchived() === true)
         {
@@ -562,10 +567,13 @@ class Validator extends Base\Validator
         $featureNames = array_keys($input['features']);
 
         $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+        $editableFeature = Feature\Constants::$merchantEditableFeatures;
 
         foreach ($featureNames as $feature)
         {
-            if (in_array($feature, $visibleFeatures, true) === false)
+            // Feature must be a "visible feature" and editable by the merchant
+            if ((in_array($feature, $visibleFeatures, true) === false) or
+                (in_array($feature, $editableFeature, true) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
@@ -835,6 +843,28 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Validate if the input application is
+     *
+     * @param string $inputAppId
+     * @param array  $partnerAppIds
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerApplicationId(string $inputAppId, array $partnerAppIds)
+    {
+        if (in_array($inputAppId, $partnerAppIds, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+                Constants::APPLICATION_ID,
+                [
+                    'partner_app_ids'         => $partnerAppIds,
+                    Constants::APPLICATION_ID => $inputAppId,
+                ]);
+        }
+    }
+
     public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
     {
         $merchantUsersCount = $merchant->users->count();
@@ -849,6 +879,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+                Entity::ACTIVATED);
         }
     }
 }

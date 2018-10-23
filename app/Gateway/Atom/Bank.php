@@ -13,11 +13,11 @@ class Bank
     // We are using the same bank code as SBIN
     protected static $map = [
         IFSC::ANDB         => 1058,     // Andhra bank
-        IFSC::BKID         => 1012,     // Bank of India
         IFSC::MAHB         => 1033,     // Bank of Maharashtra
         IFSC::CNRB         => 1030,     // Canara Bank NB
         IFSC::CSBK         => 1031,     // Catholic Syrian Bank
         IFSC::CBIN         => 1028,     // Central Bank of India
+        IFSC::CIUB         => 1020,     // City Union Bank
         IFSC::CORP         => 1004,     // Corporation Bank
         IFSC::DCBL         => 1027,     // DCB Bank, Development Credit Bank
         IFSC::DEUT         => 1024,     // Deustche Bank
@@ -47,8 +47,7 @@ class Bank
         IFSC::VIJB         => 1039,     // Vijaya Bank
         IFSC::ALLA         => 1056,     // Allahabad Bank
         IFSC::UTIB         => 1003,     // Axis Bank
-        Netbanking::BARB_C => 1045,     // Bank of Baroda Corporate
-        Netbanking::BARB_R => 1046,     // Bank of Baroda Retail
+        IFSC::BKID         => 1046,     // Bank of India
         IFSC::CNRB         => 1030,     // Canara Bank
         IFSC::SBBJ         => 1014,
         IFSC::SBHY         => 1014,

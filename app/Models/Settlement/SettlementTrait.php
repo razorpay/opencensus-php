@@ -8,11 +8,14 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payout\Core as PayoutCore;
 
 trait SettlementTrait
 {
@@ -27,6 +30,8 @@ trait SettlementTrait
     {
         $filterGroupedTxns = [];
 
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
+
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
@@ -38,6 +43,13 @@ trait SettlementTrait
             $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
 
             if ($skipForRefundAuthTxn === true)
+            {
+                continue;
+            }
+
+            $skipForEarlySettlement = $this->skipForEarlySettlement($txn);
+
+            if ($skipForEarlySettlement === true)
             {
                 continue;
             }
@@ -56,12 +68,21 @@ trait SettlementTrait
                 continue;
             }
 
+            $skipForKarvy = $this->skipForKarvy($txn);
+
+            if ($skipForKarvy === true)
+            {
+                continue;
+            }
+
             $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
             $filterGroupedTxns[$merchantId]->push($txn);
         }
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }
@@ -94,11 +115,95 @@ trait SettlementTrait
                     ],
                     1);
 
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::REFUND_AUTH_PAYMENT
+                    ]);
+
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Early settlement timing check added
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForEarlySettlement($txn): bool
+    {
+        $mid = $txn->getMerchantId();
+
+        $merchant = $this->merchants[$mid];
+
+        $isEarlySettlementEnabled = $merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC);
+
+        if ($isEarlySettlementEnabled === false)
+        {
+            return false;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $fivePm = Carbon::today(Timezone::IST)->hour(17)->getTimestamp();
+
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->getTimestamp();
+
+        $nineAm = Carbon::today(Timezone::IST)->hour(9)->getTimestamp();
+
+        $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+        //
+        // Settle the transaction if time is between 9-10 am or 5-6pm
+        // This is the time window promised to the merchants on ES.
+        // For example, if a transaction's settled_at is 7 am, this
+        // condition ensures that it doesn't get settled in the 7 or 8 am
+        // batch but only in the 9 am batch.
+        //
+        if ((($now >= $nineAm) and ($now < $tenAm)) or
+            (($now >= $fivePm) and ($now < $sixPm)))
+        {
+            return false;
+        }
+
+        //
+        // If settlement was delayed for some reason, beyond our control, settle ASAP
+        // For example, if a transaction's settled_at is 7 am, but for some
+        // reason the transaction wasn't settled at 9 am, and now it is 2 pm
+        // then we want the transactions to be settled even if it's outside
+        // the merchant's settlement window, because this transaction's
+        // settlement should have been done at 9, and it's not delayed.
+        //
+        if ((($txn->getSettledAt() <= $fivePm) and ($now > $fivePm)) or
+            (($txn->getSettledAt() <= $nineAm) and ($now > $nineAm)))
+        {
+            return false;
+        }
+
+        $this->trace->count(
+            Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+            [
+                Metric::SKIP_REASON => Metric::BLOCK_OUTSIDE_ES_WINDOW
+            ],
+            1);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SKIPPED,
+            [
+                'merchant_id'       => $txn->getMerchantId(),
+                'transaction_id'    => $txn->getId(),
+                'source_id'         => $txn->getEntityId(),
+                'reason'            => Metric::BLOCK_OUTSIDE_ES_WINDOW
+            ]);
+
+        return true;
     }
 
     protected function skipForDsp($txn): bool
@@ -116,18 +221,37 @@ trait SettlementTrait
 
             $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
 
-            if (($now < $tenAm) or
-                ($now > $threePm))
+            //This condition used when dsp transactions misses the settlement window of 10am - 3pm
+            // but needs to be settled immediately on the next cron run, same day
+            if (($now > $threePm) and ($txn->getSettledAt() <= $threePm))
             {
-                $this->trace->count(
-                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
-                    [
-                        Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                    ],
-                    1);
-
-                return true;
+                return false;
             }
+
+            if (($now >= $tenAm) and
+                ($now <= $threePm))
+            {
+                return false;
+            }
+
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                ],
+                1);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                ]);
+
+            return true;
+
         }
 
         return false;
@@ -189,6 +313,15 @@ trait SettlementTrait
                     ],
                     1);
 
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
+
                 return true;
             }
 
@@ -202,6 +335,15 @@ trait SettlementTrait
                         Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
                     ],
                     1);
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
 
                 return true;
             }
@@ -224,6 +366,14 @@ trait SettlementTrait
         $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
         $today = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(TraceCode::SETTLEMENT_DELAYED_MF_CHECK,
+            [
+                'now'               => $now,
+                'two_pm'            => $twoPm,
+                'today'             => $today,
+                'txn_settled_at'    => $txn->getSettledAt()
+            ]);
 
         //
         // If the transaction was due settlement before today, but wasn't
@@ -371,6 +521,19 @@ trait SettlementTrait
         }
     }
 
+    /**
+     * Used payout mutex to block merchant from creating a
+     * settlement when payout is in process for the same merchant.
+     *
+     * @param $merchant
+     * @param $channel
+     * @param $setlTxns
+     * @param $setlAmount
+     * @param $setlFee
+     * @param $setlApiFee
+     * @param $tax
+     * @return array
+     */
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
@@ -385,20 +548,32 @@ trait SettlementTrait
 
             $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-            $this->traceSettlementDelayOfTransactions($setlTxns);
+            $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-            $settlement = $merchantSettler->settle(
-                                $setlTxns,
-                                $setlAmount,
-                                $setlFee,
-                                $setlApiFee,
-                                $tax,
-                                $this->setlTime,
-                                $setlDetailAmounts);
+            return $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use(
+                    $merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlDetailAmounts) {
 
-            $merchantSettler->createTransaction($settlement);
+                    $this->traceSettlementDelayOfTransactions($setlTxns);
 
-            $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+                    $settlement = $merchantSettler->settle(
+                        $setlTxns,
+                        $setlAmount,
+                        $setlFee,
+                        $setlApiFee,
+                        $tax,
+                        $this->setlTime,
+                        $setlDetailAmounts);
+
+                    $merchantSettler->createTransaction($settlement);
+
+                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+
+                    return [$settlement, $bankTransferAtpt];
+
+                    },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
         }
         catch (\Throwable $ex)
         {
@@ -425,15 +600,10 @@ trait SettlementTrait
                 TraceCode::SETTLEMENT_SKIPPED,
                 $traceData);
 
-            $data = [
-                    'message' => 'Settlement Skipped. Check for Retry.',
-                    'status'  => SlackNotification::BAD,
-                ] + $traceData;
-
-            (new SlackNotification)->send($data);
+            (new SlackNotification)->send('setl_skipped', $traceData, $ex);
         }
 
-        return [$settlement, $bankTransferAtpt];
+        return [null, null];
     }
 
     protected function traceSettlementDelayOfTransactions($setlTxns)
@@ -476,6 +646,15 @@ trait SettlementTrait
                 ],
                 1);
 
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $mid,
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY
+                ]);
+
             return false;
         }
 
@@ -517,6 +696,15 @@ trait SettlementTrait
                     Metric::SKIP_REASON => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
                 ]);
 
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $mid,
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
+                ]);
+
             $shouldSettle = false;
         }
 
@@ -540,7 +728,7 @@ trait SettlementTrait
     {
         $this->trace->info($traceCode, $data);
 
-        (new SlackNotification)->success('setl_initiate', $data);
+        (new SlackNotification)->send('setl_initiate', $data);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)
@@ -554,7 +742,7 @@ trait SettlementTrait
 
     protected function failureNotification($exception)
     {
-        (new SlackNotification)->failure('setl_initiate', $exception);
+        (new SlackNotification)->send('setl_initiate', [], $exception);
     }
 
     /**
@@ -580,9 +768,85 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('6144M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
+    }
+
+    /**
+     * Early settlement timing check added
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForKarvy($txn): bool
+    {
+        // Karvy wants settlements only at 1 pm and 3 pm ¯\_(ツ)_/¯
+        if ($txn->merchant->getParentId() === Preferences::MID_KARVY)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
+
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+
+            $yesterdayThreePm = Carbon::yesterday(Timezone::IST)->hour(15)->getTimestamp();
+
+            //if settlement for a previous day transaction with
+            // settled_at of 3pm was not created then intiate it asap next day
+            if ($txn->getSettledAt() <= $yesterdayThreePm)
+            {
+              return false;
+            }
+
+            if (($now > $threePm) and ($txn->getSettledAt() <= $threePm))
+            {
+                return false;
+            }
+
+            if (($now > $onePm) and ($txn->getSettledAt() <= $onePm))
+            {
+                return false;
+            }
+
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ],
+                1);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ]);
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+               'memory_allocated'               => $memoryAllocated,
+               'memory_used'                    => $memoryUsed,
+               'memory_peak_usage'              => $memoryPeakUsage,
+               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

@@ -142,6 +142,32 @@ class Pricing extends Base
                 'international'       => 0,
             ],
             [
+                'id'                  => '1zD0BXpfOJaqqE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+            ],
+            [
+                'id'                  => '1zD01Xpe3JaqpF',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000,
+                'international'       => 0,
+            ],
+            [
                 'id'                  => '1zE3CYqf1zbyrD',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -443,6 +469,26 @@ class Pricing extends Base
             'payment_issuer'      => null,
             'percent_rate'        => 250,
             'fixed_rate'          => 0,
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createPayoutPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYz';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 50,
+            'fixed_rate'          => 80,
         ];
 
         $this->addPricingRulesToDb([$row]);

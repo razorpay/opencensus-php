@@ -318,5 +318,23 @@ class Fields
      */
     const EXPIRY_MONTH = 'expmonth';
 
-    const PAYID = 'payid';
+    const PAYID          = 'payid';
+
+    const UDF1           = 'udf1';
+
+    const UDF2           = 'udf2';
+
+    const UDF3           = 'udf3';
+
+    const UDF4           = 'udf4';
+
+    const UDF5           = 'udf5';
+
+    const TYPE           = 'type';
+
+    const ACTION         = 'action';
+
+    const PAYMENT_ID     = 'paymentid';
+
+    const AUTH_RESP_CODE = 'authRespCode';
 }

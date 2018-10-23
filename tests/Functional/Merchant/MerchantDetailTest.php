@@ -7,10 +7,14 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
 /**
  * @group dns-sensitive
@@ -295,26 +299,79 @@ class MerchantDetailTest extends TestCase
     public function testMerchantDetailsPatch()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
 
-        $merchantId = $merchantDetail['merchant_id'];
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
 
-        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the API response when the merchant context (X-Razorpay-Account header) is not set in the request
+     */
+    public function testMerchantDetailsPatchMerchantContextNotSet()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the API response when invalid business category - subcategory combination is provided
+     */
+    public function testMerchantDetailsPatchInvalidBusinessSubcategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the API response when qthe business category and the subcategory are not updated.
+     */
+    public function testMerchantDetailsPatchNoBusinessCategorySubcategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the API response when qthe business category and the subcategory are not updated.
+     */
+    public function testMerchantDetailsPatchBusinessModel()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
 
         $this->startTest();
     }
 
     public function testMerchantUpdateWebsiteDetails()
-    {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
-
-        $merchantId = $merchantDetail['merchant_id'];
-
-        $this->ba->proxyAuth('rzp_test_'.$merchantId);
-
-        $this->startTest();
-    }
-
-    public function testGetMerchantBusinessCategories()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -548,5 +605,134 @@ class MerchantDetailTest extends TestCase
         $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
         $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
+    }
+
+    /**
+     * The merchant tries to update the fields critical to instant activations after he has been activated.
+     */
+    public function testUpdateCriticalFieldsPostActivation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
+
+    /**
+     * The merchant tries to update the fields not critical to instant activations after he has been activated.
+     * An activated merchant will submit the other details using this API to complete the KYC.
+     */
+    public function testUpdateNonCriticalFieldsPostActivation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
+    
+    /**
+     * checks that category and category2 details should be set on business subcategory change
+     */
+    public function testCategoryDetailsSetOnSubCategoryChange()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
+
+        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
+        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('mutual_funds', $testMerchant->getCategory2());
+    }
+
+    /**
+     * checks that category and category2 details should be set on business category changed to others
+     * this is a special case as business subcategory field will be null
+     */
+    public function testCategoryDetailsSetForOthersCategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::LENDING,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('others', $liveMerchant->getCategory2());
+
+        $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
+        $this->assertSame(5399, $testMerchant->getCategory());
+        $this->assertSame('others', $testMerchant->getCategory2());
+    }
+    
+    /**
+     * blacklist activation flow should not be allowed to submit full activation form
+     */
+    public function testUnsupportedActivationFlow()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
+        ]);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+        
+        $this->startTest();
+    }
+    
+    /**
+     * whitelist and greylist activation flow should be allowed to fill full activation form
+     */
+    public function testSupportedActivationFlow()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::WHITELIST
+        ]);
+        
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+        
+        $this->startTest();
+    }
+
+    /**
+     * Asserts the category and category2 are populated on business category or business subcategory change
+     */
+    public function testMerchantDetailsPatchCategoryAutoPopulation()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+
+        $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
+        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
     }
 }

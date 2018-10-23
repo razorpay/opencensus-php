@@ -54,14 +54,10 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates FundTransferAttempt entity for enach payments. Channel is default to YESBANK
      * @param Base\Entity $source - currently refund entity
-     * @param $channel = Settlement\Channel::YESBANK
+     * @param $values Attributes of the created FTA
     */
-    public function createFundTransferAttempt(
-        Base\Entity $source,
-        string $channel = Settlement\Channel::YESBANK,
-        string $purpose = Purpose::REFUND)
+    public function create(Base\Entity $source, array $values = [])
     {
         $fundTransferAttempt = new Entity;
 
@@ -71,17 +67,21 @@ class Core extends Base\Core
 
         $fundTransferAttempt->bankAccount()->associate($source->bankAccount);
 
-        $values = [
-            Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
-            Entity::CHANNEL         => $channel,
-            Entity::VERSION         => Version::V3,
-            Entity::STATUS          => Status::CREATED,
-            Entity::PURPOSE         => $purpose,
+        $defaultValues = [
+            Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
+            Entity::CHANNEL     => Settlement\Channel::YESBANK,
+            Entity::VERSION     => Version::V3,
+            Entity::STATUS      => Status::CREATED,
+            Entity::PURPOSE     => Purpose::REFUND,
         ];
+
+        $values = array_merge($defaultValues, $values);
 
         $fundTransferAttempt->fillAndGenerateId($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
     }
 
     /**
@@ -94,15 +94,17 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('retry_beam_file_upload', $input);
 
-        $filename = $input[Entity::FILE];
+        $fileStoreId = $input['file_id'];
+
+        $fileEntity = $this->repo->file_store->findOrFail($fileStoreId);
+
+        $filePath = $fileEntity->getLocation();
 
         $channel  = $input[Entity::CHANNEL];
 
         $fileType = $input[Entity::FILE_TYPE];
 
         $jobName  =  $this->getJobNameForBeamPush($channel, $fileType);
-
-        $filePath = $this->getRelativeFilePath($filename, $channel);
 
         $this->sendFile($filePath, $jobName, $fileType, $channel);
 
@@ -179,26 +181,5 @@ class Core extends Base\Core
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-    }
-
-    /**
-     * @param string $filename
-     * @param string $channel
-     * @return string
-     * @throws InvalidArgumentException
-     */
-    protected function getRelativeFilePath(string $filename, string $channel): string
-    {
-        switch($channel)
-        {
-            case Settlement\Channel::ICICI:
-                return 'icici/outgoing/'.$filename;
-
-            case Settlement\Channel::AXIS:
-                return 'axis/outgoing/'.$filename;
-
-            default:
-                throw new InvalidArgumentException('Not a valid channel');
-        }
     }
 }

@@ -86,6 +86,14 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+            (isset($input['fee']) === false))
+        {
+            $input['view'] = 'html';
+
+            return $this->createFeeBearerCustomerPayment($input);
+        }
+
         if ($this->app['basicauth']->isPrivateAuth())
         {
             $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
@@ -200,6 +208,13 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        return $this->createFeeBearerCustomerPayment($input);
+    }
+
+    protected function createFeeBearerCustomerPayment($input)
+    {
         $retHtml = false;
 
         if (isset($input['view']) === true)
@@ -211,8 +226,6 @@ class PaymentCreateController extends Controller
 
             unset($input['view']);
         }
-
-        $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
@@ -307,7 +320,6 @@ class PaymentCreateController extends Controller
         return $this->returnCallbackResponse($data);
     }
 
-    // @codingStandardsIgnoreLine
     public function postAJAXCallback($id, $hash)
     {
         $input = Request::all();
@@ -375,7 +387,10 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'get')
                 {
-                    return $this->redirectToGatewayGetForm($data);
+                    $response = \Redirect::away($data['request']['url']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
                 }
                 else if ($data['request']['method'] === 'direct')
                 {
@@ -530,18 +545,6 @@ class PaymentCreateController extends Controller
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
-                   ->with('data', $postFormData);
-    }
-
-    protected function redirectToGatewayGetForm($data)
-    {
-        $merchant = $this->app['basicauth']->getMerchant();
-        $postFormData = $data;
-        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
-        $postFormData['name'] = $merchant->getBillingLabel();
-        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
-
-        return View::make('gateway.gatewayGetForm')
                    ->with('data', $postFormData);
     }
 

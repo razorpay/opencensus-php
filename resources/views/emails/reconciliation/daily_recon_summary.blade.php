@@ -12,12 +12,11 @@
         @foreach ($data['summary'] as $date => $gatewayWiseData)
             <b>{{$entity}} Reconciliation summary for {{$date}} - </b><br /><br />
             <table border="1">
-                <th>Gateway</th>
                 @foreach ($params as $param)
                     <th>{{$param}}</th>
                 @endforeach
                 @foreach ($gatewayWiseData as $date => $gatewayData)
-                    <tr><td> {{$gatewayData['gateway']}}</td>
+                    <tr>
                     @foreach ($params as $param)
                         <td> {{($gatewayData[$param] ?? 0)}}</td>
                     @endforeach

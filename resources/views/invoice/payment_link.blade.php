@@ -36,7 +36,7 @@ $customer_details               = $invoice_data['customer_details'];
             <script>
                 var Razorpay = {
                     config: {
-                        api: '/'
+                        api: "{{ config('app.url') }}/"
                     }
                 }
             </script>
@@ -262,6 +262,15 @@ $customer_details               = $invoice_data['customer_details'];
                                     <div id="payment-for" class="val" style="white-space: pre-wrap;word-wrap: break-word;"></div>
                                 </div>
 
+                                @if(isset($invoice_data['receipt']))
+                                    <div class="info">
+                                        RECEIPT NO.
+                                        <div class="val">
+                                            {{$invoice_data['receipt']}}
+                                        </div>
+                                    </div>
+                                @endif
+
                                 @if($invoice_expire_by and $invoice_status !== 'paid')
                                     <div class="info">
                                         {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
@@ -410,6 +419,15 @@ $customer_details               = $invoice_data['customer_details'];
                             PAYMENT FOR
                             <div id="payment-for" class="val" style="white-space: pre-wrap;word-wrap: break-word;"></div>
                         </div>
+
+                        @if(isset($invoice_data['receipt']))
+                            <div class="info">
+                                RECEIPT NO.
+                                <div class="val">
+                                    {{$invoice_data['receipt']}}
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="info">
                             <span id="pay-title">AMOUNT PAYABLE</span>
@@ -621,7 +639,7 @@ $customer_details               = $invoice_data['customer_details'];
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: 'Invoice #' + invoiceObj.id,
+                description: '#' + invoiceObj.id,
                 handler: function(response) {
 
                     if (globalScope.hasRedirect()) {

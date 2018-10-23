@@ -105,7 +105,7 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
-            $table->string(Order::REFERENCE9)
+            $table->string(Order::PAYER_NAME)
                   ->nullable()
                   ->default(null);
 

@@ -726,7 +726,7 @@ class Entity extends Base\PublicEntity
         return $dummyCvv;
     }
 
-    public function getDummyCardArray(string $network = null)
+    public function getDummyCardArray(string $network = null, Card\IIN\Entity $iinEntity = null)
     {
         $card = [
             Card\Entity::CVV          => self::DUMMY_CVV,
@@ -751,6 +751,21 @@ class Entity extends Base\PublicEntity
 
             default:
                 break;
+        }
+
+        if (is_null($iinEntity) === false)
+        {
+            $card[Card\Entity::NUMBER] = $iinEntity->getIin() . '0000000000';
+
+            $card[Card\Entity::NETWORK] = $iinEntity->getNetwork();
+
+            $card[Card\Entity::TYPE] = $iinEntity->getType();
+
+            $card[Card\Entity::ISSUER] = $iinEntity->getIssuer();
+
+            $card[Card\Entity::INTERNATIONAL] = $iinEntity->isInternational();
+
+            $card[Card\Entity::VAULT_TOKEN] = 'XXXXXXXXXXX';
         }
 
         return $card;

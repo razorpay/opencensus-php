@@ -24,6 +24,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\NodalBeneficiary\Status;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
@@ -33,6 +34,7 @@ use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -49,6 +51,7 @@ class MerchantTest extends TestCase
     use MocksDnsTrait;
     use DbEntityFetchTrait;
     use OAuthTrait;
+    use CreatesInvoice;
 
     public function setUp()
     {
@@ -660,101 +663,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testActivateMerchantWithoutBankAccount()
-    {
-        $this->ba->adminAuth();
-
-        $this->fixtures->on('live')->create('methods:default_methods', [
-            'merchant_id' => '1cXSLlUU8V9sXl'
-        ]);
-
-        $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => true,
-            'locked'      => false
-        ]);
-
-        $this->startTest();
-    }
-
-    public function testActivateMerchant()
-    {
-        Mail::fake();
-
-        $this->ba->adminAuth('live');
-
-        $ba = $this->fixtures
-                   ->on('live')
-                   ->create(
-                        'merchant:bank_account',
-                        ['merchant_id' => '1cXSLlUU8V9sXl',
-                         'entity_id'   => '1cXSLlUU8V9sXl',
-                         'type'        => 'merchant']);
-
-        $this->fixtures->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
-
-        $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => true,
-            'locked'      => false
-        ]);
-
-        $this->fixtures->on('live')->create('methods:default_methods', [
-            'merchant_id' => '1cXSLlUU8V9sXl'
-        ]);
-
-        $activatedAt = time();
-
-        $content = $this->startTest();
-
-        $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
-
-        // We check that the merchant balance is just zero in live mode
-        $this->ba->proxyAuth('rzp_live_1cXSLlUU8V9sXl');
-
-        $testData = $this->testData['testGetBalance'];
-        $testData['request']['url'] = '/balance';
-        $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
-        $testData['response']['content']['balance'] = 0;
-
-        $this->runRequestResponseFlow($testData);
-
-        Mail::assertQueued(ActivationMail::class, function ($mailable)
-        {
-            $mailData = $mailable->viewData;
-
-            $this->assertNotNull($mailData['merchant']);
-            $this->assertNotNull($mailData['rules']);
-            $this->assertNotNull($mailData['subject']);
-
-            $this->assertNotNull($mailData['merchant']['name']);
-            $this->assertNotNull($mailData['merchant']['website']);
-            $this->assertNotNull($mailData['merchant']['billing_label']);
-            $this->assertNotNull($mailData['merchant']['email']);
-            $this->assertNotNull($mailData['merchant']['org']);
-
-            $this->assertNotNull($mailData['merchant']['org']['business_name']);
-            $this->assertNotNull($mailData['merchant']['org']['hostname']);
-            $this->assertNotNull($mailData['merchant']['org']['custom_code']);
-
-            $this->assertNotNull($mailData['rules']['amountRangeRules']);
-            $this->assertNotNull($mailData['rules']['otherRules']);
-
-            // A pricing rule without a valid display pricing would
-            // appear in the mail as one with empty string as display.
-            $this->assertArrayNotHasKey('', $mailData['rules']['otherRules']);
-            $this->assertArrayNotHasKey('', $mailData['rules']['amountRangeRules']);
-
-            return true;
-        });
-
-        // Because rest of the tests require appAuth, reset it back
-        $this->ba->appAuthLive();
-    }
-
     public function testMerchantEnableLive()
     {
         $this->ba->adminAuth('live');
@@ -768,7 +676,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->adminAuth('live');
 
-        $this->testActivateMerchant();
+        $this->fixtures->edit('merchant', '1cXSLlUU8V9sXl', ['activated' => 1, 'live' => 1]);
 
         $this->ba->adminAuth('live');
 
@@ -1228,6 +1136,8 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutPreferencesForMagicDisabledMerchant()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -1647,6 +1557,49 @@ class MerchantTest extends TestCase
         $this->ba->publicAuth();
 
         $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForPaidOrder()
+    {
+        $order = $this->fixtures->order->createPaid();
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForCancelledInvoice()
+    {
+        $attributes = [
+            'type'         => 'link',
+            'status'       => 'cancelled',
+            'amount'       => 100000,
+            'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $invoice = $this->createInvoice($attributes);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForExpiredInvoice()
+    {
+        $attributes = [
+            'type'       => 'link',
+            'status'     => 'expired',
+            'amount'     => 100000,
+            'expired_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $invoice = $this->createInvoice($attributes);
+
+        $this->ba->publicAuth();
 
         $this->startTest();
     }
@@ -2715,6 +2668,31 @@ class MerchantTest extends TestCase
         $this->assertEquals(null, $scheduleTask['method']);
     }
 
+    public function testAssignScheduleBulk()
+    {
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'daily',
+                'interval' => 1,
+                'delay'    => 2,
+                'name'     => 'Basic T2',
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $perm = $this->fixtures->create('permission', ['name' => 'schedule_assign_bulk']);
+
+        $this->org->permissions()->sync($perm);
+
+        $this->createMerchant(['id' => '1000000000test']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantWithAdmin()
     {
         $adminId = 'admin_' . Org::SUPER_ADMIN;
@@ -3204,5 +3182,39 @@ class MerchantTest extends TestCase
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
+    }
+
+    public function testFailedBeneficiaryRegistrationWithYesbank()
+    {
+        $ba = $this->fixtures->create('bank_account');
+
+        $this->fixtures->create('nodal_beneficiary',
+            [
+                'bank_account_id'     => $ba->getId(),
+                'merchant_id'         => $ba->merchant->getId(),
+                'registration_status' => 'failed'
+            ]
+        );
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration'        => 120,
+                'failed_response' => 1
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
     }
 }

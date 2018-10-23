@@ -4,11 +4,14 @@ namespace RZP\Models\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
 {
@@ -29,9 +32,28 @@ class Core extends Base\Core
 
         $this->validateExistingTerminal($terminal);
 
+        $this->validateDirectSettlementMapping($terminal);
+
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
+    }
+
+    protected function validateDirectSettlementMapping($terminal)
+    {
+        if ($terminal->isDirectSettlement() === false)
+        {
+            return;
+        }
+
+        $gateway = $terminal->getGateway();
+
+        if (isset(Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway]) === false)
+        {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT);
+        }
     }
 
     public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
@@ -138,7 +160,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function edit($terminal, $input)
+    public function edit(Entity $terminal, array $input)
     {
         if ((isset($input['restore'])) and
             ($input['restore'] === '1'))
@@ -159,6 +181,8 @@ class Core extends Base\Core
             $terminal->edit($input);
 
             $this->validateExistingTerminal($terminal);
+
+            $this->validateDirectSettlementMapping($terminal);
 
             $this->repo->saveOrFail($terminal);
         }
@@ -308,31 +332,80 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateExistingTerminalGatewayMerchantId($terminal)
+    public function getBanksForTerminal(Entity $terminal): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (($terminal->isNetbankingEnabled() === false) or
+            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
+        }
+
+        $enabledBanks = (array) $terminal->getEnabledBanks();
+
+        $corporate = $terminal->getCorporate();
+        $tpv       = $terminal->getTpv();
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+        $disabledBanks  = array_values(array_diff($supportedBanks, $enabledBanks));
+
+        $enabledBanks  = Netbanking::getNames($enabledBanks);
+        $disabledBanks = Netbanking::getNames($disabledBanks);
+
+        return [
+            'enabled'  => $enabledBanks,
+            'disabled' => $disabledBanks,
+        ];
+    }
+
+    public function setBanksForTerminal(Entity $terminal, $banksToEnable): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (($terminal->isNetbankingEnabled() === false) or
+            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
+        }
+
+        if (empty($banksToEnable) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('enabled_banks is required and needs to be sent.');
+        }
+
+        if (is_array($banksToEnable) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('enabled_banks should be an array');
+        }
+
+        $corporate = $terminal->getCorporate();
+        $tpv       = $terminal->getTpv();
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+
+        if (empty(array_diff($banksToEnable, $supportedBanks)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('banks not supported by gateway');
+        }
+
+        $terminal->setEnabledBanks($banksToEnable);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $this->getBanksForTerminal($terminal);
+    }
+
+    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal)
     {
         // Check no record with same 'gateway_merchant_id' exists
-        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
+        $params = [
+            Entity::GATEWAY                 => $terminal->getGateway(),
+            Entity::GATEWAY_MERCHANT_ID     => $terminal->getGatewayMerchantId(),
+            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2()
+        ];
 
-        $existingTerminals = $this->repo->terminal->fetch($params);
-
-        // This check if this terminal is same as what
-        // we are trying to edit
-        if ($existingTerminals->count() === 1)
-        {
-            $existingTerminal = $existingTerminals[0];
-
-            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
-            {
-                return;
-            }
-        }
-
-        if ($existingTerminals->count() !== 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
-                Entity::GATEWAY_MERCHANT_ID);
-        }
+        $this->checkIfExists($params, $terminal);
     }
 
     protected function validateExistingMpan(Entity $terminal)
@@ -359,7 +432,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function checkIfExists($params, Entity $terminal, string $field)
+    protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
         $existingTerminals = $this->repo->terminal->fetch($params);
 

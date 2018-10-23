@@ -4,10 +4,8 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Settlement\Status as SettlementStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Service extends Base\Service
@@ -62,6 +60,24 @@ class Service extends Base\Service
             $params = $input[$id];
 
             (new Validator)->validateInput('edit', $params);
+
+            //
+            // Temporarily allowing update of channel for Refund attempts.
+            // This is because we don't have a way to change channel in a
+            // clean way at the moment, but we may still want to change the
+            // channel sometimes, and retry it.
+            //
+            if ((isset($params[Entity::CHANNEL]) === true) and
+                ($fundTransferAttempt->isRefund() === false))
+            {
+                $this->trace->error(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                    ['reason' => 'Channel can only be edited for Refund attempts!']);
+
+                $notUpdatedIds[] = $id;
+
+                continue;
+            }
 
             $fundTransferAttempt->fill($params);
 
@@ -174,7 +190,21 @@ class Service extends Base\Service
 
     public function sendFTAReconReport()
     {
-        $data = (new Report)->sendFTAReconReport();
+        $progressReport = new Report;
+
+        $failureReport  = clone $progressReport;
+
+        $fileInfo = [];
+
+        $data = $progressReport->sendFTAReconReport(Report::FTA_PROGRESS);
+
+        $data += $failureReport->sendFTAFailureReport(Report::FTA_FAILURES);
+
+        $fileInfo += $progressReport->getFileName(Report::FTA_PROGRESS);
+
+        $fileInfo += $failureReport->getFileName(Report::FTA_FAILURES);
+
+        Report::sendEmail($data, $fileInfo);
 
         return $data;
     }

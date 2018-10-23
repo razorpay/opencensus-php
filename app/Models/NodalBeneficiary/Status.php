@@ -19,7 +19,7 @@ class Status
     protected static $allowedStateTransition = [
         self::FAILED     => [ self::FAILED, self::PENDING, self::REGISTERED ],
         self::PENDING    => [ self::PENDING, self::FAILED, self::REGISTERED ],
-        self::CREATED    => [ self::CREATED, self::PENDING ],
+        self::CREATED    => [ self::CREATED, self::PENDING, self::REGISTERED, self::FAILED ],
         self::REGISTERED => [ self::REGISTERED, self::FAILED ]
     ];
 

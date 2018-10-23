@@ -643,6 +643,13 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddNonEditableFeatureToAccount()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateOnboardingResponses()
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -833,6 +840,8 @@ class FeaturesTest extends TestCase
     public function testRestrictedAccessFeatureEnabledAndAccessedByMerchant()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->create(
             'feature',

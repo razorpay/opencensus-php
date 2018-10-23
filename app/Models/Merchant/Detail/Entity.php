@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
     const CAN_SUBMIT                         = 'can_submit';
     const REVIEWER                           = 'reviewer';
     const MERCHANTS                          = 'merchants';
+    const ACTIVATION_FLOW                    = 'activation_flow';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -289,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DEPARTMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::ACTIVATION_FLOW,
     ];
 
     protected $defaults = [
@@ -346,6 +348,17 @@ class Entity extends Base\PublicEntity
         self::ISSUE_FIELDS,
         self::INTERNAL_NOTES,
         self::ISSUE_FIELDS_REASON,
+    ];
+
+    /**
+     * Attributes that are critical in the instant activations flow.
+     *
+     * The merchant will not be allowed to edit these fields once instantly activated. These fields will be blocked
+     * while filling the complete KYC form.
+     */
+    const INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES = [
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
     ];
 
     public function merchant()
@@ -540,6 +553,16 @@ class Entity extends Base\PublicEntity
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
+    }
+
+    public function setActivationFlow(string $activationFlow)
+    {
+        $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
+    }
+
+    public function getActivationFlow()
+    {
+        return $this->getAttribute(self::ACTIVATION_FLOW);
     }
 
     public function setActivationProgress($activationProgress)

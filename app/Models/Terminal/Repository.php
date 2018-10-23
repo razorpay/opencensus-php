@@ -15,23 +15,24 @@ class Repository extends Base\Repository
     protected $entity = 'terminal';
 
     protected $appFetchParamRules = array(
-        Entity::GATEWAY             => 'sometimes',
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-        Entity::CARD                => 'sometimes|boolean',
-        Entity::NETBANKING          => 'sometimes|boolean',
-        Entity::SHARED              => 'sometimes|boolean',
-        Entity::CATEGORY            => 'sometimes|integer|digits:4',
-        Entity::DELETED             => 'sometimes|boolean',
-        Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
-        Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
-        Entity::EMI                 => 'sometimes|in:0,1',
-        Entity::ENABLED             => 'sometimes|in:0,1',
-        Entity::NETWORK_CATEGORY    => 'sometimes|string|max:50',
-        Entity::MC_MPAN             => 'sometimes|string|size:16',
-        Entity::VISA_MPAN           => 'sometimes|string|size:16',
-        Entity::RUPAY_MPAN          => 'sometimes|string|size:16',
-        Entity::VPA                 => 'sometimes|string|max:20',
+        Entity::GATEWAY                 => 'sometimes',
+        Entity::MERCHANT_ID             => 'sometimes|alpha_num',
+        Entity::CARD                    => 'sometimes|boolean',
+        Entity::NETBANKING              => 'sometimes|boolean',
+        Entity::SHARED                  => 'sometimes|boolean',
+        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::DELETED                 => 'sometimes|boolean',
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string|max:50',
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes',
+        Entity::GATEWAY_ACQUIRER        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID     => 'sometimes|alpha_num',
+        Entity::EMI                     => 'sometimes|in:0,1',
+        Entity::ENABLED                 => 'sometimes|in:0,1',
+        Entity::NETWORK_CATEGORY        => 'sometimes|string|max:50',
+        Entity::MC_MPAN                 => 'sometimes|string|size:16',
+        Entity::VISA_MPAN               => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
+        Entity::VPA                     => 'sometimes|string|max:20',
     );
 
     public function fetchForPayment(Payment\Entity $payment)
@@ -92,6 +93,23 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->get();
+    }
+
+    public function findByGatewayAndTerminalData(array $terminalData, string $gateway, bool $withTrashed = false)
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::GATEWAY, '=', $gateway);
+        foreach ($terminalData as $key => $value)
+        {
+            $query->where($key, $value);
+        }
+
+        if ($withTrashed === true)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->first();
     }
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)

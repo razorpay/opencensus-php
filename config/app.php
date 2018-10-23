@@ -285,6 +285,14 @@ return array(
         'nocaptcha_secret' => env('NOCAPTCHA_SECRET', ''),
     ],
 
+    'payment_link' => [
+        'gcaptcha_key' => env('PAYMENT_LINK_GCAPTCHA_KEY'),
+    ],
+
+    'customer_refund_details' => [
+        'nocaptcha_secret' => env('WEBPAGE_GCAPTCHA_SECRET', ''),
+    ],
+
     'query_cache' => [
         'mock' => env('QUERY_CACHE_MOCK', false),
     ],

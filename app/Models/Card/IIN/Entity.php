@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const FLOWS         = 'flows';
     const ENABLED       = 'enabled';
     const LOCKED        = 'locked';
+    const NUMBER        = 'number';
 
     const INTERNATIONAL = 'international';
 

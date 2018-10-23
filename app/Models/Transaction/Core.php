@@ -71,6 +71,9 @@ class Core extends Base\Core
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        return $this->createTransactionForSource($payment);
+
+        // old code, will delete port refactoring all entites
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
             [
@@ -78,11 +81,6 @@ class Core extends Base\Core
             ]);
 
         $merchant = $payment->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
@@ -124,12 +122,10 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
+        return $this->createTransactionForSource($payment);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
+        // old code, will delete it post refactoring of all the entities
+        $merchant = $payment->merchant;
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
@@ -176,6 +172,8 @@ class Core extends Base\Core
 
         $onHold = $payment->getOnHold() ?? false;
 
+        $txn->setReconciledAt(time());
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
         $txn->setAttribute(Entity::ON_HOLD, $onHold);
@@ -199,23 +197,29 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
+            $this->repo->fee_breakup->deleteFeeBreakupForTransactionId($txn->getId());
+
             list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($txn);
 
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            $payment->setServiceTax($serviceTax);
-
             if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
+            }
+
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
             }
 
             $this->repo->saveOrFail($payment);
@@ -224,6 +228,11 @@ class Core extends Base\Core
 
             (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
         });
+    }
+
+    public function markTransactionPostpaid(Entity $txn)
+    {
+        $this->markGratisTransactionPostpaid($txn, $txn->merchant);
     }
 
     public function updateReconciliationData(Entity $transaction)
@@ -270,6 +279,11 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::CHANNEL         => $payment->merchant->getChannel(),
         ];
+
+        if ($payment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Entity::RECONCILED_AT] = time();
+        }
 
         $txn->fill($txnData);
 
@@ -876,10 +890,40 @@ class Core extends Base\Core
 
         $amount = $payout->getAmount();
 
-        $payoutAmount = abs($amount + $fee);
+        if ($payout->getPayoutType() === Payout\Entity::ON_DEMAND)
+        {
+            $payoutAmount = $amount - $fee;
+
+            if ($payoutAmount < 100)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
+                    null,
+                    [
+                      'amount' => $amount,
+                      'fee'    => $fee
+                    ]);
+            }
+
+            $debitAmount = $amount;
+
+            // Here, payout amount is the amount requested by merchant for payout and fees is
+            // levied over it.Also, this fees is deducted from merchant balance.This happens for
+            // merchants which do not have 'es_on_demand' feature enabled.In case of 'es_on_demand'
+            // merchants, payout fees will be deducted from payout amount requested by the merchant.
+            // This is done allow a merchant to do a payout on requested amount , rather then
+            // calculating fees over it and failing a transaction if merchant does not have enough balance.
+            $payout->setAmount($payoutAmount);
+        }
+        else
+        {
+            $payoutAmount = $amount + $fee;
+
+            $debitAmount = $payoutAmount;
+        }
 
         $values = [
-            Transaction\Entity::DEBIT               => $payoutAmount,
+            Transaction\Entity::DEBIT               => $debitAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
             Transaction\Entity::GATEWAY_FEE         => 0,

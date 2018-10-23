@@ -217,13 +217,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postActivate($id)
-    {
-        $data = $this->service()->activate($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function postSendActivationMail()
     {
         $input = Request::all();
@@ -656,6 +649,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEarlySettlementPricingForMerchant()
+    {
+        $data = $this->service()->getEarlySettlementPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
@@ -690,6 +690,15 @@ class MerchantController extends Controller
         $data = $service->fetchMultiple($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function bulkCreateMerchantCredits(Credits\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->bulkCreateCredits($input);
+
+        return ApiResponse::json($response);
     }
 // --------------------- End Credits API Handlers -----------------------------------------
 
@@ -855,6 +864,13 @@ class MerchantController extends Controller
         $response = $this->service()->getTags($id);
 
         return ApiResponse::json($response);
+    }
+
+    public function getAssociatedAccounts(string $merchantId)
+    {
+        $data = $this->service()->fetchAssociatedAccounts($merchantId);
+
+        return ApiResponse::json($data);
     }
 
     public function addTags($id)
@@ -1070,7 +1086,9 @@ class MerchantController extends Controller
 
     public function getSubmerchant(string $submerchantId)
     {
-        $response = $this->service()->getSubmerchant($submerchantId);
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchant($submerchantId, $input);
 
         return ApiResponse::json($response);
     }
@@ -1100,5 +1118,42 @@ class MerchantController extends Controller
         $data = $this->service()->updateLinkedAccountDashboardAccess($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function saveInstantActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->saveInstantActivationDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getRazorxTreatment($featureFlag)
+    {
+        $response = $this->service(E::MERCHANT)->getRazorxTreatment($featureFlag);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Input JSON sample:
+     * {
+     *   "schedule": {
+     *     "schedule_id": "40000000000000",
+     *     "type": "settlement"
+     *   },
+     *   "merchant_ids": ["10000000000000", "ACIg0vIkvgCALm"]
+     * }
+     *
+     * @return mixed
+     */
+    public function bulkAssignSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignSchedule($input);
+
+        return ApiResponse::json($response);
     }
 }

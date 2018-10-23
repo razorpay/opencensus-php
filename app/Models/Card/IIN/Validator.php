@@ -36,6 +36,11 @@ class Validator extends Base\Validator
         Entity::FLOWS         => 'sometimes|array|filled|custom',
     );
 
+    protected static $binIssuerValidationRules = [
+        Entity::ISSUER       => 'required|string|in:HDFC',
+        Entity::NUMBER       => 'required|numeric|digits_between:6,19',
+    ];
+
     protected static $createValidators = array(
         'create_network',
         Entity::TYPE,

@@ -31,12 +31,12 @@ class CreatePayments extends Migration
 
             $table->char(Payment::MERCHANT_ID, Payment::ID_LENGTH);
 
-            $table->integer(Payment::AMOUNT)
+            $table->bigInteger(Payment::AMOUNT)
                   ->unsigned();
 
             $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
-            $table->integer(Payment::BASE_AMOUNT)
+            $table->bigInteger(Payment::BASE_AMOUNT)
                   ->unsigned();
 
             $table->string(Payment::METHOD);
@@ -67,23 +67,23 @@ class CreatePayments extends Migration
             $table->tinyInteger(Payment::INTERNATIONAL)
                   ->nullable();
 
-            $table->integer(Payment::AMOUNT_AUTHORIZED)
+            $table->bigInteger(Payment::AMOUNT_AUTHORIZED)
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Payment::AMOUNT_REFUNDED)
+            $table->bigInteger(Payment::AMOUNT_REFUNDED)
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Payment::BASE_AMOUNT_REFUNDED)
+            $table->bigInteger(Payment::BASE_AMOUNT_REFUNDED)
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Payment::AMOUNT_TRANSFERRED)
+            $table->bigInteger(Payment::AMOUNT_TRANSFERRED)
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Payment::AMOUNT_PAIDOUT)
+            $table->bigInteger(Payment::AMOUNT_PAIDOUT)
                   ->unsigned()
                   ->default(0);
 
@@ -282,7 +282,7 @@ class CreatePayments extends Migration
             $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Payment::REFERENCE15, 255)
+            $table->string(Payment::SETTLED_BY, 255)
                   ->nullable();
 
             $table->string(Payment::REFERENCE16, 255)
@@ -325,6 +325,8 @@ class CreatePayments extends Migration
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::CAPTURED_AT]);
+            $table->index([Payment::VERIFY_AT, Payment::GATEWAY]);
+            $table->index(Payment::REFUND_AT);
 
             $table->index(Payment::RECEIVER_ID);
 

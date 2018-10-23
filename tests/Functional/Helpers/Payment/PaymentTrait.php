@@ -847,7 +847,56 @@ trait PaymentTrait
             $this->assertEquals($amount, $refund['amount']);
         }
 
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        {
+            $this->scroogeRefund($refund);
+        }
+
         return $refund;
+    }
+
+    protected function scroogeRefund(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['gateway'] = $this->gateway;
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+        $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        if ($response['status_code'] === 'REFUND_SUCCESSFUL')
+        {
+            $this->scroogeRefundMarkProcessed($refund);
+        }
+
+        return $response;
+    }
+
+    protected function scroogeRefundMarkProcessed(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'PUT',
+            'url'     => '/refunds/'.$input['id'].'/processed',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
@@ -910,7 +959,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [])
     {
         $this->ba->adminAuth();
 
@@ -921,6 +970,15 @@ trait PaymentTrait
         );
 
         $response = $this->makeRequestAndGetContent($request);
+
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        {
+            $response['id'] = $response['refund_id'];
+            $response['payment_id'] = $paymentId;
+
+            $this->scroogeRefund($response);
+        }
 
         return $response;
     }
@@ -949,6 +1007,12 @@ trait PaymentTrait
 
         $this->assertEquals('refund', $refund['entity']);
 
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        {
+            $this->scroogeRefund($refund);
+        }
+
         return $refund;
     }
 
@@ -962,6 +1026,12 @@ trait PaymentTrait
             'content' => []);
 
         $data = $this->makeRequestAndGetContent($request);
+
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        {
+            $this->scroogeRefund($data);
+        }
 
         return $data;
     }
@@ -1049,6 +1119,22 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultScroogeInputArray()
+    {
+        $refund = [
+            'amount'                => 100,
+            'base_amount'           => 100,
+            'currency'              => 'INR',
+            'merchant_id'           => '10000000000000',
+            'method'                => 'card',
+            'payment_amount'        => 100,
+            'payment_base_amount'   => 100,
+            'payment_created_at'    => 1536067732,
+        ];
+
+        return $refund;
+    }
+
     protected function getDefaultPaymentArrayNeutral()
     {
         //
@@ -1110,6 +1196,12 @@ trait PaymentTrait
         if ($authType === Payment\AuthType::AADHAAR)
         {
             $payment['aadhaar']['number'] = '123123123123';
+
+            $payment['bank_account'] = [
+                'account_number' => '914010009305862',
+                'ifsc'           => 'utib0000123',
+                'name'           => 'Test account',
+            ];
         }
 
         return $payment;
@@ -1214,10 +1306,8 @@ trait PaymentTrait
 
     protected function getDefaultNetbankingPaymentArray($bank = null)
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArrayNeutral();
         $payment['method'] = 'netbanking';
-
-        unset($payment['card']);
 
         if ($bank !== null)
         {
