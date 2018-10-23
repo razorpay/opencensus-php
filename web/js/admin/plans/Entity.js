@@ -45,9 +45,7 @@ export default class PlanEntity extends Component {
           props.id && props.name ? (
             <div>
               <span>{props.name}</span>
-              {pending ? (
-                ''
-              ) : (
+              {!pending && (
                 <button class="btn" onClick={this.copyPlan}>
                   Clone Plan
                 </button>
@@ -186,10 +184,11 @@ export function copyPricingEntity(rules) {
     items: [],
   };
 
+  let plan_id;
+
   copiedPlan.items = rules.map(rule => {
-    let {
+    const {
       id,
-      plan_id,
       plan_name,
       created_at,
       updated_at,
@@ -198,6 +197,9 @@ export function copyPricingEntity(rules) {
       payment_network_name,
       ...data
     } = rule;
+
+    plan_id = rule.plan_id;
+    delete rule.plan_id;
 
     data.international = data.international | 0;
     ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'].forEach(elem => {
@@ -212,5 +214,6 @@ export function copyPricingEntity(rules) {
     return data;
   });
 
-  openModal(<PlanEntity plan={copiedPlan} />);
+  closeModal();
+  openModal(<PlanEntity key={plan_id || 'new_plan'} plan={copiedPlan} />);
 }
