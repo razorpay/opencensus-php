@@ -166,6 +166,7 @@ export default class OnboardingCardInstant extends Component {
               instantActivation={instantActivation}
               isRejected={user.isRejected}
               isActivated={user.isActivated}
+              isSubmitted={user.isSubmitted}
               showTransactionsModal={this.showTransactionsModal}
               onActive={() => this.setActiveStep(2)}
               {...commonModeCardProps}

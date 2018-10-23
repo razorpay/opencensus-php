@@ -41,7 +41,6 @@ export default class LiveMode extends Component {
         if (!isSubmitted) {
           content = 'Fill the KYC Form in order to unlock Live Payments';
         } else {
-          status = possibleStatuses.progress;
           content =
             'Live payments will be enabled after your KYC form is verified';
         }

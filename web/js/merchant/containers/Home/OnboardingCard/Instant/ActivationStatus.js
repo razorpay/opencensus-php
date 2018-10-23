@@ -91,7 +91,9 @@ export default class ActivationCard extends Component {
     if (
       onActive &&
       status !== this.state.status &&
-      status === possibleStatuses.active
+      (status === possibleStatuses.active ||
+        status === possibleStatuses.progress ||
+        status === possibleStatuses.blocked)
     ) {
       onActive();
     }
