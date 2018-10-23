@@ -34,7 +34,7 @@ class Processor extends Base\Core
 
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
-    const MUTEX_LOCK_TIMEOUT    = 900;
+    const MUTEX_LOCK_TIMEOUT    = 1800;
 
     public function __construct()
     {
