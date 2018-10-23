@@ -66,6 +66,8 @@ class CreatePayoutsTable extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->string(Payout::TRANSACTION_TYPE, 30);
+
             $table->char(Payout::BATCH_FUND_TRANSFER_ID, Payout::ID_LENGTH)
                   ->nullable();
 
@@ -124,11 +126,6 @@ class CreatePayoutsTable extends Migration
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
-            $table->foreign(Payout::TRANSACTION_ID)
-                  ->references(Transaction\Entity::ID)
-                  ->on(Table::TRANSACTION)
-                  ->on_delete('restrict');
-
             $table->foreign(Payout::BATCH_FUND_TRANSFER_ID)
                   ->references(BatchFundTransfer\Entity::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
@@ -150,8 +147,6 @@ class CreatePayoutsTable extends Migration
             $table->dropForeign(Table::PAYOUT . '_' . Payout::MERCHANT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
-
-            $table->dropForeign(Table::PAYOUT . '_' . Payout::TRANSACTION_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
         });

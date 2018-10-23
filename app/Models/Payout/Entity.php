@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
+    const TRANSACTION_TYPE       = 'transaction_type';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const STATUS                 = 'status';
     const CHANNEL                = 'channel';
@@ -41,6 +42,7 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
+    const DESCRIPTION            = 'description';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -192,7 +194,7 @@ class Entity extends Base\PublicEntity
 
     public function transaction()
     {
-        return $this->belongsTo('RZP\Models\Transaction\Entity');
+        return $this->MorphTo();
     }
 
     public function batchFundTransfer()

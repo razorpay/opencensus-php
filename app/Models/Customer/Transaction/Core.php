@@ -14,29 +14,31 @@ class Core extends Base\Core
     /**
      * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a openwallet payment.
+     * Called at wallet balance withdrawal.
      *
-     * @param array           $payment
+     * @param array           $input
      * @param Merchant\Entity $merchant
+     * @param string          $source
      *
      * @return Entity
      */
-    public function createForCustomerDebit(array $payment, Merchant\Entity $merchant) : Entity
+    public function createForCustomerDebit(array $input, Merchant\Entity $merchant, string $source) : Entity
     {
-        $amount = $payment['amount'];
+        $amount = $input['amount'];
 
-        $customerId = $payment['customer_id'];
+        $customerId = $input['customer_id'];
 
         $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
 
-        $customerTxn->setEntityType(Constants\Entity::PAYMENT);
+        $customerTxn->setEntityType($source);
 
-        $customerTxn->setEntityId($payment['id']);
+        $customerTxn->setEntityId($input['id']);
 
-        $customerTxn->setDescription($payment['description'] ?? 'No description');
+        $customerTxn->setDescription($input['description'] ?? 'No description');
 
-        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
+        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn, $source)
         {
-            $balance = (new Customer\Balance\Core)->debit($customerId, $amount);
+            $balance = (new Customer\Balance\Core)->debit($customerId, $amount, $source);
 
             $customerTxn->setBalance($balance->getBalance());
 

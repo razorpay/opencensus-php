@@ -74,6 +74,9 @@ abstract class Base extends BaseCore
 
             $this->createFundTransferAttemptEntity($payout);
 
+            // Create merchant/customer transactions and link it to payout.
+            $this->createTxns($payout);
+
             $this->repo->saveOrFail($payout);
 
             return $payout;
@@ -88,5 +91,7 @@ abstract class Base extends BaseCore
     abstract protected function setChannel();
 
     abstract protected function setPayoutDestination($input);
+
+    abstract protected function createTxns(Payout\Entity $payout);
 }
 

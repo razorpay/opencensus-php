@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Balance;
 
 use RZP\Base;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -20,6 +21,7 @@ class Validator extends Base\Validator
                 'Maximum wallet payment amount limit has been crossed for the customer');
         }
 
+        /*
         // Check usage limits for wallet credits except for refunds
         if ($isRefund === false)
         {
@@ -30,6 +32,7 @@ class Validator extends Base\Validator
             //
             // $this->checkMonthlyUsageLimits($newBalance);
         }
+        */
     }
 
     protected function checkMonthlyUsageLimits(int $newBalance)
@@ -43,14 +46,20 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBalanceForDebit(int $amount)
+    public function validateBalanceForDebit(int $amount, string $source = Constants\Entity::PAYMENT)
     {
         $newBalance = $this->entity->getBalance() - $amount;
 
         if ($newBalance < 0)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE;
+
+            if ($source == Constants\Entity::PAYOUT)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE;
+            }
+
+            throw new Exception\BadRequestException($errorCode);
         }
     }
 }
