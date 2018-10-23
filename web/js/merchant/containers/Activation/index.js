@@ -9,7 +9,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import KycForm from './new';
 import InstantActivation from './Instant';
 
-@connect(state => ({ user: state.session.user }))
+@connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -45,7 +45,7 @@ export default class ActivationContainer extends Component {
       !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
       data = data.data;
-      categories = categories.data;
+      categories = categories && categories.data;
 
       this.setState({
         data,

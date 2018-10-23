@@ -183,7 +183,7 @@ export default class HomeContainer extends Component {
      * below
      */
     if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
-      if (!user.isSubmitted || !user.isActivated) {
+      if (user.activation_status !== 'activated' || !user.isActivated) {
         this.state = {
           ...this.state,
           showOnboardingBanner: true,

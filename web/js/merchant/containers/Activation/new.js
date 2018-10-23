@@ -59,7 +59,7 @@ export default class ActivationContainer extends React.Component {
       this.preloadWelcomeAsset();
     }
 
-    if (data.can_submit) {
+    if (data && data.can_submit) {
       this.preloadSuccessAsset();
     }
 
