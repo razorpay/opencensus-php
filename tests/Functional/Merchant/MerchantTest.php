@@ -1976,6 +1976,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutRouteWithCheckoutFeatures()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['google_pay']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['features']['google_pay']);
+    }
+
     public function testPutPaytmMethod()
     {
         $this->fixtures->create('pricing:standard_plan');
