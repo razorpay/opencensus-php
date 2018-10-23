@@ -21,6 +21,7 @@ export default class OnboardingCardInstant extends Component {
       showProducts: false,
       showTransactionsHelper: false,
       contentWidth: null,
+      activeStep: 0,
     };
 
     this.onCloseProductsModal = null;
@@ -29,6 +30,12 @@ export default class OnboardingCardInstant extends Component {
     this.showTransactionsModal = this.showTransactionsModal.bind(this);
     this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
     this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
+  }
+
+  setActiveStep(activeStep = 0) {
+    return (
+      activeStep !== this.state.activeStep && this.setState({ activeStep })
+    );
   }
 
   setContentWidth(width) {
@@ -107,6 +114,7 @@ export default class OnboardingCardInstant extends Component {
         showTransactionsHelper,
         isKLA,
         contentWidth,
+        activeStep,
       } = this.state,
       commonModeCardProps = {
         mode,
@@ -114,6 +122,7 @@ export default class OnboardingCardInstant extends Component {
         hasKeyAccess,
         isKLA,
         showProductsModal: this.showProductsModal,
+        setActiveStep: this.setActiveStep,
       },
       activationCardProps = {
         instantActivation,
@@ -121,6 +130,7 @@ export default class OnboardingCardInstant extends Component {
         needsClarification,
         isActivated,
         isRejected,
+        setActiveStep: this.setActiveStep,
       };
 
     return (
@@ -143,14 +153,21 @@ export default class OnboardingCardInstant extends Component {
           className="onboarding-card-instant-content"
           ref={node => (this.content = node)}
         >
-          <div className="onboarding-steps">
-            <TestModeCard {...commonModeCardProps} />
-            <ActivationStatusCard {...activationCardProps} />
+          <div className={`onboarding-steps active-step-${activeStep}`}>
+            <TestModeCard
+              {...commonModeCardProps}
+              onActive={() => this.setActiveStep(0)}
+            />
+            <ActivationStatusCard
+              {...activationCardProps}
+              onActive={() => this.setActiveStep(1)}
+            />
             <LiveModeCard
               instantActivation={instantActivation}
               isRejected={user.isRejected}
               isActivated={user.isActivated}
               showTransactionsModal={this.showTransactionsModal}
+              onActive={() => this.setActiveStep(2)}
               {...commonModeCardProps}
             />
           </div>
@@ -161,6 +178,17 @@ export default class OnboardingCardInstant extends Component {
           <div className="onboarding-illustration-bottom">
             <img src="/dist/css/assets/onboarding/bottom_bg.png" />
           </div>
+        </div>
+        <div className="onboarding-step-switcher">
+          {[0, 1, 2].map(stepNum => (
+            <div
+              className={`onboarding-step-switch${
+                activeStep === stepNum ? ' active' : ''
+              }`}
+              key={stepNum}
+              onClick={() => this.setActiveStep(stepNum)}
+            />
+          ))}
         </div>
       </div>
     );

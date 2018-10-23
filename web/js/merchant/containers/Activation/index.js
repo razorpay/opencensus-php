@@ -133,7 +133,9 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div class="ActivationContainer">{content || spinner}</div>
+      <div className={`ActivationContainer${showL1Modal ? ' instant' : ''}`}>
+        {content || spinner}
+      </div>
     );
   }
 }

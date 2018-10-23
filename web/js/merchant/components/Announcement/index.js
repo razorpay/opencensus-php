@@ -38,19 +38,20 @@ export default class Announcement extends Component {
       ...props
     } = this.props;
 
+    if (this.props.hidden || this.state.hidden) {
+      return null;
+    }
+
     return (
-      <AnnouncementBanner
-        className={classList(
-          'Announcement_Banner',
-          className,
-          (this.props.hidden || this.state.hidden) &&
-            'Announcement_Banner--hide'
-        )}
-        onClose={canBeClosed && this.handleClose}
-        {...props}
-      >
-        {this.props.children}
-      </AnnouncementBanner>
+      <div className="announcement-banner-container">
+        <AnnouncementBanner
+          className={classList('Announcement_Banner', className)}
+          onClose={canBeClosed && this.handleClose}
+          {...props}
+        >
+          {this.props.children}
+        </AnnouncementBanner>
+      </div>
     );
   }
 }

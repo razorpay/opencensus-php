@@ -142,7 +142,7 @@ export default [
     },
   ],
   {
-    label: 'Propreitor PAN',
+    label: 'Proprietor PAN',
     name: 'promoter_pan',
     placeholder: 'PAN Number',
     className: 'Input--capitalize',

@@ -253,6 +253,33 @@ $side-width = 240px
   .Activation--welcome
     max-width: 720px
 
+  &.instant {
+
+    .Activation--wizard {
+
+      height: auto;
+      min-height: 0;
+      max-height: max-content;
+
+      main.form-container {
+
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+
+        main-title {
+
+          font-size: 18px !important;
+          line-height: 22px;
+          font-weight: bold;
+          text-transform: none;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
 
 /* Modal-container size */
 .Modal-container.Modal-container
@@ -295,6 +322,10 @@ $side-width = 240px
 
           main-title {
 
+            font-size: 18px !important;
+            line-height: 22px;
+            font-weight: bold;
+            text-transform: none;
             margin-bottom: 0;
           }
 

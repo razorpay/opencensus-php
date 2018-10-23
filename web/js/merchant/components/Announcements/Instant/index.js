@@ -54,18 +54,16 @@ export default class InstantActivationAnnouncements extends Component {
     }
 
     return (
-      <div className="announcement-banner-container">
-        <Announcement
-          title={title}
-          theme={theme}
-          bannerKey={`announcement-banner-${user.activation_status}-${
-            user.current
-          }`}
-          canBeClosed={user.isAccepted}
-        >
-          {content}
-        </Announcement>
-      </div>
+      <Announcement
+        title={title}
+        theme={theme}
+        bannerKey={`announcement-banner-${user.activation_status}-${
+          user.current
+        }`}
+        canBeClosed={user.isAccepted}
+      >
+        {content}
+      </Announcement>
     );
   }
 }

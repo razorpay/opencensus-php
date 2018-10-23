@@ -47,7 +47,6 @@ export default class OnboardingCard extends Component {
     params.mode = this.props.mode;
 
     Promise.all([
-      //(isKLA && Promise.resolve(false)) ||
       (mode === LIVE_MODE && isKLA && Promise.resolve(false)) ||
         this.props.fetchKeys(params).then(({ data }) => {
           return !!data.items.length;
