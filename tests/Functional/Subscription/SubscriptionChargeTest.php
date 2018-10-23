@@ -494,11 +494,13 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
-    public function testSubscriptionCardChangeOnAuthenticated()
+    public function testSubscriptionCardChangeOnCancelled()
     {
-        $this->doAuthTxnForSubscriptionWithAddOn();
+        $this->doAuthTxnForSubscriptionWithAddOn(false);
 
         $subscription = $this->getLastEntity('subscription', true);
+
+        $this->cancelSubscription($subscription);
 
         $paymentRequest = $this->getSubscriptionCardChangeRequest($subscription);
 
