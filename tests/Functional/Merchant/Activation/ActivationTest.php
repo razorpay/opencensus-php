@@ -127,6 +127,14 @@ class ActivationTest extends TestCase
      */
     public function testBlacklistInstantActivation()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -134,6 +142,14 @@ class ActivationTest extends TestCase
 
     public function testGreylistInstantActivation()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
