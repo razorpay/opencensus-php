@@ -95,7 +95,13 @@ export default class AddGST extends Component {
   };
 
   render() {
-    const { handleSubmit, merchant_gst, rzp_gst, selectedGSTType } = this.props;
+    const {
+      handleSubmit,
+      merchant_gst,
+      rzp_gst,
+      selectedGSTType,
+      session,
+    } = this.props;
     const isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
     const isEditable =
       isNew && this.props.session.user.isAllowedEdit('profile_gst');
@@ -120,18 +126,22 @@ export default class AddGST extends Component {
                 <i class="i i-close" />
               </button>
 
-              <label>Razorpay's GST number</label>
-              <div>
-                <span>{rzp_gst.gstin}</span>
-                <CustomClipboard value={rzp_gst.gstin}>
-                  <button
-                    class="btn btn-default btn-xs"
-                    style={{ marginLeft: '5px' }}
-                  >
-                    Copy GST
-                  </button>
-                </CustomClipboard>
-              </div>
+              {session.user.isOrgRZP && (
+                <React.Fragment>
+                  <label>Razorpay's GST number</label>
+                  <div>
+                    <span>{rzp_gst.gstin}</span>
+                    <CustomClipboard value={rzp_gst.gstin}>
+                      <button
+                        class="btn btn-default btn-xs"
+                        style={{ marginLeft: '5px' }}
+                      >
+                        Copy GST
+                      </button>
+                    </CustomClipboard>
+                  </div>
+                </React.Fragment>
+              )}
 
               <hr />
             </div>
@@ -198,8 +208,7 @@ export default class AddGST extends Component {
               <div class="help-block">
                 <span>
                   GSTIN once submitted cannot be updated via dashboard. To
-                  update it, write to us at{' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+                  update it, please <Link to="#ticket">write to support</Link>
                 </span>
               </div>
 

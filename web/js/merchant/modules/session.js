@@ -54,17 +54,6 @@ export const logout = () => {
   };
 };
 
-export const submitFeedback = data => {
-  return () => {
-    return ajax({
-      url: '/sendfeedback',
-      method: 'post',
-      appendModeInURL: false,
-      data,
-    });
-  };
-};
-
 export const showOrHideTour = toShowTour => {
   return {
     type: SHOW_HIDE_TOUR,

@@ -47,6 +47,15 @@ const heading =
   }
 )
 export default class VirtualAccountsListContainer extends ListContainer {
+  constructor(props) {
+    super(props);
+
+    this.prefix = '';
+    if (props.user.isOrgRZP) {
+      this.prefix = 'Razorpay ';
+    }
+  }
+
   componentWillMount() {
     // TODO: Don't call below when feature is disbaled
     super.componentWillMount();
@@ -89,7 +98,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
       .then(res => {
         this.props.showNotification({
           type: 'success',
-          message: 'Razorpay Smart Collect has been enabled!',
+          message: `${this.prefix}Smart Collect has been enabled!`,
         });
         setTimeout(() => location.reload());
       })
@@ -151,7 +160,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
       component: (
         <FeatureOnboardingModal
           onClose={this.props.closeModal}
-          heading="Razorpay Smart Collect"
+          heading={`${this.prefix}Smart Collect`}
           description={heading}
           formType="virtual_accounts"
           isTestMode={false}
@@ -166,7 +175,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
     if (!featureEnabled) {
       return (
         <FeatureOnboarding
-          heading="Razorpay Smart Collect"
+          heading={`${this.prefix}Smart Collect`}
+          s
           description={heading}
           formType="virtual_accounts"
           isTestMode={this.props.mode === 'test'}
@@ -179,7 +189,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
       <div>
         {this.props.mode === 'test' && (
           <ActivationBanner
-            productName="Razorpay Smart Collect"
+            productName={`${this.prefix}Smart Collect`}
             productDocs="https://razorpay.com/docs/smart-collect"
             feature="virtual_accounts"
             symbol="sc"

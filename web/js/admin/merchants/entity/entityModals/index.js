@@ -25,3 +25,4 @@ export ViewTeam from './ViewTeam';
 export EditFraudScore from './EditFraudScore';
 export EditWhiteListIps from './EditWhiteListIps';
 export ViewBanks from './ViewBanks';
+export EditMerchantDetails from './EditMerchantDetails';

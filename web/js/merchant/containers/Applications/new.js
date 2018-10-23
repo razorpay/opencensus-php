@@ -25,18 +25,21 @@ import LoaderDots from 'rzp/ui/LoaderDots';
 
 import AppWebhook from './AppWebhook';
 
-const INFO = {
-  icon:
-    'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
-  dev:
-    "Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect with Razorpay.",
+const INFO = user => ({
+  icon: `Your uploaded app icon will be shown to your users on ${
+    user.isOrgRZP ? 'Razorpay' : 'the'
+  } Connect screens. The icon will also be displayed in the connected applications list`,
+  dev: `Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect ${
+    user.isOrgRZP ? 'with Razorpay' : 'their account'
+  }.`,
   prod: (
     <span>
       Add comma separated URIs. <b>URIs must be HTTPs.</b> We'll redirect your
-      users back to any of the URI provided, after they connect with Razorpay.
+      users back to any of the URI provided, after they connect{' '}
+      {user.isOrgRZP ? 'with Razorpay' : 'their account'}.
     </span>
   ),
-};
+});
 
 const selector = formValueSelector('newApplicationForm');
 
@@ -366,16 +369,16 @@ class NewApplicationForm extends Component {
               </div>
               <small class="col-md-8 help-block">
                 <i class="i i-info-circle" />
-                <span>{INFO.icon}</span>
+                <span>{INFO(user).icon}</span>
               </small>
             </div>
 
             {this.state.edit && (
               <div class="edit-details">
                 <div class="section-divide" />
-                <AppDetails type="dev" />
+                <AppDetails type="dev" user={user} />
                 <div class="section-divide" />
-                <AppDetails type="prod" />
+                <AppDetails type="prod" user={user} />
               </div>
             )}
 
@@ -450,7 +453,7 @@ class AppDetails extends Component {
   };
 
   render() {
-    const { type } = this.props;
+    const { type, user } = this.props;
     return (
       <Fragment>
         <div class="col-md-offset-2 col-md-10">
@@ -505,7 +508,7 @@ class AppDetails extends Component {
           <div class="clearfix" />
           <small class="col-md-offset-2 col-md-10 help-block">
             <i class="i i-info-circle" />
-            <span>{INFO[type]}</span>
+            <span>{INFO(user)[type]}</span>
           </small>
         </div>
       </Fragment>

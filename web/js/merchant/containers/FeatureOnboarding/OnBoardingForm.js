@@ -11,9 +11,9 @@ import FORM_TYPE from './Forms';
 
 export default class OnBoardingForm extends Component {
   getWizardForm = () => {
-    const { formType, handleChange, onSave, disabled } = this.props;
+    const { formType, handleChange, onSave, disabled, user } = this.props;
 
-    const currentForm = FORM_TYPE[formType];
+    const currentForm = FORM_TYPE(user)[formType];
     const WizardForm = currentForm.formComponent;
 
     return (
@@ -33,9 +33,9 @@ export default class OnBoardingForm extends Component {
   };
 
   render() {
-    const { formType, isPreStepCompleted } = this.props;
+    const { formType, isPreStepCompleted, user } = this.props;
 
-    const currentForm = FORM_TYPE[formType];
+    const currentForm = FORM_TYPE(user)[formType];
     const WizardFormPreStep =
       currentForm.preStep && currentForm.preStep.component;
 

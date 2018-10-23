@@ -5,7 +5,10 @@ import { openModal } from 'rzp/modules/modals';
 import AddGST from './AddGST';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-@connect(state => state.profile, { fetchGST, openModal })
+@connect(state => ({ ...state.profile, user: state.session.user }), {
+  fetchGST,
+  openModal,
+})
 export default class GSTDetails extends Component {
   componentWillMount() {
     this.props.fetchGST();
@@ -19,7 +22,7 @@ export default class GSTDetails extends Component {
   };
 
   render() {
-    let { merchant_gst, rzp_gst } = this.props;
+    let { merchant_gst, rzp_gst, user } = this.props;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -45,10 +48,12 @@ export default class GSTDetails extends Component {
             )}
           </div>
 
-          <div class="list-group-item">
-            <span>Razorpay's GST Number</span>
-            <span>{rzp_gst.gstin}</span>
-          </div>
+          {user.isOrgRZP && (
+            <div class="list-group-item">
+              <span>Razorpay's GST Number</span>
+              <span>{rzp_gst.gstin}</span>
+            </div>
+          )}
         </div>
       </div>
     );

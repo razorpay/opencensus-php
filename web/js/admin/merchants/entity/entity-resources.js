@@ -14,6 +14,8 @@ import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
 import ActivationStatusLogsDetails from './entityDetails/ActivationStatusLogsDetails';
 
+import { isOrgHDFC } from 'admin/user';
+
 /*---------------------------------------- Functionality ------------------------------------------*/
 
 /* RESOURCE UTILS */
@@ -522,6 +524,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Merchant Handle',
       value: details.handle,
+      toHide: isOrgHDFC(),
     },
     {
       label: 'Transaction Report Email',

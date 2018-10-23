@@ -18,6 +18,7 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'common/util';
+import { isOrgHDFC } from 'admin/user';
 
 let parentProps, merchantId;
 const actions = {};
@@ -458,6 +459,13 @@ const ActionsList = ({ model, merchantId, actions }) => {
             )}
           </div>
         </ShowWhen>
+        <ShowWhen permission="edit_merchant">
+          <div onClick={isDetailsLoading ? null : actions.EditMerchantDetails}>
+            Edit Advanced Details
+            <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
         <ShowWhen permission="edit_merchant_risk_threshold">
           <div onClick={isDetailsLoading ? null : actions.EditFraudScore}>
             Edit Fraud Score
@@ -542,10 +550,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-money" />
           </div>
         </ShowWhen>
-        <div onClick={actions.AssignMerchantHandle}>
-          Assign Merchant Handle
-          <i class="pull-right i">@</i>
-        </div>
+        <ShowWhen permission="assign_merchant_handle">
+          <div onClick={actions.AssignMerchantHandle}>
+            Assign Merchant Handle
+            <i class="pull-right i">@</i>
+          </div>
+        </ShowWhen>
         {merchant.features['live'] &&
           merchant.features['live'].assigned_features.indexOf('irctc_report') >
             -1 && (
@@ -649,7 +659,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}
+              {merchant.details.suspended_at === null
+                ? 'Suspend '
+                : 'Unsuspend '}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />
@@ -745,12 +757,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-camera" />
           </div>
         </ShowWhen>
-        <ShowWhen permission="edit_merchant">
-          <div onClick={isDetailsLoading ? null : actions.EditWhiteListIps}>
-            Edit Whitelist IPs
-            {isDetailsLoading && <div class="dot-loader">.</div>}
-          </div>
-        </ShowWhen>
+        {!isOrgHDFC() && (
+          <ShowWhen permission="edit_merchant">
+            <div onClick={isDetailsLoading ? null : actions.EditWhiteListIps}>
+              Edit Whitelist IPs
+              {isDetailsLoading && <div class="dot-loader">.</div>}
+            </div>
+          </ShowWhen>
+        )}
       </div>
     </aside>
   );

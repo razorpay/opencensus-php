@@ -112,5 +112,10 @@ const entityModalsMap = {
   },
 };
 
+export const supportHashMapping = {
+  '#request': '#support',
+  '#ticket': '#ticket',
+};
+
 export const matchDetail = matchDetailx(store, entityDetailsMap);
 export const matchModal = matchModalx(store, entityModalsMap);

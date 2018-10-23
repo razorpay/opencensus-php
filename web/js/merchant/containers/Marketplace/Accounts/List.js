@@ -88,16 +88,11 @@ export default class AccountsListContainer extends ListContainer {
       }); // dummy catch to handle confirm abort rejection
   };
 
-  fetchEntityList({ id, ...params }) {
-    if (id) {
-      return Promise.resolve(
-        this.showAccountDetailsModal({
-          id,
-        })
-      );
-    } else {
-      return this.props.fetchAccounts(params);
+  fetchList({ id, ...rest }) {
+    if (id && id.indexOf('acc_') > -1) {
+      id = id.replace('acc_', '');
     }
+    return this.props.fetchAccounts({ id, ...rest });
   }
 
   fetchAccounts = (skip, count) => {

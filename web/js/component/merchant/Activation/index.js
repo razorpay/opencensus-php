@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
@@ -945,11 +946,8 @@ export default class ActivationWizard extends React.Component {
             let Component = Alert.Info;
             let icon, msg;
 
-            let secondaryMsg =
-              'For any clarifications, you can reach out to us at';
-            const emailLink = (
-              <a href="mailto:support@razorpay.com">support@razorpay.com</a>
-            );
+            let secondaryMsg = 'For any clarifications, you can';
+            const ticketLink = <Link to="#ticket">write to support</Link>;
 
             if (showFormDisabledAlert) {
               if (isFormActivated) {
@@ -959,8 +957,7 @@ export default class ActivationWizard extends React.Component {
                 msg = 'Your account is activated.';
                 secondaryMsg = (
                   <React.Fragment>
-                    For any changes, please write to {emailLink} from your
-                    registered email.
+                    For any changes, please {ticketLink}.
                   </React.Fragment>
                 );
               } else if (data.activation_status === 'needs_clarification') {
@@ -979,8 +976,7 @@ export default class ActivationWizard extends React.Component {
                 msg = 'There are issues with your activation form. ' + subMsg;
                 secondaryMsg = (
                   <React.Fragment>
-                    In case of any queries, you can reach out to us at{' '}
-                    {emailLink}
+                    In case of any queries, please {ticketLink}
                   </React.Fragment>
                 );
               } else if (data.activation_status === 'rejected') {
@@ -998,11 +994,10 @@ export default class ActivationWizard extends React.Component {
 
                 icon = 'i-outline-lock';
                 msg =
-                  'Your activation form under review. We will let you know once your account gets activated.';
+                  'Your activation form is under review. We will let you know once your account gets activated.';
                 secondaryMsg = (
                   <React.Fragment>
-                    In case of any queries, you can reach out to us at{' '}
-                    {emailLink}
+                    In case of any queries, please {ticketLink}
                   </React.Fragment>
                 );
               } else if (isFormSubmitted) {
@@ -1360,7 +1355,7 @@ class SubmitForm extends React.Component {
           {/* Secondary copy */}
           <p class="text-fade">
             Please review the form before submitting. For any changes after
-            submission, you can contact us at support@razorpay.com.
+            submission, you can <Link to="#ticket">write to support</Link>
           </p>
 
           {/* Action button */}
