@@ -22,7 +22,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::AMOUNT          => 'required_with:currency,settings.allow_multiple_units|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
-        Entity::SUPPORT_CONTACT => 'filled|contact_syntax',
+        Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'filled|email',
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array|custom',
@@ -44,7 +44,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::AMOUNT          => 'required_with:currency,settings.allow_multiple_units|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
@@ -53,7 +53,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
-        Entity::SUPPORT_CONTACT => 'filled|contact_syntax',
+        Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'filled|email',
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array|custom',
@@ -275,13 +275,14 @@ class Validator extends Base\Validator
         {
             $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
         }
-        // If payment for multiple amounts is allowed - Payment's amount in case greater than link's amount, must contain valid units parameter in notes.
+        // Else if payment for multiple amounts is allowed and payment.notes.units must(if exists) must contain valid integer value.
         else if ($allowMultipleUnits === true)
         {
-            $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
-            if ($paymentUnits < 1)
+            $paymentUnits = filter_var($payment->getNotes()[Entity::UNITS] ?? '1', FILTER_VALIDATE_INT);
+
+            if (($paymentUnits === false) or ($paymentUnits < 1))
             {
-                $errorMsg = 'Payment notes must contain numeric units parameter greater than equal to 1.';
+                $errorMsg = 'Payment notes must contain units which is numeric and greater than equal to 1.';
             }
             else if ($paymentAmountWithoutFee !== ($paymentUnits * $paymentLinkAmount))
             {
