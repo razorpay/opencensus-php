@@ -160,6 +160,10 @@ export default class MerchantList extends Component {
       ],
     ];
 
+    if (this.props.instantActivation) {
+      fields.push(['Balance', item => item.balance]);
+    }
+
     if (user.permissions.find(perm => perm === 'view_merchant_stats')) {
       fields.push([
         'Action',
