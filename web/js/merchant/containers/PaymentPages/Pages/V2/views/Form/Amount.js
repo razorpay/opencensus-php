@@ -6,7 +6,7 @@ import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
-  const cls = 'Field Field--disabled Field--required';
+  let cls = 'Field Field--disabled Field--required';
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
@@ -15,6 +15,10 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
     amountToDisplay = getFormattedAmount(
       Number(paymentPageEntity.amount || 0) * 100
     );
+
+    if (!paymentPageEntity.amount) {
+      cls += ' Field--small';
+    }
   }
 
   const content = (
@@ -37,25 +41,29 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                   {paymentPageEntity.allow_multiple_units && (
                     <React.Fragment>
                       <span style={{ margin: '0 24px' }}>×</span>
-                      <div
-                        class="Field-wrapper Field-wrapper--counter"
-                        style={{
-                          display: 'inline-block',
-                          pointerEvents: 'none',
-                        }}
-                      >
-                        <button type="button" disabled>
-                          -
-                        </button>
-                        <input
-                          class="Field-el counter-value"
-                          name="field_1"
-                          defaultValue="1"
-                          disabled
-                        />
-                        <button type="button" disabled>
-                          +
-                        </button>
+                      <div class="Field Field--counter Field--small">
+                        <div class="Field-content">
+                          <div
+                            class="Field-wrapper Field-wrapper--counter"
+                            style={{
+                              display: 'inline-block',
+                              pointerEvents: 'none',
+                            }}
+                          >
+                            <button type="button" disabled>
+                              -
+                            </button>
+                            <input
+                              class="Field-el counter-value"
+                              name="field_1"
+                              defaultValue="1"
+                              disabled
+                            />
+                            <button type="button" disabled>
+                              +
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </React.Fragment>
                   )}
