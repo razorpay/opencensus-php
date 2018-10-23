@@ -29,6 +29,8 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
+    const INSTANT_ACTIVATION_TIMESTAMP = 1540174905;
+
     /**
      * @var Application
      */
@@ -390,7 +392,14 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    $data['experiments']['instant_activations'] = (new Merchant\Service)->getTreatment('instant_activations');
+                    if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
+                    {
+                        $data['experiments']['instant_activations'] = (new Merchant\Service)->getTreatment('instant_activations');
+                    }
+                    else
+                    {
+                        $data['experiments']['instant_activations'] = ["result" => "off"];
+                    }
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
