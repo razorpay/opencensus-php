@@ -6,7 +6,7 @@ import FileStaged from 'merchant/components/File/Staged';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-const MAX_FILE_SIZE = 1048576; // 1MB in bytes.
+const MAX_FILE_SIZE = 5242880; // 5MB in bytes.
 
 export default class BatchValidateModal extends Component {
   state = {

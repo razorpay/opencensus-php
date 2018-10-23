@@ -94,7 +94,7 @@ export default class BatchListContainer extends ListContainer {
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
         batchType="payment_link"
-        maxRows={5000}
+        maxRows={50000}
         gaEvents={gaEvents}
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
