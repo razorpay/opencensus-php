@@ -11,6 +11,7 @@ import {
   saveInvoice,
   updatePLInReduxList,
 } from 'merchant/modules/invoices/list';
+import { createAuthLink } from 'merchant/modules/auth_link';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -41,6 +42,13 @@ const mandatoryFields = [
   'mandateMethod',
   'customerContact',
   'customerEmail',
+];
+
+const mandatoryBankFields = [
+  'mandateBankName',
+  'mandateBankAccountIFSC',
+  'mandateBeneficiaryName',
+  'mandateBankAccountNumber',
   'mandateAuthType',
   'mandateBankAccountType',
 ];
@@ -52,6 +60,7 @@ const mandatoryFields = [
   updatePLInReduxList,
   showNotification,
   luminateRow,
+  createAuthLink,
 })
 export default class CreateNewAuthLinkContainer extends Component {
   state = {
@@ -61,10 +70,20 @@ export default class CreateNewAuthLinkContainer extends Component {
   };
 
   allMandatoryFieldsPresent = () => {
-    const mandatoryFieldsPresent = mandatoryFields.every(
+    const { mandateMethod } = this.state;
+    let actualMandatoryFields = [...mandatoryFields];
+
+    if (mandateMethod === 'emandate' && !Number(this.state.skipBankDetails)) {
+      actualMandatoryFields = [
+        ...actualMandatoryFields,
+        ...mandatoryBankFields,
+      ];
+    }
+
+    const mandatoryFieldsPresent = actualMandatoryFields.every(
       field => !!this.state[field]
     );
-    if (mandatoryFieldsPresent && this.state.mandateMethod === 'card') {
+    if (mandatoryFieldsPresent && mandateMethod === 'card') {
       return !!this.state.amount;
     }
     return mandatoryFieldsPresent;
@@ -105,10 +124,10 @@ export default class CreateNewAuthLinkContainer extends Component {
       );
 
     const payload = {
-      type: 'auth_link',
+      type: 'link',
       description: data.description,
       receipt: data.receipt,
-      expire_by: data.expireAt,
+      expire_by: !data.hasNoExpiry && data.expireAt,
       amount:
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
@@ -119,46 +138,47 @@ export default class CreateNewAuthLinkContainer extends Component {
         contact: data.customerContact,
         email: data.customerEmail,
       },
-      mandate: {
+      subscription_registration: {
         method: data.mandateMethod,
         max_amount:
-          data.mandateMethod === 'emandate'
+          data.mandateMethod === 'emandate' && !!data.mandateMaxAmount
             ? rupeesToPaise(data.mandateMaxAmount)
             : undefined,
-        auth_type: data.mandateMethod === 'emandate' ? 'netbanking' : undefined,
+        auth_type:
+          data.mandateMethod === 'emandate' && !data.skipBankDetails
+            ? data.mandateAuthType
+            : undefined,
         expire_at: data.mandateExpireAt,
         bank_account:
-          data.mandateMethod === 'emandate'
+          data.mandateMethod === 'emandate' && !data.skipBankDetails
             ? {
                 bank_name: data.mandateBankName,
                 ifsc_code: data.mandateBankAccountIFSC,
                 account_number: data.mandateBankAccountNumber,
                 beneficiary_name: data.mandateBeneficiaryName,
-                account_type: data.mandateBankAccountType,
+                account_type: data.mandateBankName
+                  ? data.mandateBankAccountType
+                  : undefined,
               }
             : undefined,
       },
     };
 
-    return merchantFetch({
-      url: 'invoices',
-      method: 'post',
-      data: payload,
-    })
+    return this.props
+      .createAuthLink(payload)
       .then(response => {
-        if (response.data) {
+        if (response) {
           this.props.showNotification({
             type: 'success',
             message: 'Auth Link Successfully created',
           });
 
-          const entityId = response.data.id;
+          const entityId = response.id;
 
           if (this.props.onClose) {
-            this.props.updatePLInReduxList(response, true);
             this.props.luminateRow(entityId);
 
-            this.props.onClose();
+            this.props.onClose(``);
           } else {
             const redirectUrl = '/authlinks/' + entityId;
 
@@ -176,6 +196,8 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   renderForm = ({ isModalView }) => {
     const method = this.state.mandateMethod;
+    const skipBankDetails = !!Number(this.state.skipBankDetails);
+
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
@@ -277,7 +299,16 @@ export default class CreateNewAuthLinkContainer extends Component {
 
             {method === 'emandate' && (
               <Fragment>
-                <Input.Group label="Bank Details" class="InputGroup--inline">
+                <Input.Check
+                  data-name="skipBankDetails"
+                  fieldLabel="Skip Bank Details"
+                />
+
+                <Input.Group
+                  label="Bank Details"
+                  class="InputGroup--inline"
+                  disabled={skipBankDetails}
+                >
                   <div class="Input-content">
                     <Input
                       name="mandateBankName"
@@ -295,7 +326,11 @@ export default class CreateNewAuthLinkContainer extends Component {
                   </div>
                 </Input.Group>
 
-                <Input.Group label="Account Details" class="InputGroup--inline">
+                <Input.Group
+                  label="Account Details"
+                  class="InputGroup--inline"
+                  disabled={skipBankDetails}
+                >
                   <div class="Input-content">
                     <Input
                       placeholder="Beneficiary Name"
@@ -316,7 +351,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 <Input.Group
                   label="Authentication"
                   class="InputGroup--inline"
-                  required
+                  disabled={skipBankDetails}
                 >
                   <div class="Input-content">
                     <Input.Select
@@ -331,9 +366,12 @@ export default class CreateNewAuthLinkContainer extends Component {
                       name="mandateBankAccountType"
                       options={accountTypes}
                       size="half_big"
-                      disabled={this.state.mandateAuthType !== 'aadhar'}
                       description="Type of Bank Account"
                       value={this.state.mandateBankAccountType}
+                      disabled={
+                        !skipBankDetails &&
+                        this.state.mandateAuthType !== 'aadhar'
+                      }
                     />
                   </div>
                 </Input.Group>
