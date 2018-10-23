@@ -53,4 +53,9 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'Z3' => 'Unable to go online',
         'IC' => 'Invalid currency code'
     ];
+
+    public static function getErrorFieldName($fieldName)
+    {
+        return 'pRespCode';
+    }
 }

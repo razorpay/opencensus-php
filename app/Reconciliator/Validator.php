@@ -473,7 +473,7 @@ class Validator extends Base\Core
             function($key)
             {
                 return (strpos($key, 'attachment-') === 0) and
-                       (strpos($key, 'attachment-count') === false);
+                       (strpos($key, RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT) === false);
             },
             ARRAY_FILTER_USE_KEY
         );
@@ -497,22 +497,22 @@ class Validator extends Base\Core
 
         // Sets 'attachment-count' if not present and returns.
         // If present, converts it to int.
-        if (isset($input['attachment-count']) === false)
+        if (isset($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]) === false)
         {
-            $input['attachment-count'] = $foundAttachmentsCount;
+            $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] = $foundAttachmentsCount;
         }
         else
         {
-            $input['attachment-count'] = intval($input['attachment-count']);
+            $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] = intval($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]);
 
             // The input's attachment-count and found attachments count should be equal.
-            if ($input['attachment-count'] !== $foundAttachmentsCount)
+            if ($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] !== $foundAttachmentsCount)
             {
                 throw new Exception\ReconciliationException(
                     'The number of attachments found, does not match with the attachment-count input',
                     [
                         'attachments_found' => $foundAttachmentsCount,
-                        'attachment_count' => $input['attachment-count']
+                        'attachment_count' => $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]
                     ]
                 );
             }

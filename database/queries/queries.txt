@@ -4346,6 +4346,9 @@ ALTER TABLE payments
 ALTER TABLE axis
     ADD INDEX axis_refund_id_index (refund_id);
 
+#Changes for payout on demand
+ALTER TABLE payouts ADD COLUMN `type` char(30) not null default 'default' AFTER settled_on;
+
 Alter table payments
     CHANGE reference15 settled_by VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;

@@ -2,8 +2,6 @@
 
 namespace RZP\Reconciliator\RequestProcessor;
 
-use RZP\Exception;
-
 class Manual extends Base
 {
     /**
@@ -46,8 +44,8 @@ class Manual extends Base
     protected function getInputDetails(array $input): array
     {
         $inputDetails = [
-            self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::GATEWAY          => $input['gateway'],
+            self::ATTACHMENT_COUNT => $input[self::ATTACHMENT_HYPHEN_COUNT],
+            self::GATEWAY          => $input[self::GATEWAY],
             self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? [],
             self::FORCE_AUTHORIZE  => $input[self::FORCE_AUTHORIZE] ?? [],
         ];

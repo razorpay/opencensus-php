@@ -99,9 +99,9 @@ class Server extends Base\Mock\Server
         $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = '<output response="SUCCESS" transactionId="'.
-            $payment['transaction_id'].
+            '{{transactionId}}'.
             '" paymentId="'.
-            $payment['reference_id'].
+            '{{paymentId}}'.
             '" amount="'.
             $input['Amount'].
             '" dateTime="'.
@@ -112,7 +112,7 @@ class Server extends Base\Mock\Server
             $payment["payment_id"].
             '" transactionType="refunded" status="Processing" />';
 
-        $this->content($content);
+        $this->content($content, $this->action);
 
         return $this->makeResponse($content);
     }

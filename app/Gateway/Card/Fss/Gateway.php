@@ -904,14 +904,14 @@ class Gateway extends Base\Gateway
     protected function checkErrorMessage($gatewayPayment, $gatewayContent)
     {
         // FSS sends just cancelled in the error instead of error code + desc.
-        if (empty($gatewayPayment->getErrorMessage()) === false and
-            $gatewayPayment->getErrorMessage() !== Constants::CANCELLED)
+        if ((empty($gatewayPayment->getErrorMessage()) === false) and
+            ($gatewayPayment->getErrorMessage() !== Constants::CANCELLED))
         {
             $gatewayCode = $this->getErrorCode($gatewayPayment->getErrorMessage());
 
-            $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
+            $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode(['code' => $gatewayCode]);
 
-            $errorCode = ErrorCodes::getMappedCode($gatewayCode);
+            $errorDesc = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription(['code' => $gatewayCode]);
 
             throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $gatewayContent);
         }
@@ -1056,11 +1056,11 @@ class Gateway extends Base\Gateway
         if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
         {
             $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+        }
 
-            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
-            {
-                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
-            }
+        if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
+        {
+            $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
         }
     }
 

@@ -57,6 +57,23 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantAndRelationsHdfcOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $testData = $this->testData['testCreateMerchant'];
+
+        $testData['request']['content']['org_id'] = $org->getPublicId();
+
+        $testData['response']['content']['pricing_plan_id'] = 'BAJq6FJDNJ4ZqD';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateMerchantAndRelations()
     {
         $this->ba->adminAuth();
@@ -839,7 +856,7 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
-        
+
         $this->startTest();
 
         Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail) use ($account)

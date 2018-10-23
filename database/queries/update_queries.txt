@@ -2107,3 +2107,5 @@ WHERE customers.email IS NOT NULL
 ALTER TABLE nodal_beneficiaries
     DROP INDEX nodal_beneficiaries_beneficiary_code_unique,
     ADD UNIQUE INDEX  nodal_beneficiaries_beneficiary_code_channel_unique(beneficiary_code, channel);
+
+UPDATE terminals SET corporate = 2, enabled_banks = '["ALLA","ANDB","BBKM","BKDN","BKID","CBIN","CIUB","CNRB","CORP","COSB","DCBL","DCBL","DEUT","DLXB","DBSS","IDFB","IBKL","IDIB","IOBA","JAKA","JSBP","KARB","KKBK","KVBL","MAHB","NKGS","PMCB","PSIB","SBBJ","SBHY","SBIN","SBMY","STBP","SBTR","SCBL","SIBL","SRCB","SVCB","SYNB","TMBL","TNSC","UBIN","UCBA","UTBI","UTIB","VIJB","YESB","PUNB_R","LAVB_R","BARB_C","PUNB_C","LAVB_C"]' WHERE id = '6aCOsaABBOC5M0'

@@ -25,15 +25,15 @@ return [
 
     'permissions' => [
         PermissionCategory::GENERAL => [
-            Permission::VIEW_HOMEPAGE          => 'View Dashboard Home',
+            Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
         ],
 
         PermissionCategory::MERCHANT => [
-            Permission::VIEW_ALL_MERCHANTS    => [
+            Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',
                 'assignable'  => true,
             ],
-            Permission::VIEW_MERCHANT         => [
+            Permission::VIEW_MERCHANT                 => [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
@@ -66,206 +66,207 @@ return [
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
-            Permission::VIEW_MERCHANT_BALANCE => [
+            Permission::VIEW_MERCHANT_BALANCE               => [
                 'description' => 'View merchant balance in merchant details',
                 'assignable'  => true,
             ],
-            Permission::VIEW_MERCHANT_FEATURES => '',
-            Permission::VIEW_MERCHANT_BANKS => '',
-            Permission::VIEW_NETWORKS => '',
-            Permission::VIEW_MERCHANT_BANK_ACCOUNTS => [
+            Permission::VIEW_MERCHANT_FEATURES              => '',
+            Permission::VIEW_MERCHANT_BANKS                 => '',
+            Permission::VIEW_NETWORKS                       => '',
+            Permission::VIEW_MERCHANT_BANK_ACCOUNTS         => [
                 'assignable' => true,
             ],
-            Permission::VIEW_MERCHANT_LOGIN => '',
-            Permission::VIEW_ACTIVITY => '',
-            Permission::VIEW_MERCHANT_HDFC_EXCEL => '',
-            Permission::VIEW_BENEFICIARY_FILE => '',
-            Permission::VIEW_MERCHANT_SCREENSHOT => [
+            Permission::VIEW_MERCHANT_LOGIN                 => '',
+            Permission::VIEW_ACTIVITY                       => '',
+            Permission::VIEW_MERCHANT_HDFC_EXCEL            => '',
+            Permission::VIEW_BENEFICIARY_FILE               => '',
+            Permission::VIEW_MERCHANT_SCREENSHOT            => [
                 'assignable' => true,
             ],
-            Permission::VIEW_ALL_MERCHANT_AGGREGATIONS => '',
-            Permission::VIEW_MERCHANT_AGGREGATIONS => '',
-            Permission::VIEW_MERCHANT_TAGS => '',
-            Permission::SET_PRICING_RULES => [
-                'assignable' => true,
-                'workflow'   => true
-            ],
-            Permission::DELETE_EMI_PLAN => '',
-            Permission::CREATE_EMI_PLAN => '',
-            Permission::CREATE_MERCHANT_LOCK => [
+            Permission::VIEW_ALL_MERCHANT_AGGREGATIONS      => '',
+            Permission::VIEW_MERCHANT_AGGREGATIONS          => '',
+            Permission::VIEW_MERCHANT_TAGS                  => '',
+            Permission::SET_PRICING_RULES                   => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::CREATE_MERCHANT_UNLOCK => [
+            Permission::DELETE_EMI_PLAN                     => '',
+            Permission::CREATE_EMI_PLAN                     => '',
+            Permission::CREATE_MERCHANT_LOCK                => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT => [
+            Permission::CREATE_MERCHANT_UNLOCK              => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_TAGS => '',
-            Permission::EDIT_MERCHANT_FEATURES => [
-                'assignable' => true,
-            ],
-            Permission::EDIT_MERCHANT_FEATURES => '',
-            Permission::EDIT_MERCHANT_BANK_DETAIL => '',
-            Permission::EDIT_IIN_RULE => '',
-            Permission::EDIT_ACTIVATE_MERCHANT => [
+            Permission::EDIT_MERCHANT                       => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_KEY_ACCESS => [
+            Permission::EDIT_MERCHANT_TAGS                  => '',
+            Permission::EDIT_MERCHANT_FEATURES              => [
+                'assignable' => true,
+            ],
+            Permission::EDIT_MERCHANT_FEATURES              => '',
+            Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+            Permission::EDIT_IIN_RULE                       => '',
+            Permission::EDIT_ACTIVATE_MERCHANT              => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_ENABLE_LIVE => [
+            Permission::EDIT_MERCHANT_KEY_ACCESS            => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_DISABLE_LIVE => [
+            Permission::EDIT_MERCHANT_ENABLE_LIVE           => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_ARCHIVE => [
+            Permission::EDIT_MERCHANT_DISABLE_LIVE          => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_UNARCHIVE => [
+            Permission::EDIT_MERCHANT_ARCHIVE               => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_SUSPEND => [
+            Permission::EDIT_MERCHANT_UNARCHIVE             => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
+            Permission::EDIT_MERCHANT_SUSPEND               => [
                 'assignable' => true,
             ],
-            Permission::EDIT_MERCHANT_UNSUSPEND => [
+            Permission::EDIT_MERCHANT_UNSUSPEND             => [
                 'assignable' => true,
             ],
-            Permission::EDIT_MERCHANT_RISK_THRESHOLD => [
+            Permission::EDIT_MERCHANT_RISK_THRESHOLD        => [
                 'assignable' => true,
             ],
-            Permission::EDIT_MERCHANT_METHODS => '',
-            Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL => '',
+            Permission::EDIT_MERCHANT_METHODS               => '',
+            Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
-            Permission::EDIT_MERCHANT_TERMINAL => '',
-            Permission::EDIT_MERCHANT_PRICING => '',
-            Permission::EDIT_MERCHANT_COMMENTS => '',
-            Permission::VIEW_MERCHANT_COMPANY_INFO => [
+            Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::EDIT_MERCHANT_PRICING               => '',
+            Permission::EDIT_MERCHANT_COMMENTS              => '',
+            Permission::VIEW_MERCHANT_COMPANY_INFO          => [
                 'assignable' => true,
             ],
-            Permission::VIEW_MERCHANT_CREDITS_LOG => '',
-            Permission::ADD_MERCHANT_CREDITS => [
+            Permission::VIEW_MERCHANT_CREDITS_LOG           => '',
+            Permission::ADD_MERCHANT_CREDITS                => [
                 'assignable' => true,
             ],
-            Permission::DELETE_MERCHANT_CREDITS => '',
-            Permission::EDIT_MERCHANT_SCREENSHOT => [
+            Permission::DELETE_MERCHANT_CREDITS             => '',
+            Permission::EDIT_MERCHANT_SCREENSHOT            => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::VIEW_PAYMENT_VERIFY => '',
-            Permission::EDIT_VERIFY_PAYMENTS => '',
-            Permission::EDIT_AUTHORIZED_FAILED_PAYMENT => '',
-            Permission::VIEW_REFUND_PAYMENTS => '',
-            Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
-            Permission::RETRY_REFUND_FAILED => '',
-            Permission::EDIT_REFUND    => [
+            Permission::VIEW_PAYMENT_VERIFY                 => '',
+            Permission::EDIT_VERIFY_PAYMENTS                => '',
+            Permission::EDIT_AUTHORIZED_FAILED_PAYMENT      => '',
+            Permission::VIEW_REFUND_PAYMENTS                => '',
+            Permission::EDIT_AUTHORIZED_REFUND_PAYMENT      => '',
+            Permission::RETRY_REFUND_FAILED                 => '',
+            Permission::EDIT_REFUND                         => [
                 'description' => 'edit_refund_permission',
                 'assignable'  => true,
             ],
-            Permission::RETRY_REFUND    => [
+            Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
             ],
-            Permission::EDIT_PAYMENT_REFUND => '',
-            Permission::EDIT_PAYMENT_CAPTURE => '',
-            Permission::EDIT_MERCHANT_CONFIRM => [
+            Permission::EDIT_PAYMENT_REFUND                 => '',
+            Permission::EDIT_PAYMENT_CAPTURE                => '',
+            Permission::EDIT_MERCHANT_CONFIRM               => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::CREATE_BENEFICIARY_FILE => '',
-            Permission::CREATE_NETBANKING_REFUND => '',
-            Permission::CREATE_EMI_FILES => '',
-            Permission::CREATE_SETTLEMENT_INITIATE => '',
-            Permission::DELETE_TERMINAL => '',
-            Permission::EDIT_TERMINAL => '',
-            Permission::CREATE_SETTLEMENTS_RECONCILE => '',
-            Permission::CREATE_RECONCILIATE => '',
-            Permission::VIEW_ACTIVATION_FORM => [
+            Permission::CREATE_BENEFICIARY_FILE             => '',
+            Permission::CREATE_NETBANKING_REFUND            => '',
+            Permission::CREATE_EMI_FILES                    => '',
+            Permission::CREATE_SETTLEMENT_INITIATE          => '',
+            Permission::DELETE_TERMINAL                     => '',
+            Permission::EDIT_TERMINAL                       => '',
+            Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
+            Permission::CREATE_RECONCILIATE                 => '',
+            Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
-            Permission::EDIT_MERCHANT_LOCK_ACTIVATION => [
-                'assignable' => true,
-                'workflow'   => true
-            ],
-            Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION => [
+            Permission::EDIT_MERCHANT_LOCK_ACTIVATION       => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_HOLD_FUNDS => [
+            Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION     => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_RELEASE_FUNDS => [
+            Permission::EDIT_MERCHANT_HOLD_FUNDS            => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::EDIT_MERCHANT_ENABLE_RECEIPT => '',
-            Permission::EDIT_MERCHANT_DISABLE_RECEIPT => '',
-            Permission::EDIT_BULK_MERCHANT => '',
-            Permission::ASSIGN_MERCHANT_TERMINAL => '',
-            Permission::ASSIGN_MERCHANT_BANKS => '',
-            Permission::ADD_MERCHANT_ADJUSTMENT => '',
-            Permission::EDIT_MERCHANT_EMAIL => [
+            Permission::EDIT_MERCHANT_RELEASE_FUNDS         => [
                 'assignable' => true,
                 'workflow'   => true
             ],
-            Permission::MERCHANT_AUTOFILL_FORM => '',
-            Permission::EDIT_MERCHANT_MARK_REFERRED => '',
-            Permission::VIEW_AS_ENTITY => '',
-            Permission::VIEW_MERCHANT_REFERRER => '',
-            Permission::VIEW_MERCHANT_BALANCE_TEST => [
+            Permission::EDIT_MERCHANT_ENABLE_RECEIPT        => '',
+            Permission::EDIT_MERCHANT_DISABLE_RECEIPT       => '',
+            Permission::EDIT_BULK_MERCHANT                  => '',
+            Permission::ASSIGN_MERCHANT_TERMINAL            => '',
+            Permission::ASSIGN_MERCHANT_BANKS               => '',
+            Permission::ADD_MERCHANT_ADJUSTMENT             => '',
+            Permission::EDIT_MERCHANT_EMAIL                 => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
+            Permission::MERCHANT_AUTOFILL_FORM              => '',
+            Permission::EDIT_MERCHANT_MARK_REFERRED         => '',
+            Permission::VIEW_AS_ENTITY                      => '',
+            Permission::VIEW_MERCHANT_REFERRER              => '',
+            Permission::VIEW_MERCHANT_BALANCE_TEST          => [
                 'assignable' => true,
             ],
-            Permission::VIEW_MERCHANT_BALANCE_LIVE => [
+            Permission::VIEW_MERCHANT_BALANCE_LIVE          => [
                 'assignable' => true,
             ],
-            Permission::ADD_RECONCILIATION_FILE => '',
-            Permission::ADD_SETTLEMENT_RECONCILIATION => '',
-            Permission::RETRY_SETTLEMENT => '',
-            Permission::MERCHANT_INVOICE_EDIT => '',
-            Permission::SEND_NEWSLETTER => '',
-            Permission::TRIGGER_DUMMY_ERROR => '',
-            Permission::MAKE_API_CALL => '',
-            Permission::SCHEDULE_CREATE => '',
-            Permission::SCHEDULE_FETCH => '',
-            Permission::SCHEDULE_FETCH_MULTIPLE => '',
-            Permission::SCHEDULE_DELETE => '',
-            Permission::SCHEDULE_UPDATE => '',
-            Permission::SCHEDULE_ASSIGN => '',
-            Permission::SCHEDULE_MIGRATION => '',
-            Permission::VIEW_ACTIONS => '',
-            Permission::VIEW_MERCHANT_STATS => '',
-            Permission::DELETE_MERCHANT_FEATURES => [
+            Permission::ADD_RECONCILIATION_FILE             => '',
+            Permission::ADD_SETTLEMENT_RECONCILIATION       => '',
+            Permission::RETRY_SETTLEMENT                    => '',
+            Permission::MERCHANT_INVOICE_EDIT               => '',
+            Permission::SEND_NEWSLETTER                     => '',
+            Permission::TRIGGER_DUMMY_ERROR                 => '',
+            Permission::MAKE_API_CALL                       => '',
+            Permission::SCHEDULE_CREATE                     => '',
+            Permission::SCHEDULE_FETCH                      => '',
+            Permission::SCHEDULE_FETCH_MULTIPLE             => '',
+            Permission::SCHEDULE_DELETE                     => '',
+            Permission::SCHEDULE_UPDATE                     => '',
+            Permission::SCHEDULE_ASSIGN                     => '',
+            Permission::SCHEDULE_ASSIGN_BULK                => '',
+            Permission::SCHEDULE_MIGRATION                  => '',
+            Permission::VIEW_ACTIONS                        => '',
+            Permission::VIEW_MERCHANT_STATS                 => '',
+            Permission::DELETE_MERCHANT_FEATURES            => [
                 'description' => 'Delete a merchant feature',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::VIEW_MERCHANT_REPORT   => [
+            Permission::VIEW_MERCHANT_REPORT                => [
                 'description' => 'View Merchant Reports',
             ],
 
-            Permission::VIEW_SPECIAL_MERCHANT_REPORT => [
-                'description'   => 'View custom merchant reports for a few large clients',
+            Permission::VIEW_SPECIAL_MERCHANT_REPORT        => [
+                'description' => 'View custom merchant reports for a few large clients',
             ],
-            Permission::CREATE_MERCHANT_OFFER  => [
+            Permission::CREATE_MERCHANT_OFFER               => [
                 'description' => 'Create offer for a merchant',
             ],
-            Permission::EDIT_MERCHANT_OFFER => [
+            Permission::EDIT_MERCHANT_OFFER                 => [
                 'description' => 'Edit offer for a merchant',
             ],
-            Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
-            Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
-            Permission::VIEW_MERCHANT_ANALYTICS => [
+            Permission::ASSIGN_MERCHANT_HANDLE              => 'Assign merchant handle',
+            Permission::VIEW_MERCHANT_PRICING               => 'View Mercant Pricing Plan',
+            Permission::VIEW_MERCHANT_ANALYTICS             => [
                 'description' => 'View Merchant Analytics',
                 'assignable'  => true,
                 'workflow'    => false
@@ -273,10 +274,13 @@ return [
             Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
                 'description' => 'Assign Reviews for Merchant Activation Forms',
             ],
+            Permission::CREATE_VIRTUAL_ACCOUNTS => [
+                'description' => 'Create VAs for a merchant',
+            ],
         ],
 
-        PermissionCategory::SETTLEMENT  => [
-            Permission::SETTLEMENT_BULK_UPDATE  => '',
+        PermissionCategory::SETTLEMENT => [
+            Permission::SETTLEMENT_BULK_UPDATE        => '',
             Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
         ],
 
@@ -298,15 +302,15 @@ return [
         ],
 
         PermissionCategory::PRICING => [
-            Permission::VIEW_PRICING_LIST => [
+            Permission::VIEW_PRICING_LIST         => [
                 'description' => 'view pricinglist',
             ],
-            Permission::CREATE_PRICING_PLAN => [
+            Permission::CREATE_PRICING_PLAN       => [
                 'description' => 'create pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::UPDATE_PRICING_PLAN => [
+            Permission::UPDATE_PRICING_PLAN       => [
                 'description' => 'update pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
@@ -318,7 +322,7 @@ return [
             ],
         ],
 
-        PermissionCategory::ENTITY => [
+        PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
             ],
@@ -327,45 +331,45 @@ return [
         // UAM
 
         // ORG
-        PermissionCategory::ORG => [
-            Permission::VIEW_ALL_ORG  => [
+        PermissionCategory::ORG      => [
+            Permission::VIEW_ALL_ORG => [
                 'description' => 'view all org',
             ],
-            Permission::VIEW_ORG      => [
+            Permission::VIEW_ORG     => [
                 'description' => 'view all org detail',
             ],
-            Permission::CREATE_ORG    => [
+            Permission::CREATE_ORG   => [
                 'description' => 'create org',
             ],
-            Permission::EDIT_ORG      => [
+            Permission::EDIT_ORG     => [
                 'description' => 'Edit org',
             ],
-            Permission::DELETE_ORG    => [
+            Permission::DELETE_ORG   => [
                 'description' => 'delete org',
             ],
         ],
 
         // Workflow
         PermissionCategory::WORKFLOW => [
-            Permission::VIEW_WORKFLOW      => [
+            Permission::VIEW_WORKFLOW          => [
                 'description' => 'View Workflows',
                 'assignable'  => true,
             ],
-            Permission::EDIT_WORKFLOW      => [
+            Permission::EDIT_WORKFLOW          => [
                 'description' => 'edit workflow',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::DELETE_WORKFLOW    => [
+            Permission::DELETE_WORKFLOW        => [
                 'description' => 'delete workflow',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::VIEW_ALL_WORKFLOW  => [
+            Permission::VIEW_ALL_WORKFLOW      => [
                 'description' => 'view all workflow',
                 'assignable'  => true,
             ],
-            Permission::CREATE_WORKFLOW    => [
+            Permission::CREATE_WORKFLOW        => [
                 'description' => 'create workflow',
                 'assignable'  => true,
                 'workflow'    => true
@@ -377,7 +381,7 @@ return [
         ],
 
         // Roles
-        PermissionCategory::ROLE => [
+        PermissionCategory::ROLE     => [
             Permission::VIEW_ALL_ROLE => [
                 'description' => 'view_all_role',
                 'assignable'  => true,
@@ -404,26 +408,26 @@ return [
         ],
 
         // Groups
-        PermissionCategory::GROUP => [
-            Permission::VIEW_ALL_GROUP    => [
+        PermissionCategory::GROUP    => [
+            Permission::VIEW_ALL_GROUP           => [
                 'description' => 'view_all_group',
                 'assignable'  => true,
             ],
-            Permission::VIEW_GROUP        => [
+            Permission::VIEW_GROUP               => [
                 'description' => 'view_group',
                 'assignable'  => true,
             ],
-            Permission::CREATE_GROUP      => [
+            Permission::CREATE_GROUP             => [
                 'description' => 'create_group',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::EDIT_GROUP        => [
+            Permission::EDIT_GROUP               => [
                 'description' => 'create_group',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::DELETE_GROUP      => [
+            Permission::DELETE_GROUP             => [
                 'description' => 'delete_group',
                 'assignable'  => true,
                 'workflow'    => true
@@ -435,38 +439,38 @@ return [
         ],
 
         // Admin
-        PermissionCategory::ADMIN => [
-            Permission::VIEW_ALL_ADMIN    => [
+        PermissionCategory::ADMIN    => [
+            Permission::VIEW_ALL_ADMIN => [
                 'description' => 'view_all_admin',
                 'assignable'  => true,
             ],
-            Permission::VIEW_ADMIN        => [
+            Permission::VIEW_ADMIN     => [
                 'description' => 'view_admin',
                 'assignable'  => true,
             ],
-            Permission::CREATE_ADMIN      => [
+            Permission::CREATE_ADMIN   => [
                 'description' => 'create_admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::EDIT_ADMIN        => [
+            Permission::EDIT_ADMIN     => [
                 'description' => 'edit admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::DELETE_ADMIN      => [
+            Permission::DELETE_ADMIN   => [
                 'description' => 'delete admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
         ],
 
-        PermissionCategory::ACTION => [
+        PermissionCategory::ACTION     => [
             Permission::DB_META_QUERY                => '',
             Permission::OAUTH_SYNC_MERCHANT_MAP      => '',
             Permission::DOWNLOAD_NON_MERCHANT_REPORT => [
-                'description'   => 'download non-merchant reports',
-                'assignable'    => true,
+                'description' => 'download non-merchant reports',
+                'assignable'  => true,
             ]
         ],
 
@@ -494,8 +498,8 @@ return [
             ],
         ],
 
-        PermissionCategory::AUDIT_LOG => [
-            Permission::VIEW_AUDITLOG     => [
+        PermissionCategory::AUDIT_LOG  => [
+            Permission::VIEW_AUDITLOG => [
                 'description' => 'view_auditlog',
                 'assignable'  => true,
             ],
@@ -503,23 +507,23 @@ return [
 
         // Invitations
         PermissionCategory::INVITATION => [
-            Permission::CREATE_MERCHANT_INVITE      => [
+            Permission::CREATE_MERCHANT_INVITE => [
                 'description' => 'create_merchant_invite',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::EDIT_MERCHANT_INVITE        => [
+            Permission::EDIT_MERCHANT_INVITE   => [
                 'description' => 'edit_merchant_invite',
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::VIEW_MERCHANT_INVITE        => [
+            Permission::VIEW_MERCHANT_INVITE   => [
                 'description' => 'view_merchant_invite',
                 'assignable'  => true,
             ],
         ],
 
-        PermissionCategory::GATEWAY_RULE => [
+        PermissionCategory::GATEWAY_RULE  => [
             Permission::CREATE_GATEWAY_RULE => [
                 'description' => 'create_gateway_rule',
                 'assignable'  => true,
@@ -559,7 +563,7 @@ return [
         ],
 
         PermissionCategory::BATCH => [
-            Permission::RETRY_BATCH => [
+            Permission::RETRY_BATCH        => [
                 'description' => 'Retry batch processing',
                 'assignable'  => true,
             ],
@@ -570,19 +574,19 @@ return [
         ],
 
         PermissionCategory::SHIELD => [
-            Permission::VIEW_SHIELD_RULES  => [
+            Permission::VIEW_SHIELD_RULES     => [
                 'description' => 'View shield rules',
                 'assignable'  => false
             ],
-            Permission::CREATE_SHIELD_RULES => [
+            Permission::CREATE_SHIELD_RULES   => [
                 'description' => 'Create shield rules',
                 'assignable'  => false
             ],
-            Permission::EDIT_SHIELD_RULES   => [
+            Permission::EDIT_SHIELD_RULES     => [
                 'description' => 'Edit shield rules',
                 'assignable'  => false
             ],
-            Permission::DELETE_SHIELD_RULES => [
+            Permission::DELETE_SHIELD_RULES   => [
                 'description' => 'Delete shield rules',
                 'assignable'  => false
             ],
@@ -594,6 +598,6 @@ return [
     ],
 
     'workflows' => [
-        'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
+        'mock' => env('HEIMDALL_WORKFLOWS_MOCK', false),
     ],
 ];

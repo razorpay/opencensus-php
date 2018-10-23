@@ -14,4 +14,11 @@ use RZP\Models\Merchant\Detail\Entity;
 interface ActivationFlowInterface
 {
     public function process(Entity $merchantDetails);
+
+    /**
+     * Contains validation specific to the activation flow (L2 activation form)
+     *
+     * @param Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails);
 }

@@ -1048,42 +1048,6 @@ return [
         ],
     ],
 
-    'testActivateMerchantWithoutBankAccount' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-        ]
-    ],
-
-    'testActivateMerchant' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'merchant',
-                'activated' => true,
-                'live' => true,
-            ],
-        ],
-    ],
-
     'testMerchantEnableLive' => [
         'request' => [
             'content' => [],
@@ -3402,6 +3366,27 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testAssignScheduleBulk' => [
+        'request'  => [
+            'url'     => '/merchants/schedules/bulk',
+            'method'  => 'post',
+            'content' => [
+                'schedule' => [
+                    'schedule_id' => '100001schedule',
+                    'type' => 'settlement',
+                ],
+                'merchant_ids' => ['10000000000000', '1000000000test', '1000000000000x'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 3,
+                'failed_count' => 1,
+                'failed_ids'   => ['1000000000000x']
             ],
         ],
     ],
