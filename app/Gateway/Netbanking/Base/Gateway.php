@@ -2,13 +2,11 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
-use Cache;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Netbanking\Base\Metric;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
@@ -196,39 +194,5 @@ class Gateway extends \RZP\Gateway\Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'extra_data' => $extraData
             ]);
-    }
-
-    protected function updateUrlInCacheAndPushMetric($input, $urlInRequest)
-    {
-        $bank = $input['payment']['bank'];
-
-        $cacheKey = self::getNetbankingUrlCacheKey($bank);
-
-        $cache = Redis::connection('redis_labs')->client();
-
-        $cacheValue = $cache->get($cacheKey);
-
-        $result = $cacheValue === $urlInRequest;
-
-        if ($result === false)
-        {
-            $cache->put($cacheKey, $urlInRequest);
-
-            $this->pushNetbankingDynamicUrlMetric($input, $cacheValue, $urlInRequest);
-        }
-    }
-
-    public function pushNetbankingDynamicUrlMetric($input, $oldUrl, $newUrl)
-    {
-        $metricObj = new Metric\DynamicUrlChangeMetric;
-
-        $metricObj->pushDimensions($input, $oldUrl, $newUrl);
-    }
-
-    public static function getNetbankingUrlCacheKey($bank)
-    {
-        $cachePrefix = 'gateway';
-
-        return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
     }
 }

@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount\Receiver;
@@ -1322,5 +1323,39 @@ class Gateway
     {
         throw new Exception\LogicException(
             'Extraction of payment and merchant details from callback data is not supported');
+    }
+
+    protected function updateUrlInCacheAndPushMetric($input, $urlInRequest)
+    {
+        $bank = $input['payment']['bank'];
+
+        $cacheKey = self::getNetbankingUrlCacheKey($bank);
+
+        $cache = Redis::connection('redis_labs')->client();
+
+        $cacheValue = $cache->get($cacheKey);
+
+        $result = $cacheValue === $urlInRequest;
+
+        if ($result === false)
+        {
+            $cache->put($cacheKey, $urlInRequest);
+
+            $this->pushNetbankingDynamicUrlMetric($input, $cacheValue, $urlInRequest);
+        }
+    }
+
+    public function pushNetbankingDynamicUrlMetric($input, $oldUrl, $newUrl)
+    {
+        $metricObj = new Netbanking\Base\Metric\DynamicUrlChangeMetric;
+
+        $metricObj->pushDimensions($input, $oldUrl, $newUrl);
+    }
+
+    public static function getNetbankingUrlCacheKey($bank)
+    {
+        $cachePrefix = 'gateway';
+
+        return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
     }
 }
