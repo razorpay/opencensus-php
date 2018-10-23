@@ -616,6 +616,7 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($customerId);
 
+        // Will eventually merge the direct payout also into this and create a factory.
         $payoutProcessor = new PayoutProcessor\CustomerWalletPayout();
 
         $payout = $payoutProcessor->createPayout($input);
