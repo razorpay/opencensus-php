@@ -13,7 +13,9 @@ import CreateBatch from './CreateBatch';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-const renderUploadModal = () => <CreateBatch />;
+const renderBatchOptions = openUploadModal => (
+  <CreateBatch openUploadModal={openUploadModal} />
+);
 
 const typeColumn = {
   title: 'Type',
@@ -40,9 +42,10 @@ export default class BatchListContainer extends Component {
         docUrl="https://docs.razorpay.com/v1/page/batch-card-payments"
         sampleUrl="https://cdn.razorpay.com/dashboard/sample_batch_payments.csv"
         gaEvents={gaEvents}
-        renderUploadModal={renderUploadModal}
+        renderBatchOptions={renderBatchOptions}
         extraColumns={[typeColumn]}
         ExtraFilterFields={ExtraFilterFields}
+        multiBatch
         {...this.props}
       />
     );

@@ -17,3 +17,22 @@
     }
   }
 }
+
+.SubscriptionsBatch
+    &--upload-modal
+      .panel
+        cursor: pointer
+        .panel-body
+          display: flex
+          .description
+            flex-grow: 1
+          .logo
+            background-size: contain
+            background-repeat: no-repeat
+            width: 30px
+        &.auth-link
+          .logo
+            background-image: url('assets/symbols/sub.svg')
+        &.recurring-charge
+          .logo
+            background-image: url('assets/symbols/sub.svg')
