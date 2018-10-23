@@ -29,7 +29,7 @@ class Whitelist implements ActivationFlowInterface
 
         $merchant = $merchantDetails->merchant;
 
-        (new Merchant\Activate)->instantlyActivate($merchant);
+        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails);
     }
 
     /**

@@ -145,6 +145,14 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Saves the instant activation details and also instantly activates the merchant based on the business details.
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(
@@ -171,10 +179,6 @@ class Core extends Base\Core
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
             $activationFlow->process($merchantDetails);
-
-            // Reload the merchant and merchant details to create a response with the updated values
-            $merchantDetails->reload();
-            $merchantDetails->load('merchant');
 
             $response = $this->createResponse($merchantDetails);
 

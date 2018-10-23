@@ -107,7 +107,7 @@ class Activate extends Base\Core
      *
      * @return array
      */
-    public function instantlyActivate(Entity $merchant): array
+    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
         $merchant->getValidator()->validateBeforeInstantlyActivate();
 
@@ -136,8 +136,6 @@ class Activate extends Base\Core
             [Entity::MERCHANT_ID => $merchant->getId()]);
 
         $detailCore = new Detail\Core;
-
-        $merchantDetails = $merchant->merchantDetail;
 
         //
         // If a merchant does not have website or app, we would need to activate them

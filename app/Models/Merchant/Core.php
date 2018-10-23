@@ -1549,25 +1549,22 @@ class Core extends Base\Core
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        $merchantDetail = $merchant->merchantDetail;
-
         $oldData = [
-            Entity::CATEGORY2              => $merchant->getCategory2(),
-            Entity::CATEGORY               => $merchant->getCategory(),
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
         ];
 
-        $category       = $subcategoryMetaData[Entity::CATEGORY];
-        $category2      = $subcategoryMetaData[Entity::CATEGORY2];
+        $category  = $subcategoryMetaData[Entity::CATEGORY];
+        $category2 = $subcategoryMetaData[Entity::CATEGORY2];
 
         $merchant->setCategory2($category2);
         $merchant->setCategory($category);
 
         $this->repo->saveOrFail($merchant);
-        $this->repo->saveOrFail($merchantDetail);
 
         $newData = [
-            Entity::CATEGORY2              => $merchant->getCategory2(),
-            Entity::CATEGORY               => $merchant->getCategory(),
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
         ];
 
         $this->trace->info(
