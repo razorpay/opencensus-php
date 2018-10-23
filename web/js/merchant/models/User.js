@@ -204,8 +204,12 @@ export default class User {
   }
 
   get showInstantActivation() {
-    // TODO: RazorX should be telling us about this
-    return true;
+    return (
+      !!this.activation_flow ||
+      (this.experiments &&
+        this.experiments.instant_activations &&
+        this.experiments.instant_activations.result === 'on')
+    );
   }
 
   /* Check case-insensitive tag check existence */
