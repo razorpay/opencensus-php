@@ -671,7 +671,6 @@ return [
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
                     'offer_private_auth',
-                    'emandate_mrn',
                     'terminal_banks_filter',
                 ],
             ],
