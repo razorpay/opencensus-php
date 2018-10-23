@@ -1572,4 +1572,31 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    /**
+     * Extracts a few fields like business name and website from the input
+     * and saves it to merchants as well as merchant details table.
+     *
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function editPreSignupFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $businessWebsite = $input[Detail\Entity::BUSINESS_WEBSITE] ?? null;
+
+        $preSignupInput = [
+            Entity::NAME    => $input[Detail\Entity::BUSINESS_NAME],
+            Entity::WEBSITE => $businessWebsite,
+        ];
+
+        (new Validator)->validateInput('edit_pre_signup', $preSignupInput);
+
+        $this->trace->info(TraceCode::MERCHANT_EDIT, ['input' => $preSignupInput]);
+
+        $merchant = $this->edit($merchant, $preSignupInput);
+
+        return $merchant;
+    }
 }
