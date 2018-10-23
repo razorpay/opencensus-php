@@ -97,7 +97,9 @@ export default ({ payment, transfers, onCreateTransfer }) => {
         <p>
           No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}
         </p>
-        <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+        <ShowWhen
+          additionalCondition={user => user.isAllowedEdit('marketplace')}
+        >
           {payment.status === 'captured' && (
             <CreateTransferBtn onClick={onCreateTransfer} />
           )}
@@ -123,7 +125,7 @@ export default ({ payment, transfers, onCreateTransfer }) => {
           </span>
         </Definition>
       </div>
-      <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+      <ShowWhen additionalCondition={user => user.isAllowedEdit('marketplace')}>
         {!transfers.loading &&
           payment.status === 'captured' &&
           payment.amount !== amountTransferred && (

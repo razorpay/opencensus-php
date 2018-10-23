@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
+import ShowWhen, { showWhenUtil } from 'admin/components/ShowWhen';
+
 import { adminFetch } from 'common/fetch';
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
@@ -31,15 +33,21 @@ export default class PermissionsList extends Component {
         <div class="box">
           <header>
             Permissions
-            <div class="btn pull-right" onClick={this.showEntity}>
-              Add a Permission
-            </div>
+            <ShowWhen permission="edit_permission">
+              <div class="btn pull-right" onClick={this.showEntity}>
+                Add a Permission
+              </div>
+            </ShowWhen>
           </header>
         </div>
         <PageTable
           model={this.collection}
-          fields={fields}
-          onClick={showEntity}
+          fields={getFields(this.collection)}
+          onClick={
+            showWhenUtil({ permission: 'edit_permission' })
+              ? showEntity
+              : undefined
+          }
           searchFilters={['name', 'description', 'category']}
         />
       </div>
@@ -47,26 +55,32 @@ export default class PermissionsList extends Component {
   }
 }
 
-const fields = [
-  ['Permissions', item => item.name],
-  ['Description', item => item.description],
-  ['Category', item => item.category],
-  ['Actions', item => <Actions item={item} />],
-];
+function getFields(collection) {
+  const fields = [
+    ['Permissions', item => item.name],
+    ['Description', item => item.description],
+    ['Category', item => item.category],
+    ['Actions', item => <Actions item={item} collection={collection} />],
+  ];
 
-const Actions = ({ item }) => (
+  return fields;
+}
+
+const Actions = ({ item, collection }) => (
   <div>
     <div class="link m-r" onClick={item::openRoleModal}>
       Roles
     </div>
-    <AsyncButton
-      class="link danger m-l"
-      pendingClass="link danger-faded m-l btn-pending"
-      confirm={`Are you sure you want to delete permission id "${item.id}"`}
-      onClick={item::removeEntity}
-    >
-      Delete
-      <span class="dot-loader">.</span>
-    </AsyncButton>
+    <ShowWhen permission="delete_permission">
+      <AsyncButton
+        class="link danger m-l"
+        pendingClass="link danger-faded m-l btn-pending"
+        confirm={`Are you sure you want to delete permission id "${item.id}"`}
+        onClick={removeEntity.bind(item, collection)}
+      >
+        Delete
+        <span class="dot-loader">.</span>
+      </AsyncButton>
+    </ShowWhen>
   </div>
 );
