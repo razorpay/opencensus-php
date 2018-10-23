@@ -1,3 +1,4 @@
+import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
@@ -14,6 +15,7 @@ import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
+@withRouter
 @connect(
   state => ({
     user: state.session.user,
@@ -42,6 +44,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchPaymentPage(nextProps.id);
+      this.props.closeModal();
     }
   }
 
@@ -111,10 +114,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       },
     };
 
+    if (this.state.id) {
+      console.log('USE UPDATE API TO UPDATE THE STUFF... NOT POST API..');
+      return;
+    }
+
     return createPaymentPage(reqPayload)
       .then(resp => {
         if (resp.data) {
           const entityId = resp.data.id;
+
+          this.props.history.push(`/paymentpages/${entityId}/edit`);
 
           this.openPPShareView(
             entityId,
@@ -166,7 +176,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   render() {
     const { isPageReady } = this.state;
-    const { paymentPageEntity, id } = this.props;
+    const { paymentPageEntity, id: payment_page_id } = this.props;
 
     console.log('paymentPageEntity.....', paymentPageEntity);
 
@@ -188,15 +198,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           onClick={this.handleCreate}
           disabled={!isAllowedToSubmit}
         >
-          Create and Publish Page
+          {payment_page_id
+            ? 'Save and Publish Page'
+            : 'Create and Publish Page'}
         </Button.Primary>
       </React.Fragment>
     );
 
-    const pageNavTitle = id ? (
+    const pageNavTitle = payment_page_id ? (
       <>
         Edit Payment Page{' '}
-        <span style={{ opacity: 0.35, fontWeight: 400 }}> - {id}</span>
+        <span style={{ opacity: 0.35, fontWeight: 400 }}>
+          {' '}
+          - {payment_page_id}
+        </span>
       </>
     ) : (
       'Create New Payment Page'
@@ -216,7 +231,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         />
         {isPageReady && (
           <Svelte
-            payment_page_id={id}
+            payment_page_id={payment_page_id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
             merchantData={merchantData}
             onMount={this.initSubApps}
