@@ -141,15 +141,16 @@ export function getFields() {
           // Generate links for selected array of IDs
           if (selectedArrays.indexOf(key) > -1) {
             let entityName = key.slice(0, -1);
-            let items = value.map(element => (
+            let items = value.map(id => (
               <a
-                key={element}
+                key={id}
                 class="link"
-                href={`/admin/entity/${entityName}/${data.mode}/${element}`}
+                href={`/admin/entity/${entityName}/${data.mode}/${id}`}
               >
-                {element}
+                {id}
               </a>
             ));
+
             value = <div>{items}</div>;
           } else {
             value = <pre class="duplex-json">{JSON.stringify(value)}</pre>;
