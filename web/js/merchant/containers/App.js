@@ -25,6 +25,7 @@ import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
+import { setTrackData } from 'rzp/utils/googleAnalytics';
 
 @withRouter
 @connect(
@@ -217,6 +218,13 @@ export default class App extends Component {
             dimension5: user.role, // Logged User Role
           },
         });
+
+        if (user.showInstantActivation) {
+          setTrackData({
+            eventCategory: 'Dashboard - Instant Activations',
+            eventAction: 'Show - Instant Activations Flow',
+          })();
+        }
       }
 
       return Promise.resolve({ data: user });

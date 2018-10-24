@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import ProductsModal from 'merchant/components/ProducsModal';
 import TransactionsModal from 'merchant/components/TransactionsHelperModal';
@@ -8,6 +9,9 @@ import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
 
+let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
+
+@withRouter
 @connect(state => ({
   ...state.session,
   config: state.config.config,
@@ -18,7 +22,7 @@ export default class OnboardingCardInstant extends Component {
     super(props);
 
     this.state = {
-      showProducts: false,
+      showProducts: showProductsModalOnLoad,
       showTransactionsHelper: false,
       contentWidth: null,
       activeStep: 0,
@@ -26,10 +30,21 @@ export default class OnboardingCardInstant extends Component {
 
     this.onCloseProductsModal = null;
     this.showProductsModal = this.showProductsModal.bind(this);
-    this.hideProductsModal = this.hideProductsModal.bind(this);
     this.showTransactionsModal = this.showTransactionsModal.bind(this);
     this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
     this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
+    const hideProductsModal = (this.hideProductsModal = this.hideProductsModal.bind(
+      this
+    ));
+
+    if (showProductsModalOnLoad) {
+      this.hideProductsModal = () => {
+        hideProductsModal(() => {
+          this.props.history.replace('/dashboard');
+          this.hideProductsModal = hideProductsModal;
+        });
+      };
+    }
   }
 
   setActiveStep(activeStep = 0) {
@@ -99,7 +114,7 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, user, integration } = this.props,
+    const { mode, user, integration, onClose } = this.props,
       {
         has_key_access: hasKeyAccess,
         business_website: businessWebsite,
@@ -107,6 +122,7 @@ export default class OnboardingCardInstant extends Component {
         isSubmitted,
         isActivated,
         isRejected,
+        isAccepted,
         needsClarification,
       } = user,
       {
@@ -180,6 +196,12 @@ export default class OnboardingCardInstant extends Component {
           <div className="onboarding-illustration-bottom">
             <img src="/dist/css/assets/onboarding/bottom_bg.png" />
           </div>
+          {isAccepted &&
+            integration.paymentsMade && (
+              <div className="btn-close cursor-pointer" onClick={onClose}>
+                &times;
+              </div>
+            )}
         </div>
         <div className="onboarding-step-switcher">
           {[0, 1, 2].map(stepNum => (
