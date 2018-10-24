@@ -179,8 +179,7 @@ class Activate extends Base\Core
 
         $merchant->getValidator()->validateHasBankAccount();
 
-        // releases held funds
-        $merchant->kycVerified();
+        $merchant->releaseFunds();
 
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']

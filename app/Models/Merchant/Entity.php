@@ -1445,14 +1445,6 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Releases the funds
-     */
-    public function kycVerified()
-    {
-        $this->releaseFunds();
-    }
-
-    /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant
      * @todo: Move this to Merchant/Account/Entity when account onboarding is merged.
