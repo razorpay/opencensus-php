@@ -1126,7 +1126,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        if ($response->body === null)
+        if (empty($response->body) === true)
         {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
         }
