@@ -3,7 +3,8 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
  * Covers Base/Fetch implementation. Currently it's not enabled for Payment
@@ -13,7 +14,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
  */
 class PaymentFetchTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -163,6 +164,27 @@ class PaymentFetchTest extends TestCase
                             ]);
 
         $this->fixtures->times(2)->create('dispute', ['payment_id' => $payment->getId()]);
+
+        $this->startTest();
+    }
+
+    public function testFetchPaymentByRecurringFilter()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockTokenex();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
 
         $this->startTest();
     }
