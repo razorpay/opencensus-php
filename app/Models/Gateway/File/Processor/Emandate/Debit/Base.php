@@ -23,7 +23,7 @@ abstract class Base extends EMandate\Base
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $payments = $this->repo->payment->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+        $payments = $this->repo->payment->fetchPendingEmandateDebit(static::GATEWAY, $begin, $end);
 
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
 

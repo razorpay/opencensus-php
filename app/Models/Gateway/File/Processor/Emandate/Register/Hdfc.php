@@ -26,7 +26,7 @@ class Hdfc extends Base
         $begin = $this->gatewayFile->getBegin();
         $end   = $this->gatewayFile->getEnd();
 
-        $payments = $this->repo->payment->fetchPendingEMandateRegistration(static::GATEWAY, $begin, $end);
+        $payments = $this->repo->payment->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
 
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
 

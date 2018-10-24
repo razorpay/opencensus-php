@@ -242,7 +242,76 @@ class GatewayEmiFileTest extends TestCase
             'merchant_id' => '10000000000000',
         ]);
 
-        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '472642',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'sbi_emi',
+            'gateway_merchant_id'   => '250000002',
+            'enabled'               => 0,
+        ]);
+
+        // creating a random terminal on same merchant to validate
+        // that correct `sbi_emi` terminal is used to get MID
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+
+        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
+    }
+
+    public function testGenerateEmiFileForSbiWithDuplicateSbiEmiTerminal()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+
+        $this->fixtures->edit('merchant_detail', $merchantId,[
+            'merchant_id' => '10000000000000',
+        ]);
 
         $this->fixtures->create('iin',
             [
@@ -256,6 +325,91 @@ class GatewayEmiFileTest extends TestCase
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
             ]);
+
+        // creating a random terminal on same merchant to validate
+        // that correct `sbi_emi` terminal is used to get MID
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+        ]);
+
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'sbi_emi',
+            'gateway_merchant_id'   => '250000002',
+            'enabled'               => 0,
+        ]);
+
+        // duplicate `sbi_emi` terminal
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'sbi_emi',
+            'gateway_merchant_id'   => '250000003',
+            'enabled'               => 0,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+
+        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
+    }
+
+    public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+
+        $this->fixtures->edit('merchant_detail', $merchantId,[
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '472642',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        // creating a random terminal on same merchant to validate
+        // that correct `sbi_emi` terminal is used to get MID
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+        ]);
 
         $this->ba->publicAuth();
 

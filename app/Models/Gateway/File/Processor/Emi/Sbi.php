@@ -4,99 +4,51 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
+use RZP\Models\Merchant\Detail;
+use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Models\Merchant\Detail\Entity as E;
 use RZP\Services\Beam\Constants as BeamConstants;
+
 
 class Sbi extends Base
 {
     const BANK_CODE         = IFSC::SBIN;
     const EXTENSION         = FileStore\Format::TXT;
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
-    const FILE_NAME         = 'Sbi_Emi_File';
+    const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
     protected $file;
 
-    protected function formatDataForFile($data)
+    /**
+     * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
+     */
+    public function fetchEntities(): PublicCollection
     {
-        $body = [];
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
 
-        $totalAmount = 0;
+        $emiPaymentsForBank = $this->repo
+                                   ->payment
+                                   ->fetchEmiPaymentsAndMerchantsWithCardTerminalsBetween(
+                                        $begin,
+                                        $end,
+                                        static::BANK_CODE);
 
-        $totalTransactions = 0;
-
-        // date 6 chars + time 4 chars + 4 seq numbers
-        //mmddyy
-        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
-
-        foreach ($data['items'] as $emiPayment)
-        {
-            $emiPlan = $emiPayment->emiPlan;
-
-            $merchant = $emiPayment->merchant;
-
-            $merchantDetail = $merchant->merchantDetail;
-
-            $totalTransactions++;
-
-            $uniqueReferenceNum++;
-
-            $principalAmount = $emiPayment->getAmount();
-
-            $totalAmount = $totalAmount + $principalAmount;
-
-            $rate = $emiPlan->getRate() / 100;
-
-            $tenure = $emiPlan->getDuration();
-
-            $body[] =
-                'DD' .    // record type always DD
-                'R' . $this->numpad($uniqueReferenceNum, 14) .
-                $this->strpad('Razor Pay', 40) .
-                $this->numpad($this->getCardNumber($emiPayment->card), 19) .
-                $this->numpad($principalAmount, 17) .
-                $this->numpad($tenure, 3) .
-                $this->strpad($this->getAuthCode($emiPayment), 6) .
-                Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
-                $this->strpad('Razor Pay', 40) .
-                $this->strpad($merchantDetail[E::SBI_MID], 16) .
-                $this->strpad($merchantDetail[E::BUSINESS_NAME], 40) .
-                $this->strpad('38R00001', 8) .
-                $this->formatRate($rate) .
-                $this->strpad('', 40) .
-                $this->numpad($principalAmount, 17) .
-                'F' .
-                '0' .
-                ' ' .
-                $this->numpad('0', 7) .
-                $this->strpad('GG0001' . substr($merchantDetail[E::SBI_MID], -4), 20) .
-                $this->numpad('0', 17) .
-                $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
-                $this->strpad('', 108);
-        }
-
-        $header = [
-            'HH' .
-            Carbon::now()->format('dmY') .
-            Carbon::now()->format('His') .
-            $this->numpad($totalTransactions, 5) .
-            $this->numpad($totalAmount, 17) .
-            'F' .
-            $this->strpad('', 411)
-        ];
-
-        $textRows = array_merge($header, $body);
-
-        return $this->getTxtFromRows($textRows);
+        return $emiPaymentsForBank;
     }
 
+    /**
+     * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
+     */
     public function createFile($data)
     {
         if ($this->isFileGenerated() === true)
@@ -115,12 +67,12 @@ class Sbi extends Base
             $creator = new FileStore\Creator;
 
             $creator->extension(static::EXTENSION)
-                ->content($fileData)
-                ->name($fileName)
-                ->store(FileStore\Store::S3)
-                ->type(static::FILE_TYPE)
-                ->entity($this->gatewayFile)
-                ->metadata($metadata);
+                    ->content($fileData)
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(static::FILE_TYPE)
+                    ->entity($this->gatewayFile)
+                    ->metadata($metadata);
 
             $creator->save();
 
@@ -136,8 +88,133 @@ class Sbi extends Base
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id'        => $this->gatewayFile->getId(),
             ],
-                $e);
+            $e);
         }
+    }
+
+    protected function formatDataForFile($data)
+    {
+        $body = [];
+
+        $totalAmount = 0;
+
+        $totalTransactions = 0;
+
+        // date 6 chars + time 4 chars + 4 seq numbers
+        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
+
+        foreach ($data['items'] as $emiPayment)
+        {
+            try
+            {
+                $mid = null;
+
+                $emiPlan = $emiPayment->emiPlan;
+
+                $merchantDetail = $emiPayment->merchant->merchantDetail;
+
+                $terminals = $emiPayment->merchant->terminals;
+
+                foreach ($terminals as $terminal)
+                {
+                    if ($terminal[Terminal\Entity::GATEWAY] === 'sbi_emi')
+                    {
+                        if (empty($mid) === true)
+                        {
+                            $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+                        }
+                        else
+                        {
+                            throw new LogicException(
+                                'Multiple SBI MIDs found for merchant',
+                                null,
+                                [
+                                    'payment_id' => $emiPayment['id'],
+                                    'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                                    'terminal' => $terminal['id'],
+                                ]);
+                        }
+                    }
+                }
+
+                if (empty($mid) === true)
+                {
+                    throw new LogicException(
+                        'No SBI MID found for merchant',
+                        null,
+                        [
+                            'payment_id' => $emiPayment['id'],
+                            'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                        ]);
+                }
+
+                $totalTransactions++;
+
+                $uniqueReferenceNum++;
+
+                $principalAmount = $emiPayment->getAmount();
+
+                $totalAmount = $totalAmount + $principalAmount;
+
+                $rate = $emiPlan->getRate() / 100;
+
+                $tenure = $emiPlan->getDuration();
+
+                $body[] =
+                    'DD' .    // record type always DD
+                    'R' . $this->numpad($uniqueReferenceNum, 14) .
+                    $this->strpad('Razor Pay', 40) .
+                    $this->numpad($this->getCardNumber($emiPayment->card), 19) .
+                    $this->numpad($principalAmount, 17) .
+                    $this->numpad($tenure, 3) .
+                    $this->strpad($this->getAuthCode($emiPayment), 6) .
+                    Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
+                    $this->strpad('Razor Pay', 40) .
+                    $this->strpad($mid, 16) .
+                    $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
+                    $this->strpad('38R00001', 8) .
+                    $this->formatRate($rate) .
+                    $this->strpad('', 40) .
+                    $this->numpad($principalAmount, 17) .
+                    'F' .
+                    '0' .
+                    ' ' .
+                    $this->numpad('0', 7) .
+                    $this->strpad('GG0001' . substr($mid, -4), 20) .
+                    $this->numpad('0', 17) .
+                    $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
+                    $this->strpad('', 108);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $header = [
+            'HH' .
+            Carbon::now()->format('dmY') .
+            Carbon::now()->format('His') .
+            $this->numpad($totalTransactions, 5) .
+            $this->numpad($totalAmount, 17) .
+            'F' .
+            $this->strpad('', 411)
+        ];
+
+        $textRows = array_merge($header, $body);
+
+        return $this->getTxtFromRows($textRows);
+    }
+
+    // @codingStandardsIgnoreLine
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10002',
+            'mtime' => Carbon::now()->getTimestamp(),
+            'mode'  => '33188'
+        ];
     }
 
     protected function sendEmiFile($data)
@@ -165,6 +242,8 @@ class Sbi extends Base
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 
+    //-------------------------- Helpers ------------------------------------//
+
     private function numpad($num, $count)
     {
         return strtoupper(str_pad($num, $count, '0', STR_PAD_LEFT));
@@ -191,30 +270,32 @@ class Sbi extends Base
 
         $totalElements = count($rows);
 
-        foreach ($rows as $index => $row)
+        try
         {
-            $txt .= $row;
-
-            // Don't add newline for the last line
-            if ($index < $totalElements - 1)
+            foreach ($rows as $index => $row)
             {
-                //
-                // Double quote is required to suggest new line
-                // Single quote will NOT work
-                //
-                $txt .= "\r\n";
-            }
-        }
-        return $txt;
-    }
+                if (strlen($row) !== 450)
+                {
+                    throw new LogicException('Row not formatted properly', null, ['length' => strlen($row)]);
+                }
 
-    protected function getH2HMetadata()
-    {
-        return [
-            'gid'   => '10000',
-            'uid'   => '10002',
-            'mtime' => Carbon::now()->getTimestamp(),
-            'mode'  => '33188'
-        ];
+                $txt .= $row;
+
+                // Don't add newline for the last line
+                if ($index < $totalElements - 1)
+                {
+                    //
+                    // Double quote is required to suggest new line
+                    // Single quote will NOT work
+                    //
+                    $txt .= "\r\n";
+                }
+            }
+            return $txt;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
     }
 }

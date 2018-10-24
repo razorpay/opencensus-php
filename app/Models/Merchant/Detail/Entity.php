@@ -98,7 +98,6 @@ class Entity extends Base\PublicEntity
     const SUBMITTED_AT                       = 'submitted_at';
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
-    const SBI_MID                            = 'sbi_mid';
 
     const SUBMIT                             = 'submit';
     const ARCHIVE                            = 'archive';
@@ -426,6 +425,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GSTIN);
     }
 
+    // @codingStandardsIgnoreLine
     public function getPGstin()
     {
         return $this->getAttribute(self::P_GSTIN);
@@ -664,6 +664,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_MODEL);
     }
 
+    // @codingStandardsIgnoreLine
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);

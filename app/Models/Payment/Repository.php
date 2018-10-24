@@ -56,6 +56,7 @@ class Repository extends Base\Repository
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
+        // @codingStandardsIgnoreLine
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
@@ -223,6 +224,35 @@ class Repository extends Base\Repository
                     ->with('emiPlan')
                     ->select($paymentData)
                     ->get();
+    }
+
+    public function fetchEmiPaymentsAndMerchantsWithCardTerminalsBetween($from, $to, $bank)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        return $this->newQuery()
+            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where(Entity::STATUS, '=', Status::CAPTURED)
+            ->where(Entity::BANK, '=', $bank)
+            ->where(Entity::METHOD, '=', Method::EMI)
+            ->where($terminalEmi, '=', false)
+            ->with('card.globalCard')
+            ->with('emiPlan')
+            ->with('merchant.merchantDetail')
+            ->with('merchant.terminals')
+            ->select($paymentData)
+            ->get();
     }
 
     public function fetchCreatedPaymentsWithInternalError($timestamp)
@@ -1215,7 +1245,7 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
+    public function fetchPendingEmandateRegistration(string $gateway, int $from, int $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
@@ -1292,7 +1322,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    public function fetchPendingEmandateDebit(string $gateway, $from, $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
