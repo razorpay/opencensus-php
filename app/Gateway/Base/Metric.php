@@ -6,7 +6,6 @@ use App;
 
 use RZP\Gateway\Upi;
 use RZP\Models\Card;
-use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet;
 use RZP\Models\Terminal;
