@@ -172,6 +172,8 @@ class Core extends Base\Core
 
         $onHold = $payment->getOnHold() ?? false;
 
+        $txn->setReconciledAt(time());
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
         $txn->setAttribute(Entity::ON_HOLD, $onHold);
@@ -277,6 +279,11 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
             Transaction\Entity::CHANNEL         => $payment->merchant->getChannel(),
         ];
+
+        if ($payment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
+        {
+            $txnData[Entity::RECONCILED_AT] = time();
+        }
 
         $txn->fill($txnData);
 

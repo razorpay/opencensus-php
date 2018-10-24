@@ -2,13 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
-use Carbon\Carbon;
-use RZP\Exception;
 use RZP\Gateway\FirstData\Action;
-use RZP\Models\Payment;
+use RZP\Gateway\FirstData\Status;
 use RZP\Models\Feature\Constants;
-use RZP\Constants\Timezone;
-use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\FirstData\Mock;
@@ -291,6 +287,101 @@ class FirstDataS2sGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function()
         {
             $this->doAuthPayment($this->payment);
+        });
+    }
+
+    public function testFirstAndSecondRecurringPayment()
+    {
+        list($terminal1, $terminal2) = $this->fixtures->
+                                            create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals(Status::AUTHORIZED, $gatewayEntity['status']);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->assertEquals(Status::CAPTURED, $gatewayEntity['status']);
+        $this->assertEquals($paymentEntity['amount'], $gatewayEntity['amount']);
+
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        // Switch to private auth for second recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $paymentEntity['terminal_id']);
+        $this->assertNotNull($paymentEntity['transaction_id']);
+
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
+
+        $this->assertEquals('APPROVED', $gatewayEntity['transaction_result']);
+        $this->assertEquals('CAPTURED', $gatewayEntity['status']);
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($payment)
+        {
+            $content = SoapWrapper::s2sSecondRecurringVerifyResponseWrapper();
+        });
+
+        $this->verifyPayment($paymentId);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+    }
+
+    public function testRecurringPaymentFailed()
+    {
+        list($terminal1, $terminal2) = $this->fixtures->
+                                            create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = Mock\Constants::DOMESTIC_NOT_ENROLLED_CARD;
+
+        $data = $this->testData['testNotEnrolledFailed'];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
         });
     }
 

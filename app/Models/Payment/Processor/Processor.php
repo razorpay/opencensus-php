@@ -241,7 +241,12 @@ class Processor
                 $attributes = $e->getError()->getAttributes();
             }
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = false;
+
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -249,9 +254,15 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $attributes = [Metric::LABEL_TRACE_CODE => $e->getCode()];
+            $attributes = [
+                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+                Metric::LABEL_PAYMENT_IS_CREATED => false,
+            ];
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -2050,7 +2061,7 @@ class Processor
 
         $createdAt = $payment->getCreatedAt();
 
-        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;;
+        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
         $merchantRefundAt = $createdAt + $autoRefundDelay;
 
         $refundAt = max($minRefundAt, $merchantRefundAt);
@@ -2237,16 +2248,6 @@ class Processor
 
     }
 
-    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
-    {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         if ((isset($gatewayInput["skip_gateway_call"]) === true) and
@@ -2261,11 +2262,6 @@ class Processor
             // If the payment is a second recurring payment of a file-based emandate bank
             // we do not hit the gateway, we send a debit request asynchronously
             //
-            return false;
-        }
-
-        if ($payment->isBankTransfer() === true)
-        {
             return false;
         }
 
@@ -2399,29 +2395,5 @@ class Processor
                 Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
             ]
         );
-    }
-
-    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment)
-    {
-        if (($payment->isEmandate() === true) and
-            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
-    {
-        if (($payment->hasOrder() === true) and
-            ($payment->isTpvMethod() === true) and
-            ($this->merchant->isTPVRequired() === true) and
-            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

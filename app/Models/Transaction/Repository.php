@@ -408,6 +408,8 @@ class Repository extends Base\Repository
         {
             $count = $this->newQuery()
                           ->whereIn(Transaction\Entity::ID, $batch)
+                          ->where(Transaction\Entity::SETTLED, 0)
+                          ->whereNull(Transaction\Entity::SETTLEMENT_ID)
                           ->update($values);
 
             $expected = count($batch);

@@ -1434,6 +1434,13 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
+    public static function isSupportedEmandateBank($bank): bool
+    {
+        $banks = self::getAllEMandateBanks();
+
+        return (in_array($bank, $banks, true) === true);
+    }
+
     public static function getAllEMandateBanks(): array
     {
         $banks = [];

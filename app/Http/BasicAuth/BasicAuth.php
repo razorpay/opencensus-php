@@ -1274,6 +1274,16 @@ class BasicAuth
         return $this->applicationId;
     }
 
+    /**
+     * Checks if request is coming via a lambda trigger
+     *
+     * @return boolean
+     */
+    public function isLambda(): bool
+    {
+        return ($this->internalApp === 'h2h');
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------

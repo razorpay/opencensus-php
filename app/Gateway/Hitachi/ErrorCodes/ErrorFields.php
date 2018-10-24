@@ -6,7 +6,7 @@ class ErrorFields
 {
     const P_RESP_CODE = 'pRespCode';
 
-    const BASE_CODE = 'pRespCode';
+    const BASE_CODE = 'pRespCodeBase';
 
     public static $errorCodeMap = [
         self::P_RESP_CODE  => 'authRespCodeMap',
