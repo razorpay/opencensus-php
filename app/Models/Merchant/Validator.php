@@ -513,19 +513,13 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
-        if ($merchant->merchantDetail->isSubmitted() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
-        }
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
 
         $this->validateIsNotActivated($merchant);
 
-        if ($merchant->merchantDetail->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
-        }
+        $detailValidator->validateIsNotArchived();
 
         // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
@@ -533,11 +527,17 @@ class Validator extends Base\Validator
             return;
         }
 
-        $attributes = [
-            Entity::CATEGORY,
-            Entity::BILLING_LABEL,
-            Entity::TRANSACTION_REPORT_EMAIL
-        ];
+        $this->validateActivationMandatoryAttributes();
+    }
+
+    /**
+     * @param array $attributes
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateMandatoryAttributes(array $attributes)
+    {
+        $merchant = $this->entity;
 
         $website = $merchant->merchantDetail->getWebsite();
 
@@ -560,6 +560,44 @@ class Validator extends Base\Validator
                     'Please set value for attribute: ' . $attribute);
             }
         }
+    }
+
+    public function validateActivationMandatoryAttributes()
+    {
+        $attributes = Constants::ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateInstantActivationMandatoryAttributes()
+    {
+        $attributes = Constants::INSTANT_ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateBeforeInstantlyActivate()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $this->validateIsNotActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+
+        // LA's should directly be activated. They should not go through the instant activations flow
+        if ($merchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+                Entity::PARENT_ID,
+                [
+                    Entity::PARENT_ID => $merchant->getParentId(),
+                ]);
+        }
+
+        $this->validateInstantActivationMandatoryAttributes();
     }
 
     public function validateVisibleFeatures(array $input)
@@ -723,6 +761,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED);
         }
+
+        $this->validateHasBankAccount();
     }
 
     protected function validateEnableReceiptEmails()
@@ -894,6 +934,49 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
                 Entity::ACTIVATED);
+        }
+    }
+
+    public function validateBeforeKycVerified()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
+
+        $this->validateIsActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                Entity::ACTIVATED);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateHasBankAccount()
+    {
+        $merchant = $this->entity;
+
+        $bankAccount = $merchant->bankAccount;
+
+        if ($bankAccount === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
     }
 }
