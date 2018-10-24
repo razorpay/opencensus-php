@@ -69,6 +69,12 @@ class ActivationTest extends TestCase
         $this->assertTrue($merchant->getHoldFunds());
 
         $this->assertFalse($merchant->merchantDetail->isSubmitted());
+
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
     public function testPostInstantActivationLinkedAccount()
