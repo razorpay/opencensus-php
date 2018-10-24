@@ -166,6 +166,7 @@ class Entity
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -337,6 +338,7 @@ class Entity
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,

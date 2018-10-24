@@ -46,6 +46,7 @@ class Gateway
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
@@ -1095,6 +1096,7 @@ class Gateway
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

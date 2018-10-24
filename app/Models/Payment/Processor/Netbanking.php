@@ -69,6 +69,7 @@ class Netbanking
         IFSC::ORBC,
         IFSC::CSBK,
         IFSC::ESFB,
+        IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
     ];
