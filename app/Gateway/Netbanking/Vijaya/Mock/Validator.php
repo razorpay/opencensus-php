@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         RequestFields::MERCHANT_CONSTANT => 'required|string|in:000000000010',
         RequestFields::AMOUNT            => 'required|numeric',
         RequestFields::MERCHANT_NAME     => 'required|string',
-        RequestFields::MERCHANT_ID       => 'required|numeric',
+        RequestFields::MERCHANT_ID       => 'required|string',
         RequestFields::ITEM_CODE         => 'required|string|in:Razorpay',
         RequestFields::RETURN_URL        => 'required|url',
         RequestFields::PAYMENT_ID        => 'required|alpha_num|size:14',
@@ -23,11 +23,17 @@ class Validator extends Base\Validator
         RequestFields::BANK_REFERENCE_NUMBER => 'sometimes|string',
         RequestFields::MERCHANT_CONSTANT     => 'required|string|in:000000000010',
         RequestFields::AMOUNT                => 'required|numeric',
-        RequestFields::MERCHANT_NAME         => 'required|string',
-        RequestFields::MERCHANT_ID           => 'required|numeric',
         RequestFields::ITEM_CODE             => 'required|string|in:Razorpay',
-        RequestFields::RETURN_URL            => 'required|url',
+        RequestFields::RETURN_URL            => 'required|string', //TODO fix this
         RequestFields::PAYMENT_ID            => 'required|alpha_num|size:14',
         RequestFields::CURRENCY              => 'required|string|in:INR',
+
+        'Action_ShoppingMall_Login_Init'     => 'required',
+        'BankId'                             => 'required',
+        'MD'                                 => 'required',
+        'CG'                                 => 'required',
+        'USER_LANG_ID'                       => 'required',
+        'UserType'                           => 'required',
+        'AppType'                            => 'required'
     ];
 }
