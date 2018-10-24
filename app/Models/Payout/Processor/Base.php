@@ -77,6 +77,10 @@ abstract class Base extends BaseCore
             // Create merchant/customer transactions and link it to payout.
             $this->createTxns($payout);
 
+            // Set Fees and tax in payout.
+            $payout->setFees($this->fees);
+            $payout->setTax($this->tax);
+
             $this->repo->saveOrFail($payout);
 
             return $payout;

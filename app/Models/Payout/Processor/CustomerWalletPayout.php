@@ -4,13 +4,18 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Constants;
 use RZP\Models\Payout;
+use RZP\Models\Pricing;
 use RZP\Models\Settlement;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Adjustment;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\Customer\Transaction\Core as CustTransactionCore;
 
 class CustomerWalletPayout extends Base
 {
+    const DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION  = 'Debit wallet withdrawal fee amount';
+
     /**
      * Since we don't want to register beneficieries for all the merchants customers.
      * Yes bank will be used as channel.
@@ -50,8 +55,39 @@ class CustomerWalletPayout extends Base
         $payout->transaction()->associate($customerTransaction);
 
         // Calculate merchant fee.
+        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+        $this->setPayoutFee($fee);
+        $this->setPayoutTax($tax);
+
+        // Create adjustment only if fee is > 0.
+        if ($fee > 0)
+        {
+            // Create merchant adjustment to deduct fee from merchant balance.
+            $this->createAdjustmentForFee($fee, $payout);
+        }
+    }
+
+    public function setPayoutFee($fee)
+    {
+        $this->fees = $fee;
+    }
+
+    public function setPayoutTax($tax)
+    {
+        $this->tax = $tax;
+    }
+
+    private function createAdjustmentForFee($fee, $payout)
+    {
+        $adjustmentData = [
+            Adjustment\Entity::CURRENCY    => $payout->getCurrency(),
+            Adjustment\Entity::AMOUNT      => 0 - $fee,
+            Adjustment\Entity::DESCRIPTION => self::DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION,
+        ];
 
         // Create merchant adjustment.
+        (new AdjustmentCore)->createAdjustmentForSource($adjustmentData, $payout);
     }
 
     private function getCustomerTransactionData(Payout\Entity $payout)

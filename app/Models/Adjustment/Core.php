@@ -82,20 +82,22 @@ class Core extends Base\Core
         }
     }
 
-    public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity
+    public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity
     {
+        $traceCode = strtoupper($source->getEntityName()) .'_ADJUSTMENT_CREATE_REQUEST';
+
         $this->trace->info(
-            TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
+            constant('TraceCode::' . $traceCode),
             [
                 'input'       => $input,
-                'merchant_id' => $dispute->getMerchantId()
+                'merchant_id' => $source->getMerchantId()
             ]);
 
-        (new Validator)->validateMerchantBalance($dispute->merchant, $dispute, $input);
+        (new Validator)->validateMerchantBalance($source->merchant, $source, $input);
 
-        $adjustment = $this->createAdjustment($input, $dispute->merchant);
+        $adjustment = $this->createAdjustment($input, $source->merchant);
 
-        $adjustment->entity()->associate($dispute);
+        $adjustment->entity()->associate($source);
 
         $this->repo->saveOrFail($adjustment);
 
