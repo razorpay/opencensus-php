@@ -25,13 +25,17 @@ const commonEvents = {
     'Early Settlement Pricing: Accept Pricing',
     'Request Early Settlement Pricing: Accept Pricing',
   ],
-  trackESPricingCancel: [
-    'Early Settlement Pricing: Cancel',
-    'Request Early Settlement Pricing: Cancel',
+  trackESPricingBack: [
+    'Early Settlement Pricing: Back',
+    'Request Early Settlement Pricing: Back',
   ],
   trackESPricingModalClose: [
     'Early Settlement Pricing: Modal Close',
     'Request Early Settlement Pricing: Modal Close',
+  ],
+  trackESSuccessModalClose: [
+    'Early Settlement: Success Modal Close',
+    'Request Early Settlement: Success Modal Close',
   ],
 };
 
@@ -52,17 +56,19 @@ const trackESAnnouncements = () => {
    * from banner and static "Request Early Settlements" button
    */
   Object.keys(commonEvents).forEach(elem => {
-    trackers[elem] = function(eventLabel) {
+    trackers[elem] = function(eventLabel, eventValue = '') {
       if (eventLabel) {
         return setTrackData({
           eventCategory: 'Dashboard - Announcement',
           eventAction: commonEvents[elem][0],
           eventLabel: eventLabel,
+          eventValue: eventValue,
         })();
       } else {
         return setTrackData({
           eventCategory: 'Dashboard - Settlements',
           eventAction: commonEvents[elem][1],
+          eventValue: eventValue,
         })();
       }
     };

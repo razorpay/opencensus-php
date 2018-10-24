@@ -127,9 +127,10 @@ export default class OnBoarding extends Component {
       formType,
       enableFeatureInTestMode,
       isTestMode,
+      user,
     } = this.props;
 
-    const currentForm = FORM_TYPE[formType];
+    const currentForm = FORM_TYPE(user)[formType];
 
     return (
       <div class="onboarding-page-container">
@@ -200,6 +201,7 @@ export default class OnBoarding extends Component {
                     handleChange={this.handleChange}
                     formType={formType}
                     onSave={handleSubmit(this.onSubmitClick)}
+                    user={user}
                     isPreStepCompleted={
                       isFunction(this.props.isPreStepCompleted)
                         ? this.props.isPreStepCompleted()
@@ -224,7 +226,7 @@ export default class OnBoarding extends Component {
                     </div>
                   ) : (
                     <div class="m-t">
-                      {heading === 'Razorpay Subscriptions' ? (
+                      {heading.indexOf('Subscriptions') > -1 ? (
                         <span>
                           We will review your request and get back to you.
                         </span>

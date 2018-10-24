@@ -51,10 +51,14 @@ import InvitesList from 'admin/invites/List';
 import ActivationList from 'admin/activations/List';
 
 import OperationsDashboard from 'admin/operations/List';
+import ScroogeReports from 'admin/scrooge/Reports';
+import ScroogeRefunds from 'admin/scrooge/Refunds';
+import ScroogeRefund from 'admin/scrooge/Refund';
 
 import AsyncButton from 'ui/AsyncButton';
 
 import fetch, { adminFetch } from 'common/fetch';
+import { isOrgHDFC, isOrgRazorpay } from 'admin/user';
 
 @withRouter
 export default class App extends Component {
@@ -135,9 +139,15 @@ export default class App extends Component {
 
               <Route path="/invites" component={InvitesList} />
 
-              <Route path="/activation" component={ActivationList} />
-
-              <Route path="/operations" component={OperationsDashboard} />
+              {isOrgRazorpay() && (
+                <React.Fragment>
+                  <Route path="/activation" component={ActivationList} />
+                  <Route path="/operations" component={OperationsDashboard} />
+                  <Route path="/scrooge/reports" component={ScroogeReports} />
+                  <Route path="/scrooge/refunds" component={ScroogeRefunds} />
+                  <Route path="/scrooge/refund/:id" component={ScroogeRefund} />
+                </React.Fragment>
+              )}
 
               <Redirect to="/merchants" />
             </Switch>
@@ -149,14 +159,16 @@ export default class App extends Component {
             <i class="i-arrow-down" />
             <div class="menu">
               <Link to="/profile">
-                <i class="i-user" />Profile
+                <i class="i-user" />
+                Profile
               </Link>
               <AsyncButton
                 onClick={this.handleLogout}
                 class="logout-btn btn-default"
                 pendingClass="logout-btn btn-default btn-pending"
               >
-                <i class="i-logout" />Logout
+                <i class="i-logout" />
+                Logout
                 <span class="spin-btn" />
               </AsyncButton>
             </div>
@@ -170,16 +182,24 @@ export default class App extends Component {
           />
           {links.map((linkGroup, i) => (
             <div key={i}>
-              {linkGroup.map((l, i) => (
-                <MainNavLink
-                  key={i}
-                  to={l[1]}
-                  permission={l[2]}
-                  icon={l[3] || 'layers'}
-                >
-                  {l[0]}
-                </MainNavLink>
-              ))}
+              {linkGroup.map((l, i) => {
+                // For other orgs, don't render restricted routes.
+                // (FE only solution. BE doesn't support.)
+                if (!isOrgRazorpay() && Heimdall_restrictRoutes.find(l[1])) {
+                  return null;
+                }
+
+                return (
+                  <MainNavLink
+                    key={i}
+                    to={l[1]}
+                    permission={l[2]}
+                    icon={l[3] || 'layers'}
+                  >
+                    {l[0]}
+                  </MainNavLink>
+                );
+              })}
             </div>
           ))}
         </aside>
@@ -207,6 +227,7 @@ const links = [
       'magic-hat',
     ],
     ['Ops Dashboard', '/operations', ''],
+    ['Refunds', '/scrooge/reports', ''],
   ],
 
   // workflow
@@ -225,4 +246,11 @@ const links = [
     ['Groups', '/groups', 'view_group', 'group'],
     ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
+];
+
+// restrict routes to other orgs
+const Heimdall_restrictRoutes = [
+  '/activation',
+  '/operations',
+  '/scrooge/reports',
 ];

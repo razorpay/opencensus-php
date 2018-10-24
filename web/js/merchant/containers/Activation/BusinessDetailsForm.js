@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
@@ -153,12 +154,8 @@ export default class BusinessDetailsForm extends Component {
               {!accountId &&
                 this.props.business_type === '2' && (
                   <div class="alert alert-warning">
-                    We may not be able to support individuals as of now. Get in
-                    touch with{' '}
-                    <a href="mailto:support@razorpay.com">
-                      support@razorpay.com
-                    </a>{' '}
-                    for more details
+                    We may not be able to support individuals as of now. Please{' '}
+                    <Link to="#ticket">write to support</Link> for more details
                   </div>
                 )}
 

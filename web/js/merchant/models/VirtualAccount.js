@@ -10,6 +10,7 @@ const fields = [
   'customer_id',
   'status',
   'receivers',
+  'notes',
 ];
 
 export default class VirtualAccount extends GenericEntity {
@@ -39,6 +40,13 @@ export default class VirtualAccount extends GenericEntity {
       url: 'ecollect/validate/test',
       method: 'post',
       data,
+    });
+  }
+
+  close() {
+    const url = `${this.resourceUrl}/${this.id}/close`;
+    return this.makeGenericAjaxCall({ method: 'POST', url }).then(response => {
+      return new VirtualAccount(response.data).deserialize();
     });
   }
 }

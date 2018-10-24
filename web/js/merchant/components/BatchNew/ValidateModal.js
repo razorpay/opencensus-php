@@ -45,7 +45,7 @@ export default class BatchValidateModal extends Component {
         <h4 class="modal-heading">UPLOAD FILE</h4>
         <div class="modal-file">
           <FileUpload
-            accept={['csv', 'xlsx', 'xls']}
+            accept={['csv', 'xlsx']}
             size="large"
             uploadedFileName="Upload File here"
             maxSize={MAX_FILE_SIZE}
