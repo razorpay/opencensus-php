@@ -20,3 +20,7 @@ export function isSuperAdmin() {
 export function isOrgHDFC() {
   return org.custom_code === 'hdfc';
 }
+
+export function isOrgRazorpay() {
+  return org.custom_code === 'rzp';
+}
