@@ -22,7 +22,7 @@ import {
   trackGoToPersonalise,
   trackSwitchToLive,
 } from './ga';
-import SwitchToLive from './SwitchToLive';
+import SwitchToMode from './SwitchToMode';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
@@ -40,6 +40,18 @@ const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   }
 
   return <div className={`activation-step-icon ${className}`} />;
+};
+
+const SwitchToLive = ({ stepNum, ...props }) => {
+  return (
+    <SwitchToMode
+      mode="live"
+      onSwitch={() => trackSwitchToLive(stepNum)}
+      {...props}
+    >
+      Switch To Live
+    </SwitchToMode>
+  );
 };
 
 /*
@@ -255,10 +267,7 @@ const Text = ({
                 </Link>
                 <span>
                   {' '}
-                  or{' '}
-                  <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
-                    Switch to live
-                  </SwitchToLive>
+                  or <SwitchToLive merchantId={merchantId} stepNum={stepNum} />
                 </span>
               </span>
             ) : (
@@ -271,9 +280,7 @@ const Text = ({
           // user has personalized, activated and is in test mode
 
           <span>
-            <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
-              Switch to live
-            </SwitchToLive>
+            <SwitchToLive merchantId={merchantId} stepNum={stepNum} />
           </span>
         ) : (
           'You are all set up.'

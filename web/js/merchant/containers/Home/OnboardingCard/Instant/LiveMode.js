@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Button from 'component/Button';
 import { LIVE_MODE } from 'merchant/containers/Home/OnboardingCard/data';
-import { switchToLive } from 'merchant/containers/Home/OnboardingCard/SwitchToLive';
+import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
@@ -18,7 +18,7 @@ export default class LiveMode extends Component {
     super(props);
 
     this.state = initialState;
-    this.switchToLive = () => switchToLive(props.merchantId);
+    this.switchToLive = () => switchToMode(props.merchantId, 'live');
   }
 
   componentWillReceiveProps(nextProps) {

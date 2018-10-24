@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
+import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
 const TestProducts = ({ onClick }) => (
@@ -22,13 +23,20 @@ export default class TestMode extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { mode, integration, showProductsModal } = nextProps,
+    const { mode, integration, showProductsModal, merchantId } = nextProps,
       { isLoading, keysGenerated, paymentsMade } = integration;
 
     let { title, status, content } = initialState;
 
     if (mode === 'live') {
-      content = 'You can try out the Dashboard in Test Mode';
+      content = (
+        <span>
+          You can try out the Dashboard in{' '}
+          <SwitchToMode mode="test" merchantId={merchantId}>
+            Test Mode
+          </SwitchToMode>
+        </span>
+      );
     } else if (isLoading) {
       status = possibleStatuses.loading;
     } else {

@@ -50,7 +50,7 @@ export default class OnboardingCard extends Component {
 
     Promise.all([
       (mode === LIVE_MODE && isKLA && Promise.resolve(false)) ||
-        this.props.fetchKeys(params).then(({ data }) => {
+        this.props.fetchKeys(params, user.has_key_access).then(({ data }) => {
           return !!data.items.length;
         }),
       this.paymentsRequest.then(payments => {

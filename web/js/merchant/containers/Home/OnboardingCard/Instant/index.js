@@ -139,6 +139,7 @@ export default class OnboardingCardInstant extends Component {
         isKLA,
         showProductsModal: this.showProductsModal,
         setActiveStep: this.setActiveStep,
+        merchantId: user.current,
       },
       activationCardProps = {
         instantActivation,
@@ -185,7 +186,6 @@ export default class OnboardingCardInstant extends Component {
               isSubmitted={user.isSubmitted}
               showTransactionsModal={this.showTransactionsModal}
               onActive={() => this.setActiveStep(2)}
-              merchantId={user.current}
               {...commonModeCardProps}
             />
           </div>

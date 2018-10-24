@@ -27,7 +27,7 @@ import {
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
-import { switchToLive } from 'merchant/containers/Home/OnboardingCard/SwitchToLive';
+import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 
 import {
   trackError,
@@ -235,7 +235,7 @@ export default class HomeContainer extends Component {
   }
 
   onInstantActivationSuccess() {
-    return switchToLive(this.props.user.current);
+    return switchToMode(this.props.user.current, 'live');
   }
 
   onExtraContentMount(node) {

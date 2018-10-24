@@ -18,6 +18,7 @@ import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -25,6 +26,7 @@ import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
   state => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
+    config: state.config,
   }),
   { openModal }
 )
@@ -47,6 +49,7 @@ class AnalyticsMobile extends Component {
 
   render() {
     const {
+      config,
       current_balance,
       onExtraContentMount,
       isAdmin,
@@ -78,6 +81,9 @@ class AnalyticsMobile extends Component {
       windowWidth,
     } = this.props;
 
+    const hasSecondaryBanner =
+      showInstantActivation && config.config && !config.config.hasPersonalised;
+
     return (
       <div className="home-analytics-mobile">
         <EarlySettlementAnnouncement
@@ -85,7 +91,16 @@ class AnalyticsMobile extends Component {
           marginBottom={!showOnboardingBanner}
         />
 
-        <div ref={node => onExtraContentMount(node)} className="extra-content">
+        <div
+          ref={node => onExtraContentMount(node)}
+          className={`extra-content${
+            showOnboardingBanner ? ' has-ob-banner' : ''
+          }${
+            !showOnboardingBanner && hasSecondaryBanner
+              ? ' has-secondary-banner'
+              : ''
+          }`}
+        >
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
@@ -105,6 +120,12 @@ class AnalyticsMobile extends Component {
               />
             )}
           </div>
+
+          {hasSecondaryBanner && (
+            <div className="secondary-announcement-banner">
+              <PersonaliseBanner />
+            </div>
+          )}
 
           <Header className="clearfix" title="" showMode={false}>
             <div
