@@ -1074,6 +1074,7 @@ final class Route
         'customer_fetch_tokens',
         'customer_add_bank_account',
         'customer_fetch_bank_account',
+        'customer_wallet_payout',
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
@@ -1272,7 +1273,6 @@ final class Route
     ];
 
     public static $proxy = [
-        'customer_wallet_payout',
         'get_es_pricing_merchant',
         'merchant_dashboard_access_la',
         'merchant_fetch_users',

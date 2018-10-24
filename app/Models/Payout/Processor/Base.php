@@ -18,8 +18,6 @@ abstract class Base extends BaseCore
 
     protected $fees;
 
-    protected $amount;
-
     protected $destination;
 
     protected $channel;
@@ -31,8 +29,6 @@ abstract class Base extends BaseCore
         $this->tax = 0;
 
         $this->fees = 0;
-
-        $this->amount = 0;
 
         $this->customer = null;
     }

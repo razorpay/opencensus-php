@@ -2,39 +2,40 @@
 
 namespace RZP\Services;
 
-use Http\Mock\Client as MockHttplug;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP;
-use RZP\Base\Database\MySqlConnection;
-use RZP\Constants\Entity as E;
-use RZP\Gateway\GatewayManager;
-use RZP\Models\Adjustment;
-use RZP\Models\Admin as Admin;
-use RZP\Models\BankAccount;
-use RZP\Models\Batch;
-use RZP\Models\Customer;
-use RZP\Models\Dispute;
-use RZP\Models\Gateway\File as GatewayFile;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Request as MerchantRequest;
-use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\Payout;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Promotion;
-use RZP\Models\Reversal;
-use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\Transfer;
-use RZP\Models\VirtualAccount;
-use RZP\Models\Workflow\Action;
-use RZP\Services\Beam\Service as BeamService;
 use Swift_Mailer;
+use Illuminate\Database\Connection;
+use Http\Mock\Client as MockHttplug;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
+
+use RZP\Models\Batch;
+use RZP\Models\Order;
+use RZP\Models\Payout;
+use RZP\Models\Dispute;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Reversal;
+use RZP\Models\Transfer;
+use RZP\Models\Promotion;
+use RZP\Models\Adjustment;
+use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
+use RZP\Models\Admin as Admin;
+use RZP\Models\VirtualAccount;
+use RZP\Gateway\GatewayManager;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Plan\Subscription;
+use RZP\Base\Database\MySqlConnection;
+use RZP\Models\Plan\Subscription\Addon;
+use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Services\Beam\Service as BeamService;
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
 {

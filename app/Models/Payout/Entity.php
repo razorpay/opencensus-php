@@ -222,7 +222,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
-
     // FeeCalculator calls `$entity->getFee()` for all the pricing entity
     public function getFee()
     {

@@ -4,15 +4,13 @@ namespace RZP\Models\Customer;
 
 use Request;
 use RZP\Models\Base;
-use RZP\Models\Device;
 use RZP\Models\Address;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Payout\Processor as PayoutProcessor;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Payout\Processor as PayoutProcessor;
 
 class Service extends Base\Service
 {

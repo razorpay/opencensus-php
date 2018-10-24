@@ -52,6 +52,7 @@ class Validator extends Base\Validator
 
         if ($newBalance < 0)
         {
+            // This errorCode will decide the action = TOPUP/PAYOUT on the error message.
             $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE;
 
             if ($source == Constants\Entity::PAYOUT)
