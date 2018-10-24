@@ -717,5 +717,32 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE,
         ],
-    ]
+    ],
+
+    'testCustomerWalletPayoutInsufficientMerchantBalance' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 800,
+                'method'      => 'fund_transfer',
+                'purpose'     => 'refund',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant does not have enough balance for negative adjustment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+        ],
+    ],
 ];

@@ -398,6 +398,19 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Merchant will not have sufficient balance to debit the incurred fees.
+     */
+    public function testCustomerWalletPayoutInsufficientMerchantBalance()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 100]);
+
+        $this->startTest();
+    }
+
     protected function mockRaven()
     {
         $raven = Mockery::mock('RZP\Services\Raven')->makePartial();
