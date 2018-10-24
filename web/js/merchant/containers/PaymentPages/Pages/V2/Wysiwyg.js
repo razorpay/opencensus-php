@@ -2,6 +2,7 @@ import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
+import { Link } from 'react-router-dom';
 import Button from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
@@ -14,6 +15,11 @@ import { createPaymentPage, sendLink } from '../model';
 import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+
+const ERROR = {
+  SCRIPT: 1,
+  OLD_ENTITY: 2,
+};
 
 @withRouter
 @connect(
@@ -38,15 +44,36 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
 
   componentWillMount() {
-    this.props.fetchPaymentPage(this.props.id);
+    this.fetchEntity(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchPaymentPage(nextProps.id);
+      this.fetchEntity(nextProps.id);
       this.props.closeModal();
+
+      this.setState({
+        isPageLoadError: null,
+      });
     }
   }
+
+  fetchEntity = id => {
+    if (!id) {
+      return;
+    }
+
+    this.props.fetchPaymentPage(id).then(resp => {
+      if (
+        resp.data &&
+        (!resp.data.settings || !resp.data.settings.udf_schema)
+      ) {
+        this.setState({
+          isPageLoadError: ERROR.OLD_ENTITY,
+        });
+      }
+    });
+  };
 
   componentDidMount() {
     // Insert script in local
@@ -57,6 +84,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       // Init the Svelte App in wysiwyg-root;
       this.setState({
         isPageReady: true,
+      });
+    };
+
+    script.onerror = () => {
+      this.setState({
+        isPageLoadError: ERROR.SCRIPT,
       });
     };
 
@@ -178,7 +211,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   render() {
-    const { isPageReady } = this.state;
+    const { isPageReady, isPageLoadError } = this.state;
     const { paymentPageEntity, id: payment_page_id } = this.props;
 
     console.log('paymentPageEntity.....', paymentPageEntity);
@@ -232,14 +265,32 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           handleClose={this.handleClose}
           isPageReady={isPageReady}
         />
-        {isPageReady && (
-          <Svelte
-            payment_page_id={payment_page_id}
-            isTestMode={this.props.mode.toLowerCase() === 'test'}
-            merchantData={merchantData}
-            onMount={this.initSubApps}
-          />
-        )}
+        {!isPageLoadError &&
+          isPageReady && (
+            <Svelte
+              payment_page_id={payment_page_id}
+              isTestMode={this.props.mode.toLowerCase() === 'test'}
+              merchantData={merchantData}
+              onMount={this.initSubApps}
+            />
+          )}
+        {do {
+          if (isPageLoadError) {
+            if (isPageLoadError === ERROR.SCRIPT) {
+              <div class="page-center">
+                Some network error has occurred. Please reload the page.
+              </div>;
+            } else if (isPageLoadError === ERROR.OLD_ENTITY) {
+              <div class="page-center">
+                This Payment page was created in Old view. Please click{' '}
+                <Link to={`/paymentpages/${payment_page_id}`}>
+                  {payment_page_id}
+                </Link>{' '}
+                to edit.
+              </div>;
+            }
+          }
+        }}
       </div>
     );
   }
