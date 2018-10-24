@@ -1328,11 +1328,16 @@ class Gateway
 
     protected function updateUrlInCacheAndPushMetric($input, $urlInRequest)
     {
+        if (isset($input['payment']['bank']) === false)
+        {
+            return;
+        }
+
         $bank = $input['payment']['bank'];
 
         $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-        $cache = Redis::connection('redis_labs')->client();
+        $cache = $this->app['redis']->connection('redis_labs');
 
         $cacheValue = $cache->get($cacheKey);
 

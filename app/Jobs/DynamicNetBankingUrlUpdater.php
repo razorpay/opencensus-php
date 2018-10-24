@@ -30,6 +30,10 @@ class DynamicNetBankingUrlUpdater extends Job
 
     const ISSUES    = 'Issues';
 
+    protected $app = null;
+
+    protected $redis = null;
+
     protected $username = null;
 
     protected $apiKey = null;
@@ -43,6 +47,8 @@ class DynamicNetBankingUrlUpdater extends Job
         parent::__construct($mode);
 
         $this->app = App::getFacadeRoot();
+
+        $this->redis = $this->app['redis']->connection('redis_labs');
 
         list($this->username, $this->apiKey, $this->statusCakeUrl, $this->statusCakeUpdateUrl) =
             $this->fetchStatusCakeCredentials();
@@ -78,13 +84,6 @@ class DynamicNetBankingUrlUpdater extends Job
                 $this->updateUrlInStatusCake($testId, $urlFromCache);
             }
         }
-    }
-
-    protected function init()
-    {
-        parent::init();
-
-        $this->cache = Redis::connection('redis_labs')->client();
     }
 
     protected function fetchStatusCakeCredentials()
@@ -153,7 +152,7 @@ class DynamicNetBankingUrlUpdater extends Job
     {
         $cacheKey = $this->getCacheKey($issuer);
 
-        $value = $this->cache->get($cacheKey);
+        $value = $this->redis->get($cacheKey);
 
         if (empty($value) === true)
         {
