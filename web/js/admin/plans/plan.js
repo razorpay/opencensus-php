@@ -97,6 +97,7 @@ export const options = {
     payout: 'Payout',
     transfer: 'Transfer',
     emi: 'EMI',
+    esautomatic: 'Early Settlement',
   },
   payment_method: {
     ...methods,
