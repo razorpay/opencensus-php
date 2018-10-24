@@ -1600,4 +1600,32 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    /**
+     * This function should always be called within the transactionOnLiveAndTest() function
+     *
+     * @param Entity $merchant
+     */
+    protected function disableLiveIfActivated(Entity $merchant)
+    {
+    }
+
+    /**
+     * This function should always be called within the transactionOnLiveAndTest() function
+     *
+     * @param Entity $merchant
+     */
+    protected function enableLiveIf(Entity $merchant)
+    {
+        if ($merchant->isActivated() === false)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_LIVE_DISABLED);
+
+        $merchant->liveDisable();
+
+        $this->repo->saveOrFail($merchant);
+    }
 }

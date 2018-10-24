@@ -179,6 +179,8 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
+        // enable live mode if not enabled
+
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']
              ->handle();
