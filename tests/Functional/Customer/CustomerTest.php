@@ -358,7 +358,7 @@ class CustomerTest extends TestCase
     }
 
 
-    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata=false)
+    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata = false)
     {
         $content = [
             'contact' => $contact,
@@ -387,6 +387,15 @@ class CustomerTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    public function testCustomerWalletPayoutInsufficientWalletBalance()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 200]);
+
+        $this->startTest();
     }
 
     protected function mockRaven()
