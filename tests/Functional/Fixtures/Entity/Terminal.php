@@ -1659,6 +1659,25 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingVijayaTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_VIJAYA_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_vijaya',
+            'gateway_merchant_id'       => 'netbanking_vijaya_merchant_id',
+            'gateway_merchant_id2'      => 'netbanking_vijaya_merchant_id2',
+            'netbanking'                => 1,
+            'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingRblTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
