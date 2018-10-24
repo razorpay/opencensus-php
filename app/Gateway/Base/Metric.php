@@ -59,7 +59,7 @@ class Metric
         Payment\Action::AUTHORIZE_PUSH,
         Payment\Action::DEBIT,
         Payment\Action::VALIDATE_VPA,
-        Base\Action::OTP_RESEND,
+        Payment\Action::OTP_RESEND,
     ];
 
     protected $trace;
