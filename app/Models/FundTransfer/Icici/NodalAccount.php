@@ -285,7 +285,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_BENEFICIARY_JOB_NAME
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_SETTLEMENT_JOB_NAME
         ];
 
         // In seconds

@@ -37,7 +37,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
-        Entity::WEBSITE                     => 'sometimes|url|max:255',
+        Entity::WEBSITE                     => 'sometimes|url|max:255|nullable',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
         Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
@@ -107,6 +107,12 @@ class Validator extends Base\Validator
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
         'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
+    protected static $bulkAssignScheduleRules = [
+        'schedule'       => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14',
     ];
 
     protected static $oauthMailRules = [
@@ -561,10 +567,13 @@ class Validator extends Base\Validator
         $featureNames = array_keys($input['features']);
 
         $visibleFeatures = array_keys(Feature\Constants::$visibleFeaturesMap);
+        $editableFeature = Feature\Constants::$merchantEditableFeatures;
 
         foreach ($featureNames as $feature)
         {
-            if (in_array($feature, $visibleFeatures, true) === false)
+            // Feature must be a "visible feature" and editable by the merchant
+            if ((in_array($feature, $visibleFeatures, true) === false) or
+                (in_array($feature, $editableFeature, true) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,

@@ -2,18 +2,21 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
 class ActivationTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use EntityActionTrait;
     use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
 
@@ -49,9 +52,30 @@ class ActivationTest extends TestCase
 
     public function testPostInstantActivation()
     {
+        $this->fixtures->edit('merchant',
+                              self::DEFAULT_MERCHANT_ID,
+                              [
+                                  Merchant\Entity::WEBSITE => null,
+                              ]);
+
+        $this->fixtures->create('merchant_detail', [
+            Merchant\Detail\Entity::MERCHANT_ID      => self::DEFAULT_MERCHANT_ID,
+            Merchant\Detail\Entity::BUSINESS_WEBSITE => null,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', self::DEFAULT_MERCHANT_ID);
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
     public function testUpdateActivationFlow()
@@ -92,6 +116,39 @@ class ActivationTest extends TestCase
     public function testPostInstantActivationByActivatedMerchant()
     {
         $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * for blacklist activation flow
+     */
+    public function testBlacklistInstantActivation()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGreylistInstantActivation()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
 
         $this->ba->proxyAuth();
 

@@ -437,4 +437,13 @@ class Entity extends Base\PublicEntity
         // and then just append the original last 4 digits
         return str_repeat('XXXX-', $repeat) . substr($ac, -4);
     }
+
+    public function matches(array $input)
+    {
+        $new = (new Entity)->build($input, 'addBankTransfer');
+
+        return (($this->getAccountNumber() === $new->getAccountNumber()) and
+                ($this->getIfscCode() === $new->getIfscCode()) and
+                ($this->getName() === $new->getName()));
+    }
 }

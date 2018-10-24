@@ -862,43 +862,4 @@ class FirstDataGatewayTest extends TestCase
             "Payment was not completed on time." .
             "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
-
-    public function testSwitchForRecurringPayment()
-    {
-        $this->mockTokenex();
-
-        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
-
-        $this->fixtures->merchant->addFeatures('first_data_s2s_flow');
-
-        $this->fixtures->merchant->addFeatures('charge_at_will');
-
-        $payment = $this->getDefaultRecurringPaymentArray();
-
-        $response = $this->doAuthPayment($payment);
-
-        $paymentId = $response['razorpay_payment_id'];
-
-        $this->capturePayment($paymentId, $payment['amount']);
-
-        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
-
-        $this->assertNotNull($paymentEntity['token_id']);
-
-        $this->assertEquals(true, $paymentEntity['recurring']);
-
-        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
-
-        $token = $this->getLastEntity('token', true);
-
-        $this->assertEquals($paymentEntity['token_id'], $token['id']);
-
-        $this->assertEquals(true, $token['recurring']);
-
-        $this->verifyPayment($paymentId);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(1, $payment['verified']);
-    }
 }

@@ -33,6 +33,7 @@ class Workflow
         Permission::EDIT_MERCHANT_KEY_ACCESS,
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,
+        Permission::SCHEDULE_ASSIGN_BULK,
         Permission::EDIT_MERCHANT_ENABLE_LIVE,
         Permission::EDIT_MERCHANT_DISABLE_LIVE,
         Permission::DELETE_MERCHANT_FEATURES,

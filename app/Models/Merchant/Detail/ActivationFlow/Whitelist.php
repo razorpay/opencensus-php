@@ -20,4 +20,14 @@ class Whitelist implements ActivationFlowInterface
     {
         // TODO: Implement process() method.
     }
+
+    /**
+     * validation specific to whitelist activation flow
+     *
+     * @param Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails)
+    {
+        return;
+    }
 }

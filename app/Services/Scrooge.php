@@ -107,7 +107,7 @@ class Scrooge
      */
     public function getReports(array $input): array
     {
-        return $this->sendRequest(self::URLS['reports'], 'GET', $input);
+        return $this->sendRequest(self::URLS['reports'], 'POST', $input);
     }
 
     /**
@@ -129,7 +129,7 @@ class Scrooge
      */
     public function getRefunds(array $input): array
     {
-        return $this->sendRequest(self::URLS['refunds'], 'GET', $input);
+        return $this->sendRequest(self::URLS['refunds'], 'POST', $input);
     }
 
     /**
