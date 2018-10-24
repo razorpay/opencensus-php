@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Entity;
 
 /**
@@ -15,10 +16,13 @@ use RZP\Models\Merchant\Detail\Entity;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class Whitelist implements ActivationFlowInterface
+class Whitelist extends Base implements ActivationFlowInterface
 {
+
     public function process(Entity $merchantDetails)
     {
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);
+
         //
         // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
         // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
