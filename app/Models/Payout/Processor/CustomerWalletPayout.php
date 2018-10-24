@@ -78,7 +78,7 @@ class CustomerWalletPayout extends Base
         $this->tax = $tax;
     }
 
-    private function createAdjustmentForFee($fee, $payout)
+    private function createAdjustmentForFee($fee, Entity $payout)
     {
         $adjustmentData = [
             Adjustment\Entity::CURRENCY    => $payout->getCurrency(),
