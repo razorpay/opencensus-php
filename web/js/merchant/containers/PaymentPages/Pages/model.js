@@ -40,7 +40,7 @@ export function editPaymentPage(id, data) {
 
 export function fetchPaymentPageEntity(id) {
   return merchantFetch({
-    url: `payment_links/${id}`,
+    url: `payment_links/${id}/details`,
     params: {
       expand: ['user'],
     },
