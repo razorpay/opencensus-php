@@ -26,6 +26,7 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT                   => NetbankingEntity::AMOUNT,
         ResponseFields::STATUS                  => NetbankingEntity::STATUS,
         ResponseFields::BANK_REFERENCE_NUMBER   => NetbankingEntity::BANK_PAYMENT_ID,
+        NetbankingEntity::RECEIVED              => NetbankingEntity::RECEIVED,
     ];
 
     public function authorize(array $input): array
@@ -150,6 +151,8 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content, array $input)
     {
+        $content[NetbankingEntity::RECEIVED] = true;
+
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE);
@@ -233,7 +236,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID        => $payment['id'],
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::AMOUNT            => $this->formatAmount($payment['amount']),
-            RequestFields::RETURN_URL        => ''
+            RequestFields::RETURN_URL        => 'abc' //TODO find what needs to be sent here
         ];
 
         if (isset($input['gateway'][NetbankingEntity::BANK_PAYMENT_ID]))
