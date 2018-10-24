@@ -2306,7 +2306,15 @@ class Entity extends Base\PublicEntity
 
         $this->setGateway($terminal->getGateway());
 
-        $this->setSettledBy("Razorpay");
+        $this->setSettledBy('Razorpay');
+
+        if ($terminal->isDirectSettlement() === true)
+        {
+            $gateway = $this->getGateway();
+
+            $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+            $this->setSettledBy($settledBy);
+        }
 
         $this->setRelation('terminal', $terminal);
     }
@@ -2735,6 +2743,11 @@ class Entity extends Base\PublicEntity
             ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
         {
             $features[] = Pricing\Feature::EMI;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === true)
+        {
+            $features[] = Pricing\Feature::ESAUTOMATIC;
         }
 
         return $features;

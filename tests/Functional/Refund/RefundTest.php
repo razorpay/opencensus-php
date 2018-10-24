@@ -1319,10 +1319,17 @@ class RefundTest extends TestCase
 
     public function testRefundSettledBy()
     {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
 
-        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $refund = $this->startTest($payment['razorpay_payment_id']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -1330,7 +1337,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('Razorpay', $refund['settled_by']);
+        $this->assertEquals('hdfc', $refund['settled_by']);
     }
 
     public function startTest($paymentId = null, $amount = null)

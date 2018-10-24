@@ -6,6 +6,8 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
@@ -226,6 +228,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15',
         Entity::BUSINESS_CATEGORY          => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL             => 'sometimes|max:255',
     ];
 
     protected static $bulkAssignReviewerRules = [
@@ -365,7 +368,7 @@ class Validator extends Base\Validator
 
         $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
-        $validSubcategories = $subcategoryMap[$category];
+        $validSubcategories = $subcategoryMap[$category] ?? [];
 
         $isError            = false;
 
@@ -463,6 +466,50 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function blockInstantActivationCriticalFields(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
+
+        if (($merchant->isActivated() === true) and (empty($criticalInput) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
+                null,
+                $criticalInput);
+        }
+    }
+
+    /**
+     * Contains validations for full activation form (L2 activation form)
+     * L1 and L2 activation form have different validations
+     *
+     * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
+     * no detail will be save in db and validation exception will be thrown
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function validateFullActivationForm()
+    {
+        $this->validateIsNotLocked();
+
+        if ($this->entity->getActivationFlow() !== null)
+        {
+            $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
+
+            $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }
 }

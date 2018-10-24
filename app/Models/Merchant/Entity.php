@@ -141,6 +141,7 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
+    const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -694,6 +695,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'RZP\Models\Transaction\Entity');
+    }
+
+    /**
+     * Different communication emails for various purposes that are stored
+     * in merchant_emails table against the merchant.
+     */
+    public function emails()
+    {
+        return $this->hasMany(Email\Entity::class);
     }
 
     /**

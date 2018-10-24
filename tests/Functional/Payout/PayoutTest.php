@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Payout;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -347,5 +348,61 @@ class PayoutTest extends TestCase
         }
 
         Carbon::setTestNow();
+    }
+
+    public function testCreateMerchantPayoutOnDemand()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->getLastEntity('payout',true);
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals(398, $txn['amount']);
+
+        $this->assertEquals(602, $txn['fee']);
+
+        $this->assertEquals(1000, $txn['debit']);
+    }
+
+    public function testCreateMerchantPayoutOnDemandOnLowBalance()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnHoldFunds()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnMinAmount()
+    {
+        $this->fixtures->create('pricing:payout_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYz']);
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }

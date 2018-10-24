@@ -347,6 +347,56 @@ class CustomerTokenTest extends TestCase
         $this->assertEquals('aadhaar', $token[Token\Entity::AUTH_TYPE]);
     }
 
+    public function testFetchTokenMrn()
+    {
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'netbanking',
+                'gateway_token' => 'test',
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::AUTH_TYPE]);
+        $this->assertNull($token[Token\Entity::MRN]);
+        $this->assertEquals('netbanking', $token[Token\Entity::AUTH_TYPE]);
+
+        $this->fixtures->merchant->addFeatures(['emandate_mrn']);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'aadhaar',
+                'gateway_token' => 'test',
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::MRN]);
+        $this->assertEquals('test', $token[Token\Entity::MRN]);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'card',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'otp',
+                'gateway_token' => 'test',
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNull($token[Token\Entity::MRN]);
+    }
+
     protected function mockSession()
     {
         $data = array(

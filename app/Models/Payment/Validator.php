@@ -117,7 +117,7 @@ class Validator extends Base\Validator
 
     protected static $verifyAllRules = [
         'gateway'                    => 'sometimes|string|max:50',
-        'delay'                      => 'sometimes|integer|max:720',
+        'delay'                      => 'sometimes|integer|max:43200',
         'count'                      => 'sometimes|integer|max:10000'
     ];
 
@@ -571,16 +571,21 @@ class Validator extends Base\Validator
         $supported = false;
         $bank = $input['bank'];
 
-        if ($input['method'] === Payment\Method::NETBANKING)
-        {
-            $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
-        }
+        $method = $input['method'];
 
-        if ($input['method'] === Payment\Method::EMANDATE)
+        switch ($method)
         {
-            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+            case Payment\Method::EMANDATE:
+                $supported = Payment\Gateway::isSupportedEmandateBank($bank);
+                break;
 
-            $supported = in_array($bank, $supportedBanks, true);
+            case Payment\Method::UPI:
+                $supported = Payment\Processor\Upi::isSupportedUpiBank($bank);
+                break;
+
+            case Payment\Method::NETBANKING:
+                $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
+                break;
         }
 
         //
