@@ -610,6 +610,7 @@ export default class extends React.Component {
       size: 'medium',
       component: (
         <ActivateAgain
+          isPaymentPagesV2Enabled={user.isPaymentPagesV2Enabled}
           reactivationTimeGap={reactivationTimeGap}
           expireBy={
             isExpired || hasExpiredInCompletedState

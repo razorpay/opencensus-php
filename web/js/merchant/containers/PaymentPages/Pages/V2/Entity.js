@@ -41,7 +41,7 @@ const MAX_API_COUNT = 100;
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
-  completed: 'Total payments made reached Times payable limit',
+  completed: 'All the available items in the Stock are sold',
   expired: 'The link is expired',
   deactivated: 'You manually deactivated the link',
 };
