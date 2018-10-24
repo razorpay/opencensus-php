@@ -41,19 +41,33 @@ class Activate extends Base\Core
      */
     public function activate(Entity $merchant): array
     {
+        // Merchants who have been activated (instantly activated whitelisted merchants)
+        if ($merchant->isActivated() === true)
+        {
+            return $this->markKycVerified($merchant);
+        }
+
+        //
+        // For merchants who never went through the instant activations flow, and,
+        // who went through the instant activations flow and got greylisted
+        //
+        return $this->activateAndMarkKycVerified($merchant);
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function activateAndMarkKycVerified(Entity $merchant)
+    {
         $merchant->getValidator()->validateBeforeActivate();
 
         $this->validateMethodsAndPricing($merchant);
 
         (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
 
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($ba === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
+        $merchant->getValidator()->validateHasBankAccount();
 
         $this->activateMerchantPromotions($merchant);
 
@@ -69,8 +83,8 @@ class Activate extends Base\Core
         }
 
         // Triggering workflow for the activation_status change in merchantDetail entity
-        $workflow = $this->app['workflow']
-                         ->handle();
+        $this->app['workflow']
+             ->handle();
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
@@ -85,17 +99,9 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
-            ['merchant_id' => $merchant->getId()]);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED, [Entity::MERCHANT_ID => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
-
-        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
 
         return $merchant->toArrayPublic();
     }
@@ -158,6 +164,44 @@ class Activate extends Base\Core
     }
 
     /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function markKycVerified(Entity $merchant): array
+    {
+        // @todo: add a check - should be through an instantly_activated state
+        $merchant->getValidator()->validateBeforeKycVerified();
+
+        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+
+        $merchant->getValidator()->validateHasBankAccount();
+
+        $merchant->releaseFunds();
+
+        // Triggering workflow for the activation_status change in merchantDetail entity
+        $this->app['workflow']
+             ->handle();
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
+
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED, ['merchant_id' => $merchant->getId()]);
+
+        $this->sendMerchantActivatedEvents($merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
      * Ensure that all payment methods enabled for the merchant has an associated pricing assigned
      *
      * @param Entity $merchant
@@ -214,6 +258,12 @@ class Activate extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
 
         $this->sendActivationEmail($merchant);
+
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**

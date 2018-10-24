@@ -761,6 +761,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED);
         }
+
+        $this->validateHasBankAccount();
     }
 
     protected function validateEnableReceiptEmails()
@@ -932,6 +934,49 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
                 Entity::ACTIVATED);
+        }
+    }
+
+    public function validateBeforeKycVerified()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
+
+        $this->validateIsActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                Entity::ACTIVATED);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateHasBankAccount()
+    {
+        $merchant = $this->entity;
+
+        $bankAccount = $merchant->bankAccount;
+
+        if ($bankAccount === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
     }
 }
