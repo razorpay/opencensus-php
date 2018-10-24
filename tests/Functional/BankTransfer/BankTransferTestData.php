@@ -219,7 +219,7 @@ return [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
         'content' => [
-            'payee_account'  => 'R A Z O R P A Y 1 2 3',
+            'payee_account'  => 'R Z R P A Y 1 2 3',
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',
