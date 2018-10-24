@@ -176,6 +176,9 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchantDetails);
 
+            // Sync few input fields to merchant entity
+            (new Merchant\Core)->editPreSignupFields($merchant, $input);
+
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
             $activationFlow->process($merchantDetails);

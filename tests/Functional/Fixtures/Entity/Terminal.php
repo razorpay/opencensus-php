@@ -1107,7 +1107,7 @@ class Terminal extends Base
 
     public function createSharedNetbankingHdfcTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultAttributes = [
             'id'                        => Shared::NETBANKING_HDFC_TERMINAL,
             'card'                      => 0,
             'netbanking'                => 1,
@@ -1117,6 +1117,8 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef'
         ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
 
         return parent::create($attributes);
     }

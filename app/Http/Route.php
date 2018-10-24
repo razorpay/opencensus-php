@@ -1245,6 +1245,7 @@ final class Route
         'merchant_post_beneficiary_api',
         'setl_verify',
         'apspdcl_bridge',
+        'billdesk_reconcile_cancelled',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1572,7 +1573,6 @@ final class Route
         'bank_transfer_strip_payer_accounts',
         'batch_process_by_id',
         'batch_retry_output_file',
-        'billdesk_reconcile_cancelled',
         'coupon_apply',
         'coupon_create',
         'coupon_delete',
@@ -2104,6 +2104,7 @@ final class Route
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
+        'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
     ];
 
     public static $direct = [
@@ -2286,6 +2287,7 @@ final class Route
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
             'setl_verify',
+            'billdesk_reconcile_cancelled',
         ],
 
         'subscriptions' => [

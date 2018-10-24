@@ -272,6 +272,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
+    const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
@@ -1319,6 +1320,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END   = 'MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END';
     const MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START         = 'MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START';
     const MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END           = 'MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END';
+    const SETTLEMENT_TRANSACTIONS_SKIPPED                       = 'SETTLEMENT_TRANSACTIONS_SKIPPED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

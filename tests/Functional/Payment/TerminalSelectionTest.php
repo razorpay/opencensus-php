@@ -1471,4 +1471,32 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals($lastPayment['terminal_id'], $motoTerminal['id']);
     }
 
+    public function testNetbankingTerminalSelectedWithEnabledBanks()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal', [
+            'enabled_banks' => ['HDFC'],
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+    }
+
+    public function testNetbankingTerminalNotSelectedWithoutEnabledBanks()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+            $payment = $this->doAuthPayment($payment);
+        }, RuntimeException::class, 'Terminal should not be null');
+    }
 }

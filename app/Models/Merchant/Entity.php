@@ -141,6 +141,7 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
+    const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';

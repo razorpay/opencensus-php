@@ -2,19 +2,21 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
 class ActivationTest extends TestCase
 {
+    use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
-    use DbEntityFetchTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
 
@@ -135,6 +137,14 @@ class ActivationTest extends TestCase
      */
     public function testBlacklistInstantActivation()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -142,6 +152,14 @@ class ActivationTest extends TestCase
 
     public function testGreylistInstantActivation()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
+            'contact_email' => "test@razorpay.com",
+        ]);
+
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', self::DEFAULT_MERCHANT_ID);
+
         $this->ba->proxyAuth();
 
         $this->startTest();

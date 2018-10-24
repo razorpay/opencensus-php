@@ -905,6 +905,7 @@ return [
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
                 'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
             ],
         ],
         'response'    => [

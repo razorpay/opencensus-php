@@ -2687,6 +2687,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithCheckoutFeatures' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+
     'testGetCheckoutRouteWithSavedLocal' => [
         'request' => [
             'url' => '/preferences',

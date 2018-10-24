@@ -67,6 +67,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -576,6 +579,25 @@ class MerchantFeeTest extends TestCase
             'max_fee'             => null,
         ]);
 
+        $pricingRuleCardEsAutomatic = new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaaxyz',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'esautomatic',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+        ]);
+
         $pricingRules =  [
             $pricingRuleUpi,
             $pricingRuleOne,
@@ -598,6 +620,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
             $pricingRuleDebitPin,
+            $pricingRuleCardEsAutomatic
         ];
 
         if ($withDefault === false)
@@ -657,6 +680,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -715,8 +741,10 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
-            });
 
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
+            });
         return $mock;
     }
 
@@ -1337,5 +1365,33 @@ class MerchantFeeTest extends TestCase
 
             $this->assertEquals($feeSplitComponent['amount'], $expectedFeeSplit[$componentName]);
         }
+    }
+
+    public function testDebitCardRuleSelectionWithEsAutomatic()
+    {
+        $this->fixtures->merchant->addFeatures('es_automatic');
+
+        $expectedPricingRules = [
+            'payment'          => '4pmbgtgNVVDd7x',
+            'esautomatic'      => '1nvp2XPMmaaxyz',
+        ];
+
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, false);
+
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, true);
+
+        $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::DEBIT, false);
+
+        $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::DEBIT, true);
+
+        $expectedPricingRules['payment'] = '1nvp2XPMmaRLxx';
+
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::CREDIT, false);
+
+        $this->runMerchantFeeTest('1000', 'Visa', $expectedPricingRules, Card\Type::CREDIT, true);
+
+        $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::CREDIT, false);
+
+        $this->runMerchantFeeTest('100', 'Maestro', $expectedPricingRules, Card\Type::CREDIT, true);
     }
 }

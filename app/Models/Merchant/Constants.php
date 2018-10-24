@@ -39,6 +39,9 @@ final class Constants
         self::PURE_PLATFORM,
     ];
 
+    // Used in merchant activation elastic search flows
+    const INSTANT_ACTIVATION = 'instant_activation';
+
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.

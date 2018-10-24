@@ -369,11 +369,6 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
         }
 
-        if (empty($banksToEnable) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException('enabled_banks is required and needs to be sent.');
-        }
-
         if (is_array($banksToEnable) === false)
         {
             throw new Exception\BadRequestValidationFailureException('enabled_banks should be an array');
