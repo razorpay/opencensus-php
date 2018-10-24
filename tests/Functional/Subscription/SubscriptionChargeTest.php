@@ -146,6 +146,27 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
+    public function testSubscrptionWithDeletedToken()
+    {
+        $details = $this->doAuthTxnForNewSubscription(false);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->fixtures->edit("token", $token['id'], array("deleted_at"=>1000000000));
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        while ($subscription['auth_attempts'] < 4)
+        {
+            $this->retrySubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $this->assertEquals("halted", $subscription['status']);
+    }
     public function testDailySubscriptionsWithRetry()
     {
         $planAttributes = [

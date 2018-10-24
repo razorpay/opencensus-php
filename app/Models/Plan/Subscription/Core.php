@@ -859,7 +859,14 @@ class Core extends Base\Core
         $subscriptionAmount = $invoice->getAmount();
 
         $customer = $subscription->customer;
-        $tokenId  = $subscription->token->getPublicId();
+
+        $tokenId = null;
+
+        if ($subscription->token !== null)
+        {
+            $tokenId  = $subscription->token->getPublicId();
+        }
+
         $order    = $invoice->order;
 
         $recurringPayload = [
