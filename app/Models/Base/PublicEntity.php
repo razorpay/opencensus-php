@@ -11,11 +11,8 @@ use RZP\Models\Currency;
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY                = 'entity';
-
     const PUBLIC_ID             = 'public_id';
-
     const ADMIN                 = 'admin';
-
     const MERCHANT_ID           = 'merchant_id';
 
     /**
@@ -23,6 +20,9 @@ class PublicEntity extends UniqueIdEntity
      * in various cases.
     */
     const IDS                   = 'ids';
+
+    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/';
+    const UNSIGNED_PUBLIC_ID_REGEX = '/[a-zA-Z0-9]{14}\b/';
 
     protected static $sign      = '';
 
