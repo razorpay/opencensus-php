@@ -707,14 +707,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'action'      => 'PAYOUT',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payout failed due to insufficient balance in wallet',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE,
         ],
     ],
@@ -734,15 +735,40 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Merchant does not have enough balance for negative adjustment',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
         ],
     ],
+
+    'testCustomerWalletPayout' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 800,
+                'method'      => 'fund_transfer',
+                'purpose'     => 'refund',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'customer_id' => 'cust_100000customer',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+                'amount'      => 800,
+                'status'      => 'created',
+            ]
+        ],
+
+    ]
 ];
