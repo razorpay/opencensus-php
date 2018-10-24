@@ -6,8 +6,8 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Transfer;
 use RZP\Models\Merchant;
+use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {
@@ -28,7 +28,7 @@ class Core extends Base\Core
 
         $customerId = $input['customer_id'];
 
-        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
+        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId, $source);
 
         $customerTxn->setEntityType($source);
 
@@ -132,16 +132,33 @@ class Core extends Base\Core
         return $entities;
     }
 
+    /**
+     * @param string          $type
+     * @param Merchant\Entity $merchant
+     * @param int             $amount
+     * @param string          $customerId
+     * @param string          $source
+     *
+     * @return Entity
+     */
     protected function createEntityForType(
         string $type,
         Merchant\Entity $merchant,
         int $amount,
-        string $customerId) : Entity
+        string $customerId,
+        string $source = Constants\Entity::PAYMENT) : Entity
     {
         $customerTxn = new Entity;
 
+        $txnType = Type::TRANSFER;
+
+        if ($source == Constants\Entity::PAYOUT)
+        {
+            $txnType = Type::WITHDRAWAL;
+        }
+
         $txnData = [
-            Entity::TYPE                => Type::TRANSFER,
+            Entity::TYPE                => $txnType,
             Entity::STATUS              => 'complete', // @todo - change this to something useful
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',
