@@ -272,6 +272,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
+    const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
@@ -778,8 +779,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UPDATE_WEBSITE_DETAILS           = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
     const MERCHANT_UPDATE_KEY_ACCESS                = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
+    const MERCHANT_TAGS_APPEND                      = 'MERCHANT_TAGS_APPEND';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST      = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
-    const MERCHANT_ACTIVATE_REQUEST                 = 'MERCHANT_ACTIVATE_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST              = 'MERCHANT_LIVE_ENABLE_REQUEST';
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_REQUEST      = 'MERCHANT_PAYOUT_NOTIFICATION_REQUEST';
@@ -822,6 +823,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_FILES_FETCH                           = 'AWS_FILES_FETCH';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const AWS_FILE_DOWNLOAD_ERROR                   = 'AWS_FILE_DOWNLOAD_ERROR';
+    const AWS_FILE_DELETE_ERROR                     = 'AWS_FILE_DELETE_ERROR';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
@@ -1006,6 +1009,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_CREDITS_BULK_REQUEST                 = 'MERCHANT_CREDITS_BULK_REQUEST';
     const MERCHANT_CREDITS_BULK_EXCEPTION               = 'MERCHANT_CREDITS_BULK_EXCEPTION';
 
+    const MERCHANT_SCHEDULE_BULK_REQUEST                = 'MERCHANT_SCHEDULE_BULK_REQUEST';
+    const MERCHANT_SCHEDULE_BULK_EXCEPTION              = 'MERCHANT_SCHEDULE_BULK_EXCEPTION';
+
 // Trace codes for Heimdall
     const HEIMDALL_EVENT_RECORD                         = 'HEIMDALL_EVENT_RECORD';
     const HEIMDALL_AUDIT_LOG                            = 'HEIMDALL_AUDIT_LOG';
@@ -1151,6 +1157,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_CORRECTION_TRACE             = 'MERCHANT_INVOICE_CORRECTION_TRACE';
     const MERCHANT_INVOICE_CORRECTION_OLD_AMOUNT        = 'MERCHANT_INVOICE_CORRECTION_OLD_AMOUNT';
     const MERCHANT_INVOICE_CORRECTION_PARAMS            = 'MERCHANT_INVOICE_CORRECTION_PARAMS';
+
+    const MERCHANT_EMAIL_ADD_REQUEST                    = 'MERCHANT_EMAIL_ADD_REQUEST';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
@@ -1310,6 +1318,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END   = 'MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END';
     const MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START         = 'MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_START';
     const MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END           = 'MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END';
+    const SETTLEMENT_TRANSACTIONS_SKIPPED                       = 'SETTLEMENT_TRANSACTIONS_SKIPPED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

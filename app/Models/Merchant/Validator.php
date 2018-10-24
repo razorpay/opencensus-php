@@ -37,7 +37,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
-        Entity::WEBSITE                     => 'sometimes|url|max:255',
+        Entity::WEBSITE                     => 'sometimes|url|max:255|nullable',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
         Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
@@ -107,6 +107,12 @@ class Validator extends Base\Validator
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
         'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
+    protected static $bulkAssignScheduleRules = [
+        'schedule'       => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14',
     ];
 
     protected static $oauthMailRules = [

@@ -2745,6 +2745,11 @@ class Entity extends Base\PublicEntity
             $features[] = Pricing\Feature::EMI;
         }
 
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC) === true)
+        {
+            $features[] = Pricing\Feature::ESAUTOMATIC;
+        }
+
         return $features;
     }
 

@@ -69,13 +69,14 @@ class Verify extends Base\Core
      */
     protected static $updateWaitBoundaries = [
         0 => 600,       // 10 Minutes
-        1 => 1200,      // 20 Minutes
-        2 => 3600,      // 60 Minutes
-        3 => 14400,     // 4 Hours
-        4 => 43200,     // 10 Hours
+        1 => 600,       // 10 Minutes
+        2 => 900,       // 15 Minutes
+        3 => 2700,      // 45 Minutes
+        4 => 7200,      // 2 Hours
         5 => 57600,     // 16 Hours
         6 => 86400,     // 24 Hours
-        7 => 129600,    // 36 Hours
+        7 => 86400,     // 24 Hours
+        8 => 86400,     // 24 Hours
     ];
 
     /**
@@ -924,14 +925,7 @@ class Verify extends Base\Core
         {
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
-            if ($nextVerifyBucket >= count(self::$failureStartBoundary))
-            {
-                $verifyAt = null;
-            }
-            else
-            {
-                $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
-            }
+            $verifyAt = $this->getPaymentVerifyAt($payment, $nextVerifyBucket);
 
             $payment->setVerifyAt($verifyAt);
 
@@ -1091,6 +1085,27 @@ class Verify extends Base\Core
         $nextVerifyBucket = $currentVerifyBucket + 1;
 
         return $nextVerifyBucket;
+    }
+
+    protected function getPaymentVerifyAt(Payment\Entity $payment, int $nextVerifyBucket)
+    {
+        $verifyAt = null;
+
+        if ($nextVerifyBucket > count(self::$failureStartBoundary))
+        {
+            $verifyAt = null;
+        }
+        else if ($nextVerifyBucket === $payment->getVerifyBucket())
+        {
+            // if verify bucket is not changing, verify after few mins.
+            $verifyAt = time() + 600;
+        }
+        else
+        {
+            $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
+        }
+
+        return $verifyAt;
     }
 
 //    protected function getPaymentVerifyBucket(

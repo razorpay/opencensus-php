@@ -19,6 +19,7 @@ final class AccountStatus
     const PENDING_UNDER_REVIEW        = 'pending_under_review';
     const PENDING_NEEDS_CLARIFICATION = 'pending_needs_clarification';
     const DEAD                        = 'dead';
+    const INSTANTLY_ACTIVATED         = 'instantly_activated';
 
     public static function isValid($value)
     {

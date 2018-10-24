@@ -360,6 +360,10 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
+        $existingTags = ['RandomTag-1', 'RandomTag-2'];
+
+        $submerchant->retag($existingTags);
+
         $this->startTest();
 
         // Fully managed will create a user with the role:owner for the submerchant
@@ -378,6 +382,12 @@ class PartnerTest extends OAuthTestCase
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
 
         $this->assertEquals(self::DEFAULT_MERCHANT_ID, $submerchant->getReferrer());
+
+        array_push($existingTags, 'Ref-' . $partner->getId());
+
+        $actualTags = $submerchant->tagNames();
+
+        $this->assertEquals($existingTags, $actualTags);
     }
 
     public function testAddPartnerAccessMapForDiffOrgSubmerchant()

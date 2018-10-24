@@ -11,6 +11,11 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::ENTITY_TYPE => 'filled|string|in:payment,order',
+        Entity::OFFER_ID    => 'filled|string|min:14|max:20',
+    ];
+
+    protected $signedIds = [
+        Entity::OFFER_ID,
     ];
 
     //
