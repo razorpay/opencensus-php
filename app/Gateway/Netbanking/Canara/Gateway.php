@@ -245,6 +245,31 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function preProcessServerCallback($input): array
+    {
+        $encryptedString = $input[ResponseFields::ENCRYPTED_DATA];
+
+        $decryptedString = $this->decryptString($encryptedString);
+
+        $inputArray = [];
+
+        $input  = explode('&', $decryptedString);
+
+        foreach ($input as $pair)
+        {
+            list($key, $value) = explode('=', $pair);
+
+            $inputArray[$key] = $value;
+        }
+
+        return $inputArray;
+    }
+
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input[ResponseFields::PAYMENT_ID];
+    }
+
     // -------------------------- Verify helper methods ------------------------------
 
     protected function sendPaymentVerifyRequest($verify)

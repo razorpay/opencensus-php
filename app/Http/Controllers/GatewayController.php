@@ -16,7 +16,6 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Netbanking\Corporation;
 use RZP\Gateway\Netbanking\Canara;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
@@ -307,23 +306,9 @@ class GatewayController extends Controller
 
         $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_CANARA);
 
-        $encryptedString = $input[Canara\ResponseFields::ENCRYPTED_DATA];
+        $input = $gateway->preProcessServerCallback($input);
 
-        //TODO: find if this approach is okay
-        $decryptedString = $gateway->decryptString($encryptedString);
-
-        $input = [];
-
-        $inputArray  = explode('&', $decryptedString);
-
-        foreach ($inputArray as $pair)
-        {
-            list($key, $value) = explode('=', $pair);
-
-            $input[$key] = $value;
-        }
-
-        $paymentId = $input[Canara\ResponseFields::PAYMENT_ID];
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
