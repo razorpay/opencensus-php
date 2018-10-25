@@ -65,6 +65,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION               = 'description';
     const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
+    const ENTITY_ID                  = 'entity_id';
+    const ENTITY_TYPE                = 'entity_type';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -264,6 +266,8 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS     => false,
         self::CALLBACK_URL              => null,
         self::CALLBACK_METHOD           => null,
+        self::ENTITY_ID                 => null,
+        self::ENTITY_TYPE               => null,
     ];
 
     protected static $generators = [
@@ -297,6 +301,8 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
     ];
 
     protected $visible = [
@@ -352,6 +358,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::ENTITY_TYPE,
     ];
 
     protected $public = [
@@ -438,6 +445,7 @@ class Entity extends Base\PublicEntity
         self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::CREATED_AT,
+        self::ENTITY_TYPE,
     ];
 
     protected $appends = [
@@ -850,6 +858,11 @@ class Entity extends Base\PublicEntity
         {
             return self::ALLOWED_LINE_ITEM_TYPES_INVOICE;
         }
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
 
     /**
@@ -1453,6 +1466,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(User\Entity::class);
     }
 
+    public function entity()
+    {
+        return $this->morphTo();
+    }
     /**
      * Gets the most recent invoice pdf file, or null
      *
@@ -1491,5 +1508,14 @@ class Entity extends Base\PublicEntity
         $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
 
         return $report;
+    }
+
+    public function toArrayHosted()
+    {
+        $data = parent::toArrayHosted();
+
+        $data[self::ENTITY_TYPE] = $this->getEntityType();
+
+        return $data;
     }
 }

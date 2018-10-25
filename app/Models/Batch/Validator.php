@@ -128,6 +128,16 @@ class Validator extends Base\Validator
         Entity::CONFIG . '.entity_to_type'   => 'required|string',
     ];
 
+    protected static $authLinkCreateRules = [
+        Entity::TYPE                    => 'required|in:auth_link',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+        Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::CONFIG                  => 'filled|array',
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty

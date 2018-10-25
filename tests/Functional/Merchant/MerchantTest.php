@@ -891,6 +891,31 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithAccountType()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+    }
+
+    public function testAddBankAccountWithInvalidAccountType()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testAddBankAccountWithMerchantDetail()
     {
         Mail::fake();

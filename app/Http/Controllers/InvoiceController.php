@@ -7,6 +7,7 @@ use Request;
 use Response;
 use ApiResponse;
 
+use RZP\Constants;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Preferences;
 use Illuminate\Http\Response as ResponseCodes;
@@ -158,6 +159,7 @@ class InvoiceController extends Controller
         try
         {
             $data = $this->service()->getInvoiceViewData($invoiceId);
+
         }
         catch (BaseException $e)
         {
@@ -187,8 +189,14 @@ class InvoiceController extends Controller
 
         $view = 'invoice.index';
 
-        if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice') {
+        if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice')
+        {
             $view = 'invoice.payment_link';
+        }
+
+        if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
+        {
+            $view = 'invoice.auth_link';
         }
 
         if (in_array($merchantId, $idsForUberFlow, true) === true)

@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\SubscriptionRegistration;
 
 class Generator extends Base\Core
 {
@@ -67,6 +68,13 @@ class Generator extends Base\Core
      */
     protected $shouldFailOnDuplicateInternalRef;
 
+    /**
+     * The mandate entity used for auth links.
+     *
+     * @var SubscriptionRegistration\Entity
+     */
+    protected $externalEntity;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -104,6 +112,13 @@ class Generator extends Base\Core
         {
             $this->subscriptionId = Subscription\Entity::verifyIdAndStripSign($subscription);
         }
+
+        return $this;
+    }
+
+    public function setExternalEntity($externalEntity = null)
+    {
+        $this->externalEntity = $externalEntity;
 
         return $this;
     }
@@ -272,6 +287,14 @@ class Generator extends Base\Core
             $operation = Validator::CREATE_DRAFT;
         }
 
+        if(($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
+        {
+            if ($this->externalEntity->getMethod() === SubscriptionRegistration\Type::EMANDATE)
+            {
+                $operation = Validator::CREATE_AUTH_LINK_ISSUED;
+            }
+        }
+
         $invoice = new Entity;
 
         // Merchant should get associated before calling build()
@@ -414,6 +437,19 @@ class Generator extends Base\Core
             Order\Entity::RECEIPT         => $orderReceipt,
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
+
+        if(($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
+        {
+            if($this->externalEntity->getMethod() === SubscriptionRegistration\Type::EMANDATE)
+            {
+                $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
+            }
+
+            if($this->externalEntity->getBank() !== null)
+            {
+                $orderInput[Order\Entity::BANK] = $this->externalEntity->getBank();
+            }
+        }
 
         $partialPayment = $this->invoice->isPartialPaymentAllowed();
 

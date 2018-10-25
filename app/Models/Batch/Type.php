@@ -36,6 +36,8 @@ class Type
 
     const ENTITY_MAPPING        = 'entity_mapping';
 
+    const AUTH_LINK             = 'auth_link';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -95,6 +97,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::PARTNER_SUBMERCHANTS,
         self::ENTITY_MAPPING,
+        self::AUTH_LINK,
     ];
 
     public static function exists(string $type)
@@ -110,6 +113,18 @@ class Type
     }
 
     public static function validateType(string $type)
+    {
+        self::validateSingleType($type);
+    }
+
+    public static function validateTypes(array $types)
+    {
+        foreach ($types as $row)
+        {
+            self::validateSingleType($row);
+        }
+    }
+    public static function validateSingleType(String $type)
     {
         if ((self::exists($type) === false) or
             (self::isDisabled($type) === true))

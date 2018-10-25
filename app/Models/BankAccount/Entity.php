@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_COUNTRY       = 'beneficiary_country';
     const DELETED_AT                = 'deleted_at';
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
+    const ACCOUNT_TYPE              = 'account_type';
     const MPIN                      = 'mpin';
 
     const NAME                      = 'name';
@@ -71,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
@@ -90,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::BANK_NAME,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
@@ -117,6 +120,18 @@ class Entity extends Base\PublicEntity
         self::BANK_NAME,
         self::NAME,
         self::ACCOUNT_NUMBER,
+    ];
+
+    protected $hosted = [
+        self::ID,
+        self::ENTITY,
+        self::IFSC,
+        self::BANK_NAME,
+        self::NAME,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL
     ];
 
     protected $appends = [
@@ -292,6 +307,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
+    public function getBeneficiaryEmail()
+    {
+        return $this->getAttribute(self::BENEFICIARY_EMAIL);
+    }
+
+    public function getBeneficiaryMobile()
+    {
+        return $this->getAttribute(self::BENEFICIARY_MOBILE);
+    }
+
     public function setMobileBankingEnabled($mobileBankingEnabled)
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
@@ -445,5 +475,18 @@ class Entity extends Base\PublicEntity
         return (($this->getAccountNumber() === $new->getAccountNumber()) and
                 ($this->getIfscCode() === $new->getIfscCode()) and
                 ($this->getName() === $new->getName()));
+    }
+
+    public function toArrayHosted()
+    {
+        $data = parent::toArrayHosted();
+
+        $data[self::ACCOUNT_TYPE] = $this->getAccountType();
+
+        $data[self::BENEFICIARY_EMAIL] = $this->getBeneficiaryEmail();
+
+        $data[self::BENEFICIARY_MOBILE] = $this->getBeneficiaryMobile();
+
+        return $data;
     }
 }

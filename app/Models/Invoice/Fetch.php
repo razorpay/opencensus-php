@@ -26,6 +26,7 @@ class Fetch extends BaseFetch
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
             Entity::MERCHANT_ID       => 'sometimes|alpha_num',
             Entity::ORDER_ID          => 'sometimes|string|max:20',
+            Entity::ENTITY_TYPE       => 'sometimes|string|nullable',
             self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
         ],
     ];
@@ -36,6 +37,7 @@ class Fetch extends BaseFetch
             Entity::PAYMENT_ID,
             Entity::RECEIPT,
             Entity::CUSTOMER_ID,
+            Entity::ENTITY_TYPE,
         ],
         AuthType::PROXY_AUTH => [
             Entity::BATCH_ID,
@@ -47,6 +49,7 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_EMAIL ,
             Entity::NOTES,
             Entity::SUBSCRIPTION_ID,
+            Entity::ENTITY_TYPE,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
             self::EXPAND_EACH,
