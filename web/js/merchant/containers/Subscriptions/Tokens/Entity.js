@@ -70,8 +70,9 @@ export default class TokenEntityContainer extends Component {
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Failure Reason">
-                    {entity.recurring_details && entity.recurring_details
-                      ? entity.recurring_details
+                    {entity.recurring_details &&
+                    entity.recurring_details.failure_reason
+                      ? entity.recurring_details.failure_reason
                       : '--'}
                   </EntityDetailRow>
 

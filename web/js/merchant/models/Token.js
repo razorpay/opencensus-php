@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
 
 export default class Token extends GenericEntity {
-  resourceUrl = 'mandate/tokens';
+  resourceUrl = 'subscription_registration/tokens';
 }
