@@ -161,4 +161,36 @@ class SubscriptionRegistrationTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testFetchTokenByMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $paymentRequest = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteTokenByMerchant()
+    {
+        $this->fixtures->create('token',["id" => '10000000000000']);
+
+        $this->startTest();
+    }
+
+    public function testFetchDeletedTokenByMerchant()
+    {
+        $this->fixtures->create('token',["id" => '10000000000000' ,'deleted_at' => '1000000000']);
+
+        $this->startTest();
+
+    }
 }

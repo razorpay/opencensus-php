@@ -305,5 +305,51 @@ return [
         ],
     ],
 
+    'testFetchTokenByMerchant' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testDeleteTokenByMerchant' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens/token_10000000000000',
+            'method'  => 'delete',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'deleted' => true,
+            ],
+        ],
+    ],
+
+    'testFetchDeletedTokenByMerchant' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens/token_10000000000000',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];
