@@ -192,6 +192,13 @@ class Gateway extends Base\Gateway
         return $encryptor->encryptString($content);
     }
 
+    public function decryptString(string $encryptedString): string
+    {
+        $aes = new AESCrypto($this->config);
+
+        return $aes->decryptString($encryptedString);
+    }
+
     protected function getQueryString($content)
     {
         $queryStr = RequestFields::MODE_OF_TRANSACTION . '=' . $content[RequestFields::MODE_OF_TRANSACTION];
