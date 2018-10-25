@@ -305,19 +305,23 @@ class GatewayController extends Controller
             [ 'input' => $input ]
         );
 
+        $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_CANARA);
+
         $encryptedString = $input[Canara\ResponseFields::ENCRYPTED_DATA];
 
-        $mode = $this->app['rzp.mode'];
-
-        $config = $this->config['gateway']['netbanking_canara'];
-
-        $aes = new Canara\AESCrypto($mode, $config);
-
-        $decryptedString = $aes->decryptString($encryptedString);
+        //TODO: find if this approach is okay
+        $decryptedString = $gateway->decryptString($encryptedString);
 
         $input = [];
 
-        parse_str($decryptedString, $input);
+        $inputArray  = explode('&', $decryptedString);
+
+        foreach ($inputArray as $pair)
+        {
+            list($key, $value) = explode('=', $pair);
+
+            $input[$key] = $value;
+        }
 
         $paymentId = $input[Canara\ResponseFields::PAYMENT_ID];
 
