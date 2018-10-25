@@ -165,11 +165,6 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
-  // TODO: Remove this code when confirmed no rollbacks
-  get isNewAnalyticsEnabled() {
-    return true;
-  }
-
   get isAgentRole() {
     return this.findTag('enable_agent_role');
   }
