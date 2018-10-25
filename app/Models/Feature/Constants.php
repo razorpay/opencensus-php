@@ -46,6 +46,7 @@ class Constants
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
+    const TERMINAL_BANKS_FILTER           = 'terminal_banks_filter';
     const TPV                             = 'tpv';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
@@ -93,6 +94,8 @@ class Constants
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
+    const GOOGLE_PAY                      = 'google_pay';
+    const EMANDATE_MRN                    = 'emandate_mrn';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -118,6 +121,10 @@ class Constants
     public static $debitRecurringFeatures = [
         self::ALLOW_ALL_DC_RECURRING,
         self::ALLOW_DC_RECURRING
+    ];
+
+    const CHECKOUT_FEATURES = [
+        self::GOOGLE_PAY,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -221,6 +228,9 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
+        self::TERMINAL_BANKS_FILTER           => true,
+        self::EMANDATE_MRN                    => true,
+        self::GOOGLE_PAY                      => true,
     ];
 
     // Entity type constants

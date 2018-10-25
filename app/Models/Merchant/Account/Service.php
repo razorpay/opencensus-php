@@ -91,12 +91,16 @@ class Service extends Merchant\Service
      * @param array $input
      *
      * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\InvalidArgumentException
      */
     public function listLinkedAccounts(array $input)
     {
         (new Validator)->validateInput('fetch', $input);
 
-        $accounts = $this->repo->account->getAccounts($this->merchant->getId(), $input);
+        $input[Entity::PARENT_ID] = $this->merchant->getId();
+
+        $accounts = $this->repo->account->fetch($input);
 
         return $accounts->toArrayPublic();
     }

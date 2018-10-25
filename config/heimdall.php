@@ -274,6 +274,9 @@ return [
             Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER => [
                 'description' => 'Assign Reviews for Merchant Activation Forms',
             ],
+            Permission::CREATE_VIRTUAL_ACCOUNTS => [
+                'description' => 'Create VAs for a merchant',
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

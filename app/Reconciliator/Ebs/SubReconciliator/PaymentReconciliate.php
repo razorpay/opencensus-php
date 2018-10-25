@@ -20,7 +20,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const COLUMN_SETTLED_AT         = ['settlement_date'];
     const COLUMN_PAYMENT_DATE       = ['txn_date'];
-    const COLUMN_TRANSACTION_ID     = ['transactionid'];
     const COLUMN_GATEWAY_PAYMENT_ID = ['paymentid'];
     const COLUMN_FEE                = ['tdr', 'tdr_amt'];
     const COLUMN_PAYMENT_AMOUNT     = ['captured', 'credit'];
@@ -154,17 +153,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Carbon::createFromFormat('d/m/Y', $settledAt, Timezone::IST)->getTimestamp();
     }
 
-    protected function getGatewayTransactionId(array $row)
-    {
-        $gatewayTransactionId = Helper::getArrayFirstValue($row, self::COLUMN_TRANSACTION_ID);
-
-        return $gatewayTransactionId;
-    }
-
     protected function getGatewayPaymentId(array $row)
     {
-        $gatewayTransactionId = Helper::getArrayFirstValue($row, self::COLUMN_GATEWAY_PAYMENT_ID);
+        $gatewayPaymentId = Helper::getArrayFirstValue($row, self::COLUMN_GATEWAY_PAYMENT_ID);
 
-        return $gatewayTransactionId;
+        return $gatewayPaymentId;
     }
 }

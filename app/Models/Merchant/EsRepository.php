@@ -10,9 +10,11 @@ use RZP\Constants\Es;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class EsRepository extends Base\EsRepository
 {
@@ -43,6 +45,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
         DetailEntity::REVIEWER_ID,
+        DetailEntity::ACTIVATION_FLOW,
     ];
 
     protected $groupIndexedFields = [
@@ -52,6 +55,11 @@ class EsRepository extends Base\EsRepository
     protected $adminIndexedFields = [
         AdminEntity::ID,
         AdminEntity::NAME,
+    ];
+
+    protected $balanceIndexedFields = [
+        BalanceEntity::ID,
+        BalanceEntity::BALANCE,
     ];
 
     protected $queryFields = [
@@ -73,6 +81,7 @@ class EsRepository extends Base\EsRepository
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
         DetailEntity::REVIEWER_ID,
+        Constants::INSTANT_ACTIVATION,
     ];
 
     /**
@@ -84,6 +93,14 @@ class EsRepository extends Base\EsRepository
      * @var boolean
      */
     protected $sortBySubmittedAtAsc = false;
+
+    /**
+     * By default we sort by descending created_at but in instant activation listing case
+     * we sort by descending order of balance , followed by ascending submitted_at.
+     *
+     * @var boolean
+     */
+    protected $sortByPendingBalance = false;
 
     // --------------- Getters -----------------------------
 
@@ -100,6 +117,11 @@ class EsRepository extends Base\EsRepository
     public function getAdminIndexedFields()
     {
         return $this->adminIndexedFields;
+    }
+
+    public function getBalanceIndexedFields()
+    {
+        return $this->balanceIndexedFields;
     }
 
     // --------------- Query builders ----------------------
@@ -251,6 +273,12 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
+            case AccountStatus::INSTANTLY_ACTIVATED:
+
+                 $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::INSTANTLY_ACTIVATED));
+
+                 break;
+
             default:
 
                 throw new LogicException('Invalid value for account_status.');
@@ -278,6 +306,22 @@ class EsRepository extends Base\EsRepository
         $this->addQueryForAcl($query, $params);
     }
 
+    public function buildQueryForInstantActivation(array & $query, bool $value)
+    {
+        $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_FLOW;
+
+        if ($value === true)
+        {
+            $this->sortByPendingBalance = true;
+
+            $this->addTermFilter($query, $attribute, ActivationFlow::WHITELIST);
+        }
+        else
+        {
+            $this->addNegativeTermFilter($query, $attribute, ActivationFlow::WHITELIST);
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -285,10 +329,18 @@ class EsRepository extends Base\EsRepository
      * set sortBySubmittedAtAsc as true and override the sort parameter of
      * query building.
      *
+     * In case of instant activation  , we set sortByPendingBalance as true
+     * and override the sort parameter of query building.
+     *
      * @return array
      */
     public function getSortParameter(): array
     {
+        if ($this->sortByPendingBalance === true)
+        {
+            return $this->getSortParameterForSortByBalance();
+        }
+
         if ($this->sortBySubmittedAtAsc === false)
         {
             return parent::getSortParameter();
@@ -298,6 +350,30 @@ class EsRepository extends Base\EsRepository
 
         return [
             Es::_SCORE => [
+                Es::ORDER => Es::DESC,
+            ],
+            $submittedAtAttr => [
+                Es::ORDER => Es::ASC,
+            ],
+        ];
+    }
+
+    /**
+     * returns sort parameters for instant activation case
+     * sort by merchant balance in descending order , followed by ascending order of submitted at
+     *
+     * @return array
+     */
+    private function getSortParameterForSortByBalance(): array
+    {
+        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+        $balanceAttr     = BalanceEntity::BALANCE;
+
+        return [
+            Es::_SCORE       => [
+                Es::ORDER => Es::DESC,
+            ],
+            $balanceAttr     => [
                 Es::ORDER => Es::DESC,
             ],
             $submittedAtAttr => [

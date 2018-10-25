@@ -9,9 +9,8 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
@@ -254,14 +253,36 @@ class GatewayController extends Controller
 
     public function callbackCorporation()
     {
-        $input = Request::all();
+        $input = Request::keys();
 
-        $this->app['trace']->info(
-            TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [ 'input' => $input ]
-        );
+        /**
+         * They send the data in the below format:
+         * https://api.razorpay.com/v1/gateway/netbanking_corporation/callback?6T9sZxc9z5XCQKsT3\
+         * HdxWY+pj6wAIUp3tsrgEBjH5SM39o5QI3S9mTygY/ABkXtBtOdBsuImxJB91xz8K/bDxT9CcsOpjvT69XkK/uO\
+         * xud6mk9KllE4ryN0v/DcO5xn/
+         *
+         * Since there is no value and just a key, we have to get the first key and use it as
+         * the input to gateway
+         */
+        $input = $input[0];
 
-        $paymentId = $input[Corporation\ResponseFields::PAYMENT_ID];
+        /**
+         * For the input "xWY+pj6w" (say), the $input value would be "xWY_pj6w".
+         * This is done internally by PHP. Refer: http://ca.php.net/variables.external
+         *
+         * > Dots and spaces in variable names are converted to underscores.
+         * > For example <input name="a.b" /> becomes $_REQUEST["a_b"].
+         *
+         * The above applies for '+' as well. So, we convert this manually back to
+         * the correct input which was received in the URL.
+         */
+        $input = str_replace('_', '+', $input);
+
+        $gateway = $this->app['gateway']->gateway('netbanking_corporation');
+
+        $input = $gateway->preProcessServerCallback($input);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
@@ -269,7 +290,7 @@ class GatewayController extends Controller
 
         $netbanking = $this->app['repo']->netbanking->findByPaymentIdAndAction(
             $paymentId,
-            \RZP\Gateway\Base\Action::AUTHORIZE
+            Action::AUTHORIZE
         );
 
         if ($netbanking === null)
@@ -416,7 +437,7 @@ class GatewayController extends Controller
 
         $app['config']->set('database.default', $mode);
 
-        $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
+        $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
 
         if ($nb === null)
         {
@@ -424,7 +445,7 @@ class GatewayController extends Controller
 
             $app['config']->set('database.default', $mode);
 
-            $nb = $repo->findByTraceIdAndAction($traceId, \RZP\Gateway\Base\Action::AUTHORIZE);
+            $nb = $repo->findByTraceIdAndAction($traceId, Action::AUTHORIZE);
         }
 
         return ['nb' => $nb, 'mode' => $mode];

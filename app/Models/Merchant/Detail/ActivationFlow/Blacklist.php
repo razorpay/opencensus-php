@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -16,7 +17,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class Blacklist implements ActivationFlowInterface
+class Blacklist extends Base implements ActivationFlowInterface
 {
     /**
      * In blacklist activation flow , merchant won't get activated from basic (L1) activation form
@@ -26,6 +27,8 @@ class Blacklist implements ActivationFlowInterface
      */
     public function process(Entity $merchantDetails)
     {
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_BLACKLIST_ACTIVATION);
+
         return;
     }
 

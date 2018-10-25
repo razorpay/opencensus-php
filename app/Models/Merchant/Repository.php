@@ -15,6 +15,7 @@ use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use \RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Repository extends Base\Repository
 {
@@ -61,6 +62,7 @@ class Repository extends Base\Repository
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
+        Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
     ];
 
     protected function validateAccountStatus($attribute, $value)
@@ -348,7 +350,8 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Modifies query to eager load details, admins, groups and features.
+     * Modifies query to eager load details, admins, groups and features,
+     * Unsettled balance.
      * Also projects to find only needed attributes.
      *
      * @param \RZP\Base\BuilderEx $query
@@ -377,15 +380,23 @@ class Repository extends Base\Repository
                               $query->select($fields);
                          };
 
+        $balanceSelector = function($query)
+                           {
+                              $fields = $this->esRepo->getBalanceIndexedFields();
+
+                              $query->select($fields);
+                           };
+
         $with = [
             camel_case(Entity::MERCHANT_DETAIL) => $detailSelector,
             Entity::GROUPS                      => $groupSelector,
             Entity::ADMINS                      => $adminSelector,
             Entity::FEATURES                    => function () {},
+            Entity::BALANCE                     => $balanceSelector,
         ];
 
         //
-        // Following 5 queries are run in total (dumps from indexing command):
+        // Following 6 queries are run in total (dumps from indexing command):
         //
         // - SELECT * FROM merchants
         //
@@ -409,6 +420,9 @@ class Repository extends Base\Repository
         // - SELECT * FROM features
         //   WHERE features.entity_id IN (?)
         //      AND features.entity_type = ?
+        //
+        // - SELECT <fields> FROM balance
+        //   WHERE balance.id IN (?)
         //
 
         $query->with($with);
@@ -435,6 +449,7 @@ class Repository extends Base\Repository
         // - List of groups which this merchant belongs to as well as their
         //   recursive parents hierarchy.
         // - Few additional attributes consumed by clients.
+        // - Unsettled balance to merchant
         //
 
         $serialized[Entity::TAG_LIST]        = $entity->tagNames();
@@ -449,6 +464,8 @@ class Repository extends Base\Repository
         $firstAdmin = $entity->admins->first();
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
+
+        $serialized[Entity::BALANCE] = optional($entity->balance)->getBalance() ?: 0;
 
         return $serialized;
     }
