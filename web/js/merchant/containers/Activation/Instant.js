@@ -227,7 +227,10 @@ export default class ActivationWizard extends React.Component {
 
     if (stateName === 'has_url') {
       if (fieldValue === '1') {
-        this.prevBusinessWebsiteVal = dirty.business_website;
+        this.prevBusinessWebsiteVal =
+          'business_website' in dirty
+            ? dirty.business_website
+            : this.props.data.business_website;
         sideEffectFieldsToUpdate['business_website'] = '';
       } else {
         sideEffectFieldsToUpdate[

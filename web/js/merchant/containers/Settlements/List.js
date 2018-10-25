@@ -11,6 +11,7 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
@@ -27,6 +28,7 @@ import Button from 'component/Button';
 @connect(
   state => ({
     user: state.session.user,
+    mode: state.session.mode,
     ...state.home,
     ...state.settlements,
   }),
@@ -134,7 +136,8 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, error, current_balance } = this.props;
+    let { loading, items, error, current_balance, user, mode } = this.props,
+      { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
 
     return (
@@ -146,7 +149,11 @@ export default class SettlementsListContainer extends ListContainer {
             <NavLink to="/settlements">Settlements</NavLink>
           </header>
 
-          <TestModeBanner />
+          {showInstantActivation && mode === 'live' && !isSubmitted ? (
+            <EnableSettlementsBanner />
+          ) : (
+            <TestModeBanner />
+          )}
 
           <content>
             <div class="content-wrapper">

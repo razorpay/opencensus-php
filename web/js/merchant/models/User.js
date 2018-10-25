@@ -204,6 +204,7 @@ export default class User {
   }
 
   get showInstantActivation() {
+    return true;
     return (
       !!this.activation_flow ||
       (this.experiments &&
