@@ -49,6 +49,7 @@ import OrgEntity from 'admin/organizations/Entity';
 import InvitesList from 'admin/invites/List';
 
 import ActivationList from 'admin/activations/List';
+import InstantActivationList from 'admin/instantactivations/List';
 
 import OperationsDashboard from 'admin/operations/List';
 import ScroogeReports from 'admin/scrooge/Reports';
@@ -142,6 +143,10 @@ export default class App extends Component {
               {isOrgRazorpay() && (
                 <React.Fragment>
                   <Route path="/activation" component={ActivationList} />
+                  <Route
+                    path="/instant-activation"
+                    component={InstantActivationList}
+                  />
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
@@ -214,6 +219,7 @@ const links = [
     // title, url, permission, icon
     ['Merchants', '/merchants', 'view_all_merchants', 'user-manager'],
     ['Activations', '/activation', 'view_activation_form'],
+    ['Instant Activations', '/instant-activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
     ['Downtimes', '/downtimes', '', 'pulse'],
