@@ -8,14 +8,16 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
-use RZP\Exception\RuntimeException;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class UpiIciciGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -830,5 +832,96 @@ EOT;
             'razorpay_signature'],
 
         array_keys($response));
+    }
+
+    public function testCollectForceAuthorized()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('92', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+        $this->assertSame('92', $upi->status_code);
+
+        $this->forceAuthorizeFailedPayment($payment->getPublicId(), []);
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+        $this->assertSame('SUCCESS', $upi->status_code);
+    }
+
+    public function testIntentForceAuthorized()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('0', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+        $this->assertSame('0', $upi->status_code);
+
+        $this->forceAuthorizeFailedPayment($payment->getPublicId(),
+            [
+                'vpa'                => 'vishnu@icici',
+                'gateway_payment_id' => '800800800800',
+            ]);
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+        $this->assertSame('SUCCESS', $upi->status_code);
+        $this->assertSame('vishnu@icici', $upi->vpa);
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('800800800800', $upi->gateway_payment_id);
     }
 }
