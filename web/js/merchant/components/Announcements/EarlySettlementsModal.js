@@ -106,7 +106,8 @@ export default class RequestEarlyAccessForm extends Component {
 
   createFreshdeskTicket() {
     const TSYS_AUTH_TOKEN = '4d482bcf908b56771a86db388bae8ee7639b0f81';
-    const apiUrl = 'https://bmwloans.razorpay.com/ticketing/api';
+    const apiUrl =
+      'https://bmwloans.razorpay.com/ticketing/api/fd/ticket/create';
     // Sandbox API URL - Bussiness operations group id = 42000097437
     // const apiUrl = 'http://localhost:4000/api/fd/ticket/create';
 
@@ -129,7 +130,7 @@ export default class RequestEarlyAccessForm extends Component {
         subject: `Razorpay | Early Settlement Request [${
           this.props.user.current
         }]`,
-        type: 'Service Request',
+        type: 'Service request',
         group_id: 1000097912,
         ticketType: 'early_settlement',
         description: `<div dir="ltr"><div>Hey,<br><br>We have received a request for ${
