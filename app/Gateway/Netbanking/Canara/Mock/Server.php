@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Canara\Mock;
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
@@ -71,6 +74,8 @@ class Server extends Base\Mock\Server
     {
         $this->bank_ref_no = Base\Entity::generateUniqueId();
 
+        $date = $this->changeDateFormat($input[RequestFields::DATE]);
+
         $data = [
             ResponseFields::ACTION                 => TransactionType::AUTHORIZE,
             ResponseFields::MERCHANT_CODE          => $input[RequestFields::MERCHANT_CODE],
@@ -78,16 +83,13 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                 => $input[RequestFields::AMOUNT],
             ResponseFields::CLIENT_CODE            => $input[RequestFields::CLIENT_CODE],
             ResponseFields::CURRENCY               => $input[RequestFields::CURRENCY],
-            ResponseFields::SUCCESS_STATIC_FLAG    => $input[RequestFields::SUCCESS_STATIC_FLAG],
-            ResponseFields::FAILURE_STATIC_FLAG    => $input[RequestFields::FAILURE_STATIC_FLAG],
-            ResponseFields::DATE                   => $input[RequestFields::DATE],
+            ResponseFields::ACK_STATIC_FLAG        => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
+            ResponseFields::RESPONSE_STATIC_FLAG   => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
+            ResponseFields::DATE                   => $date,
             ResponseFields::SERVICE_CHARGE         => $input[RequestFields::SERVICE_CHARGE],
             ResponseFields::BANK_REFERENCE_NUMBER  => $this->bank_ref_no,
-            ResponseFields::CLIENT_ACCOUNT         => $input[RequestFields::CLIENT_ACCOUNT],
             ResponseFields::MESSAGE                => Constants::DEFAULT_MESSAGE,
         ];
-
-        $this->content($data, Base\Action::CALLBACK);
 
         return $data;
     }
@@ -96,10 +98,10 @@ class Server extends Base\Mock\Server
     {
         $data = [
             ResponseFields::VER_CLIENT_ACCOUNT                => '',
-            ResponseFields::VER_PAYMENT_ID                    => $input[ResponseFields::PAYMENT_ID],
-            ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
+            ResponseFields::VER_PAYMENT_ID                    => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::PUR_DATE                          => $input[RequestFields::PUR_DATE],
             ResponseFields::VER_BANK_REFERENCE_NUMBER         => $this->bank_ref_no,
-            ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
+            ResponseFields::VER_AMOUNT                        => $input[RequestFields::AMOUNT],              // have to verify
             ResponseFields::RETURN_CODE                       => Constants::SUCCESS,
             ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
          ];
@@ -128,7 +130,7 @@ class Server extends Base\Mock\Server
     {
         $config = $this->app['config']['gateway']['netbanking_canara'];
 
-        $aes = new AESCrypto(Mode::TEST, $config);
+        $aes = new AESCrypto($config);
 
         return $aes->decryptString($encryptedString);
     }
@@ -137,7 +139,14 @@ class Server extends Base\Mock\Server
     {
         $inputArray = [];
 
-        parse_str($input, $inputArray);
+        $input  = explode('&', $input);
+
+        foreach ($input as $pair)
+        {
+            list($key, $value) = explode('=', $pair);
+
+            $inputArray[$key] = $value;
+        }
 
         return $inputArray;
     }
@@ -148,9 +157,7 @@ class Server extends Base\Mock\Server
 
         unset($content[RequestFields::CHECKSUM]);
 
-        $content = http_build_query($content);
-
-        $calculatedChecksum = $this->getChecksum($content);
+        $calculatedChecksum = $this->getGatewayInstance()->generateHash($content);
 
         if ($receivedChecksum !== $calculatedChecksum)
         {
@@ -167,8 +174,17 @@ class Server extends Base\Mock\Server
     {
         $config = $this->app['config']['gateway']['netbanking_canara'];
 
-        $encryptor = new AESCrypto(Mode::TEST, $config);
+        $encryptor = new AESCrypto($config);
 
         return $encryptor->encryptString($content);
+    }
+
+    protected function changeDateFormat($dateTime)
+    {
+        $date = explode('+' , $dateTime)[0];
+
+        $date = Carbon::createFromFormat('d/m/Y', $date, Timezone::IST);
+
+        return $date->format('d-m-Y');
     }
 }
