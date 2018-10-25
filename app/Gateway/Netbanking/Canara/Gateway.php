@@ -71,7 +71,10 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PAYMENT_ID]);
 
-        $this->assertAmount($input['payment']['amount'], (int) $content[ResponseFields::AMOUNT]);
+        $this->assertAmount(
+            $this->formatAmount($input['payment']['amount'] / 100),
+            $content[ResponseFields::AMOUNT]
+        );
 
         $this->verifySecureHash($content);
 
@@ -102,13 +105,15 @@ class Gateway extends Base\Gateway
 
         $date = $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]);
 
+        $amount = $this->formatAmount($paymentEntity[Payment\Entity::AMOUNT] / 100);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
             RequestFields::CLIENT_ACCOUNT                => '', //keeping this blank as specified in the Doc
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
-            RequestFields::AMOUNT                        => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100), // have to verify
+            RequestFields::AMOUNT                        => $amount,
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
@@ -152,7 +157,17 @@ class Gateway extends Base\Gateway
 
     protected function addExtraRefFields(& $content)
     {
-        $additionalFields = ['fldRef1', 'fldRef2', 'fldRef3', 'fldRef4', 'fldRef5', 'fldRef6', 'fldRef7', 'fldRef8', 'fldRef9', 'fldDate1', 'fldDate2'];
+        $additionalFields = [
+            'fldRef1',
+            'fldRef2',
+            'fldRef3',
+            'fldRef4',
+            'fldRef5',
+            'fldRef6',
+            'fldRef7',
+            'fldRef8',
+            'fldRef9'
+        ];
 
         foreach ($additionalFields as $field)
         {
@@ -172,7 +187,7 @@ class Gateway extends Base\Gateway
 
     protected function encryptString($content)
     {
-        $encryptor = new AESCrypto($this->mode, $this->config);
+        $encryptor = new AESCrypto($this->config);
 
         return $encryptor->encryptString($content);
     }
@@ -228,10 +243,8 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest($verify)
     {
         $request = $this->getVerifyRequest($verify);
-        sd($request);
 
         $response = $this->sendGatewayRequest($request);
-        sd($response->body);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
 
@@ -363,9 +376,9 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        $expectedAmount = $input['payment']['amount'];
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
-        $actualAmount = (int) $content[ResponseFields::VER_AMOUNT];
+        $actualAmount = $this->formatAmount($content[ResponseFields::VER_AMOUNT]);
 
         return ($expectedAmount !== $actualAmount);
     }
@@ -399,5 +412,4 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount, 2, '.', '');
     }
-
 }
