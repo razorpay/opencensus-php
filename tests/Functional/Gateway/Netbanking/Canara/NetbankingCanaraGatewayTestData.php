@@ -33,7 +33,7 @@ return [
 
     'testPaymentNetbankingEntity' => [
         'action'                  => 'authorize',
-        'amount'                  => 50000,
+        'amount'                  => 500,
         'bank'                    => 'CNRB',
         'received'                => true,
         'client_code'             => 'CLIENTCODE',
