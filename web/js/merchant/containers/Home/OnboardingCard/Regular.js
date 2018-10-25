@@ -6,7 +6,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
