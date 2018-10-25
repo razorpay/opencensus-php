@@ -53,4 +53,9 @@ class EsRepository extends Merchant\EsRepository
 
         parent::buildQueryForQ($query, $value);
     }
+
+    public function buildQueryForParentId(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::PARENT_ID, $value);
+    }
 }
