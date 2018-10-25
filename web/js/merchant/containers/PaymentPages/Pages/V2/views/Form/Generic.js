@@ -84,7 +84,13 @@ export class GenericCreator extends React.PureComponent {
   };
 
   render() {
-    const { onClose, onSubmit, field } = this.props;
+    const {
+      onClose,
+      onSubmit,
+      field,
+      allFieldsLabelList,
+      selfIndex,
+    } = this.props;
     const { hasDescription, disableSubmit } = this.state;
 
     return (
@@ -100,6 +106,20 @@ export class GenericCreator extends React.PureComponent {
             defaultValue={field.title}
             placeholder="Enter field title"
             pattern="^[0-9a-zA-Z]+(?: [0-9a-zA-Z]+)*$"
+            validator={function(val) {
+              if (!val) {
+                return;
+              }
+
+              const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);
+
+              if (
+                sameTitleFieldIndex > -1 &&
+                sameTitleFieldIndex !== selfIndex
+              ) {
+                return 'Label cannot be same as other field';
+              }
+            }}
             autoFocus
           />
           {/*<input name="name" hidden value={} />*/}

@@ -23,13 +23,31 @@ function setNativeValue(element, value) {
 
 export default class extends React.Component {
   className = 'Input--PowerDropdown';
-  state = {
-    mature: this.props.mature,
-    optionIndex:
-      typeof this.props.defaultValue !== 'undefined'
-        ? this.props.defaultValue
-        : 0,
-  };
+
+  constructor(props) {
+    super(props);
+
+    let defaultIndex = 0;
+    const hasDefaultValue = typeof this.props.defaultValue !== 'undefined';
+
+    if (hasDefaultValue) {
+      if (typeof props.options[0] === 'object') {
+        props.options.forEach((o, i) => {
+          if (o.value === props.defaultValue) {
+            defaultIndex = i;
+            return false;
+          }
+        });
+      } else {
+        defaultIndex = props.options.indexOf(props.defaultValue);
+      }
+    }
+
+    this.state = {
+      mature: this.props.mature,
+      selectedOptionIndex: defaultIndex > 0 ? defaultIndex : 0,
+    };
+  }
 
   focus = e => {
     this.setState({ focus: true });
@@ -41,22 +59,25 @@ export default class extends React.Component {
 
   onSelection = e => {
     const dataSet = e.target.dataset;
+    const { options, onChange } = this.props;
 
     if (dataSet && dataSet.optionIndex !== void 0) {
-      const curSelectedIndex =
-        dataSet.optionIndex < this.props.options.length
-          ? dataSet.optionIndex
-          : 0;
-      const selectedValue = this.props.options[curSelectedIndex].label;
+      const selectedOptionIndex =
+        dataSet.optionIndex < options.length ? dataSet.optionIndex : 0; // Safe check
 
-      this.setState({ optionIndex: curSelectedIndex });
+      const selectedValue =
+        typeof options[0] === 'object'
+          ? options[selectedOptionIndex].value
+          : options[selectedOptionIndex];
+
+      this.setState({ selectedOptionIndex: selectedOptionIndex });
 
       const mainFormElement = document.getElementsByName(this.props.name)[0];
       setNativeValue(mainFormElement, selectedValue);
       mainFormElement.dispatchEvent(new Event('change', { bubbles: true }));
 
-      this.props.onChange &&
-        this.props.onChange({ index: curSelectedIndex, value: selectedValue });
+      onChange &&
+        onChange({ index: selectedOptionIndex, value: selectedValue });
 
       this.toggleExpansion();
     }
@@ -65,40 +86,48 @@ export default class extends React.Component {
   };
 
   toggleExpansion = e => {
-    this.setState({ expandDropdown: !this.state.expandDropdown });
+    this.setState({ isDropdownExpanded: !this.state.isDropdownExpanded });
   };
 
   render() {
-    const OptionComponent = this.props.customOptionComponent;
-    const SelectedComponent = this.props.customSelectedOptionComponent;
+    const {
+      name,
+      label,
+      defaultValue,
+      options,
+      customOptionComponent: OptionComponent,
+      customSelectedOptionComponent: SelectedComponent,
+    } = this.props;
 
-    const curSelectedIndex =
-      this.state.optionIndex < this.props.options.length
-        ? this.state.optionIndex
-        : 0;
+    const { selectedOptionIndex, isDropdownExpanded } = this.state;
+
+    const selectedOptionLabel =
+      typeof options[0] === 'object'
+        ? options[selectedOptionIndex].label
+        : options[selectedOptionIndex];
 
     return (
       <div class={inputClass(this)}>
-        <Label text={this.props.label} />
+        {/* Contains actual value of dropdown. Automatically considered in Form using via serializer */}
+        <input name={name} defaultValue={defaultValue} hidden />
+        <Label text={label} />
         <div class="Input-content">
           <div class="Input-elWrapper Select-elWrapper">
             <div onClick={this.toggleExpansion}>
               <input
                 class="Input-el"
-                name={this.props.name}
                 readOnly
+                value={selectedOptionLabel}
                 hidden={!!SelectedComponent}
               />
               {SelectedComponent && (
                 <div class="Input-el Input-el--customSelection">
-                  <SelectedComponent
-                    option={this.props.options[curSelectedIndex]}
-                  />
+                  <SelectedComponent option={options[selectedOptionIndex]} />
                 </div>
               )}
             </div>
 
-            {this.state.expandDropdown && (
+            {isDropdownExpanded && (
               <DropDownList
                 options={this.props.options}
                 onSelection={this.onSelection}

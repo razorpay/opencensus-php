@@ -118,6 +118,8 @@ export default class View extends React.PureComponent {
         editorContent = (
           <GenericCreator
             field={FORM_SCHEMA[this.state.activeSchemaIndex] || {}}
+            selfIndex={this.state.activeSchemaIndex}
+            allFieldsLabelList={FORM_SCHEMA.map(f => f.title)}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
           />
