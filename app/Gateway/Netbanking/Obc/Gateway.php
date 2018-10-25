@@ -47,8 +47,6 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $this->updateUrlInCacheAndPushMetric($input, $request['url']);
-
         return $request;
     }
 
