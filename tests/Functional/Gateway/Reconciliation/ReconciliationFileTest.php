@@ -1455,6 +1455,58 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAmexPaymentRecon()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '341111111111111';
+
+        $this->payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('amex');
+
+        $paymentData = $this->overrideAmexPayment($gatewayPayment);
+
+        // adding 20 blanks rows before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 20 ; $row_index++)
+        {
+            $entries[] = [];
+        }
+
+        $entries[] = array_keys($paymentData);
+
+        $entries[] = $paymentData;
+
+        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement');
+
+        $response = $this->runForFiles([$file], 'Amex');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
@@ -1468,6 +1520,19 @@ class ReconciliationFileTest extends TestCase
         $facade['Merchant Track ID'] = "''". $entityId;
 
         $facade['Transaction Type'] =  $transactionType;
+
+        return $facade;
+    }
+
+    private function overrideAmexPayment(array $gatewayPayment)
+    {
+        $facade = $this->testData['facades']['testAmexPaymentRecon'];
+
+        $facade['Charge reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
+
+        $facade['Reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
+
+        $facade['Rental agreement number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
         return $facade;
     }
