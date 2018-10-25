@@ -456,6 +456,7 @@ pipeline:
       - api-sqs-emails
       - api-sqs-gen-live
       - api-sqs-main
+      - api-sqs-shield
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
@@ -491,6 +492,7 @@ pipeline:
       - api-canary-sqs-batch
       - api-canary-sqs-emails
       - api-canary-sqs-gen-live
+      - api-canary-sqs-shield
       - api-canary-sqs-main
       - api-canary-sqs-subscription-charge
       - api-canary-sqs-webhooks-failure
@@ -737,7 +739,6 @@ pipeline:
       - api-sqs-gen-live
       - api-sqs-shield
       - api-sqs-main
-      - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
@@ -824,6 +825,7 @@ pipeline:
       - api-sqs-batch
       - api-sqs-emails
       - api-sqs-gen-live
+      - api-sqs-shield
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
