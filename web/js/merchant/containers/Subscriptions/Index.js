@@ -29,6 +29,17 @@ const heading =
   { updateFeatures, showNotification, ...ModalActions }
 )
 export default class SubscriptionsController extends Component {
+  constructor(props) {
+    super(props);
+
+    this.prefix = '';
+    if (props.user.isOrgRZP) {
+      this.prefix = 'Razorpay ';
+    }
+
+    this.heading = `Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.`;
+  }
+
   enableFeature = () => {
     var data = {
       features: {
@@ -41,7 +52,7 @@ export default class SubscriptionsController extends Component {
       .then(res => {
         this.props.showNotification({
           type: 'success',
-          message: 'Razorpay Subscriptions has been enabled!',
+          message: `${this.prefix}Subscriptions has been enabled!`,
         });
         setTimeout(() => location.reload());
       })
@@ -59,8 +70,8 @@ export default class SubscriptionsController extends Component {
         <div className="subscriptions-onboarding-modal">
           <FeatureOnboardingModal
             onClose={this.props.closeModal}
-            heading="Razorpay Subscriptions"
-            description={heading}
+            heading={`${this.prefix}Subscriptions`}
+            description={this.heading}
             formType="subscriptions"
             isTestMode={false}
             isPreStepCompleted={() => !!this.props.business_website}
@@ -77,8 +88,8 @@ export default class SubscriptionsController extends Component {
     if (!featureEnabled) {
       return (
         <FeatureOnboarding
-          heading="Razorpay Subscriptions"
-          description={heading}
+          heading={`${this.prefix}Subscriptions`}
+          description={this.heading}
           formType="subscriptions"
           isTestMode={this.props.mode === 'test'}
           enableFeatureInTestMode={this.enableFeature}
@@ -91,7 +102,7 @@ export default class SubscriptionsController extends Component {
       <div>
         {this.props.mode === 'test' && (
           <ActivationBanner
-            productName="Razorpay Subscriptions"
+            productName={`${this.prefix}Subscriptions`}
             productDocs="https://razorpay.com/docs/subscriptions"
             feature="subscriptions"
             symbol="sub"

@@ -50,7 +50,9 @@ export default class PlansListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen additionalCondition={user => user.isAllowedEdit('plans')}>
+          <ShowWhen
+            additionalCondition={user => user.isAllowedEdit('subscriptions')}
+          >
             <div class="btn-toolbar">
               <NavLink to="/plans/new">
                 <button class="pull-right btn btn-primary">

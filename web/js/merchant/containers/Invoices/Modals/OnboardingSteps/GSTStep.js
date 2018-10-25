@@ -1,5 +1,6 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
@@ -44,8 +45,8 @@ export default class GSTStepOnboarding extends Component {
                   <span class="section-title">{merchantGstin}</span>
                 </div>
                 <p class="help-block">
-                  To update your GST details, reach out to us at{' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+                  To update your GST details, please{' '}
+                  <Link to="#ticket">write to support</Link>
                 </p>
               </Fragment>
             ) : (

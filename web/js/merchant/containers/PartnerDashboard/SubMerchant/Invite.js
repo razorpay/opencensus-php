@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -11,7 +12,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
-@connect(state => ({ ...state.submerchant.item }), {
+@connect(state => ({ ...state.submerchant.item, user: state.session.user }), {
   closeModal,
   inviteSubmerchant,
   showNotification,
@@ -63,13 +64,14 @@ export default class Invite extends Component {
             </div>
 
             <span class="help-block">
-              By inviting the merchant to sign up on Razorpay dashboard, you
-              both can manage the account.
+              By inviting the merchant to sign up on{' '}
+              {user.isOrgRZP ? 'Razorpay' : 'the'} dashboard, you both can
+              manage the account.
             </span>
 
             <div class="alert alert-warning custom-banner arrow-up">
-              To change the registered email ID please, send a request to{' '}
-              <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+              To change the registered email ID please, you can{' '}
+              <a href="#ticket">write to us</a>
             </div>
 
             <div class="Modal__Actions clearfix">

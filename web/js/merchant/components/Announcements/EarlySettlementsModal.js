@@ -6,15 +6,13 @@ import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import trackESAnnouncements from './ga';
 import ajax from 'merchant/utils/ajax';
+import LocalStorageService from 'rzp/utils/localStorage';
 
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
   initialValues: {
-    interested_in: 'automatic',
+    interested_in: '',
   },
 })
 export default class RequestEarlyAccessForm extends Component {
@@ -24,6 +22,7 @@ export default class RequestEarlyAccessForm extends Component {
       saving: false,
       fetching: false,
       activeScreenIndex: 0,
+      formData: '',
       pricing: 0.2,
       errors: [],
       modalTitle: '',
@@ -37,6 +36,7 @@ export default class RequestEarlyAccessForm extends Component {
     this.onSubmit = this.onSubmit.bind(this);
     this.closeForm = this.closeForm.bind(this);
     this.closePricing = this.closePricing.bind(this);
+    this.requestKey = `early-settlement-requested-${props.user.current}`;
   }
 
   onSubmit(body) {
@@ -86,7 +86,10 @@ export default class RequestEarlyAccessForm extends Component {
   }
 
   handleAcceptPricing = () => {
-    trackESAnnouncements.trackESPricingAccept(this.props.from);
+    trackESAnnouncements.trackESPricingAccept(
+      this.props.from,
+      this.state.formData.interested_in
+    );
     this.postESRequest(
       'https://hooks.zapier.com/hooks/catch/1088429/lbq8rx/',
       2
@@ -94,7 +97,6 @@ export default class RequestEarlyAccessForm extends Component {
   };
 
   handleCancelPricing = () => {
-    trackESAnnouncements.trackESPricingCancel(this.props.from);
     this.postESRequest(
       'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
       0
@@ -126,13 +128,30 @@ export default class RequestEarlyAccessForm extends Component {
     })
       .then(response => {
         if (response.status == 200) {
-          if (this.props.closeBanner && nextScreen == 2) {
-            this.props.closeBanner();
-          }
           this.setState({
             saving: false,
             activeScreenIndex: nextScreen,
           });
+          if (nextScreen == 2) {
+            const bannerEvent = new window.CustomEvent(
+              'remove-es-announcement',
+              {
+                bubbles: false,
+              }
+            );
+            const buttonEvent = new window.CustomEvent('remove-req-es-button', {
+              bubbles: false,
+            });
+
+            window.dispatchEvent(bannerEvent);
+            window.dispatchEvent(buttonEvent);
+
+            LocalStorageService.setItem(this.requestKey, 1);
+            this.props.closeModal();
+            this.props.openModal({
+              component: SuccessScreen(this.closeSuccessScreen),
+            });
+          }
         }
       })
       .catch(response => {
@@ -149,15 +168,27 @@ export default class RequestEarlyAccessForm extends Component {
 
   closePricing() {
     this.handleCancelPricing();
-    trackESAnnouncements.trackESPricingModalClose(this.props.from);
+    trackESAnnouncements.trackESPricingModalClose(
+      this.props.from,
+      this.state.formData.interested_in
+    );
     this.props.closeModal();
   }
 
   handleBack = () => {
     this.handleCancelPricing();
+    trackESAnnouncements.trackESPricingBack(
+      this.props.from,
+      this.state.formData.interested_in
+    );
     this.setState({
       activeScreenIndex: Math.max(this.state.activeScreenIndex - 1, 0),
     });
+  };
+
+  closeSuccessScreen = buttonText => {
+    trackESAnnouncements.trackESSuccessModalClose(this.props.from, buttonText);
+    this.props.closeModal();
   };
 
   handleNext = () => {
@@ -173,6 +204,14 @@ export default class RequestEarlyAccessForm extends Component {
       showFeatures: true,
       showOptions: false,
       activeScreenIndex: 0,
+    });
+  };
+
+  handleChange = e => {
+    this.setState({
+      formData: {
+        interested_in: e.target.name,
+      },
     });
   };
 
@@ -204,6 +243,7 @@ export default class RequestEarlyAccessForm extends Component {
               name="interested_in"
               component={RadioButton}
               htmlValue="automatic"
+              onChange={this.handleChange}
               label={() => (
                 <span class="radio-label">
                   <label class="title">Automatic Early Settlements</label>
@@ -219,6 +259,7 @@ export default class RequestEarlyAccessForm extends Component {
               name="interested_in"
               component={RadioButton}
               htmlValue="on-demand"
+              onChange={this.handleChange}
               label={() => (
                 <span class="radio-label">
                   <label class="title">On-demand Early Settlements</label>
@@ -234,7 +275,10 @@ export default class RequestEarlyAccessForm extends Component {
             <Button class="options-back-btn" onClick={this.handleOptionsBack}>
               Back
             </Button>
-            <Button.Primary class="submit-btn" disabled={this.state.fetching}>
+            <Button.Primary
+              class="submit-btn"
+              disabled={this.state.fetching || !this.state.formData}
+            >
               {this.state.fetching ? 'Fetching details ' : 'Request'}
             </Button.Primary>
           </div>
@@ -256,7 +300,9 @@ export default class RequestEarlyAccessForm extends Component {
             ? 'Choose when you want your settlements early. All your other settlements follow your existing settlement schedule.'
             : 'Razorpay will automatically settle all your payments at specific hours during the day, ensuring a consistent working capital.'}
         </div>
-        <span class="modal-subtitle">Pricing</span>
+        <span class="modal-subtitle">
+          Your pricing is {this.state.pricing}%
+        </span>
         <p>
           Based on your risk profile which includes refunds, chargebacks,
           vintage with Razorpay, etc. you will be charged{' '}
@@ -277,109 +323,114 @@ export default class RequestEarlyAccessForm extends Component {
       </React.Fragment>
     );
 
-    if (this.state.activeScreenIndex == 2) {
-      mainScreen = (
-        <div
-          id="es-modal-cnt"
-          class="modal-body rzp-early-stl-modal success-modal"
-        >
-          <div class="success-banner-cnt">
-            <img
-              class="banner-header"
-              src="img/early_settlements/es-banner-1-header.png"
-            />
-            <button class="close" onClick={this.props.closeModal}>
-              <i class="i i-close" />
-            </button>
-            <img class="banner" src="img/early_settlements/es-banner-2.png" />
-            <h3 class="modal-title">Early Settlements Requested</h3>
-            <div class="help-block">
-              You shall be activated soon for Early Settlements. A confirmation
-              email will be sent to your registered Email ID.
+    mainScreen = (
+      <div id="es-modal-cnt" class="modal-body rzp-early-stl-modal">
+        <div class={`content-left ${!this.state.showFeatures && 'hide'}`}>
+          <button class="close" onClick={this.props.closeModal}>
+            <i class="i i-close" />
+          </button>
+          <div class="modal-header">
+            <h3 class="modal-title">Early Settlements</h3>
+          </div>
+          <div class="help-block">
+            Razorpay is working with <strong>top financing institutions</strong>{' '}
+            to help you realise your settlements within a few working hours. No
+            more shortfalls in working capital.
+            <p class="m-t">
+              <a target="_blank" href="https://razorpay.com/knowledgebase/">
+                Know more about Early Settlements{' '}
+                <i class="i i-external-link" />
+              </a>
+            </p>
+          </div>
+          <div class="features-list">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <img src="img/early_settlements/es-icon-1.png" />
+              </div>
+              <div class="feature-content">
+                <span class="feature-title">Better Budgeting</span>
+                <div class="feature-text">
+                  Predict monthly budget, expenses and investment
+                </div>
+              </div>
             </div>
-            <div>
-              <Button.Primary class="close-btn" onClick={this.props.closeModal}>
-                Got it
-              </Button.Primary>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <img src="img/early_settlements/es-icon-2.png" />
+              </div>
+              <div class="feature-content">
+                <span class="feature-title">Zero Backlogs</span>
+                <div class="feature-text">
+                  Avoid backlog in your payment reconciliation
+                </div>
+              </div>
             </div>
-            <img
-              class="banner-footer"
-              src="img/early_settlements/es-banner-1-footer.png"
-            />
+            <div class="feature-item">
+              <div class="feature-icon">
+                <img src="img/early_settlements/es-icon-3.png" />
+              </div>
+              <div class="feature-content">
+                <span class="feature-title">Easy Financing</span>
+                <div class="feature-text">
+                  Avoid costly short-term financing
+                </div>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <img src="img/early_settlements/es-icon-4.png" />
+              </div>
+              <div class="feature-content">
+                <span class="feature-title">Manage Settlements</span>
+                <div class="feature-text">
+                  Efficiently manage your vendor settlements
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-action">
+            <Button.Primary onClick={this.handleNext}>Next</Button.Primary>
           </div>
         </div>
-      );
-    } else {
-      mainScreen = (
-        <div id="es-modal-cnt" class="modal-body rzp-early-stl-modal">
-          <div class={`content-left ${!this.state.showFeatures && 'hide'}`}>
-            <button class="close" onClick={this.props.closeModal}>
-              <i class="i i-close" />
-            </button>
-            <div class="modal-header">
-              <h3 class="modal-title">Early Settlements</h3>
-            </div>
-            <div class="help-block">
-              Get your payments settled within a few working hours and never
-              have a shortfall of working capital for your business.
-            </div>
-            <div class="features-list">
-              <div class="feature-item">
-                <div class="feature-icon">
-                  <img src="img/early_settlements/es-icon-1.png" />
-                </div>
-                <div class="feature-content">
-                  <span class="feature-title">Better Budgeting</span>
-                  <div class="feature-text">
-                    Predict monthly budget, expenses and investment
-                  </div>
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">
-                  <img src="img/early_settlements/es-icon-2.png" />
-                </div>
-                <div class="feature-content">
-                  <span class="feature-title">Zero Backlogs</span>
-                  <div class="feature-text">
-                    Avoid backlog in your payment reconciliation
-                  </div>
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">
-                  <img src="img/early_settlements/es-icon-3.png" />
-                </div>
-                <div class="feature-content">
-                  <span class="feature-title">Easy Financing</span>
-                  <div class="feature-text">
-                    Avoid costly short-term financing
-                  </div>
-                </div>
-              </div>
-              <div class="feature-item">
-                <div class="feature-icon">
-                  <img src="img/early_settlements/es-icon-4.png" />
-                </div>
-                <div class="feature-content">
-                  <span class="feature-title">Manage Settlements</span>
-                  <div class="feature-text">
-                    Efficiently manage your vendor settlements
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-action">
-              <Button.Primary onClick={this.handleNext}>Next</Button.Primary>
-            </div>
-          </div>
-          <div class={`content-right ${!this.state.showOptions && 'hide'}`}>
-            {screens[this.state.activeScreenIndex]}
-          </div>
+        <div class={`content-right ${!this.state.showOptions && 'hide'}`}>
+          {screens[this.state.activeScreenIndex]}
         </div>
-      );
-    }
+      </div>
+    );
 
     return mainScreen;
   }
 }
+
+const SuccessScreen = closeScreen => (
+  <div class="modal-body rzp-early-stl-modal success-modal">
+    <div class="success-banner-cnt">
+      <img
+        class="banner-header"
+        src="img/early_settlements/es-banner-1-header.png"
+      />
+      <button class="close" onClick={() => closeScreen('Close Buuton')}>
+        <i class="i i-close" />
+      </button>
+
+      <img class="banner" src="img/early_settlements/es-banner-2.png" />
+      <h3 class="modal-title">Early Settlements Requested</h3>
+      <div class="help-block">
+        You shall be activated soon for Early Settlements. A confirmation email
+        will be sent to your registered Email ID.
+      </div>
+
+      <div>
+        <Button.Primary class="close-btn" onClick={() => closeScreen('Got it')}>
+          Got it
+        </Button.Primary>
+      </div>
+
+      <img
+        class="banner-footer"
+        src="img/early_settlements/es-banner-1-footer.png"
+      />
+    </div>
+  </div>
+);

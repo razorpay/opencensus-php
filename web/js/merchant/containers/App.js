@@ -372,9 +372,10 @@ export default class App extends Component {
           user={user}
           logoURL={org.main_logo_url}
           config={config.config}
+          org_custom_code={org.custom_code}
         />
         <Content user={user} modeFormatted={modeFormatted} />
-        <Footer />
+        <Footer showMobileNav={this.props.windowWidth < 950} />
 
         {/* Creates Portal for the comp */}
         <ModalDialog />
