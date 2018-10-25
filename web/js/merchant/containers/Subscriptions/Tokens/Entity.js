@@ -47,7 +47,7 @@ export default class TokenEntityContainer extends Component {
 
   handleChargeNow = () => {
     this.props.openModal({
-      size: 'small',
+      size: 'medium',
       component: (
         <ChargeToken
           closeModal={this.props.closeModal}
