@@ -841,7 +841,7 @@ trait Refund
                                                    'REFUND_SUCCESSFUL' :
                                                    (
                                                        (empty($exception) === false) ?
-                                                       $exception->getCode() :
+                                                       (string) $exception->getCode() :
                                                        ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
                                                    ),
             Payment\Gateway::GATEWAY_RESPONSE   => $gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ??

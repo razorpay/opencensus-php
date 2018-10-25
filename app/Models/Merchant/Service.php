@@ -454,7 +454,9 @@ class Service extends Base\Service
                 'pricing_plan_id');
         }
 
-        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($input['pricing_plan_id']);
+        $orgId = $merchant->org->getId();
+
+        $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($input['pricing_plan_id'], $orgId);
 
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324

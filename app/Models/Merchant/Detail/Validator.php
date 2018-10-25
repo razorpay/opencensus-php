@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
@@ -470,11 +471,28 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Throws an exception if the activation form is not submitted
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateActivationFormSubmitted()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED,
+                Entity::SUBMITTED);
+        }
+    }
+
+    /**
      * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
      *
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function blockInstantActivationCriticalFields(array $input)
     {
@@ -489,6 +507,46 @@ class Validator extends Base\Validator
                 null,
                 $criticalInput);
         }
+    }
+
+    /**
+     * Throws an exception if the merchant details are archived
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotArchived()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION,
+                Entity::ARCHIVED_AT);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function performInstantActivationValidations(array $input)
+    {
+        $merchantDetails = $this->entity;
+
+        $this->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $this->validateBusinessSubcategoryForCategory($input);
+
+        $merchantValidator = new Merchant\Validator;
+
+        $merchant = $merchantDetails->merchant;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchant);
     }
 
     /**

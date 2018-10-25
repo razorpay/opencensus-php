@@ -21,6 +21,8 @@ class DigioGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/DigioGatewayTestData.php';
+
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_digio_terminal');
@@ -62,6 +64,40 @@ class DigioGatewayTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testDigioCancelledByUser()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockCancelledByUser();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc' => 'utib0000123',
+            'name' => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals(
+            ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
+            $payment['internal_error_code']
+        );
+    }
+
     protected function runPaymentCallbackFlowEsignerDigio($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
@@ -75,5 +111,18 @@ class DigioGatewayTest extends TestCase
         }
 
         return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function mockCancelledByUser()
+    {
+        $this->mockServerContentFunction(function(& $request, $action = null)
+        {
+            if ($action === 'sign')
+            {
+                $request['content']['status'] = 'cancel';
+
+                $request['content']['message'] = 'Signing Cancelled';
+            }
+        }, 'esigner_digio');
     }
 }

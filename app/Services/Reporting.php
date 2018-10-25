@@ -219,7 +219,7 @@ class Reporting implements ExternalService
 
         if (isset($response['error']) === false)
         {
-            $scheduleIds = $response['schedule_ids'];
+            $scheduleIds = $response['schedule_ids'] ?? [];
 
             foreach ($scheduleIds as $scheduleId)
             {
@@ -239,7 +239,14 @@ class Reporting implements ExternalService
         //
         $input['mode'] = $this->mode;
 
-        return $this->createAndSendRequest(Requests::POST, self::LOG_PATH, $input);
+        $path = self::LOG_PATH;
+
+        if (empty($input['emails']) === true)
+        {
+            $path .= '?send_email=false';
+        }
+
+        return $this->createAndSendRequest(Requests::POST, $path, $input);
     }
 
     public function editLog(string $id, array $input): array

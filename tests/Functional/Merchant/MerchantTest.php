@@ -1976,6 +1976,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutRouteWithCheckoutFeatures()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['google_pay']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['features']['google_pay']);
+    }
+
     public function testPutPaytmMethod()
     {
         $this->fixtures->create('pricing:standard_plan');
@@ -2200,7 +2213,10 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
+
+        $this->assertArrayHasKey('total_count', $content);
+
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
@@ -2276,7 +2292,8 @@ class MerchantTest extends TestCase
         Carbon::setTestNow();
 
         $this->assertArrayHasKey('signed_url', $content);
-        $this->assertEquals(2, $content['merchants_count']);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(2, $content['total_count']);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
@@ -3175,9 +3192,9 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
 
-        $this->assertEquals(1, $content['merchants_count']);
+        $this->assertEquals(1, $content['register_count']);
 
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
@@ -3216,5 +3233,97 @@ class MerchantTest extends TestCase
         $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
 
         $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
+    }
+
+    public function testNegativeBeneficiaryRegisterBetweenTimestampAxis()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0123456']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'HDFC0153496']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(3, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
+        {
+            return $mail->hasTo(['abc@d.com', 'efg@h.com']);
+        });
+    }
+
+    public function testBeneficiaryRegisterBetweenTimestampAxisWithInvalidIfsc()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertEquals(0, $content['register_count']);
+        $this->assertEquals(1, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
     }
 }

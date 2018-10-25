@@ -3,6 +3,8 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -50,7 +52,7 @@ class Fee extends Base\Core
 
         $method = $entity->getMethod();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method);
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method, $entity->merchant);
     }
 
     public function calculateMerchantFees($entity)
@@ -59,9 +61,9 @@ class Fee extends Base\Core
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
-        $pricing = $this->repo->getPricingPlanById($pricingPlanId);
+        $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
-        $pricing = $this->addFallbackPricingRules($pricing);
+        $pricing = $this->addFallbackPricingRules($pricing, $entity->merchant);
 
         return $calculator->calculate($pricing);
     }
@@ -74,15 +76,21 @@ class Fee extends Base\Core
      *
      * @return Plan
      */
-    protected function addFallbackPricingRules(Plan $pricingPlan)
+    protected function addFallbackPricingRules(Plan $pricingPlan, Merchant\Entity $merchant)
     {
-        $emiSubPricing = $this->repo->getPricingPlanById(self::EMI_SUB_PRICING_PLAN_ID);
+        // for other orgs we don't merge any pricing plans
+        if ($merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return $pricingPlan;
+        }
+
+        $emiSubPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::EMI_SUB_PRICING_PLAN_ID);
 
         $pricingPlan = $pricingPlan->merge($emiSubPricing);
 
         if ($pricingPlan->hasMethod(Payment\Method::BANK_TRANSFER) === false)
         {
-            $bankTransferPricing = $this->repo->getPricingPlanById(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
+            $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
         }
@@ -97,14 +105,14 @@ class Fee extends Base\Core
             // 2. If we add it in the code we will have to keep validation on deletion. Because if
             //    a ops guy deletes it it will get created again.
             //
-            $qrCodePricing = $this->repo->getPricingPlanById(self::DEFAULT_QR_CODE_PLAN_ID);
+            $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_QR_CODE_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($qrCodePricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)
         {
-            $emiPricing = $this->repo->getPricingPlanById(self::DEFAULT_EMI_PLAN_ID);
+            $emiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_EMI_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
