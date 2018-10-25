@@ -502,10 +502,6 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
-    console.log('next props', nextProps);
-  }
-
   /*
   * Fn. to keep _name fields(FE-only fields) in sync with updated values(props.data) on tab change.
   * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
@@ -1102,8 +1098,6 @@ export default class ActivationWizard extends React.Component {
 
   // returns validity
   tabValidity(i) {
-    console.log('jankay');
-
     return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)

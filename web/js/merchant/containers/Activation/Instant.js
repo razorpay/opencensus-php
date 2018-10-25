@@ -264,8 +264,6 @@ export default class ActivationWizard extends React.Component {
   render() {
     const isFormLocked = !!this.props.data.locked;
 
-    console.log(this.state, this.props);
-
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
         return (
