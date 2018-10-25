@@ -179,8 +179,6 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
-        // enable live mode if not enabled
-
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']
              ->handle();
@@ -195,6 +193,12 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
         });
+
+        //
+        // Live transactions get disabled if the activation_status changes to 'rejected'.
+        // If later the status is change to 'activated', enable live transactions explicitly.
+        //
+        (new Merchant\Core)->enableLive($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED, ['merchant_id' => $merchant->getId()]);
 

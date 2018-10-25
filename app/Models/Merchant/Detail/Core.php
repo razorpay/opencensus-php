@@ -681,21 +681,14 @@ class Core extends Base\Core
 
         $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
 
-        $workflow = $this->app['workflow']
-                         ->setEntity($newMerchantDetails->getEntity())
-                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+        $this->app['workflow']
+             ->setEntity($newMerchantDetails->getEntity())
+             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
 
         $merchant = $newMerchantDetails->merchant;
 
         // If the merchant is instantly activated and the kyc gets rejected, disable live transactions
-        if ($merchant->isActivated() === true)
-        {
-            $this->trace->info(TraceCode::MERCHANT_LIVE_DISABLED);
-
-            $merchant->liveDisable();
-
-            $this->repo->saveOrFail($merchant);
-        }
+        (new Merchant\Core)->disableLiveIfAlreadyActivated($merchant);
     }
 
     /**

@@ -733,9 +733,4 @@ class Entity extends Base\PublicEntity
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
-
-    public function hasSubmittedInstantActivationForm(): bool
-    {
-        return (empty($this->getActivationFlow()) === false);
-    }
 }
