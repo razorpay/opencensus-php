@@ -459,6 +459,13 @@ const ActionsList = ({ model, merchantId, actions }) => {
             )}
           </div>
         </ShowWhen>
+        <ShowWhen permission="edit_merchant">
+          <div onClick={isDetailsLoading ? null : actions.EditMerchantDetails}>
+            Edit Advanced Details
+            <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
         <ShowWhen permission="edit_merchant_risk_threshold">
           <div onClick={isDetailsLoading ? null : actions.EditFraudScore}>
             Edit Fraud Score
@@ -547,6 +554,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <div onClick={actions.AssignMerchantHandle}>
             Assign Merchant Handle
             <i class="pull-right i">@</i>
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="create_virtual_accounts">
+          <div onClick={actions.CreateVA}>
+            Create Virtual Account
+            <i class="pull-right i i-money" />
           </div>
         </ShowWhen>
         {merchant.features['live'] &&

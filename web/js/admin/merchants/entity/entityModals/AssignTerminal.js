@@ -132,9 +132,6 @@ export default class TerminalForm extends Component {
       });
       body.type = temp;
     }
-    if (!Object.keys(body.type).length) {
-      delete body.type;
-    }
 
     if (body.file) {
       file = body.file[0];
