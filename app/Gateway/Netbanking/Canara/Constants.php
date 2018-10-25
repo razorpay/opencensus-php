@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Canara;
 class Constants
 {
     const CLIENT_CODE                       = 'CLIENTCODE';
-    const DEFAULT_MESSAGE                           = 'This field will contain message description';
+    const DEFAULT_MESSAGE                   = 'This field will contain message description';
     const SUCCESS                           = '0';
     const SUCCESS_VERIFY_STATUS             = '0';
     const SUCCESS_AND_FAILURE_STATIC_FLAG   = 'N';
