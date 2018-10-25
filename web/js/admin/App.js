@@ -143,22 +143,16 @@ export default class App extends Component {
               {isOrgRazorpay() && (
                 <React.Fragment>
                   <Route path="/activation" component={ActivationList} />
+                  <Route
+                    path="/instant-activation"
+                    component={InstantActivationList}
+                  />
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
                   <Route path="/scrooge/refund/:id" component={ScroogeRefund} />
                 </React.Fragment>
               )}
-
-              <Route
-                path="/instant-activation"
-                component={InstantActivationList}
-              />
-
-              <Route
-                path="/instant-activation"
-                component={InstantActivationList}
-              />
 
               <Redirect to="/merchants" />
             </Switch>
