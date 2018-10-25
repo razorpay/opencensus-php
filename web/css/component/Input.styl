@@ -63,7 +63,7 @@
   &.is-mature:not(.is-focused)
     .is-invalid, &.is-invalid
       .Input-addons
-        background-color: rgba(167, 4, 5, 0.17);
+        background-color: rgba(167, 4, 5, 0.17)
 
   &.Input-addons--transparent
     .Input-addons
@@ -102,10 +102,49 @@
 
 .Input--checkbox.Input--checkbox
   .Input-elWrapper
-    width: 100%;
+    width: 100%
 
 .Input--capitalize .Input-el
   text-transform: uppercase
+
+.Input--PowerDropdown
+  .Input-elWrapper
+    z-index: 9999
+    cursor: pointer
+
+  .Input-el--customSelection
+    line-height: 32px
+
+  .Input-list
+    position: absolute
+    width: 100%
+    border-radius: 2px
+    background: #fff
+    box-shadow: 0 0 6px rgba(0,0,0,0.12)
+
+  .Input-list-item
+    position: relative
+    width: 100%
+    line-height: 32px
+    padding: 0 12px
+    font-size: 14px
+    overflow: hidden
+    white-space: nowrap
+    text-overflow: ellipsis
+    cursor: pointer
+
+    &:last-of-type
+      border-bottom-left-radius: 2px
+      border-bottom-right-radius: 2px
+
+    &:hover
+      background: #f6f6f6
+
+  i
+    font-size: 16px
+    vertical-align: middle
+    margin-right: 8px
+
 
 .Input--pair
   .Input-pair
@@ -187,6 +226,7 @@
       font-style: normal
       font-weight: normal !important
       pointer-events: none
+      z-index: 100
 
   select
     -webkit-appearance: none

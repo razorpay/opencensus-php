@@ -9,7 +9,7 @@ import fUnits from './field-units';
 *
 * */
 
-export const TYPES = [
+export const TYPES_not_now = [
   {
     label: 'Text',
     options: [
@@ -22,6 +22,15 @@ export const TYPES = [
     ],
   },
   fUnits.dropdown,
+];
+
+export const TYPES = [
+  fUnits.str,
+  fUnits.number,
+  fUnits.email,
+  fUnits.phone,
+  fUnits.url,
+  fUnits.textarea,
 ];
 
 export default function getFieldShell(type, validation) {

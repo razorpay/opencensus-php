@@ -5,6 +5,13 @@ import EditLayer from '../EditLayer';
 import { classList } from 'common/util';
 import { TYPES } from './Fields/helpers';
 
+const CustomTypeOption = ({ option }) => (
+  <React.Fragment>
+    <i class={classList('i', option.icon && 'i-' + option.icon)} />
+    {option.label}
+  </React.Fragment>
+);
+
 export const GenericField = ({ field, onEditField, infoTxt }) => {
   return (
     <EditLayer
@@ -45,11 +52,12 @@ export class GenericCreator extends React.PureComponent {
     hasDescription: !!this.props.field.description,
   };
 
-  typeOptions = ['--Select--'].concat(
+  typeOptions = [{ label: '--Select--', value: '' }].concat(
     Object.keys(TYPES).map(i => {
       return {
-        name: TYPES[i].label,
+        value: TYPES[i].label,
         label: TYPES[i].label,
+        icon: TYPES[i].icon,
       };
     })
   );
@@ -95,12 +103,15 @@ export class GenericCreator extends React.PureComponent {
             autoFocus
           />
           {/*<input name="name" hidden value={} />*/}
-          <Input.Select
+
+          <Input.PowerDropdown
             name="type"
             label="What type of field is this?"
-            defaultValue={field.type}
             placeholder="Select Type"
+            defaultValue={field.type}
             options={this.typeOptions}
+            customOptionComponent={CustomTypeOption}
+            customSelectedOptionComponent={CustomTypeOption}
           />
         </div>
         <div class="section section-2">
