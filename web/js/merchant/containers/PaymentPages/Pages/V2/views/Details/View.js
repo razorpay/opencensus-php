@@ -29,19 +29,19 @@ export default class View extends React.PureComponent {
     const { paymentPageEntity } = this.props;
     const self = this;
 
+    if (!paymentPageEntity) {
+      return null;
+    }
+
     if (paymentPageEntity.id && !paymentPageEntity.title) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
         </div>
       );
-    } else if (paymentPageEntity.id && !paymentPageEntity) {
-      return (
-        <div class="spinner-container">
-          <b>{paymentPageEntity.id}</b> ID doesn't exist
-        </div>
-      );
     }
+
+    const settings = paymentPageEntity.settings || {};
 
     return (
       <React.Fragment>
@@ -58,16 +58,17 @@ export default class View extends React.PureComponent {
         </div>
 
         <Share
-          allowSocialShare={paymentPageEntity.allow_social_share}
+          allowSocialShare={settings.allow_social_share}
           updateData={this.updateData}
         />
 
         <Support
-          support={paymentPageEntity.support}
+          support_phone={settings.support_phone}
+          support_email={settings.support_email}
           updateData={this.updateData}
         />
 
-        <Terms terms={paymentPageEntity.terms} updateData={this.updateData} />
+        <Terms terms={settings.terms} updateData={this.updateData} />
       </React.Fragment>
     );
   }

@@ -12,7 +12,7 @@ export const fetchPaymentPage = id => {
     return {
       type: 'UPDATE_DATA',
       fields: {
-        id: null,
+        id: null, // To handle case where intial UI schema to be shown
       },
     };
   } else {
@@ -58,7 +58,7 @@ export const addInSchema = field => ({
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
-  FORM_SCHEMA: [createEmailField(), createPhoneField()],
+  FORM_SCHEMA: [createEmailField(), createPhoneField()], // Email and Phone not to be sent in udf_schema in all cases.
 };
 
 export default function(state = initialState, action) {
@@ -68,14 +68,22 @@ export default function(state = initialState, action) {
 
     case `${FETCH_ENTITY}::SUCCESS`:
       const entityData = action.payload.data;
-      return set(state, 'paymentPageEntity', entityData);
+
+      return merge(state, {
+        paymentPageEntity: entityData,
+        FORM_SCHEMA: entityData.udf_schema, // Must have phone and email already with it. FE hardcodes only for new payment page.
+      });
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
     case 'UPDATE_DATA':
       if (action.fields.hasOwnProperty('id')) {
-        return set(state, 'paymentPageEntity', { id: action.id });
+        // re-Initialise FE if ID is changed to other ID/null
+        return merge(state, {
+          ...initialState,
+          paymentPageEntity: { id: action.id },
+        });
       } else {
         return set(state, 'paymentPageEntity', {
           ...state.paymentPageEntity,

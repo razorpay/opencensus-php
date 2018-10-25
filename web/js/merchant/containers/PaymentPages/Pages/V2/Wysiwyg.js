@@ -10,7 +10,7 @@ import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
 import PPShareView from '../Modals/Share';
-import { createPaymentPage, sendLink } from '../model';
+import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
 import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
@@ -18,7 +18,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 const ERROR = {
   SCRIPT: 1,
-  OLD_ENTITY: 2,
+  INVALID_ENTITY: 2,
 };
 
 @withRouter
@@ -54,25 +54,25 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       this.setState({
         isPageLoadError: null,
+        isIntroOpened: false,
       });
+
+      if (!nextProps.id) {
+        this.setState({ isIntroOpened: true });
+      }
     }
   }
 
   fetchEntity = id => {
-    if (!id) {
-      return;
-    }
+    const promise = this.props.fetchPaymentPage(id); // Auto reinitialise store if id doesn't exist.
 
-    this.props.fetchPaymentPage(id).then(resp => {
-      if (
-        resp.data &&
-        (!resp.data.settings || !resp.data.settings.udf_schema)
-      ) {
+    if (promise instanceof Promise) {
+      promise.catch(err => {
         this.setState({
-          isPageLoadError: ERROR.OLD_ENTITY,
+          isPageLoadError: ERROR.INVALID_ENTITY,
         });
-      }
-    });
+      });
+    }
   };
 
   componentDidMount() {
@@ -93,6 +93,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
+    // TODO: Change to prod CDN url
     script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
@@ -125,7 +126,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
-  handleCreate = () => {
+  // To handle both Create and Edit payment page.
+  handleSavePublish = () => {
     console.log('Handle Create..', this.props.paymentPageEntity);
 
     const {
@@ -137,6 +139,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       allow_social_share,
     } = this.props.paymentPageEntity;
 
+    const udf_schema = [...this.props.FORM_SCHEMA];
     // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
     const reqPayload = {
       amount: amount || undefined,
@@ -146,28 +149,33 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       settings: {
         allow_multiple_units: allow_multiple_units | 0,
         allow_social_share: allow_social_share | 0,
-        udf_schema: JSON.stringify(this.props.FORM_SCHEMA),
+        udf_schema: JSON.stringify(udf_schema.splice(2)), // To remove Email and Phone in all cases before sending to API.
       },
     };
 
-    if (this.state.id) {
-      console.log('USE UPDATE API TO UPDATE THE STUFF... NOT POST API..');
-      return;
-    }
+    const isEditExistingId = this.state.id;
+    const requestAPI = isEditExistingId ? editPaymentPage : createPaymentPage;
 
-    return createPaymentPage(reqPayload)
+    return requestAPI(reqPayload)
       .then(resp => {
         if (resp.data) {
-          const entityId = resp.data.id;
+          if (isEditExistingId) {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Paymentpage is successfully Saved and Published',
+            });
+          } else {
+            const entityId = resp.data.id;
 
-          this.props.history.push(`/paymentpages/${entityId}/edit`);
+            this.props.history.push(`/paymentpages/${entityId}/edit`);
 
-          this.openPPShareView(
-            entityId,
-            resp.data.short_url,
-            resp.data.title,
-            resp.data.description
-          );
+            this.openPPShareView(
+              entityId,
+              resp.data.short_url,
+              resp.data.title,
+              resp.data.description
+            );
+          }
         } else {
           throw new Error(resp.errors);
         }
@@ -214,8 +222,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const { isPageReady, isPageLoadError } = this.state;
     const { paymentPageEntity, id: payment_page_id } = this.props;
 
-    console.log('paymentPageEntity.....', paymentPageEntity);
-
     const merchantData = {
       name: this.props.user.name,
       brand_color: this.props.config.brand_color,
@@ -231,7 +237,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const actionBtns = (
       <React.Fragment>
         <Button.Primary
-          onClick={this.handleCreate}
+          onClick={this.handleSavePublish}
           disabled={!isAllowedToSubmit}
         >
           {payment_page_id
@@ -262,7 +268,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         <Header
           title={pageNavTitle}
           actionBtns={actionBtns}
-          handleClose={this.handleClose}
           isPageReady={isPageReady}
         />
         {!isPageLoadError &&
@@ -280,13 +285,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               <div class="page-center">
                 Some network error has occurred. Please reload the page.
               </div>;
-            } else if (isPageLoadError === ERROR.OLD_ENTITY) {
+            } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
               <div class="page-center">
-                This Payment page was created in Old view. Please click{' '}
-                <Link to={`/paymentpages/${payment_page_id}`}>
-                  {payment_page_id}
-                </Link>{' '}
-                to edit.
+                Payment page with id <b>{payment_page_id}</b> doesn't exist.
+                <br />
+                Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
               </div>;
             }
           }

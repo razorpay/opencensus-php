@@ -678,12 +678,7 @@ export default class extends React.Component {
   };
 
   render() {
-    let {
-      paymentPageEntity,
-      loading,
-      paymentPagePayments,
-      paymentsListLoading,
-    } = this.state;
+    let { paymentPageEntity, loading } = this.state;
 
     if (loading) {
       return (
@@ -709,10 +704,7 @@ export default class extends React.Component {
       );
     }
 
-    const hasUDFSchema =
-      paymentPageEntity.settings && paymentPageEntity.settings.udf_schema; // To fetch from new End point
-
-    return hasUDFSchema ? (
+    return this.props.user.isPaymentPagesV2 ? (
       <PaymentPagesV2Entity
         {...this.props}
         {...this.state}

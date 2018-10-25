@@ -163,12 +163,16 @@ export default class PaymentPagesV2Entity extends React.Component {
 
                 <EntityDetailRow
                   label="Amount"
-                  value={() => (
-                    <Amount
-                      value={paymentPageEntity.amount}
-                      currency={paymentPageEntity.currency}
-                    />
-                  )}
+                  value={
+                    paymentPageEntity.amount
+                      ? () => (
+                          <Amount
+                            value={paymentPageEntity.amount}
+                            currency={paymentPageEntity.currency}
+                          />
+                        )
+                      : '--'
+                  }
                 />
                 <EntityDetailRow
                   label="Available Stock"

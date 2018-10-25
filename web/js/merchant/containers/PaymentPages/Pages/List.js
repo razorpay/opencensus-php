@@ -210,7 +210,11 @@ export default class PaymentPagesContainer extends ListContainer {
                       </NavLink>
                     </td>
                     <td>
-                      <Amount value={item.amount} currency={item.currency} />
+                      {item.amount ? (
+                        <Amount value={item.amount} currency={item.currency} />
+                      ) : (
+                        '--'
+                      )}
                     </td>
                     <td>{item.times_paid}</td>
                     <td>{item.times_payable || '--'}</td>

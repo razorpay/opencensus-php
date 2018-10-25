@@ -89,16 +89,14 @@ export default class View extends React.PureComponent {
     const activeCreatorType = this.state.activeCreatorType;
     const { paymentPageEntity } = this.props;
 
+    if (!paymentPageEntity) {
+      return null;
+    }
+
     if (paymentPageEntity.id && !paymentPageEntity.title) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
-        </div>
-      );
-    } else if (paymentPageEntity.id && !paymentPageEntity) {
-      return (
-        <div class="spinner-container">
-          <b>{paymentPageEntity.id}</b> ID doesn't exist
         </div>
       );
     }
