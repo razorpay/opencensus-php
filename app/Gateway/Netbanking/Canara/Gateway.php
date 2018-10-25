@@ -108,13 +108,15 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_ACCOUNT                => '', //keeping this blank as specified in the Doc
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
-            RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
+            RequestFields::AMOUNT                        => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100), // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
         ];
+
+        $this->addExtraRefFields($data);
 
         return $data;
     }
@@ -125,7 +127,7 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($content);
 
-        $content = http_build_query($content);
+        $content = $this->getQueryString($content);
 
         $queryString = $content . '&checksum=' . $checksum;
 
@@ -148,9 +150,19 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
+    protected function addExtraRefFields(& $content)
+    {
+        $additionalFields = ['fldRef1', 'fldRef2', 'fldRef3', 'fldRef4', 'fldRef5', 'fldRef6', 'fldRef7', 'fldRef8', 'fldRef9', 'fldDate1', 'fldDate2'];
+
+        foreach ($additionalFields as $field)
+        {
+            $content[$field] = '';
+        }
+    }
+
     protected function getStringToHash($content, $glue = '')
     {
-        return http_build_query($content);
+        return $this->getQueryString($content);
     }
 
     protected function getHashOfString($str)
@@ -163,6 +175,20 @@ class Gateway extends Base\Gateway
         $encryptor = new AESCrypto($this->mode, $this->config);
 
         return $encryptor->encryptString($content);
+    }
+
+    protected function getQueryString($content)
+    {
+        $queryStr = RequestFields::MODE_OF_TRANSACTION . '=' . $content[RequestFields::MODE_OF_TRANSACTION];
+
+        unset($content[RequestFields::MODE_OF_TRANSACTION]);
+
+        foreach ($content as $field => $value)
+        {
+            $queryStr = $queryStr . '&' . $field . '=' . $value;
+        }
+
+        return $queryStr;
     }
 
     // -------------------------- Callback helper methods ------------------------------
@@ -202,8 +228,10 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest($verify)
     {
         $request = $this->getVerifyRequest($verify);
+        sd($request);
 
         $response = $this->sendGatewayRequest($request);
+        sd($response->body);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
 
@@ -225,7 +253,7 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
-            RequestFields::AMOUNT                        => $paymentEntity[PaymentEntity::AMOUNT], // have to verify
+            RequestFields::AMOUNT                        => $this->formatAmount($paymentEntity[PaymentEntity::AMOUNT] / 100), // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity[PaymentEntity::ID],
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
@@ -239,7 +267,7 @@ class Gateway extends Base\Gateway
             $data[ResponseFields::BANK_REFERENCE_NUMBER] = $bankRefNumber;
         }
 
-        $request = $this->getStandardRequestArray($data, 'get', Action::VERIFY);
+        $request = $this->getStandardRequestArray($data, 'post', Action::VERIFY);
 
         // Since they don't have a valid SSL certificate on UAT site.
         if ($this->mode === Mode::TEST)
@@ -359,12 +387,17 @@ class Gateway extends Base\Gateway
 
     public function getCurrentDate()
     {
-        return $date = Carbon::now()->format('d/m/Y+H:i:s');
+        return $date = Carbon::now(Timezone::IST)->format('d/m/Y+H:i:s');
     }
 
     protected function parseResponseXml(string $response): array
     {
         return (array) simplexml_load_string(trim($response));
+    }
+
+    public function formatAmount($amount)
+    {
+        return number_format($amount, 2, '.', '');
     }
 
 }
