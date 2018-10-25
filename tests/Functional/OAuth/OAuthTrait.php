@@ -141,6 +141,7 @@ trait OAuthTrait
      * @param string     $route
      * @param string     $method
      * @param array|null $requestParams
+     * @param int        $times
      */
     protected function setAuthServiceMockDetail(
         string $route,
