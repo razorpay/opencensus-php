@@ -19,7 +19,18 @@ class Validator extends Base\Validator
         RequestFields::DATE                           => 'required|date_format:"d/m/Y\+H:i:s"',
         RequestFields::MODE_OF_TRANSACTION            => 'required|in:PER',
         RequestFields::CLIENT_ACCOUNT                 => 'sometimes',
-        RequestFields::CHECKSUM                       => 'required'
+        RequestFields::CHECKSUM                       => 'required',
+
+        //additional fields - we do not send any value here
+        'fldRef1'  => 'sometimes',
+        'fldRef2'  => 'sometimes',
+        'fldRef3'  => 'sometimes',
+        'fldRef4'  => 'sometimes',
+        'fldRef5'  => 'sometimes',
+        'fldRef6'  => 'sometimes',
+        'fldRef7'  => 'sometimes',
+        'fldRef8'  => 'sometimes',
+        'fldRef9'  => 'sometimes',
     ];
 
     protected static $verifyRules = [
