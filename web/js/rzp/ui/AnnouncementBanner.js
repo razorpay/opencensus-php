@@ -28,7 +28,7 @@ export const BANNER_THEMES = {
       dark: '#108E2F',
       light: '#4DB534',
     },
-    toString: 'success',
+    toString: () => 'success',
   },
 };
 
