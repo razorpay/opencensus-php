@@ -71,8 +71,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     protected function getDefaultPayload($data, $container = null)
     {
         $payload = [
-            'payload' => $data,
-            'last_activity' => time()
+            'payload' => $data
         ];
 
         if (empty($container))

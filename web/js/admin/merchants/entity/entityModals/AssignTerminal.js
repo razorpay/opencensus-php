@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 
+import { isOrgHDFC } from 'admin/user';
+
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import Field, { SelectField, FileField, CheckField } from 'ui/Field';
 import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
+import MultiSelectField from 'ui/MultiSelectField';
 
 const gatewayMapping = {
   hdfc: 'HDFC',
@@ -56,6 +59,14 @@ const gatewayMapping = {
   bt_dashboard: 'Bank Transfer - Dashboard (Test)',
 };
 
+const HDFC_gatewayMapping = {
+  hdfc: 'HDFC',
+  wallet_payzapp: 'Payzapp',
+  upi_hulk: 'UPI/HULK',
+  upi_mindgate: 'UPI/Mindgate',
+  cybersource: 'Cybersource',
+};
+
 const gatewayAcquirerMapping = {
   hdfc: 'HDFC',
   axis: 'Axis',
@@ -64,6 +75,38 @@ const gatewayAcquirerMapping = {
   barb: 'Bank of Baroda',
   fss: 'FSS',
 };
+
+const HDFC_gatewayAcquirerMapping = {
+  hdfc: 'HDFC',
+};
+
+const terminalTypesMapping = [
+  { value: 'non_recurring', name: 'Non Recurring' },
+  { value: 'recurring_3ds', name: 'Recurring 3DS' },
+  { value: 'recurring_non_3ds', name: 'Recurring Non 3DS' },
+  { value: 'ivr', name: 'IVR' },
+  { value: 'numeric_account', name: 'Numeric Account' },
+  { value: 'alpha_numeric_account', name: 'Alpha Numeric Account' },
+  { value: 'no_2fa', name: 'No 2FA' },
+  { value: 'pay', name: 'UPI Pay' },
+  { value: 'collect', name: 'UPI Collect' },
+  { value: 'pin', name: 'PIN' },
+  { value: 'bharat_qr', name: 'Bharat QR' },
+  { value: 'debit_recurring', name: 'Debit Recurring' },
+  { value: 'direct_settlement', name: 'Direct Settlement' },
+];
+
+const HDFC_terminalTypesMapping = [
+  { value: 'non_recurring', name: 'Non Recurring' },
+  { value: 'ivr', name: 'IVR' },
+  { value: 'numeric_account', name: 'Numeric Account' },
+  { value: 'alpha_numeric_account', name: 'Alpha Numeric Account' },
+  { value: 'no_2fa', name: 'No 2FA' },
+  { value: 'pay', name: 'UPI Pay' },
+  { value: 'collect', name: 'UPI Collect' },
+  { value: 'bharat_qr', name: 'Bharat QR' },
+  { value: 'direct_settlement', name: 'Direct Settlement' },
+];
 
 export default class TerminalForm extends Component {
   state = { pricingPlans: {} };
@@ -82,13 +125,12 @@ export default class TerminalForm extends Component {
       delete body['gateway_terminal_password_confirmation'];
     }
 
-    for (let key in body.type) {
-      if (body.type[key] == '0') {
-        delete body.type[key];
-      }
-    }
-    if (!Object.keys(body.type).length) {
-      delete body.type;
+    if (body.type) {
+      let temp = {};
+      body.type.split(',').forEach(elem => {
+        temp[elem] = '1';
+      });
+      body.type = temp;
     }
 
     if (body.file) {
@@ -142,6 +184,23 @@ export default class TerminalForm extends Component {
 
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
+
+    const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
+    const gatewayAcquirers = isOrgHDFC()
+      ? HDFC_gatewayAcquirerMapping
+      : gatewayAcquirerMapping;
+
+    const terminalTypes = isOrgHDFC()
+      ? HDFC_terminalTypesMapping
+      : terminalTypesMapping;
+
+    let selectedTypes = [];
+    if (entity && entity.type) {
+      selectedTypes = entity.type.map(elem => ({
+        value: elem,
+      }));
+    }
+
     return (
       <ModalContent header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
         <div class="m-b">
@@ -176,9 +235,9 @@ export default class TerminalForm extends Component {
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
           >
-            {Object.keys(gatewayMapping).map(key => (
+            {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
-                {gatewayMapping[key]}
+                {gateways[key]}
               </option>
             ))}
           </SelectField>
@@ -189,9 +248,9 @@ export default class TerminalForm extends Component {
             defaultValue={''}
           >
             <option value="">NA</option>
-            {Object.keys(gatewayAcquirerMapping).map(key => (
+            {Object.keys(gatewayAcquirers).map(key => (
               <option key={key} value={key}>
-                {gatewayAcquirerMapping[key]}
+                {gatewayAcquirers[key]}
               </option>
             ))}
           </SelectField>
@@ -271,9 +330,13 @@ export default class TerminalForm extends Component {
           </SelectField>
 
           <SelectField
-              name="bank_transfer"
-              label="Bank Transfer"
-              defaultValue={isEditMode && (entity.bank_transfer !== null) ? (entity.bank_transfer | 0): ''}
+            name="bank_transfer"
+            label="Bank Transfer"
+            defaultValue={
+              isEditMode && entity.bank_transfer !== null
+                ? entity.bank_transfer | 0
+                : ''
+            }
           >
             <option value="" />
             <option value="1">Yes</option>
@@ -364,80 +427,20 @@ export default class TerminalForm extends Component {
           <Field label="Rupay mpan" name="rupay_mpan" />
           <Field label="VPA" name="vpa" />
 
-          <CheckField
-            label="Non recurring"
-            name="type[non_recurring]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('non_recurring') >= 0
-            }
-          />
-          <CheckField
-            label="Recurring 3DS"
-            name="type[recurring_3ds]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('recurring_3ds') >= 0
-            }
-          />
-          <CheckField
-            label="Recurring Non 3DS"
-            name="type[recurring_non_3ds]"
-            defaultChecked={
-              entity &&
-              entity.type &&
-              entity.type.indexOf('recurring_non_3ds') >= 0
-            }
-          />
-          <CheckField
-            label="IVR"
-            name="type[ivr]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('ivr') >= 0
-            }
-          />
-          <CheckField
-            label="No 2FA"
-            name="type[no_2fa]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('no_2fa') >= 0
-            }
-          />
-          <CheckField
-            label="UPI Pay"
-            name="type[pay]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('pay') >= 0
-            }
-          />
-          <CheckField
-            label="UPI Collect"
-            name="type[collect]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('collect') >= 0
-            }
-          />
-          <CheckField
-            label="Pin Auth"
-            name="type[pin]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('pin') >= 0
-            }
-          />
-          <CheckField
-            label="Bharat Qr"
-            name="type[bharat_qr]"
-            defaultChecked={
-              entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
-            }
-          />
-          <CheckField
-            label="Debit Recurring"
-            name="type[debit_recurring]"
-            defaultChecked={
-              entity &&
-              entity.type &&
-              entity.type.indexOf('debit_recurring') >= 0
-            }
-          />
+          <Field label="Account Number" name="account_number" />
+
+          <div class="types-select">
+            <MultiSelectField
+              class="terminal-types"
+              label="Types"
+              name="type"
+              options={terminalTypes}
+              trackBy="value"
+              keys={['name']}
+              defaultValue={selectedTypes}
+              placeholder="Select Types"
+            />
+          </div>
 
           <div class="m-t m-b" />
           <AsyncButton

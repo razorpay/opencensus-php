@@ -2,6 +2,16 @@ import ajax from 'merchant/utils/ajax';
 import { filterBy } from 'rzp/utils/rzp-utils';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
+import LocalStorageService from 'rzp/utils/localStorage';
+
+import { getOrg } from 'merchant/store';
+
+import {
+  roleEditPermissions,
+  roleViewPermissions,
+  antiOrgsModules,
+  antiOrgsFeatures,
+} from '../resources/permissions';
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
@@ -65,17 +75,43 @@ export default class User {
     return this.user.confirmed;
   }
 
-  /*
-   * Return string of allowed roles for the given module.
-   * If isReadOnly = false, then role strictly needs to have 'ALL' access.
-   * Note: Since 'All' can view the route, so, by default it has isReadOnly = true for it.
-   * */
+  get isOrgRZP() {
+    const org = getOrg();
+
+    if (org && org.custom_code.toLowerCase() === 'rzp') {
+      return true;
+    }
+  }
+
+  isOrgAllowedFunctionality(featureName) {
+    const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
+
+    if (restrictedFeaturesForOrg) {
+      const isFeatureAllowed =
+        restrictedFeaturesForOrg.indexOf(featureName) === -1;
+
+      return isFeatureAllowed;
+    }
+
+    return true; // By default it's allowed if not restricted
+  }
+
   isAllowedEdit(moduleName) {
-    return _isAllowed(this.userRole, moduleName, false);
+    const isEditAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      roleEditPermissions
+    );
+    return isEditAllowed;
   }
 
   isAllowedView(moduleName) {
-    return _isAllowed(this.userRole, moduleName, true);
+    const isViewAllowed = _isAllowed(
+      this.userRole,
+      moduleName,
+      roleViewPermissions
+    );
+    return isViewAllowed;
   }
 
   /*
@@ -164,101 +200,41 @@ export default class User {
   }
 
   get showEarlySettlementAnnouncement() {
-    return this.activated && this.findTag('announcement_early_settlements');
+    return (
+      this.activated &&
+      this.findTag('announcement_early_settlements') &&
+      !LocalStorageService.getItem(
+        `early-settlement-requested-${this.current}`
+      ) &&
+      !this.findTag('es_automatic') &&
+      !this.isFeatureEnabled('es_on_demand')
+    );
+  }
+
+  get isOndemandSettlementEnabled() {
+    return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 }
 
-function _isAllowed(userRole, moduleName, isReadOnly) {
-  if (typeof isReadOnly === undefined) {
-    throw new Error('isReadOnly is required argument.');
+function _isAllowed(userRole, moduleName, permissionsMap) {
+  if (!moduleName) {
+    return;
   }
 
-  const permissionSetForModule = MODULE_PERMISSION_MAP[moduleName];
-  let isAllowed = false;
+  const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];
 
-  let myRole = [];
-  const roleIndex = USER_ROLES.indexOf(userRole);
-
-  const permissionLevel = permissionSetForModule.charAt(roleIndex);
-
-  if (permissionLevel == 2 || (isReadOnly && permissionLevel == 1)) {
-    isAllowed = true;
+  if (restrictedModulesForOrg) {
+    const isModuleAllowed = restrictedModulesForOrg.indexOf(moduleName) === -1;
+    if (!isModuleAllowed) {
+      return false; // Module not allowed for Org
+    }
   }
 
+  const allowedRoles = permissionsMap[moduleName.toLowerCase()];
+  if (!allowedRoles) {
+    return false; // Module is missing in the map
+  }
+
+  const isAllowed = allowedRoles.indexOf(userRole) > -1;
   return isAllowed;
 }
-
-const USER_ROLES = [
-  'owner',
-  'admin',
-  'manager',
-  'operations',
-  'finance',
-  'support',
-  'sellerapp', // epos is public name
-  'agent',
-];
-
-// PERMISSION Level:
-// 2: All
-// 1: Read only
-// 0: None
-
-/*
-* Each set below is in same order as USER_ROLES
-* */
-const MODULE_PERMISSION_MAP = {
-  home: '22222000',
-
-  // Transactions
-  payments: '22221100',
-  orders: '22211100',
-  refunds: '22221100',
-  payments_batch_uploads: '22220000',
-  refunds_batch_uploads: '22220000',
-
-  // Settlements
-  settlements: '22211100',
-
-  // Invoices
-  invoices: '22221122',
-  items: '22211122',
-
-  // Payment Links
-  payment_links: '22221022',
-
-  // Payment Pages
-  payment_pages: '22211020',
-
-  // Marketplace
-  accounts: '222000000',
-
-  // Subscriptions
-  subscriptions: '22222200',
-  plans: '22222200',
-  addons: '22222200',
-
-  // Smart Collect
-  virtual_accounts: '22222000',
-
-  // Customers
-  customers: '22211100',
-
-  // Reports
-  reports: '22211000',
-  api_keys: '22000000',
-
-  // My Account
-  profile: '22222220',
-  add_funds: '22220000',
-  profile_gst: '22222112',
-  credits: '22211000',
-  activation: '22200000',
-  referrals: '22211100',
-  team: '20000000',
-
-  // Settings
-  webhooks: '22200000',
-  configuration: '22200000',
-  applications: '20000000',
-};

@@ -4,7 +4,7 @@ import { extendObservable } from 'mobx';
 import { observer } from 'mobx-react';
 
 import { adminFetch } from 'common/fetch';
-import { formatDate } from 'common/util';
+import { formatDate, getSearchParams } from 'common/util';
 
 import Form, { serialize } from 'ui/Form';
 import Field, { FromField, ToField, SelectField, SelectMode } from 'ui/Field';
@@ -20,16 +20,6 @@ var sharedData;
 @withRouter
 @observer
 export default class EntityList extends Component {
-  initialQueryParams = location.search
-    .slice(1)
-    .split(/&|=/)
-    .reduce((p, n, i, a) => {
-      if (n && !(i % 2)) {
-        p[decodeURIComponent(n)] = decodeURIComponent(a[i + 1]);
-      }
-      return p;
-    }, {});
-
   submit = filters => {
     filters = parseFilters(filters);
 
@@ -94,7 +84,7 @@ export default class EntityList extends Component {
         mode: this.props.match.params.mode || 'live',
         type: this.props.match.params.selectedEntity || 'payment',
       },
-      filters: this.initialQueryParams,
+      filters: getSearchParams(),
       fetchFn: adminFetch,
     });
 

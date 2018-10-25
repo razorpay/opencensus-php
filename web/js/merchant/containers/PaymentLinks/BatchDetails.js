@@ -28,7 +28,7 @@ const renderBatchDetails = props => {
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
         </EntityDetailRow>
-        <EntityDetailRow label="Status">
+        <EntityDetailRow label="Created At">
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>

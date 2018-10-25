@@ -14,15 +14,34 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import Button from 'component/Button';
+import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
+import { openModal } from 'rzp/modules/modals';
 
-import { trackPresetChange, trackSettlementsClick } from './ga';
+import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
-@connect(state => ({
-  windowWidth: state.app.windowWidth,
-}))
+@connect(
+  state => ({
+    windowWidth: state.app.windowWidth,
+    user: state.session.user,
+  }),
+  { openModal }
+)
 class AnalyticsMobile extends Component {
   constructor(props) {
     super(props);
+    this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
+      this
+    );
+  }
+
+  showOndemandSettlementForm() {
+    trackSettleNow();
+    let balance = this.props.current_balance.data.balance;
+    this.props.openModal({
+      component: <OndemandModal currentBalance={balance} fromWhere="Home" />,
+      size: 'small',
+    });
   }
 
   render() {
@@ -80,7 +99,10 @@ class AnalyticsMobile extends Component {
           </div>
 
           <Header className="clearfix" title="" showMode={false}>
-            <div className="pull-left">
+            <div
+              className={`pull-left ${this.props.user
+                .isOndemandSettlementEnabled && 'm-t'}`}
+            >
               Balance:{' '}
               <b>
                 {!current_balance.loading &&
@@ -90,11 +112,27 @@ class AnalyticsMobile extends Component {
               </b>
             </div>
             <div className="pull-right">
-              <Link className="pull-right" to="/settlements">
-                <span className="text-no-wrap" onClick={trackSettlementsClick}>
-                  View Settlements <i className="i i-chevron-right" />
-                </span>
-              </Link>
+              {this.props.user.isOndemandSettlementEnabled ? (
+                <Button.Secondary
+                  class="settle-btn"
+                  onClick={this.showOndemandSettlementForm}
+                  disabled={
+                    current_balance.loading ||
+                    current_balance.data.balance < 100
+                  }
+                >
+                  Settle Now
+                </Button.Secondary>
+              ) : (
+                <Link className="pull-right" to="/settlements">
+                  <span
+                    className="text-no-wrap"
+                    onClick={trackSettlementsClick}
+                  >
+                    View Settlements <i className="i i-chevron-right" />
+                  </span>
+                </Link>
+              )}
             </div>
           </Header>
           {!isAdmin && (
@@ -127,7 +165,9 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360 ? 40 : 57
+                      : windowWidth > 360
+                        ? 40
+                        : 57
                     : 0
                 }
               />

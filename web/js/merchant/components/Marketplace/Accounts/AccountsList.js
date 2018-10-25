@@ -8,7 +8,7 @@ import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
-import store from 'merchant/store';
+import { getUser } from 'merchant/store';
 
 const ToggleField = ({ children, onEdit, isDisabled }) => {
   if (isDisabled) {
@@ -47,7 +47,7 @@ const AccountsListItem = ({
     ? account.activation_details.activated_at
     : account.activated_at;
 
-  const user = store.getState().session.user;
+  const user = getUser();
   const noLAEmail = user.merchants[user.current].email === account.email;
 
   return (

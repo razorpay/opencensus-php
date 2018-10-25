@@ -14,8 +14,8 @@ import { trackGoToActivation, trackGoToConfig } from './ga';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|(applications\/new)|applications)/;
-const INVOICES_ROUTES_REGEX = /^\/((invoices\/new)|invoices|items)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
+const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
@@ -31,6 +31,7 @@ const BASE_ROUTES = {
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
+  request: '#request',
 };
 
 @withRouter
@@ -263,7 +264,9 @@ export default class Sidebar extends Component {
                     label="Route"
                     icon="i i-store text-success"
                     to={routes.marketplace}
-                    additionalCondition={user => user.isAllowedView('home')}
+                    additionalCondition={user =>
+                      user.isAllowedView('marketplace')
+                    }
                   />
                   <MainNavLink
                     label="Subscriptions"
@@ -319,6 +322,12 @@ export default class Sidebar extends Component {
                         'webhooks applications configuration api_keys'
                       )
                     }
+                  />
+                  <MainNavLink
+                    label="Contact Support"
+                    icon="i i-support text-warning"
+                    to={routes.request}
+                    id="nav-contact-support"
                   />
                 </div>;
               }
