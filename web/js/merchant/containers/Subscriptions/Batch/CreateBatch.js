@@ -56,9 +56,12 @@ export default class CreateHostedMandateBatch extends Component {
           <div class="panel-body">
             <div class="logo" />
             <div class="description">
-              <strong class="text-primary">Batch Authorization Links</strong>{' '}
-              <i class="i-chevron-right pull-right text-primary" />
+              <div class="text-primary">
+                <strong>Batch Authorization Links</strong>
+              </div>
+              <div>Create Bulk Auth links to create tokens</div>
             </div>
+            <i class="i-chevron-right pull-right text-primary" />
           </div>
         </div>
 
@@ -69,9 +72,12 @@ export default class CreateHostedMandateBatch extends Component {
           <div class="panel-body">
             <div class="logo" />
             <div class="description">
-              <strong class="text-primary">Batch Payments</strong>{' '}
-              <i class="i-chevron-right pull-right text-primary" />
+              <div class="text-primary">
+                <strong>Batch Recurring Payments</strong>
+              </div>
+              <div>Create bulk recurring Payments</div>
             </div>
+            <i class="i-chevron-right pull-right text-primary" />
           </div>
         </div>
       </div>

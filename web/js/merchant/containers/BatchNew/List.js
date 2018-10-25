@@ -74,15 +74,17 @@ export default class BatchList extends ListContainer {
     return (
       <div class="content-wrapper batch-upload-wrapper">
         <div class="btn-toolbar pull-right header-btns">
-          <a
-            class="btn btn-link hidden-xs"
-            href={sampleUrl}
-            onClick={this.props.gaEvents.trackSampleFileDownload(
-              'From List View'
-            )}
-          >
-            Download Sample File
-          </a>
+          {sampleUrl && (
+            <a
+              class="btn btn-link hidden-xs"
+              href={sampleUrl}
+              onClick={this.props.gaEvents.trackSampleFileDownload(
+                'From List View'
+              )}
+            >
+              Download Sample File
+            </a>
+          )}
           {docUrl && (
             <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
               Documentation &nbsp;
