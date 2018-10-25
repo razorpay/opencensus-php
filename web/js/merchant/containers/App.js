@@ -224,6 +224,11 @@ export default class App extends Component {
             eventCategory: 'Dashboard - Instant Activations',
             eventAction: 'Show - Instant Activations Flow',
           })();
+
+          if (typeof window.hj === 'function') {
+            window.hj('trigger', 'instant_activation');
+            window.hj('tagRecording', ['instant_activation']);
+          }
         }
       }
 
