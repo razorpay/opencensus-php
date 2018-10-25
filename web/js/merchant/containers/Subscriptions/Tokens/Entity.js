@@ -1,4 +1,5 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -14,13 +15,26 @@ import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMetho
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
-import { fetchToken } from 'merchant/modules/token';
+import { fetchToken, deleteToken } from 'merchant/modules/token';
+import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import { getTokenStatus } from './List';
+import ChargeToken from './ChargeToken';
 
 @withRouter
-@connect(state => ({ ...state.token }), { fetchToken })
+@connect(state => ({ ...state.token }), {
+  fetchToken,
+  openModal,
+  closeModal,
+  deleteToken,
+  showNotification,
+})
 export default class TokenEntityContainer extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   componentWillMount() {
     this.props.fetchToken(this.props.id);
   }
@@ -32,11 +46,51 @@ export default class TokenEntityContainer extends Component {
   }
 
   handleChargeNow = () => {
-    // code to make api call
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <ChargeToken
+          closeModal={this.props.closeModal}
+          token={this.props.entity}
+        />
+      ),
+    });
   };
 
   handleDeleteToken = () => {
-    // code to make api call
+    this.context.confirm({
+      header: 'Delete Token?',
+      message:
+        'Once the token is deleted you will not be able to charge this token',
+      affirmativeLabel: 'Yes, delete',
+      abortLabel: "No, don't",
+      affirmativePendingLabel: 'Deleting...',
+      action: () => {
+        return this.props
+          .deleteToken(this.props.id)
+          .then(resp => {
+            if (resp) {
+              this.props.showNotification({
+                type: 'success',
+                message: `The ${this.props.id} has been successfully delete`,
+              });
+              this.props.history.push('/tokens');
+            } else {
+              this.props.showNotification({
+                type: 'error',
+                message:
+                  'An error occurred while deleting token. Kindly try again',
+              });
+            }
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors[0],
+            });
+          });
+      },
+    });
   };
 
   render() {
