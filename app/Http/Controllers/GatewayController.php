@@ -16,7 +16,6 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Netbanking\Canara;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
