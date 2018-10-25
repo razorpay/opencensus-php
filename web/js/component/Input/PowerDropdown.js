@@ -1,5 +1,26 @@
 import { Label, Error, inputClass } from './index';
 
+/*
+* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+*
+* This is helper fn. as a work around for dispatching manual events on native elements.
+*
+* */
+function setNativeValue(element, value) {
+  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+  const prototype = Object.getPrototypeOf(element);
+  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
+    prototype,
+    'value'
+  ).set;
+
+  if (valueSetter && valueSetter !== prototypeValueSetter) {
+    prototypeValueSetter.call(element, value);
+  } else {
+    valueSetter.call(element, value);
+  }
+}
+
 export default class extends React.Component {
   className = 'Input--PowerDropdown';
   state = {
@@ -22,9 +43,22 @@ export default class extends React.Component {
     const dataSet = e.target.dataset;
 
     if (dataSet && dataSet.optionIndex !== void 0) {
-      this.setState({ optionIndex: dataSet.optionIndex });
+      const curSelectedIndex =
+        dataSet.optionIndex < this.props.options.length
+          ? dataSet.optionIndex
+          : 0;
+      const selectedValue = this.props.options[curSelectedIndex].label;
 
-      this.props.onChange && this.props.onChange(dataSet.optionIndex);
+      this.setState({ optionIndex: curSelectedIndex });
+
+      const mainFormElement = document.getElementsByName(this.props.name)[0];
+      setNativeValue(mainFormElement, selectedValue);
+      mainFormElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+      this.props.onChange &&
+        this.props.onChange({ index: curSelectedIndex, value: selectedValue });
+
+      this.toggleExpansion();
     }
 
     e.stopPropagation();
@@ -42,7 +76,6 @@ export default class extends React.Component {
       this.state.optionIndex < this.props.options.length
         ? this.state.optionIndex
         : 0;
-    const selectedValue = this.props.options[curSelectedIndex].label;
 
     return (
       <div class={inputClass(this)}>
@@ -53,7 +86,6 @@ export default class extends React.Component {
               <input
                 class="Input-el"
                 name={this.props.name}
-                value={selectedValue}
                 readOnly
                 hidden={!!SelectedComponent}
               />
@@ -100,6 +132,11 @@ class DropDownList extends React.PureComponent {
   }
 
   handleDocumentClick(e) {
+    if (this.dropdownlist.contains(e.target)) {
+      e.stopPropagation();
+      return;
+    }
+
     this.props.toggleExpansion();
   }
 
@@ -110,7 +147,12 @@ class DropDownList extends React.PureComponent {
     const { options, onSelection, OptionComponent } = this.props;
 
     return (
-      <div class="Input-list">
+      <div
+        class="Input-list"
+        ref={dropdownlist => {
+          this.dropdownlist = dropdownlist;
+        }}
+      >
         {options.map((o, i) => {
           let optionVal, displayLabel;
           if (typeof o === 'object') {
@@ -124,9 +166,6 @@ class DropDownList extends React.PureComponent {
           return (
             <div
               class="Input-list-item"
-              ref={dropdownlist => {
-                this.dropdownlist = dropdownlist;
-              }}
               key={i}
               onClick={onSelection}
               data-option-index={i}
