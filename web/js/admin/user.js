@@ -16,3 +16,11 @@ export function isSuperAdmin() {
     return true;
   }
 }
+
+export function isOrgHDFC() {
+  return org.custom_code === 'hdfc';
+}
+
+export function isOrgRazorpay() {
+  return org.custom_code === 'rzp';
+}

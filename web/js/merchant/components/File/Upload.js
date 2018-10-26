@@ -223,8 +223,9 @@ export default class FileUpload extends React.Component {
       ? this.state
       : this.props;
 
+    let files = this.props.files || this.state.files;
     // if doc is pre-uploaded inserting one dummy file object to be provided to Staged
-    const files = isDocPreUploaded ? [{}] : this.state.files;
+    files = isDocPreUploaded ? [{}] : files;
 
     return (
       <div

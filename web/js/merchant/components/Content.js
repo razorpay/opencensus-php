@@ -3,7 +3,7 @@ import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { classList } from 'common/util';
-import { matchDetail, matchModal } from 'merchant/routes';
+import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
@@ -131,14 +131,11 @@ export default class Content extends Component {
 
     const hash = location.hash || '#' + hashInUrl;
     if (window.rzpTicketSystem) {
-      if (
-        hash === '#request' &&
-        !!location.pathname &&
-        location.pathname !== '/'
-      ) {
+      const actionHash = supportHashMapping[hash];
+      if (actionHash && !!location.pathname && location.pathname !== '/') {
         window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
         window.rzpTicketSystem.addEventListener('modal-select', onModalSelect);
-        window.rzpTicketSystem.openModal('#support', {
+        window.rzpTicketSystem.openModal(actionHash, {
           chat: Boolean(window.rzp_user && window.rzp_user.activated),
           call: Boolean(window.rzp_user && window.rzp_user.activated),
         });
@@ -223,10 +220,36 @@ export default class Content extends Component {
             featureEnabled="paymentpages"
             additionalCondition={user => user.isAllowedView('payment_pages')}
           />
-          <Route path="/subscriptions" component={Subscriptions} />
-          <Route path="/plans" component={Subscriptions} />
-          <Route path="/authlinks" component={Subscriptions} />
-          {/*<Route path="/addons" component={Subscriptions} />*/}
+
+          <ShowWhenRoute
+            path="/subscriptions"
+            component={Subscriptions}
+            additionalCondition={user => user.isAllowedView('subscriptions')}
+          />
+          <ShowWhenRoute
+            path="/plans"
+            component={Subscriptions}
+            additionalCondition={user => user.isAllowedView('subscriptions')}
+          />
+
+          <ShowWhenRoute
+            path="/recurring_payments"
+            component={Subscriptions}
+            additionalCondition={user => user.isChargeAtWillEnabled}
+          />
+
+          <ShowWhenRoute
+            path="/tokens"
+            component={Subscriptions}
+            additionalCondition={user => user.isChargeAtWillEnabled}
+          />
+
+          <ShowWhenRoute
+            path="/authlinks"
+            component={Subscriptions}
+            additionalCondition={user => user.isChargeAtWillEnabled}
+          />
+
           <Route
             path="/customers"
             render={() => (
@@ -239,8 +262,17 @@ export default class Content extends Component {
             )}
           />
 
-          <Route path="/route" component={Marketplace} />
-          <Route path="/virtualaccounts" component={VirtualAccounts} />
+          <ShowWhenRoute
+            path="/route"
+            component={Marketplace}
+            additionalCondition={user => user.isAllowedView('marketplace')}
+          />
+
+          <ShowWhenRoute
+            path="/virtualaccounts"
+            component={VirtualAccounts}
+            additionalCondition={user => user.isAllowedView('virtual_accounts')}
+          />
 
           <ShowWhenRoute
             path="/reports"
@@ -251,7 +283,9 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}
-            additionalCondition={user => user.isAllowedView('profile')}
+            additionalCondition={user =>
+              user.isAllowedView('profile') || !user.userRole
+            }
           />
           <ShowWhenRoute
             path="/addfunds"

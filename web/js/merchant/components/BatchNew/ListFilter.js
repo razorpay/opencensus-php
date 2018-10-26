@@ -1,13 +1,14 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
-export default props => {
+export default ({ ExtraFilterFields = () => null, ...props }) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Batch Upload Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
+      <ExtraFilterFields />
       <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field

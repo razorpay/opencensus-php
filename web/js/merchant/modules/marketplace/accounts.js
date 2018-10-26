@@ -6,11 +6,12 @@ const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
 const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
 
-export const fetchAccountsApi = params => {
+export const fetchAccountsApi = (data, params) => {
   return ajax(
     {
       url: '/accounts',
-      data: params,
+      data,
+      params,
     },
     {},
     '/merchant/api'

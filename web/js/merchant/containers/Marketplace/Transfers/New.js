@@ -7,6 +7,9 @@ import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
+import debounce from 'rzp/utils/debounce';
+import { merchantFetch } from 'merchant/utils/ajax';
+
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import { prefixEntityValue } from 'common/data';
@@ -18,7 +21,10 @@ import { required } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { titleCase, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
-import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
+import {
+  fetchAccountsApi,
+  fetchAccounts,
+} from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/modules/payments/details';
@@ -192,8 +198,49 @@ export default class TransferNew extends Component {
     this.setState({ selectedAccount: option });
   };
 
+  searchInAccountList(val) {
+    fetchAccountsApi(null, { q: val, search_hits: 1 })
+      .then(resp => {
+        let accountsList = null;
+        if (resp.data && resp.data.items && resp.data.items.length) {
+          accountsList = resp.data.items;
+        }
+
+        this.setState({ accountsList });
+      })
+      .catch(err => {
+        this.setState({ accountsList: null });
+      });
+  }
+
+  debounce_searchInAccountList = debounce(
+    this.searchInAccountList.bind(this),
+    50
+  );
+
+  handleKeyDown = e => {
+    const target = e.target;
+
+    setTimeout(() => {
+      const val = target.value;
+
+      if (val.length < 2) {
+        this.setState({ accountsList: null });
+        return;
+      }
+
+      this.debounce_searchInAccountList(val);
+    }, 5);
+  };
+
   render() {
     const { handleSubmit, invalid, plan, accounts } = this.props;
+
+    let accountsList;
+
+    if (!accounts.loading) {
+      accountsList = this.state.accountsList || accounts.accounts;
+    }
 
     const nextWorkingDate = nextWorkingDay(
       moment()
@@ -229,14 +276,17 @@ export default class TransferNew extends Component {
               <FormItem
                 label={() => <Label text="Account" required />}
                 field={() => (
-                  <div class="custom-select" style={{ position: 'relative' }}>
+                  <div
+                    class="custom-select transfers-accounts"
+                    style={{ position: 'relative' }}
+                  >
                     <TypeAhead
-                      options={accounts.accounts}
-                      disabled={accounts.loading}
+                      options={accountsList}
+                      disabled={!accountsList}
                       class="ps-in-modal"
                       searchIndices={['id', 'name', 'email']}
                       placeholder={`${
-                        accounts.loading
+                        !accountsList
                           ? 'Loading...'
                           : 'Account ID, Account Name, Email Address'
                       }`}
@@ -258,6 +308,7 @@ export default class TransferNew extends Component {
                       )}
                       onClick={this.handleClick}
                       onChange={this.handleSelect}
+                      onKeyDown={this.handleKeyDown}
                     />
                     <div
                       class="typeAheadSkin"

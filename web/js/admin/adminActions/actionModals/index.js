@@ -49,6 +49,8 @@ export RetryBulkRefundsWithoutVerifying from './RetryBulkRefundsWithoutVerifying
 
 export BulkAssignMerchantFeature from './BulkAssignMerchantFeature';
 
+export BulkAssignSchedule from './BulkAssignSchedule';
+
 export BulkEditMerchants from './BulkEditMerchants';
 
 export RegisterBeneficiaries from './RegisterBeneficiaries';

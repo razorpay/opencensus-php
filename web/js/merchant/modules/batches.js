@@ -1,54 +1,48 @@
 import { set, merge } from 'rzp/utils/immutable';
-import ajax from 'merchant/utils/ajax';
 import {
   getActionName,
   makeCollectionReducer,
   makeActionCollectionReducer,
 } from 'merchant/modules/collection';
+import {
+  makeEntityReducer,
+  entityFetchPendingState,
+  entityFetchErrorState,
+} from 'rzp/modules/entity';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
 
 //Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/rzp/modules/collection.js
-const PAYMENT_LINK = 'PAYMENT_LINK_BATCHS';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
-/* New Batch Action Types */
-const VALIDATE_BATCH = 'VALIDATE_BATCH';
-const CREATE_BATCH = 'PAYMENT_LINK_BATCH_CREATE';
-const FETCH_BATCH = 'FETCH_BATCH';
-const FETCH_BATCH_STATS = 'FETCH_BATCH_STATS';
-const FETCH_BATCH_INVOICES = 'FETCH_BATCH_INVOICES';
-const NOTIFY_BATCH = 'NOTIFY_BATCH';
-const PAYMENT = 'PAYMENT_BATCHES';
-const PAYMENT_BATCH_CREATE = 'PAYMENT_BATCHE_CREATE';
 
-const fetchBatchAjax = id => {
-  return merchantFetch(`batches/${id}`).then(response => {
-    return {
-      data: {
-        items: [response.data],
-      },
-    };
-  });
-};
+/* Batch Names */
+const BATCH = 'BATCH';
+const PAYMENT_LINK = 'PAYMENT_LINK';
+
+/* New Batch Action Types */
+const NOTIFY_BATCH = 'NOTIFY_BATCH';
+
+const appendBatches = namespace => namespace + '_BATCHS';
+const getCreateActioName = namespace => namespace + '_BATCH_CREATE';
+const getValidateActionName = namespace => namespace + '_BATCH_VALIDATE';
+const getFetchActionName = namespace => appendBatches(namespace) + '_FETCH';
+const getFetchDetailAction = namespace => namespace + '_BATCHS_FETCH_DETAILS';
+
+const BATCH_DETAILS = getFetchDetailAction(BATCH);
+const BATCH_LIST = getFetchActionName(BATCH);
+const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
+
+const fetchBatchAjax = id => merchantFetch(`batches/${id}`);
 
 const fetchBatchesAjax = (params, type) => {
-  params.type = type;
+  params[Array.isArray(type) ? 'types' : 'type'] = type;
   return merchantFetch({
     url: 'batches',
     params: params,
   });
-};
-
-export const fetchRefundBatches = params => {
-  return {
-    type: getActionName(REFUND),
-    payload: params.id
-      ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'refund'),
-  };
 };
 
 export const fetchIssuableBatchList = batchIdList => {
@@ -71,51 +65,14 @@ export const editIssuableBatchList = batchIdToRemove => {
   };
 };
 
-export const fetchPaymentLinkBatches = params => {
-  //for new batches
-  params.with_config = '1';
-
-  return dispatch => {
-    return dispatch({
-      type: getActionName(PAYMENT_LINK),
-      payload: params.id
-        ? fetchBatchAjax(params.id)
-        : fetchBatchesAjax(params, 'payment_link').then(res => {
-            const listOfBatchIds = [];
-
-            res.data.items.forEach(item => {
-              listOfBatchIds.push(item.id);
-            });
-
-            dispatch(fetchIssuableBatchList(listOfBatchIds));
-
-            return res;
-          }),
-    });
-  };
-};
-
-export const fetchPaymentLinkBatchesDetails = params => {
-  const id = params.id;
-
-  params.with_config = '1';
-  return {
-    type: `${PAYMENT_LINK}_FETCH_DETAILS`,
-    payload: Promise.all([
-      fetchBatchAjax(id),
-      fetchBatchStats(id),
-      fetchBatchInvoices(id),
-    ]),
-  };
-};
-
-const validateBatch = (actionType, batchType) => (file, progressTracker) => {
+/* methods to create actions for validating batch */
+const validateBatch = batchType => (file, progressTracker) => {
   let formData = new FormData();
   formData.append('file', file);
   formData.append('type', batchType);
 
   return {
-    type: actionType,
+    type: getValidateActionName(BATCH),
     payload: merchantFetch({
       url: 'batches/validate',
       method: 'post',
@@ -125,18 +82,22 @@ const validateBatch = (actionType, batchType) => (file, progressTracker) => {
   };
 };
 
-export const fetchPaymentBatches = params => {
-  return {
-    type: getActionName(PAYMENT),
-    payload: params.id
-      ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'direct_debit'),
-  };
-};
+/* method to create action for fetching batch list */
+const fetchBatches = (batchType, fetchActionName) => params => ({
+  type: BATCH_LIST || fetchActionName,
+  payload: fetchBatchesAjax(params, batchType),
+});
 
-const createBatch = (actionType, batchType) => data => {
+/* method to create action for fetching batch details */
+const fetchBatchDetails = (batchType, fetchDetailAction) => params => ({
+  type: BATCH_DETAILS || fetchDetailAction,
+  payload: fetchBatchAjax(params.id, batchType),
+});
+
+/* method to create action for create batch action */
+const createBatch = batchType => data => {
   return {
-    type: actionType,
+    type: getCreateActioName(BATCH),
     payload: merchantFetch({
       url: 'batches',
       method: 'post',
@@ -148,6 +109,8 @@ const createBatch = (actionType, batchType) => data => {
   };
 };
 
+/* method to create action for upload batch action */
+// currently used by only refund batches
 const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   let formData = new FormData();
   formData.append('file', file);
@@ -169,6 +132,17 @@ const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   };
 };
 
+/* extra methods for more details related to payment link batch */
+export const fetchBatchStats = batchId =>
+  merchantFetch({
+    method: 'get',
+    url: `batches/${batchId}/stats`,
+  });
+
+export const fetchBatchInvoices = batchId =>
+  merchantFetch(`invoices?batch_id=${batchId}`);
+
+/* actions currently used by only payment link batch */
 export const issuePaymentLinkBatch = (batchId, data) => {
   return {
     type: `${PAYMENT_LINK}_ISSUE`,
@@ -179,31 +153,6 @@ export const issuePaymentLinkBatch = (batchId, data) => {
     }),
   };
 };
-
-export const batchDownload = batchId => {
-  return {
-    type: BATCH_DOWNLOAD,
-    payload: merchantFetch(`batches/${batchId}/download`),
-  };
-};
-
-export const fetchBatch = batchId => {
-  return {
-    type: FETCH_BATCH,
-    payload: merchantFetch(`batches/${batchId}`).then(
-      response => response.data
-    ),
-  };
-};
-
-export const fetchBatchStats = batchId =>
-  merchantFetch({
-    method: 'get',
-    url: `batches/${batchId}/stats`,
-  });
-
-export const fetchBatchInvoices = batchId =>
-  merchantFetch(`invoices?batch_id=${batchId}`);
 
 export const notifyBatch = (batchId, data) => {
   return {
@@ -216,63 +165,108 @@ export const notifyBatch = (batchId, data) => {
   };
 };
 
-export const createPaymentLinkBatch = createBatch(CREATE_BATCH, 'payment_link');
-export const validatePaymentLinkBatch = validateBatch(
-  VALIDATE_BATCH,
-  'payment_link'
-);
-export const createPaymentsBatch = createBatch(
-  PAYMENT_BATCH_CREATE,
-  'direct_debit'
-);
+/* common batch actions */
+export const batchDownload = batchId => {
+  return {
+    type: BATCH_DOWNLOAD,
+    payload: merchantFetch(`batches/${batchId}/download`),
+  };
+};
+
+/* actions refund batches */
+export const fetchRefundBatches = params => {
+  return {
+    type: getActionName(REFUND),
+    payload: params.id
+      ? fetchBatchAjax(params.id)
+      : fetchBatchesAjax(params, 'refund'),
+  };
+};
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
-export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');
 
+/* action for payment link batch */
+export const fetchPaymentLinkBatches = params => {
+  //for new batches
+  params.with_config = '1';
+
+  return dispatch => {
+    return dispatch({
+      type: BATCH_LIST,
+      payload: fetchBatchesAjax(params, 'payment_link').then(res => {
+        const listOfBatchIds = [];
+
+        res.data.items.forEach(item => {
+          listOfBatchIds.push(item.id);
+        });
+
+        dispatch(fetchIssuableBatchList(listOfBatchIds));
+
+        return res;
+      }),
+    });
+  };
+};
+
+export const fetchPaymentLinkBatchesDetails = params => {
+  const id = params.id;
+
+  params.with_config = '1';
+  return {
+    type: PAYMENT_LINK_DETAILS,
+    payload: Promise.all([
+      fetchBatchAjax(id),
+      fetchBatchStats(id),
+      fetchBatchInvoices(id),
+    ]),
+  };
+};
+
+export const createPaymentLinkBatch = createBatch('payment_link');
+export const validatePaymentLinkBatch = validateBatch('payment_link');
+
+/* direct debit batches */
+export const createPaymentsBatch = createBatch('direct_debit');
+export const fetchPaymentBatches = fetchBatches('direct_debit');
+
+/* batches for emandate */
+export const fetchHostMandateBatches = fetchBatches([
+  'recurring_charge',
+  'auth_link',
+]);
+export const createAuthLinkBatch = createBatch('auth_link');
+export const validateAuthLinkBatch = validateBatch('auth_link');
+export const createRecurringChargeBatch = createBatch('recurring_charge');
+export const validateRecurringChargeBatch = validateBatch('recurring_charge');
+export const fetchHostedMandateBatchDetails = fetchBatchDetails();
+
+/* reducers */
 export const refundBatchesReducer = makeCollectionReducer(REFUND);
-
-//List Reducer
-export const paymentLinkBatchesReducer = makeActionCollectionReducer(
-  PAYMENT_LINK
-);
-export const paymentBatchesReducer = makeActionCollectionReducer(PAYMENT);
+export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
 
 let paymentBatchIdsInitialState = {
   issuableIdList: [],
 };
 
-let batchDetailsReducerState = {
-  loading: true,
-  item: {},
-  error: null,
-};
+const onPaymentLinkDetails = (state, { payload }) =>
+  merge(state, {
+    loading: false,
+    entity: {
+      batch: payload[0].data,
+      stats: payload[1].data.stats,
+      invoices: payload[2].data.items,
+    },
+  });
 
-export const batchDetailsReducer = function(
-  state = batchDetailsReducerState,
-  action
-) {
-  switch (action.type) {
-    case `${PAYMENT_LINK}_FETCH_DETAILS::PENDING`:
-      return merge(state, {
-        loading: true,
-      });
+const customBatchDetailsSet = (fetchDetailAction, onSuccess) => ({
+  [`${fetchDetailAction}::PENDING`]: entityFetchPendingState,
+  [`${fetchDetailAction}::ERROR`]: entityFetchErrorState,
+  [`${fetchDetailAction}::SUCCESS`]: onSuccess,
+});
 
-    case `${PAYMENT_LINK}_FETCH_DETAILS::SUCCESS`:
-      const payload = action.payload;
-      return merge(state, {
-        loading: false,
-        item: {
-          batch: payload[0].data.items[0],
-          stats: payload[1].data.stats,
-          invoices: payload[2].data.items,
-        },
-        error: null,
-      });
-
-    default:
-      return state;
-  }
-};
+export const batchDetailsReducer = makeEntityReducer(BATCH_DETAILS, {
+  ...customBatchDetailsSet(PAYMENT_LINK_DETAILS, onPaymentLinkDetails),
+});
 
 export const PaymentBatchIdsReducer = function(
   state = paymentBatchIdsInitialState,

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { openModal, closeModal, notifyDone } from 'common/modal';
+import { openModal, closeModal, notifySuccess } from 'common/modal';
 import Form from 'ui/Form';
 import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
@@ -59,15 +59,19 @@ export default class EditPerm extends Component {
     body.assignable = body.assignable === '1' ? 1 : 0;
     let data = { data: body };
 
-    let promise;
+    let promise, msg;
     if (this.props.model) {
+      msg = 'Permissions is updated successfully';
+
       data.url = `live/permissions/${this.props.model.id}`;
       promise = adminPut(data);
     } else {
+      msg = 'Permissions is added successfully';
+
       data.url = 'live/permissions';
       promise = adminPost(data).then(data => {
         if (data) {
-          this.props.collection.items.push(data);
+          this.props.collection.items.unshift(data);
           return data;
         }
       });
@@ -76,7 +80,8 @@ export default class EditPerm extends Component {
     return promise.then(data => {
       if (data) {
         closeModal();
-        notifyDone();
+        notifySuccess(msg);
+
         return data;
       }
     });
@@ -148,10 +153,11 @@ export default class EditPerm extends Component {
 export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
 }
-export function removeEntity(e) {
+
+export function removeEntity(collection) {
   return adminDelete(`live/permissions/${this.id}`).then(response => {
-    notifyDone();
-    this.collection.items.remove(this);
+    notifySuccess('Permission is removed successfully');
+    collection.items.remove(this);
 
     return response;
   });
