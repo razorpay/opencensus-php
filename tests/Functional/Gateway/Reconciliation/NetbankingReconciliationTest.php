@@ -561,6 +561,10 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testIciciFailedPaymentReconciliation()
