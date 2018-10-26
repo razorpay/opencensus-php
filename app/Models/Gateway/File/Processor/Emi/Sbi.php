@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
@@ -26,6 +27,9 @@ class Sbi extends Base
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
+    /**
+     * @var $file FileStore\Entity
+     */
     protected $file;
 
     /**
@@ -103,6 +107,9 @@ class Sbi extends Base
         // date 6 chars + time 4 chars + 4 seq numbers
         $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
 
+        /**
+         * @var $emiPayment Payment\Entity
+         */
         foreach ($data['items'] as $emiPayment)
         {
             try
@@ -117,6 +124,9 @@ class Sbi extends Base
 
                 $terminals = $emiPayment->merchant->terminals;
 
+                /**
+                 * @var $terminal Terminal\Entity
+                 */
                 foreach ($terminals as $terminal)
                 {
                     if (($terminal[Terminal\Entity::GATEWAY] === Payment\Gateway::SBI_EMI) and
@@ -250,6 +260,11 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    protected function getFileToWriteName()
+    {
+        return static::FILE_NAME . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
     //-------------------------- Helpers ------------------------------------//

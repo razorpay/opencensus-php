@@ -29,6 +29,9 @@ abstract class Base extends Core
 
     protected $mutex;
 
+    /**
+     * @var $gatewayFile File\Entity
+     */
     protected $gatewayFile;
 
     public function __construct()
