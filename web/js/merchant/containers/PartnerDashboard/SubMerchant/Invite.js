@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -69,8 +70,8 @@ export default class Invite extends Component {
             </span>
 
             <div class="alert alert-warning custom-banner arrow-up">
-              To change the registered email ID please, send a request to{' '}
-              <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+              To change the registered email ID please, you can{' '}
+              <a href="#ticket">write to us</a>
             </div>
 
             <div class="Modal__Actions clearfix">

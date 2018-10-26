@@ -63,6 +63,7 @@ export default class BatchUpload extends Component {
                   docUrl={this.props.docUrl}
                   gaEvents={this.props.gaEvents}
                   validateBatch={this.props.validateBatch}
+                  maxRows={this.props.maxRows}
                 />
               );
             case 'create':
@@ -72,7 +73,6 @@ export default class BatchUpload extends Component {
                   batchName={this.state.batchName}
                   batch={this.state.batch}
                   batchType={this.props.batchType}
-                  maxRows={this.props.maxRows}
                   batchFormInitialValues={this.props.batchFormInitialValues}
                   renderBatchCreationForm={this.props.renderBatchCreationForm}
                   createBatch={this.props.createBatch}

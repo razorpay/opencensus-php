@@ -14,11 +14,11 @@ import { trackGoToActivation, trackGoToConfig } from './ga';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|(applications\/new)|applications)/;
-const INVOICES_ROUTES_REGEX = /^\/((invoices\/new)|invoices|items)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
+const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
-const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
+const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 

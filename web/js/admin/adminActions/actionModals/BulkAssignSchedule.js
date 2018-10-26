@@ -44,7 +44,13 @@ export default function BulkAssignSchedule() {
   return (
     <Form class="full-span bulk-assign-schedule-action" onSubmit={onSubmit}>
       <Field required label="Schedule ID" type="text" name="schedule_id" />
-      <Field required label="Schedule Type" type="text" value="settlement" name="schedule_type" />
+      <Field
+        required
+        label="Schedule Type"
+        type="text"
+        value="settlement"
+        name="schedule_type"
+      />
       <TextAreaField
         label="Merchant Ids"
         type="text"

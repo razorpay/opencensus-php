@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -80,10 +81,10 @@ export default class SubmitForm extends Component {
                   <em>
                     Please review the form before submitting. After submitting,
                     the form will get locked and thereafter for any changes you
-                    may contact&nbsp;
-                    <a href="mailto:support@razorpay.com" class="highlight">
-                      support@razorpay.com
-                    </a>.
+                    can{' '}
+                    <Link to="#ticket" class="highlight">
+                      write to us
+                    </Link>
                   </em>
                 </div>
               </div>

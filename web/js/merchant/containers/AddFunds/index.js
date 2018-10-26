@@ -152,10 +152,10 @@ export default class AddFundsContainer extends Component {
           <p>
             Add Funds works over your own account. Therefore, a TDR will be
             deducted on this as well. If you are adding funds for a large
-            refund, send us a mail to{' '}
-            <a href="mailto:support@razorpay.com" class="highlight">
-              support@razorpay.com
-            </a>
+            refund, please{' '}
+            <Link to="#ticket" class="highlight">
+              write to support
+            </Link>
             .
           </p>
 
