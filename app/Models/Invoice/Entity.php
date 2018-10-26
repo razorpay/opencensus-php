@@ -862,7 +862,8 @@ class Entity extends Base\PublicEntity
 
     public function isTypeOfSubscriptionRegistration(): bool
     {
-        return ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity);
+        return (($this->getEntityType() !== null) and
+               ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity));
     }
 
     /**
