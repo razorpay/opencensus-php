@@ -1579,9 +1579,11 @@ class Entity extends Base\PublicEntity
     {
         $liveConnection = app('basicauth')->getLiveConnection();
 
-        return $this->getConnectionName() === $liveConnection ?
+        $tags = $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
                 (clone $this)->setConnection($liveConnection)->tagNames();
+
+        return array_map('strtolower', $tags);
     }
 
     public function isEmailOptional()

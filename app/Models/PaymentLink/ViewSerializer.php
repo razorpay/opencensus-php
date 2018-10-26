@@ -78,6 +78,23 @@ class ViewSerializer extends Base\Core
     }
 
     /**
+     * Returns settings array for given payment link with defaults.
+     * @return array
+     */
+    public function serializeSettingsWithDefaults(): array
+    {
+        $settings = $this->paymentLink->getSettings()->toArray();
+
+        // Prepends default UDF schema for view. Ref: getDefaultUdfSchemaForView().
+        $defaultUdfSchemaForView = $this->getDefaultUdfSchemaForView();
+        $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
+        array_unshift($udfSchema, ...$defaultUdfSchemaForView);
+        $settings[Entity::UDF_SCHEMA] = json_encode($udfSchema);
+
+        return $settings;
+    }
+
+    /**
      * @return string|null
      */
     protected function getMerchantKeyId()
@@ -142,7 +159,10 @@ class ViewSerializer extends Base\Core
 
     protected function addSettingsOfPaymentLink(array & $serialized)
     {
-        $serialized[Entity::SETTINGS] = $this->paymentLink->getSettings()->toArray();
+        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
+        {
+            $serialized[Entity::SETTINGS] = $this->serializeSettingsWithDefaults();
+        }
     }
 
     /**
@@ -154,6 +174,36 @@ class ViewSerializer extends Base\Core
     {
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
+        ];
+    }
+
+    /**
+     * Hosted view expects email and phone(otherwise part of checkout modal) also for view rendering besides the
+     * additional UDFs defined by merchant. We just prepends it here for view.
+     * @return array
+     */
+    protected function getDefaultUdfSchemaForView(): array
+    {
+        return [
+            [
+                'title'    => 'Email',
+                'name'     => 'email',
+                'type'     => 'string',
+                'required' => true,
+                'options'  => [
+                    'keydown_restrictive' => false,
+                ],
+            ],
+            [
+                'title'     => 'Phone',
+                'name'      => 'phone',
+                'type'      => 'number',
+                'required'  => true,
+                'minLength' => 8,
+                'options'   => [
+                    'keydown_restrictive' => false,
+                ],
+            ],
         ];
     }
 }

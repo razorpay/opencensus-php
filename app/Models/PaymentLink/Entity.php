@@ -88,6 +88,13 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
+     * Merchant having below tags have specific behavior -
+     * 1. Settings attribute is expected, if and only
+     * 2. New view is rendered for existing or new pages
+     */
+    const TAG_PAYMENT_PAGE_V2 = 'paymentpagesv2';
+
+    /**
      * expire_by has to be atleast 15 minutes from current timestamp
      */
     const MIN_EXPIRY_SECS = 900;

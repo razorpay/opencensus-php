@@ -36,10 +36,12 @@ class Service extends Base\Service
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        $extra = [
-            Entity::CAPTURED_PAYMENTS_COUNT => $entity->getCapturedPaymentsCount(),
-            Entity::SETTINGS                => $entity->getSettings()->toArray(),
-        ];
+        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
+
+        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
+        {
+            $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
+        }
 
         return $entity->toArrayPublic() + $extra;
     }

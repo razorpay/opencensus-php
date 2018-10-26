@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'filled|email',
         Entity::TERMS           => 'filled|string|min:5|max:2048',
-        Entity::SETTINGS        => 'filled|array|custom',
+        Entity::SETTINGS        => 'filled|array',
 
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
@@ -56,7 +56,7 @@ class Validator extends Base\Validator
         Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'filled|email',
         Entity::TERMS           => 'filled|string|min:5|max:2048',
-        Entity::SETTINGS        => 'filled|array|custom',
+        Entity::SETTINGS        => 'filled|array',
 
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
@@ -83,6 +83,14 @@ class Validator extends Base\Validator
         'udf_schema.*.title' => 'required|string|max:255',
         // Additional optional parameters are left intentionally, for now at least.
         // This is because there are keys conditioned to type.
+    ];
+
+    protected static $createValidators = [
+        Entity::SETTINGS,
+    ];
+
+    protected static $editValidators = [
+        Entity::SETTINGS,
     ];
 
     public function validateExpireBy(string $attribute, int $value)
@@ -154,12 +162,30 @@ class Validator extends Base\Validator
 
     /**
      * Settings should have defined set of keys and it's udf_schema's value should be a valid JSON schema.
-     * @param  string $attribute
-     * @param  array  $value
+     * Additionally it must and only exists if merchant has v2 tag.
+     *
+     * @param array $input
      */
-    public function validateSettings(string $attribute, array $value)
+    public function validateSettings(array $input)
     {
-        $extraSettingsKeys = array_values(array_diff(array_keys($value), Entity::SETTINGS_KEYS));
+        $attributeExists  = array_key_exists(Entity::SETTINGS, $input);
+        $merchantHasV2Tag = $this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2);
+
+        if ($attributeExists !== $merchantHasV2Tag)
+        {
+            $message = $attributeExists ? 'Extra attribute sent in request - settings.' : 'settings is required.';
+
+            throw new BadRequestValidationFailureException($message, Entity::SETTINGS);
+        }
+
+        if ($attributeExists === false)
+        {
+            return;
+        }
+
+        $settings = $input[Entity::SETTINGS];
+        $extraSettingsKeys = array_values(array_diff(array_keys($settings), Entity::SETTINGS_KEYS));
+
         if (empty($extraSettingsKeys) === false)
         {
             throw new BadRequestValidationFailureException(
@@ -167,7 +193,7 @@ class Validator extends Base\Validator
         }
 
         // Additionally, validates udf schema
-        $udfSchema = json_decode($value[Entity::UDF_SCHEMA] ?? '{}', true);
+        $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
     }
 

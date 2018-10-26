@@ -432,7 +432,7 @@ class Core extends Base\Core
         catch (BaseException $e)
         {
             // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
-            if (str_contains($e->getDataAsString(), 'Duplicate') === true)
+            if (preg_match('/Duplicate|Blacklisted/', $e->getDataAsString()) === 1)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED,
@@ -541,10 +541,6 @@ class Core extends Base\Core
 
     /**
      * Returns the name of the Payment link view template to be used.
-     * In order:
-     * 1. If has custom template id defined use that.
-     * 2. If has udf schema use general new template that renders and handles udf schema
-     * 3. By default the first version of view (which should get replaced by 2 in time).
      *
      * @param  Entity $paymentLink
      *
@@ -552,25 +548,27 @@ class Core extends Base\Core
      */
     public function getHostedViewTemplate(Entity $paymentLink): string
     {
-        $defaultView  = 'payment_link.hosted';
-        $templateId   = $paymentLink->getHostedTemplateId();
-        $hasUdfSchema = ($paymentLink->getSettingsScalarElseNull(Entity::UDF_SCHEMA) !== null);
+        $templateId = $paymentLink->getHostedTemplateId();
 
         if ($templateId !== null)
         {
             $templateAccessor = new HostedTemplate($templateId);
+
             if ($templateAccessor->exists() === true)
             {
-                return 'hostedpage.' . $templateAccessor->getViewName();
+                $view = 'hostedpage.' . $templateAccessor->getViewName();
             }
         }
-
-        if ($hasUdfSchema === true)
+        else if ($paymentLink->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
         {
-            return 'payment_link.hosted_with_udf';
+            $view = 'payment_link.hosted_with_udf';
+        }
+        else
+        {
+            $view = 'payment_link.hosted';
         }
 
-        return $defaultView;
+        return $view;
     }
 
     /**
