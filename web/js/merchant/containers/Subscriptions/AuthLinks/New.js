@@ -498,16 +498,18 @@ export default class CreateNewAuthLinkContainer extends Component {
 }
 
 function getBankOptions(emandateBanks, authType) {
+  let options = [];
   if (emandateBanks.loading) {
-    return ['Fetching Banks...'];
+    options = ['Fetching Banks...'];
   } else if (!authType) {
-    return ['Select Authentication'];
+    options = ['Select Authentication'];
   } else {
     const bankOptions = emandateBanks.list.filter(bank => !!bank[authType]);
-    return !!bankOptions.length
+    options = !!bankOptions.length
       ? ['Select Bank', ...bankOptions]
       : [`No Bank for ${authType}`];
   }
+  return options;
 }
 
 function checkIfAmount(value) {
