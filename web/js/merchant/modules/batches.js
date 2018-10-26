@@ -38,7 +38,7 @@ const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
 const fetchBatchAjax = id => merchantFetch(`batches/${id}`);
 
 const fetchBatchesAjax = (params, type) => {
-  params.type = type;
+  params[Array.isArray(type) ? 'types' : 'type'] = type;
   return merchantFetch({
     url: 'batches',
     params: params,
@@ -228,6 +228,17 @@ export const validatePaymentLinkBatch = validateBatch('payment_link');
 /* direct debit batches */
 export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');
+
+/* batches for emandate */
+export const fetchHostMandateBatches = fetchBatches([
+  'recurring_charge',
+  'auth_link',
+]);
+export const createAuthLinkBatch = createBatch('auth_link');
+export const validateAuthLinkBatch = validateBatch('auth_link');
+export const createRecurringChargeBatch = createBatch('recurring_charge');
+export const validateRecurringChargeBatch = validateBatch('recurring_charge');
+export const fetchHostedMandateBatchDetails = fetchBatchDetails();
 
 /* reducers */
 export const refundBatchesReducer = makeCollectionReducer(REFUND);

@@ -22,6 +22,8 @@ const sources = {
 
 const batchBaseUrls = {
   payment_link: 'paymentlinks',
+  auth_link: 'subscriptions',
+  recurring_charge: 'subscriptions',
 };
 
 export const idItem = id => <code>{id}</code>;
