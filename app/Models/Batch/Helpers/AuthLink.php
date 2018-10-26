@@ -156,7 +156,7 @@ class AuthLink
         return $output;
     }
 
-    public static function getBankName(array & $entry): string
+    public static function getBankName(array & $entry)
     {
         $bank = empty($entry[Batch\Header::AUTH_LINK_BANK]) === true
             ? null : (string) $entry[Batch\Header::AUTH_LINK_BANK];
