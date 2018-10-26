@@ -204,11 +204,13 @@ return [
     ],
 
     'atom' => [
-        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
-        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
-        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
-        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
-        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'test_authorize_hash_secret'   => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'    => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'             => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'         => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'             => env('ATOM_TEST_ACCESS_CODE'),
+        'test_request_encryption_key'  => env('ATOM_TEST_REQUEST_ENCRYPTION_KEY'),
+        'test_response_encryption_key' => env('ATOM_TEST_RESPONSE_ENCRYPTION_KEY'),
     ],
 
     'mpi_blade' => [
