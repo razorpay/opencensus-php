@@ -49,10 +49,7 @@ export default class Announcement extends Component {
   }
 }
 
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();

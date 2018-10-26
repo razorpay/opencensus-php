@@ -23,7 +23,7 @@ export default ({ batchType, sms_notify, email_notify, onChange }) => {
             name="config.sms_notify"
             id="sms_notify"
             component={CheckBoxField}
-            onChange={handleChange(onChange, 'sms_notify')}
+            onChange={handleChange('sms_notify')}
           />
           <label for="sms_notify" class="icon i-check">
             Send SMS

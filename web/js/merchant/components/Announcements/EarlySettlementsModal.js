@@ -8,10 +8,7 @@ import trackESAnnouncements from './ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
   initialValues: {

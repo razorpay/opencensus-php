@@ -110,7 +110,10 @@ export default function Reports(store, opts) {
         promises = [configRequest];
 
       const monthlyInvoiceConfig = getCustomConfig('monthlyInvoice');
-      if (monthlyInvoiceConfig) {
+      if (
+        monthlyInvoiceConfig &&
+        user.isOrgAllowedFunctionality('monthlyInvoice')
+      ) {
         configs.push(monthlyInvoiceConfig);
       }
 

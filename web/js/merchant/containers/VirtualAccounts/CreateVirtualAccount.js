@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { TypeAhead } from 'react-power-select';
 import { findBy } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
@@ -14,6 +14,7 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
 import * as ModalActions from 'rzp/modules/modals';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
 const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
   let bankAccount = virtualAccount.receivers[0];
@@ -66,12 +67,14 @@ const selector = formValueSelector('createVirtualAccount');
     const customers = state.customers.items;
     return {
       descriptor: selector(state, 'descriptor'),
+      notes: selector(state, 'notes'),
       customers,
       customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       initialValues: {
         receivers: {
           types: ['bank_account'],
+          notes: [],
         },
       },
       ...state.config.config,
@@ -113,10 +116,20 @@ export default class CreateVirtualAccount extends Component {
     }
   }
 
-  save = ({ numeric, descriptor, receivers, ...props }) => {
+  save = ({ numeric, descriptor, notes, receivers, ...props }) => {
+    let transformedNotes = notes;
+
+    if (transformedNotes && transformedNotes.length > 0) {
+      transformedNotes = transformedNotes.reduce((result, current) => {
+        result[current.key] = current.value;
+        return result;
+      }, {});
+    }
+
     return this.props
       .saveVirtualAccount({
         ...props,
+        notes: transformedNotes,
         receivers: {
           ...receivers,
           bank_account: descriptor
@@ -286,6 +299,15 @@ export default class CreateVirtualAccount extends Component {
                   </small>
                 </div>
               )}
+
+              <div class="form-group">
+                <label class="notes-label">Internal Notes</label>
+                <FieldArray
+                  name="notes"
+                  component={NotesFieldArray}
+                  showLinkedAccountOpt={false}
+                />
+              </div>
 
               <div class="Modal__actions clearfix">
                 <AsyncButton
