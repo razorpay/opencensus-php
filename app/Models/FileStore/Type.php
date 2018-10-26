@@ -56,6 +56,10 @@ class Type
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
 
+    const VIJAYA_NETBANKING_REFUND          = 'vijaya_netbanking_refund';
+
+    const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
