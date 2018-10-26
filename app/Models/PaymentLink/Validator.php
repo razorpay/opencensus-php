@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array',
 
+        Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
@@ -58,6 +59,7 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'filled|string|min:5|max:2048',
         Entity::SETTINGS        => 'filled|array',
 
+        Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',

@@ -72,6 +72,7 @@ class Entity extends Base\PublicEntity
 
     // List of keys stored against entity's settings.
     const SETTINGS                     = 'settings';
+    const THEME                        = 'theme';
     const UDF_SCHEMA                   = 'udf_schema';
     const UNITS                        = 'units';
     const ALLOW_MULTIPLE_UNITS         = 'allow_multiple_units';
@@ -80,6 +81,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
 
     const SETTINGS_KEYS                = [
+        self::THEME,
         self::UDF_SCHEMA,
         self::ALLOW_MULTIPLE_UNITS,
         self::ALLOW_SOCIAL_SHARE,
