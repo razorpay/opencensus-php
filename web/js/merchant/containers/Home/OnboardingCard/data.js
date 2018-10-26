@@ -6,11 +6,13 @@ export const ACTIVATION_URL = '/activation';
 export const TEST_MODE = 'test';
 export const LIVE_MODE = 'live';
 
-export const onBoardingItems = [
-  'Generate Financial Reports',
-  'Check Transaction History',
-  'Access API keys  & Webhooks',
-  'Access Razorpay Products',
-  'Check Settlements',
-  'Issue Refunds',
-];
+export function onBoardingItems(user) {
+  return [
+    'Generate Financial Reports',
+    'Check Transaction History',
+    'Access API keys  & Webhooks',
+    `Access ${user.isOrgRZP ? 'Razorpay ' : ''}Products`,
+    'Check Settlements',
+    'Issue Refunds',
+  ];
+}

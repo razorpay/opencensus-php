@@ -1,19 +1,21 @@
 import { Component } from 'react';
 import user from 'admin/user';
 
-export default class ShowWhen extends Component {
-  render() {
-    var permission = this.props.permission;
-    var permissions = user.permissions;
+export default props => {
+  return showWhenUtil(props) ? props.children : null;
+};
 
-    if (
-      !permissions ||
-      !permission ||
-      permissions.find(perm => permission === perm)
-    ) {
-      return this.props.children;
-    }
+export function showWhenUtil(props) {
+  var permission = props.permission;
+  var permissions = user.permissions;
 
-    return null;
+  if (
+    !permissions ||
+    !permission ||
+    permissions.find(perm => permission === perm)
+  ) {
+    return true;
   }
+
+  return false;
 }

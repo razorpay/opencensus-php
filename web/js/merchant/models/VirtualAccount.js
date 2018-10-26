@@ -10,6 +10,7 @@ const fields = [
   'customer_id',
   'status',
   'receivers',
+  'notes',
 ];
 
 export default class VirtualAccount extends GenericEntity {

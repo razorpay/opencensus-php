@@ -27,7 +27,15 @@ export default class Plan extends Collection {
     this.props = props;
 
     if (!props.id) {
-      this.items.push(new Rule(this));
+      if (props.items && props.items.length > 0) {
+        this.items.replace(
+          (props.items || []).map(p => {
+            return new Rule(this, p);
+          })
+        );
+      } else {
+        this.items.push(new Rule(this));
+      }
     }
 
     this.bind(['save', 'updateName']);
@@ -89,6 +97,7 @@ export const options = {
     payout: 'Payout',
     transfer: 'Transfer',
     emi: 'EMI',
+    esautomatic: 'Early Settlement',
   },
   payment_method: {
     ...methods,
@@ -204,6 +213,8 @@ class Rule extends CollectionItem {
     delete data.amount_range;
     delete data.isEditing;
     delete data.originalRule;
+    delete data.readonly;
+    delete data.org_id;
 
     data.emi_duration = data.emi_duration && data.emi_duration.trim();
 
@@ -303,7 +314,10 @@ class Rule extends CollectionItem {
           percent_rate: Math.round(this.percent_rate * 100),
           fixed_rate: Math.round(this.fixed_rate * 100),
           min_fee: Math.round(this.min_fee * 100),
-          max_fee: Math.round(this.max_fee * 100),
+          max_fee:
+            this.max_fee || parseInt(this.max_fee) === 0
+              ? Math.round(this.max_fee * 100)
+              : undefined,
         },
       };
 
@@ -401,7 +415,7 @@ class Rule extends CollectionItem {
       data = {
         '': 'All',
         aadhaar: 'Aadhaar',
-        aadhaar_fingerprint: 'Aadhaar Fingerprint',
+        aadhaar_fp: 'Aadhaar Fingerprint',
         netbanking: 'Netbanking',
       };
     }

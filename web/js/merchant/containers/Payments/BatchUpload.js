@@ -7,7 +7,6 @@ import CreateModal from 'merchant/components/BatchNew/CreateModal';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
-import TableSlider from 'rzp/ui/TableSlider';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { closeModal } from 'rzp/modules/modals';
 import { createPaymentsBatch as createBatch } from 'merchant/modules/batches';
@@ -16,7 +15,7 @@ import { showNotification } from 'rzp/modules/notifications';
 const hostToIframeHost = {
   'dashboard.razorpay.in': 'http://api.razorpay.in',
   'dashboard.razorpay.com': 'https://api.razorpay.com',
-  'beta-dashboard.razorpay.in': 'https://beta-api.razorpay.in',
+  'beta-dashboard.stage.razorpay.in': 'https://beta-api.razorpay.in',
 };
 
 const iframeHost = hostToIframeHost[location.hostname];

@@ -102,6 +102,7 @@ export default class MerchantList extends Component {
             >
               <option value="">All</option>
               <option value="activated">Activated</option>
+              <option value="instantly_activated">Instantly Activated</option>
               <option value="pending">Pending Activation</option>
               <option value="dead">Dead</option>
               <option value="archived">Archived</option>
