@@ -232,7 +232,11 @@ export default class Content extends Component {
             additionalCondition={user => user.isAllowedView('subscriptions')}
           />
 
-          <Route path="/emandates" component={Subscriptions} />
+          <ShowWhenRoute
+            path="/recurring_payments"
+            component={Subscriptions}
+            additionalCondition={user => user.isChargeAtWillEnabled}
+          />
 
           {/*<Route path="/addons" component={Subscriptions} />*/}
           <Route
