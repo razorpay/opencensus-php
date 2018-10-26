@@ -615,6 +615,7 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($customerId);
 
         // Will eventually merge the direct payout also into this and create a factory.
+        // https://razorpay.atlassian.net/browse/ME-732
         $payoutProcessor = new PayoutProcessor\CustomerWalletPayout();
 
         $payout = $payoutProcessor->createPayout($input);

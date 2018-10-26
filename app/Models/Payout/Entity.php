@@ -42,7 +42,6 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
-    const DESCRIPTION            = 'description';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -194,7 +193,7 @@ class Entity extends Base\PublicEntity
 
     public function transaction()
     {
-        return $this->MorphTo();
+        return $this->morphTo();
     }
 
     public function batchFundTransfer()

@@ -5,9 +5,9 @@ namespace RZP\Models\Payout\Processor;
 use RZP\Constants;
 use RZP\Models\Payout;
 use RZP\Models\Pricing;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payout\Entity;
-use RZP\Models\Adjustment;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\Customer\Transaction\Core as CustTransactionCore;
@@ -93,10 +93,10 @@ class CustomerWalletPayout extends Base
     private function getCustomerTransactionData(Payout\Entity $payout)
     {
         $transactionData = [
-            Entity::ID          => $payout->getId(),
-            Entity::AMOUNT      => $payout->getAmount(),
-            Entity::CUSTOMER_ID => $payout->customer->getId(),
-            Entity::DESCRIPTION => 'Wallet Withdrawal',
+            Entity::ID                     => $payout->getId(),
+            Entity::AMOUNT                 => $payout->getAmount(),
+            Entity::CUSTOMER_ID            => $payout->customer->getId(),
+            Adjustment\Entity::DESCRIPTION => 'Wallet Withdrawal',
         ];
 
         return $transactionData;

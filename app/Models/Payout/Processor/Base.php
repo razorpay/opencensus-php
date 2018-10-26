@@ -46,10 +46,7 @@ abstract class Base extends BaseCore
 
         $payout->merchant()->associate($this->merchant);
 
-        if (empty($this->customer) === false)
-        {
-            $payout->customer()->associate($this->customer);
-        }
+        $payout->customer()->associate($this->customer);
 
         $payout->setChannel($this->channel);
 

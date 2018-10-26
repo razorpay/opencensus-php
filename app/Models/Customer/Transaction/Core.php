@@ -28,7 +28,14 @@ class Core extends Base\Core
 
         $customerId = $input['customer_id'];
 
-        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId, $source);
+        $txnType = Type::TRANSFER;
+
+        if ($source === Constants\Entity::PAYOUT)
+        {
+            $txnType = Type::WITHDRAWAL;
+        }
+
+        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId, $txnType);
 
         $customerTxn->setEntityType($source);
 
@@ -137,7 +144,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param int             $amount
      * @param string          $customerId
-     * @param string          $source
+     * @param string          $txnType
      *
      * @return Entity
      */
@@ -146,16 +153,9 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         int $amount,
         string $customerId,
-        string $source = Constants\Entity::PAYMENT) : Entity
+        string $txnType = Type::TRANSFER) : Entity
     {
         $customerTxn = new Entity;
-
-        $txnType = Type::TRANSFER;
-
-        if ($source == Constants\Entity::PAYOUT)
-        {
-            $txnType = Type::WITHDRAWAL;
-        }
 
         $txnData = [
             Entity::TYPE                => $txnType,
