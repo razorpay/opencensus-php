@@ -190,7 +190,10 @@ export default class App extends Component {
               {linkGroup.map((l, i) => {
                 // For other orgs, don't render restricted routes.
                 // (FE only solution. BE doesn't support.)
-                if (!isOrgRazorpay() && Heimdall_restrictRoutes.find(l[1])) {
+                if (
+                  !isOrgRazorpay() &&
+                  Heimdall_restrictRoutes.find(route => route === l[1])
+                ) {
                   return null;
                 }
 
