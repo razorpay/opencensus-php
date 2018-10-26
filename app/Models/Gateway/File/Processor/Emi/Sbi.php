@@ -87,7 +87,7 @@ class Sbi extends Base
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id'        => $this->gatewayFile->getId(),
-            ],
+                ],
                 $e);
         }
     }
