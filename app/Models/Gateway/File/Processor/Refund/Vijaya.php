@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -19,6 +20,8 @@ class Vijaya extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_VIJAYA;
     const PAYMENT_BANK               = 'VijayaBank';
     const REFUND                     = 'RFND';
+    const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
+    const GATEWAY_CODE               = IFSC::VIJB;
 
     protected function formatDataForFile(array $data)
     {
