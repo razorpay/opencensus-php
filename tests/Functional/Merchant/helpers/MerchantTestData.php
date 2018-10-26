@@ -2381,14 +2381,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'downtime' => [
-                    'netbanking' => [
-                        [
-
-                        ],
-                    ],
                 ],
-            ],
         ],
     ],
 
