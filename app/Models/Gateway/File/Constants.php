@@ -14,6 +14,7 @@ class Constants
     const EQUITAS          = 'equitas';
     const BOB              = 'bob';
     const IDFC             = 'idfc';
+    const VIJAYA           = 'VIJAYA';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
