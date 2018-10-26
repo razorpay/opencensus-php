@@ -351,6 +351,81 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals('Refund is not allowed', $gatwayRefund['gateway_result_description']);
     }
 
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['STATUSCODE']         = 'M1';
+                $content['STATUSMESSAGE']      = 'Refund is not allowed';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(1, $refund['attempts']);
+    }
+
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['STATUSCODE']         = 'M1';
+                $content['STATUSMESSAGE']      = 'Refund is not allowed';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content = '<REFUNDSTATUS>
+                <ERRORCODE>EE</ERRORCODE>
+                <MESSAGE>Refund Not Found</MESSAGE>
+                 </REFUNDSTATUS>';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(2, $refund['attempts']);
+    }
+
     protected function assertPaymentAfterAuthAndCapture($paymentInput = null)
     {
         $this->doAuthAndCapturePayment($paymentInput);
