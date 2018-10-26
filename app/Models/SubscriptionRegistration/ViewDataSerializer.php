@@ -38,7 +38,7 @@ class ViewDataSerializer extends Base\Core
 
         $invoiceData[Constants\Entity::SUBSCRIPTION_REGISTRATION] = $subscriptionRegistration->toArrayPublic();
 
-        if($subscriptionRegistration->getMethod() === Type::EMANDATE)
+        if($subscriptionRegistration->getMethod() === Method::EMANDATE)
         {
             $bankAccount = $subscriptionRegistration->entity;
 
