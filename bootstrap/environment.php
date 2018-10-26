@@ -73,8 +73,6 @@ if ($dockerEnvironment === true)
 
 if (! function_exists('read_env_file'))
 {
-
-    // @codingStandardsIgnoreLine
     function read_env_file($envDir, $fileName)
     {
         $file = $envDir . '/' . $fileName;
