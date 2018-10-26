@@ -511,6 +511,11 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
+    protected static $netbankingSbiTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    ];
+
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',

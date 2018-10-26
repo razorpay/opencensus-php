@@ -177,6 +177,7 @@ class Entity
     const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
+    const NETBANKING_SBI         = 'netbanking_sbi';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -348,6 +349,7 @@ class Entity
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
+        self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -395,6 +397,8 @@ class Entity
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Base::class,
+
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,

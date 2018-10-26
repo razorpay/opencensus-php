@@ -69,6 +69,7 @@ class Netbanking
         IFSC::ORBC,
         IFSC::CSBK,
         IFSC::ESFB,
+        IFSC::SBIN,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -388,6 +389,11 @@ class Netbanking
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
+            ]
+        ],
+        Gateway::NETBANKING_SBI => [
+            'retail' => [
+                IFSC::SBIN,
             ]
         ]
     ];

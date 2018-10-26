@@ -44,6 +44,7 @@ return [
         'netbanking_obc',
         'netbanking_csb',
         'netbanking_equitas',
+        'netbanking_sbi',
         'paytm',
         'sharp',
         'upi_axis',
@@ -92,6 +93,7 @@ return [
     'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_equitas'     => env('NETBANKING_EQUITAS_MOCK'),
+    'mock_netbanking_sbi'         => env('NETBANKING_SBI_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
@@ -555,6 +557,11 @@ return [
     'netbanking_equitas' => [
         'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
         'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
+    ],
+
+    'netbanking_sbi' => [
+        'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

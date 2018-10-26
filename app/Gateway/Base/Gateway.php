@@ -971,6 +971,16 @@ class Gateway
         return $code;
     }
 
+    protected function getMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+
+        return $this->getLiveMerchantId();
+    }
+
     protected function getTestMerchantId()
     {
         $code = null;
