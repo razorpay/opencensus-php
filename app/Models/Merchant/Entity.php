@@ -152,6 +152,12 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
 
+    // Extra constants for Batch
+    const AUTO_SUBMIT               = 'auto_submit';
+    const AUTOFILL_DETAILS          = 'autofill_details';
+    const AUTO_ACTIVATE             = 'auto_activate';
+    const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
