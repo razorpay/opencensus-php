@@ -129,6 +129,8 @@ export default class GenericEntity extends Component {
   }
 }
 
+const selectedArrays = ['offers'];
+
 export function getFields() {
   let data = this.state.data;
   if (data) {
@@ -136,7 +138,23 @@ export function getFields() {
       let value = data[key];
       if (value) {
         if (typeof value === 'object') {
-          value = <pre class="duplex-json">{JSON.stringify(value)}</pre>;
+          // Generate links for selected array of IDs
+          if (selectedArrays.indexOf(key) > -1) {
+            let entityName = key.slice(0, -1);
+            let items = value.map(id => (
+              <a
+                key={id}
+                class="link"
+                href={`/admin/entity/${entityName}/${data.mode}/${id}`}
+              >
+                {id}
+              </a>
+            ));
+
+            value = <div>{items}</div>;
+          } else {
+            value = <pre class="duplex-json">{JSON.stringify(value)}</pre>;
+          }
         }
       }
       return item => [key, value];
