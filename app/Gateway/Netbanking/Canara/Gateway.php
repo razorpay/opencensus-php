@@ -235,6 +235,7 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse($content, $payment)
     {
         $content[NetbankingEntity::RECEIVED] = true;
+        //TODO check if status has to be added and mapped
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                                         $payment['id'],
