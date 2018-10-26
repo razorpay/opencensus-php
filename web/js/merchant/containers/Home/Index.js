@@ -15,6 +15,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 import * as ModalActions from 'rzp/modules/modals';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { activationDuration } from 'common/data';
 
 import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';
@@ -69,7 +70,7 @@ const KycFormSuccess = ({ onClose, isWhitelistFlow }) => (
         )}
         <div>
           We will reach out on your contact email for further clarifications if
-          needed. The review process usually takes 2-3 working days.
+          needed. The review process usually takes {activationDuration}.
         </div>
       </div>
     }

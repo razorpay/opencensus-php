@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
+import { activationDuration } from 'common/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 
 const initialState = {
@@ -71,8 +72,7 @@ export default class ActivationCard extends Component {
           content = 'Your KYC form has been rejected.';
         } else {
           status = possibleStatuses.progress;
-          content =
-            'We are reviewing your form. Expect confirmation in 2-3 days.';
+          content = `We are reviewing your form. Expect confirmation in ${activationDuration}.`;
         }
       }
     } else if (isBlacklistFlow) {

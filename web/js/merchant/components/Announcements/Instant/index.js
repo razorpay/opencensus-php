@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
+import { activationDuration } from 'common/data';
 import Announcement from 'merchant/components/Announcement';
 
 export default class InstantActivationAnnouncements extends Component {
@@ -49,8 +50,7 @@ export default class InstantActivationAnnouncements extends Component {
         }
       } else {
         title = 'KYC under review';
-        content =
-          'We are reviewing your KYC details. This process usually takes 2-3 working days.';
+        content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
       }
     }
 
