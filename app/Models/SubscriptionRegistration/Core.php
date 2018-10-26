@@ -151,6 +151,15 @@ class Core extends Base\Core
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE,
+            [
+                'token_id'     => $id,
+                'merchant_id'  => $merchant->getPublicId(),
+                'orderInput'   => $orderInput,
+            ]
+        );
+
         $orderCore = new Order\Core();
 
         $order = $orderCore->create($orderInput, $this->merchant);
@@ -166,6 +175,15 @@ class Core extends Base\Core
             Payment\Entity::ORDER_ID    => $order->getPublicId(),
             Payment\Entity::RECURRING   => '1',
         ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN,
+            [
+                'token_id'     => $id,
+                'merchant_id'  => $merchant->getPublicId(),
+                'paymentInput' => $paymentInput,
+            ]
+        );
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
