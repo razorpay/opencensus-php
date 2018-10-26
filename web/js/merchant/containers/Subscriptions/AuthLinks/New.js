@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import { isEmail, isAmount, isPhone } from 'rzp/utils/validators';
-import { merchantFetch } from 'merchant/utils/ajax';
+import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { showNotification } from 'rzp/modules/notifications';
@@ -34,7 +34,7 @@ const accountTypes = [
 const authTypes = [
   'Select Auth Type...',
   { label: 'Netbanking', name: 'netbanking' },
-  { label: 'Aadhar', name: 'aadhar' },
+  { label: 'Aadhaar', name: 'aadhaar' },
 ];
 
 const mandatoryFields = [
@@ -67,7 +67,37 @@ export default class CreateNewAuthLinkContainer extends Component {
     mandateMethod: '',
     hasNoExpiry: '1',
     tokenHasNoExpiry: '1',
+    emandateBanks: {
+      loading: true,
+      list: [],
+    },
   };
+
+  componentWillMount() {
+    fetchPaymentMethods().then(methods => {
+      if (methods) {
+        const emandates = methods.recurring.emandate || {};
+
+        const emandateBanks = Object.entries(emandates).map(([code, bank]) => {
+          const authTypes = bank['auth_types'].reduce(
+            (authTypes, authType) => ({ ...authTypes, [authType]: true }),
+            {}
+          );
+
+          const emandateBank = {
+            label: bank.name,
+            name: code,
+            ...authTypes,
+          };
+
+          return { ...emandateBank };
+        });
+        this.setState({
+          emandateBanks: { list: emandateBanks, loading: false },
+        });
+      }
+    });
+  }
 
   allMandatoryFieldsPresent = () => {
     const { mandateMethod } = this.state;
@@ -305,17 +335,55 @@ export default class CreateNewAuthLinkContainer extends Component {
                 />
 
                 <Input.Group
+                  label="Authentication"
+                  class="InputGroup--inline"
+                  disabled={skipBankDetails}
+                >
+                  <div class="Input-content">
+                    <Input.Select
+                      name="mandateAuthType"
+                      options={authTypes}
+                      size="half_big"
+                      description="Preferred Authentication Method"
+                      onChange={this.handleAuthTypeChange}
+                    />
+
+                    <Input.Select
+                      name="mandateBankAccountType"
+                      options={accountTypes}
+                      size="half_big"
+                      description="Type of Bank Account"
+                      value={this.state.mandateBankAccountType}
+                      disabled={
+                        !skipBankDetails &&
+                        this.state.mandateAuthType !== 'aadhar'
+                      }
+                    />
+                  </div>
+                </Input.Group>
+
+                <Input.Group
                   label="Bank Details"
                   class="InputGroup--inline"
                   disabled={skipBankDetails}
                 >
                   <div class="Input-content">
-                    <Input
-                      name="mandateBankName"
-                      size="half_big"
-                      placeholder="Bank Name"
-                      description="Preferred bank for authentication"
-                    />
+                    {(() => {
+                      const bankOptions = getBankOptions(
+                        this.state.emandateBanks,
+                        this.state.mandateAuthType
+                      );
+                      return (
+                        <Input.Select
+                          name="mandateBankName"
+                          options={bankOptions}
+                          size="half_big"
+                          placeholder="Bank Name"
+                          description="Preferred bank for authentication"
+                          disabled={bankOptions.length < 2}
+                        />
+                      );
+                    })()}
 
                     <Input
                       name="mandateBankAccountIFSC"
@@ -344,34 +412,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                       name="mandateBankAccountNumber"
                       description="Bank Account Number"
                       size="half_big"
-                    />
-                  </div>
-                </Input.Group>
-
-                <Input.Group
-                  label="Authentication"
-                  class="InputGroup--inline"
-                  disabled={skipBankDetails}
-                >
-                  <div class="Input-content">
-                    <Input.Select
-                      name="mandateAuthType"
-                      options={authTypes}
-                      size="half_big"
-                      description="Preferred Authentication Method"
-                      onChange={this.handleAuthTypeChange}
-                    />
-
-                    <Input.Select
-                      name="mandateBankAccountType"
-                      options={accountTypes}
-                      size="half_big"
-                      description="Type of Bank Account"
-                      value={this.state.mandateBankAccountType}
-                      disabled={
-                        !skipBankDetails &&
-                        this.state.mandateAuthType !== 'aadhar'
-                      }
                     />
                   </div>
                 </Input.Group>
@@ -454,6 +494,19 @@ export default class CreateNewAuthLinkContainer extends Component {
     ) : (
       <div class="StandAloneContainer">{this.renderForm({ isModalView })}</div>
     );
+  }
+}
+
+function getBankOptions(emandateBanks, authType) {
+  if (emandateBanks.loading) {
+    return ['Fetching Banks...'];
+  } else if (!authType) {
+    return ['Select Authentication'];
+  } else {
+    const bankOptions = emandateBanks.list.filter(bank => !!bank[authType]);
+    return !!bankOptions.length
+      ? ['Select Bank', ...bankOptions]
+      : [`No Bank for ${authType}`];
   }
 }
 
