@@ -190,11 +190,4 @@ class Core extends Base\Core
                 ['order_ids' => $duplicateOrderIds]);
         }
     }
-
-    public function assignBank(Entity $order, string $bank)
-    {
-        $order->setBank($bank);
-
-        $this->repo->saveOrFail($order);
-    }
 }

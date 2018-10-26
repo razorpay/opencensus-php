@@ -252,13 +252,13 @@ class ViewDataSerializer extends Base\Core
     {
         $subscriptionRegistration = $this->invoice->entity;
 
-        if(($subscriptionRegistration instanceof SubscriptionRegistration\Entity === true))
+        if (($subscriptionRegistration instanceof SubscriptionRegistration\Entity === true))
         {
             $order = $this->invoice->order;
 
             $serialized[E::SUBSCRIPTION_REGISTRATION] = $subscriptionRegistration->toArrayPublic();
 
-            if($subscriptionRegistration->getMethod() === SubscriptionRegistration\Type::EMANDATE)
+            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $bankAccount = $subscriptionRegistration->entity;
 

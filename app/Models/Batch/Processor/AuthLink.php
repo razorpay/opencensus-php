@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Invoice;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -42,11 +43,11 @@ class AuthLink extends Base
         $entry[HEADER::AUTH_LINK_CREATED_AT]    = $this->invoice->getCreatedAt();
     }
 
-    protected function createAuthLink(array &$entry)
+    protected function createAuthLink(array & $entry) : Invoice\Entity
     {
         $settings = $this->settingsAccessor->all()->toArray();
 
-        $input = Helpers\AuthLink::getInvoiceEntityInput($entry, array_merge($this->params, $settings));
+        $input = Helpers\AuthLink::getAuthLinkInput($entry, $settings);
 
         $invoice = $this->subrCore->createAuthLink($input, $this->merchant, $this->batch);
 

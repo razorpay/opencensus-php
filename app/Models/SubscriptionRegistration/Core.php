@@ -5,7 +5,9 @@ namespace RZP\Models\SubscriptionRegistration;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Models\Invoice;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -125,6 +127,47 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($this->invoice);
         }
+    }
+
+    public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
+    {
+        $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+
+        $customer = $token->customer;
+
+        $orderCurrency = 'INR';
+
+        if (isset($input[Order\Entity::CURRENCY]) === true)
+        {
+            $orderCurrency = $input[Order\Entity::CURRENCY];
+        }
+
+        $orderInput = [
+            Order\Entity::AMOUNT          => $input[Order\Entity::AMOUNT],
+            Order\Entity::CURRENCY        => $orderCurrency,
+            Order\Entity::RECEIPT         => $input[Order\Entity::RECEIPT],
+            Order\Entity::PAYMENT_CAPTURE => true,
+        ];
+
+        $orderCore = new Order\Core();
+
+        $order = $orderCore->create($orderInput, $this->merchant);
+
+        $paymentInput = [
+            Payment\Entity::TOKEN       => $token->getPublicId(),
+            Payment\Entity::AMOUNT      => $input[Order\Entity::AMOUNT],
+            Payment\Entity::CURRENCY    => $orderCurrency,
+            Payment\Entity::DESCRIPTION => $input[Payment\Entity::DESCRIPTION],
+            Payment\Entity::EMAIL       => $customer->getEmail(),
+            Payment\Entity::CONTACT     => $customer->getContact(),
+            Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
+            Payment\Entity::ORDER_ID    => $order->getPublicId(),
+            Payment\Entity::RECURRING   => '1',
+        ];
+
+        $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+        return $paymentProcessor->process($paymentInput);
     }
 
     public function setBankAccountEntity(Entity $subscriptionRegistration, BankAccount\Entity $bankAccount)

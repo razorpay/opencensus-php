@@ -8,8 +8,8 @@ class Repository extends Base\Repository
 {
     protected $entity = 'subscription_registration';
 
-    public function fetchTokensByMerchant($merchant, $input)
+    public function fetchRecurringTokensByMerchant($merchant, $input) : Base\PublicCollection
     {
-        return $this->repo->token->fetchByMerchant($input, $merchant->getId());
+        return $this->repo->token->fetchRecurringTokensByMerchant($input, $merchant->getId());
     }
 }

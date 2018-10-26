@@ -7,7 +7,7 @@ use ApiResponse;
 
 class SubscriptionRegistrationController extends Controller
 {
-    public function fetchTokens()
+    public function listTokens()
     {
         $input = Request::all();
 
@@ -25,7 +25,7 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createAuthLinks()
+    public function createAuthLink()
     {
         $input = Request::all();
 
@@ -43,7 +43,7 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($invoice);
     }
 
-    public function fetchSingleToken(String $id)
+    public function fetchToken(string $id)
     {
         $input = Request::all();
 
@@ -52,9 +52,18 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($invoice);
     }
 
-    public function deleteSingleToken(String $id)
+    public function deleteToken(string $id)
     {
         $invoice = $this->service()->deleteSingleToken($id);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function chargeToken(string $id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service()->chargeToken($id, $input);
 
         return ApiResponse::json($invoice);
     }

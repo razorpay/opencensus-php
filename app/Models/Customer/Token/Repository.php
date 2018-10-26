@@ -122,18 +122,17 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchByMerchant(array $input, string $merchantId)
+    public function fetchRecurringTokensByMerchant(array $input, string $merchantId) : Base\PublicCollection
     {
         $query = $this->newQuery()
                       ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
                       ->where(Token\Entity::RECURRING, '=', "1")
                       ->orWhere(function($query)
                       {
-                        $query->where(Token\Entity::RECURRING ,'=' ,"0")
+                        $query->where(Token\Entity::RECURRING, '=', "0")
                               ->whereIn(
-                                  Token\Entity::RECURRING_STATUS ,
-                                  [RecurringStatus::CONFIRMED,RecurringStatus::REJECTED]
-                              );
+                                  Token\Entity::RECURRING_STATUS,
+                                  [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED]);
                       })
                       ->with('customer');
 

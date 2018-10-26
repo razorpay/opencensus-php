@@ -71,7 +71,7 @@ class Generator extends Base\Core
     /**
      * The mandate entity used for auth links.
      *
-     * @var SubscriptionRegistration\Entity
+     * @var Base\Entity
      */
     protected $externalEntity;
 
@@ -287,9 +287,9 @@ class Generator extends Base\Core
             $operation = Validator::CREATE_DRAFT;
         }
 
-        if(($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
+        if (($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
         {
-            if ($this->externalEntity->getMethod() === SubscriptionRegistration\Type::EMANDATE)
+            if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $operation = Validator::CREATE_AUTH_LINK_ISSUED;
             }
@@ -440,7 +440,7 @@ class Generator extends Base\Core
 
         if(($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
         {
-            if($this->externalEntity->getMethod() === SubscriptionRegistration\Type::EMANDATE)
+            if($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
                 $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
             }

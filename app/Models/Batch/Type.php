@@ -114,22 +114,18 @@ class Type
 
     public static function validateType(string $type)
     {
-        self::validateSingleType($type);
+        if ((self::exists($type) === false) or
+            (self::isDisabled($type) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
+        }
     }
 
     public static function validateTypes(array $types)
     {
         foreach ($types as $row)
         {
-            self::validateSingleType($row);
-        }
-    }
-    public static function validateSingleType(String $type)
-    {
-        if ((self::exists($type) === false) or
-            (self::isDisabled($type) === true))
-        {
-            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
+            self::validateType($row);
         }
     }
 

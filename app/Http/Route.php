@@ -918,12 +918,13 @@ final class Route
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
 
         // subscription registration
-        'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@fetchTokens'                    ],
+        'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
         'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],
-        'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLinks'                ],
+        'subscription_registration_create_links'   => ['post',     'subscription_registration/auth_links',           'SubscriptionRegistrationController@createAuthLink'                 ],
         'subscription_registration_fetch_link'     => ['get',      'subscription_registration/auth_links/{id}',      'SubscriptionRegistrationController@fetchAuthLink'                  ],
-        'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchSingleToken'               ],
-        'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteSingleToken'              ],
+        'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
+        'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
+        'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
     ];
 
     public static $public = [
@@ -1442,6 +1443,7 @@ final class Route
         'subscription_registration_fetch_link',
         'subscription_registration_fetch_token',
         'subscription_registration_delete_token',
+        'subscription_registration_charge_token',
     ];
 
     // These will run on internal auth with the assurance

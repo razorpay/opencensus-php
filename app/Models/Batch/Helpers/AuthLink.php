@@ -18,7 +18,7 @@ class AuthLink
         Batch\Header::AUTH_LINK_ACCOUNT_TYPE   => BankAccount\Entity::ACCOUNT_TYPE,
     ];
 
-    public static function getInvoiceEntityInput(array & $entry, array $params): array
+    public static function getAuthLinkInput(array & $entry, array $params): array
     {
         $receipt = $entry[Batch\Header::AUTH_LINK_RECEIPT];
 
@@ -57,12 +57,6 @@ class AuthLink
 
         $mandateInput = self::getMandateEntityInput($entry);
 
-        $bankInput = self::getBankEntityInput($entry);
-
-        $bankInput[BankAccount\Entity::BANK_NAME] = self::getBankName($entry);
-
-        $mandateInput[Entity::BANK_ACCOUNT] = $bankInput;
-
         $input[Entity::SUBSCRIPTION_REGISTRATION] = $mandateInput;
 
         return $input;
@@ -79,13 +73,13 @@ class AuthLink
         return $customer;
     }
 
-    public static function getBankEntityInput(array & $entry)
+    public static function getBankEntityInput(array & $entry): array
     {
         $method = $entry[Batch\Header::AUTH_LINK_METHOD];
 
         $input = [];
 
-        if ($method == SubscriptionRegistration\Type::EMANDATE)
+        if ($method == SubscriptionRegistration\Method::EMANDATE)
         {
             $input = self::buildBankAccountFromBatchInput($entry);
         }
@@ -93,12 +87,15 @@ class AuthLink
         return $input;
     }
 
-    public static function getMandateEntityInput(array & $entry)
+    public static function getMandateEntityInput(array & $entry): array
     {
         $method = $entry[Batch\Header::AUTH_LINK_METHOD];
 
         $maxAmount = empty($entry[Batch\Header::AUTH_LINK_MAX_AMOUNT]) === true
             ? null : (int) $entry[Batch\Header::AUTH_LINK_MAX_AMOUNT];
+
+        $maxAmount = (is_numeric($maxAmount) === true) ?
+            (int) number_format($maxAmount, 0, '', '') : $maxAmount;
 
         $authType = empty($entry[Batch\Header::AUTH_LINK_AUTH_TYPE]) === true
             ? null : (string) $entry[Batch\Header::AUTH_LINK_AUTH_TYPE];
@@ -109,24 +106,24 @@ class AuthLink
             SubscriptionRegistration\Entity::AUTH_TYPE  => $authType,
         ];
 
-        $expiry = $entry[Batch\Header::AUTH_LINK_EXPIRE_BY];
+        $expiry = $entry[Batch\Header::AUTH_LINK_TOKEN_EXPIRE_BY];
 
         if (empty($expiry) === false)
         {
-            $expiry = Utility::parseAsEpoch($entry[Batch\Header::AUTH_LINK_EXPIRE_BY]);
+            $expiry = Utility::parseAsEpoch($entry[Batch\Header::AUTH_LINK_TOKEN_EXPIRE_BY]);
 
             $input[SubscriptionRegistration\Entity::EXPIRE_AT] = $expiry;
         }
 
+        $bankInput = self::getBankEntityInput($entry);
+
+        // since bank name does not go into bank account and if only bank name is present,
+        // we dont need to create a bank account
+        $bankInput[BankAccount\Entity::BANK_NAME] = self::getBankName($entry);
+
+        $input[Entity::BANK_ACCOUNT] = $bankInput;
+
         return $input;
-    }
-
-    public static function doesMandateMethodExists(array & $entry): bool
-    {
-        $method = $entry[Batch\Header::AUTH_LINK_METHOD];
-
-        return (empty($method) !== true);
-
     }
 
     public static function buildBankAccountFromBatchInput(array & $entry): array
@@ -159,7 +156,7 @@ class AuthLink
         return $output;
     }
 
-    public static function getBankName(array & $entry)
+    public static function getBankName(array & $entry): string
     {
         $bank = empty($entry[Batch\Header::AUTH_LINK_BANK]) === true
             ? null : (string) $entry[Batch\Header::AUTH_LINK_BANK];

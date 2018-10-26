@@ -2,7 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
-class Type
+class Method
 {
     const CARD          = 'card';
     const EMANDATE      = 'emandate';

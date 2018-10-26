@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
+use RZP\Models\Customer\Token;
 
 class Service extends Base\Service
 {
@@ -15,21 +16,19 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->setUser();
-
         $this->core = new Core();
     }
 
-    public function fetchTokens(array $input)
+    public function fetchTokens(array $input) : array
     {
-        $result = $this->repo->subscription_registration->fetchTokensByMerchant(
+        $result = $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
             $this->merchant,
             $input);
 
         return $result->toArrayPublic();
     }
 
-    public function listAuthLinks(array $input)
+    public function listAuthLinks(array $input) : array
     {
         $input[Invoice\Entity::ENTITY_TYPE] = Constants\Entity::SUBSCRIPTION_REGISTRATION;
 
@@ -39,43 +38,39 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
-    public function createAuthLinks(array $input)
+    public function createAuthLinks(array $input) : array
     {
         $invoice = $this->core->createAuthLink($input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
 
-    public function fetchAuthLink(string $id, array $input)
+    public function fetchAuthLink(string $id, array $input) : array
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant(
             $id,
             $this->merchant,
-            $this->userId,
-            $this->userRole,
             $input
         );
 
         return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 
-    public function fetchSingleToken(String $id, array $input)
+    public function fetchSingleToken(String $id, array $input) : array
     {
-        return $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        $token = $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return (new Token\ViewDataSerializer($token))->serializeForSubscriptionRegistration();
     }
 
-    public function deleteSingleToken(String $id)
+    public function deleteSingleToken(String $id) : array
     {
         return $this->deleteTokenForMerchant($id);
     }
 
-    protected function setUser()
+    public function chargeToken(String $id, array $input) : array
     {
-        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
-
-        $this->userId   = $dashboardHeaders['user_id'] ?? null;
-
-        $this->userRole = $dashboardHeaders['user_role'] ?? null;
+        return $this->core->chargeToken($id, $input, $this->merchant);
     }
 
     protected function deleteTokenForMerchant($tokenId) : array

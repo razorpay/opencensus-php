@@ -12,8 +12,11 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const MERCHANT_ID       = 'merchant_id';
     const CUSTOMER_ID       = "customer_id";
+
+    //
+    // Method can be of card or emandate
+    //
     const METHOD            = "method";
     const ENTITY_TYPE       = "entity_type";
     const BANK              = "bank";
@@ -21,6 +24,10 @@ class Entity extends Base\PublicEntity
     const RECURRING_STATUS  = "recurring_status";
     const FAILURE_REASON    = "failure_reason";
     const MAX_AMOUNT        = "max_amount";
+
+    //
+    // Auth Type is aadhaar or netbanking
+    //
     const AUTH_TYPE         = "auth_type";
     const EXPIRE_AT         = "expire_at";
     const DELETED_AT        = 'deleted_at';
@@ -28,8 +35,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'subr';
 
     protected $entity = 'subscription_registration';
-
-    protected $primaryKey = self::ID;
 
     protected $generateIdOnCreate = true;
 
@@ -44,9 +49,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
-        self::ENTITY_ID,
         self::METHOD,
-        self::ENTITY_TYPE,
         self::RECURRING_STATUS,
         self::FAILURE_REASON,
         self::MAX_AMOUNT,
@@ -60,6 +63,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::METHOD,
+        self::ENTITY,
         self::RECURRING_STATUS,
         self::FAILURE_REASON,
         self::MAX_AMOUNT,
@@ -118,6 +122,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Customer\Entity::class);
     }
 
+    //
+    // Entity type currently supports bank_account or card.
+    //
     public function entity()
     {
         return $this->morphTo();

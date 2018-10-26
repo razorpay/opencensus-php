@@ -159,7 +159,6 @@ class InvoiceController extends Controller
         try
         {
             $data = $this->service()->getInvoiceViewData($invoiceId);
-
         }
         catch (BaseException $e)
         {

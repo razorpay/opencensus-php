@@ -42,7 +42,7 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->string(Entity::FAILURE_REASON,255)
                   ->nullable();
 
-            $table->integer(Entity::MAX_AMOUNT)
+            $table->bigInteger(Entity::MAX_AMOUNT)
                   ->nullable();
 
             $table->string(Entity::AUTH_TYPE,255)
@@ -63,6 +63,8 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::DELETED_AT);
+
+            $table->index(Entity::EXPIRE_AT);
         });
     }
 

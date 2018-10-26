@@ -49,7 +49,6 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_EMAIL ,
             Entity::NOTES,
             Entity::SUBSCRIPTION_ID,
-            Entity::ENTITY_TYPE,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
             self::EXPAND_EACH,

@@ -340,21 +340,21 @@ class Header
     const AUTH_LINK_CURRENCY            = 'currency';
     const AUTH_LINK_TOKEN_EXPIRE_BY     = 'token_expiry_by';
     const AUTH_LINK_METHOD              = 'method';
-    const AUTH_LINK_MAX_AMOUNT          = 'max_amount';
+    const AUTH_LINK_MAX_AMOUNT          = 'token_max_amount';
     const AUTH_LINK_EXPIRE_BY           = 'expiry_by';
     const AUTH_LINK_AUTH_TYPE           = 'auth_type';
     const AUTH_LINK_BANK                = 'bank';
-    const AUTH_LINK_NAME_ON_ACCOUNT     = 'name_on_account';
+    const AUTH_LINK_NAME_ON_ACCOUNT     = 'account_holder_name';
     const AUTH_LINK_IFSC                = 'ifsc';
-    const AUTH_LINK_ACCOUNT_NUMBER      ='account_number';
+    const AUTH_LINK_ACCOUNT_NUMBER      = 'account_number';
     const AUTH_LINK_ACCOUNT_TYPE        = 'account_type';
     const AUTH_LINK_RECEIPT             = 'receipt';
     const AUTH_LINK_DESCRIPTION         = 'description';
     //
     // Auth Link Output Headers
     //
-    const AUTH_LINK_ID                  = 'auth_link_id';
-    const AUTH_LINK_SHORT_URL           = 'auth_link';
+    const AUTH_LINK_ID                  = 'authorization_link_id';
+    const AUTH_LINK_SHORT_URL           = 'authorization_link';
     const AUTH_LINK_STATUS              = 'link_status';
     const AUTH_LINK_MAIL_SENT           = 'sent_mail';
     const AUTH_LINK_SMS_SENT            = 'sent_sms';
@@ -1038,7 +1038,6 @@ class Header
                 self::AUTH_LINK_METHOD,
                 self::AUTH_LINK_TOKEN_EXPIRE_BY,
                 self::AUTH_LINK_MAX_AMOUNT,
-                self::AUTH_LINK_EXPIRE_BY,
                 self::AUTH_LINK_AUTH_TYPE,
                 self::AUTH_LINK_BANK,
                 self::AUTH_LINK_NAME_ON_ACCOUNT,
@@ -1047,6 +1046,7 @@ class Header
                 self::AUTH_LINK_ACCOUNT_TYPE,
                 self::AUTH_LINK_RECEIPT,
                 self::AUTH_LINK_DESCRIPTION,
+                self::AUTH_LINK_EXPIRE_BY,
                 self::NOTES,
             ],
 
@@ -1059,20 +1059,20 @@ class Header
                 self::AUTH_LINK_METHOD,
                 self::AUTH_LINK_TOKEN_EXPIRE_BY,
                 self::AUTH_LINK_MAX_AMOUNT,
-                self::AUTH_LINK_EXPIRE_BY,
                 self::AUTH_LINK_AUTH_TYPE,
                 self::AUTH_LINK_BANK,
-                self::AUTH_LINK_ACCOUNT_NUMBER,
-                self::AUTH_LINK_IFSC,
                 self::AUTH_LINK_NAME_ON_ACCOUNT,
+                self::AUTH_LINK_IFSC,
+                self::AUTH_LINK_ACCOUNT_NUMBER,
                 self::AUTH_LINK_ACCOUNT_TYPE,
                 self::AUTH_LINK_RECEIPT,
                 self::AUTH_LINK_DESCRIPTION,
+                self::AUTH_LINK_EXPIRE_BY,
                 self::NOTES,
                 self::STATUS,
-                self::AUTH_LINK_STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
+                self::AUTH_LINK_STATUS,
                 self::AUTH_LINK_MAIL_SENT,
                 self::AUTH_LINK_SMS_SENT,
                 self::AUTH_LINK_CREATED_AT,

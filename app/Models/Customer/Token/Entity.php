@@ -165,7 +165,7 @@ class Entity extends Base\PublicEntity
         self::MRN,
         self::USED_AT,
         self::CREATED_AT,
-        self::CUSTOMER
+        self::CUSTOMER,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
