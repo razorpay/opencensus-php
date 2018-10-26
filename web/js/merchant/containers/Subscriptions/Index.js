@@ -10,10 +10,12 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
+
 import ActivationBanner from 'merchant/components/ActivationBanner';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-import HostedEmanadateBatches from 'merchant/containers/Subscriptions/Batch/List';
+import HostedEmanadateBatches from './Batch/List';
+import RecurringPayments from './RecurringPayments/List';
 
 const heading =
   'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
@@ -115,7 +117,10 @@ export default class SubscriptionsController extends Component {
               Subscriptions
             </NavLink>
             <NavLink to="/plans">Plans</NavLink>
+
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
+              <NavLink to="/recurring_payments">Payments</NavLink>
+
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>
@@ -131,6 +136,12 @@ export default class SubscriptionsController extends Component {
               />
               <Route path="/subscriptions" component={SubscriptionsList} />
               <Route path="/plans" component={PlansList} />
+
+              <ShowWhenRoute
+                path="/recurring_payments"
+                component={RecurringPayments}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
             </Switch>
           </content>
         </tabbed-container>

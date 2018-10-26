@@ -220,6 +220,7 @@ export default class Content extends Component {
             featureEnabled="paymentpages"
             additionalCondition={user => user.isAllowedView('payment_pages')}
           />
+
           <ShowWhenRoute
             path="/subscriptions"
             component={Subscriptions}
@@ -230,6 +231,13 @@ export default class Content extends Component {
             component={Subscriptions}
             additionalCondition={user => user.isAllowedView('subscriptions')}
           />
+
+          <ShowWhenRoute
+            path="/recurring_payments"
+            component={Subscriptions}
+            additionalCondition={user => user.isChargeAtWillEnabled}
+          />
+
           {/*<Route path="/addons" component={Subscriptions} />*/}
           <Route
             path="/customers"
