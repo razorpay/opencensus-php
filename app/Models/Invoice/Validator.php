@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -44,7 +45,6 @@ class Validator extends Base\Validator
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
     const ISSUE_BATCH   = 'issueBatch';
-    const CREATE_AUTH_LINK_ISSUED = 'createAuthLinkIssued';
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
@@ -77,36 +77,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT     => 'filled|boolean',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:0',
-        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::CURRENCY            => 'filled|in:INR',
-        Entity::BILLING_START       => 'filled|epoch',
-        Entity::BILLING_END         => 'filled|epoch',
-        Entity::DRAFT               => 'filled|boolean',
-        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
-        Entity::CALLBACK_URL        => 'filled|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
-    ];
-
-    protected static $createAuthLinkIssuedRules = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|epoch|nullable',
-        Entity::TERMS               => 'sometimes|string|max:2048',
-        Entity::NOTES               => 'sometimes|notes',
-        Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
-        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
-        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
-        Entity::VIEW_LESS           => 'filled|in:1',
-        Entity::SOURCE              => 'filled|string|max:32|custom',
-        Entity::TYPE                => 'filled|string|max:16|custom',
-        Entity::CUSTOMER            => 'sometimes|array',
-        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|in:0',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
         Entity::BILLING_START       => 'filled|epoch',
@@ -168,7 +139,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT     => 'filled|boolean',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
         Entity::BILLING_START       => 'filled|epoch',
@@ -278,8 +249,18 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
     ];
 
+    protected static $validExternalEntities = [
+        E::SUBSCRIPTION_REGISTRATION,
+    ];
+
     public function validateAmount(array $input)
     {
+        $invoice = $this->entity;
+
+        if ($invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            return;
+        }
         if (isset($input[Entity::AMOUNT]) === false)
         {
             return;
@@ -288,6 +269,8 @@ class Validator extends Base\Validator
         $this->checkIfAmountIsExpectedInInput($input);
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
+
+        $this->validateMinAmount($input[Entity::AMOUNT]);
     }
 
     /**
@@ -376,6 +359,22 @@ class Validator extends Base\Validator
                     'id'                 => $invoice->getId(),
                     'amount'             => $amount,
                     'max_amount_allowed' => $maxAmountAllowed,
+                ]);
+        }
+    }
+
+    public function validateMinAmount(int $amount)
+    {
+        $invoice = $this->entity;
+
+        if ($amount < 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'The amount should be atleast 1.',
+                'amount',
+                [
+                    'id'                 => $invoice->getId(),
+                    'amount'             => $amount,
                 ]);
         }
     }
@@ -769,6 +768,19 @@ class Validator extends Base\Validator
         if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
+        }
+    }
+
+    public function validateExternalEntity()
+    {
+        $invoice = $this->entity;
+
+        if (in_array($invoice->getEntityType(), self::$validExternalEntities) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid External Entity',
+                "entity_type"
+                );
         }
     }
 }

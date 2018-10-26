@@ -250,17 +250,19 @@ class ViewDataSerializer extends Base\Core
 
     protected function addExternalEntityAttributesForInvoice(array & $serialized)
     {
-        $subscriptionRegistration = $this->invoice->entity;
+        $externalEntity = $this->invoice->entity;
 
-        if (($subscriptionRegistration instanceof SubscriptionRegistration\Entity === true))
+        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
         {
             $order = $this->invoice->order;
 
-            $serialized[E::SUBSCRIPTION_REGISTRATION] = $subscriptionRegistration->toArrayPublic();
+            $serialized[E::SUBSCRIPTION_REGISTRATION] = $externalEntity->toArrayPublic();
 
-            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+            $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
+
+            if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
-                $bankAccount = $subscriptionRegistration->entity;
+                $bankAccount = $externalEntity->entity;
 
                 if ($bankAccount !== null)
                 {
@@ -274,6 +276,10 @@ class ViewDataSerializer extends Base\Core
                 [E::BANK_ACCOUNT]
                 [BankAccount\Entity::BANK_NAME] = $order->getBank();
             }
+        }
+        else
+        {
+            $serialized[Entity::ENTITY_TYPE] = null;
         }
 
     }

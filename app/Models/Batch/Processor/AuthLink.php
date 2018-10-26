@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Invoice;
+use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -48,6 +49,14 @@ class AuthLink extends Base
         $settings = $this->settingsAccessor->all()->toArray();
 
         $input = Helpers\AuthLink::getAuthLinkInput($entry, $settings);
+
+        $this->trace->info(
+            TraceCode::AUTH_LINK_BATCH_INPUT,
+            [
+                'input'         => $input,
+                'batch_entry'   => $entry
+            ]
+        );
 
         $invoice = $this->subrCore->createAuthLink($input, $this->merchant, $this->batch);
 

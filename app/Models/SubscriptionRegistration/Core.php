@@ -27,6 +27,15 @@ class Core extends Base\Core
 
     public function create(array $input, Merchant\Entity $merchant, Customer\Entity $customer): Entity
     {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_REQUEST,
+            [
+                'customer_id'  => $customer->getPublicId(),
+                'merchant_id'  => $merchant->getPublicId(),
+                'input'        => $input,
+            ]
+        );
+
         $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_REQUEST, $input);
 
         $subscriptionRegistration = (new Entity)->build($input);
@@ -120,13 +129,6 @@ class Core extends Base\Core
             null,
             $this->batch,
             $this->subscriptionRegistration);
-
-        if ($this->subscriptionRegistration !== null)
-        {
-            $this->invoice->entity()->associate($this->subscriptionRegistration);
-
-            $this->repo->saveOrFail($this->invoice);
-        }
     }
 
     public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
@@ -175,6 +177,28 @@ class Core extends Base\Core
         $subscriptionRegistration->entity()->associate($bankAccount);
 
         $this->repo->saveOrFail($subscriptionRegistration);
+    }
+
+    public function deleteToken(string $id, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_DELETE_TOKEN,
+            [
+                'token_id' => $id,
+                'merchant_id'  => $merchant->getPublicId(),
+            ]
+        );
+
+        $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+
+        $token = $this->repo->token->deleteOrFail($token);
+
+        if ($token === null)
+        {
+            return ['deleted' => true];
+        }
+
+        return $token->toArrayPublic();
     }
 
     protected function setDefaultValuesForBank(array & $bankInput)

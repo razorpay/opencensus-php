@@ -72,4 +72,9 @@ class EsRepository extends Base\EsRepository
     {
         $this->addTermFilter($query, Entity::USER_ID, $value);
     }
+
+    public function buildQueryForEntityType(array & $query, $value)
+    {
+        $this->addNullFilterForField($query, Entity::ENTITY_TYPE);
+    }
 }

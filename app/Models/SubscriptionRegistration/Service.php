@@ -19,7 +19,7 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function fetchTokens(array $input) : array
+    public function listTokens(array $input): array
     {
         $result = $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
             $this->merchant,
@@ -28,68 +28,52 @@ class Service extends Base\Service
         return $result->toArrayPublic();
     }
 
-    public function listAuthLinks(array $input) : array
+    public function listAuthLinks(array $input): array
     {
-        $input[Invoice\Entity::ENTITY_TYPE] = Constants\Entity::SUBSCRIPTION_REGISTRATION;
-
-        $invoices = $this->repo->invoice
-                         ->fetch($input, $this->merchant->getId());
+        $invoices = $this->repo->invoice->fetchForEntityType(
+            $input,
+            $this->merchant->getId(),
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
+        );
 
         return $invoices->toArrayPublic();
     }
 
-    public function createAuthLinks(array $input) : array
+    public function createAuthLink(array $input): array
     {
         $invoice = $this->core->createAuthLink($input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
 
-    public function fetchAuthLink(string $id, array $input) : array
+    public function fetchAuthLink(string $id, array $input): array
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
             $id,
             $this->merchant,
-            $input
+            null,
+            null,
+            $input,
+            Constants\Entity::SUBSCRIPTION_REGISTRATION
         );
 
         return (new ViewDataSerializer($invoice))->serializeForApi();
     }
 
-    public function fetchSingleToken(String $id, array $input) : array
+    public function fetchToken(String $id, array $input): array
     {
         $token = $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return (new Token\ViewDataSerializer($token))->serializeForSubscriptionRegistration();
     }
 
-    public function deleteSingleToken(String $id) : array
+    public function deleteToken(String $id): array
     {
-        return $this->deleteTokenForMerchant($id);
+        return $this->core->deletToken($id, $this->merchant);
     }
 
-    public function chargeToken(String $id, array $input) : array
+    public function chargeToken(String $id, array $input): array
     {
         return $this->core->chargeToken($id, $input, $this->merchant);
-    }
-
-    protected function deleteTokenForMerchant($tokenId) : array
-    {
-        $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $this->merchant);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Token not found');
-        }
-
-        $token = $this->repo->token->deleteOrFail($token);
-
-        if ($token === null)
-        {
-            return ['deleted' => true];
-        }
-
-        return $token->toArrayPublic();
     }
 }

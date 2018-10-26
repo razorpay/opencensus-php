@@ -11,7 +11,7 @@ class SubscriptionRegistrationController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->fetchTokens($input);
+        $data = $this->service()->listTokens($input);
 
         return ApiResponse::json($data);
     }
@@ -29,7 +29,7 @@ class SubscriptionRegistrationController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->createAuthLinks($input);
+        $data = $this->service()->createAuthLink($input);
 
         return ApiResponse::json($data);
     }
@@ -47,14 +47,14 @@ class SubscriptionRegistrationController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service()->fetchSingleToken($id, $input);
+        $invoice = $this->service()->fetchToken($id, $input);
 
         return ApiResponse::json($invoice);
     }
 
     public function deleteToken(string $id)
     {
-        $invoice = $this->service()->deleteSingleToken($id);
+        $invoice = $this->service()->deleteToken($id);
 
         return ApiResponse::json($invoice);
     }

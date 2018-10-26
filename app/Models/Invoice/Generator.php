@@ -287,19 +287,15 @@ class Generator extends Base\Core
             $operation = Validator::CREATE_DRAFT;
         }
 
-        if (($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
-        {
-            if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
-            {
-                $operation = Validator::CREATE_AUTH_LINK_ISSUED;
-            }
-        }
-
         $invoice = new Entity;
 
         // Merchant should get associated before calling build()
         // as invoice's validator uses merchant relation.
         $invoice->merchant()->associate($this->merchant);
+
+        // Associating External entity here. We are doing this because, we are using this in invoice validator
+        // to validate amount
+        $invoice->entity()->associate($this->externalEntity);
 
         $invoice->build($input);
 
@@ -314,6 +310,8 @@ class Generator extends Base\Core
         //
 
         $validator->validateMerchantSpecificData();
+
+        $validator->validateExternalEntity();
 
         //
         // This is being done so that we can do associations
@@ -438,7 +436,7 @@ class Generator extends Base\Core
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        if(($this->externalEntity instanceof SubscriptionRegistration\Entity === true))
+        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
         {
             if($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {

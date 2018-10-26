@@ -83,6 +83,7 @@ class Fetch extends BaseFetch
         Entity::TYPES,
         Entity::MERCHANT_ID,
         Entity::USER_ID,
+        Entity::ENTITY_TYPE,
     ];
 
     // ---------------------- Custom validation methods --------------

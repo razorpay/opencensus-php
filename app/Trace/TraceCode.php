@@ -1351,6 +1351,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // New mandate entity tracecodes
     const SUBSCRIPTION_REGISTRATION_CREATE_REQUEST      = 'SUBSCRIPTION_REGISTRATION_CREATE_REQUEST';
+    const SUBSCRIPTION_REGISTRATION_DELETE_TOKEN        = 'SUBSCRIPTION_REGISTRATION_DELETE_TOKEN';
+    const AUTH_LINK_BATCH_INPUT                         = 'AUTH_LINK_BATCH_INPUT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

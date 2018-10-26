@@ -21,6 +21,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Subscription\Entity $subscription
@@ -65,7 +66,6 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION               = 'description';
     const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
-    const ENTITY_ID                  = 'entity_id';
     const ENTITY_TYPE                = 'entity_type';
 
     /**
@@ -266,8 +266,6 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS     => false,
         self::CALLBACK_URL              => null,
         self::CALLBACK_METHOD           => null,
-        self::ENTITY_ID                 => null,
-        self::ENTITY_TYPE               => null,
     ];
 
     protected static $generators = [
@@ -301,8 +299,6 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
     ];
 
     protected $visible = [
@@ -358,7 +354,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::ENTITY_TYPE,
     ];
 
     protected $public = [
@@ -445,7 +440,6 @@ class Entity extends Base\PublicEntity
         self::SUPPLY_STATE_CODE,
         self::SUBSCRIPTION_STATUS,
         self::CREATED_AT,
-        self::ENTITY_TYPE,
     ];
 
     protected $appends = [
@@ -863,6 +857,11 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function isTypeOfSubscriptionRegistration(): bool
+    {
+        return ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity);
     }
 
     /**
@@ -1508,14 +1507,5 @@ class Entity extends Base\PublicEntity
         $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
 
         return $report;
-    }
-
-    public function toArrayHosted()
-    {
-        $data = parent::toArrayHosted();
-
-        $data[self::ENTITY_TYPE] = $this->getEntityType();
-
-        return $data;
     }
 }
