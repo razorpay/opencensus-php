@@ -439,7 +439,7 @@ class Generator extends Base\Core
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+        if (($this->externalEntity !== null) and ($this->invoice->isTypeOfSubscriptionRegistration() === true))
         {
             if($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
             {
