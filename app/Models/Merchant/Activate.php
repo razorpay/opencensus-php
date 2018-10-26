@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
@@ -305,32 +306,30 @@ class Activate extends Base\Core
 
         $org = $merchant->org;
 
-        $subjectName = $merchant->getBillingLabel();
-
         if ($org === null)
         {
             $org = $this->repo->org->getRazorpayOrg();
         }
 
-        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
-
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
+        $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
+
         $data = [
             'merchant' => [
-                'name'          => $merchant->getName(),
-                'website'       => $merchant->getWebsite(),
-                'billing_label' => $merchant->getBillingLabel(),
-                'email'         => $merchant->getEmail(),
-                'org'           => [
+                'name'                               => $merchant->getName(),
+                'website'                            => $merchant->getWebsite(),
+                'billing_label'                      => $merchant->getBillingLabel(),
+                'email'                              => $merchant->getEmail(),
+                Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
+                'org'                                => [
                     'business_name' => $org->getBusinessName(),
                     'custom_code'   => $org->getCustomCode(),
                 ],
             ],
             'rules'    => $this->formatPricingRules($rules),
-            'subject'  => $subject,
         ];
 
         $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();

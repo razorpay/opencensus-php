@@ -18,6 +18,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -443,6 +444,8 @@ class Core extends Base\Core
         $org['hostname'] = $merchant->org->getPrimaryHostName();
 
         $data = $merchantDetails->toArray();
+
+        $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST ;
 
         $notifyMerchantMail = new NotifyMerchant($data, $org);
 

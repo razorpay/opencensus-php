@@ -6,6 +6,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Constants as MerchantConstant;
 
 class NotifyActivationSubmission extends Mailable
 {
@@ -60,7 +61,14 @@ class NotifyActivationSubmission extends Mailable
 
     protected function addSubject()
     {
-        $subject = $this->org['business_name'] . ' | Account pending approval for ' . $this->data['business_name'];
+        if($this->data[MerchantConstant::IS_WHITELISTED_ACTIVATION] === true)
+        {
+            $subject = 'KYC form submitted for ' . $this->org['business_name'];
+        }
+        else
+        {
+            $subject = $this->org['business_name'] . ' | Account pending approval for ' . $this->data['business_name'];
+        }
 
         $this->subject($subject);
 

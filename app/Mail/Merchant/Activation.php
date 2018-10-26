@@ -6,6 +6,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Constants as MerchantConstant;
 
 class Activation extends Mailable
 {
@@ -31,14 +32,28 @@ class Activation extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.activation');
+        if ($this->isWhitelistActivationFlow())
+        {
+            $this->view('emails.merchant.whitelist_activation');
+        }
+        else
+        {
+            $this->view('emails.merchant.activation');
+        }
 
         return $this;
     }
 
     protected function addTextView()
     {
-        $this->text('emails.merchant.activation_text');
+        if ($this->isWhitelistActivationFlow())
+        {
+            $this->text('emails.merchant.whitelist_activation_text');
+        }
+        else
+        {
+            $this->text('emails.merchant.activation_text');
+        }
 
         return $this;
     }
@@ -65,7 +80,18 @@ class Activation extends Mailable
 
     protected function addSubject()
     {
-        $this->subject($this->data['subject']);
+        $subject = null;
+
+        if ($this->isWhitelistActivationFlow())
+        {
+            $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
+        }
+        else
+        {
+            $subject = $this->data['merchant']['org']['business_name'] . " | Account activated for " . $this->data['merchant']['billing_label'];
+        }
+
+        $this->subject($subject);
 
         return $this;
     }
@@ -86,5 +112,10 @@ class Activation extends Mailable
         });
 
         return $this;
+    }
+
+    public function isWhitelistActivationFlow(): bool
+    {
+        return $this->data['merchant'][MerchantConstant::IS_WHITELISTED_ACTIVATION] === true;
     }
 }
