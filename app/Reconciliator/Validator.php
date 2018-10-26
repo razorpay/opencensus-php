@@ -38,7 +38,7 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::KOTAK              => ["/^PG Transaction File/"],
         RequestProcessor\Base::OLAMONEY           => ["/^Merchant Settlement File/"],
-        RequestProcessor\Base::FREECHARGE         => ["/^Merchant (Transaction|Settlement) Report/"],
+        RequestProcessor\Base::FREECHARGE         => ["/^Merchant Settlement Report/"],
         RequestProcessor\Base::NETBANKING_AXIS    => [
                                                         "/^MIS file for (0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
@@ -74,14 +74,13 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
-        RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
-
-
+        RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
+        RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         ];
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
-        RequestProcessor\Base::FREECHARGE             => ["/Please view your (transaction|settlement) report/"],
+        RequestProcessor\Base::FREECHARGE             => ["/Please view your settlement report/"],
         RequestProcessor\Base::NETBANKING_AXIS        => [
                                                             "/Kindly find attached below the MIS for "
                                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
@@ -117,6 +116,8 @@ class Validator extends Base\Core
                                                             "/Please find attached All transaction Report & Settlement Report "
                                                             . "for transactions done/"
                                                           ],
+        RequestProcessor\Base::UPI_HULK                => ["/PFA transaction details for the date "
+                                                            . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"]
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -472,7 +473,7 @@ class Validator extends Base\Core
             function($key)
             {
                 return (strpos($key, 'attachment-') === 0) and
-                       (strpos($key, 'attachment-count') === false);
+                       (strpos($key, RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT) === false);
             },
             ARRAY_FILTER_USE_KEY
         );
@@ -496,22 +497,22 @@ class Validator extends Base\Core
 
         // Sets 'attachment-count' if not present and returns.
         // If present, converts it to int.
-        if (isset($input['attachment-count']) === false)
+        if (isset($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]) === false)
         {
-            $input['attachment-count'] = $foundAttachmentsCount;
+            $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] = $foundAttachmentsCount;
         }
         else
         {
-            $input['attachment-count'] = intval($input['attachment-count']);
+            $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] = intval($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]);
 
             // The input's attachment-count and found attachments count should be equal.
-            if ($input['attachment-count'] !== $foundAttachmentsCount)
+            if ($input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT] !== $foundAttachmentsCount)
             {
                 throw new Exception\ReconciliationException(
                     'The number of attachments found, does not match with the attachment-count input',
                     [
                         'attachments_found' => $foundAttachmentsCount,
-                        'attachment_count' => $input['attachment-count']
+                        'attachment_count' => $input[RequestProcessor\Base::ATTACHMENT_HYPHEN_COUNT]
                     ]
                 );
             }

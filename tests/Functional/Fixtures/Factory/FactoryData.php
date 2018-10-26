@@ -149,6 +149,7 @@ final class FactoryData
             'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
+            'verify_at'  => $faker->timestamp,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);
@@ -175,6 +176,7 @@ final class FactoryData
             'payment_issuer' => 'ICIC',
             'percent_rate' => 1000,
             'fixed_rate' => 10000,
+            'org_id'    => '100000razorpay',
         ]);
 
         $factory(\RZP\Models\Transaction\Entity::class, [

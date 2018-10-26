@@ -921,8 +921,8 @@ class Terminal extends Base
             'id'                        => 'SHRDBANKACCALN',
             'merchant_id'               => \RZP\Models\Merchant\Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::BT_DASHBOARD,
-            'gateway_merchant_id'       => 'RZRP',
-            'gateway_merchant_id2'      => 'RPAY',
+            'gateway_merchant_id'       => 'RZR',
+            'gateway_merchant_id2'      => 'PAY',
             'card'                      => 0,
             'recurring'                 => 0,
             'gateway_acquirer'          => null,
@@ -1108,7 +1108,7 @@ class Terminal extends Base
 
     public function createSharedNetbankingHdfcTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultAttributes = [
             'id'                        => Shared::NETBANKING_HDFC_TERMINAL,
             'card'                      => 0,
             'netbanking'                => 1,
@@ -1118,6 +1118,8 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef'
         ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
 
         return parent::create($attributes);
     }

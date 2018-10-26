@@ -79,6 +79,7 @@ class Entity
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
+    const MERCHANT_EMAIL        = 'merchant_email';
     const DISPUTE_REASON        = 'dispute_reason';
     const NODAL_STATEMENT       = 'nodal_statement';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
@@ -285,6 +286,7 @@ class Entity
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE          => \RZP\Models\Gateway\File::class,
+        self::MERCHANT_EMAIL        => \RZP\Models\Merchant\Email::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,

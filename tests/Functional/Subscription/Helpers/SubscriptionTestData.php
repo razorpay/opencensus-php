@@ -1491,7 +1491,7 @@ return [
         ]
     ],
 
-    'testSubscriptionCardChangeOnAuthenticated' => [
+    'testSubscriptionCardChangeOnCancelled' => [
         'response' => [
             'content' => [
                 'error' => [

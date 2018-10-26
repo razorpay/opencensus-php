@@ -124,6 +124,7 @@ trait RepositoryFetch
      *
      * @return PublicCollection
      * @throws InvalidArgumentException
+     * @throws BadRequestValidationFailureException
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
@@ -740,6 +741,10 @@ trait RepositoryFetch
         if ($value === 'null')
         {
             $query->whereNull($attribute);
+        }
+        else if ((is_array($value) === true) and (is_sequential_array($value) === true))
+        {
+            $query->whereIn($attribute, $value);
         }
         else
         {

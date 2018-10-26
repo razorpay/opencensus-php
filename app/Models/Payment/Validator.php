@@ -24,6 +24,12 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
+    /**
+     * recurring_token epoch constrains :
+     * min : Sat Jan  1 05:30:00 IST 2000 => 946684800
+     * max : 17 August 292278994 => 9223372036854775807 - max for 64 bit signed int
+     **/
+
     protected static $createRules = [
         'amount'                        => 'required|integer',
         'currency'                      => 'required|string|size:3|custom',
@@ -69,7 +75,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:10|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
@@ -77,7 +83,7 @@ class Validator extends Base\Validator
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
         'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
-        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
     ];
 
@@ -107,6 +113,12 @@ class Validator extends Base\Validator
         'bucket'                     => 'sometimes|sequential_array',
         'bucket.*'                   => 'sometimes|integer|max:7',
         'gateway'                    => 'sometimes|string|max:50'
+    ];
+
+    protected static $verifyAllRules = [
+        'gateway'                    => 'sometimes|string|max:50',
+        'delay'                      => 'sometimes|integer|max:43200',
+        'count'                      => 'sometimes|integer|max:10000'
     ];
 
     protected static $bulkVerifyRules = [
@@ -559,16 +571,21 @@ class Validator extends Base\Validator
         $supported = false;
         $bank = $input['bank'];
 
-        if ($input['method'] === Payment\Method::NETBANKING)
-        {
-            $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
-        }
+        $method = $input['method'];
 
-        if ($input['method'] === Payment\Method::EMANDATE)
+        switch ($method)
         {
-            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+            case Payment\Method::EMANDATE:
+                $supported = Payment\Gateway::isSupportedEmandateBank($bank);
+                break;
 
-            $supported = in_array($bank, $supportedBanks, true);
+            case Payment\Method::UPI:
+                $supported = Payment\Processor\Upi::isSupportedUpiBank($bank);
+                break;
+
+            case Payment\Method::NETBANKING:
+                $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
+                break;
         }
 
         //

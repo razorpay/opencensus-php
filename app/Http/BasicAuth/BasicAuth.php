@@ -969,7 +969,14 @@ class BasicAuth
         // The key in case of app proxy will be the merchant id
         $merchantId = $this->authCreds->getKey();
 
-        $merchant = $this->repo->merchant->find($merchantId);
+        if (empty($merchantId) === false)
+        {
+            $merchant = $this->repo->merchant->find($merchantId);
+        }
+        else
+        {
+            $merchant = null;
+        }
 
         $this->authCreds->setMerchant($merchant);
 
@@ -1272,6 +1279,16 @@ class BasicAuth
     public function getOAuthApplicationId()
     {
         return $this->applicationId;
+    }
+
+    /**
+     * Checks if request is coming via a lambda trigger
+     *
+     * @return boolean
+     */
+    public function isLambda(): bool
+    {
+        return ($this->internalApp === 'h2h');
     }
 
 // --------------------- Getters Ends ------------------------------------------

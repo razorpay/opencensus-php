@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class NetbankingReconciliationTest extends TestCase
@@ -743,7 +744,7 @@ class NetbankingReconciliationTest extends TestCase
             'content' => $input,
             'method'  => 'POST',
             'files'   => [
-                'attachment-1' => $uploadedFile,
+                Base::ATTACHMENT_HYPHEN_ONE => $uploadedFile,
             ],
         ];
 

@@ -663,101 +663,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testActivateMerchantWithoutBankAccount()
-    {
-        $this->ba->adminAuth();
-
-        $this->fixtures->on('live')->create('methods:default_methods', [
-            'merchant_id' => '1cXSLlUU8V9sXl'
-        ]);
-
-        $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => true,
-            'locked'      => false
-        ]);
-
-        $this->startTest();
-    }
-
-    public function testActivateMerchant()
-    {
-        Mail::fake();
-
-        $this->ba->adminAuth('live');
-
-        $ba = $this->fixtures
-                   ->on('live')
-                   ->create(
-                        'merchant:bank_account',
-                        ['merchant_id' => '1cXSLlUU8V9sXl',
-                         'entity_id'   => '1cXSLlUU8V9sXl',
-                         'type'        => 'merchant']);
-
-        $this->fixtures->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
-
-        $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => true,
-            'locked'      => false
-        ]);
-
-        $this->fixtures->on('live')->create('methods:default_methods', [
-            'merchant_id' => '1cXSLlUU8V9sXl'
-        ]);
-
-        $activatedAt = time();
-
-        $content = $this->startTest();
-
-        $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
-
-        // We check that the merchant balance is just zero in live mode
-        $this->ba->proxyAuth('rzp_live_1cXSLlUU8V9sXl');
-
-        $testData = $this->testData['testGetBalance'];
-        $testData['request']['url'] = '/balance';
-        $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
-        $testData['response']['content']['balance'] = 0;
-
-        $this->runRequestResponseFlow($testData);
-
-        Mail::assertQueued(ActivationMail::class, function ($mailable)
-        {
-            $mailData = $mailable->viewData;
-
-            $this->assertNotNull($mailData['merchant']);
-            $this->assertNotNull($mailData['rules']);
-            $this->assertNotNull($mailData['subject']);
-
-            $this->assertNotNull($mailData['merchant']['name']);
-            $this->assertNotNull($mailData['merchant']['website']);
-            $this->assertNotNull($mailData['merchant']['billing_label']);
-            $this->assertNotNull($mailData['merchant']['email']);
-            $this->assertNotNull($mailData['merchant']['org']);
-
-            $this->assertNotNull($mailData['merchant']['org']['business_name']);
-            $this->assertNotNull($mailData['merchant']['org']['hostname']);
-            $this->assertNotNull($mailData['merchant']['org']['custom_code']);
-
-            $this->assertNotNull($mailData['rules']['amountRangeRules']);
-            $this->assertNotNull($mailData['rules']['otherRules']);
-
-            // A pricing rule without a valid display pricing would
-            // appear in the mail as one with empty string as display.
-            $this->assertArrayNotHasKey('', $mailData['rules']['otherRules']);
-            $this->assertArrayNotHasKey('', $mailData['rules']['amountRangeRules']);
-
-            return true;
-        });
-
-        // Because rest of the tests require appAuth, reset it back
-        $this->ba->appAuthLive();
-    }
-
     public function testMerchantEnableLive()
     {
         $this->ba->adminAuth('live');
@@ -771,7 +676,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->adminAuth('live');
 
-        $this->testActivateMerchant();
+        $this->fixtures->edit('merchant', '1cXSLlUU8V9sXl', ['activated' => 1, 'live' => 1]);
 
         $this->ba->adminAuth('live');
 
@@ -2071,6 +1976,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutRouteWithCheckoutFeatures()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['google_pay']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['features']['google_pay']);
+    }
+
     public function testPutPaytmMethod()
     {
         $this->fixtures->create('pricing:standard_plan');
@@ -2295,7 +2213,10 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
+
+        $this->assertArrayHasKey('total_count', $content);
+
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
@@ -2371,7 +2292,8 @@ class MerchantTest extends TestCase
         Carbon::setTestNow();
 
         $this->assertArrayHasKey('signed_url', $content);
-        $this->assertEquals(2, $content['merchants_count']);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(2, $content['total_count']);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
@@ -2761,6 +2683,31 @@ class MerchantTest extends TestCase
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals(null, $scheduleTask['method']);
+    }
+
+    public function testAssignScheduleBulk()
+    {
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'daily',
+                'interval' => 1,
+                'delay'    => 2,
+                'name'     => 'Basic T2',
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $perm = $this->fixtures->create('permission', ['name' => 'schedule_assign_bulk']);
+
+        $this->org->permissions()->sync($perm);
+
+        $this->createMerchant(['id' => '1000000000test']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testCreateMerchantWithAdmin()
@@ -3245,9 +3192,9 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
 
-        $this->assertEquals(1, $content['merchants_count']);
+        $this->assertEquals(1, $content['register_count']);
 
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
@@ -3286,5 +3233,97 @@ class MerchantTest extends TestCase
         $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
 
         $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
+    }
+
+    public function testNegativeBeneficiaryRegisterBetweenTimestampAxis()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0123456']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'HDFC0153496']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(3, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
+        {
+            return $mail->hasTo(['abc@d.com', 'efg@h.com']);
+        });
+    }
+
+    public function testBeneficiaryRegisterBetweenTimestampAxisWithInvalidIfsc()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertEquals(0, $content['register_count']);
+        $this->assertEquals(1, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
     }
 }

@@ -185,8 +185,6 @@ class NetbankingCsbReconTest extends TestCase
         // The payment will not be reconciled as the amount did not match
         $this->assertEquals(false, $payment['gateway_captured']);
 
-        $this->assertNull($netbanking['date']);
-
         $transactionId = $payment['transaction_id'];
 
         $transaction = $this->getEntityById('transaction', $transactionId, true);

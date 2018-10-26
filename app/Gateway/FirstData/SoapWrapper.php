@@ -35,6 +35,29 @@ class SoapWrapper
         </SOAP-ENV:Envelope>
     ";
 
+    public static function errorWrapper($content)
+    {
+        $soapWrapper = "<?xml version='1.0' encoding='UTF-8'?>
+           <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">
+           <SOAP-ENV:Header/>
+           <SOAP-ENV:Body>
+           <SOAP-ENV:Fault>
+           <faultcode>SOAP-ENV:Client</faultcode>
+           <faultstring xml:lang=\"en\">ProcessingException</faultstring>
+            <detail><ipgapi:IPGApiOrderResponse 
+            xmlns:ipgapi=\"http://ipg-online.com/ipgapi/schemas/ipgapi\"
+            xmlns:a1=\"http://ipg-online.com/ipgapi/schemas/a1\"
+            xmlns:v1=\"http://ipg-online.com/ipgapi/schemas/v1\">
+            $content
+            </ipgapi:IPGApiOrderResponse>
+            </detail>
+            </SOAP-ENV:Fault>
+            </SOAP-ENV:Body>
+            </SOAP-ENV:Envelope>";
+
+        return trim($soapWrapper);
+    }
+
     const ERROR_ACTION_RESPONSE = "
         <SOAP-ENV:Envelope
             xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
@@ -320,5 +343,123 @@ class SoapWrapper
         ";
 
         return $soapContent;
+    }
+
+    public static function s2sVerifyResponseWrapper($oid)
+    {
+        $soapContent = "
+        <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/>
+        <SOAP-ENV:Body>
+        <ipgapi:IPGApiActionResponse xmlns:ipgapi=\"http://ipg-online.com/ipgapi/schemas/ipgapi\"
+        xmlns:a1=\"http://ipg-online.com/ipgapi/schemas/a1\" xmlns:v1=\"http://ipg-online.com/ipgapi/schemas/v1\">
+        <ipgapi:successfully>true</ipgapi:successfully>
+        <ipgapi:OrderId>$oid</ipgapi:OrderId>
+        <v1:Billing/>
+        <v1:Shipping/>
+        <a1:TransactionValues>
+            <v1:CreditCardTxType>
+                <v1:Type>preauth</v1:Type>
+            </v1:CreditCardTxType>
+            <v1:CreditCardData>
+                <v1:CardNumber>403587...4977</v1:CardNumber>
+                <v1:ExpMonth>12</v1:ExpMonth>
+                <v1:ExpYear>18</v1:ExpYear>
+                <v1:Brand>VISA</v1:Brand>
+            </v1:CreditCardData>
+            <v1:Payment>
+                <v1:ChargeTotal>1</v1:ChargeTotal>
+                <v1:Currency>356</v1:Currency>
+            </v1:Payment>
+            <v1:TransactionDetails>
+                <v1:OrderId>$oid</v1:OrderId>
+                <v1:TDate>1537952788</v1:TDate>
+                <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
+            </v1:TransactionDetails>
+            <ipgapi:IPGApiOrderResponse>
+                <ipgapi:ApprovalCode>Y:HOSTOK:4518694810:PPX :826909323595</ipgapi:ApprovalCode>
+                <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
+                <ipgapi:Brand>VISA</ipgapi:Brand>
+                <ipgapi:OrderId>B2KwRPq3OHCHyS</ipgapi:OrderId>
+                <ipgapi:IpgTransactionId>84518694810</ipgapi:IpgTransactionId>
+                <ipgapi:PayerSecurityLevel>1</ipgapi:PayerSecurityLevel>
+                <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
+                <ipgapi:ProcessorApprovalCode>HOSTOK</ipgapi:ProcessorApprovalCode>
+                <ipgapi:ProcessorCCVResponse></ipgapi:ProcessorCCVResponse>
+                <ipgapi:ReferencedTDate>1537952788</ipgapi:ReferencedTDate>
+                <ipgapi:TDate>1537952788</ipgapi:TDate>
+                <ipgapi:TDateFormatted>2018.09.26 11:06:28 (CEST)</ipgapi:TDateFormatted>
+                <ipgapi:TerminalID>00001113</ipgapi:TerminalID>
+            </ipgapi:IPGApiOrderResponse>
+            <a1:TraceNumber>826909</a1:TraceNumber>
+            <a1:Brand>VISA</a1:Brand>
+            <a1:TransactionType>PREAUTH</a1:TransactionType>
+            <a1:TransactionState>AUTHORIZED</a1:TransactionState>
+            <a1:UserID>1</a1:UserID>
+            <a1:SubmissionComponent>API</a1:SubmissionComponent>
+        </a1:TransactionValues>
+        </ipgapi:IPGApiActionResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+
+        return $soapContent;
+    }
+
+    public static function s2sSecondRecurringVerifyResponseWrapper()
+    {
+        $soapContent =
+        "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/>
+        <SOAP-ENV:Body>
+        <ipgapi:IPGApiActionResponse
+        xmlns:ipgapi='http://ipg-online.com/ipgapi/schemas/ipgapi'
+        xmlns:a1 = 'http://ipg-online.com/ipgapi/schemas/a1'
+        xmlns:v1 ='http://ipg-online.com/ipgapi/schemas/v1'>
+        <ipgapi:successfully > true</ipgapi:successfully>
+        <ipgapi:OrderId > BAFWKQEApnmw6O</ipgapi:OrderId>
+        <v1:Billing/>
+        <v1:Shipping/>
+        <a1:TransactionValues>
+            <v1:CreditCardTxType>
+                <v1:Type>sale</v1:Type>
+            </v1:CreditCardTxType>
+            <v1:CreditCardData>
+                <v1:CardNumber>524167. . .7361</v1:CardNumber >
+                <v1:ExpMonth>12</v1:ExpMonth >
+                <v1:ExpYear>22</v1:ExpYear >
+                <v1:Brand>MASTERCARD</v1:Brand >
+            </v1:CreditCardData>
+            <v1:Payment>
+                <v1:ChargeTotal>1.01</v1:ChargeTotal>
+                <v1:Currency>356</v1:Currency>
+            </v1:Payment>
+            <v1:TransactionDetails>
+                <v1:OrderId>BAFWKQEApnmw6O</v1:OrderId>
+                <v1:MerchantTransactionId>BAFWKQEApnmw6O</v1:MerchantTransactionId>
+                <v1:TDate>1539680418</v1:TDate >
+                <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
+            </v1:TransactionDetails>
+            <ipgapi:IPGApiOrderResponse>
+                <ipgapi:ApprovalCode>Y:T00323:6583185032:PPX :101609234349 </ipgapi:ApprovalCode>
+                <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
+                <ipgapi:Brand>MASTERCARD</ipgapi:Brand>
+                <ipgapi:Country>IND</ipgapi:Country>
+                <ipgapi:OrderId>BAFWKQEApnmw6O</ipgapi:OrderId>
+                <ipgapi:IpgTransactionId>66583185032</ipgapi:IpgTransactionId>
+                <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
+                <ipgapi:ProcessorApprovalCode>T00323</ipgapi:ProcessorApprovalCode>
+                <ipgapi:ProcessorCCVResponse>
+                </ipgapi:ProcessorCCVResponse>
+                <ipgapi:ReferencedTDate>1539680418</ipgapi:ReferencedTDate>
+                <ipgapi:TDate>1539680418</ipgapi:TDate>
+                <ipgapi:TDateFormatted>2018.10.16 14:30:18 (IST) </ipgapi:TDateFormatted>
+                <ipgapi:TerminalID>87013099</ipgapi:TerminalID>
+            </ipgapi:IPGApiOrderResponse>
+            <a1:TraceNumber> 101609</a1:TraceNumber>
+            <a1:Brand> MASTERCARD</a1:Brand>
+            <a1:TransactionType>SALE</a1:TransactionType>
+            <a1:TransactionState>CAPTURED</a1:TransactionState>
+            <a1:UserID > 1</a1:UserID>
+            <a1:SubmissionComponent>API</a1:SubmissionComponent>
+        </a1:TransactionValues>
+    </ipgapi:IPGApiActionResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+
+     return $soapContent;
     }
 }

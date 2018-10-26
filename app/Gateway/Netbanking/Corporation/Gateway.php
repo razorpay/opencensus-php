@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 use phpseclib\Crypt\AES;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
@@ -38,11 +39,9 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getAuthRequestData($input);
+        $content = $this->getAuthRequestDataAndCreateGatewayPayment($input);
 
-        $this->createGatewayPaymentEntity($content);
-
-        $content = http_build_query($content);
+        $content = urldecode(http_build_query($content));
 
         $request = $this->getStandardRequestArray([], 'get');
 
@@ -104,19 +103,41 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Auth helper methods ------------------------------
 
-    protected function getAuthRequestData($input)
+    protected function getAuthRequestDataAndCreateGatewayPayment($input)
     {
         $data = [
             // Setting this as the merchant code shared with us
-            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
+            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         ];
 
-        return $data;
+        $this->traceGatewayPaymentRequest(
+            [
+                'before_encryption' => $data,
+                'payment_id'        => $input['payment']['id'],
+                'gateway'           => $this->gateway,
+            ],
+            $input
+        );
+
+        //
+        // Create gateway payment entity here, since the unencrypted data(base on which
+        // we create the gateway payment entity) won't be available outside this function
+        //
+        $this->createGatewayPaymentEntity($data);
+
+        $encrypted = $this->getEncryptor()->encryptData($data, '=', '&');
+
+        $result = [
+            RequestFields::MERCHANT_CODE => $this->getMerchantId(),
+            RequestFields::QUERY_STRING  => $encrypted,
+        ];
+
+        return $result;
     }
 
     // -------------------------- Auth helper methods end --------------------------
@@ -277,7 +298,7 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($content)
     {
-        return $this->getEncryptor()->decryptData($content);
+        return $this->getEncryptor()->decryptAndFormatData($content);
     }
 
     /**
@@ -319,7 +340,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
-            RequestFields::VERIFY_DATA          => $encryptedString
+            RequestFields::VERIFY_DATA          => $encryptedString,
         ];
 
         $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
@@ -360,9 +381,12 @@ class Gateway extends Base\Gateway
 
     // -------------------------- General helper methods --------------------------
 
-    public function getEncryptor()
+    public function getEncryptor($secret = null)
     {
-        $secret = $this->getSecret();
+        if ($secret === null)
+        {
+            $secret = $this->getSecret();
+        }
 
         return new Encryptor(AES::MODE_CBC, $secret, $secret);
     }
@@ -382,6 +406,47 @@ class Gateway extends Base\Gateway
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    public function preProcessServerCallback($encryptedData): array
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_RESPONSE,
+            [
+                'gateway'          => $this->gateway,
+                'gateway_response' => $encryptedData
+            ]
+        );
+
+        $secret = $this->getTestSecret();
+
+        if ($this->app->environment() === Environment::PRODUCTION)
+        {
+            $secret = $this->getLiveSecret();
+        }
+
+        $data = $this->getEncryptor($secret)->decryptAndFormatData($encryptedData, '=', '&');
+
+        return $data;
+    }
+
+    public function getPaymentIdFromServerCallback($data)
+    {
+        return $data[ResponseFields::PAYMENT_ID];
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
+    }
+
+    /**
+     * Since $this->mode is not set when calling preProcessServerCallback
+     * we can not assert the mode to test here.
+     */
+    protected function getTestSecret()
+    {
+        return $this->config['test_hash_secret'];
     }
 
     // -------------------------- General helper methods end ----------------------

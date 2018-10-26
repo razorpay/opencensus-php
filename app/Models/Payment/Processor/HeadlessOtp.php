@@ -158,7 +158,8 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
 
-        if ($response['success'] === true)
+        if ((isset($response['success']) === true) and
+            ($response['success'] === true))
         {
             switch ($response['data']['action'])
             {

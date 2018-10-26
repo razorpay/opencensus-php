@@ -124,9 +124,11 @@ return [
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'hdfc' => [
-        'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
-        'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
-        'mock_server'       => false,
+        'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
+        'test_terminal_pwd'                => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'test_debit_pin_terminal_id'       => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_ID'),
+        'test_debit_pin_terminal_password' => env('HDFC_GATEWAY_TEST_DEBIT_PIN_TERMINAL_PASSWORD'),
+        'mock_server'                      => false,
     ],
 
     'cybersource' => [
@@ -444,6 +446,7 @@ return [
     'netbanking_corporation' => [
         'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_LIVE_HASH_SECRET'),
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
@@ -567,14 +570,33 @@ return [
 
     'mpi_enstage' => [
         'test' => [
-            'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
-            'gateway_merchant_name'        => 'Test Merchant',
+            'gateway_merchant_id'           => env('ENSTAGE_TEST_MERCHANT_ID'),
+            'gateway_merchant_name'         => 'Test Merchant',
         ],
         // Hardcoding the values here.
         'live' => [
-            'gateway_merchant_id'          => 'Wibmo_Razorpay_Axis_Expay',
-            'gateway_merchant_name'        => 'Razorpay_Axis_Expay',
+            'gateway_merchant_id'           => 'Wibmo_Razorpay_Axis_Expay',
+            'gateway_merchant_name'         => 'Razorpay_Axis_Expay',
         ],
+
+        // yatra config
+        '87qTXzFTBLFN7i' => [
+            'gateway_merchant_id'           => 'Wibmo_RYatra_Axis_Expay',
+            'gateway_merchant_name'         => 'RYatra_Axis_Expay',
+        ],
+
+        // goomo config
+        '7kBHljwok8Fsom' => [
+            'gateway_merchant_id'           => 'Wibmo_Goomo_Axis_Expay',
+            'gateway_merchant_name'         => 'Goomo_Axis_Expay',
+        ],
+
+        // goomo config
+        '8STmhcK1Gd1JVo' => [
+            'gateway_merchant_id'           => 'Wibmo_Goomo_Axis_Expay',
+            'gateway_merchant_name'         => 'Goomo_Axis_Expay',
+        ],
+
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),
         'test_encryption_key'               => env('ENSTAGE_TEST_ENCRYPTION_KEY'),

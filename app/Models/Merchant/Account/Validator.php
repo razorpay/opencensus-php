@@ -22,8 +22,11 @@ class Validator extends Merchant\Validator
      ];
 
     protected static $fetchRules = [
-        Entity::EMAIL => 'sometimes|email',
-        Fetch::SKIP   => 'sometimes|integer',
-        Fetch::COUNT  => 'sometimes|integer',
+        EsRepository::SEARCH_HITS => 'filled|boolean',
+        EsRepository::QUERY       => 'filled|string|min:2|max:100',
+        Entity::EMAIL             => 'sometimes|email',
+        Fetch::SKIP               => 'sometimes|integer',
+        Fetch::COUNT              => 'sometimes|integer',
+        Entity::ID                => 'sometimes|string|min:14',
     ];
 }

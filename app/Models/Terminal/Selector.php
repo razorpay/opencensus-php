@@ -13,6 +13,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Terminal\Category;
 use RZP\Constants\Entity as Constants;
 
 class Selector extends Base\Core
@@ -24,6 +25,7 @@ class Selector extends Base\Core
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\RuleFilter::class,
+        Filters\TerminalBankFilter::class,
     ];
 
     /**
@@ -132,34 +134,48 @@ class Selector extends Base\Core
             else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
             {
                 //
-                // Only for Rupay card transactions if no terminal is found, we
-                // want to distribute payments via the following logic.
+                // Rupay transactions for pharma merchants need to be routed through
+                // the aala firstdata terminal. Hence adding this terminal manually,
+                // in case no terminal found error comes.
                 //
+                if ($this->input['merchant']->getCategory2() === Category::PHARMA)
+                {
+                    $terminal = $this->repo->terminal->find('76lEBqibDvhOzY');
 
-                //
-                // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
-                // equal 10% load to other FirstData terminals, hence the below
-                // array structure
-                // courtesy : Sunny sir _/\_
-                //
-                $rupayTerminalSet = [
-                    '94RNvZoogX4kOB',
-                    '94RNvZoogX4kOB',
-                    '94RNvZoogX4kOB',
-                    '94RNvZoogX4kOB',
-                    '76wS0y0kLvd2Z9',
-                    '81x0D4UfzB1T7V',
-                    '8f65Iykp4YRF31',
-                    '7mugQsqdruXGSd',
-                    '8AcyFtPYDi2rdx',
-                    '76lEBqibDvhOzY',
-                ];
+                    $sortedTerminals = [$terminal];
+                }
+                else
+                {
+                    //
+                    // Only for Rupay card transactions if no terminal is found, we
+                    // want to distribute payments via the following logic.
+                    //
 
-                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
+                    //
+                    // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
+                    // equal 10% load to other FirstData terminals, hence the below
+                    // array structure
+                    // courtesy : Sunny sir _/\_
+                    //
+                    $rupayTerminalSet = [
+                        '94RNvZoogX4kOB',
+                        '94RNvZoogX4kOB',
+                        '94RNvZoogX4kOB',
+                        '94RNvZoogX4kOB',
+                        '76wS0y0kLvd2Z9',
+                        '81x0D4UfzB1T7V',
+                        '8f65Iykp4YRF31',
+                        '7mugQsqdruXGSd',
+                        '8AcyFtPYDi2rdx',
+                        '76lEBqibDvhOzY',
+                    ];
 
-                $terminal = $this->repo->terminal->find($selectedTerminalId);
+                    $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
 
-                $sortedTerminals = [$terminal];
+                    $terminal = $this->repo->terminal->find($selectedTerminalId);
+
+                    $sortedTerminals = [$terminal];
+                }
             }
             else if (($payment->isCard() === true) and
                      (($payment->card->isDiners() === true) or

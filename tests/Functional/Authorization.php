@@ -8,7 +8,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 class Authorization
 {
     protected $test;
-    protected $auth  = array();
+    protected $auth  = [];
     protected $type;
     protected $proxy = false;
 
@@ -277,7 +277,7 @@ class Authorization
 
         $pwd = $cronConfig['secret'];
 
-        $this->appAuth('rzp_'.$mode, $pwd);
+        $this->appAuth('rzp_' . $mode, $pwd);
     }
 
     public function kotakAuth($mode = 'test')
@@ -286,7 +286,16 @@ class Authorization
 
         $pwd = $kotakConfig['secret'];
 
-        $this->appAuth('rzp_'.$mode, $pwd);
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function h2hAuth($mode = 'test')
+    {
+        $h2hConfig = \Config::get('applications.h2h');
+
+        $pwd = $h2hConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
     }
 
     public function yesbankAuth($mode = 'test')

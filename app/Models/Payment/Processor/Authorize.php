@@ -12,12 +12,10 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Exception;
-
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
-use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -44,11 +42,13 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\TerminalAnalytics;
+
 
 trait Authorize
 {
@@ -92,6 +92,19 @@ trait Authorize
         return $this->processPaymentFinal($payment, $gatewayInput);
     }
 
+    protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
+    {
+        if (($payment->isPushPaymentMethod() === true) and
+            ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+        {
+            $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
+        }
+        else
+        {
+            $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+        }
+    }
+
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
     {
         //
@@ -100,7 +113,7 @@ trait Authorize
         // for s2s recurring payments, so that terminal can be set later
         // using this instance variable.
         //
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
+        $this->setSelectedTerminals($payment, $gatewayInput);
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
@@ -158,6 +171,13 @@ trait Authorize
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
+            // TODO: This is temporarily added here until we make
+            // gateway functions like authorize for bank transfer.
+            if ($payment->isBankTransfer() === true)
+            {
+                return null;
+            }
 
             // data for terminal analytics
             $terminalData = [
@@ -352,7 +372,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getName(),
+            'merchant'   => $payment->merchant->getDbaName(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -1321,7 +1341,7 @@ trait Authorize
                     // here to check if the auth method is aadhaar.
                     //
 
-                    $eSignerGateway = Payment\Gateway::ESIGNER_DIGIO;
+                    $eSignerGateway = Payment\Gateway::DEFAULT_ESIGNER_GATEWAY;
 
                     $key = ConfigKey::MERCHANT_ENACH_CONFIGS;
 
@@ -1345,9 +1365,15 @@ trait Authorize
                         );
                     }
 
-                    $esignerConfigs = json_decode($esignerConfigs, true);
-
-                    if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
+                    /*
+                     * If we want to override all the merchant's esigner configs to use
+                     * a particular esigner gateway, we use this
+                     */
+                    if (isset($esignerConfigs['auth_gateway']['override']) === true)
+                    {
+                        $eSignerGateway = $esignerConfigs['auth_gateway']['override'];
+                    }
+                    else if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
                     {
                         $eSignerGateway = $esignerConfigs['auth_gateway'][$merchantId];
                     }
@@ -4339,6 +4365,8 @@ trait Authorize
             }
 
             $payment->setErrorNull();
+
+            $payment->setNonVerifiable();
 
             $payment->setAmountAuthorized();
 

@@ -30,6 +30,12 @@ return [
     'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
     'invoice_bucket'        => env('AWS_S3_INVOICES_BUCKET'),
     'test_bucket'           => env('AWS_S3_TEST_BUCKET'),
+    //
+    // The below  bucket is used to store input reconciliation files
+    // temporatily. Whenever a file is uploaded to this bucket, a request is
+    // triggerred to API using a lambda function.
+    //
+    'recon_input_bucket'    => env('AWS_S3_RECON_INPUT_BUCKET'),
 
     'sns_target_arn'        => [
         'sms'               => env('AWS_RAVEN_TARGET_ARN'),

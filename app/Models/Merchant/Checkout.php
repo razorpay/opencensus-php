@@ -86,6 +86,8 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
+        $this->fillEnabledFeatures($merchant, $data);
+
         return $data;
     }
 
@@ -781,6 +783,17 @@ class Checkout
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+        }
+    }
+
+    protected function fillEnabledFeatures(Merchant\Entity $merchant, array & $data)
+    {
+        foreach (Feature\Constants::CHECKOUT_FEATURES as $feature)
+        {
+            if ($merchant->isFeatureEnabled($feature) === true)
+            {
+                $data['features'][$feature] = true;
+            }
         }
     }
 }

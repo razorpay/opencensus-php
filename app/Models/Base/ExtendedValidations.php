@@ -24,7 +24,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const INT_PERCENTAGE_MAX     = 10000;
 
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_BIGINT_MAX; // 17 August 292278994
+    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
 
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
@@ -56,7 +56,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(PublicEntity::SIGNED_PUBLIC_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because
@@ -77,7 +77,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(UniqueIdEntity::UNSIGNED_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because

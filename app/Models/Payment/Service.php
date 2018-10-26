@@ -1191,6 +1191,21 @@ class Service extends Base\Service
         return ['payments_count' => $count, 'emails_count' => $emailCount];
     }
 
+    public function verifyAllPayments(array $input)
+    {
+        (new Payment\Validator)->validateInput('verify_all', $input);
+
+        $gateway = $input['gateway'] ?? null;
+
+        $delay = $input['delay'] ?? 0;
+
+        $count = $input['count'] ?? 200;
+
+        $timestamp = Carbon::now(Timezone::IST)->subMinutes($delay)->getTimestamp();
+
+        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
+    }
+
     public function verifyPaymentsInBulk(array $input)
     {
         (new Payment\Validator)->validateInput('bulk_verify', $input);
@@ -1370,6 +1385,11 @@ class Service extends Base\Service
     public function updateReceiverData()
     {
         return $this->core->updateReceiverData();
+    }
+
+    public function updateBankTransferTerminal($input)
+    {
+        return $this->core->updateBankTransferTerminal($input);
     }
 
     public function validateVpa($input)

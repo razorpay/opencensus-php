@@ -905,6 +905,25 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25f6uN5S1Z7c',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
+                'card'                  => '1',
+                'gateway_merchant_id'   => 'test_merchant_hdfc',
+                'gateway_terminal_id'   => 'test_terminal_hdfc',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 65,
+            )
+        );
+
+
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1BjhC5CJAqNF7R',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::ATOM,

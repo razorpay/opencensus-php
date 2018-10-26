@@ -9,11 +9,13 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payout\Core as PayoutCore;
 
 trait SettlementTrait
 {
@@ -26,13 +28,29 @@ trait SettlementTrait
      */
     protected function filterTransactionsForSettlement($txns): array
     {
-        $filterGroupedTxns = [];
+        $filterGroupedTxns    = [];
 
+        $transactionSkipCount    = 0;
+
+        $transactionsSettleCount = 0;
+
+        $esMerchants = $this->repo->feature
+                            ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC])
+                            ->pluck(Feature\Entity::ENTITY_ID)
+                            ->toArray();
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
+
+         // Here we are fetch each transaction using a reference.
+         // This avoids loading the entire transaction entity from
+         // Public Collection preventing extra memory consumption.
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
             if ($this->shouldSettle($txn) === false)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -40,13 +58,17 @@ trait SettlementTrait
 
             if ($skipForRefundAuthTxn === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
-            $skipForEarlySettlement = $this->skipForEarlySettlement($txn);
+            $skipForEarlySettlement = $this->skipForEarlySettlement($txn, $esMerchants);
 
             if ($skipForEarlySettlement === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -54,6 +76,8 @@ trait SettlementTrait
 
             if ($skipForDsp === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
 
@@ -61,15 +85,40 @@ trait SettlementTrait
 
             if ($skipForMutualFundsMarketplace === true)
             {
+                $transactionSkipCount++;
+
                 continue;
             }
+
+            $skipForKarvy = $this->skipForKarvy($txn);
+
+            if ($skipForKarvy === true)
+            {
+                $transactionSkipCount++;
+
+                continue;
+            }
+
+            $transactionsSettleCount++;
 
             $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
             $filterGroupedTxns[$merchantId]->push($txn);
+
+            $txn = null;
         }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTIONS_SKIPPED,
+            [
+                'transactions_skip_count'   => $transactionSkipCount,
+                'transactions_settle_count' => $transactionsSettleCount
+            ]
+        );
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }
@@ -122,17 +171,15 @@ trait SettlementTrait
      * Early settlement timing check added
      *
      * @param $txn
+     * @param $esMerchants
      * @return bool
      */
-    protected function skipForEarlySettlement($txn): bool
+    protected function skipForEarlySettlement($txn, $esMerchants): bool
     {
         $mid = $txn->getMerchantId();
 
-        $merchant = $this->merchants[$mid];
 
-        $isEarlySettlementEnabled = $merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC);
-
-        if ($isEarlySettlementEnabled === false)
+        if (in_array($mid, $esMerchants, true) === false)
         {
             return false;
         }
@@ -419,10 +466,19 @@ trait SettlementTrait
             return [null, null];
         }
 
-        list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-            $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
+        try
+        {
+            list($setl, $bankTransferAtpt) = $this->settleForMerchant(
+                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
-        return [$setl, $bankTransferAtpt];
+            return [$setl, $bankTransferAtpt];
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception);
+
+            return [null, null];
+        }
     }
 
     protected function getSettlementAmountsForMerchant($txns): array
@@ -508,6 +564,19 @@ trait SettlementTrait
         }
     }
 
+    /**
+     * Used payout mutex to block merchant from creating a
+     * settlement when payout is in process for the same merchant.
+     *
+     * @param $merchant
+     * @param $channel
+     * @param $setlTxns
+     * @param $setlAmount
+     * @param $setlFee
+     * @param $setlApiFee
+     * @param $tax
+     * @return array
+     */
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
@@ -515,57 +584,65 @@ trait SettlementTrait
 
         $bankTransferAtpt = null;
 
-        try
-        {
-            // create settlement and attempt
-            $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+        $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-            $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+        return $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt) {
+                try
+                {   // create settlement and attempt
+                    $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
-            $this->traceSettlementDelayOfTransactions($setlTxns);
+                    $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-            $settlement = $merchantSettler->settle(
-                                $setlTxns,
-                                $setlAmount,
-                                $setlFee,
-                                $setlApiFee,
-                                $tax,
-                                $this->setlTime,
-                                $setlDetailAmounts);
+                    $this->traceSettlementDelayOfTransactions($setlTxns);
 
-            $merchantSettler->createTransaction($settlement);
+                    $settlement = $merchantSettler->settle(
+                        $setlTxns,
+                        $setlAmount,
+                        $setlFee,
+                        $setlApiFee,
+                        $tax,
+                        $this->setlTime,
+                        $setlDetailAmounts);
 
-            $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
-        }
-        catch (\Throwable $ex)
-        {
-            $traceData = [
-                'merchant'      => $merchant->getId(),
-                'setlAmount'    => $setlAmount,
-            ];
+                    $merchantSettler->createTransaction($settlement);
 
-            if ($settlement !== null)
-            {
-                $traceData['settlement_id'] = $settlement->getId();
+                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+                }
+                catch (\Exception $ex)
+                {
+                    $traceData = [
+                        'merchant'      => $merchant->getId(),
+                        'setlAmount'    => $setlAmount,
+                    ];
 
-                //
-                // Mark it failed anyway, so that it can be retried
-                //
-                $settlement->setStatus(Status::FAILED);
+                    if ($settlement !== null)
+                    {
+                        $traceData['settlement_id'] = $settlement->getId();
 
-                $this->repo->saveOrFail($settlement);
-            }
+                        //
+                        // Mark it failed anyway, so that it can be retried
+                        //
+                        $settlement->setStatus(Status::FAILED);
 
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::SETTLEMENT_SKIPPED,
-                $traceData);
+                        $this->repo->saveOrFail($settlement);
+                    }
 
-            (new SlackNotification)->send('setl_skipped', $traceData, $ex);
-        }
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::SETTLEMENT_SKIPPED,
+                        $traceData);
 
-        return [$settlement, $bankTransferAtpt];
+                    (new SlackNotification)->send('setl_skipped', $traceData, $ex);
+                }
+                finally
+                {
+                    return [$settlement, $bankTransferAtpt];
+                }
+                },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
     protected function traceSettlementDelayOfTransactions($setlTxns)
@@ -730,9 +807,87 @@ trait SettlementTrait
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('6144M');
 
         // Time limit of 9 mins 55 seconds
         RuntimeManager::setTimeLimit(599);
+    }
+
+    /**
+     * Early settlement timing check added
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForKarvy($txn): bool
+    {
+        $merchant = $this->merchants[$txn->getMerchantId()];
+
+        // Karvy wants settlements only at 1 pm and 3 pm ¯\_(ツ)_/¯
+        if ($merchant->getParentId() === Preferences::MID_KARVY)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
+
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+
+            $yesterdayThreePm = Carbon::yesterday(Timezone::IST)->hour(15)->getTimestamp();
+
+            //if settlement for a previous day transaction with
+            // settled_at of 3pm was not created then intiate it asap next day
+            if ($txn->getSettledAt() <= $yesterdayThreePm)
+            {
+              return false;
+            }
+
+            if (($now > $threePm) and ($txn->getSettledAt() <= $threePm))
+            {
+                return false;
+            }
+
+            if (($now > $onePm) and ($txn->getSettledAt() <= $onePm))
+            {
+                return false;
+            }
+
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ],
+                1);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                ]);
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+               'memory_allocated'               => $memoryAllocated,
+               'memory_used'                    => $memoryUsed,
+               'memory_peak_usage'              => $memoryPeakUsage,
+               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

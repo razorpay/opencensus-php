@@ -351,7 +351,7 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'version' => 'V3',
         'status' => FundTransferAttemptStatus::CREATED,
         'utr' => NULL,
@@ -360,7 +360,7 @@ return [
     ],
 
     'testPayoutEntitySuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'status' => PayoutStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
@@ -370,9 +370,100 @@ return [
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'axis',
+        'channel' => 'yesbank',
         'version' => 'V3',
         'bank_status_code'  => 'P',
         'status'  => FundTransferAttemptStatus::INITIATED,
+    ],
+
+    'testCreateMerchantPayoutOnDemand' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'method'      => 'fund_transfer',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandOnLowBalance' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+        ],
+    ],
+    'testCreateMerchantPayoutOnHoldFunds' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This operation is not allowed. Please contact Razorpay support for details.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+        ],
+    ],
+    'testCreateMerchantPayoutOnMinAmount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 105,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payout amount including fees should be greater than Re 1',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT,
+        ],
     ],
 ];

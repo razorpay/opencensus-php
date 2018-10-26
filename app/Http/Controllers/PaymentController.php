@@ -252,6 +252,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postVerifyAllPayments()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyAllPayments($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyPaymentsBulk()
     {
         $input = Request::all();
@@ -398,6 +407,15 @@ class PaymentController extends Controller
     public function updateReceiverData()
     {
         $data = $this->service()->updateReceiverData();
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateBankTransferTerminal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateBankTransferTerminal($input);
 
         return ApiResponse::json($data);
     }

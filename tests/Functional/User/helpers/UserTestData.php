@@ -47,8 +47,8 @@ return [
                         'activated'    => false,
                         'archived_at'  => null,
                         'suspended_at' => null,
-                        'role'         => 'owner'
-                    ]
+                        'role'         => 'owner',
+                    ],
                 ]
             ],
         ],

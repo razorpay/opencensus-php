@@ -282,7 +282,7 @@ class CreatePayments extends Migration
             $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Payment::REFERENCE15, 255)
+            $table->string(Payment::SETTLED_BY, 255)
                   ->nullable();
 
             $table->string(Payment::REFERENCE16, 255)

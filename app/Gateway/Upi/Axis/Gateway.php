@@ -601,7 +601,8 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         // Gateway sends result in different positions based on the kind of error hence handling both
-        $result = $content[Fields::DATA][0][Fields::RESULT] ?? $content[Fields::RESULT];
+        // sometimes gateway is sending empty response
+        $result = ($content[Fields::DATA][0][Fields::RESULT] ?? ($content[Fields::RESULT] ?? null));
 
         $verify->gatewaySuccess = ($result === Status::VERIFY_SUCCESS);
     }

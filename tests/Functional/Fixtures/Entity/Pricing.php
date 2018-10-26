@@ -23,6 +23,7 @@ class Pricing extends Base
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1OwH8rTI0ejFxS',
@@ -36,6 +37,7 @@ class Pricing extends Base
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1fq0OXpgeyafQq',
@@ -49,6 +51,7 @@ class Pricing extends Base
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1nwo5YENadEFvf',
@@ -62,6 +65,7 @@ class Pricing extends Base
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 1,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOyaqpB',
@@ -75,6 +79,7 @@ class Pricing extends Base
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOyaqpC',
@@ -88,6 +93,7 @@ class Pricing extends Base
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOJaqpC',
@@ -101,6 +107,7 @@ class Pricing extends Base
                 'percent_rate'        => 0,
                 'fixed_rate'          => 1000,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOJaqpD',
@@ -114,6 +121,7 @@ class Pricing extends Base
                 'percent_rate'        => 0,
                 'fixed_rate'          => 2000,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOJaqpE',
@@ -127,6 +135,7 @@ class Pricing extends Base
                 'percent_rate'        => 0,
                 'fixed_rate'          => 1000,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zD0BXpeOJaqpF',
@@ -140,6 +149,35 @@ class Pricing extends Base
                 'percent_rate'        => 0,
                 'fixed_rate'          => 2000,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zD0BXpfOJaqqE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zD01Xpe3JaqpF',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'aadhaar_fp',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE3CYqf1zbyrD',
@@ -153,6 +191,7 @@ class Pricing extends Base
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
                 'international'       => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE3CYqf1zbyaF',
@@ -165,6 +204,7 @@ class Pricing extends Base
                 'payment_issuer'      => null,
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE3QYFf1zbys6',
@@ -177,6 +217,7 @@ class Pricing extends Base
                 'payment_issuer'      => null,
                 'percent_rate'        => 250,
                 'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE3CYqf1zhyaE',
@@ -189,6 +230,7 @@ class Pricing extends Base
                 'payment_issuer'      => null,
                 'percent_rate'        => 100,
                 'fixed_rate'          => 500,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE3CYf21zbybG',
@@ -201,6 +243,7 @@ class Pricing extends Base
                 'payment_issuer'      => null,
                 'percent_rate'        => 0,
                 'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE31zbybGCYf2',
@@ -214,6 +257,7 @@ class Pricing extends Base
                 'percent_rate'        => 100,
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE31zbybGCab2',
@@ -228,6 +272,7 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
                 'receiver_type'       => 'qr_code',
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE31zbybabab2',
@@ -241,6 +286,7 @@ class Pricing extends Base
                 'percent_rate'        => 100,
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
+                'org_id'              => '100000razorpay',
             ],
             [
                 'id'                  => '1zE31zbybacab2',
@@ -255,6 +301,7 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
                 'receiver_type'       => 'qr_code',
+                'org_id'              => '100000razorpay',
             ]
         ];
 
@@ -274,6 +321,7 @@ class Pricing extends Base
                 'payment_method' => 'card',
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1osdf0GGDdalfF',
@@ -283,6 +331,7 @@ class Pricing extends Base
                 'payment_method' => 'netbanking',
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1osdf0GGDdaHfF',
@@ -292,6 +341,7 @@ class Pricing extends Base
                 'payment_method' => 'emandate',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 1000,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1pteg2HHEebmhH',
@@ -301,6 +351,7 @@ class Pricing extends Base
                 'payment_method' => 'wallet',
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1pteg2FFEebmgG',
@@ -310,6 +361,7 @@ class Pricing extends Base
                 'payment_method' => 'transfer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1zE31zbyeGCTd4',
@@ -319,6 +371,7 @@ class Pricing extends Base
                 'payment_method' => 'account',
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1zE31zbyeGCTd5',
@@ -328,6 +381,7 @@ class Pricing extends Base
                 'payment_method' => 'customer',
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
         ];
 
@@ -347,6 +401,7 @@ class Pricing extends Base
                 'payment_method' => 'card',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR2',
@@ -356,6 +411,7 @@ class Pricing extends Base
                 'payment_method' => 'netbanking',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR3',
@@ -365,6 +421,7 @@ class Pricing extends Base
                 'payment_method' => 'wallet',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR4',
@@ -374,6 +431,7 @@ class Pricing extends Base
                 'payment_method' => 'transfer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR5',
@@ -383,6 +441,7 @@ class Pricing extends Base
                 'payment_method' => 'account',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR6',
@@ -392,6 +451,7 @@ class Pricing extends Base
                 'payment_method' => 'customer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
             [
                 'id'             => '1ZeroPricingR7',
@@ -401,6 +461,7 @@ class Pricing extends Base
                 'payment_method' => 'emandate',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
             ],
         ];
 
@@ -421,7 +482,8 @@ class Pricing extends Base
                 'percent_rate'   => 549,
                 'fixed_rate'     => 0,
                 'emi_duration'   => 9,
-                'payment_issuer' => 'ICIC'
+                'payment_issuer' => 'ICIC',
+                'org_id'         => '100000razorpay',
             ],
         ];
 
@@ -443,6 +505,27 @@ class Pricing extends Base
             'payment_issuer'      => null,
             'percent_rate'        => 250,
             'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createPayoutPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYz';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 50,
+            'fixed_rate'          => 80,
         ];
 
         $this->addPricingRulesToDb([$row]);

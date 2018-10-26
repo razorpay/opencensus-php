@@ -38,7 +38,8 @@ trait Support
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if ((in_array($input['card']['network_code'], $this->purchase, true)) or
+                ($input['payment']['auth_type'] === PaymentModel\AuthType::PIN))
             {
                 return;
             }
@@ -82,7 +83,8 @@ trait Support
             $status = Status::AUTHORIZED;
 
             // For purchase transactions, status will be captured.
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if ((in_array($input['card']['network_code'], $this->purchase, true)) or
+                (isset($input['payment']['auth_type']) === true and $input['payment']['auth_type'] === PaymentModel\AuthType::PIN))
             {
                 $status = Status::CAPTURED;
             }
@@ -152,9 +154,14 @@ trait Support
 
         if ($success === false)
         {
-            $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
+            $errorCode = Hdfc\ErrorCodes\ErrorCodes::getErrorCodeForResult($result);
 
             Hdfc\ErrorHandler::setErrorInResponse($response, $errorCode);
+
+            if (isset($response['data']['authRespCode']))
+            {
+                $response['error']['authRespCode'] = $response['data']['authRespCode'];
+            }
 
             $this->error = true;
 
@@ -174,7 +181,7 @@ trait Support
         $input = $this->input;
 
         if (($this->action === Base\Action::CAPTURE) and
-            ($error['code'] === Hdfc\ErrorCode::GW00176) and
+            ($error['code'] === Hdfc\ErrorCodes\ErrorCodes::GW00176) and
             ($input['payment']['status'] === 'authorized') and
             ($input['payment']['amount_authorized'] === (int) $input['amount']))
         {

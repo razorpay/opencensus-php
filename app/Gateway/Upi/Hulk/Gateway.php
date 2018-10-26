@@ -217,10 +217,9 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($p2p, Status::COMPLETED);
-
-        // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $p2p);
+
+        $this->checkResponseStatus($p2p, Status::COMPLETED);
 
         return [
             'acquirer' => [
@@ -809,6 +808,10 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED, null,
+            'Refund Blocked');
 
         $repo = $this->getRepository();
 

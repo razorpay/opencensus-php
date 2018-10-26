@@ -643,6 +643,13 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddNonEditableFeatureToAccount()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateOnboardingResponses()
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();

@@ -42,4 +42,6 @@ RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
 RUN composer dump-autoload -o && php artisan optimize
 
 EXPOSE 80
-ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
+#Apache exits abruptly on sigterm and sigwinch has to be sent for it to gracefully-stop.
+#https://github.com/Yelp/dumb-init#signal-rewriting
+ENTRYPOINT [ "/usr/bin/dumb-init", "--rewrite", "15:28", "/app/dockerconf/entrypoint.sh"]
