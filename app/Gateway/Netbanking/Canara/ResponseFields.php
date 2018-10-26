@@ -26,5 +26,6 @@ class ResponseFields
     const VER_BANK_REFERENCE_NUMBER     = 'BankRefNo';
     const RETURN_CODE                   = 'ReturnCode';
     const VERIFY_STATUS                 = 'VerifyStatus';
+    const STATUS                        = 'Status';
 
 }
