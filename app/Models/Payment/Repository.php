@@ -1614,6 +1614,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsWithoutTerminal($method, $rows)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, $method)
+                    ->whereNull(Payment\Entity::TERMINAL_ID)
+                    ->limit($rows)
+                    ->get();
+    }
+
     public function buildUpdateMdrQuery(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
     {
         $query = $this->newQuery()->with('transaction')

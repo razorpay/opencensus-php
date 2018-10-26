@@ -38,7 +38,7 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::KOTAK              => ["/^PG Transaction File/"],
         RequestProcessor\Base::OLAMONEY           => ["/^Merchant Settlement File/"],
-        RequestProcessor\Base::FREECHARGE         => ["/^Merchant (Transaction|Settlement) Report/"],
+        RequestProcessor\Base::FREECHARGE         => ["/^Merchant Settlement Report/"],
         RequestProcessor\Base::NETBANKING_AXIS    => [
                                                         "/^MIS file for (0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
@@ -80,7 +80,7 @@ class Validator extends Base\Core
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
-        RequestProcessor\Base::FREECHARGE             => ["/Please view your (transaction|settlement) report/"],
+        RequestProcessor\Base::FREECHARGE             => ["/Please view your settlement report/"],
         RequestProcessor\Base::NETBANKING_AXIS        => [
                                                             "/Kindly find attached below the MIS for "
                                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"

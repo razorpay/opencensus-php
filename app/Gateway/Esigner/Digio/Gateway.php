@@ -58,6 +58,18 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if ((isset($input['gateway']['status']) === true) and
+            ($input['gateway']['status'] === Status::CANCEL))
+        {
+            $status = $input['gateway']['status'];
+            $message = $input['gateway']['message'] ?? null;
+
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
+                $status,
+                $message);
+        }
+
         if ((isset($input['gateway']['status']) === false) or
             ($input['gateway']['status'] !== Status::SUCCESS))
         {
@@ -113,6 +125,7 @@ class Gateway extends Base\Gateway
         $content = [
             'logo'         => urlencode('https://razorpay.com/assets/razorpay-logo-95e9447029.svg'),
             'redirect_url' => $input['callbackUrl'],
+            'error_url'    => $input['callbackUrl'],
         ];
 
         // For biometric authentication, Digio expects this parameter

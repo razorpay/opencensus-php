@@ -1549,6 +1549,11 @@ class Core extends Base\Core
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
+        $oldData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $category  = $subcategoryMetaData[Entity::CATEGORY];
         $category2 = $subcategoryMetaData[Entity::CATEGORY2];
 
@@ -1557,18 +1562,14 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $newData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
-            [
-                'old_data' => [
-                    Entity::CATEGORY2 => $merchant->getCategory2(),
-                    Entity::CATEGORY  => $merchant->getCategory(),
-                ],
-                'new_data' => [
-                    Entity::CATEGORY2 => $category2,
-                    Entity::CATEGORY  => $category,
-                ],
-            ]);
+            compact('oldData', 'newData'));
 
         return $merchant;
     }

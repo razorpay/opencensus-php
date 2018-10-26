@@ -6,8 +6,12 @@ use App;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
+use RZP\Models\BharatQr;
+use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\Account;
+use RZP\Exception\LogicException;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
 
 class TerminalProcessor extends Base\Core
@@ -26,36 +30,9 @@ class TerminalProcessor extends Base\Core
      *
      * @return array
      */
-    public function getTerminalsForPayment(Payment\Entity $payment, array $gatewayData = [])
+    public function getTerminalsForPayment(Payment\Entity $payment)
     {
         $this->payment = $payment;
-
-        /*
-         * This is added temporarily because currently
-         * we are not passing the right terminal Id.
-         * Will remove this later.
-         */
-        if (($payment->isBankTransfer() === true) and
-            (empty($gatewayData) === false))
-        {
-            return [];
-        }
-
-        if (($payment->isBharatQr() === true) and
-            (empty($gatewayData) === false))
-        {
-            $terminalId = $gatewayData[BharatQr\Constants::RAZORPAY_TERMINAL_ID];
-
-            return [$this->repo->terminal->find($terminalId)];
-        }
-
-        if (($payment->isUpi() === true) and
-            (empty($gatewayData["terminal_id"]) === false))
-        {
-            $terminalId = $gatewayData["terminal_id"];
-
-            return [$this->repo->terminal->find($terminalId)];
-        }
 
         $options = $this->getTerminalSelectionOptions();
 
@@ -74,6 +51,98 @@ class TerminalProcessor extends Base\Core
         }
 
         return $terminalsSelected;
+    }
+
+    public function getTerminalFromGatewayData(array $gatewayData = []): Terminal\Entity
+    {
+        $terminalId = $gatewayData[Payment\Entity::TERMINAL_ID];
+
+        return $this->repo->terminal->find($terminalId);
+    }
+
+    public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false): Terminal\Entity
+    {
+        $terminals = $this->repo->terminal->getAllBankTransferTerminals();
+
+        return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
+    }
+
+    protected function selectTerminalForBankAccount(Base\PublicCollection $allTerminals, string $accountNumber, bool $log = false): Terminal\Entity
+    {
+        $matchingPrefixTerminals = $allTerminals->filter(function (Terminal\Entity $terminal) use ($accountNumber)
+        {
+            // We will filter the terminals which could possibly be used to make this account number.
+            return $this->isTerminalValid($terminal, $accountNumber);
+        });
+
+        if ($log ===  true)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_FILTERED,
+                ['matching_prefix_terminal_ids' => $matchingPrefixTerminals->getIds()]
+            );
+        }
+
+         // Fallback Terminals are those terminals which are created with just Root
+         // and are assigned to the Shared Merchant to get unexpected payments.
+        $fallbackTerminals = new Base\PublicCollection();
+
+        $selectedTerminals = $matchingPrefixTerminals->filter(function (Terminal\Entity $terminal) use ($fallbackTerminals)
+        {
+            if (($terminal->isShared() === true) and
+                (empty($terminal->getGatewayMerchantId2()) === true))
+            {
+                $fallbackTerminals->push($terminal);
+
+                return false;
+            }
+
+            return true;
+        });
+
+        if ($log ===  true)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_FILTERED,
+                ['selected_terminal_ids' => $selectedTerminals->getIds()]
+            );
+        }
+
+        if ($selectedTerminals->count() === 0)
+        {
+             // Count zero means none of the terminals could have created this bank account
+             // and this is an unexpected bank transfer.
+            if ($fallbackTerminals->count() === 1)
+            {
+                return $fallbackTerminals->first();
+            }
+
+            // This case will only happen if we get request for root that is not allotted
+            // to us or we forgot to create the fallback terminal.
+            throw new LogicException('Should not have reached here');
+        }
+
+        if ($selectedTerminals->count() !== 1)
+        {
+             // If a Bank account matches with 2 terminals that means this can be created from
+             // either of these and we should probably change the handle for 1 of the merchant
+             // to avoid such future cases.
+            $this->trace->error(
+                TraceCode::BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE,
+                [
+                    'terminal_ids' => $selectedTerminals->getIds()
+                ]
+            );
+        }
+
+        return $selectedTerminals->first();
+    }
+
+    protected function isTerminalValid(Terminal\Entity $terminal, string $accountNumber)
+    {
+        $prefix = Provider::getRoot($terminal) . Provider::getHandle($terminal);
+
+        return (substr($accountNumber, 0, strlen($prefix)) === $prefix);
     }
 
     protected function getTerminalSelectionOptions()

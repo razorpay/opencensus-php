@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP;
+use Redis;
 use Swift_Mailer;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
@@ -24,6 +25,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
@@ -201,6 +203,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerShield();
 
+        $this->registerRedisDualWrite();
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -308,6 +312,21 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerRedisDualWrite()
+    {
+        $this->app->singleton('redisdualwrite', function($app)
+        {
+            $lockMock = $app['config']->get('services.mutex.mock');
+
+            if ($lockMock === true)
+            {
+                return new Mock\Mutex($app);
+            }
+
+            return new RedisDualWrite($app);
+        });
+    }
+
     protected function registerMaxMind()
     {
         $this->app->singleton('maxmind', function($app)
@@ -364,7 +383,25 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\Mutex($app);
             }
 
-            return new Mutex($app);
+            $mutex = new Mutex($app);
+
+            $requestId = $app['request']->getId();
+
+            $mode = $app['rzp.mode'] ?? 'live';
+
+            $dualWrite = $app->razorx->getTreatment($requestId, 'redis_dual_write', $mode);
+
+            if (($this->app->environment('testing') === true) or
+                ($dualWrite === 'off'))
+            {
+                $mutex->setRedisClient(new Mock\RedisDualWrite($app));
+
+                return $mutex;
+            }
+
+            $mutex->setRedisClient($this->app['redisdualwrite']);
+
+            return $mutex;
         });
     }
 

@@ -7,16 +7,17 @@ class Status
     /*
      * Enum values used for activation form status
      */
+    const INSTANTLY_ACTIVATED = 'instantly_activated';
     const UNDER_REVIEW        = 'under_review';
     const NEEDS_CLARIFICATION = 'needs_clarification';
     const ACTIVATED           = 'activated';
     const REJECTED            = 'rejected';
-    const INSTANTLY_ACTIVATED = 'instantly_activated';
 
     /*
      * Allowed next activation statuses mapping
      */
     const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING = [
+        self::INSTANTLY_ACTIVATED => [self::UNDER_REVIEW],
         self::UNDER_REVIEW        => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED],
         self::NEEDS_CLARIFICATION => [self::UNDER_REVIEW],
         self::REJECTED            => [self::UNDER_REVIEW],
