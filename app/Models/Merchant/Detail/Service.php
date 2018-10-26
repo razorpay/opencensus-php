@@ -587,14 +587,7 @@ class Service extends Base\Service
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
         {
-            $businessWebsite = $input[Entity::BUSINESS_WEBSITE] ?? null;
-
-            $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $businessWebsite];
-
-            // Validate Input Name for merchant
-            (new Merchant\Validator)->validateInput('edit_pre_signup', $inputDetails);
-
-            (new Merchant\Service)->edit($this->merchant->id, $inputDetails);
+            (new Merchant\Core)->editPreSignupFields($this->merchant, $input);
 
             // Save User Information of contact name nad contact Email.
 

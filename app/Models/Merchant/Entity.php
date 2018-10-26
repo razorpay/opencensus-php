@@ -141,6 +141,7 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
+    const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -150,6 +151,12 @@ class Entity extends Base\PublicEntity
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
+
+    // Extra constants for Batch
+    const AUTO_SUBMIT               = 'auto_submit';
+    const AUTOFILL_DETAILS          = 'autofill_details';
+    const AUTO_ACTIVATE             = 'auto_activate';
+    const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
 
     protected $entity = 'merchant';
 
@@ -515,7 +522,7 @@ class Entity extends Base\PublicEntity
 
     public function isExposeARNRefundEnabled(): bool
     {
-       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
     }
 
     public function isExposeARNPaymentEnabled(): bool
@@ -694,6 +701,15 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(
             'RZP\Models\Transaction\Entity');
+    }
+
+    /**
+     * Different communication emails for various purposes that are stored
+     * in merchant_emails table against the merchant.
+     */
+    public function emails()
+    {
+        return $this->hasMany(Email\Entity::class);
     }
 
     /**
@@ -935,6 +951,13 @@ class Entity extends Base\PublicEntity
         return $value ?: $this->getBillingLabel();
     }
 
+    public function getDbaName()
+    {
+        $value = optional($this->merchantDetail)->getAttribute(Detail\Entity::BUSINESS_DBA);
+
+        return $value ?: $this->getName();
+    }
+
     public function getAutoCaptureLateAuth()
     {
         return $this->getAttribute(self::AUTO_CAPTURE_LATE_AUTH);
@@ -1002,7 +1025,7 @@ class Entity extends Base\PublicEntity
 
     protected function getBrandColorAttribute()
     {
-        $storedBrandColor = $this->attributes[self::BRAND_COLOR];
+        $storedBrandColor = $this->attributes[self::BRAND_COLOR] ?? null;
 
         if ($storedBrandColor === null)
         {
@@ -1101,7 +1124,7 @@ class Entity extends Base\PublicEntity
 
     protected function getTransactionReportEmailAttribute()
     {
-        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL] ?? null);
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));

@@ -12,6 +12,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -595,6 +596,8 @@ class ApiEventSubscriber extends Base\Core
 
     protected function dispatchWebhook(array $data)
     {
+        $this->trace->info(TraceCode::WEBHOOK_DISPATCH, $data);
+
         Webhook::dispatch($data)->using([$this->event]);
     }
 

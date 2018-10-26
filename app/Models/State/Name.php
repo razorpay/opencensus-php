@@ -35,6 +35,7 @@ class Name
         self::CLOSED,
 
         // Activation Action States
+        Status::INSTANTLY_ACTIVATED,
         Status::UNDER_REVIEW,
         Status::NEEDS_CLARIFICATION,
         Status::ACTIVATED,

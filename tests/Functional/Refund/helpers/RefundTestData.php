@@ -32,7 +32,37 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoFailedFromInitiated' => [
+    'testRefundFetchDetailsForCustomerFromRefundIdAndPaymentId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'refund_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundFetchDetailsForCustomerFromReservationId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/customer/refund',
+            'content' => [
+                'reservation_id' => 'dummy',
+                'captcha' => 'dummy',
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRefundEditStatusToFailedFromInitiated' => [
         'request'  => [
             'content' => [
                 'status'    => 'failed',
@@ -62,7 +92,7 @@ return [
         ],
     ],
 
-    'testRefundEditStatustoProcessedFromFailed' => [
+    'testRefundEditStatusToProcessedFromFailed' => [
         'request'  => [
             'content' => [
                 'status'    => 'processed',
@@ -523,6 +553,18 @@ return [
                 'amount'         => 50000,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testRefundSettledBy' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
             ],
         ],
     ],

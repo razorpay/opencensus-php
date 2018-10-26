@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use DB;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -772,6 +773,39 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Payment\Entity::ORDER_ID, '=', $orderId)
                     ->get();
+    }
+
+    public function fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants(string $receipt, array $merchantIds)
+    {
+        /**
+         * SELECT `payments`.`*`
+         * FROM `payments`
+         * INNER JOIN `orders` ON `payments`.`order_id` = `orders`.`id`
+         * WHERE `payments`.`authorized_at` IS NOT NULL
+         * AND `orders`.`receipt` = ?
+         * AND `orders`.`authorized` = ?
+         * AND `orders`.`merchant_id` IN (?)
+         */
+
+        $ordersTable = $this->repo->order->getTableName();
+
+        $paymentCols = $this->dbColumn('*');
+        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
+        $paymentAuthorizedAtCol = $this->dbColumn(Entity::AUTHORIZED_AT);
+
+        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $orderMerchantIdCol = $this->repo->order->dbColumn(Order\Entity::MERCHANT_ID);
+        $orderAuthorizedCol = $this->repo->order->dbColumn(Order\Entity::AUTHORIZED);
+        $orderReceiptCol = $this->repo->order->dbColumn(Order\Entity::RECEIPT);
+
+        return $this->newQuery()
+                    ->select($paymentCols)
+                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
+                    ->whereNotNull($paymentAuthorizedAtCol)
+                    ->where($orderReceiptCol, $receipt)
+                    ->where($orderAuthorizedCol, true)
+                    ->whereIn($orderMerchantIdCol, $merchantIds)
+                    ->first();
     }
 
     /**
@@ -1605,6 +1639,15 @@ class Repository extends Base\Repository
                     ->join($bankAccountTable, $bankAccountId, '=', $virtualAccountBankAccountId)
                     ->whereNull(Payment\Entity::RECEIVER_ID)
                     ->limit(1000)
+                    ->get();
+    }
+
+    public function fetchPaymentsWithoutTerminal($method, $rows)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, $method)
+                    ->whereNull(Payment\Entity::TERMINAL_ID)
+                    ->limit($rows)
                     ->get();
     }
 

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
@@ -193,6 +194,7 @@ class FeeCalculator
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
         $method = $this->entity->getMethod();
+        $orgId = $this->entity->merchant->org->getId();
 
         $filters = array(
             [Pricing\Entity::FEATURE,         $feature, false, null  ],
@@ -208,7 +210,8 @@ class FeeCalculator
         // In this case, we add the zero pricing rule and return
         //
         if (($rulesCount === 0) and
-            (Feature::isFeaturePricingOptional($feature) === true))
+            (Feature::isFeaturePricingOptional($feature) === true) and
+            ($orgId === Org\Entity::RAZORPAY_ORG_ID))
         {
             $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
 
@@ -521,10 +524,10 @@ class FeeCalculator
 
         // If network is not amex, we can check for AMOUNT RANGE FILTERS
 
-        $filters2 = array(
+        $filters2 = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
             [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 

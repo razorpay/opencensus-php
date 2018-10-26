@@ -103,12 +103,6 @@ deploy:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - script:
-          name: Conditionally skip canary deployment
-          code: |
-            if [ "$APP_ENV" != "beta" ] && [ "$APP_ENV" != "prod" ]; then
-              export SKIP_CANARY=true
-            fi
-      - script:
           name: Conditionally verify if commit matches between K8s and Asg.
           code: |
             if [ "$APP_ENV" == "prod" ] && [ "$CHECK_K8S_COMMIT" == "true" ]; then
@@ -118,14 +112,6 @@ deploy:
                 exit 1
               fi
             fi
-      - razorpay/aws-code-deploy@0.0.32:
-          key: $AWS_KEY
-          secret: $AWS_SECRET
-          region: $AWS_REGION
-          application-name: api
-          deployment-group-name: $APP_ENV-api-canary
-          s3-bucket: rzp-code-deploy
-          skip: $SKIP_CANARY
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET

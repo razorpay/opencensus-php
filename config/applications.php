@@ -86,6 +86,11 @@ return [
         'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
+    'redisdualwrite' => [
+        'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
+        'skip_dual_write'           => env('SKIP_DUAL_WRITE'),
+    ],
+
     'maxmind' => [
         'mock'      => env('MAXMIND_MOCK', false),
         'id'        => '115820',
@@ -176,12 +181,10 @@ return [
     ],
 
     'reporting' => [
-        'mock' => env('REPORTING_MOCK', false),
-        'url'  => env('REPORTING_BASE_URL'),
-        'auth' => [
-            'username' => 'api',
-            'password' => env('REPORTING_PASSWORD'),
-        ],
+        'mock'   => env('REPORTING_MOCK', false),
+        'url'    => env('REPORTING_BASE_URL'),
+        'username' => 'api',
+        'secret' => env('REPORTING_PASSWORD'),
     ],
 
     'ufh' => [

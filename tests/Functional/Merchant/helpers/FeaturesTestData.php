@@ -626,9 +626,55 @@ return [
                     'block_intl_recurring',
                     'bharat_qr',
                     'mobikwik_offers',
-                ]
-            ]
-        ]
+                    'allow_dc_recurring',
+                    'allow_all_dc_recurring',
+                    'skip_hold_funds_on_payout',
+                    'report_v2',
+                    'corporate_banks',
+                    'order_id_mandatory',
+                    'order_receipt_unique',
+                    'magic',
+                    'new_analytics',
+                    'daily_settlement',
+                    'disable_upi_intent',
+                    'atm_pin_auth',
+                    'allow_s2s_apps',
+                    'upi_plus',
+                    'fss_ipay',
+                    'direct_debit',
+                    'expose_card_expiry',
+                    'expose_card_iin',
+                    's2s_optional_data',
+                    'partner',
+                    'payment_nobranding',
+                    'otpelf',
+                    'enable_vpa_validate',
+                    'allow_sub_without_email',
+                    'hdfc_debit_si',
+                    'axis_express_pay',
+                    'pre_auth_shield_intg',
+                    'bank_transfer_refund',
+                    'log_response',
+                    'excess_order_amount',
+                    'subscription_v2',
+                    'subscription_auth_v2',
+                    'expose_arn_payment',
+                    'expose_arn_refund',
+                    'offers',
+                    'otp_auth_default',
+                    'edit_methods',
+                    'capture_queue',
+                    'transaction_v2',
+                    'es_on_demand',
+                    'es_automatic',
+                    'headless',
+                    'first_data_s2s_flow',
+                    'bin_issuer_validator',
+                    'offer_private_auth',
+                    'terminal_banks_filter',
+                ],
+            ],
+        ],
     ],
 
     'bulkUpdateFeatureActivationStatus' => [
@@ -779,6 +825,29 @@ return [
             'url'     => '/accounts/me/features',
             'content' => [
                 'names' => ['dummy'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddNonEditableFeatureToAccount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/accounts/me/features',
+            'content' => [
+                'names' => ['es_on_demand'],
             ],
         ],
         'response' => [

@@ -33,30 +33,41 @@ class Beneficiary extends FileProcessor
     }
 
     /**
-     * @param $bankAccounts
+     * @param PublicCollection $bankAccounts
      * @param array $input
-     *
      * @return array
-     * @return array with keys 'signed_url'
-     *                         'local_file_path'
-     *                         'file_name'
-     *                         'merchants_count'
      */
     public function register(PublicCollection $bankAccounts, array $input = []): array
     {
-        $rows = $this->getData($bankAccounts);
+        $file          = new FileStore\Creator;
+
+        $fileCreated   = false;
+
+        $totalCount    = $bankAccounts->count();
+
+        $rows          = $this->getData($bankAccounts);
+
+        $registerCount = count($rows);
 
         $this->trace->info(TraceCode::BENEFICIARY_REGISTER_DATA_FETCHED);
 
-        $txt = $this->getTxt($rows);
+        if ($registerCount !== 0)
+        {
+            $txt         = $this->getTxt($rows);
 
-        $file = $this->generateFile($txt);
+            $file        = $this->generateFile($txt);
 
-        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
+            $fileCreated = true;
 
-        $merchantCount = count($rows);
+            $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
+        }
 
-        $response = $this->makeResponse($file, $merchantCount);
+        $response = $this->makeResponse($file, $totalCount, $registerCount, $fileCreated);
+
+        if ($registerCount === 0)
+        {
+            return $response;
+        }
 
         $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
 
@@ -171,7 +182,7 @@ class Beneficiary extends FileProcessor
 
     protected function sendEmail(array $data)
     {
-        $beneficiaryFileMail = new BeneficiaryFileMail($data, $this->channel, $data['merchants_count']);
+        $beneficiaryFileMail = new BeneficiaryFileMail($data, $this->channel, $data['register_count']);
 
         Mail::queue($beneficiaryFileMail);
     }

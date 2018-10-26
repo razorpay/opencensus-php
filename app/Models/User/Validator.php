@@ -138,6 +138,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }
     }
+
     /**
      * Google captcha validation.
      *

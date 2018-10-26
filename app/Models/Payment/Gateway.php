@@ -29,6 +29,10 @@ class Gateway
     const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
+    const ICICI                  = 'icici';
+    const KOTAK                  = 'kotak';
+    const RBL                    = 'rbl';
+    const AXIS                   = 'axis';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
@@ -152,6 +156,14 @@ class Gateway
         self::BILLDESK,
     ];
 
+    const DIRECT_SETTLEMENT_GATEWAYS = [
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_RBL    => self::RBL,
+        self::NETBANKING_AXIS   => self::AXIS,
+    ];
+
     /**
     * Gateways for which we can validate the refunds
     * if they are successful after they are 'initiated'
@@ -185,6 +197,7 @@ class Gateway
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
+        self::UPI_ICICI,
     ];
 
     /**
@@ -614,6 +627,15 @@ class Gateway
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
         Provider::DASHBOARD => self::BT_DASHBOARD,
+    ];
+
+    //
+    // Temporary, since bank transfers will be refactored to use terminals too
+    // TODO: Remove when above refactor is done
+    protected static $nonTerminalGateways = [
+        self::BT_YESBANK,
+        self::BT_KOTAK,
+        self::BT_DASHBOARD,
     ];
 
     /**
@@ -1187,6 +1209,11 @@ class Gateway
         ],
     ];
 
+    public static function isNonTerminalGateway(string $gateway)
+    {
+        return in_array($gateway, self::$nonTerminalGateways, true);
+    }
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -1280,6 +1307,13 @@ class Gateway
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    public static function isSupportedEmandateBank($bank): bool
+    {
+        $banks = self::getAllEMandateBanks();
+
+        return (in_array($bank, $banks, true) === true);
     }
 
     public static function getAllEMandateBanks(): array

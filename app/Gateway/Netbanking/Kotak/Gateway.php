@@ -288,6 +288,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content);
 
+        $request['options']['verify'] = $this->getCaInfo();
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             $request);
@@ -443,5 +445,12 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }

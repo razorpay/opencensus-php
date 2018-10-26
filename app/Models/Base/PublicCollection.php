@@ -68,6 +68,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayHosted();
     }
 
+    public function toArrayPublicCustomer()
+    {
+        return $this->itemsToArrayPublicCustomer();
+    }
+
     public function toArrayPartner(): array
     {
         $array[static::ENTITY] = $this->entity;
@@ -180,6 +185,14 @@ class PublicCollection extends Collection
         {
             return $item->toArrayHosted();
 
+        }, $this->items);
+    }
+
+    public function itemsToArrayPublicCustomer()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayPublicCustomer();
         }, $this->items);
     }
 

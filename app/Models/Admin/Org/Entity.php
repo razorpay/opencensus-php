@@ -38,6 +38,8 @@ class Entity extends Base\Entity
     const PERMISSIONS       = 'permissions';
 
     const RAZORPAY_ORG_ID = '100000razorpay';
+    const HDFC_ORG_ID     = '6dLbNSpv5XbCOG';
+    const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
 
     protected static $sign = 'org';
 

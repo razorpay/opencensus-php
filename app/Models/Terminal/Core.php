@@ -32,9 +32,28 @@ class Core extends Base\Core
 
         $this->validateExistingTerminal($terminal);
 
+        $this->validateDirectSettlementMapping($terminal);
+
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
+    }
+
+    protected function validateDirectSettlementMapping($terminal)
+    {
+        if ($terminal->isDirectSettlement() === false)
+        {
+            return;
+        }
+
+        $gateway = $terminal->getGateway();
+
+        if (isset(Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway]) === false)
+        {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT);
+        }
     }
 
     public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
@@ -162,6 +181,8 @@ class Core extends Base\Core
             $terminal->edit($input);
 
             $this->validateExistingTerminal($terminal);
+
+            $this->validateDirectSettlementMapping($terminal);
 
             $this->repo->saveOrFail($terminal);
         }
@@ -348,11 +369,6 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
         }
 
-        if (empty($banksToEnable) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException('enabled_banks is required and needs to be sent.');
-        }
-
         if (is_array($banksToEnable) === false)
         {
             throw new Exception\BadRequestValidationFailureException('enabled_banks should be an array');
@@ -375,7 +391,6 @@ class Core extends Base\Core
         return $this->getBanksForTerminal($terminal);
     }
 
-  
     protected function validateExistingTerminalGatewayMerchantId(Entity $terminal)
     {
         // Check no record with same 'gateway_merchant_id' exists

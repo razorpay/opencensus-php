@@ -66,6 +66,11 @@ class Gateway extends Base\Gateway
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
     ];
 
+    protected $forceFillable = [
+        Entity::VPA                       => Entity::VPA,
+        Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
+    ];
+
     /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
@@ -767,13 +772,14 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if (($content['status'] === Status::SUCCESS) or
-            ($content['status'] === Status::DEEMED))
+        if (($content[Fields::STATUS] === Status::SUCCESS) or
+            ($content[Fields::STATUS] === Status::DEEMED))
         {
             return true;
         }
 
-        if ($content['status'] === Status::FAILURE)
+        if (($content[Fields::STATUS] === Status::FAILURE) or
+            ($content[Fields::STATUS] === Status::FAIL))
         {
             return false;
         }
@@ -904,6 +910,13 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
+        // We have mapped status_code to response field of authorized
+        // Thus we need to change field name in callback to update it
+        $content[Fields::RESPONSE] = $status;
+
+        // We are saving the gateway entity even if txn was failed
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+
         if ($status !== Status::SUCCESS)
         {
             $message = "Payment Failed during callback";
@@ -913,9 +926,6 @@ class Gateway extends Base\Gateway
                 $status,
                 $message);
         }
-
-        // Authorization was successful
-        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
         return [
             'acquirer' => [
@@ -1062,5 +1072,33 @@ class Gateway extends Base\Gateway
         $class = $ns . '\\' . 'RefundFile';
 
         return (new $class)->generate($input);
+    }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+            Action::AUTHORIZE);
+
+        /**
+         * We do not update the upi status code on callback, thus we are going to
+         * use success as status code to make sure we do not force auth already auth txns.
+         */
+        if (($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) and
+            ($gatewayPayment[Entity::RECEIVED]) === true)
+        {
+            return true;
+        }
+
+        $attr = array_only($input['gateway'], $this->forceFillable);
+
+        $attr[Entity::STATUS_CODE] = Status::SUCCESS;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->generatePspData($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return true;
     }
 }

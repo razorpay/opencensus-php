@@ -873,6 +873,29 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
+        if ($response['status_code'] === 'REFUND_SUCCESSFUL')
+        {
+            $this->scroogeRefundMarkProcessed($refund);
+        }
+
+        return $response;
+    }
+
+    protected function scroogeRefundMarkProcessed(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'PUT',
+            'url'     => '/refunds/'.$input['id'].'/processed',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
         return $response;
     }
 
@@ -936,7 +959,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $content = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [])
     {
         $this->ba->adminAuth();
 
@@ -947,6 +970,15 @@ trait PaymentTrait
         );
 
         $response = $this->makeRequestAndGetContent($request);
+
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        {
+            $response['id'] = $response['refund_id'];
+            $response['payment_id'] = $paymentId;
+
+            $this->scroogeRefund($response);
+        }
 
         return $response;
     }
@@ -998,7 +1030,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
         {
-            $this->scroogeRefund($refund);
+            $this->scroogeRefund($data);
         }
 
         return $data;

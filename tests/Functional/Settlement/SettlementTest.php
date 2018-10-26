@@ -1574,5 +1574,172 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
     }
 
+    public function testMerchantSettlementV2KarvySettlement()
+    {
+        $channel = Channel::AXIS;
 
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2017, 12, 12, 12, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('AmReTNPu1KFKBn');
+
+        $this->fixtures->merchant->createAccount('AwLHhFePbpsfSZ');
+
+        $this->fixtures->edit('merchant', 'AwLHhFePbpsfSZ',['parent_id' => 'AmReTNPu1KFKBn']);
+
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'AwLHhFePbpsfSZ');
+
+        $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2017, 12, 12, 13, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2017, 12, 12, 13, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2017, 12, 12, 14, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+        $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2017, 12, 12, 14, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2017, 12, 12, 15, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
+    }
+
+    public function testMerchantSettlementV2BlockKarvyOutsideTime()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2017, 12, 12, 15, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('AmReTNPu1KFKBn');
+
+        $this->fixtures->merchant->createAccount('AwLHhFePbpsfUU');
+
+        $this->fixtures->edit('merchant', 'AwLHhFePbpsfUU', ['parent_id' => 'AmReTNPu1KFKBn']);
+
+        $input = [
+            'name' => 'Every 1 hour',
+            'period' => 'hourly',
+            'interval' => 1,
+            'delay' => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input, 'AwLHhFePbpsfUU');
+
+        $payments = $this->createPaymentEntities(2, 'AwLHhFePbpsfUU', $dt);
+
+        foreach ($payments as $payment) {
+            $attrs = ['payment' => $payment, 'amount' => '100'];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $dt = Carbon::create(2017, 12, 12, 16, 10, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+        $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
+    }
+
+    public function testMerchantSettlementV2DelayedKarvySettlement()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2017, 12, 12, 12, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('AmReTNPu1KFKBn');
+
+        $this->fixtures->merchant->createAccount('AwLHhFePbpsfSZ');
+
+        $this->fixtures->edit('merchant', 'AwLHhFePbpsfSZ',['parent_id' => 'AmReTNPu1KFKBn']);
+
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'AwLHhFePbpsfSZ');
+
+        $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2017, 12, 12, 16, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2017, 12, 13, 14, 30, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2017, 12, 14, 10, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+    }
 }

@@ -17,4 +17,9 @@ class BaseCodes
 
         return $errorCode;
     }
+
+    public static function getErrorFieldName($fieldName)
+    {
+        return $fieldName;
+    }
 }

@@ -25,6 +25,7 @@ class Selector extends Base\Core
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\RuleFilter::class,
+        Filters\TerminalBankFilter::class,
     ];
 
     /**

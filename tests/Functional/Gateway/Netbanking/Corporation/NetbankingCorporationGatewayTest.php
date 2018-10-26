@@ -215,7 +215,7 @@ class NetbankingCorporationGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if ($action === 'authorize')
+            if ($action === 'callback')
             {
                 $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::FAILURE_CODE;
 

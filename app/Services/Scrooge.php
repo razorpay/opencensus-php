@@ -23,16 +23,21 @@ class Scrooge
 
     protected $proxy;
 
+    protected $request;
+
     protected $headers;
 
     protected $auth;
 
+    const BaseUrl = 'refund';
+
     const URLS = [
-        'initiate'      => 'refund',
+        'initiate'      => '',
+        'retry'         => 'retry',
         'reports'       => 'list/reports',
-        'bulkupdate'    => 'refund/bulk-status-update',
+        'bulkupdate'    => 'bulk-status-update',
         'refunds'       => 'list/refunds',
-        'refund'        => 'refund',
+        'refund'        => '',
     ];
 
     // Headers
@@ -40,11 +45,13 @@ class Scrooge
     const X_MODE        = 'X-Mode';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
     const CONTENT_TYPE  = 'Content-Type';
+    const X_REQUEST_ID  = 'X-Request-ID';
 
     const REQUEST_TIMEOUT = 60;
 
     /**
      * Scrooge constructor.
+     *
      * @param $app
      */
     public function __construct($app)
@@ -58,6 +65,8 @@ class Scrooge
         // Refer: https://github.com/razorpay/api/issues/6385
         $this->mode = $app['rzp.mode'];
 
+        $this->request = $app['request'];
+
         $this->key = $this->config['scrooge_key'];
 
         $this->secret = $this->config['scrooge_secret'];
@@ -69,62 +78,79 @@ class Scrooge
 
     /**
      * @param array $input
-     * @param bool $throwExceptionOnFailure
+     * @param bool  $throwExceptionOnFailure
+     *
      * @return array
-     * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
      */
     public function initiateRefund(array $input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::URLS['initiate'], 'POST', $input, $throwExceptionOnFailure);
+        return $this->sendRequest(self::BaseUrl, 'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
+    {
+        $retryUrl = self::BaseUrl . '/' . $input['id'] . '/' . self::URLS['retry'];
+
+        return $this->sendRequest($retryUrl, 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
      * @param array $input
+     *
      * @return array
      */
     public function getReports(array $input): array
     {
-        return $this->sendRequest(self::URLS['reports'], 'GET', $input);
+        return $this->sendRequest(self::URLS['reports'], 'POST', $input);
     }
 
     /**
      * @param array $input
+     *
      * @return array
      */
     public function bulkUpdateRefundStatus(array $input): array
     {
-        return $this->sendRequest(self::URLS['bulkupdate'], 'PUT', $input);
+        $bulkUpdateUrl = self::BaseUrl . '/' . self::URLS['bulkupdate'];
+
+        return $this->sendRequest($bulkUpdateUrl, 'PUT', $input);
     }
 
     /**
      * @param array $input
+     *
      * @return array
      */
     public function getRefunds(array $input): array
     {
-        return $this->sendRequest(self::URLS['refunds'], 'GET', $input);
+        return $this->sendRequest(self::URLS['refunds'], 'POST', $input);
     }
 
     /**
      * @param string $id
+     *
      * @return array
      */
     public function getRefund(string $id): array
     {
-        return $this->sendRequest(self::URLS['refund'] . '/' . $id, 'GET');
+        return $this->sendRequest(self::BaseUrl . '/' . $id, 'GET');
     }
 
     /**
      * @param string $endpoint
      * @param string $method
-     * @param array $data
-     * @param bool $throwExceptionOnFailure
+     * @param array  $data
+     * @param bool   $throwExceptionOnFailure
+     *
      * @return array
-     * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
      */
-    public function sendRequest(
+    protected function sendRequest(
         string $endpoint,
         string $method,
         array $data = [],
@@ -156,12 +182,14 @@ class Scrooge
         $headers[self::CONTENT_TYPE]  = 'application/json';
         $headers[self::X_MODE]        = $this->mode;
         $headers[self::ADMIN_EMAIL]   = $this->getAdminEmail();
+        $headers[self::X_REQUEST_ID]  = $this->request->getId();
 
         $this->headers = $headers;
     }
 
     /**
      * @param array $request
+     *
      * @return \Requests_Response
      * @throws \Requests_Exception
      */
@@ -207,7 +235,8 @@ class Scrooge
 
     /**
      * @param \Requests_Response $response
-     * @param bool $throwExceptionOnFailure
+     * @param bool               $throwExceptionOnFailure
+     *
      * @return array
      * @throws Exception\RuntimeException
      */
@@ -236,7 +265,8 @@ class Scrooge
     /**
      * @param string $endpoint
      * @param string $method
-     * @param array $data
+     * @param array  $data
+     *
      * @return array
      */
     protected function generateRequest(string $endpoint, string $method, array $data): array

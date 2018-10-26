@@ -191,6 +191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
+    const BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE                         = 'Duplicate email for given type';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
@@ -256,6 +257,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
+    const BAD_REQUEST_INVALID_SUBCATEGORY                                       = 'The business subcategory is not valid';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
@@ -264,6 +266,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                    = 'The merchant has not been suspended. This action can only be taken for suspended merchants';
     const BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED                             = 'The input action is not supported for the merchant';
     const BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS                           = 'Merchant details does not exists';
+    const BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED                         = 'Merchant details cannot be updated';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
@@ -280,6 +283,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
+    const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -435,6 +439,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
     const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                = 'Shared terminal merchant cannot be changed';
+    const BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT          = 'No terminal gateway mapping for direct settlement';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
     const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
 
@@ -643,6 +648,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
@@ -659,6 +665,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
+    const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
@@ -670,6 +677,7 @@ class PublicErrorDescription
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                 = 'Verification of older refunds is disabled';
     const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'Refund is marked unprocessed manually';
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
+    const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';

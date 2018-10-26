@@ -24,8 +24,7 @@ abstract class RequestProcessor extends Beneficiary
 
         $response = [
             'body'            => 'Beneficiaries registration request sent to ' . ucfirst($this->channel),
-            'channel'         => $this->channel,
-            'merchants_count' => $bankAccounts->count(),
+            'channel'         => $this->channel
         ];
 
         return $response;

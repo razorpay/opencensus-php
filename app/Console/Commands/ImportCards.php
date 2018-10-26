@@ -2,11 +2,11 @@
 
 namespace RZP\Console\Commands;
 
+use App;
 use Illuminate\Console\Command;
+
+use RZP\Exception;
 use RZP\Models\Customer\Token\Core;
-use RZP\Models\Merchant\Repository;
-use Symfony\Component\Console\Input\InputArgument;
-use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\Card\Entity as Card;
 
 class ImportCards extends Command
@@ -16,7 +16,7 @@ class ImportCards extends Command
      *
      * @var string
      */
-    protected $signature = 'rzp:import-cards {merchant} {cards-file} {phone-numbers-file}';
+    protected $signature = 'rzp:import-cards {mode} {merchant} {cards-file} {customers-file}';
 
     /**
      * The console command description.
@@ -25,11 +25,8 @@ class ImportCards extends Command
      */
     protected $description = 'Imports all the cards in a file';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
+    protected $repo;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,106 +39,88 @@ class ImportCards extends Command
      */
     public function handle()
     {
+        $mode = $this->argument("mode");
+
+        $app = App::getFacadeRoot();
+        $app['rzp.mode'] = $mode;
+        \Database\DefaultConnection::set($mode);
+
+        $this->repo = $app['repo'];
+
         $merchantId = $this->argument("merchant");
-        $phoneNumbersFilePath   = $this->argument("phone-numbers-file");
+        $customersFilePath   = $this->argument("customers-file");
         $cardsFilePath   = $this->argument("cards-file");
 
-        $merchantRepository = new Repository();
-        $merchant = $merchantRepository->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $core = new \RZP\Models\Customer\Core();
+        $fyndUserToCustomerMap = [];
 
-        $phoneNumbersMap = [];
+        $file = fopen($customersFilePath,"r");
+        fgetcsv($file);
 
-        $file = fopen($phoneNumbersFilePath,"r");
-        while (feof($file) === false)
+        $this->info("Starting import of customer data");
+
+        while (($row = fgetcsv($file)) !== false)
         {
-            $row = fgetcsv($file);
+            $fyndUserId = trim($row[0]);
+            $customerId = trim($row[3]);
 
-            if ($row === false) break;
+            $customer = $this->repo->customer->findByPublicId($customerId);
 
-            $email = trim($row[1]);
-            $phone = trim($row[2]);
-
-            $phoneNumbersMap[$email] = $phone;
+            $fyndUserToCustomerMap[$fyndUserId] = $customer;
         }
+
         fclose($file);
 
+        $this->info("Total customers to process " . count($fyndUserToCustomerMap));
 
         $count = 0;
-        $file = fopen($cardsFilePath,"r");
-        while (feof($file) === false)
+        $file = fopen($cardsFilePath, "r");
+        fgetcsv($file);
+
+        while (($row = fgetcsv($file)) !== false)
         {
-            $jsonString = fgets($file);
+            $expiry = explode('/', $row[1]);
+            $expiryYear = $expiry[0];
+            $expiryMonth = $expiry[1];
 
-            if ($jsonString === false) break;
+            $fyndUserId = $row[3];
 
-            $cardDetails = json_decode($jsonString, true);
-            $email = $cardDetails['customer_id'];
+            $customer = $fyndUserToCustomerMap[$fyndUserId] ?? null;
 
-            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            if ($customer === null)
             {
-                $this->error("Ignored customer_id " . $email);
+                $this->error("No customer found for fyndUserId: $fyndUserId");
+
                 continue;
             }
 
-            if (array_key_exists('card_number', $cardDetails) === false)
-            {
-                continue;
-
-            }
-
-            $request = [
-                Customer::NAME      =>  $cardDetails['name_on_card'],
-                Customer::EMAIL     =>  $cardDetails['customer_id'],
-            ];
-
-            if (empty($request[Customer::NAME]) === true)
-            {
-                $request[Customer::NAME] = "Name";
-            }
-
-            if (isset($phoneNumbersMap[$email]) === true)
-            {
-                $request[Customer::CONTACT] =  $phoneNumbersMap[$email];
-            } else
-            {
-                $this->warn('Importing card without phone number for customer ' . $email);
-            }
-
-            try
-            {
-                $customer = $core->createLocalCustomer($request, $merchant, false);
-            }
-            catch(\Exception $e)
-            {
-                $this->error("Failed to create customer for " . $cardDetails['customer_id']);
-                continue;
-            }
-
-            $card   =   [
+            $cardDetails   =   [
                 'method'    =>  'card',
                 'card'      => [
-                    Card::NUMBER        =>  $cardDetails['card_number'],
-                    Card::NAME          =>  $request[Customer::NAME],
-                    Card::EXPIRY_MONTH  =>  $cardDetails['card_exp_month'],
-                    Card::EXPIRY_YEAR   =>  $cardDetails['card_exp_year'],
+                    Card::NUMBER        =>  $row[0],
+                    Card::NAME          =>  $row[2],
+                    Card::EXPIRY_MONTH  =>  $expiryMonth,
+                    Card::EXPIRY_YEAR   =>  $expiryYear,
                 ]
             ];
 
             $tokenCore = new Core();
+
             try
             {
-                $tokenCore->createDirectToken($customer, $card);
-                $this->info("Successfully imported card ending with xx" . substr($cardDetails['card_number'], -4) . " for " . $cardDetails['customer_id']);
+                $tokenCore->createDirectToken($customer, $cardDetails);
+
+                $this->info("Successfully imported card ending with xx" . substr($row[0], -4) . " for " . $customer->getPublicId());
+
                 $count++;
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
-                $this->error("Failed to save card for " . $cardDetails['customer_id']);
+                $this->error("Failed to save card for fynd user: $fyndUserId  rzp customer id: " . $customer->getPublicId());
             }
-
         }
+
         fclose($file);
 
         $this->info("\n\n\n\nSuccessfully finished importing the cards. Total Cards Imported: " . $count);

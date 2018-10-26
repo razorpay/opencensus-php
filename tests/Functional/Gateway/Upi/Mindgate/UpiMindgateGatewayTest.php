@@ -82,6 +82,7 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
+        $this->assertSame('00', $upiEntity['status_code']);
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);
@@ -505,6 +506,10 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertSame('ZA', $upiEntity['status_code']);
     }
 
     public function testPaymentWithExpiryPrivateAuth()
@@ -547,6 +552,9 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $entity['status']);
         $this->assertEquals(false, $entity['gateway_refunded']);
 
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('BT', $upi['status_code']);
     }
 
     public function testRetryRefund()

@@ -115,12 +115,13 @@ t.oninput = () => {
 }
 
 $('#keys').onclick = t.onkeypress = e => {
+  var source = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0 ? 'checkout.stage.razorpay.in' : 'checkout.razorpay.com';
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
     i.className = 'open';
     i.contentDocument.write(`
       <script>${t.value}<\/script>
       <script>options['modal.onhidden']=_=>parent.i.className=""<\/script>
-      <script src="https://checkout.razorpay.com/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
+      <script src="https://${source}/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
     `)
     i.contentDocument.close();
   }

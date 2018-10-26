@@ -1201,7 +1201,7 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subDays($delay)->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->subMinutes($delay)->getTimestamp();
 
         return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
@@ -1385,6 +1385,11 @@ class Service extends Base\Service
     public function updateReceiverData()
     {
         return $this->core->updateReceiverData();
+    }
+
+    public function updateBankTransferTerminal($input)
+    {
+        return $this->core->updateBankTransferTerminal($input);
     }
 
     public function validateVpa($input)

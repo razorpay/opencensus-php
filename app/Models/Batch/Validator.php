@@ -5,9 +5,11 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Exception\BaseException;
+use RZP\Models\Merchant\Entity as ME;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -117,6 +119,15 @@ class Validator extends Base\Validator
         Entity::CONFIG => 'filled|array',
     ];
 
+    protected static $entityMappingCreateRules = [
+        Entity::TYPE                         => 'required|in:entity_mapping',
+        Entity::NAME                         => 'filled|string|max:255',
+        Entity::FILE                         => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG                       => 'required|array',
+        Entity::CONFIG . '.entity_from_type' => 'required|string',
+        Entity::CONFIG . '.entity_to_type'   => 'required|string',
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -142,10 +153,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE                 => 'required|in:sub_merchant',
-        Entity::NAME                 => 'filled|string|max:255',
-        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Entity::APPLICATION_ID       => 'filled|string|size:14',
+        Entity::TYPE           => 'required|in:sub_merchant',
+        Entity::NAME           => 'filled|string|max:255',
+        Entity::FILE           => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        ME::AUTO_SUBMIT        => 'filled|boolean',
+        ME::AUTOFILL_DETAILS   => 'filled|boolean',
+        ME::AUTO_ACTIVATE      => 'filled|boolean',
+        ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -200,11 +214,11 @@ class Validator extends Base\Validator
      * Validates entries(array) of batch input file before
      * creating the batch entity.
      *
-     * @param array           $entries
-     * @param array           $params
-     * @param Merchant\Entity $merchant
+     * @param array $entries
+     * @param array $params
+     * @param ME    $merchant
      */
-    public function validateEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    public function validateEntries(array & $entries, array $params, ME $merchant)
     {
         $rules = $this->getRuleNames();
 
@@ -365,7 +379,7 @@ class Validator extends Base\Validator
     protected function validateRefundEntries(
         array & $entries,
         array $params,
-        Merchant\Entity $merchant)
+        ME $merchant)
     {
         $existingPaymentIds = [];
 
@@ -410,16 +424,16 @@ class Validator extends Base\Validator
      * - Creates dummy invoice object and validates them as it happens
      *   otherwise in creation by API flow. This approach let us re-use code.
      *
-     * @param array             $entries
-     * @param array             $params
-     * @param Merchant\Entity   $merchant
+     * @param array $entries
+     * @param array $params
+     * @param ME    $merchant
      *
      * @throws BadRequestException
      */
     protected function validatePaymentLinkEntries(
         array & $entries,
         array $params,
-        Merchant\Entity $merchant)
+        ME $merchant)
     {
         // Associative array with index as input file's row index and values
         // as the error message.
@@ -490,7 +504,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVirtualBankAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    protected function validateVirtualBankAccountEntries(array & $entries, array $params, ME $merchant)
     {
         if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
         {
@@ -503,7 +517,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateRecurringChargeEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    protected function validateRecurringChargeEntries(array & $entries, array $params, ME $merchant)
     {
         if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
         {
@@ -517,7 +531,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validatePayoutEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    protected function validatePayoutEntries(array & $entries, array $params, ME $merchant)
     {
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
@@ -530,7 +544,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    protected function validateLinkedAccountEntries(array & $entries, array $params, ME $merchant)
     {
         //
         // Batch creation for linked account should only be allowed for
@@ -554,7 +568,7 @@ class Validator extends Base\Validator
     }
 
     protected function validateEmandateRegisterHdfcEntries(
-        array & $entries, array $params, Merchant\Entity $merchant)
+        array & $entries, array $params, ME $merchant)
     {
         foreach ($entries as $entry)
         {
@@ -572,7 +586,7 @@ class Validator extends Base\Validator
     }
 
     protected function validateEmandateDebitHdfcEntries(
-        array & $entries, array $params, Merchant\Entity $merchant)
+        array & $entries, array $params, ME $merchant)
     {
         foreach ($entries as $entry)
         {
@@ -589,24 +603,13 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateSubMerchantEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
-        if ($merchant->isFeatureEnabled(Feature::AGGREGATOR) === false)
+        if ($merchant->isNonPurePlatformPartner() === false)
         {
             throw new BadRequestValidationFailureException(
-                'Sub-merchant creation not allowed for merchant',
+                PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT,
                 null,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
-
-        if ((isset($params[Entity::APPLICATION_ID]) === true) and
-            ($merchant->isFeatureEnabled(Feature::PARTNER) === false))
-        {
-            throw new BadRequestValidationFailureException(
-                'Application ID cannot be sent, and is not allowed',
-                Entity::APPLICATION_ID,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);

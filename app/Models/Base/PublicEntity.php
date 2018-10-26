@@ -11,11 +11,8 @@ use RZP\Models\Currency;
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY                = 'entity';
-
     const PUBLIC_ID             = 'public_id';
-
     const ADMIN                 = 'admin';
-
     const MERCHANT_ID           = 'merchant_id';
 
     /**
@@ -23,6 +20,8 @@ class PublicEntity extends UniqueIdEntity
      * in various cases.
     */
     const IDS                   = 'ids';
+
+    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/';
 
     protected static $sign      = '';
 
@@ -72,6 +71,19 @@ class PublicEntity extends UniqueIdEntity
      * @var array
      */
     protected $hosted           = [];
+
+    /**
+     * This variable name cannot be "customer" since
+     * some entities like subscriptions have a relation
+     * named customer already which is accessed by magic method.
+     * That clashes. Hence, using publicCustomer instead.
+     *
+     * This is mainly used right now for displaying refund
+     * details to the customer.
+     *
+     * @var array
+     */
+    protected $publicCustomer      = [];
 
     protected $publicSetters    = [
         self::ID,
@@ -218,6 +230,13 @@ class PublicEntity extends UniqueIdEntity
         $attributes = $this->toArrayPublic();
 
         return array_only($attributes, $this->hosted);
+    }
+
+    public function toArrayPublicCustomer()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->publicCustomer);
     }
 
     /**

@@ -2,68 +2,87 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
-use Razorpay\OAuth;
-
-use RZP\Models\User;
-use RZP\Models\Partner;
 use RZP\Models\Merchant;
-use RZP\Models\Admin\Org;
 use RZP\Models\Batch\Type;
-use RZP\Models\BankAccount;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
-use RZP\Mail\User as UserMail;
-use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Merchant\Email;
+use RZP\Models\Merchant\Entity as ME;
+use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 
 class SubMerchant extends Base
 {
+    /**
+     * @var MerchantDetailCore
+     */
+    protected $merchantDetailCore;
+
+    /**
+     * @var Merchant\Service
+     */
+    protected $merchantService;
+
     /**
      * @var Merchant\Core
      */
     protected $merchantCore;
 
     /**
-     * @var BankAccount\Core
+     * @var string
      */
-    protected $bankAccountCore;
+    protected $userId;
 
     /**
-     * @var MerchantDetail\Core
+     * Used to check if activation form  needs to be auto-submitted
+     *
+     * @var bool
      */
-    protected $merchantDetailCore;
+    protected $autoSubmit = false;
 
     /**
-     * @var OAuth\Application\Entity
+     * Used to check if activation form  detail needs to be auto-filled
+     *
+     * @var bool
      */
-    protected $partnerApp;
+    protected $autofillDetails = false;
 
     /**
-     * @var array
+     * Used to check if sub-merchants need to be auto-activated
+     *
+     * @var bool
      */
-    protected $orgData;
+    protected $autoActivate = false;
 
-    const SUB_MERCHANT_USER_DEFAULT_PASSWORD = 'password123';
+    /**
+     * Used to check if sub-merchant email needs to be treated as dummy
+     * when provided in which case the submerchant email is same as the
+     * partner email and the dummy is stored in the merchant_emails table
+     * for business purposes.
+     *
+     * @var bool
+     */
+    protected $useMerchantEmailAsDummy = true;
 
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
 
-        $this->merchantCore       = new Merchant\Core;
-        $this->bankAccountCore    = new BankAccount\Core;
-        $this->merchantDetailCore = new MerchantDetail\Core;
+        $this->merchantDetailCore = new MerchantDetailCore;
+
+        $this->merchantService  = new Merchant\Service;
+
+        $this->merchantCore = new Merchant\Core;
     }
 
     protected function processEntry(array & $entry)
     {
         $this->repo->transactionOnLiveAndTest(function() use (& $entry)
         {
-            $subMerchant = $this->createSubMerchantForEntry($entry);
-
-            $this->processPartnerAppIfApplicable($subMerchant, $entry);
+            $this->createSubMerchantForEntry($entry);
 
             $this->unsetExtraOutputKeys($entry);
         });
@@ -71,136 +90,111 @@ class SubMerchant extends Base
 
     protected function performPreProcessingActions()
     {
-        $this->setPartnerAppIfApplicable();
+        $this->autoSubmit = (empty($this->params[ME::AUTO_SUBMIT]) === false);
+
+        $this->autofillDetails = (empty($this->params[ME::AUTOFILL_DETAILS]) === false);
+
+        $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
+
+        //
+        // This is true by default and needs to be overridden only when an input
+        // is set to False explicitly, it should not be overridden by null. Hence
+        // the following explicitly check for isset.
+        //
+        if (isset($this->params[ME::USE_EMAIL_AS_DUMMY]) === true)
+        {
+            $this->useMerchantEmailAsDummy = $this->params[ME::USE_EMAIL_AS_DUMMY];
+        }
+
+        $this->userId = $this->merchant->primaryOwner()->getId();
 
         return parent::performPreProcessingActions();
-    }
-
-    protected function setPartnerAppIfApplicable()
-    {
-        $appId = $this->params[Entity::APPLICATION_ID] ?? null;
-
-        if (empty($appId) === true)
-        {
-            return;
-        }
-
-        /** @var OAuth\Application\Entity $app */
-        $app = (new OAuth\Application\Repository)->findOrFailPublic($appId);
-
-        $appType = $app->getType();
-
-        if ($appType !== OAuth\Application\Type::PARTNER)
-        {
-            throw new BadRequestValidationFailureException(
-                'Application is not of type partner',
-                Entity::APPLICATION_ID,
-                ['type' => $appType]);
-        }
-
-        $this->partnerApp = $app;
-
-        // Org data is required for the sub-merchant user confirmation email
-        /** @var Org\Entity $razorpayOrg */
-        $razorpayOrg   = $this->repo->org->getRazorpayOrg();
-        $this->orgData = array_merge(
-            $razorpayOrg->toArrayPublic(),
-            [
-                Org\Hostname\Entity::HOSTNAME => $razorpayOrg->getPrimaryHostName()
-            ]);
     }
 
     /**
      * @param  array $entry
      *
-     * @return Merchant\Entity
+     * @return ME
      */
-    protected function createSubMerchantForEntry(array & $entry) : Merchant\Entity
+    protected function createSubMerchantForEntry(array & $entry) : ME
     {
-        $input = Helper::getSubMerchantInput($entry);
+        $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
 
-        // Create Sub-merchant account
-        $subMerchant = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
+        $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->merchant);
 
-        $this->merchantCore->addSubMerchantReferral($this->merchant, $subMerchant);
-
-        $this->merchantCore->attachSubMerchantOwner($this->merchant->primaryOwner()->getId(), $subMerchant);
-
-        $this->repo->saveOrFail($subMerchant);
+        /** @var ME $subMerchant */
+        $subMerchant = $this->repo->merchant->findOrFailPublic(
+            Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
 
         $status = Status::SUCCESS;
 
-        // Fill in merchant details (activation form)
-        $detailInput = Helper::getSubMerchantDetailInput($entry);
-        $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
+        if ($this->autofillDetails === true)
+        {
+            // Fill in merchant details (activation form)
+            $detailInput = Helper::getSubMerchantDetailInput($entry, $this->merchant, $this->useMerchantEmailAsDummy);
+            $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
+        }
 
-        // Add files and submit for non-partner flow
-        if ($this->partnerApp === null)
+        if ($this->autoSubmit === true)
         {
             // Save files
             $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
 
             // Submit activation form
-            $submitData = [MerchantDetail\Entity::SUBMIT => '1'];
+            $submitData = [MerchantDetail::SUBMIT => '1'];
             $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
 
-            $status = ($response[MerchantDetail\Entity::SUBMITTED] === true) ?
-                Status::SUCCESS : Status::FAILURE;
+            if ($response[MerchantDetail::SUBMITTED] === false)
+            {
+                $status                           = Status::FAILURE;
+                $entry[Header::ERROR_DESCRIPTION] = 'Activation details not submitted successfully';
+            }
+
+            if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
+            {
+                $status = Status::SUCCESS;
+
+                $this->merchantCore->autoUpdateCategoryDetails(
+                        $subMerchant,
+                        $entry[Header::BUSINESS_CATEGORY],
+                        $entry[Header::BUSINESS_SUB_CATEGORY]);
+
+                $websiteUpdateData = [ME::WEBSITE => $entry[Header::WEBSITE_URL]];
+
+                $this->merchantCore->edit($subMerchant, $websiteUpdateData);
+
+                $response = (new Merchant\Activate)->activate($subMerchant);
+
+                if ($response[ME::ACTIVATED] === false)
+                {
+                    $status = Status::FAILURE;
+
+                    $entry[Header::ERROR_DESCRIPTION] = 'Merchant not activated successfully';
+                }
+            }
         }
 
-        $entry[Header::MERCHANT_ID] = $subMerchant->getId();
+        if (($this->useMerchantEmailAsDummy === true) and (empty($entry[Header::MERCHANT_EMAIL]) === false))
+        {
+            $emailInput = [
+                Email\Entity::EMAIL => $entry[Header::MERCHANT_EMAIL],
+                Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
+            ];
+
+            (new Email\Core)->create($subMerchant, $emailInput);
+        }
+
         $entry[Header::STATUS]      = $status;
+        $entry[Header::MERCHANT_ID] = Account::getSignedId($subMerchant->getId());
 
         return $subMerchant;
     }
 
-    protected function processPartnerAppIfApplicable(Merchant\Entity $subMerchant, array & $entry)
-    {
-        if ($this->partnerApp === null)
-        {
-            return;
-        }
-
-        $token = (new Partner\Core)->connectMerchant($this->partnerApp, $this->merchant, $subMerchant);
-
-        $status = ((empty($token)) === true) ? Status::FAILURE : Status::SUCCESS;
-
-        $this->createSubMerchantUserAndEmail($subMerchant);
-
-        $entry[Header::STATUS]      = $status;
-        $entry[Header::PARTNER_TOKEN] = $token;
-    }
-
-    protected function createSubMerchantUserAndEmail(Merchant\Entity $subMerchant)
-    {
-        $userInput = [
-            User\Entity::NAME                  => $subMerchant->getName(),
-            User\Entity::EMAIL                 => $subMerchant->getEmail(),
-            User\Entity::PASSWORD              => self::SUB_MERCHANT_USER_DEFAULT_PASSWORD,
-            User\Entity::PASSWORD_CONFIRMATION => self::SUB_MERCHANT_USER_DEFAULT_PASSWORD,
-            User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
-        ];
-
-        // Create a new user
-        $subMerchantUser = (new User\Core)->create($userInput);
-
-        // Attach the user as an owner on the sub_merchant account
-        (new Merchant\Core)->attachSubMerchantOwner($subMerchantUser->getPublicId(), $subMerchant);
-
-        // Sent the user an email for confirmation
-        $this->sendSubmerchantUserEmail($subMerchantUser);
-    }
-
-    protected function sendSubmerchantUserEmail(User\Entity $user)
-    {
-        $confirmationMail = new UserMail\AccountVerification($user, $this->orgData);
-
-        Mail::queue($confirmationMail);
-    }
-
     protected function unsetExtraOutputKeys(array & $entry)
     {
-        $entry = array_only($entry, Header::HEADER_MAP[Type::SUB_MERCHANT][Header::OUTPUT]);
+        $outputHeaders = Header::HEADER_MAP[Type::SUB_MERCHANT][Header::OUTPUT];
+
+        $entry = array_only($entry, $outputHeaders);
     }
 
     protected function sendProcessedMail()

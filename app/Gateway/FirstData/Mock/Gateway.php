@@ -12,6 +12,15 @@ class Gateway extends FirstData\Gateway
 
     public function authorize(array $input)
     {
-        return $this->authorizeMock($input);
+        $this->setS2sFlowFlag($input);
+
+        if ($this->s2sFlowFlag === false)
+        {
+            return $this->authorizeMock($input);
+        }
+        else
+        {
+            return parent::authorize($input);
+        }
     }
 }

@@ -3,15 +3,11 @@
 namespace RZP\Models\Upi;
 
 use Cache;
-use Database;
-use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Models\P2p;
 use RZP\Models\Device;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class Core extends Base\Core
 {

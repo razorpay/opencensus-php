@@ -395,7 +395,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Root and handle from alpha numeric shared terminal will be used.
-        $this->assertStringStartsWith("RZRPRPAY", $vba['account_number']);
+        $this->assertStringStartsWith("RZRPAY", $vba['account_number']);
 
         $terminalAttributes = [
             'gateway'               => Gateway::BT_DASHBOARD,
@@ -889,7 +889,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         $refund =  $this->getLastEntity('refund', true);
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
         // Make a payment with right order amount
@@ -937,7 +937,7 @@ class VirtualAccountTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
         $this->assertEquals(1000, $refund['amount']);
     }
 

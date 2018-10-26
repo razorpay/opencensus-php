@@ -82,9 +82,19 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input): array
+    /**
+     * We need the merchant param for batch. This can be removed once the code is restructured
+     * in a way that batch can call just core class functions.
+     *
+     * @param  array       $input
+     * @param  Entity|null $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function createSubMerchant(array $input, Entity $merchant = null): array
     {
-        $merchant = $this->merchant;
+        $merchant = $merchant ?? $this->merchant;
 
         $isLinkedAccount = (bool) ($input['account'] ?? false);
 
@@ -299,9 +309,9 @@ class Service extends Base\Service
             return;
         }
 
-        $orgId = $this->auth->getOrgId();
+        $orgId = $subMerchant['org']['id'];
 
-        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+        $org = $this->repo->org->find($orgId)->toArrayPublic();
 
         $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
 
@@ -454,7 +464,9 @@ class Service extends Base\Service
                 'pricing_plan_id');
         }
 
-        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($input['pricing_plan_id']);
+        $orgId = $merchant->org->getId();
+
+        $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($input['pricing_plan_id'], $orgId);
 
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
@@ -499,13 +511,55 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $scheduleTask->toArrayPublic();
+    }
+
+    public function bulkAssignSchedule(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_SCHEDULE_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_schedule', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        $schedule    = $input['schedule'];
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $schedule)
+                {
+                    $this->assignSettlementSchedule($merchantId, $schedule);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    \Razorpay\Trace\Logger::ERROR,
+                    TraceCode::MERCHANT_SCHEDULE_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $schedule,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
     }
 
     public function migrateMerchantToSettlementSchedules($input)
@@ -576,23 +630,6 @@ class Service extends Base\Service
         $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
 
         return $plan->toArrayPublic();
-    }
-
-    public function activate($id)
-    {
-        $this->trace->info(
-            TraceCode::MERCHANT_ACTIVATE_REQUEST,
-            [
-                'merchant_id' => $id,
-            ]);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $act = new Activate($this->app);
-
-        $act->activate($merchant);
-
-        return $merchant->toArrayPublic();
     }
 
     public function sendActivationEmail(array $input)
@@ -1277,7 +1314,7 @@ class Service extends Base\Service
 
         return [
             $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.3
+            $key2 => Cache::get($key2) ?? 0.2
         ];
     }
 
@@ -2067,8 +2104,10 @@ class Service extends Base\Service
 
             unset($input['dashboard_access']);
 
+            /** @var  Core */
             $merchantCore = $this->core();
 
+            /** @var Entity */
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
 
             $newUser = null;
@@ -2431,5 +2470,53 @@ class Service extends Base\Service
         }
 
         return ['success' => true];
+    }
+
+    /**
+     * Fetches submerchant / linked / referred accounts for parent account.
+     */
+    public function fetchAssociatedAccounts(string $merchantId)
+    {
+        $associatedAccounts = [];
+
+        $merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        if ($merchant->isMarketplace() === true)
+        {
+            // linked accounts
+            $associatedAccounts = $merchant->accounts()->get()->getIds();
+        }
+        else if ($merchant->isPartner() === true)
+        {
+            // submerchant accounts
+            $associatedAccounts = $this->core()->listSubmerchants($merchant, [])->getIds();
+        }
+        else if ($merchant->hasAggregatorFeature() === true)
+        {
+            // referred accounts
+            $associatedAccounts = $this->repo->merchant->fetchReferredMerchants($merchantId)->getIds();
+        }
+
+        return ['associated_accounts' => array_unique($associatedAccounts)];
+    }
+
+    /**
+     * Takes Merchant from auth context and sends it to razorx.
+     *
+     * @param string $featureFlag
+     *
+     * @return array
+     */
+    public function getRazorxTreatment(string $featureFlag)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $mode = $this->mode ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment($merchantId, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
     }
 }
