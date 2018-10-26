@@ -86,9 +86,10 @@ export default connect(null, { openModal, closeModal })(props => {
                     <React.Fragment>
                       {!hasKeyAccess && (
                         <p>
-                          You can generate API keys in Test Mode. For generating
-                          keys in Live Mode, you need to provide your business
-                          website/app details while filling the activation form.
+                          You can generate API keys in Test Mode.<br />For
+                          generating keys in Live Mode, you need to provide your
+                          business website/app details while filling the
+                          activation form.
                         </p>
                       )}
                       <button
