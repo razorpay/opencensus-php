@@ -2,16 +2,16 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    name: api-sqs-invoice-reports
-  name: api-sqs-invoice-reports
+    name: api-sqs-subscription-charge
+  name: api-sqs-subscription-charge
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 6
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: api-sqs-invoice-reports
+      name: api-sqs-subscription-charge
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,12 +23,12 @@ spec:
         iam.amazonaws.com/role: kube-prod-api
       creationTimestamp: null
       labels:
-        name: api-sqs-invoice-reports
+        name: api-sqs-subscription-charge
     spec:
       containers:
       - args:
         - sqs_multi_default
-        - api-invoice-reports
+        - api-subscriptions-charge
         - "10"
         env:
         - name: APP_MODE
@@ -36,7 +36,7 @@ spec:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:0b7d01ff1067ad8e91dea4c907d882fc622b308
+        image: razorpay/api:0b7d01ff1067ad8e91dea4c907d882fc622b3081
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -45,7 +45,7 @@ spec:
               - /usr/bin/php
               - artisan
               - queue:restart
-        name: sqs-invoice-reports
+        name: sqs-subscriptions-charge
         ports:
         - containerPort: 80
           protocol: TCP
@@ -66,6 +66,6 @@ spec:
       terminationGracePeriodSeconds: 300
       volumes:
       - hostPath:
-          path: /var/log/fluentd/api/sqs-invoice-reports/trace
+          path: /var/log/fluentd/api/sqs-subscriptions-charge/trace
           type: ""
         name: trace

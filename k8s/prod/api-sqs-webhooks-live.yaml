@@ -2,16 +2,16 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    name: api-sqs-invoice-reports
-  name: api-sqs-invoice-reports
+    name: api-sqs-webhooks-live
+  name: api-sqs-webhooks-live
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 6
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: api-sqs-invoice-reports
+      name: api-sqs-webhooks-live
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,12 +23,12 @@ spec:
         iam.amazonaws.com/role: kube-prod-api
       creationTimestamp: null
       labels:
-        name: api-sqs-invoice-reports
+        name: api-sqs-webhooks-live
     spec:
       containers:
       - args:
         - sqs_multi_default
-        - api-invoice-reports
+        - api-webhooks-live
         - "10"
         env:
         - name: APP_MODE
@@ -36,7 +36,7 @@ spec:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:0b7d01ff1067ad8e91dea4c907d882fc622b308
+        image: razorpay/api:a50413b285a9890bdeefa34e8f2ada2c5e22cde9
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -45,7 +45,7 @@ spec:
               - /usr/bin/php
               - artisan
               - queue:restart
-        name: sqs-invoice-reports
+        name: sqs-webhooks-live
         ports:
         - containerPort: 80
           protocol: TCP
@@ -66,6 +66,6 @@ spec:
       terminationGracePeriodSeconds: 300
       volumes:
       - hostPath:
-          path: /var/log/fluentd/api/sqs-invoice-reports/trace
+          path: /var/log/fluentd/api/sqs-webhooks-live/trace
           type: ""
         name: trace
