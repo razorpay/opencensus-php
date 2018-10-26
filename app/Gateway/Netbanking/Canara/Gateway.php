@@ -279,7 +279,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
-
     }
 
     protected function getVerifyRequest($verify)
@@ -380,9 +379,9 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
-        if (($response[ResponseFields::RETURN_CODE] === Constants::SUCCESS) and
-            (isset($response[ResponseFields::VERIFY_STATUS]) === true) and
-            ($response[ResponseFields::VERIFY_STATUS] === Constants::SUCCESS_VERIFY_STATUS))
+        if (($response[ResponseFields::STATUS][ResponseFields::RETURN_CODE] === Constants::SUCCESS) and
+            (isset($response[ResponseFields::STATUS][ResponseFields::VERIFY_STATUS]) === true) and
+            ($response[ResponseFields::STATUS][ResponseFields::VERIFY_STATUS] === Constants::SUCCESS_VERIFY_STATUS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -390,11 +389,17 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributes(array $content): array
     {
-        return [
+        $data = [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::VERIFY_STATUS],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::VER_BANK_REFERENCE_NUMBER]
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS][ResponseFields::RETURN_CODE], //TODO should this be converted to success/failure?
         ];
+
+        if (empty($content[ResponseFields::VER_BANK_REFERENCE_NUMBER]) === false)
+        {
+            $data[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::VER_BANK_REFERENCE_NUMBER];
+        }
+
+        return $data;
     }
 
     protected function getVerifyAmountMismatch(Verify $verify)
@@ -403,7 +408,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (isset($content[ResponseFields::VER_AMOUNT]) === false)
+        if (empty($content[ResponseFields::VER_AMOUNT]) === true)
         {
             return false;
         }
@@ -437,7 +442,9 @@ class Gateway extends Base\Gateway
 
     protected function parseResponseXml(string $response): array
     {
-        return (array) simplexml_load_string(trim($response));
+        $response = (array) simplexml_load_string(trim($response));
+
+        return json_decode(json_encode($response), true);
     }
 
     public function formatAmount($amount)
