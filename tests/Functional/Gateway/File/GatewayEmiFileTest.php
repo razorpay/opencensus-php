@@ -255,11 +255,16 @@ class GatewayEmiFileTest extends TestCase
                 'trivia'        => 'random trivia'
             ]);
 
-        $this->fixtures->create('terminal', [
+        $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'sbi_emi',
             'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal->getId(),[
+            'enabled'   => 1,
         ]);
 
         // creating a random terminal on same merchant to validate
@@ -332,19 +337,29 @@ class GatewayEmiFileTest extends TestCase
             'merchant_id'           => '10000000000000',
         ]);
 
-        $this->fixtures->create('terminal', [
+        $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'sbi_emi',
             'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
         ]);
 
+        $this->fixtures->edit('terminal', $terminal->getId(),[
+            'enabled'   => 1,
+        ]);
+
         // duplicate `sbi_emi` terminal
-        $this->fixtures->create('terminal', [
+        $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'sbi_emi',
             'gateway_merchant_id'   => '250000003',
+            'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal->getId(),[
+            'enabled'   => 1,
         ]);
 
         $this->ba->publicAuth();

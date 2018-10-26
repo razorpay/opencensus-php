@@ -74,7 +74,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
-        'sbi_emi',
+        Payment\Gateway::SBI_EMI,
     ];
 
     protected static $createValidators = [
@@ -226,6 +226,7 @@ class Validator extends Base\Validator
     protected static $sbiEmiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:sbi_emi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::ENABLED                    => 'required|in:0',
     ];
 

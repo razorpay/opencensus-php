@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -16,7 +17,6 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Services\Beam\Constants as BeamConstants;
-
 
 class Sbi extends Base
 {
@@ -109,6 +109,8 @@ class Sbi extends Base
             {
                 $mid = null;
 
+                $tid = null;
+
                 $emiPlan = $emiPayment->emiPlan;
 
                 $merchantDetail = $emiPayment->merchant->merchantDetail;
@@ -117,11 +119,14 @@ class Sbi extends Base
 
                 foreach ($terminals as $terminal)
                 {
-                    if ($terminal[Terminal\Entity::GATEWAY] === 'sbi_emi')
+                    if (($terminal[Terminal\Entity::GATEWAY] === Payment\Gateway::SBI_EMI) and
+                        ($terminal->isEnabled() === true))
                     {
                         if (empty($mid) === true)
                         {
                             $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+                            $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
                         }
                         else
                         {
@@ -172,8 +177,8 @@ class Sbi extends Base
                     $this->strpad('Razor Pay', 40) .
                     $this->strpad($mid, 16) .
                     $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
-                    $this->strpad('38R00001', 8) .
-                    $this->formatRate($rate) .
+                    $this->strpad($tid, 8) .
+                    str_pad(str_pad($rate, 2, '0', STR_PAD_LEFT), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
                     $this->numpad($principalAmount, 17) .
                     'F' .
@@ -184,6 +189,11 @@ class Sbi extends Base
                     $this->numpad('0', 17) .
                     $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
                     $this->strpad('', 108);
+
+                if (strlen(end($body)) !== 450)
+                {
+                    throw new LogicException('Row not formatted properly', null, ['length' => strlen(end($body))]);
+                }
             }
             catch (\Exception $e)
             {
@@ -254,16 +264,6 @@ class Sbi extends Base
         return strtoupper(str_pad($str, $length, ' ', STR_PAD_RIGHT));
     }
 
-    private function formatRate($rate)
-    {
-        if ($rate < 10)
-        {
-            $rate = '0' . $rate;
-        }
-
-        return str_pad($rate, 7, '0', STR_PAD_RIGHT);
-    }
-
     private function getTxtFromRows(array $rows): string
     {
         $txt = '';
@@ -274,11 +274,6 @@ class Sbi extends Base
         {
             foreach ($rows as $index => $row)
             {
-                if (strlen($row) !== 450)
-                {
-                    throw new LogicException('Row not formatted properly', null, ['length' => strlen($row)]);
-                }
-
                 $txt .= $row;
 
                 // Don't add newline for the last line
