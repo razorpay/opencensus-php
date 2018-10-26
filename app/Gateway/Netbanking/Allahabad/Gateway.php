@@ -146,7 +146,10 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
-                    'content' => $content
+                    'content'    => $content,
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $content[ResponseFields::ITEM_CODE],
+
                 ]);
 
             throw new Exception\GatewayErrorException(
