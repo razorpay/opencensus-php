@@ -66,7 +66,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION               = 'description';
     const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
-    const ENTITY_TYPE                = 'entity_type';
+    const ENTITY_TYPE               = 'entity_type';
+    const ENTITY_ID                 = 'entity_id';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
