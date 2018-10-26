@@ -224,7 +224,7 @@ trait RequestResponseFlowTrait
             'cookies' => array(),
             'files' => array(),
             'raw' => '');
-
+        sd($request);
         $request = array_merge($defaults, $request);
 
         if ($this->ba->isPublicAuth() === false)

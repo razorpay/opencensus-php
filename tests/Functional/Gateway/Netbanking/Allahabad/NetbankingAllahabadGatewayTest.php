@@ -214,27 +214,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
         });
     }
 
-    protected function createRefundForFileGeneration()
-    {
-        return array_map(
-            function($amount)
-            {
-                $refund = $this->doAuthCaptureAndRefundPayment($this->payment, $amount);
-
-                $payment = $this->getDbLastEntity('payment');
-
-                $createdAt = Carbon::yesterday(Timezone::IST)
-                                ->addHours(10)
-                                ->addMinutes(45)
-                                ->getTimestamp();
-
-                $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-                $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
-            },
-            [50000, 50000, 10000]
-        );
-    }
-
     protected function checkRefundExcelData(array $data, array $file)
     {
         $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
