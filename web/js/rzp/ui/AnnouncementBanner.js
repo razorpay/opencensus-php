@@ -36,7 +36,7 @@ export default class Announcement extends Component {
   constructor(props) {
     super(props);
 
-    this.isPure = 'hidden' in props;
+    this.isPure = props.hasOwnProperty('hidden');
 
     if (!this.isPure) {
       this.state = {
