@@ -18,10 +18,12 @@ import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
-import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
+
+import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
+import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/Entity';
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
@@ -84,6 +86,9 @@ const entityDetailsMap = {
     component: SubscriptionDetails,
   },
   '/subscriptions/:id(sub_.+)': { component: SubscriptionDetails },
+  '/subscriptions/batchuploads/:id(batch_.+)': {
+    component: SubscriptionBatchDetails,
+  },
 
   '/route/transfers/:id': { component: TransferDetails },
   '/route/reversals/:id': { component: ReversalDetails },
@@ -114,6 +119,11 @@ const entityModalsMap = {
     featureEnabled: 'paymentpages',
     additionalCondition: user => user.isAllowedEdit('payment_pages'),
   },
+};
+
+export const supportHashMapping = {
+  '#request': '#support',
+  '#ticket': '#ticket',
 };
 
 export const matchDetail = matchDetailx(store, entityDetailsMap);

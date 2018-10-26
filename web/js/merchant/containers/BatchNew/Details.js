@@ -18,7 +18,7 @@ import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
     return {
       isLoading: batchDetails.loading,
       error: batchDetails.error,
-      ...batchDetails.item,
+      ...batchDetails.entity,
     };
   },
   {

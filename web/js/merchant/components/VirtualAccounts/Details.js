@@ -72,16 +72,21 @@ export default props => {
                   )}
                 />
 
-                {!!Object.keys(virtualaccount.notes).length && (
-                  <EntityDetailRow label="Notes">
-                    {Object.keys(virtualaccount.notes).map((key, index) => (
-                      <Definition key={index} customClass="notes">
-                        {key}
-                        {String(virtualaccount.notes[key] || '--')}
-                      </Definition>
-                    ))}
-                  </EntityDetailRow>
-                )}
+                {/* Notes */}
+                <EntityDetailRow label="Notes">
+                  {virtualaccount.notes &&
+                  Object.keys(virtualaccount.notes).length === 0
+                    ? '--'
+                    : Object.keys(virtualaccount.notes).map((key, index) => (
+                        <div className="m-b" key={index}>
+                          <Definition>
+                            {key}
+                            {String(virtualaccount.notes[key])}
+                            <i />
+                          </Definition>
+                        </div>
+                      ))}
+                </EntityDetailRow>
               </div>
 
               {virtualaccount.status !== 'closed' ? (

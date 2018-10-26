@@ -150,3 +150,8 @@ export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
 
 export const fetchTokens = params => fetchAll(params, Token, 'TOKENS');
 export const tokensReducer = makeActionCollectionReducer('TOKENS');
+
+export const fetchEmandatePayments = params => {
+  params.recurring = 1;
+  return fetchAll(params, Payment, 'PAYMENTS');
+};

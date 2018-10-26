@@ -1,3 +1,14 @@
+export const getSearchParams = () =>
+  location.search
+    .slice(1)
+    .split(/&|=/)
+    .reduce((p, n, i, a) => {
+      if (n && !(i % 2)) {
+        p[decodeURIComponent(n)] = decodeURIComponent(a[i + 1]);
+      }
+      return p;
+    }, {});
+
 export const getFormattedAmount = amount =>
   (amount / 100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
 

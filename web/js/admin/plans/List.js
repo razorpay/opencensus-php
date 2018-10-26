@@ -4,7 +4,7 @@ import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
-import { openPricingEntity } from './Entity';
+import { openPricingEntity, copyPricingEntity } from './Entity';
 import Plan from './plan';
 
 function fetchFn() {
@@ -23,6 +23,7 @@ export default class PlanList extends Component {
   collection = new Collection({
     data: {
       url: 'live/pricing/merchants',
+      copyItem: rules => this.copyPricing(rules),
     },
     fetchFn,
   });
@@ -31,6 +32,15 @@ export default class PlanList extends Component {
     openPricingEntity.call({
       collection: this.collection,
     });
+
+  copyPricing = rules => {
+    copyPricingEntity.call(
+      {
+        collection: this.collection,
+      },
+      rules
+    );
+  };
 
   render() {
     return (
@@ -56,5 +66,5 @@ export default class PlanList extends Component {
 const pricingFields = [
   ['Plan ID', item => item.id],
   ['Plan Name', item => item.name],
-  ['Number of Rules', item => item.rules_count],
+  ['Number of Rules', item => item.rules_count || item.count],
 ];

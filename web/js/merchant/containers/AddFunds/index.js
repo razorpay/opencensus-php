@@ -132,7 +132,12 @@ export default class AddFundsContainer extends Component {
 
   render() {
     let status = this.state.status;
-    let { handleSubmit } = this.props;
+    let { handleSubmit, user } = this.props;
+
+    let prefix = '';
+    if (user.isOrgRZP) {
+      prefix = ' with Razorpay';
+    }
 
     return (
       <div>
@@ -142,17 +147,15 @@ export default class AddFundsContainer extends Component {
           <Alert type={status.type} message={status.message} />
 
           <p>
-            This is just a simple way for you to add money to your account
-            balance with Razorpay. This is needed sometimes when you are making
-            refunds and your account doesn't have enough funds.
+            {`This is just a simple way for you to add money to your account balance${prefix}. This is needed sometimes when you are making refunds and your account doesn't have enough funds.`}
           </p>
           <p>
             Add Funds works over your own account. Therefore, a TDR will be
             deducted on this as well. If you are adding funds for a large
-            refund, send us a mail to{' '}
-            <a href="mailto:support@razorpay.com" class="highlight">
-              support@razorpay.com
-            </a>
+            refund, please{' '}
+            <Link to="#ticket" class="highlight">
+              write to support
+            </Link>
             .
           </p>
 
