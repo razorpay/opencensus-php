@@ -398,6 +398,7 @@ class Entity
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
