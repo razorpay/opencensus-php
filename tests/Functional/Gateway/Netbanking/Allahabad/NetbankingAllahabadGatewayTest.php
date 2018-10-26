@@ -214,52 +214,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
         });
     }
 
-    protected function checkRefundExcelData(array $data, array $file)
-    {
-        $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull($data[File\Entity::SENT_AT]);
-        $this->assertNull($data[File\Entity::FAILED_AT]);
-        $this->assertNull($data[File\Entity::ACKNOWLEDGED_AT]);
-        $filePath = storage_path('files/filestore') . '/' . $file['location'];
-
-        $this->assertTrue(file_exists($filePath));
-
-        $refundFileContent = file($filePath);
-
-        $refundAmounts = ['500.00', '500.00', '100.00'];
-
-        foreach($refundFileContent as $row)
-        {
-            $refundsFileRow = explode('|', $row);
-
-            assert(count($refundsFileRow) === 10);
-
-            $rowRefundAmount = trim($refundsFileRow[9]);
-
-            assert(in_array($rowRefundAmount, $refundAmounts, true));
-        }
-
-        $this->assertEquals(3, count($refundFileContent));
-
-        unlink($filePath);
-    }
-
-    protected function checkMailQueue(array $file)
-    {
-        Mail::assertSent(DailyFile::class, function ($mail) use ($file)
-        {
-            $this->assertEquals(1500, $mail->viewData['amount']['claims']);
-            $this->assertEquals(1100, $mail->viewData['amount']['refunds']);
-            $this->assertEquals(400, $mail->viewData['amount']['total']);
-
-            $this->assertEquals('3', $mail->viewData['count']['claims']);
-            $this->assertEquals('3', $mail->viewData['count']['refunds']);
-            $this->assertEquals('6', $mail->viewData['count']['total']);
-
-            return true;
-        });
-    }
-
     protected function mockPaymentVerifyFailed()
     {
         $this->mockServerContentFunction(

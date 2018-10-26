@@ -143,15 +143,6 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::PAID]) === false) or
             ($content[ResponseFields::PAID] !== Status::YES))
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [
-                    'content'    => $content,
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $content[ResponseFields::ITEM_CODE],
-
-                ]);
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
