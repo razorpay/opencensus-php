@@ -17,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -257,12 +258,26 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        if ($invoice->isTypeOfSubscriptionRegistration() === true)
+        if (isset($input[Entity::AMOUNT]) === false)
         {
             return;
         }
-        if (isset($input[Entity::AMOUNT]) === false)
+
+        if (($invoice->isTypeOfSubscriptionRegistration() === true)
+            and ($invoice->entity->getMethod() == SubscriptionRegistration\Method::EMANDATE))
         {
+            $amount = (int) $input[Entity::AMOUNT];
+
+            if($amount !== 0)
+            {
+                throw new BadRequestValidationFailureException(
+                    'The amount should be 0.',
+                    'amount',
+                    [
+                        'id'                 => $invoice->getId(),
+                        'amount'             => $input[Entity::AMOUNT],
+                    ]);
+            }
             return;
         }
 

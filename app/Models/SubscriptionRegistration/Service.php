@@ -69,7 +69,7 @@ class Service extends Base\Service
 
     public function deleteToken(String $id): array
     {
-        return $this->core->deletToken($id, $this->merchant);
+        return $this->core->deleteToken($id, $this->merchant);
     }
 
     public function chargeToken(String $id, array $input): array
