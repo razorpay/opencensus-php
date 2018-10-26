@@ -34,6 +34,7 @@ import {
 import submerchantReducer from 'merchant/modules/submerchant';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
+import tokenReducer from 'merchant/modules/token';
 
 import {
   refundBatchesReducer,
@@ -52,6 +53,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
+  tokensReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -114,5 +116,7 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  tokens: tokensReducer,
+  token: tokenReducer,
   batches: batchesReducer,
 });

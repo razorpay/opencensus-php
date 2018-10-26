@@ -9,6 +9,7 @@ import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
+import Token from 'merchant/models/Token';
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -146,6 +147,9 @@ export const disputesReducer = makeCollectionReducer('DISPUTES');
 export const fetchSubmerchants = params =>
   fetchAll(params, Submerchant, 'SUB_MERCHANTS');
 export const submerchantsReducer = makeActionCollectionReducer('SUB_MERCHANTS');
+
+export const fetchTokens = params => fetchAll(params, Token, 'TOKENS');
+export const tokensReducer = makeActionCollectionReducer('TOKENS');
 
 export const fetchEmandatePayments = params => {
   params.recurring = 1;

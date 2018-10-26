@@ -16,6 +16,7 @@ import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import HostedEmanadateBatches from './Batch/List';
 import RecurringPayments from './RecurringPayments/List';
+import TokensList from './Tokens/List';
 
 const heading =
   'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
@@ -119,6 +120,7 @@ export default class SubscriptionsController extends Component {
             <NavLink to="/plans">Plans</NavLink>
 
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
+              <NavLink to="/tokens">Tokens</NavLink>
               <NavLink to="/recurring_payments">Payments</NavLink>
 
               <NavLink exact to="/subscriptions/batchuploads">
@@ -136,6 +138,12 @@ export default class SubscriptionsController extends Component {
               />
               <Route path="/subscriptions" component={SubscriptionsList} />
               <Route path="/plans" component={PlansList} />
+
+              <ShowWhenRoute
+                path="/tokens"
+                component={TokensList}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
 
               <ShowWhenRoute
                 path="/recurring_payments"
