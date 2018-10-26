@@ -6,18 +6,33 @@ use RZP\Models\Payout;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
+/**
+ * Payouts base where we will have a generic flow for the customer/merchants payouts.
+ * Class Base
+ * @package RZP\Models\Payout\Processor
+ */
 abstract class Base extends BaseCore
 {
     protected $merchant;
 
     protected $customer = null;
 
+    /**
+     * method by which the payout will be made for destination.
+     * @var string
+     */
     protected $method;
 
     protected $tax;
 
+    /**
+     * @var int
+     */
     protected $fees;
 
+    /**
+     * Destination can be bank accounts/wallets/any other destination where the money should be deposited.
+     */
     protected $destination;
 
     protected $channel;
@@ -63,8 +78,10 @@ abstract class Base extends BaseCore
 
             $this->setChannel();
 
+            // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
+            // Need to create a fund transfer entity where the fund transfers will be processed.
             $this->createFundTransferAttemptEntity($payout);
 
             // Create merchant/customer transactions and link it to payout.

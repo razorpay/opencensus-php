@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor;
 use RZP\Constants;
 use RZP\Models\Payout;
 use RZP\Models\Pricing;
+use RZP\Models\Customer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payout\Entity;
@@ -30,16 +31,18 @@ class CustomerWalletPayout extends Base
         $this->destination = (new PayoutCore)->getPayoutDestination($input, $this->merchant, $this->customer);
     }
 
-    protected function setCustomer(array $input)
+    protected function setCustomer(Customer\Entity $customer)
     {
-        $customerId = $input[Entity::CUSTOMER_ID];
-
-        $this->customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $this->customer = $customer;
     }
 
     public function createPayout(array $input)
     {
-        $this->setCustomer($input);
+        $customerId = $input[Entity::CUSTOMER_ID];
+
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+
+        $this->setCustomer($customer);
 
         return parent::createPayout($input);
     }
@@ -95,7 +98,7 @@ class CustomerWalletPayout extends Base
         $transactionData = [
             Entity::ID                     => $payout->getId(),
             Entity::AMOUNT                 => $payout->getAmount(),
-            Entity::CUSTOMER_ID            => $payout->customer->getId(),
+            Entity::CUSTOMER_ID            => $payout->getCustomerId(),
             Adjustment\Entity::DESCRIPTION => 'Wallet Withdrawal',
         ];
 
