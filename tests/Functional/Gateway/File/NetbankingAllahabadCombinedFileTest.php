@@ -14,6 +14,8 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $terminal;
+
     public function setUp()
     {
         Carbon::setTestNow();
@@ -22,7 +24,7 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
     }
 
     public function testGenerateCombinedFile()
