@@ -387,7 +387,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $requestId = $app['request']->getId();
 
-            $mode = $app['rzp.mode'] ?? '';
+            $mode = $app['rzp.mode'] ?? 'live';
 
             $dualWrite = $app->razorx->getTreatment($requestId, 'redis_dual_write', $mode);
 
