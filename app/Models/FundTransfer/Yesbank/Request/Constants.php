@@ -30,7 +30,7 @@ final class Constants
     //
     const BENE_FLAG                     = 'ADD';
 
-    const BENE_RESPONSE_IDENTIFIER      = 'NS1maintainBeneficiaryResponse';
+    const BENE_RESPONSE_IDENTIFIER      = 'NS1maintainBeneResponse';
 
     const BENE_RESPONSE_BODY_IDENTIFIER = 'soapenvBody';
 
