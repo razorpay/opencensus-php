@@ -4,7 +4,7 @@ import Banner from 'rzp/ui/Banner';
 import Spinner from 'rzp/ui/Spinner';
 
 export default function BatchDetails({ renderDetails, ...props }) {
-  let { batch = {}, isLoading, onDownload } = props;
+  let { data: batch = {}, isLoading, onDownload } = props;
   let batchName =
     batch.name && batch.name.length > 24
       ? `${batch.name.substr(0, 24)}...`
