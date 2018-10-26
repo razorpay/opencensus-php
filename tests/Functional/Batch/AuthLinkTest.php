@@ -9,15 +9,12 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Traits\TestsMetrics;
 use RZP\Mail\Batch\AuthLink as BatchAuthFileMail;
-use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class AuthLinkTest extends TestCase
 {
-    use TestsMetrics;
     use BatchTestTrait;
-    use CreatesInvoice;
 
     public function setUp()
     {
@@ -88,15 +85,17 @@ class AuthLinkTest extends TestCase
         $response = $this->startTest();
 
         // Gets last entity (Post queue processing) and asserts attributes
-        $entity = $this->getLastEntity('batch', true);
+        $entity = $this->getDbLastEntity('batch');
 
         $this->assertEquals(2, $entity['success_count']);
+
         $this->assertEquals(2, $entity['failure_count']);
 
         // Processing should have happened immediately in tests as
         // queue are sync basically.
 
         $this->assertInputFileExistsForBatch($response[Entity::ID]);
+
         $this->assertOutputFileExistsForBatch($response[Entity::ID]);
 
         Mail::assertSent(BatchAuthFileMail::class);
@@ -123,9 +122,9 @@ class AuthLinkTest extends TestCase
                 Header::AUTH_LINK_AMOUNT_IN_PAISE => 0,
                 Header::AUTH_LINK_CURRENCY        => "INR",
                 Header::AUTH_LINK_METHOD          => 'emandate',
-                Header::AUTH_LINK_TOKEN_EXPIRE_BY => '20-10-2018',
+                Header::AUTH_LINK_TOKEN_EXPIRE_BY => '20-10-2020',
                 Header::AUTH_LINK_MAX_AMOUNT      => "100000",
-                Header::AUTH_LINK_EXPIRE_BY       => '20-10-2018',
+                Header::AUTH_LINK_EXPIRE_BY       => '20-10-2020',
                 Header::AUTH_LINK_AUTH_TYPE       => 'netbanking',
                 Header::AUTH_LINK_BANK            => "HDFC",
                 Header::AUTH_LINK_NAME_ON_ACCOUNT => "Test",
@@ -168,11 +167,11 @@ class AuthLinkTest extends TestCase
                 Header::AUTH_LINK_MAX_AMOUNT      => "100000",
                 Header::AUTH_LINK_EXPIRE_BY       => null,
                 Header::AUTH_LINK_AUTH_TYPE       => null,
-                Header::AUTH_LINK_BANK            => "HDFC",
-                Header::AUTH_LINK_NAME_ON_ACCOUNT => "Test",
-                Header::AUTH_LINK_IFSC            => "HDFC0001233",
-                Header::AUTH_LINK_ACCOUNT_NUMBER  => "1233100023891",
-                Header::AUTH_LINK_ACCOUNT_TYPE    => "savings",
+                Header::AUTH_LINK_BANK            => null,
+                Header::AUTH_LINK_NAME_ON_ACCOUNT => null,
+                Header::AUTH_LINK_IFSC            => null,
+                Header::AUTH_LINK_ACCOUNT_NUMBER  => null,
+                Header::AUTH_LINK_ACCOUNT_TYPE    => null,
                 Header::AUTH_LINK_RECEIPT         => '#3',
                 Header::AUTH_LINK_DESCRIPTION     => 'test auth link',
             ],

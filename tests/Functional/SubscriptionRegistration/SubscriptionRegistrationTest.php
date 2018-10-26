@@ -6,22 +6,13 @@ use Mail;
 use Queue;
 
 use RZP\Constants\Entity as E;
-use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 
-/**
- * @group dns-sensitive
- */
 class SubscriptionRegistrationTest extends TestCase
 {
-    use TestsMetrics;
     use PaymentTrait;
-    use MocksDnsTrait;
-    use CreatesInvoice;
     use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
@@ -33,8 +24,6 @@ class SubscriptionRegistrationTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
-
-        $this->setupMockDns();
     }
 
     public function testCreateAuthLinkWithoutMandate()
@@ -46,11 +35,11 @@ class SubscriptionRegistrationTest extends TestCase
     {
         $this->startTest();
 
-        $subr = $this->getLastEntity('subscription_registration', true);
+        $subr = $this->getDbLastEntity('subscription_registration');
 
         $this->assertEquals($subr['method'], "card");
 
-        $order = $this->getLastEntity('order', true);
+        $order = $this->getDbLastEntity('order');
 
         $this->assertEquals($order['method'], null);
     }
@@ -59,11 +48,11 @@ class SubscriptionRegistrationTest extends TestCase
     {
         $this->startTest();
 
-        $subr = $this->getLastEntity('subscription_registration', true);
+        $subr = $this->getDbLastEntity('subscription_registration');
 
         $this->assertEquals($subr['method'], "emandate");
 
-        $order = $this->getLastEntity('order', true);
+        $order = $this->getDbLastEntity('order');
 
         $this->assertEquals($order['method'], "emandate");
     }
@@ -72,11 +61,11 @@ class SubscriptionRegistrationTest extends TestCase
     {
         $this->startTest();
 
-        $order = $this->getLastEntity('order', true);
+        $order = $this->getDbLastEntity('order');
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
 
-        $subr = $this->getLastEntity('subscription_registration', true);
+        $subr = $this->getDbLastEntity('subscription_registration');
 
         $this->assertEquals($order['bank'], "HDFC");
 

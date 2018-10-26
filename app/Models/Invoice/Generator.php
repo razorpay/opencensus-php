@@ -311,7 +311,10 @@ class Generator extends Base\Core
 
         $validator->validateMerchantSpecificData();
 
-        $validator->validateExternalEntity();
+        if ($this->externalEntity !== null)
+        {
+            $validator->validateExternalEntity();
+        }
 
         //
         // This is being done so that we can do associations
