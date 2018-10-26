@@ -12,7 +12,13 @@
 
 <script type="text/javascript">
     const data = {!!utf8_json_encode($data)!!};
+    var Razorpay = {
+        config: {
+            api: "{{env('APP_URL')}}/"
+        }
+    }
+
 </script>
-<script type="text/javascript" src="{{env('CHECKOUT_URL')}}/v1/checkout.js"></script>
+<script type="text/javascript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="text/javascript" src="{{env('AWS_CF_CDN_URL')}}/static/auth_link/bundle.js"></script>
 </html>
