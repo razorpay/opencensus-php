@@ -1980,15 +1980,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 13,
+                'count' => 12,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ALLA',
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -2086,20 +2079,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer'    => 'HDFC'
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ALLA',
                         ],
                     ],
                     [
@@ -2213,15 +2199,9 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 1,
+                'count' => 0,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer'    => 'ALLA'
-                        ],
-                    ],
+
                 ],
             ],
         ],
@@ -2272,15 +2252,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 2,
+                'count' => 1,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'medium',
-                        'instrument' => [
-                            'issuer' => 'ALLA'
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'high',
@@ -2379,7 +2352,6 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
-                                'ALLA',
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
@@ -2412,9 +2384,7 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'    => ['ALLA'],
-                            'scheduled' => true,
-                            'severity'  => 'low',
+
                         ],
                     ],
                 ],
