@@ -81,9 +81,15 @@ const entityDetailsMap = {
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
-  '/authlinks/:id(inv_.+)': { component: AuthLink },
+  '/authlinks/:id(inv_.+)': {
+    component: AuthLink,
+    additionalCondition: user => user.isChargeAtWillEnabled,
+  },
 
-  '/tokens/:id(token_.+)': { component: Token },
+  '/tokens/:id(token_.+)': {
+    component: Token,
+    additionalCondition: user => user.isChargeAtWillEnabled,
+  },
 
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
     component: SubscriptionDetails,
@@ -124,6 +130,7 @@ const entityModalsMap = {
   },
   '/authlinks/new': {
     component: NewAuthLink,
+    additionalCondition: user => user.isChargeAtWillEnabled,
   },
 };
 

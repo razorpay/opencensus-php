@@ -87,9 +87,8 @@ export default class SubscriptionsController extends Component {
   };
 
   render() {
-    let featureEnabled = this.props.user.isSubscriptionsEnabled;
-
-    if (!featureEnabled) {
+    const { isSubscriptionsEnabled, isChargeAtWillEnabled } = this.props.user;
+    if (!isSubscriptionsEnabled && !isChargeAtWillEnabled) {
       return (
         <FeatureOnboarding
           heading={`${this.prefix}Subscriptions`}
@@ -104,27 +103,29 @@ export default class SubscriptionsController extends Component {
 
     return (
       <div>
-        {this.props.mode === 'test' && (
-          <ActivationBanner
-            productName={`${this.prefix}Subscriptions`}
-            productDocs="https://razorpay.com/docs/subscriptions"
-            feature="subscriptions"
-            symbol="sub"
-            onActivate={this.openActivationModal}
-          />
-        )}
+        {this.props.mode === 'test' &&
+          !isChargeAtWillEnabled && (
+            <ActivationBanner
+              productName={`${this.prefix}Subscriptions`}
+              productDocs="https://razorpay.com/docs/subscriptions"
+              feature="subscriptions"
+              symbol="sub"
+              onActivate={this.openActivationModal}
+            />
+          )}
         <tabbed-container>
           <header id="subscriptions-header">
-            <NavLink exact to="/subscriptions">
-              Subscriptions
-            </NavLink>
-            <NavLink to="/plans">Plans</NavLink>
+            <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
+              <NavLink exact to="/subscriptions">
+                Subscriptions
+              </NavLink>
+              <NavLink to="/plans">Plans</NavLink>
+            </ShowWhen>
 
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
-              <NavLink to="/tokens">Tokens</NavLink>
               <NavLink to="/recurring_payments">Payments</NavLink>
+              <NavLink to="/tokens">Tokens</NavLink>
               <NavLink to="/authlinks">Auth Links</NavLink>
-
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>
@@ -138,26 +139,15 @@ export default class SubscriptionsController extends Component {
                 component={HostedEmanadateBatches}
                 additionalCondition={user => user.isChargeAtWillEnabled}
               />
-              <Route path="/subscriptions" component={SubscriptionsList} />
+              <ShowWhenRoute
+                path="/subscriptions"
+                component={SubscriptionsList}
+                additionalCondition={user => !user.isChargeAtWillEnabled}
+              />
               <Route path="/plans" component={PlansList} />
-
-              <ShowWhenRoute
-                path="/tokens"
-                component={TokensList}
-                additionalCondition={user => user.isChargeAtWillEnabled}
-              />
-
-              <ShowWhenRoute
-                path="/recurring_payments"
-                component={RecurringPayments}
-                additionalCondition={user => user.isChargeAtWillEnabled}
-              />
-
-              <ShowWhenRoute
-                path="/authlinks"
-                component={AuthLinksList}
-                additionalCondition={user => user.isChargeAtWillEnabled}
-              />
+              <Route path="/tokens" component={TokensList} />
+              <Route path="/recurring_payments" component={RecurringPayments} />
+              <Route path="/authlinks" component={AuthLinksList} />
             </Switch>
           </content>
         </tabbed-container>

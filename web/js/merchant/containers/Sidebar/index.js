@@ -31,6 +31,7 @@ const BASE_ROUTES = {
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
+  chargeAtWill: '/recurring_payments',
   request: '#request',
 };
 
@@ -74,6 +75,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
+    const user = this.props.user;
 
     if (location.state && location.state.was404) {
       routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
@@ -98,8 +100,12 @@ export default class Sidebar extends Component {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
       this.prevRoute = 'paymentlinks';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
-      routes.subscriptions = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
-      this.prevRoute = 'subscriptions';
+      routes[
+        user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'
+      ] = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
+      this.prevRoute = user.isChargeAtWillEnabled
+        ? 'recurring_payments'
+        : 'subscriptions';
     }
   }
 
@@ -274,7 +280,13 @@ export default class Sidebar extends Component {
                     additionalCondition={user =>
                       user.isAllowedView('subscriptions')
                     }
-                    to={routes.subscriptions}
+                    to={
+                      routes[
+                        user.isChargeAtWillEnabled
+                          ? 'chargeAtWill'
+                          : 'subscriptions'
+                      ]
+                    }
                   />
                   <MainNavLink
                     label="Smart Collect"
