@@ -341,7 +341,7 @@ class Header
     const AUTH_LINK_TOKEN_EXPIRE_BY     = 'token_expiry_by';
     const AUTH_LINK_METHOD              = 'method';
     const AUTH_LINK_MAX_AMOUNT          = 'token_max_amount';
-    const AUTH_LINK_EXPIRE_BY           = 'expiry_by';
+    const AUTH_LINK_EXPIRE_BY           = 'link_expiry_by';
     const AUTH_LINK_AUTH_TYPE           = 'auth_type';
     const AUTH_LINK_BANK                = 'bank';
     const AUTH_LINK_NAME_ON_ACCOUNT     = 'account_holder_name';
@@ -678,6 +678,8 @@ class Header
                 self::NOTES,
                 self::RECURRING_CHARGE_ORDER_ID,
                 self::RECURRING_CHARGE_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

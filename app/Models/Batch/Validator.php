@@ -134,6 +134,8 @@ class Validator extends Base\Validator
         Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Entity::CONFIG                  => 'filled|array',
+        Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
     ];
 
     /**
