@@ -233,7 +233,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateUneditableFeatures(array $input)
+    public function validateUneditableFeatures(array $input)
     {
         $requestedFeatures = array_keys($input['features']);
 
