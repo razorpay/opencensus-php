@@ -44,6 +44,7 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
+        Entity::RECURRING          => 'sometimes|boolean|in:0,1',
         self::EXPAND . '.*'        => 'filled|string|in:card',
     ];
 
