@@ -3,7 +3,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import { isEmail, isAmount, isPhone } from 'rzp/utils/validators';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/util';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
+
 import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { showNotification } from 'rzp/modules/notifications';
@@ -18,23 +21,10 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
-
-const methods = [
-  { label: 'Card', value: 'card' },
-  { label: 'Emandate', value: 'emandate' },
-];
-
 const accountTypes = [
   'Select Account Type...',
   { label: 'Savings', name: 'savings' },
   { label: 'Current', name: 'current' },
-];
-
-const authTypes = [
-  'Select Auth Type...',
-  { label: 'Netbanking', name: 'netbanking' },
-  { label: 'Aadhaar', name: 'aadhaar' },
 ];
 
 const mandatoryFields = [
@@ -50,7 +40,6 @@ const mandatoryBankFields = [
   'mandateBeneficiaryName',
   'mandateBankAccountNumber',
   'mandateAuthType',
-  'mandateBankAccountType',
 ];
 
 @withRouter
@@ -67,33 +56,35 @@ export default class CreateNewAuthLinkContainer extends Component {
     mandateMethod: '',
     hasNoExpiry: '1',
     tokenHasNoExpiry: '1',
-    emandateBanks: {
-      loading: true,
-      list: [],
-    },
+    avlblMethods: [],
+    loading: true,
+    emandateBanks: [],
   };
 
   componentWillMount() {
     fetchPaymentMethods().then(methods => {
-      if (methods) {
-        const emandates = methods.recurring.emandate || {};
+      if (methods && methods.recurring) {
+        let emandateBanks = [];
+        const avlblMethods = Object.keys(methods.recurring).map(method => ({
+          label: titleCase(method),
+          value: method,
+        }));
 
-        const emandateBanks = Object.entries(emandates).map(([code, bank]) => {
-          const authTypes = bank['auth_types'].reduce(
-            (authTypes, authType) => ({ ...authTypes, [authType]: true }),
-            {}
-          );
-
-          const emandateBank = {
+        if (methods.recurring.emandate) {
+          const emandates = methods.recurring.emandate || {};
+          emandateBanks = Object.entries(emandates).map(([code, bank]) => ({
             label: bank.name,
+            authTypes: bank.auth_types,
             name: code,
-            ...authTypes,
-          };
-
-          return { ...emandateBank };
-        });
+          }));
+        }
+        const mandateMethod =
+          avlblMethods.length < 2 ? avlblMethods[0].value : '';
         this.setState({
-          emandateBanks: { list: emandateBanks, loading: false },
+          loading: false,
+          emandateBanks,
+          avlblMethods,
+          mandateMethod,
         });
       }
     });
@@ -128,7 +119,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   handleDateChange = fieldName => date => {
     this.setState({
-      [fieldName]: date.format('X'),
+      [fieldName]: Number(date.format('X')),
     });
   };
 
@@ -157,7 +148,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       type: 'link',
       description: data.description,
       receipt: data.receipt,
-      expire_by: !data.hasNoExpiry && data.expireAt,
+      expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
       amount:
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
@@ -178,7 +169,9 @@ export default class CreateNewAuthLinkContainer extends Component {
           data.mandateMethod === 'emandate' && !data.skipBankDetails
             ? data.mandateAuthType
             : undefined,
-        expire_at: data.mandateExpireAt,
+        expire_at: !Number(data.tokenHasNoExpiry)
+          ? data.mandateExpireAt
+          : undefined,
         bank_account:
           data.mandateMethod === 'emandate' && !data.skipBankDetails
             ? {
@@ -186,9 +179,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 ifsc_code: data.mandateBankAccountIFSC,
                 account_number: data.mandateBankAccountNumber,
                 beneficiary_name: data.mandateBeneficiaryName,
-                account_type: data.mandateBankName
-                  ? data.mandateBankAccountType
-                  : undefined,
+                account_type: data.mandateBankAccountType || 'savings',
               }
             : undefined,
       },
@@ -200,7 +191,7 @@ export default class CreateNewAuthLinkContainer extends Component {
         if (response) {
           this.props.showNotification({
             type: 'success',
-            message: 'Auth Link Successfully created',
+            message: 'Authorisation Link Successfully created',
           });
 
           const entityId = response.id;
@@ -223,15 +214,14 @@ export default class CreateNewAuthLinkContainer extends Component {
         });
       });
   };
-
   renderForm = ({ isModalView }) => {
-    const method = this.state.mandateMethod;
+    const { mandateMethod: method, avlblMethods, loading } = this.state;
     const skipBankDetails = !!Number(this.state.skipBankDetails);
 
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
-          <main-title>Create Auth Link</main-title>
+          <main-title>Create Authorisation Link</main-title>
 
           <Form
             class="PaymentLinks--Create--Form"
@@ -318,14 +308,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               />
             </Input.Group>
 
-            <Input.Radio
-              required
-              label="Payment Method"
-              name="mandateMethod"
-              options={methods}
-              class="Input--vTop"
-              description="Method to be used for Auth Link"
-            />
+            <PaymentMethod loading={loading} avlblMethods={avlblMethods} />
 
             {method === 'emandate' && (
               <Fragment>
@@ -335,55 +318,18 @@ export default class CreateNewAuthLinkContainer extends Component {
                 />
 
                 <Input.Group
-                  label="Authentication"
-                  class="InputGroup--inline"
-                  disabled={skipBankDetails}
-                >
-                  <div class="Input-content">
-                    <Input.Select
-                      name="mandateAuthType"
-                      options={authTypes}
-                      size="half_big"
-                      description="Preferred Authentication Method"
-                      onChange={this.handleAuthTypeChange}
-                    />
-
-                    <Input.Select
-                      name="mandateBankAccountType"
-                      options={accountTypes}
-                      size="half_big"
-                      description="Type of Bank Account"
-                      value={this.state.mandateBankAccountType}
-                      disabled={
-                        !skipBankDetails &&
-                        this.state.mandateAuthType !== 'aadhar'
-                      }
-                    />
-                  </div>
-                </Input.Group>
-
-                <Input.Group
                   label="Bank Details"
                   class="InputGroup--inline"
                   disabled={skipBankDetails}
                 >
                   <div class="Input-content">
-                    {(() => {
-                      const bankOptions = getBankOptions(
-                        this.state.emandateBanks,
-                        this.state.mandateAuthType
-                      );
-                      return (
-                        <Input.Select
-                          name="mandateBankName"
-                          options={bankOptions}
-                          size="half_big"
-                          placeholder="Bank Name"
-                          description="Preferred bank for authentication"
-                          disabled={bankOptions.length < 2}
-                        />
-                      );
-                    })()}
+                    <Input.Select
+                      name="mandateBankName"
+                      options={['Select Bank', ...this.state.emandateBanks]}
+                      size="half_big"
+                      placeholder="Bank Name"
+                      description="Preferred bank for authentication"
+                    />
 
                     <Input
                       name="mandateBankAccountIFSC"
@@ -412,6 +358,33 @@ export default class CreateNewAuthLinkContainer extends Component {
                       name="mandateBankAccountNumber"
                       description="Bank Account Number"
                       size="half_big"
+                    />
+                  </div>
+                </Input.Group>
+
+                <Input.Group
+                  label="Authentication"
+                  class="InputGroup--inline"
+                  disabled={skipBankDetails}
+                >
+                  <div class="Input-content">
+                    <SelectAuthType
+                      emandateBanks={this.state.emandateBanks}
+                      mandateBankName={this.state.mandateBankName}
+                      skipBankDetails={skipBankDetails}
+                      handleAuthTypeChange={this.handleAuthTypeChange}
+                    />
+
+                    <Input.Select
+                      name="mandateBankAccountType"
+                      options={accountTypes}
+                      size="half_big"
+                      description="Type of Bank Account"
+                      value={this.state.mandateBankAccountType}
+                      disabled={
+                        !skipBankDetails &&
+                        this.state.mandateAuthType !== 'aadhaar'
+                      }
                     />
                   </div>
                 </Input.Group>
@@ -455,7 +428,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 type="tel"
                 placeholder="0.00"
                 addonBefore="₹"
-                description="Amount of Auth Link Payment"
+                description="Amount of Authorisation Link Payment"
                 required
                 validator={checkIfAmount}
               />
@@ -463,7 +436,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
             <Input.PairList
               name="notes"
-              label="Internal Notest"
+              label="Internal Notes"
               class="Input--vTop"
               onChange={this.handleNotesChange}
             />
@@ -478,7 +451,7 @@ export default class CreateNewAuthLinkContainer extends Component {
             onClick={this.onCreate}
             disabled={!this.allMandatoryFieldsPresent()}
           >
-            Create Auth Link
+            Create Authorisation Link
           </AsyncBtn.Primary>
         </footer>
       </div>
@@ -497,21 +470,75 @@ export default class CreateNewAuthLinkContainer extends Component {
   }
 }
 
-function getBankOptions(emandateBanks, authType) {
-  let options = [];
-  if (emandateBanks.loading) {
-    options = ['Fetching Banks...'];
-  } else if (!authType) {
-    options = ['Select Authentication'];
-  } else {
-    const bankOptions = emandateBanks.list.filter(bank => !!bank[authType]);
-    options = !!bankOptions.length
-      ? ['Select Bank', ...bankOptions]
-      : [`No Bank for ${authType}`];
-  }
-  return options;
+function SelectAuthType(props) {
+  const authTypeOptions = getAuthTypes(
+    props.mandateBankName,
+    props.emandateBanks
+  );
+  return (
+    <Input.Select
+      name="mandateAuthType"
+      options={authTypeOptions}
+      size="half_big"
+      description="Preferred Authentication Method"
+      onChange={props.handleAuthTypeChange}
+      disabled={!props.skipBankDetails && authTypeOptions.length < 2}
+    />
+  );
 }
 
+function PaymentMethod({ loading, avlblMethods }) {
+  if (loading)
+    return (
+      <PaymentMethodPlaceHolder
+        content={<span class="text-muted">Fetching Methods...</span>}
+      />
+    );
+  return avlblMethods.length > 1 ? (
+    <Input.Radio
+      required
+      label="Payment Method"
+      name="mandateMethod"
+      options={avlblMethods}
+      class="Input--vTop"
+      description="Method to be used for Authorisation Link"
+    />
+  ) : (
+    <PaymentMethodPlaceHolder content={avlblMethods[0].label} />
+  );
+}
+
+function PaymentMethodPlaceHolder({ content }) {
+  return (
+    <div class="Input Input--vTop">
+      <div class="Input-label">Payment Method</div>
+      <div class="Input-content">{content}</div>
+    </div>
+  );
+}
+
+// utils required
 function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';
+}
+
+function getAuthTypes(selectedBankName, emandateBanks) {
+  if (!selectedBankName) return ['Select Authentication'];
+  const authTypeOptions = getAuthTypeOptions(
+    filterAuthTypes(findBankFrom(emandateBanks, selectedBankName))
+  );
+  return ['Select Authentication', ...authTypeOptions];
+}
+
+function findBankFrom(banks, bankName) {
+  return banks.find(bank => bank.name === bankName);
+}
+
+function getAuthTypeOptions(authTypes) {
+  return authTypes.map(type => ({ label: titleCase(type), name: type }));
+}
+
+const ALLOWED_AUTH_TYPES = ['aadhaar', 'netbanking'];
+function filterAuthTypes({ authTypes = [] }) {
+  return authTypes.filter(type => ALLOWED_AUTH_TYPES.indexOf(type) > -1);
 }
