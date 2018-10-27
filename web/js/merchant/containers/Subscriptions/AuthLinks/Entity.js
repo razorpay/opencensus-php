@@ -51,7 +51,7 @@ export default class AuthLinkEntityContainer extends Component {
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
-                    {/* status of auth link */}
+                    {/* status of Authorization Link */}
                     <EntityDetailRow label="Status">
                       <InvoiceStatusLabel status={entity.status} />
                     </EntityDetailRow>

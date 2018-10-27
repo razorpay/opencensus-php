@@ -125,7 +125,7 @@ export default class SubscriptionsController extends Component {
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
               <NavLink to="/recurring_payments">Payments</NavLink>
               <NavLink to="/tokens">Tokens</NavLink>
-              <NavLink to="/authlinks">Auth Links</NavLink>
+              <NavLink to="/authlinks">Authorization Links</NavLink>
               <NavLink exact to="/subscriptions/batchuploads">
                 Batch Upload
               </NavLink>

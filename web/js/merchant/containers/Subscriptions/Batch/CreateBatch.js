@@ -59,7 +59,7 @@ export default class CreateHostedMandateBatch extends Component {
               <div class="text-primary">
                 <strong>Batch Authorization Links</strong>
               </div>
-              <div>Create Bulk Auth links to create tokens</div>
+              <div>Create Bulk Authorization Links to create tokens</div>
             </div>
             <i class="i-chevron-right pull-right text-primary" />
           </div>
