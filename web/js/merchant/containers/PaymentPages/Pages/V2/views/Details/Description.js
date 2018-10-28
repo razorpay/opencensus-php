@@ -16,7 +16,9 @@ export default class extends React.PureComponent {
 
   handleOnInput = ({ target }) => {
     const content = target.value;
-    const fakeEle = window.document.querySelector('#description .fakeTextArea');
+    const fakeEle = window.document.querySelector(
+      '#description .fake-textarea'
+    );
 
     fakeEle.innerHTML = content;
     this.elHeight = fakeEle.scrollHeight + 6 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
@@ -30,9 +32,8 @@ export default class extends React.PureComponent {
       <div id="description">
         {isEditable ? (
           <React.Fragment>
-            <div class="fakeTextArea" />
+            <div class="fake-textarea" />
             <Input.Textarea
-              style={{ height: this.elHeight }}
               name="description"
               placeholder="Enter page description"
               info={infoTxt}

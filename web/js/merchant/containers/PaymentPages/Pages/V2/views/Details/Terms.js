@@ -8,7 +8,7 @@ export default class extends React.PureComponent {
   handleOnInput = ({ target }) => {
     const content = target.value;
     const fakeEle = window.document.querySelector(
-      '#terms-details .fakeTextArea'
+      '#terms-details .fake-textarea'
     );
 
     fakeEle.innerHTML = content;
@@ -23,10 +23,9 @@ export default class extends React.PureComponent {
       <div id="terms-details">
         {isEditable ? (
           <React.Fragment>
-            <div class="fakeTextArea" />
+            <div class="fake-textarea" />
             <label>Terms & Conditions:</label>
             <Input.Textarea
-              style={{ height: this.elHeight }}
               name="terms"
               placeholder="Enter Terms & Conditions"
               defaultValue={this.props.terms}

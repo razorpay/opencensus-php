@@ -165,14 +165,10 @@ export class AmountCreator extends React.PureComponent {
       const form = document.getElementsByName('form_creator_amount')[0];
       const amount = document.getElementsByName('amount')[0].value;
 
-      if (
+      const disableSubmit =
         form.querySelectorAll('.is-invalid').length ||
-        (!amount && !this.state.hasDynamicAmount)
-      ) {
-        this.setState({ disableSubmit: true });
-      } else {
-        this.setState({ disableSubmit: false });
-      }
+        (!amount && !this.state.hasDynamicAmount);
+      this.setState({ disableSubmit });
     });
   };
 

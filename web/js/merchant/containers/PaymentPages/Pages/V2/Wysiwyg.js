@@ -100,7 +100,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   handleClose = () => {
-    console.log('Handle close button');
+    // TODO: Handle close button
   };
 
   initSubApps = () => {
@@ -126,7 +126,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
-  // To handle both Create and Edit payment page.
+  // Handles both Create and Edit payment page.
   handleSavePublish = () => {
     console.log('Handle Create..', this.props.paymentPageEntity);
 
@@ -153,7 +153,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       },
     };
 
-    const isEditExistingId = this.state.id;
+    const isEditExistingId = this.props.id;
     const requestAPI = isEditExistingId ? editPaymentPage : createPaymentPage;
 
     return requestAPI(reqPayload)
@@ -249,11 +249,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const pageNavTitle = payment_page_id ? (
       <>
-        Edit Payment Page{' '}
-        <span style={{ opacity: 0.35, fontWeight: 400 }}>
-          {' '}
-          - {payment_page_id}
-        </span>
+        Edit Payment Page <span> - {payment_page_id}</span>
       </>
     ) : (
       'Create New Payment Page'
@@ -305,11 +301,11 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
       <div class="page-size">
         <div class="page-title">{title}</div>
 
-        {actionBtns &&
-          isPageReady && <div class="page-action">{actionBtns}</div>}
+        {isPageReady &&
+          !!actionBtns && <div class="page-action">{actionBtns}</div>}
 
-        {handleClose &&
-          isPageReady && (
+        {isPageReady &&
+          !!handleClose && (
             <span class="close-btn" onClick={handleClose}>
               ×
             </span>

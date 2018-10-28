@@ -1,9 +1,6 @@
 import { set, merge, removeItem, updateItem, push } from 'rzp/utils/immutable';
 import { fetchPaymentPageEntity } from 'merchant/containers/paymentpages/Pages/model';
-import {
-  createEmailField,
-  createPhoneField,
-} from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
@@ -58,7 +55,7 @@ export const addInSchema = field => ({
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
-  FORM_SCHEMA: [createEmailField(), createPhoneField()], // Email and Phone not to be sent in udf_schema in all cases.
+  FORM_SCHEMA: [FIELD_CONST.email, FIELD_CONST.phone], // Email and Phone not to be sent in udf_schema in all cases.
 };
 
 export default function(state = initialState, action) {
@@ -71,7 +68,7 @@ export default function(state = initialState, action) {
 
       return merge(state, {
         paymentPageEntity: entityData,
-        FORM_SCHEMA: entityData.udf_schema, // Must have phone and email already with it. FE hardcodes only for new payment page.
+        FORM_SCHEMA: JSON.parse(entityData.settings.udf_schema), // Must have phone and email already with it. FE hardcodes only for new payment page.
       });
 
     case `${FETCH_ENTITY}::ERROR`:

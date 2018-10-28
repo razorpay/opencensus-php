@@ -1,6 +1,6 @@
 const str = {
   label: 'Single line text',
-  icon: 'text',
+  icon: 'alphabet i-fix-alphabet',
   schema: {
     type: 'string',
   },
@@ -8,7 +8,7 @@ const str = {
 
 const number = {
   label: 'Number',
-  icon: 'number',
+  icon: 'number i-fix-number',
   schema: {
     type: 'number',
   },
@@ -56,10 +56,12 @@ const url = {
 
 const textarea = {
   label: 'Large text area',
-  icon: 'sort',
-  type: 'string',
-  options: {
-    cmp: 'textarea',
+  icon: 'sort i-fix-sort',
+  schema: {
+    type: 'string',
+    options: {
+      cmp: 'textarea',
+    },
   },
 };
 

@@ -33,30 +33,22 @@ export const TYPES = [
   fUnits.textarea,
 ];
 
-export default function getFieldShell(type, validation) {
-  return {
-    name: '__0__', // Dummy quantum name
-    label: '',
-    type: 'string', // Default is type string
-    require: false,
-    description: '',
-  };
-}
+export const FIELD_CONST = {
+  get email() {
+    return {
+      name: 'email',
+      required: true,
+      title: 'Email',
+      ...fUnits.email.schema,
+    };
+  },
 
-export function createEmailField() {
-  return {
-    name: 'email',
-    required: true,
-    title: 'Email',
-    ...fUnits.email.schema,
-  };
-}
-
-export function createPhoneField() {
-  return {
-    name: 'phone',
-    title: 'Phone',
-    required: true,
-    ...fUnits.phone.schema,
-  };
-}
+  get phone() {
+    return {
+      name: 'phone',
+      title: 'Phone',
+      required: true,
+      ...fUnits.phone.schema,
+    };
+  },
+};

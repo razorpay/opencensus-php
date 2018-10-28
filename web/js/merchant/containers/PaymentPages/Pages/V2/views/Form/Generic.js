@@ -75,11 +75,9 @@ export class GenericCreator extends React.PureComponent {
       const title = document.getElementsByName('title')[0].value;
       const type = document.getElementsByName('type')[0].value;
 
-      if (form.querySelectorAll('.is-invalid').length || !title || !type) {
-        this.setState({ disableSubmit: true });
-      } else {
-        this.setState({ disableSubmit: false });
-      }
+      const disableSubmit =
+        form.querySelectorAll('.is-invalid').length || !title || !type;
+      this.setState({ disableSubmit });
     });
   };
 

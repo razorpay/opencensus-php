@@ -217,14 +217,17 @@
 
   &.Select-elWrapper
     &::before
-      content: '\f105'
+      content: ''
       position: absolute
       right: 8px
-      top: 4px
-      font-size: 20px
-      font-family: merchant-icons !important
-      font-style: normal
-      font-weight: normal !important
+      margin-top: 12px
+      width: 0;
+      height: 0;
+      border-top: 4px dashed;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+
+
       pointer-events: none
       z-index: 100
 
