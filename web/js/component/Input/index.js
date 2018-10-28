@@ -59,6 +59,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     validator,
@@ -84,6 +85,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     checkboxMaskLabel,
@@ -351,6 +353,9 @@ export default class Field extends React.Component {
               <span class="Input-addons Input-addons--before">
                 {allProps.addonBefore}
               </span>
+            )}
+            {allProps.addonValueBefore && (
+              <span class="Input-valueBefore">{allProps.addonValueBefore}</span>
             )}
             {InputComponent}
             {allProps.addonAfter && (

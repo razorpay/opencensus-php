@@ -1,5 +1,5 @@
 .Modal-mask.Modal-mask--payment-pages-v2-intro
-  background-color: rgba(17,30,60,0.8);
+  background-color: rgba(17,30,60,0.8)
   text-align: center
   z-index: 999999 // Has to be highest
 
@@ -44,10 +44,59 @@
       margin-right: 0
       padding: 8px 32px
 
+.Modal-mask--paymentpages-settings
+  background: #fff
+
+  .main-title
+    font-weight: 600
+    padding: 16px 24px 4px
+    font-size: 18px
+
+  .Modal-container
+    width: 400px
+
+  .settings-section
+    padding: 24px
+
+    .Input
+      margin-top: 0
+
+    &:not(:last-of-type)
+      border-bottom: 1px solid #ececec
+
+  .Input .Input-valueBefore + .Input-el
+    padding-left: 182px
+
+  .Input
+    margin-bottom: 0
+
+  .Input-content
+    margin-top: 4px
+
+  .Input--theme, .Input--expiryby
+    .Input-label, .Input-content
+      display: inline-block
+
+    .Input-content
+      margin-left: 28px
+      margin-top: -4px
+      vertical-align: middle
+
+  footer
+    padding: 16px 24px
+    background: #f6f6f6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    .Button--transparent
+      padding: 10px 20px
+
+    button:last-of-type
+      margin-right: 0
 
 
 #wysiwyg-root
-  padding-top: 30px;
+  padding-top: 30px
   animation: 0.3s fadein ease-in
 
 /* Paymentpages v2 styles*/

@@ -42,7 +42,7 @@ export function editPaymentPage(id, data) {
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: data,
+    data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },

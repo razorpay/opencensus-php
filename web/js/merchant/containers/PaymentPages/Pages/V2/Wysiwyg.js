@@ -9,10 +9,11 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
+import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
+import { fetchPaymentPage, updateData } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -30,6 +31,7 @@ const ERROR = {
     ...state.wysiwyg,
   }),
   {
+    updateData,
     fetchPaymentPage,
     showNotification,
     closeModal,
@@ -126,9 +128,69 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
+  // Handles both in save and edit mode.
+  handleSaveSettings = formData => {
+    const payload = {};
+
+    if (formData.expire_by) {
+      payload.expire_by = formData.expire_by;
+    }
+
+    if (formData.slug) {
+      payload.slug = formData.slug.trim();
+    }
+
+    payload.settings = {};
+
+    if (formData.theme) {
+      if (formData.theme === '0') {
+        payload.settings.theme = 'dark';
+      } else {
+        payload.settings.theme = 'light';
+      }
+    }
+
+    // In edit mode
+    if (this.props.id) {
+      editPaymentPage(this.props.id, payload)
+        .then(resp => {
+          this.setState({
+            isSettingsOpened: false,
+          });
+
+          if (resp.data) {
+            this.props.updateData(payload);
+
+            this.props.showNotification({
+              type: 'success',
+              message: 'Page Settings are successfully updated',
+            });
+          }
+        })
+        .catch(({ errors }) => {
+          this.setState({
+            isSettingsOpened: false,
+          });
+
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    } else {
+      this.props.updateData(payload);
+
+      this.setState({
+        isSettingsOpened: false,
+      });
+    }
+  };
+
   // Handles both Create and Edit payment page.
   handleSavePublish = () => {
-    console.log('Handle Create..', this.props.paymentPageEntity);
+    const { FORM_SCHEMA, paymentPageEntity } = this.props;
+
+    console.log('Handle Create..', paymentPageEntity);
 
     const {
       amount,
@@ -137,9 +199,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       stock,
       allow_multiple_units,
       allow_social_share,
-    } = this.props.paymentPageEntity;
+    } = paymentPageEntity;
 
-    const udf_schema = [...this.props.FORM_SCHEMA];
+    // Remove Email and Phone in all cases before sending to API.
+    const udf_schema = [...FORM_SCHEMA];
+
     // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
     const reqPayload = {
       amount: amount || undefined,
@@ -147,16 +211,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       description: description || undefined,
       times_payable: stock || undefined,
       settings: {
-        allow_multiple_units: allow_multiple_units | 0,
+        allow_multiple_units: !!allow_multiple_units ? 1 : undefined,
         allow_social_share: allow_social_share | 0,
         udf_schema: JSON.stringify(udf_schema.splice(2)), // To remove Email and Phone in all cases before sending to API.
       },
     };
 
     const isEditExistingId = this.props.id;
-    const requestAPI = isEditExistingId ? editPaymentPage : createPaymentPage;
+    const requestAPIPromise = isEditExistingId
+      ? editPaymentPage(this.props.id, reqPayload)
+      : createPaymentPage(reqPayload);
 
-    return requestAPI(reqPayload)
+    return requestAPIPromise
       .then(resp => {
         if (resp.data) {
           if (isEditExistingId) {
@@ -218,6 +284,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }, 100);
   };
 
+  togglePageSettings = () => {
+    this.setState({
+      isSettingsOpened: !this.state.isSettingsOpened,
+    });
+  };
+
   render() {
     const { isPageReady, isPageLoadError } = this.state;
     const { paymentPageEntity, id: payment_page_id } = this.props;
@@ -225,9 +297,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const merchantData = {
       name: this.props.user.name,
       brand_color: this.props.config.brand_color,
-      image:
-        'https://cdn.razorpay.com/logos/AjkWrnqhycTNfR_medium.png' ||
-        this.props.user.logo_url,
+      image: this.props.user.logo_url,
     };
 
     const isAllowedToSubmit =
@@ -236,6 +306,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       paymentPageEntity.title;
     const actionBtns = (
       <React.Fragment>
+        <Button.Transparent
+          type="button"
+          style={{ color: '#fff' }}
+          onClick={this.togglePageSettings}
+        >
+          Page Settings
+        </Button.Transparent>
         <Button.Primary
           onClick={this.handleSavePublish}
           disabled={!isAllowedToSubmit}
@@ -259,6 +336,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       <div class="payment-pages-v2">
         {this.state.isIntroOpened && (
           <IntroMask onClose={this.handleIntroClose} />
+        )}
+
+        {this.state.isSettingsOpened && (
+          <PPSettingsView
+            handleClose={this.togglePageSettings}
+            paymentPageEntity={paymentPageEntity}
+            handleAction={this.handleSaveSettings}
+            isNew={this.props.id}
+          />
         )}
 
         <Header

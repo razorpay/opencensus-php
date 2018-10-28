@@ -108,6 +108,7 @@ export class PaymentPagesEntity extends React.Component {
       paymentPageEntity,
       paymentPagePayments,
       paymentsListLoading,
+      editPaymentPage,
     } = this.props;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
@@ -205,7 +206,7 @@ export class PaymentPagesEntity extends React.Component {
                         description: paymentPageEntity.description,
                       }}
                       entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -218,7 +219,7 @@ export class PaymentPagesEntity extends React.Component {
                     <EditReceipt
                       value={paymentPageEntity.receipt}
                       entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -246,7 +247,7 @@ export class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <EditExpiry
                       value={paymentPageEntity.expire_by}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -258,7 +259,7 @@ export class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <EditTimesPayable
                       value={paymentPageEntity.times_payable}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
@@ -271,7 +272,7 @@ export class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <EditNotes
                       value={paymentPageEntity.notes}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}

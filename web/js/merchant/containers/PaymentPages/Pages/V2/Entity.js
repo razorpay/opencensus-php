@@ -97,7 +97,7 @@ export default class PaymentPagesV2Entity extends React.Component {
   };
 
   render() {
-    let { createdByUser, paymentPageEntity } = this.props;
+    let { createdByUser, paymentPageEntity, editPaymentPage } = this.props;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
@@ -180,7 +180,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                     <EditStocks
                       value={paymentPageEntity.times_payable}
                       timesPaid={paymentPageEntity.times_paid}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
@@ -250,7 +250,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                   value={() => (
                     <EditExpiry
                       value={paymentPageEntity.expire_by}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -263,7 +263,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                     <EditReceipt
                       value={paymentPageEntity.receipt}
                       entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
@@ -275,7 +275,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                   value={() => (
                     <EditNotes
                       value={paymentPageEntity.notes}
-                      editFn={this.editPaymentPage}
+                      editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}

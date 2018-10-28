@@ -66,6 +66,11 @@ export default function(state = initialState, action) {
     case `${FETCH_ENTITY}::SUCCESS`:
       const entityData = action.payload.data;
 
+      // Normalize expire_by for FE consumption
+      entityData.expire_by = entityData.expire_by
+        ? entityData.expire_by * 1000
+        : entityData.expire_by;
+
       return merge(state, {
         paymentPageEntity: entityData,
         FORM_SCHEMA: JSON.parse(entityData.settings.udf_schema), // Must have phone and email already with it. FE hardcodes only for new payment page.
