@@ -352,11 +352,10 @@ app
 
       $scope.sendDetails = function() {
         if (
-          !$scope.forms.detailsForm.business_website.$error.pattern &&
-          $scope.signup.merchantData.business_website
+          $scope.signup.merchantData.business_website &&
+          ($scope.forms.detailsForm.business_website.$valid ||
+            $scope.forms.detailsForm.business_website.$error.pattern)
         ) {
-          return;
-        } else if ($scope.signup.merchantData.business_website) {
           $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
             $scope.signup.merchantData.business_website
           );
