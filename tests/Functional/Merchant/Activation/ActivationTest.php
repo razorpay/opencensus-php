@@ -248,6 +248,10 @@ class ActivationTest extends TestCase
 
         $this->startTest($testData);
 
+        // @todo: Lock the form once submitted. Change this to assertTrue then
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');
+        $this->assertFalse($merchantDetail->isLocked());
+
         // under_review to rejected
         $this->changeActivationStatus(
             $testData['request']['content'],
@@ -276,6 +280,10 @@ class ActivationTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId);
         $this->assertTrue($merchant->isLive());
         $this->assertFalse($merchant->getHoldFunds());
+
+        // Changing activation_status to activated should lock the form
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');
+        $this->assertTrue($merchantDetail->isLocked());
     }
 
     /**
