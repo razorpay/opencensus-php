@@ -225,6 +225,11 @@ const statusPillClasses = {
   amount: 'label-primary',
   fee: 'label-info',
   refund: 'label-yellow',
+
+  // activation flow
+  whitelist: 'label-success',
+  greylist: 'label-info',
+  blacklist: 'label-danger',
 };
 
 export const statusPill = (status, emptyValue = '--') => {
