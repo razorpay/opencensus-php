@@ -575,6 +575,12 @@ export function getDetailsViewMap(model) {
         : '--',
     },
     {
+      label: 'Activation Flow',
+      value: details.merchant_details
+        ? () => statusPill(details.merchant_details.activation_flow)
+        : '--',
+    },
+    {
       label: 'Rejection Reason',
       children:
         details.merchant_details && details.merchant_details.rejection_reasons
