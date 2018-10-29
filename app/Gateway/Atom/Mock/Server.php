@@ -4,6 +4,8 @@ namespace RZP\Gateway\Atom\Mock;
 
 use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Gateway\Atom\AESCrypto;
+use RZP\Gateway\Atom\VerifyRefundFields;
 use Carbon\Carbon;
 use RZP\Gateway\Atom\DateFormat;
 use RZP\Gateway\Base;
@@ -17,6 +19,7 @@ use RZP\Gateway\Atom\VerifyRequestFields;
 use RZP\Gateway\Atom\RefundRequestFields;
 use RZP\Gateway\Atom\RefundResponseFields;
 use RZP\Gateway\Atom\VerifyResponseFields;
+use RZP\Gateway\Base\Repository;
 
 class Server extends Base\Mock\Server
 {
@@ -79,13 +82,24 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input, 'verify');
+        if (isset($input['login']) === true)
+        {
+            $this->validateActionInput($input, 'verify_refund');
 
-        $response = $this->getVerifyResponseData($input);
+            $response = $this->getVerifyRefundResponseData($input);
 
-        $xml = $this->getVerifyResponseXml($response);
+            return $this->makeResponse($response);
+        }
+        else
+        {
+            $this->validateActionInput($input, 'verify');
 
-        return $this->makeResponse($xml);
+            $response = $this->getVerifyResponseData($input);
+
+            $xml = $this->getVerifyResponseXml($response);
+
+            return $this->makeResponse($xml);
+        }
     }
 
     protected function getRefundResponseData($input)
@@ -270,6 +284,43 @@ class Server extends Base\Mock\Server
         $this->content($response);
 
         return $response;
+    }
+
+    public function getVerifyRefundResponseData($input)
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8" ?> 
+            <REFUNDSTATUS>
+            <ERRORCODE>00</ERRORCODE>
+            <MESSAGE>Refund Found</MESSAGE>
+            <DETAILS>
+            <REFUND>
+            <TXNID>100001470088</TXNID>
+            <PRODUCT>NSE</PRODUCT>
+            <REFUNDAMOUNT>1.0000</REFUNDAMOUNT>
+            <REFUNDINITIATEDATE>2018-07-26</REFUNDINITIATEDATE>
+            <REFUNDPROCESSDATE></REFUNDPROCESSDATE>
+            <REMARKS></REMARKS>
+            <MEREFUNDREF>test1</MEREFUNDREF>
+            </REFUND>
+            </DETAILS>
+            </REFUNDSTATUS>';
+
+        $this->content($xml, 'verify_refund');
+
+        $crypto = $this->getEncryptor();
+
+        $data = $crypto->encryptString($xml);
+
+        return $data;
+    }
+
+    public function getEncryptor()
+    {
+        $masterKey = $this->config['test_response_encryption_key'];
+
+        $salt = $this->config['test_merchant_id'];
+
+        return new AESCrypto($masterKey, $salt);
     }
 
     public function getVerifyResponseXml($response)

@@ -204,11 +204,13 @@ return [
     ],
 
     'atom' => [
-        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
-        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
-        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
-        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
-        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'test_authorize_hash_secret'   => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'    => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'             => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'         => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'             => env('ATOM_TEST_ACCESS_CODE'),
+        'test_request_encryption_key'  => env('ATOM_TEST_REQUEST_ENCRYPTION_KEY'),
+        'test_response_encryption_key' => env('ATOM_TEST_RESPONSE_ENCRYPTION_KEY'),
     ],
 
     'mpi_blade' => [
@@ -562,14 +564,33 @@ return [
 
     'mpi_enstage' => [
         'test' => [
-            'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
-            'gateway_merchant_name'        => 'Test Merchant',
+            'gateway_merchant_id'           => env('ENSTAGE_TEST_MERCHANT_ID'),
+            'gateway_merchant_name'         => 'Test Merchant',
         ],
         // Hardcoding the values here.
         'live' => [
-            'gateway_merchant_id'          => 'Wibmo_Razorpay_Axis_Expay',
-            'gateway_merchant_name'        => 'Razorpay_Axis_Expay',
+            'gateway_merchant_id'           => 'Wibmo_Razorpay_Axis_Expay',
+            'gateway_merchant_name'         => 'Razorpay_Axis_Expay',
         ],
+
+        // yatra config
+        '87qTXzFTBLFN7i' => [
+            'gateway_merchant_id'           => 'Wibmo_RYatra_Axis_Expay',
+            'gateway_merchant_name'         => 'RYatra_Axis_Expay',
+        ],
+
+        // goomo config
+        '7kBHljwok8Fsom' => [
+            'gateway_merchant_id'           => 'Wibmo_Goomo_Axis_Expay',
+            'gateway_merchant_name'         => 'Goomo_Axis_Expay',
+        ],
+
+        // goomo config
+        '8STmhcK1Gd1JVo' => [
+            'gateway_merchant_id'           => 'Wibmo_Goomo_Axis_Expay',
+            'gateway_merchant_name'         => 'Goomo_Axis_Expay',
+        ],
+
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),
         'test_encryption_key'               => env('ENSTAGE_TEST_ENCRYPTION_KEY'),

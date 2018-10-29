@@ -411,6 +411,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateBankTransferTerminal()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateBankTransferTerminal($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postPaymentValidateVpa()
     {
         $input = Request::all();

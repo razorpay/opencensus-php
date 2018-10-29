@@ -2265,11 +2265,6 @@ class Processor
             return false;
         }
 
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
         return true;
     }
 

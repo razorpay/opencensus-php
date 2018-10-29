@@ -258,6 +258,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
+    const BAD_REQUEST_INVALID_SUBCATEGORY                                       = 'The business subcategory is not valid';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
@@ -648,6 +649,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';

@@ -69,6 +69,23 @@ class Beneficiary extends FileProcessor
 
             $ifsc = strtoupper($ba->getIfscCode());
 
+            //Axis bank EPH system does not support beneficiary registration
+            //with IFSC code having character after UTIB.
+            //Examples : UTIB0CCH274
+            if ((substr($ifsc, 0, 4) === 'UTIB') and
+               (preg_match('/^\d{7}+$/', substr($ifsc, 4)) === 0))
+            {
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_UNSUPPORTED_IFSC_CODE,
+                    [
+                        'bank_account_id'   => $ba->getId(),
+                        'channel'           => $this->channel,
+                        'ifsc_code'         => $ba->getIfscCode(),
+                    ]);
+
+                continue;
+            }
+
             $rows[] = [
                 $ba->getId(),
                 $beneName,
@@ -124,18 +141,29 @@ class Beneficiary extends FileProcessor
      */
     protected function registerBeneficiary(PublicCollection $bankAccounts): array
     {
-        $data = $this->getData($bankAccounts);
+        $file          = new FileStore\Creator;
 
-        $file = $this->generateFile($data);
+        $totalCount    = $bankAccounts->count();
 
-        $merchantCount = count($data);
+        $fileCreated   = false;
 
-        $response = $this->makeResponse($file, $merchantCount);
+        $data          = $this->getData($bankAccounts);
 
-        // Pushing to Beam after sending the email
-        // such that current beneficiary processing
-        // doesn't get affected by Beam errors.
-        $this->sendFile($file);
+        $registerCount = count($data) - 1;
+
+        if ($registerCount !== 0)
+        {
+            $file        = $this->generateFile($data);
+
+            $fileCreated = true;
+
+            // Pushing to Beam after sending the email
+            // such that current beneficiary processing
+            // doesn't get affected by Beam errors.
+            $this->sendFile($file);
+        }
+
+        $response = $this->makeResponse($file, $totalCount, $registerCount, $fileCreated);
 
         return $response;
     }

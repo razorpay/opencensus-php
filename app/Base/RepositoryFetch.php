@@ -124,6 +124,7 @@ trait RepositoryFetch
      *
      * @return PublicCollection
      * @throws InvalidArgumentException
+     * @throws BadRequestValidationFailureException
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
