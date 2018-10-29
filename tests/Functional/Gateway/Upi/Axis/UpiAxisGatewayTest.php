@@ -51,6 +51,8 @@ class UpiAxisGatewayTest extends TestCase
 
         $upi = $this->getDBLastEntity('upi');
 
+        $this->assertNotNull($upi[Entity::NPCI_TXN_ID]);
+
         $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content);
@@ -73,7 +75,6 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertNotNull($upi['status_code']);
 
         $this->assertNotNull($upi['npci_reference_id']);
-        $this->assertNotNull($upi['gateway_payment_id']);
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($payment->getPublicId(), $payment['amount']);

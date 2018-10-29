@@ -594,6 +594,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_FAILED                     = 'GATEWAY_REFUND_FAILED';
     const GATEWAY_REFUND_VERIFY_REQUEST             = 'GATEWAY_REFUND_VERIFY_REQUEST';
     const GATEWAY_REFUND_VERIFY_RESPONSE            = 'GATEWAY_REFUND_VERIFY_RESPONSE';
+    const GATEWAY_REFUND_VERIFY_REQUEST_CONTENT     = 'GATEWAY_REFUND_VERIFY_REQUEST_CONTENT';
     const GATEWAY_PAYMENT_MISSING_FIELD             = 'GATEWAY_PAYMENT_MISSING_FIELD';
     const GATEWAY_REVERSE_RESPONSE                  = 'GATEWAY_REVERSE_RESPONSE';
     const GATEWAY_REVERSE_REQUEST                   = 'GATEWAY_REVERSE_REQUEST';
@@ -807,6 +808,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
+
+    const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC         = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
 
     const MERCHANT_PAYOUT_SKIPPED                   = 'MERCHANT_PAYOUT_SKIPPED';
 
@@ -1323,6 +1326,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Instant activation traces
     const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
+    // redis dual write
+    const REDIS_DUAL_WRITE_STORE_ERROR                  = 'REDIS_DUAL_WRITE_STORE_ERROR';
+    const REDIS_DUAL_WRITE_READ_ERROR                   = 'REDIS_DUAL_WRITE_READ_ERROR';
+    const REDIS_DUAL_WRITE_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
+    const REDIS_DUAL_WRITE_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
 
     const BENEFICIARY_UNSUPPORTED_IFSC_CODE             = 'BENEFICIARY_UNSUPPORTED_IFSC_CODE';
 

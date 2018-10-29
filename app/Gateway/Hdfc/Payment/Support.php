@@ -269,10 +269,8 @@ trait Support
             }
         }
 
-        if ($this->shouldMigrateToIpay() === true)
-        {
-            $data['udf5'] = '';
-        }
+        $data['udf5'] = '';
+
         $this->setDebitSecondRecurringPayment($input);
 
         if (($this->secondDebitRecurringFlag === true) and

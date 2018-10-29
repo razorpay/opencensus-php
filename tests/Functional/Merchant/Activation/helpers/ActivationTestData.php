@@ -1192,7 +1192,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testKYCVerificationForInstantlyActivatedMerchant' => [
+    'changeActivationStatus' => [
         'request' => [
             'content' => [
                 'activation_status'  => 'under_review',
@@ -1205,6 +1205,7 @@ return [
             ],
         ],
     ],
+
     'submitKyc' => [
         'request'  => [
             'content' => [

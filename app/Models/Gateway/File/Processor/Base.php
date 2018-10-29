@@ -79,7 +79,10 @@ abstract class Base extends Core
     {
         try
         {
-            $entities = $this->fetchEntities();
+            $entities = $this->repo->useSlave(function ()
+            {
+                return $this->fetchEntities();
+            });
 
             $this->checkIfValidDataAvailable($entities);
 

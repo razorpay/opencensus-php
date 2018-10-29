@@ -49,7 +49,7 @@ class Gateway extends Base\Gateway
         Fields::MOB_NO                  => Entity::CONTACT,
         Fields::TXN_REFUND_ID           => Entity::REFUND_ID,
         Fields::RRN                     => Entity::NPCI_REFERENCE_ID,
-        Fields::GATEWAY_TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
+        Fields::GATEWAY_TRANSACTION_ID  => Entity::NPCI_TXN_ID,
         Fields::CODE                    => Entity::STATUS_CODE,
         Fields::GATEWAY_RESPONSE_CODE   => Entity::STATUS_CODE,
         Fields::W_COLLECT_TXN_ID        => Entity::NPCI_TXN_ID,
@@ -89,6 +89,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $collectResponse = $this->parseGatewayResponse($response->body, $input);
+
+        $collectResponse[Fields::W_COLLECT_TXN_ID] = $collectResponse[Fields::DATA][Fields::W_COLLECT_TXN_ID];
 
         $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS);
 

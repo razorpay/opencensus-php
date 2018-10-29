@@ -7,19 +7,17 @@ use RZP\Error\ErrorCode;
 
 class GatewayRequestException extends GatewayErrorException
 {
+    const ERROR_CODE = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+
     protected $safeRetry;
 
     public function __construct($curlErrorMessage = null, \Exception $previous = null, $safeRetry = false)
     {
-        $code = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+        $data = ['message' => $curlErrorMessage];
 
-        $this->error = new Error($code);
-
-        $this->code = $code;
+        parent::__construct(static::ERROR_CODE, null, null, $data, $previous);
 
         $this->message = 'Gateway request failed with error';
-
-        $this->data['message'] = $curlErrorMessage;
 
         $this->safeRetry = $safeRetry;
     }
