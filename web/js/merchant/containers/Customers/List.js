@@ -13,7 +13,7 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
-@connect(state => state.customers, {
+@connect(state => ({ ...state.customers, mode: state.session.mode }), {
   ...CustomerActions,
   ...ModalActions,
   ...NotificationActions,
@@ -71,7 +71,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items } = this.props;
+    let { loading, items, mode } = this.props;
     let status = this.state.status;
 
     return (
@@ -80,7 +80,10 @@ export default class CustomersListContainer extends ListContainer {
 
         <HeaderAction>
           <ShowWhen
-            additionalCondition={user => user.isAllowedEdit('customers')}
+            additionalCondition={user =>
+              (mode !== 'live' || !user.isRejected) &&
+              user.isAllowedEdit('customers')
+            }
           >
             <div class="btn-toolbar">
               <button

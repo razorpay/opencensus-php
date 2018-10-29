@@ -116,13 +116,19 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items } = this.props;
+    let { loading, items, session } = this.props,
+      { mode } = session;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen additionalCondition={user => user.isAllowedEdit('items')}>
+          <ShowWhen
+            additionalCondition={user =>
+              (mode !== 'live' || !user.isRejected) &&
+              user.isAllowedEdit('items')
+            }
+          >
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"
