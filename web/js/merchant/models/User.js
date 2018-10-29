@@ -159,6 +159,10 @@ export default class User {
     };
   }
 
+  get isAccepted() {
+    return this.activation_status === 'activated';
+  }
+
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }
@@ -200,8 +204,13 @@ export default class User {
   }
 
   get showInstantActivation() {
-    // TODO: RazorX should be telling us about this
-    return true;
+    return (
+      this.isOrgRZP &&
+      (!!this.activation_flow ||
+        (this.experiments &&
+          this.experiments.instant_activations &&
+          this.experiments.instant_activations.result === 'on'))
+    );
   }
 
   /* Check case-insensitive tag check existence */

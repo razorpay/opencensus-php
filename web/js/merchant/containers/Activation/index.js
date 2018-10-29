@@ -9,7 +9,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import KycForm from './new';
 import InstantActivation from './Instant';
 
-@connect(state => ({ user: state.session.user }))
+@connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -22,6 +22,7 @@ export default class ActivationContainer extends Component {
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
     this.setAdditionalModalClass = this.setAdditionalModalClass.bind(this);
+    this.handleNewData = this.handleNewData.bind(this);
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -44,7 +45,7 @@ export default class ActivationContainer extends Component {
       !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
       data = data.data;
-      categories = categories.data;
+      categories = categories && categories.data;
 
       this.setState({
         data,
@@ -53,6 +54,10 @@ export default class ActivationContainer extends Component {
 
       return [data, categories];
     });
+  }
+
+  handleNewData(data) {
+    this.setState({ data });
   }
 
   componentWillMount() {
@@ -74,7 +79,10 @@ export default class ActivationContainer extends Component {
       },
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-      isModal = !!this.props.onClose;
+      isModal = !!this.props.onClose,
+      { isL1Submitted, isBlacklistFlow } = user.instantActivation,
+      showL1Modal =
+        user.showInstantActivation && (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
       modalClasses = ['animate-down'];
@@ -93,9 +101,7 @@ export default class ActivationContainer extends Component {
         </div>
       );
     } else {
-      const { isL1Submitted, isBlacklistFlow } = user.instantActivation;
-
-      if (user.showInstantActivation && (!isL1Submitted || isBlacklistFlow)) {
+      if (showL1Modal) {
         modalClasses = modalClasses.concat([
           'Activation--wizard',
           'Activation--wizard--Instant',
@@ -105,6 +111,7 @@ export default class ActivationContainer extends Component {
         content = (
           <KycForm
             {...commonProps}
+            onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
           />
         );
@@ -116,15 +123,19 @@ export default class ActivationContainer extends Component {
     }
 
     return isModal ? (
-      <Modal
-        class={classList(...modalClasses)}
-        onClose={this.props.onClose}
-        onCloseCB={this.saveDirtyState}
-      >
-        <ModalContent>{content || spinner}</ModalContent>
-      </Modal>
+      <div className={showL1Modal ? 'instant-activations-modal-container' : ''}>
+        <Modal
+          class={classList(...modalClasses)}
+          onClose={this.props.onClose}
+          onCloseCB={this.saveDirtyState}
+        >
+          <ModalContent>{content || spinner}</ModalContent>
+        </Modal>
+      </div>
     ) : (
-      <div class="ActivationContainer">{content || spinner}</div>
+      <div className={`ActivationContainer${showL1Modal ? ' instant' : ''}`}>
+        {content || spinner}
+      </div>
     );
   }
 }

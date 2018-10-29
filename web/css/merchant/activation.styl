@@ -115,7 +115,7 @@ $side-width = 240px
     font-size: 14px !important
 
   .Form
-    margin-top: 36px
+    margin-top: 30px
 
   .SubmitForm-modal
     p
@@ -253,6 +253,33 @@ $side-width = 240px
   .Activation--welcome
     max-width: 720px
 
+  &.instant {
+
+    .Activation--wizard {
+
+      height: auto;
+      min-height: 0;
+      max-height: max-content;
+
+      main.form-container {
+
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+
+        main-title {
+
+          font-size: 18px !important;
+          line-height: 22px;
+          font-weight: bold;
+          text-transform: none;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
 
 /* Modal-container size */
 .Modal-container.Modal-container
@@ -269,11 +296,20 @@ $side-width = 240px
       height: auto;
       max-height: none;
       overflow: visible;
+      min-height: 0;
+
+      // fixes scroll on mobile
+      @media (max-width: 820px) and (max-height: 750px) {
+
+        top: 30px;
+        transform: translate(-50%, 0);
+      }
 
       .Activation--wizard {
 
         height: auto;
         max-height: none;
+        min-height: 0;
 
         main {
 
@@ -286,6 +322,10 @@ $side-width = 240px
 
           main-title {
 
+            font-size: 18px !important;
+            line-height: 22px;
+            font-weight: bold;
+            text-transform: none;
             margin-bottom: 0;
           }
 
@@ -299,16 +339,27 @@ $side-width = 240px
             transition: none;
           }
 
+          .Input---Website {
+
+            margin-top: 18px;
+          }
+
           .form-footer {
 
             .Input-content {
 
-              border-top: 1px solid #838383;
-              padding-top: 8px;
+              border-top: 1px solid #E2E2E2;
+              margin-top: 18px;
+              
+              small {
 
-              div.submit-btn {
+                color: #838383;
+                line-height: 20px;
+              }
 
-                margin-top: 32px;
+              .submit-btn {
+
+                margin-top: 20px;
               }
             }
           }
@@ -323,6 +374,14 @@ $side-width = 240px
   &--Activation--welcome
     width: 90%
     max-width: 720px
+
+.instant-activations-modal-container {
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
 
 // For linked-account activation form
 .Modal-mask--Account-Activation

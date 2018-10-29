@@ -1508,8 +1508,14 @@ $stepIndicatorSize = 36px;
 // Onboarding Card - Instant Activations
 .onboarding-card-instant {
 
+  position: relative;
   height: 354px;
   padding: 22px;
+
+  .onboarding-step-switcher {
+
+    display: none;
+  }
 
   .onboarding-card-instant-content {
 
@@ -1518,6 +1524,27 @@ $stepIndicatorSize = 36px;
     padding: 66px 300px 40px 40px;
     position: relative;
     background-color: #fff;
+
+    @media (max-width: 1234px) {
+
+      padding-right: 30%;
+    }
+
+    @media (max-width: 1150px) {
+
+      padding-right: 25%;
+    }
+
+    @media (max-width: 1095px) {
+
+      padding-right: 40px;
+    }
+
+    @media (max-width: 910px) {
+
+      padding-left: 16px;
+      padding-right: 16px;
+    }
 
     .onboarding-illustration-top, .onboarding-illustration-bottom {
 
@@ -1546,6 +1573,8 @@ $stepIndicatorSize = 36px;
       display: table;
       width: 100%;
       height: 100%;
+      position: relative;
+      z-index: 1;
       
       .onboarding-step {
 
@@ -1573,8 +1602,8 @@ $stepIndicatorSize = 36px;
           left: 0;
           transform: translate(-50%, 0);
           width: 100%;
-          padding-left: 22px;
-          padding-right: 22px;
+          padding-left: 26px;
+          padding-right: 26px;
           height: 4px;
 
           .step-connector-content {
@@ -1585,16 +1614,19 @@ $stepIndicatorSize = 36px;
           }
         }
 
-        &.status-active .step-connector {
+        &.status-active {
 
           .step-indicator {
 
             padding: 0;
           }
 
-          .step-connector-content {
+          .step-connector {
 
-            background-image: url('assets/onboarding/active_connector.png');
+            .step-connector-content {
+
+              background-image: url('assets/onboarding/active_connector.png');
+            }
           }
         }
 
@@ -1635,8 +1667,105 @@ $stepIndicatorSize = 36px;
             line-height: 19px;
             margin-bottom: 12px;
           }
+
+          .btn {
+
+            margin-top: 18px;
+          }
         }
       }
+    }
+
+    @media (max-width: 640px) {
+
+      overflow: hidden;
+      box-shadow: 0 3px 6px 0 rgba(0,0,0,0.13);
+
+      .onboarding-steps {
+
+        display: block;
+        width: 300%;
+        transform: translate(0, 0);
+        transition: transform 0.2s ease;
+        
+        &:after {
+
+          display: table;
+          clear: both;
+        }
+
+        .onboarding-step {
+
+          display: block;
+          float: left;
+          width: (100/3)%;
+          height: auto;
+        }
+
+        &.active-step-0 {
+
+          transform: translate(0, 0);
+        }
+
+        &.active-step-1 {
+
+          transform: translate(-(100/3)%, 0);
+        }
+
+        &.active-step-2 {
+
+          transform: translate(-(200/3)%, 0);
+        }
+      }
+    }
+
+    .btn-close {
+
+      color: #fff;
+      position: absolute;
+      top: 4px;
+      right: 14px;
+      font-size: 28px;
+      line-height: 28px;
+    }
+  }
+
+  @media (max-width: 640px) {
+
+    height: 394px;
+    padding-bottom: 40px;
+
+    .onboarding-step-switcher {
+
+      display: table;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      line-height: 8px;
+      margin-top: -20px;
+
+      .onboarding-step-switch {
+
+         display: inline-block;
+         width: 8px;
+         height: 8px;
+         margin-left: 18px;
+         background-color: #D9D9D9;
+         border-radius: 50%;
+         cursor: pointer;
+
+         &.active {
+
+           cursor: default;
+           background-color: #939393;
+         }
+
+         &:first-child {
+
+           margin-left: 0;
+         }
+       }
     }
   }
 }
@@ -1763,7 +1892,7 @@ $stepIndicatorSize = 36px;
   modal-header {
 
     padding: 34px;
-    background: transparent url('assets/instant_activations/success_modal_bg.png') top left no-repeat;
+    background: rgb(31, 53, 181) url('assets/instant_activations/success_modal_bg.png') top left no-repeat;
     background-size: cover;
 
     > h1, p {
@@ -1809,7 +1938,7 @@ $stepIndicatorSize = 36px;
 
   modal-header {
 
-    background: transparent url('assets/instant_activations/transactions_helper.png') top left no-repeat;
+    background: rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat;
     background-size: cover;
     padding: 34px;
 
@@ -1833,7 +1962,7 @@ $stepIndicatorSize = 36px;
    .rzp-group {
 
      width: 100%;
-    
+ 
      .rzp-group-item {
 
        border: none;
@@ -1860,10 +1989,33 @@ $stepIndicatorSize = 36px;
        .Button--secondary {
 
          display: inline-block;
-         margin: 0;
+         margin: 18px 0 0 0;
          box-shadow: none;
          color: #497fd6;
          border: 1px solid #528ff0;
+       }
+     }
+
+     @media(max-width: 498px) {
+
+       display: block;
+
+       .rzp-group-item {
+
+         display: block;
+
+         &.vertical-splitter {
+
+           width: 100%;
+          
+           > div {
+
+             width: 100%;
+             height: 3px;
+             margin-top: 8px;
+             margin-bottom: 8px;
+           } 
+         }
        }
      }
    }
@@ -1881,9 +2033,36 @@ $stepIndicatorSize = 36px;
   max-width: 328px;
   padding: 30px 24px 24px 24px;
 
+  b {
+
+    font-size: 18px;
+    line-height: 22px;
+  }
+
   > a {
 
     display: block;
     margin-top: 24px;
   }
+}
+
+// Announcements
+.announcement-banner-container {
+
+  padding: 20px;
+}
+
+.big-dot-separator {
+
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin: 0 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
+.enable-settlements-banner .rzp-banner {
+
+  margin-bottom: 0;
 }

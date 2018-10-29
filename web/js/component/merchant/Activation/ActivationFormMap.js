@@ -112,7 +112,7 @@ const businessModel = [
       _cmp: Input.Select,
       options: [],
       _disabledWhen: function(form) {
-        return !!form.props.user.showInstantActivation;
+        return form.props.user.isActivated;
       },
     },
     {
@@ -132,7 +132,7 @@ const businessModel = [
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
       },
       _disabledWhen: function(form) {
-        return !!form.props.user.showInstantActivation;
+        return form.props.user.isActivated;
       },
     },
     {

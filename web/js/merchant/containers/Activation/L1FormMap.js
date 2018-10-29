@@ -142,7 +142,7 @@ export default [
     },
   ],
   {
-    label: 'Propreitor PAN',
+    label: 'Proprietor PAN',
     name: 'promoter_pan',
     placeholder: 'PAN Number',
     className: 'Input--capitalize',
@@ -154,11 +154,21 @@ export default [
       label: 'Website/App URL',
       _cmp: Input.Radio,
       _name: 'has_url',
-      className: 'Input--vTop',
+      className: 'Input--vTop Input---Website',
       options: [
         'Website/App',
         {
           label: 'We do not have either',
+          description: (
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
+          ),
         },
       ],
     },

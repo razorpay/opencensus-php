@@ -124,6 +124,10 @@ export default class ActivationWizard extends React.Component {
         window.hj('tagRecording', ['activation_form_open']);
       }
     }
+
+    this.formName = props.user.showInstantActivation
+      ? 'KYC Form'
+      : 'Activation Form';
   }
 
   prepareTabs(props) {
@@ -880,7 +884,7 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
         <ModalAsideNav
-          title="Activation Form"
+          title={this.formName}
           description={
             !this.isLinkedAccountForm &&
             !isFormSubmitted && (

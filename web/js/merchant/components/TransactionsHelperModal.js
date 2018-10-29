@@ -63,16 +63,15 @@ export default class InstantActivationSuccess extends Component {
               )}
               <GroupItem>
                 <p>
-                  <img src="/dist/css/assets/symbols/sc.svg" />
-                  <img className="m-l" src="/dist/css/assets/symbols/pl.svg" />
+                  {/* <img src="/dist/css/assets/symbols/sc.svg" /> */}
+                  <img src="/dist/css/assets/symbols/pl.svg" />
                   <img className="m-l" src="/dist/css/assets/symbols/inv.svg" />
                 </p>
                 <p>
                   <b>Accept payments using products</b>
                 </p>
                 <p>
-                  You can receive Payment through Payment Links, Invoices &
-                  Smart Collect
+                  You can receive Payment through Payment Links and Invoices
                 </p>
                 <Button.Secondary onClick={this.handleProductsView}>
                   View products

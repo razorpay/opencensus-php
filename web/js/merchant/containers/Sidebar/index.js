@@ -124,7 +124,7 @@ export default class Sidebar extends Component {
     let isMerchant = !!user.current;
 
     const { showInstantActivation } = user,
-      { isL1Submitted } = user.instantActivation;
+      { isL1Submitted, isBlacklistFlow } = user.instantActivation;
 
     return (
       <React.Fragment>
@@ -159,63 +159,65 @@ export default class Sidebar extends Component {
                 }
 
                 <div class="nav">
-                  <ShowWhen
-                    additionalCondition={user =>
-                      user.isAllowedEdit('activation') &&
-                      !user.isPartner() &&
-                      (!user.isSubmitted || !config.hasPersonalised)
-                    }
-                  >
-                    <Link
-                      className="activation-status-link"
-                      to={!user.isSubmitted ? '/activation' : '/config'}
-                      onClick={this.onSidebarBannerClick}
+                  {!isBlacklistFlow && (
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isAllowedEdit('activation') &&
+                        !user.isPartner() &&
+                        (!user.isSubmitted || !config.hasPersonalised)
+                      }
                     >
-                      <div
-                        className={classList(
-                          'activation-status',
-                          user.isSubmitted && !config.hasPersonalised
-                            ? 'not-personalised'
-                            : ''
-                        )}
+                      <Link
+                        className="activation-status-link"
+                        to={!user.isSubmitted ? '/activation' : '/config'}
+                        onClick={this.onSidebarBannerClick}
                       >
-                        <div className="clearfix">
-                          <div className="pull-left">{actionCopy}</div>
-                          <div className="pull-right">
-                            <i className="i i-chevron-right" />
+                        <div
+                          className={classList(
+                            'activation-status',
+                            user.isSubmitted && !config.hasPersonalised
+                              ? 'not-personalised'
+                              : ''
+                          )}
+                        >
+                          <div className="clearfix">
+                            <div className="pull-left">{actionCopy}</div>
+                            <div className="pull-right">
+                              <i className="i i-chevron-right" />
+                            </div>
                           </div>
+                          {do {
+                            if (showInstantActivation && !isL1Submitted) {
+                              actionContent = (
+                                <div className="activation-status-secondary">
+                                  Form not Completed
+                                </div>
+                              );
+                            } else {
+                              actionContent = !user.isSubmitted ? (
+                                <div className="activation-bar-content activation-status-secondary">
+                                  <div className="activation-bar-text">
+                                    {user.activation_progress}% Complete
+                                  </div>
+                                  <div className="activation-bar">
+                                    <ProgressBar
+                                      type="success"
+                                      max={100}
+                                      value={user.activation_progress}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="activation-status-secondary">
+                                  Personalise your Account
+                                </div>
+                              );
+                            }
+                          }}
                         </div>
-                        {do {
-                          if (showInstantActivation && !isL1Submitted) {
-                            actionContent = (
-                              <div className="activation-status-secondary">
-                                Form not Completed
-                              </div>
-                            );
-                          } else {
-                            actionContent = !user.isSubmitted ? (
-                              <div className="activation-bar-content activation-status-secondary">
-                                <div className="activation-bar-text">
-                                  {user.activation_progress}% Complete
-                                </div>
-                                <div className="activation-bar">
-                                  <ProgressBar
-                                    type="success"
-                                    max={100}
-                                    value={user.activation_progress}
-                                  />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="activation-status-secondary">
-                                Personalise your Account
-                              </div>
-                            );
-                          }
-                        }}
-                      </div>
-                    </Link>
-                  </ShowWhen>
+                      </Link>
+                    </ShowWhen>
+                  )}
 
                   <MainNavLink
                     label="Partner Dashboard"

@@ -102,7 +102,7 @@ export default class InvoicesListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user } = this.props;
+    let { loading, invoices, user, mode } = this.props;
     let { loadingAllList, totalInvoicesLength, status } = this.state;
     let content;
 
@@ -154,7 +154,10 @@ export default class InvoicesListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <ShowWhen
-            additionalCondition={user => user.isAllowedEdit('invoices')}
+            additionalCondition={user =>
+              (mode !== 'live' || !user.isRejected) &&
+              user.isAllowedEdit('invoices')
+            }
           >
             <div class="btn-toolbar pull-right">
               <NavLink
