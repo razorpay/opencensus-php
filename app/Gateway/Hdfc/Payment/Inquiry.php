@@ -244,9 +244,8 @@ trait Inquiry
 
             // If payment is marked as success in api or in gateway entity, but gateway's verify response
             // returned false. This is an issue and should ideally never happen.
-            if ((($input['payment']['status'] !== 'failed') and
-                 ($input['payment']['status'] !== 'created')) or
-                (in_array($gatewayPayment['status'], $successStatusArray, true) === true))
+            if (($input['payment']['status'] !== 'failed') and
+                ($input['payment']['status'] !== 'created'))
             {
                 // Ideally both api payment entity status and gateway payment entity status should be true,
                 // to reach this block. In case even if one of them is not true, we log it.

@@ -37,39 +37,39 @@ class Activate extends Base\Core
 
     /**
      * This function is used for activating merchant
-     * @param Entity $merchant
      *
-     * @throws Exception\BadRequestException
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetail
      *
-     * @return array
+     * @return Detail\Entity
      */
-    public function activate(Entity $merchant): array
+    public function activate(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
     {
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
-            return $this->markKycVerified($merchant);
+            return $this->markKycVerified($merchant, $merchantDetail);
         }
 
         //
         // For merchants who never went through the instant activations flow, and,
         // who went through the instant activations flow and got greylisted
         //
-        return $this->activateAndMarkKycVerified($merchant);
+        return $this->activateAndMarkKycVerified($merchant, $merchantDetail);
     }
 
     /**
      * @param Entity $merchant
      *
-     * @return array
+     * @return Detail\Entity
      */
-    public function activateAndMarkKycVerified(Entity $merchant)
+    public function activateAndMarkKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
     {
         $merchant->getValidator()->validateBeforeActivate();
 
         $this->validateMethodsAndPricing($merchant);
 
-        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
 
         $merchant->getValidator()->validateHasBankAccount();
 
@@ -80,7 +80,7 @@ class Activate extends Base\Core
         $merchant->activate();
 
         // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
+        if ((empty($merchantDetail->getWebsite()) === false) and
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);
@@ -92,28 +92,27 @@ class Activate extends Base\Core
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
         {
             $this->repo->saveOrFail($merchant);
-
-            $merchantDetail = $merchant->merchantDetail;
 
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED, [Entity::MERCHANT_ID => $merchant->getId()]);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
 
-        return $merchant->toArrayPublic();
+        return $merchantDetail;
     }
 
     /**
      * Instantly activates a merchant with funds on hold
      *
-     * @param Entity $merchant
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
      *
      * @return array
      */
@@ -137,13 +136,9 @@ class Activate extends Base\Core
         $this->repo->transactionOnLiveAndTest(function () use ($merchant)
         {
             $this->repo->saveOrFail($merchant);
-
-            $this->repo->saveOrFail($merchant->merchantDetail);
         });
 
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED,
-            [Entity::MERCHANT_ID => $merchant->getId()]);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
 
         $detailCore = new Detail\Core;
 
@@ -170,16 +165,17 @@ class Activate extends Base\Core
     }
 
     /**
-     * @param Entity $merchant
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetail
      *
-     * @return array
+     * @return Detail\Entity
      */
-    public function markKycVerified(Entity $merchant): array
+    public function markKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
     {
         // @todo: add a check - should be through an instantly_activated state
         $merchant->getValidator()->validateBeforeKycVerified();
 
-        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
 
         $merchant->getValidator()->validateHasBankAccount();
 
@@ -189,22 +185,26 @@ class Activate extends Base\Core
         $this->app['workflow']
              ->handle();
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
         {
             $this->repo->saveOrFail($merchant);
-
-            $merchantDetail = $merchant->merchantDetail;
 
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED, ['merchant_id' => $merchant->getId()]);
+        //
+        // Live transactions get disabled if the activation_status changes to 'rejected'.
+        // If later the status is change to 'activated', enable live transactions explicitly.
+        //
+        (new Merchant\Core)->enableLive($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED);
 
         $this->sendMerchantActivatedEvents($merchant);
 
-        return $merchant->toArrayPublic();
+        return $merchantDetail;
     }
 
     /**
