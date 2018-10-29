@@ -58,6 +58,7 @@ class Repository extends Base\Repository
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
         Entity::BATCH_ID        => 'sometimes|string|size:20',
+        Entity::RECURRING       => 'sometimes|boolean',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
