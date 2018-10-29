@@ -333,7 +333,7 @@ export default class App extends Component {
         />
         <Sidebar user={user} logoURL={org.main_logo_url} />
         <Content user={user} modeFormatted={modeFormatted} />
-        <Footer />
+        <Footer user={user} />
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

@@ -40,7 +40,6 @@ const mandatoryBankFields = [
   'mandateBeneficiaryName',
   'mandateBankAccountNumber',
   'mandateAuthType',
-  'mandateBankAccountType',
 ];
 
 @withRouter
@@ -180,9 +179,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 ifsc_code: data.mandateBankAccountIFSC,
                 account_number: data.mandateBankAccountNumber,
                 beneficiary_name: data.mandateBeneficiaryName,
-                account_type: data.mandateBankName
-                  ? data.mandateBankAccountType
-                  : undefined,
+                account_type: data.mandateBankAccountType || 'savings',
               }
             : undefined,
       },

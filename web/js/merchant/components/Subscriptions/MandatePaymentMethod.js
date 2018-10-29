@@ -12,7 +12,7 @@ export default function MandatePaymentMethod({ mandate }) {
         <strong>
           {bank_account &&
             bank_account.bank_name &&
-            bank_account.bank_name + '- '}{' '}
+            bank_account.bank_name + ' - '}
           Emandate
         </strong>
         {/* token expiry of mandate */}
