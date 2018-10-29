@@ -237,6 +237,7 @@ export default class Content extends Component {
             component={Subscriptions}
             additionalCondition={user => user.isChargeAtWillEnabled}
           />
+
           <ShowWhenRoute
             path="/tokens"
             component={Subscriptions}

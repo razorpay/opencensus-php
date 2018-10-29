@@ -10,7 +10,10 @@ export default function MandatePaymentMethod({ mandate }) {
     return (
       <Definition>
         <strong>
-          {bank_account && bank_account.bank_name + '- '} Emandate
+          {bank_account &&
+            bank_account.bank_name &&
+            bank_account.bank_name + ' - '}
+          Emandate
         </strong>
         {/* token expiry of mandate */}
         {!!mandate.expire_at && (

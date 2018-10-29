@@ -1,16 +1,23 @@
 import { connect } from 'react-redux';
+import { NavLink, Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { fetchInvoices } from 'merchant/modules/invoices/list';
+import { fetchAuthLinks as fetchAll } from 'merchant/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
-import { authLink as id, amount, receipt, status } from 'rzp/ui/item/pair';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import { amount, receipt, status } from 'rzp/ui/item/pair';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 
 import ListFilter from './ListFilter';
 
 const customerDetail = prop => item => item.customer_details[prop] || '--';
+
+const id = {
+  title: 'Link ID',
+  value: item => <Link to={'/authlinks/' + item.id}>{item.id}</Link>,
+};
 
 const customerEmail = {
   title: 'Email',
@@ -29,20 +36,23 @@ const link = {
 
 @connect(
   state => ({
-    ...state.invoices,
-    items: state.invoices.invoices,
+    ...state.authLinks,
   }),
-  { fetchInvoices }
+  { fetchAll }
 )
 export default class AuthLinksList extends ListContainer {
-  fetchEntityList(params) {
-    params.type = 'auth_link';
-    return this.props.fetchInvoices(params);
-  }
-
   render() {
     return (
       <div class="content-wrapper">
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <NavLink class="btn btn-primary" to="/authlinks/new">
+              <i class="i i-plus" />
+              <span>Create New Link</span>
+            </NavLink>
+          </div>
+        </HeaderAction>
+
         <ListFilter
           form="authLinksListFilter"
           count={this.state.count}

@@ -140,7 +140,6 @@ export default class SubscriptionsController extends Component {
               />
               <Route path="/subscriptions" component={SubscriptionsList} />
               <Route path="/plans" component={PlansList} />
-              <Route path="/authlinks" component={AuthLinksList} />
 
               <ShowWhenRoute
                 path="/tokens"
@@ -151,6 +150,12 @@ export default class SubscriptionsController extends Component {
               <ShowWhenRoute
                 path="/recurring_payments"
                 component={RecurringPayments}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+
+              <ShowWhenRoute
+                path="/authlinks"
+                component={AuthLinksList}
                 additionalCondition={user => user.isChargeAtWillEnabled}
               />
             </Switch>

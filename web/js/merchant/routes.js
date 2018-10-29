@@ -28,6 +28,7 @@ import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/En
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
+import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -120,6 +121,9 @@ const entityModalsMap = {
     component: PaymentPagesCreate,
     featureEnabled: 'paymentpages',
     additionalCondition: user => user.isAllowedEdit('payment_pages'),
+  },
+  '/authlinks/new': {
+    component: NewAuthLink,
   },
 };
 

@@ -27,10 +27,6 @@ const batchBaseUrls = {
   recurring_charge: 'subscriptions',
 };
 
-const invoiceBaseUrls = {
-  auth_link: 'authlinks',
-};
-
 export const idItem = id => <code>{id}</code>;
 
 /* if label not present id will be used as label */
@@ -73,15 +69,6 @@ export const batchLink = item => {
   const url = batchBaseUrls[item.type];
   return !!url ? (
     <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
-  ) : (
-    idItem(item.id)
-  );
-};
-
-export const invoiceLink = item => {
-  const baseUrl = invoiceBaseUrls[item.type];
-  return !!baseUrl ? (
-    <Link to={`/${baseUrl}/${item.id}`}> {idItem(item.id)} </Link>
   ) : (
     idItem(item.id)
   );

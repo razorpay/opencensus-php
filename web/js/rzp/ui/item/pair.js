@@ -60,9 +60,6 @@ export const creditId = { title: 'Credit Id', value: id.credit };
 export const submerchant = { title: 'Merchant Name', value: id.submerchant };
 export const submerchantId = { title: 'Merchant ID', value: id.submerchantId };
 
-// invcoies
-export const authLink = { title: 'Auth Link ID', value: id.invoiceLink };
-
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
 };
