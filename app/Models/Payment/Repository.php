@@ -57,6 +57,8 @@ class Repository extends Base\Repository
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
+        Entity::BATCH_ID        => 'sometimes|string|size:20',
+        Entity::RECURRING       => 'sometimes|boolean',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
@@ -96,6 +98,7 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_ID,
         Entity::PAYMENT_LINK_ID,
         Entity::TRANSFER_ID,
+        Entity::BATCH_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -1609,6 +1612,15 @@ class Repository extends Base\Repository
                     ->join($bankAccountTable, $bankAccountId, '=', $virtualAccountBankAccountId)
                     ->whereNull(Payment\Entity::RECEIVER_ID)
                     ->limit(1000)
+                    ->get();
+    }
+
+    public function fetchPaymentsWithoutTerminal($method, $rows)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::METHOD, $method)
+                    ->whereNull(Payment\Entity::TERMINAL_ID)
+                    ->limit($rows)
                     ->get();
     }
 

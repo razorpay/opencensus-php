@@ -26,6 +26,7 @@ use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Models\Merchant\Detail\ActivationFlow\Whitelist as WhitelistActivationFlow;
 use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
@@ -144,6 +145,14 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Saves the instant activation details and also instantly activates the merchant based on the business details.
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
     public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(
@@ -154,23 +163,13 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $merchantDetails->getValidator()->validateIsNotLocked();
-
-        // validates if the business subcategory belongs to the business category
-        $merchantDetails->getValidator()->validateBusinessSubcategoryForCategory($input);
+        $merchantDetails->getValidator()->performInstantActivationValidations($input);
 
         $merchantDetails->edit($input, 'instant_activation');
 
-        $merchantValidator = new Merchant\Validator;
-
-        //
-        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
-        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
-        //
-        $merchantValidator->validateIsNotActivated($merchantDetails->merchant);
-
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->autoUpdateMerchantActivationFlow($merchantDetails);
@@ -180,21 +179,36 @@ class Core extends Base\Core
             // Sync few input fields to merchant entity
             (new Merchant\Core)->editPreSignupFields($merchant, $input);
 
-            $activationFlowImpl = Factory::getActivationFlowImpl($merchantDetails);
-
-            $activationFlowImpl->process($merchantDetails);
+            // $activationFlow will be an instance of the ActivationFlowInterface
+            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
+            $activationFlow->process($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
 
             // used to show the progress of the activation form on the dashboard
             $activationProgress = $response['verification']['activation_progress'];
-
             $merchantDetails->setActivationProgress($activationProgress);
-
             $this->repo->saveOrFail($merchantDetails);
+
+            $this->trackActivationProgressEvents($merchant, $activationProgress);
+
+            $response['auto_activated'] = false;
 
             return $response;
         });
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param                 $activationProgress
+     */
+    protected function trackActivationProgressEvents(Merchant\Entity $merchant, $activationProgress)
+    {
+        $eventAttributes = $merchant->toArrayEvent();
+
+        $eventAttributes['activation_progress'] = $activationProgress;
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
@@ -470,7 +484,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
+    public function checkAndMarkHasKeyAccess(Entity $merchantDetails)
     {
         $merchant = $merchantDetails->merchant;
 
@@ -603,7 +617,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchantDetails->merchant);
+                (new Merchant\Activate)->activate($merchantDetails->merchant, $merchantDetails);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -667,9 +681,14 @@ class Core extends Base\Core
 
         $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
 
-        $workflow = $this->app['workflow']
-                         ->setEntity($newMerchantDetails->getEntity())
-                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+        $this->app['workflow']
+             ->setEntity($newMerchantDetails->getEntity())
+             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+
+        $merchant = $newMerchantDetails->merchant;
+
+        // If the merchant is instantly activated and the kyc gets rejected, disable live transactions
+        (new Merchant\Core)->disableLiveIfAlreadyActivated($merchant);
     }
 
     /**

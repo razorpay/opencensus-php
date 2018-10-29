@@ -1493,6 +1493,13 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isPushPaymentMethod()
+    {
+        return ($this->isBankTransfer() === true) or
+               ($this->isBharatQr() === true) or
+               ($this->isUpi() === true);
+    }
+
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);

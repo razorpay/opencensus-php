@@ -152,6 +152,12 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
 
+    // Extra constants for Batch
+    const AUTO_SUBMIT               = 'auto_submit';
+    const AUTOFILL_DETAILS          = 'autofill_details';
+    const AUTO_ACTIVATE             = 'auto_activate';
+    const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -1019,7 +1025,7 @@ class Entity extends Base\PublicEntity
 
     protected function getBrandColorAttribute()
     {
-        $storedBrandColor = $this->attributes[self::BRAND_COLOR];
+        $storedBrandColor = $this->attributes[self::BRAND_COLOR] ?? null;
 
         if ($storedBrandColor === null)
         {
@@ -1118,7 +1124,7 @@ class Entity extends Base\PublicEntity
 
     protected function getTransactionReportEmailAttribute()
     {
-        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL] ?? null);
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));

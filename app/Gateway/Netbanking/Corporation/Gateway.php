@@ -440,5 +440,14 @@ class Gateway extends Base\Gateway
         return $this->config['live_hash_secret'];
     }
 
+    /**
+     * Since $this->mode is not set when calling preProcessServerCallback
+     * we can not assert the mode to test here.
+     */
+    protected function getTestSecret()
+    {
+        return $this->config['test_hash_secret'];
+    }
+
     // -------------------------- General helper methods end ----------------------
 }

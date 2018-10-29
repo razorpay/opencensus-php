@@ -33,37 +33,195 @@ class Activate extends Base\Core
 
     /**
      * This function is used for activating merchant
+     *
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetail
+     *
+     * @return Detail\Entity
+     */
+    public function activate(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
+    {
+        // Merchants who have been activated (instantly activated whitelisted merchants)
+        if ($merchant->isActivated() === true)
+        {
+            return $this->markKycVerified($merchant, $merchantDetail);
+        }
+
+        //
+        // For merchants who never went through the instant activations flow, and,
+        // who went through the instant activations flow and got greylisted
+        //
+        return $this->activateAndMarkKycVerified($merchant, $merchantDetail);
+    }
+
+    /**
      * @param Entity $merchant
      *
-     * @throws Exception\BadRequestException
-     *
-     * @return array
+     * @return Detail\Entity
      */
-    public function activate(Entity $merchant): array
+    public function activateAndMarkKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
     {
         $merchant->getValidator()->validateBeforeActivate();
 
-        //
-        // Ensure that all payment methods enabled for the merchant
-        // has an associated pricing assigned
-        //
-        //
-        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        $this->validateMethodsAndPricing($merchant);
 
-        (new Methods\Core)->checkMccAndEnableEmi($merchant, $methods);
+        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
 
-        (new Methods\Core)->checkPricing($merchant, $methods, true);
+        $merchant->getValidator()->validateHasBankAccount();
 
-        (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        $this->activateMerchantPromotions($merchant);
 
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
+        $merchant->enableReceiptEmails();
 
-        if ($ba === null)
+        $merchant->activate();
+
+        // making sure that merchant's has_key_access is set to true when website is set.
+        if ((empty($merchantDetail->getWebsite()) === false) and
+            ($merchant->getHasKeyAccess() === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            $merchant->setHasKeyAccess(true);
         }
 
+        // Triggering workflow for the activation_status change in merchantDetail entity
+        $this->app['workflow']
+             ->handle();
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
+
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
+
+        $this->sendMerchantActivatedEvents($merchant);
+
+        return $merchantDetail;
+    }
+
+    /**
+     * Instantly activates a merchant with funds on hold
+     *
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetails
+     *
+     * @return array
+     */
+    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
+    {
+        $merchant->getValidator()->validateBeforeInstantlyActivate();
+
+        $this->validateMethodsAndPricing($merchant);
+
+        // @todo: Enable sometime later after instant activations is launched
+        // $this->activateMerchantPromotions($merchant);
+
+        $merchant->enableReceiptEmails();
+
+        $merchant->activate();
+
+        $merchant->holdFunds();
+
+        (new Core)->createBalance($merchant, 'live');
+
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+        });
+
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
+
+        $detailCore = new Detail\Core;
+
+        //
+        // If a merchant does not have website or app, we would need to activate them
+        // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
+        // should be set to true only if one submits website details, there by will be able to
+        // generate/access keys.
+        //
+        $detailCore->checkAndMarkHasKeyAccess($merchantDetails);
+
+        $activationStatusData = [
+            Detail\Entity::ACTIVATION_STATUS => Detail\Status::INSTANTLY_ACTIVATED,
+        ];
+
+        $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
+        // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
+        // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
+     * @param Entity        $merchant
+     * @param Detail\Entity $merchantDetail
+     *
+     * @return Detail\Entity
+     */
+    public function markKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
+    {
+        // @todo: add a check - should be through an instantly_activated state
+        $merchant->getValidator()->validateBeforeKycVerified();
+
+        (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
+
+        $merchant->getValidator()->validateHasBankAccount();
+
+        $merchant->releaseFunds();
+
+        // Triggering workflow for the activation_status change in merchantDetail entity
+        $this->app['workflow']
+             ->handle();
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
+
+        //
+        // Live transactions get disabled if the activation_status changes to 'rejected'.
+        // If later the status is change to 'activated', enable live transactions explicitly.
+        //
+        (new Merchant\Core)->enableLive($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED);
+
+        $this->sendMerchantActivatedEvents($merchant);
+
+        return $merchantDetail;
+    }
+
+    /**
+     * Ensure that all payment methods enabled for the merchant has an associated pricing assigned
+     *
+     * @param Entity $merchant
+     */
+    protected function validateMethodsAndPricing(Entity $merchant)
+    {
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        $methodCore = new Methods\Core;
+
+        $methodCore->checkMccAndEnableEmi($merchant, $methods);
+
+        $methodCore->checkPricing($merchant, $methods, true);
+    }
+
+    /**
+     * @param Entity $merchant
+     */
+    protected function activateMerchantPromotions(Entity $merchant)
+    {
         $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
 
         $merchantPromotionCore = (new Merchant\Promotion\Core);
@@ -83,48 +241,6 @@ class Activate extends Base\Core
                     ['merchant_promotion_id' => $merchantPromotion->getId()]);
             }
         }
-
-        $merchant->enableReceiptEmails();
-
-        $merchant->activate();
-
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchant->merchantDetail->getWebsite()) === false) and
-            ($merchant->getHasKeyAccess() === false))
-        {
-            $merchant->setHasKeyAccess(true);
-        }
-
-        // Triggering workflow for the activation_status change in merchantDetail entity
-        $workflow = $this->app['workflow']
-                         ->handle();
-
-        (new Merchant\Core)->createBalance($merchant, 'live');
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
-        {
-            $this->repo->saveOrFail($merchant);
-
-            $merchantDetail = $merchant->merchantDetail;
-
-            $merchantDetail->setLocked(true);
-
-            $this->repo->saveOrFail($merchantDetail);
-        });
-
-        $this->trace->info(
-            TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
-            ['merchant_id' => $merchant->getId()]);
-
-        $this->sendMerchantActivatedEvents($merchant);
-
-        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
-
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
-
-        return $merchant->toArrayPublic();
     }
 
     /**
@@ -142,6 +258,12 @@ class Activate extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
 
         $this->sendActivationEmail($merchant);
+
+        $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**

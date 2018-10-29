@@ -590,6 +590,26 @@ trait SubscriptionTrait
         return $this->startTest($testData);
     }
 
+    protected function cancelSubscription($subscription, $future = null)
+    {
+        $request = [
+            'url'     => '/subscriptions/'.$subscription['id'].'/cancel',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        if ($future !== null)
+        {
+            $request['content']['cancel_at_cycle_end'] = $future;
+        }
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];

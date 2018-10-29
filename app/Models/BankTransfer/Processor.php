@@ -17,23 +17,11 @@ use RZP\Exception\LogicException;
 use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\InvalidArgumentException;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Processor extends VirtualAccount\Processor
 {
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
-
-    protected $paymentProcessor;
-
-    protected function getPaymentProcessor()
-    {
-        if (isset($this->paymentProcessor) === false)
-        {
-            $this->paymentProcessor = new PaymentProcessor($this->merchant);
-        }
-
-        return $this->paymentProcessor;
-    }
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -75,55 +63,6 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
-    protected function processWithoutOrder(array $input)
-    {
-        if (isset($input[Payment\Entity::ORDER_ID]) === true)
-        {
-            $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
-        }
-
-        /*
-         * This is added temporarily because if gatewayData is passed with
-         * Terminal Id then getTerminalFromPayment returns an empty array.
-         * Will remove this later.
-         */
-        $gatewayData[Constants::RAZORPAY_TERMINAL_ID] = 'SkipTerminalId';
-
-        $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
-    }
-
-    protected function processBankTransfer(array $input)
-    {
-        try
-        {
-            /*
-             * This is added temporarily because if gatewayData is passed with
-             * Terminal Id then getTerminalFromPayment returns an empty array.
-             * Will remove this later.
-             */
-            $gatewayData[Constants::RAZORPAY_TERMINAL_ID] = 'SkipTerminalId';
-
-            $this->getPaymentProcessor()->process($input, $gatewayData);
-        }
-        catch (\Exception $e)
-        {
-            /*
-             * Exception might have been because of Validation Failure on Order.
-             * In this case we will make the payment without Order and refund
-             * it in later flow.
-             */
-            if (isset($input[Payment\Entity::ORDER_ID]) === false)
-            {
-                throw $e;
-            }
-
-            $this->trace->traceException($e, Trace::INFO,
-                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
-
-            $this->processWithoutOrder($input);
-        }
-    }
-
     /**
      * Processing the bank transfer
      *  - Create bank transfer, associate with the merchant, and the identified VA
@@ -141,12 +80,14 @@ class Processor extends VirtualAccount\Processor
 
         $paymentProcessor = $this->getPaymentProcessor();
 
-        $payment = $this->repo->transaction(
+        $this->repo->transaction(
                         function() use ($bankTransfer, $paymentProcessor)
                         {
                             $paymentInput = $this->getPaymentArray($bankTransfer);
 
-                            $this->processBankTransfer($paymentInput);
+                            $gatewayData[Payment\Entity::TERMINAL_ID] = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer)->getId();
+
+                            $this->createPayment($paymentInput, $gatewayData);
 
                             $payment = $paymentProcessor->getPayment();
 
@@ -164,25 +105,10 @@ class Processor extends VirtualAccount\Processor
 
                             $this->repo->saveOrFail($this->virtualAccount);
 
-                            // TODO Remove when VA terminals are used in payment auth
-                            $this->setGateway($payment, $bankTransfer->getGateway());
-
-                            $this->repo->saveOrFail($payment);
-
                             return $payment;
                         });
 
-        if ($bankTransfer->isExpected() === true)
-        {
-            if ($this->shouldRefundOrderPayment($bankTransfer) === true)
-            {
-                $paymentProcessor->refundAuthorizedPayment($payment);
-            }
-            else
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
-        }
+        $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
     }
@@ -331,27 +257,6 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $isExpected;
-    }
-
-    protected function shouldRefundOrderPayment(Entity $bankTransfer)
-    {
-        if ($bankTransfer->virtualAccount->hasOrder() === false)
-        {
-            return false;
-        }
-
-        /**
-         * If Virtual Account has an Order but Bank Transfer Payment
-         * doesn't have an order then this is probably because
-         * Validations on Order are failing and Payment is created
-         * without Order to refund that while further processing.
-         */
-        if ($bankTransfer->payment->hasOrder() === false)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function areBankTransfersBlockedForCrypto(): bool
