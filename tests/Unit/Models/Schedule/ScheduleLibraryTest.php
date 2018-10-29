@@ -21,6 +21,11 @@ class ScheduleLibraryTest extends TestCase
         $this->startScheduleLibraryTest();
     }
 
+    public function testBasicT32Schedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
     public function testT3ScheduleWithMinTime()
     {
         $this->startScheduleLibraryTest();
