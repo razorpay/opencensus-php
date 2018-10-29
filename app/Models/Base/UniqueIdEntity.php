@@ -11,6 +11,8 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    const UNSIGNED_ID_REGEX = '/[a-zA-Z0-9]{14}\b/';
+
     const MAC_OS = 'Darwin';
 
     /**
