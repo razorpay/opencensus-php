@@ -14,7 +14,7 @@ class Constants
     const EQUITAS          = 'equitas';
     const BOB              = 'bob';
     const IDFC             = 'idfc';
-    const VIJAYA           = 'VIJAYA';
+    const VIJAYA           = 'vijaya';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -63,6 +63,7 @@ class Constants
             self::CSB,
             self::EQUITAS,
             self::IDFC,
+            self::VIJAYA
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -116,6 +117,8 @@ class Constants
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC     => ['settlements@razorpay.com'],
+            //TODO: ADD this value
+            self::VIJAYA   => [''],
         ],
 
         Type::EMANDATE_REGISTER => [
