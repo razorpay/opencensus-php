@@ -42,11 +42,11 @@ export default class InstantActivationAnnouncements extends Component {
         if (user.isRejected) {
           title = 'Account Suspended';
           content =
-            'Due to irregularities with your account or the documents submitted by you, your account has been suspended.';
+            'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
         } else {
           title = 'KYC Clarification';
           content =
-            'Your KYC Form has an anomaly and needs clarification. Please check your email for details.';
+            'Your KYC details require further clarification. We have reached out to you seeking more information. Please check your email for details.';
         }
       } else {
         title = 'KYC under review';
