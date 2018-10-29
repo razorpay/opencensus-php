@@ -15,16 +15,6 @@ use RZP\Models\BankAccount;
 
 class Core extends Base\Core
 {
-    protected $subscriptionRegistration;
-
-    protected $customer;
-
-    protected $invoice;
-
-    protected $batch;
-
-    protected $bankAccount;
-
     public function create(array $input, Merchant\Entity $merchant, Customer\Entity $customer): Entity
     {
         $this->trace->info(
@@ -49,86 +39,92 @@ class Core extends Base\Core
         return $subscriptionRegistration;
     }
 
-    public function createAuthLink(array $input, Merchant\Entity $merchant, Batch\Entity $batch = null): Invoice\Entity
+    public function createAuthLink(
+        array $input,
+        Merchant\Entity $merchant,
+        Batch\Entity $batch = null): Invoice\Entity
     {
-        $this->merchant = $merchant;
-
-        $this->repo->transaction(
-            function() use ($input, $batch)
+        $invoice = $this->repo->transaction(
+            function() use ($input, $merchant, $batch)
             {
-                $this->batch = $batch;
+                $customer = $this->createCustomer($input, $merchant);
 
-                $this->createCustomer($input);
+                $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
 
-                $this->createSubscriptionRegistration($input);
+                $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch);
 
-                $this->createInvoice($input);
+                return $invoice;
             });
 
-        return $this->invoice;
+        return $invoice;
     }
 
-    public function createSubscriptionRegistration(array & $input)
+    public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
     {
-        if (isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]) === true)
+        $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
+
+        $bankInput = [];
+
+        $bankName = null;
+
+        if (array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput))
         {
-            $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
+            $bankInput = array_pull($subrInput, Constants\Entity::BANK_ACCOUNT);
 
-            $bankInput = [];
-
-            $bankName = null;
-
-            if (array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput))
+            if (array_key_exists(BankAccount\Entity::BANK_NAME, $bankInput))
             {
-                $bankInput = array_pull($subrInput, Constants\Entity::BANK_ACCOUNT);
-
-                if (array_key_exists(BankAccount\Entity::BANK_NAME, $bankInput))
-                {
-                    $bankName = array_pull($bankInput, BankAccount\Entity::BANK_NAME);
-                }
-            }
-
-            $this->subscriptionRegistration = $this->create($subrInput, $this->merchant, $this->customer);
-
-            if (empty($bankInput) === false)
-            {
-                $this->setDefaultValuesForBank($bankInput);
-
-                $bankAccountCore = new BankAccount\Core();
-
-                $bankAccount = $bankAccountCore->addOrUpdateBankAccountForCustomer($bankInput, $this->customer);
-
-                $this->bankAccount = $bankAccount;
-
-                $this->setBankAccountEntity($this->subscriptionRegistration, $bankAccount);
-
-            }
-            if (empty($bankName) === false)
-            {
-                $this->subscriptionRegistration->setBank($bankName);
+                $bankName = array_pull($bankInput, BankAccount\Entity::BANK_NAME);
             }
         }
+
+        $subscriptionRegistration = $this->create($subrInput, $merchant, $customer);
+
+        if (empty($bankInput) === false)
+        {
+            $this->setDefaultValuesForBank($bankInput, $customer);
+
+            $bankAccountCore = new BankAccount\Core();
+
+            $bankAccount = $bankAccountCore->addOrUpdateBankAccountForCustomer($bankInput, $customer);
+
+            $this->setBankAccountEntity($subscriptionRegistration, $bankAccount);
+
+        }
+        if (empty($bankName) === false)
+        {
+            $subscriptionRegistration->setBank($bankName);
+        }
+
+        return $subscriptionRegistration;
     }
 
-    public function createCustomer(array & $input)
+    public function createCustomer(array & $input, Merchant\Entity $merchant): Customer\Entity
     {
         $details = array_pull($input, Constants\Entity::CUSTOMER);
 
-        $this->customer = (new Customer\Core)->createLocalCustomer($details, $this->merchant, false);
+        $customer = (new Customer\Core)->createLocalCustomer($details, $merchant, false);
 
-        $input[Entity::CUSTOMER_ID] = $this->customer->getPublicId();
+        $input[Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        return $customer;
     }
 
-    public function createInvoice(array & $input)
+    public function createInvoice(
+        array & $input,
+        Merchant\Entity $merchant,
+        Entity $subscriptionRegistration,
+        Batch\Entity $batch = null): Invoice\Entity
     {
         $invoiceCore = new Invoice\Core();
 
-        $this->invoice = $invoiceCore->create(
+        $invoice = $invoiceCore->create(
             $input,
-            $this->merchant,
+            $merchant,
             null,
-            $this->batch,
-            $this->subscriptionRegistration);
+            $batch,
+            $subscriptionRegistration);
+
+        return $invoice;
     }
 
     public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
@@ -144,10 +140,12 @@ class Core extends Base\Core
             $orderCurrency = $input[Order\Entity::CURRENCY];
         }
 
+        $receipt = $input[Order\Entity::RECEIPT];
+
         $orderInput = [
             Order\Entity::AMOUNT          => $input[Order\Entity::AMOUNT],
             Order\Entity::CURRENCY        => $orderCurrency,
-            Order\Entity::RECEIPT         => $input[Order\Entity::RECEIPT],
+            Order\Entity::RECEIPT         => $receipt,
             Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
@@ -219,16 +217,16 @@ class Core extends Base\Core
         return $token->toArrayPublic();
     }
 
-    protected function setDefaultValuesForBank(array & $bankInput)
+    protected function setDefaultValuesForBank(array & $bankInput, Customer\Entity $customer)
     {
         if (array_key_exists(BankAccount\Entity::BENEFICIARY_EMAIL, $bankInput) == false)
         {
-            $bankInput[BankAccount\Entity::BENEFICIARY_EMAIL] = $this->customer->getEmail();
+            $bankInput[BankAccount\Entity::BENEFICIARY_EMAIL] = $customer->getEmail();
         }
 
         if (array_key_exists(BankAccount\Entity::BENEFICIARY_MOBILE, $bankInput) == false)
         {
-            $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $this->customer->getContact();
+            $bankInput[BankAccount\Entity::BENEFICIARY_MOBILE] = $customer->getContact();
         }
     }
 }

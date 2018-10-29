@@ -153,13 +153,7 @@ class SubscriptionRegistrationTest extends TestCase
 
     public function testFetchTokenByMerchant()
     {
-        $this->fixtures->merchant->addFeatures(['charge_at_will']);
-
-        $this->mockTokenex();
-
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
-
-        $paymentRequest = $this->getDefaultRecurringPaymentArray();
+        $paymentRequest = $this->setupPaymentRequest();
 
         $this->doAuthPayment($paymentRequest);
 
@@ -181,5 +175,49 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->startTest();
 
+    }
+
+    public function testChargeToken()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $this->ba->proxyAuth();
+
+        $token = $this->getDbLastEntity("token");
+
+        $chargeContent = ['amount' => 2000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContent
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity("payment");
+
+        $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
+
+        $this->assertEquals($payment->getAmount(), 2000);
+    }
+
+    protected function setupPaymentRequest()
+    {
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $order = $this->fixtures->create('order', ['amount' => $payment['amount']]);
+
+        $paymentRequest['order_id'] = $order->getPublicId();
+
+        return $payment;
     }
 }
