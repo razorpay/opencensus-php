@@ -22,6 +22,9 @@
     &--upload-modal
       .panel
         cursor: pointer
+        transition: background-color 400ms
+        &:hover
+          background-color: alpha($primary-color, 0.2)
         .panel-body
           display: flex
           align-items: center

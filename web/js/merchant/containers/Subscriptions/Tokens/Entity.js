@@ -115,47 +115,49 @@ export default class TokenEntityContainer extends Component {
               </div>
             </div>
             <Alert type="error" message={error} />
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <div class="list-group details-row-container">
-                  {/* status of token */}
-                  <EntityDetailRow label="Status">
-                    <TokenStatusLabel status={getTokenStatus(entity)} />
-                  </EntityDetailRow>
+            {!error && (
+              <div class="SliderPanel__Body">
+                <div class="panel-body">
+                  <div class="list-group details-row-container">
+                    {/* status of token */}
+                    <EntityDetailRow label="Status">
+                      <TokenStatusLabel status={getTokenStatus(entity)} />
+                    </EntityDetailRow>
 
-                  <EntityDetailRow label="Failure Reason">
-                    {entity.recurring_details &&
-                    entity.recurring_details.failure_reason
-                      ? entity.recurring_details.failure_reason
-                      : '--'}
-                  </EntityDetailRow>
+                    <EntityDetailRow label="Failure Reason">
+                      {entity.recurring_details &&
+                      entity.recurring_details.failure_reason
+                        ? entity.recurring_details.failure_reason
+                        : '--'}
+                    </EntityDetailRow>
 
-                  {/*  */}
-                  <EntityDetailRow label="Payment Method">
-                    <PaymentMethod mandate={entity} />
-                  </EntityDetailRow>
+                    {/*  */}
+                    <EntityDetailRow label="Payment Method">
+                      <PaymentMethod mandate={entity} />
+                    </EntityDetailRow>
 
-                  <EntityDetailRow label="Customer Details">
-                    <CustomerDetails customer={entity.customer} />
-                  </EntityDetailRow>
+                    <EntityDetailRow label="Customer Details">
+                      <CustomerDetails customer={entity.customer} />
+                    </EntityDetailRow>
 
-                  <EntityDetailRow label="Created At">
-                    <TimeStamps token={entity} />
-                  </EntityDetailRow>
+                    <EntityDetailRow label="Created At">
+                      <TimeStamps token={entity} />
+                    </EntityDetailRow>
 
-                  <NestedEntityDetailRow label="Notes" value={entity.notes} />
+                    <NestedEntityDetailRow label="Notes" value={entity.notes} />
 
-                  <div class="pair-group-item">
-                    <button
-                      class="btn btn-default"
-                      onClick={this.handleDeleteToken}
-                    >
-                      Delete Token
-                    </button>
+                    <div class="pair-group-item">
+                      <button
+                        class="btn btn-default"
+                        onClick={this.handleDeleteToken}
+                      >
+                        Delete Token
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
