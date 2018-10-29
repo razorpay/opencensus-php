@@ -194,6 +194,12 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
+        //
+        // Live transactions get disabled if the activation_status changes to 'rejected'.
+        // If later the status is change to 'activated', enable live transactions explicitly.
+        //
+        (new Merchant\Core)->enableLive($merchant);
+
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED, ['merchant_id' => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);

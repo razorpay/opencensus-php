@@ -24,7 +24,6 @@ class Action
     const ACTIVATION_PROGRESS    = 'activation_progress';
     const TEST_KEYS_CREATED      = 'test_keys_created';
     const LIVE_KEYS_CREATED      = 'live_keys_created';
-    const INSTANTLY_ACTIVATED    = 'instantly_activated';
 
     public static function exists($action)
     {
