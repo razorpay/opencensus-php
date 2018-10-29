@@ -432,13 +432,28 @@ class ScheduleTest extends TestCase
 
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
 
-        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, ['submitted' => true]);
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
+            'submitted'           => true,
+            'bank_branch_ifsc'    => 'CBIN0281697',
+            'bank_account_number' => '0002020000304030434',
+            'bank_account_name'   => 'random name',
+            'contact_mobile'      => '9999999999',
+        ]);
 
-        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, ['submitted' => true]);
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
+            'submitted'           => true,
+            'bank_branch_ifsc'    => 'CBIN0281697',
+            'bank_account_number' => '0002020000304030434',
+            'bank_account_name'   => 'random name',
+            'contact_mobile'      => '9999999999',
+        ]);
 
         $activationRequest = [
-            'url' => '/merchants/' . $merchantId .  '/activate',
-            'method' => 'post',
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
         ];
 
         $this->ba->adminAuth();

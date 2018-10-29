@@ -197,6 +197,7 @@ class Gateway
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
+        self::UPI_ICICI,
     ];
 
     /**
@@ -1305,6 +1306,13 @@ class Gateway
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    public static function isSupportedEmandateBank($bank): bool
+    {
+        $banks = self::getAllEMandateBanks();
+
+        return (in_array($bank, $banks, true) === true);
     }
 
     public static function getAllEMandateBanks(): array

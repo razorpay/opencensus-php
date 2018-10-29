@@ -11,6 +11,7 @@ class Feature
     const RECURRING         = 'recurring';
     const TRANSFER          = 'transfer';
     const EMI               = 'emi';
+    const ESAUTOMATIC       = 'esautomatic';
 
     const FEATURE_LIST = [
         self::PAYMENT,
@@ -18,6 +19,7 @@ class Feature
         self::RECURRING,
         self::TRANSFER,
         self::EMI,
+        self::ESAUTOMATIC
     ];
 
     /**

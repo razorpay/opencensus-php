@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -1565,16 +1565,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.12",
+            "version": "8.9.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "b906325b1bcf99309bc10bff7cbdc1ed8fbcf774"
+                "reference": "04425318e27b3a41ef9910fc0a9e43c9d3c3e725"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/b906325b1bcf99309bc10bff7cbdc1ed8fbcf774",
-                "reference": "b906325b1bcf99309bc10bff7cbdc1ed8fbcf774",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/04425318e27b3a41ef9910fc0a9e43c9d3c3e725",
+                "reference": "04425318e27b3a41ef9910fc0a9e43c9d3c3e725",
                 "shasum": ""
             },
             "require": {
@@ -1588,7 +1588,7 @@
                 "pear/versioncontrol_git": "^0.5",
                 "phing/phing": "^2.7",
                 "php-coveralls/php-coveralls": "^1.0|^2.0",
-                "phpunit/phpunit": "^4.8|^5.0",
+                "phpunit/phpunit": "^4.8.36|^5.0",
                 "symfony/console": "^2.8|^3.0"
             },
             "type": "library",
@@ -1629,7 +1629,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-08-23T10:23:25+00:00"
+            "time": "2018-10-18T08:12:16+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -5727,16 +5727,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.2.2",
+            "version": "1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "58887ccaf21b21d596a5cc31e9026a4ed46db378"
+                "reference": "db64ebef5449b4143e44efb78c943e9eff4f8a25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/58887ccaf21b21d596a5cc31e9026a4ed46db378",
-                "reference": "58887ccaf21b21d596a5cc31e9026a4ed46db378",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/db64ebef5449b4143e44efb78c943e9eff4f8a25",
+                "reference": "db64ebef5449b4143e44efb78c943e9eff4f8a25",
                 "shasum": ""
             },
             "require": {
@@ -5770,7 +5770,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-10-03T11:17:00+00:00"
+            "time": "2018-10-26T06:26:16+00:00"
         },
         {
             "name": "razorpay/metrics-php",

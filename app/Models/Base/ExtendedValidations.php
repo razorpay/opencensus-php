@@ -56,7 +56,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(PublicEntity::SIGNED_PUBLIC_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because
@@ -77,7 +77,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(UniqueIdEntity::UNSIGNED_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because

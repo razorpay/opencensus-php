@@ -331,7 +331,8 @@ class Gateway extends Base\Gateway
             // This is the second redirect (form post). The response of this is passed on to the third redirect request.
             $secondRedirectResponse = $this->sendSecondGatewayRequestForEbsAuthorize($secondRedirectRequest);
 
-            $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
+            $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest,
+                                                                         $secondRedirectResponse);
 
             if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect, true) !== false)
             {
@@ -836,9 +837,14 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED    => true,
         ];
 
-        if (isset($response[Resp::TRANSACTION_ID]))
+        if (isset($response[Resp::API_TRANSACTION_ID]))
         {
             $attributes[Entity::TRANSACTION_ID] = $response[Resp::API_TRANSACTION_ID];
+        }
+
+        if (isset($response[Resp::API_REFERENCE_ID]))
+        {
+            $attributes[Entity::GATEWAY_PAYMENT_ID] = $response[Resp::API_REFERENCE_ID];
         }
 
         if ((isset($response[Entity::IS_FLAGGED]) === true) and

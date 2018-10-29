@@ -176,6 +176,7 @@ final class FactoryData
             'payment_issuer' => 'ICIC',
             'percent_rate' => 1000,
             'fixed_rate' => 10000,
+            'org_id'    => '100000razorpay',
         ]);
 
         $factory(\RZP\Models\Transaction\Entity::class, [

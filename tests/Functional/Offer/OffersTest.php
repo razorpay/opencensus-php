@@ -49,6 +49,22 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testOfferPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['offer_private_auth']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testOfferPrivateAuthWithoutFeature()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateCardOfferWithLinkedOfferIds()
     {
         $offer = $this->fixtures->create('offer:card');

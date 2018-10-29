@@ -1270,7 +1270,7 @@ class Gateway
     {
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
     }
 
     //

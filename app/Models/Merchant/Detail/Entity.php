@@ -350,6 +350,17 @@ class Entity extends Base\PublicEntity
         self::ISSUE_FIELDS_REASON,
     ];
 
+    /**
+     * Attributes that are critical in the instant activations flow.
+     *
+     * The merchant will not be allowed to edit these fields once instantly activated. These fields will be blocked
+     * while filling the complete KYC form.
+     */
+    const INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES = [
+        self::BUSINESS_CATEGORY,
+        self::BUSINESS_SUBCATEGORY,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -721,5 +732,10 @@ class Entity extends Base\PublicEntity
         $adminId = $this->getAttribute(Entity::REVIEWER_ID);
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
+    }
+
+    public function hasSubmittedInstantActivationForm(): bool
+    {
+        return (empty($this->getActivationFlow()) === false);
     }
 }

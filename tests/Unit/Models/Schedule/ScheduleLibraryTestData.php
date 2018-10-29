@@ -29,6 +29,31 @@ return [
         ],
     ],
 
+    'testBasicT32Schedule' => [
+        'cases' => [
+            // Simply adding 32 brings us to 22nd June, but skips
+            // 7 non-working days. Add those and you reach 1st July.
+            [
+                'initialTime'      => "2016-05-21 20:57:59",
+                'expectedNextTime' => "2016-07-01 00:00:00"
+            ],
+
+            // Calculation similar to the one above brings us to 24th
+            // May, plus 3 holidays in late April to reach 27th May
+            [
+                'initialTime'      => "2016-04-13 16:27:10",
+                'expectedNextTime' => "2016-05-27 00:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'Basic T32',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'anchor'      => null,
+            'delay'       => 32,
+        ],
+    ],
+
     'testT3ScheduleWithMinTime' => [
         'cases' => [
             // This will check the case when settled at time

@@ -7,6 +7,7 @@ use RZP\Gateway\Atom\DateFormat;
 use RZP\Gateway\Atom\AuthRequestFields;
 use RZP\Gateway\Atom\RefundRequestFields;
 use RZP\Gateway\Atom\VerifyRequestFields;
+use RZP\Gateway\Atom\VerifyRefundFields;
 
 class Validator extends Base\Validator
 {
@@ -41,5 +42,11 @@ class Validator extends Base\Validator
         VerifyRequestFields::TRANSACTION_DATE => 'required|date_format:'.DateFormat::VERIFY,
         VerifyRequestFields::TRANSACTION_ID   => 'required|alpha_num',
         VerifyRequestFields::AMOUNT           => 'required|numeric',
+    );
+
+    protected static $verifyRefundRules = array(
+        VerifyRefundFields::LOGIN     => 'required',
+        VerifyRefundFields::ENC_DATA  => 'required',
+        VerifyRefundFields::REFUND_ID => 'required',
     );
 }

@@ -25,4 +25,24 @@ class Helper
         // is a hack to avoid this issue
         return intval(number_format($amountToBeFormatted, 2, '.', ''));
     }
+
+    /**
+     * Search for fields in the row one by one and returns first value at first occurrence
+     *
+     * @param array $row
+     * @param array $fields
+     * @return mixed
+     */
+    public static function getArrayFirstValue(array $row, array $fields)
+    {
+        $value = array_first(
+            $fields,
+            function($field) use ($row)
+            {
+                return (isset($row[$field]) === true);
+            });
+
+        return $row[$value] ?? null;
+
+    }
 }

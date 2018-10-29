@@ -7,7 +7,7 @@ metadata:
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 0
+  replicas: 6
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -29,14 +29,14 @@ spec:
       - args:
         - sqs_multi_default
         - api-invoice-reports
-        - "20"
+        - "10"
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:3b5df79f9782773bcac4a237cd870372fc5a539e
+        image: razorpay/api:0b7d01ff1067ad8e91dea4c907d882fc622b308
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -45,7 +45,7 @@ spec:
               - /usr/bin/php
               - artisan
               - queue:restart
-        name: api
+        name: sqs-invoice-reports
         ports:
         - containerPort: 80
           protocol: TCP
@@ -55,8 +55,6 @@ spec:
         volumeMounts:
         - mountPath: /app/storage/logs/
           name: trace
-        - mountPath: /var/log/apache/
-          name: apache
       dnsPolicy: Default
       imagePullSecrets:
       - name: registry
@@ -68,10 +66,6 @@ spec:
       terminationGracePeriodSeconds: 300
       volumes:
       - hostPath:
-          path: /var/log/fluentd/splunk/api/trace
+          path: /var/log/fluentd/api/sqs-invoice-reports/trace
           type: ""
         name: trace
-      - hostPath:
-          path: /var/log/fluentd/splunk/api/apache
-          type: ""
-        name: apache

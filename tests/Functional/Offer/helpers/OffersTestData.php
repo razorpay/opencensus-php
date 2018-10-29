@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -74,6 +76,78 @@ return [
                 'terms'               => 'Some more details'
             ]
         ]
+    ],
+
+    'testOfferPrivateAuth' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer over private auth',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1639758567,
+                'ends_at'             => 1639758568,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer over private auth',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1639758567,
+                'ends_at'             => 1639758568,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testOfferPrivateAuthWithoutFeature' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer over private auth',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1639758567,
+                'ends_at'             => 1639758568,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+        ],
     ],
 
     'testCreateOfferWithNullMethodAndInvalidIssuer' => [

@@ -1126,7 +1126,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        if ($response->body === null)
+        if (empty($response->body) === true)
         {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
         }
@@ -2274,6 +2274,9 @@ class Gateway extends Base\Gateway
                 if ($responseCode >= 500)
                 {
                     $responseArray = $this->parseXmlAndReturnArray($responseBody);
+
+                    $this->traceGatewayPaymentResponse($responseArray, $this->input,
+                        TraceCode::GATEWAY_RESPONSE);
 
                     $this->processAuthorizeResponse($responseArray);
                 }

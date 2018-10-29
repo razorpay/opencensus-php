@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Merchant\helpers;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-
+use RZP\Exception\BadRequestException;
 
 return [
     'testMerchantActivationCategoriesResponseForAdminAuth' => [
@@ -497,7 +497,7 @@ return [
                             'category2'       => 'ecommerce',
                             'activation_flow' => 'greylist',
                         ],
-                        'crypto_machinery '         => [
+                        'crypto_machinery'          => [
                             'category'        => 5999,
                             'description'     => 'Crypto Machinery',
                             'category2'       => 'ecommerce',
@@ -898,27 +898,29 @@ return [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
             'content' => [
-                'business_category'    => 'services',
-                'business_subcategory' => 'event_planning',
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
                 'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
             ],
         ],
         'response'    => [
             'content' => [
-                'contact_email'                    => "test@razorpay.com",
                 'promoter_pan'                     => "ABCDE0000Z",
                 'gstin'                            => null,
                 'p_gstin'                          => null,
-                'business_category'                => "services",
-                'business_subcategory'             => "event_planning",
-                'activation_progress'              => 0,
+                'business_category'                => "ecommerce",
+                'business_subcategory'             => "fashion_and_lifestyle",
                 'archived'                         => 0,
-                'allowed_next_activation_statuses' => [],
+                'allowed_next_activation_statuses' => [
+                    'under_review'
+                ],
                 'submitted_at'                     => null,
+                'activation_status'                => 'instantly_activated',
                 'verification'                     => [
                     'status'              => "disabled",
                     'disabled_reason'     => "required_fields",
@@ -927,7 +929,6 @@ return [
                         "bank_account_name",
                         "bank_account_number",
                         "bank_branch_ifsc",
-                        "business_international",
                         "business_operation_address",
                         "business_operation_city",
                         "business_operation_pin",
@@ -942,10 +943,10 @@ return [
                         "contact_name",
                         "promoter_address_url",
                     ],
-                    'activation_progress' => 18,
+                    'activation_progress' => 22,
                 ],
                 'can_submit'                       => false,
-                'activated'                        => 0,
+                'activated'                        => 1,
             ],
         ],
         'status_code' => 200,
@@ -1001,6 +1002,35 @@ return [
         'status_code' => 200,
     ],
 
+    'testPostInstantActivationLinkedAccount' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+        ],
+    ],
+
     'testPostInstantActivationByActivatedMerchant' => [
         'request'     => [
             'method'  => 'POST',
@@ -1030,6 +1060,64 @@ return [
         ]
     ],
 
+    'testBlacklistInstantActivation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'betting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "betting",
+                'activation_flow'                  => 'blacklist',
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
+    'testGreylistInstantActivation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'mutual_fund',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_email'                    => "test@razorpay.com",
+                'promoter_pan'                     => "ABCDE0000Z",
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "mutual_fund",
+                'activation_flow'                  => 'greylist',
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+            ],
+        ],
+    ],
+
     'testL1ResubmissionForBlacklist' => [
         'request'     => [
             'method'  => 'POST',
@@ -1046,13 +1134,113 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => "ABCDE0000Z",
-                'business_category'    => "financial_services",
-                'business_subcategory' => "accounting",
-                'can_submit'           => false,
+                'promoter_pan'                     => "ABCDE0000Z",
+                'activation_progress'              => 0,
+                'archived'                         => 0,
+                'allowed_next_activation_statuses' => [],
+                'submitted_at'                     => null,
+                'activation_flow'                  => 'whitelist',
+                'business_category'                => "financial_services",
+                'business_subcategory'             => "accounting",
+                'can_submit'                       => false,
                 //'activated'            => 1,
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testKycSubmissionForInstantlyActivatedMerchant' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '1',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testKYCVerificationForInstantlyActivatedMerchant' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+    'submitKyc' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'testReleaseFundsWithoutBankAccount' => [
+        'request' => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method' => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        ],
     ],
 ];

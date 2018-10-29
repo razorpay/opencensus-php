@@ -229,7 +229,7 @@ class Core extends Base\Core
 
         $merchant->edit($input);
 
-        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+        $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
@@ -421,7 +421,7 @@ class Core extends Base\Core
 
         if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
         {
-            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
             (new Methods\Core)->validatePricingForInternational($merchant, $plan);
         }
@@ -1062,11 +1062,9 @@ class Core extends Base\Core
 
     public function addSubMerchantReferral($aggregratorMerchant, $account)
     {
-        $tagInputData = [
-            'tags' => ['ref-' . $aggregratorMerchant->id],
-        ];
+        $refTag = 'ref-' . $aggregratorMerchant->getId();
 
-        $this->addTags($account->id, $tagInputData);
+        $this->appendTag($account, $refTag);
     }
 
     /**
@@ -1135,6 +1133,21 @@ class Core extends Base\Core
         }
 
         return $merchant->tagNames();
+    }
+
+    /**
+     * Adds a new tag to the merchant
+     *
+     * @param Entity $merchant
+     * @param string $tagName
+     */
+    public function appendTag(Entity $merchant, string $tagName)
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_APPEND, ['tag' => $tagName]);
+
+        $merchant->tag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
     }
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
@@ -1536,6 +1549,11 @@ class Core extends Base\Core
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
+        $oldData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $category  = $subcategoryMetaData[Entity::CATEGORY];
         $category2 = $subcategoryMetaData[Entity::CATEGORY2];
 
@@ -1544,18 +1562,41 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $newData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
-            [
-                'old_data' => [
-                    Entity::CATEGORY2 => $merchant->getCategory2(),
-                    Entity::CATEGORY  => $merchant->getCategory(),
-                ],
-                'new_data' => [
-                    Entity::CATEGORY2 => $category2,
-                    Entity::CATEGORY  => $category,
-                ],
-            ]);
+            compact('oldData', 'newData'));
+
+        return $merchant;
+    }
+
+    /**
+     * Extracts a few fields like business name and website from the input
+     * and saves it to merchants as well as merchant details table.
+     *
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function editPreSignupFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $businessWebsite = $input[Detail\Entity::BUSINESS_WEBSITE] ?? null;
+
+        $preSignupInput = [
+            Entity::NAME    => $input[Detail\Entity::BUSINESS_NAME],
+            Entity::WEBSITE => $businessWebsite,
+        ];
+
+        (new Validator)->validateInput('edit_pre_signup', $preSignupInput);
+
+        $this->trace->info(TraceCode::MERCHANT_EDIT, ['input' => $preSignupInput]);
+
+        $merchant = $this->edit($merchant, $preSignupInput);
 
         return $merchant;
     }

@@ -409,7 +409,11 @@ trait FileHandlerTrait
         return $url;
     }
 
-    protected function getFileFromAws($key, $filePath, $bucket = 'settlement_bucket')
+    protected function getFileFromAws(
+        string $key,
+        string $filePath,
+        string $bucketConfigKey = 'settlement_bucket',
+        string $region = null)
     {
         $config =  \Config::get('aws');
 
@@ -420,28 +424,66 @@ trait FileHandlerTrait
             return $key;
         }
 
-        $s3 = Handler::getClient();
+        $s3 = Handler::getClient($region);
+
+        $request = [
+            'Bucket'    => $config[$bucketConfigKey],
+            'Key'       => $key,
+            'SaveAs'    => $filePath
+        ];
 
         try
         {
-            $request = array(
-                'Bucket'    => $config[$bucket],
-                'Key'       => $key,
-                'SaveAs'    => $filePath
-            );
-
             $result = $s3->getObject($request);
 
             $this->trace()->info(TraceCode::AWS_FILE_DOWNLOAD, $request);
         }
         catch (\Throwable $e)
         {
-            $this->trace()->traceException($e);
+            $this->trace()->traceException(
+                                $e,
+                                null,
+                                TraceCode::AWS_FILE_DOWNLOAD_ERROR,
+                                $request);
 
             throw $e;
         }
 
         return $filePath;
+    }
+
+    protected function deleteFileFromAws(string $key, string $bucketConfigKey, string $region = null): bool
+    {
+        $config =  \Config::get('aws');
+
+        $awsS3Mock = $config['mock'];
+
+        if ($awsS3Mock)
+        {
+            return true;
+        }
+
+        $s3 = Handler::getClient($region);
+
+        $request = [
+            'Bucket'    => $config[$bucketConfigKey],
+            'Key'       => $key,
+        ];
+
+        try
+        {
+            $result = $s3->deleteObject($request);
+
+            $this->trace()->info(TraceCode::AWS_FILE_DELETE, $request);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace()->traceException($e, null, TraceCode::AWS_FILE_DELETE_ERROR, $request);
+
+            throw $e;
+        }
+
+        return true;
     }
 
     protected function getPreSignedUrlFromAws($key, $bucket = 'settlement_bucket', $ttl = '+10 minutes')

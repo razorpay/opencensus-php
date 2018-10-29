@@ -154,6 +154,15 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getAllBankTransferTerminals(): PublicCollection
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::BANK_TRANSFER, true)
+                      ->withTrashed();
+
+        return $query->get();
+    }
+
     protected function addMerchantWhereCondition($query, array $merchantIds)
     {
         $query->where(

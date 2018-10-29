@@ -155,10 +155,22 @@ class EbsGatewayTest extends TestCase
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
+        $override = [
+            '{{transactionId}}' => random_integer(8),
+            '{{paymentId}}'     => random_integer(8),
+        ];
+        $this->mockServerContentFunction(function(& $content) use ($override)
+        {
+            $content = strtr($content, $override);
+        });
+
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('ebs', true);
         $this->assertTestResponse($refund);
+
+        $this->assertEquals($override['{{transactionId}}'], $refund['transaction_id']);
+        $this->assertEquals($override['{{paymentId}}'], $refund['gateway_payment_id']);
     }
 
     public function testPaymentPartialRefund()

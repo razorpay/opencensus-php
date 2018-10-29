@@ -61,6 +61,7 @@ class Reconciliate extends Base\Core
     const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';
     const AUTH_CODE              = 'auth_code';
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
+    const GATEWAY_PAYMENT_ID     = 'gateway_payment_id';
 
     const GATEWAY_TOKEN          = 'gateway_token';
     const GATEWAY_ERROR_CODE     = 'gateway_error_code';
