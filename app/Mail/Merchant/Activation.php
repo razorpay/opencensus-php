@@ -32,7 +32,7 @@ class Activation extends Mailable
 
     protected function addHtmlView()
     {
-        if ($this->isWhitelistActivationFlow())
+        if ($this->isWhitelistActivationFlow() === true)
         {
             $this->view('emails.merchant.whitelist_activation');
         }
@@ -46,7 +46,7 @@ class Activation extends Mailable
 
     protected function addTextView()
     {
-        if ($this->isWhitelistActivationFlow())
+        if ($this->isWhitelistActivationFlow() === true)
         {
             $this->text('emails.merchant.whitelist_activation_text');
         }
@@ -82,7 +82,7 @@ class Activation extends Mailable
     {
         $subject = null;
 
-        if ($this->isWhitelistActivationFlow())
+        if ($this->isWhitelistActivationFlow() === true)
         {
             $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
         }

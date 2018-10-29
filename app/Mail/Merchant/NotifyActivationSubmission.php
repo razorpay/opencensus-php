@@ -61,7 +61,7 @@ class NotifyActivationSubmission extends Mailable
 
     protected function addSubject()
     {
-        if($this->data[MerchantConstant::IS_WHITELISTED_ACTIVATION] === true)
+        if ($this->data[MerchantConstant::IS_WHITELISTED_ACTIVATION] === true)
         {
             $subject = 'KYC form submitted for ' . $this->org['business_name'];
         }
