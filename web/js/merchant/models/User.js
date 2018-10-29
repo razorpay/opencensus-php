@@ -191,6 +191,10 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
+  get isChargeAtWillEnabled() {
+    return this.findTag('Hosted_emandate');
+  }
+
   get isAgentRole() {
     return this.findTag('enable_agent_role');
   }

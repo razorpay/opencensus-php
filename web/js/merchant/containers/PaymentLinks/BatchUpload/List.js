@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import ListContainer from 'merchant/containers/ListContainer';
+
 import BatchList from 'merchant/containers/BatchNew/List';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import { openModal } from 'rzp/modules/modals';
@@ -19,15 +19,12 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 @connect(
   state => {
     return {
-      mode: state.session.mode,
-      user: state.session.user,
       issuableIdList: state.paymentBatchIds.issuableIdList,
-      ...state.paymentlinkbatches,
     };
   },
   { fetchAll, createBatch, validateBatch, openModal }
 )
-export default class BatchListContainer extends ListContainer {
+export default class BatchListContainer extends Component {
   constructor(props) {
     super(props);
     //hotjar integration
@@ -116,17 +113,13 @@ export default class BatchListContainer extends ListContainer {
     return (
       <BatchList
         form="batchListFilter"
-        count={this.state.count}
-        skip={this.state.skip}
-        paginate={this.paginate}
-        onSubmit={this.search}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
         sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
         batchType="payment_link"
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
-        {...this.props}
         gaEvents={gaEvents}
+        {...this.props}
       />
     );
   }
@@ -135,7 +128,7 @@ export default class BatchListContainer extends ListContainer {
 function allowSendAllLinks(batch) {
   // config object will not be available for older batches
   // duplicate batches will have no success count
-  if (Object.keys(batch.config).length) {
+  if (batch.config && Object.keys(batch.config).length) {
     if (
       parseInt(batch.config.sms_notify) > 0 ||
       parseInt(batch.config.email_notify) > 0

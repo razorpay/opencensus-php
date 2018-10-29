@@ -388,7 +388,7 @@ export default class App extends Component {
           org_custom_code={org.custom_code}
         />
         <Content user={user} modeFormatted={modeFormatted} />
-        <Footer showMobileNav={this.props.windowWidth < 950} />
+        <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

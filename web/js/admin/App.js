@@ -49,6 +49,7 @@ import OrgEntity from 'admin/organizations/Entity';
 import InvitesList from 'admin/invites/List';
 
 import ActivationList from 'admin/activations/List';
+import InstantActivationList from 'admin/instantactivations/List';
 
 import OperationsDashboard from 'admin/operations/List';
 import ScroogeReports from 'admin/scrooge/Reports';
@@ -64,14 +65,22 @@ import { isOrgHDFC, isOrgRazorpay } from 'admin/user';
 export default class App extends Component {
   /*
     Following urls will be redirected to
-     - http://dashboard.razorpay.dev/admin#/app/entity/live/pricing_plan/8DayWD4r6ewju2
+     - http://dashboard.razorpay.com/admin#/app/entity/live/pricing_plan/8DayWD4r6ewju2
      TO
-     http://dashboard.razorpay.dev/admin/entity/live/pricing_plan/8DayWD4r6ewju2
-     - http://dashboard.razorpay.dev/admin#/app/merchants/9FI02gqNcWhPxy/detail
+     http://dashboard.razorpay.com/admin/entity/live/pricing_plan/8DayWD4r6ewju2
+     - http://dashboard.razorpay.com/admin#/app/merchants/9FI02gqNcWhPxy/detail
      TO
-     http://dashboard.razorpay.dev/admin/merchants/9FI02gqNcWhPxy/detail
+     http://dashboard.razorpay.com/admin/merchants/9FI02gqNcWhPxy/detail
   */
   componentWillUpdate() {
+    this.legacyUrlSupport();
+  }
+
+  componentWillMount() {
+    this.legacyUrlSupport();
+  }
+
+  legacyUrlSupport() {
     let hashUrl = this.props.location.hash;
     if (hashUrl && hashUrl.indexOf('#/') > -1) {
       hashUrl = hashUrl.substring(2); // Remove '#/'
@@ -142,6 +151,10 @@ export default class App extends Component {
               {isOrgRazorpay() && (
                 <React.Fragment>
                   <Route path="/activation" component={ActivationList} />
+                  <Route
+                    path="/instant-activation"
+                    component={InstantActivationList}
+                  />
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
@@ -185,7 +198,10 @@ export default class App extends Component {
               {linkGroup.map((l, i) => {
                 // For other orgs, don't render restricted routes.
                 // (FE only solution. BE doesn't support.)
-                if (!isOrgRazorpay() && Heimdall_restrictRoutes.find(l[1])) {
+                if (
+                  !isOrgRazorpay() &&
+                  Heimdall_restrictRoutes.find(route => route === l[1])
+                ) {
                   return null;
                 }
 
@@ -214,6 +230,7 @@ const links = [
     // title, url, permission, icon
     ['Merchants', '/merchants', 'view_all_merchants', 'user-manager'],
     ['Activations', '/activation', 'view_activation_form'],
+    ['Instant Activations', '/instant-activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
     ['Downtimes', '/downtimes', '', 'pulse'],

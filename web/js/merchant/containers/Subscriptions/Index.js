@@ -10,8 +10,16 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
+
 import ActivationBanner from 'merchant/components/ActivationBanner';
-import AddOnsList from 'merchant/containers/AddOns/List';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+
+import HostedEmanadateBatches from './Batch/List';
+import RecurringPayments from './RecurringPayments/List';
+import TokensList from './Tokens/List';
+
+const heading =
+  'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
 
 @connect(
   state => {
@@ -106,16 +114,42 @@ export default class SubscriptionsController extends Component {
         )}
         <tabbed-container>
           <header id="subscriptions-header">
-            <NavLink to="/subscriptions">Subscriptions</NavLink>
+            <NavLink exact to="/subscriptions">
+              Subscriptions
+            </NavLink>
             <NavLink to="/plans">Plans</NavLink>
-            {/* <NavLink to="/addons">Add Ons</NavLink> */}
+
+            <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
+              <NavLink to="/tokens">Tokens</NavLink>
+              <NavLink to="/recurring_payments">Payments</NavLink>
+
+              <NavLink exact to="/subscriptions/batchuploads">
+                Batch Upload
+              </NavLink>
+            </ShowWhen>
           </header>
           <TestModeBanner />
           <content>
             <Switch>
+              <ShowWhenRoute
+                path="/subscriptions/batchuploads"
+                component={HostedEmanadateBatches}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
               <Route path="/subscriptions" component={SubscriptionsList} />
               <Route path="/plans" component={PlansList} />
-              {/* <Route path="/addons" component={AddOnsList} /> */}
+
+              <ShowWhenRoute
+                path="/tokens"
+                component={TokensList}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+
+              <ShowWhenRoute
+                path="/recurring_payments"
+                component={RecurringPayments}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
             </Switch>
           </content>
         </tabbed-container>
