@@ -60,16 +60,6 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
                     ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
-    protected function getGatewayToken(array $row)
-    {
-        if (empty($row[self::COLUMN_GATEWAY_TOKEN]) === false)
-        {
-            return trim($row[self::COLUMN_GATEWAY_TOKEN]);
-        }
-
-        return null;
-    }
-
     protected function getGatewayErrorCode(array $row)
     {
         if (empty($row[self::COLUMN_STATUS]) === false)
@@ -122,7 +112,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
 
     protected function getApiErrorCodeMapped(array $rowDetails)
     {
-        $gatewayErrorCode = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_CODE];
+        $gatewayErrorCode = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_CODE] ?? null;
 
         $this->checkValidStatus($gatewayErrorCode);
 
@@ -147,7 +137,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
 
     protected function getApiErrorCodeFromDescription(array $rowDetails): string
     {
-        $errorDescription = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_DESC];
+        $errorDescription = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_DESC] ?? null;
 
         return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
