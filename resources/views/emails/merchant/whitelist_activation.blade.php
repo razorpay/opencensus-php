@@ -13,6 +13,7 @@
 
         <p>You will now start receiving settlements for the payments made to your business. Your settlement schedule is (T+3) working days.
             The balance eligible for settlements will be settled in the next cycle.</p>
+        <p><a href="https://dashboard.razorpay.com" target="_blank">Go to dashboard</a></p>
     </div>
 
 <div>
