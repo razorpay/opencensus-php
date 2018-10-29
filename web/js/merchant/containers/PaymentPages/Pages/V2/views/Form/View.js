@@ -72,6 +72,10 @@ export default class View extends React.PureComponent {
     this.setState({ activeCreatorType: false });
   };
 
+  onGenericFieldDelete = idx => {
+    this.props.deleteInSchema(idx);
+  };
+
   onAmountCreatorSubmit = formData => {
     const { amount, stock, allow_multiple_units } = formData;
 
@@ -149,7 +153,9 @@ export default class View extends React.PureComponent {
 
             return (
               <GenericField
-                key={idx}
+                key={field.name}
+                onFieldDelete={this.onGenericFieldDelete}
+                selfIndex={idx}
                 field={field}
                 infoTxt={infoTxt}
                 onEditField={

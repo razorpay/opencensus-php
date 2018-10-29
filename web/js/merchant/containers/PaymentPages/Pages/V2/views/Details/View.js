@@ -68,7 +68,7 @@ export default class View extends React.PureComponent {
           updateData={this.updateData}
         />
 
-        <Terms terms={settings.terms} updateData={this.updateData} />
+        <Terms terms={paymentPageEntity.terms} updateData={this.updateData} />
       </React.Fragment>
     );
   }

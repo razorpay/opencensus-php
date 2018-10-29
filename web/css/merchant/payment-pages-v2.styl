@@ -267,13 +267,25 @@
     border-radius: 2px
     cursor: pointer
 
+    .action-btn
+      position absolute
+      top: 8px
+      right: 2px
+      font-size: 20px
+      padding: 2px 8px
+      cursor: pointer
+      visibility: hidden
+
+      &:hover
+        color: $textDangerColor
+
     &:not(.disable-hover):hover
       background-color: #fff
       box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
 
     &:hover
-      .close-btn
-        opacity: 0.5
+      .action-btn
+        visibility: visible
 
       .Input-info
         transform: translateY(-50%)

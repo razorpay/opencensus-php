@@ -196,6 +196,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       amount,
       title,
       description,
+      terms,
       stock,
       allow_multiple_units,
       allow_social_share,
@@ -210,6 +211,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       title,
       description: description || undefined,
       times_payable: stock || undefined,
+      terms,
       settings: {
         allow_multiple_units: !!allow_multiple_units ? '1' : undefined,
         allow_social_share: !!allow_social_share ? '1' : '0',

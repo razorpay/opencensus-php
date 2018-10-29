@@ -61,7 +61,7 @@ export default class PaymentPagesV2Entity extends React.Component {
       [
         {
           title: 'Number of Payments made',
-          value: paymentPageEntity.times_paid,
+          value: paymentPageEntity.captured_payments_count,
         },
         {
           title: 'Total revenue in sales',

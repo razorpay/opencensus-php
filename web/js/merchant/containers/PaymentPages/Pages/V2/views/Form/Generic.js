@@ -12,7 +12,13 @@ const CustomTypeOption = ({ option }) => (
   </React.Fragment>
 );
 
-export const GenericField = ({ field, onEditField, infoTxt }) => {
+export const GenericField = ({
+  field,
+  onEditField,
+  infoTxt,
+  onFieldDelete,
+  selfIndex,
+}) => {
   return (
     <EditLayer
       class={classList(
@@ -40,6 +46,17 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
           <div class="Field-description">{field.description}</div>
         )}
       </div>
+      {!field.required && (
+        <span
+          class="action-btn"
+          onClick={e => {
+            onFieldDelete(selfIndex);
+            e.stopPropagation();
+          }}
+        >
+          ×
+        </span>
+      )}
     </EditLayer>
   );
 };
