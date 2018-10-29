@@ -140,7 +140,9 @@ class Core extends Base\Core
             $orderCurrency = $input[Order\Entity::CURRENCY];
         }
 
-        $receipt = $input[Order\Entity::RECEIPT];
+        $receipt = isset($input[Order\Entity::RECEIPT]) ? $input[Order\Entity::RECEIPT] : "";
+
+        $description = isset($input[Payment\Entity::DESCRIPTION]) ? $input[Payment\Entity::DESCRIPTION] : "";
 
         $orderInput = [
             Order\Entity::AMOUNT          => $input[Order\Entity::AMOUNT],
@@ -166,7 +168,7 @@ class Core extends Base\Core
             Payment\Entity::TOKEN       => $token->getPublicId(),
             Payment\Entity::AMOUNT      => $input[Order\Entity::AMOUNT],
             Payment\Entity::CURRENCY    => $orderCurrency,
-            Payment\Entity::DESCRIPTION => $input[Payment\Entity::DESCRIPTION],
+            Payment\Entity::DESCRIPTION => $description,
             Payment\Entity::EMAIL       => $customer->getEmail(),
             Payment\Entity::CONTACT     => $customer->getContact(),
             Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
