@@ -66,7 +66,7 @@ class CreatePayoutsTable extends Migration
                   ->nullable()
                   ->unique();
 
-            $table->string(Payout::TRANSACTION_TYPE, 30)
+            $table->string(Payout::TRANSACTION_TYPE, 255)
                   ->nullable();
 
             $table->char(Payout::BATCH_FUND_TRANSFER_ID, Payout::ID_LENGTH)
