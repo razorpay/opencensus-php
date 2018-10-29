@@ -11,6 +11,10 @@ class RequestFields
 
     const PAYMENT_ID    = 'payment_id'; // payment_id
 
+    const REDIRECT_URL  = 'redirect_URL';
+
+    const CANCEL_URL    = 'cancel_URL';
+
     const CHECKSUM      = 'checkSum';
 
     // Authorize query params
@@ -20,5 +24,6 @@ class RequestFields
 
 
     // Verify request fields
+    const BANK_REF_NO = 'bank_ref_no';
 
 }

@@ -38,6 +38,7 @@ class Gateway extends Base\Gateway
         /**
          * Fields from the authorize response
          */
+        Base\Entity::RECEIVED           => Base\Entity::RECEIVED,
         ResponseFields::BANK_REF_NO     => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS          => Base\Entity::STATUS,
     ];
@@ -71,23 +72,25 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $gatewayInput = $input['gateway'];
+        $gatewayInput = $this->preProcessServerCallback($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $gatewayInput[ResponseFields::REF_NO]);
 
-        $this->assertAmount($input['payment']['amount'] / 100, $gatewayInput[ResponseFields::AMOUNT]);
+        $this->assertAmount($input['payment']['amount'] / 100, (int) $gatewayInput[ResponseFields::AMOUNT]);
 
         /**
          * @var $gatewayPayment GatewayEntity
          */
-        $gatewayPayment = $this->repo->netbanking->netfindByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->checkCallbackStatus($input, $gatewayPayment);
+        $this->checkCallbackStatus($gatewayInput, $gatewayPayment);
 
         $this->verifyCallback($gatewayPayment, $input);
 
         $gatewayInput[ResponseFields::AMOUNT] = $gatewayInput[ResponseFields::AMOUNT] * 100;
+
+        $gatewayInput[Base\Entity::RECEIVED] = true;
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 
@@ -126,8 +129,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
-                null,
-                null,
+                $verify->verifyResponseContent[ResponseFields::STATUS],
+                $verify->verifyResponseContent[ResponseFields::STATUS_DESC],
                 [
                     'callback_response' => $input['gateway'],
                     'verify_response'   => $verify->verifyResponseContent,
@@ -161,7 +164,7 @@ class Gateway extends Base\Gateway
         $requestArray = [
             RequestFields::REF_NO           => $input['payment'][Payment\Entity::ID],
             RequestFields::AMOUNT           => $input['payment'][Payment\Entity::AMOUNT],
-            RequestFields::PAYMENT_ID       => $input['callbackUrl'],
+            RequestFields::PAYMENT_ID       => $input['payment'][Payment\Entity::ID],
             RequestFields::MERCHANT_CODE    => $this->getMerchantId(),
         ];
 
@@ -175,6 +178,8 @@ class Gateway extends Base\Gateway
             RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
             RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,
             RequestFields::PAYMENT_ID   => $input['payment'][Payment\Entity::ID],
+            RequestFields::REDIRECT_URL => $input['callbackUrl'],
+            RequestFields::CANCEL_URL   => $input['callbackUrl'],
         ];
 
         $contentToEncrypt = $this->getFormattedRequest($requestArray);
@@ -209,7 +214,7 @@ class Gateway extends Base\Gateway
     {
         try
         {
-            $decryptedString = $this->decrypt($input);
+            $decryptedString = $this->decrypt($input['encdata']);
         }
         catch (\Exception $e)
         {
@@ -226,9 +231,14 @@ class Gateway extends Base\Gateway
 
         if ($response[RequestFields::CHECKSUM] !== md5($stringWithoutChecksum))
         {
-            throw new Exception\LogicException(
-                'Checksum verification failed',
-                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED);
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $response[RequestFields::CHECKSUM],
+                    'generated' => md5($stringWithoutChecksum),
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
         }
 
         return $response;
@@ -248,8 +258,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                null,
-                null,
+                $content[ResponseFields::STATUS],
+                $content[ResponseFields::STATUS_DESC],
                 [
                     'callback_response' => $content,
                     'payment_id'        => $this->input['payment']['id'],
@@ -297,7 +307,9 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->getFormattedRequest($requestArray);
 
-        $request['content'] = $this->encrypt($stringToEncrypt);
+        $request['content'] = [
+            RequestFields::ENCDATA => $this->encrypt($stringToEncrypt)
+        ];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -310,16 +322,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    private function parseVerifyResponse(string $responseString): array
+    private function parseVerifyResponse($responseString): array
     {
-        $response = simplexml_load_string($responseString);
+        $response = $this->jsonToArray($responseString);
 
-        //
-        // Converting all elements of $response xml into an array
-        //
-        $responseArray = json_decode(json_encode($response), true);
+        $responseString = $this->decrypt($response['encdata']);
 
-        return $responseArray;
+        $responseArray = $this->xmlToArray($responseString);
+
+        return $responseArray['@attributes'];
     }
 
     protected function checkGatewaySuccess(Verify $verify)
@@ -346,7 +357,18 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        return (($input['payment']['amount'] / 100) !== $content[ResponseFields::AMOUNT]);
+        return (($input['payment']['amount'] / 100) !== ((int) $content[ResponseFields::AMOUNT]));
+    }
+
+    protected function getVerifyAttributesToSave($content, $gatewayPayment)
+    {
+        $content[ResponseFields::AMOUNT] = $content[ResponseFields::AMOUNT] * 100;
+
+        $attributesToSave = $this->getMappedAttributes($content);
+
+        $attributesToSave[Base\Entity::RECEIVED] = true;
+
+        return $attributesToSave;
     }
 
     //--------------------Common Helper functions ---------------------------//
@@ -365,7 +387,7 @@ class Gateway extends Base\Gateway
 
         $checksum = md5($requestWithoutChecksum);
 
-        return  $requestWithoutChecksum . '|' . RequestFields::CHECKSUM . '=' . $checksum;
+        return $requestWithoutChecksum . '|' . RequestFields::CHECKSUM . '=' . $checksum;
     }
 
     private function getResponseArray($stringArray)
@@ -394,7 +416,7 @@ class Gateway extends Base\Gateway
     {
         $this->createCryptoIfNotCreated();
 
-        return base64_decode($this->aesCrypto->decryptString($stringToDecrypt));
+        return $this->aesCrypto->decryptString(base64_decode($stringToDecrypt));
     }
 
     private function createCryptoIfNotCreated()
@@ -403,7 +425,7 @@ class Gateway extends Base\Gateway
         {
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
-                file_get_contents(__DIR__ . '/RAZORPAY.key'),
+                $this->getSecret(),
                 $this->getIv());
         }
     }
