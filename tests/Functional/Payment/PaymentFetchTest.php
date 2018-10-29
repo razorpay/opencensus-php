@@ -170,8 +170,6 @@ class PaymentFetchTest extends TestCase
 
     public function testFetchPaymentByRecurringFilter()
     {
-        $this->ba->proxyAuth();
-
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
@@ -185,6 +183,8 @@ class PaymentFetchTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $this->doAuthAndCapturePayment($payment);
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
