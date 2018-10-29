@@ -15,3 +15,10 @@ spec:
         backend:
           serviceName: dashboard
           servicePort: 80
+  - host: func-dashboard-hdfc.razorpay.in
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: dashboard
+          servicePort: 80
