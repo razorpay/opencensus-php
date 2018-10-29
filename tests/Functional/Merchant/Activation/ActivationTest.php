@@ -29,9 +29,13 @@ class ActivationTest extends TestCase
 
     public function testMerchantActivationCategoriesResponseForAdminAuth()
     {
-        $this->ba->adminAuth();
+        $merchant = $this->fixtures->create('merchant');
 
-        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+        // allow admin to access merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->id);
 
         $this->startTest();
     }

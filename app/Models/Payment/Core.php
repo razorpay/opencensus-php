@@ -93,6 +93,11 @@ class Core extends Base\Core
 
         $payments = $this->repo->payment->fetchPaymentsWithoutTerminal(Method::BANK_TRANSFER, $rows);
 
+        $this->trace->info(
+            TraceCode::PAYMENTS_SELECTED,
+            ['payment_ids' => $payments->getIds()]
+        );
+
         $successCount = 0;
 
         $failureCount = 0;
@@ -103,7 +108,7 @@ class Core extends Base\Core
             {
                 $bankTransfer = $payment->bankTransfer;
 
-                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer, true);
 
                 $payment->associateTerminal($terminal);
 
@@ -127,19 +132,19 @@ class Core extends Base\Core
                     ['payment_id' => $payment->getId()]
                 );
             }
-
-            $summary = [
-                'success_count' => $successCount,
-                'failure_count' => $failureCount,
-            ];
-
-            $this->trace->info(
-                TraceCode::PAYMENT_TERMINAL_UPDATE_SUMMARY,
-                $summary
-            );
-
-            return $summary;
         }
+
+        $summary = [
+            'success_count' => $successCount,
+            'failure_count' => $failureCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TERMINAL_UPDATE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
     }
 
     public function updateMdr(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
