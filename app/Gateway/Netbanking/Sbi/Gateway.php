@@ -371,6 +371,48 @@ class Gateway extends Base\Gateway
         return $attributesToSave;
     }
 
+    //-------------------Verify common functions ----------------------------//
+
+    // TODO: move all these functions to Base/Gateway
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $verify->status = $this->getVerifyMatchStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $this->saveVerifyContent($verify);
+
+        $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
+    }
+
+    protected function saveVerifyContent(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getVerifyMatchStatus(Verify $verify)
+    {
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            return VerifyResult::STATUS_MISMATCH;
+        }
+
+        return VerifyResult::STATUS_MATCH;
+    }
+
     //--------------------Common Helper functions ---------------------------//
 
     // converts request array to request string with | delimiter
@@ -425,7 +467,7 @@ class Gateway extends Base\Gateway
         {
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
-                $this->getSecret(),
+                hex2bin($this->getSecret()),
                 $this->getIv());
         }
     }
@@ -438,5 +480,16 @@ class Gateway extends Base\Gateway
         }
 
         return self::LIVE_IV;
+    }
+
+    //TODO: move this to Base/Gateway
+    protected function getMerchantId()
+    {
+        if ($this->isTestMode() === true)
+        {
+            return $this->getTestMerchantId();
+        }
+
+        return $this->getLiveMerchantId();
     }
 }

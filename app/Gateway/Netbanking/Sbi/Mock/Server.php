@@ -169,7 +169,7 @@ class Server extends Base\Mock\Server
         {
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
-                $this->getSecret(),
+                hex2bin($this->getSecret()),
                 $this->getIv());
         }
     }
@@ -178,5 +178,4 @@ class Server extends Base\Mock\Server
     {
         return '1234567890123456';
     }
-
 }

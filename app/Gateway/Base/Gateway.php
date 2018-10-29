@@ -752,44 +752,6 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    protected function verifyPayment(Verify $verify)
-    {
-        $verify->status = $this->getVerifyMatchStatus($verify);
-
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        $this->saveVerifyContent($verify);
-
-        $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
-    }
-
-    protected function saveVerifyContent(Verify $verify)
-    {
-        $gatewayPayment = $verify->payment;
-
-        $content = $verify->verifyResponseContent;
-
-        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-    }
-
-    protected function getVerifyMatchStatus(Verify $verify)
-    {
-        $this->checkApiSuccess($verify);
-
-        $this->checkGatewaySuccess($verify);
-
-        if ($verify->gatewaySuccess !== $verify->apiSuccess)
-        {
-            return VerifyResult::STATUS_MISMATCH;
-        }
-
-        return VerifyResult::STATUS_MATCH;
-    }
-
     public function preProcessServerCallback($input): array
     {
         return $input;
@@ -1016,16 +978,6 @@ class Gateway
         }
 
         return $code;
-    }
-
-    protected function getMerchantId()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->getTestMerchantId();
-        }
-
-        return $this->getLiveMerchantId();
     }
 
     protected function getTestMerchantId()
