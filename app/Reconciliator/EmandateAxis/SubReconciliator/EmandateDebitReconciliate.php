@@ -5,9 +5,10 @@ namespace RZP\Reconciliator\EmandateAxis\SubReconciliator;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 
 class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitReconciliate
@@ -18,7 +19,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const COLUMN_GATEWAY_TOKEN     = 'mandate_refumr';
     const COLUMN_CUSTOMER_NAME     = 'customer_name';
     const COLUMN_DEBIT_ACCOUNT     = 'customer_bank_account';
-    const COLUMN_AMOUNT            = 'paid_in_amount';
+    const COLUMN_PAYMENT_AMOUNT    = 'paid_in_amount';
     const COLUMN_MIS_INFO3         = 'mis_info3';
     const COLUMN_MIS_INFO4         = 'mis_info4';
     const COLUMN_FILE_REF          = 'file_ref';
@@ -149,5 +150,31 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         $errorDescription = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_DESC];
 
         return StatusCode::getEmandateDebitErrorDesc($errorDescription);
+    }
+
+    protected function getReconPaymentAmount($row)
+    {
+        return Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

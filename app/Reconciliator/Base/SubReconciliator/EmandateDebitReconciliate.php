@@ -36,8 +36,6 @@ class EmandateDebitReconciliate extends PaymentReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
-
-            throw $ex;
         }
     }
 
