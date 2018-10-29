@@ -15,6 +15,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 import * as ModalActions from 'rzp/modules/modals';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { activationDuration } from 'common/data';
 
 import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';
@@ -25,6 +26,9 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
+import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
+import KycDetailsModal from 'merchant/components/KycDetailsModal';
+import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 
 import {
   trackError,
@@ -55,6 +59,25 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
+const KycFormSuccess = ({ onClose, isWhitelistFlow }) => (
+  <InstantActivationSuccess
+    title="KYC under review"
+    subtitle="Your KYC Form has been submitted"
+    content={
+      <div>
+        {isWhitelistFlow && (
+          <p>Meanwhile, you can continue to accept payments using Razorpay.</p>
+        )}
+        <div>
+          We will reach out on your contact email for further clarifications if
+          needed. The review process usually takes {activationDuration}.
+        </div>
+      </div>
+    }
+    onClose={onClose}
+  />
+);
+
 const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA
@@ -69,6 +92,11 @@ const keymetricsSectionTitle = 'Transactions Overview',
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
+      showInstantActivationSuccess:
+        state.home.instantActivations.showInstantActivationSuccess,
+      showKYCActivationSuccess:
+        state.home.instantActivations.showKYCActivationSuccess,
+      showKYCDetails: state.home.instantActivations.showKYCDetails,
     };
   },
   {
@@ -166,16 +194,21 @@ export default class HomeContainer extends Component {
      * below
      */
     if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
-      if (!user.isActivated) {
+      if (user.activation_status !== 'activated' || !user.isActivated) {
         this.state = {
           ...this.state,
           showOnboardingBanner: true,
-          showOnboardingBannerFirstStep: true,
+          showOnboardingBannerFirstStep: user.showInstantActivation
+            ? !user.instantActivation.isL1Submitted
+            : true,
           expandOnboardingBanner: true,
         };
 
         LocalStorageService.setItem(this.onboardingBannerToken, 'true');
-        LocalStorageService.setItem(this.firstStepToken, 'true');
+
+        if (this.state.showOnboardingBannerFirstStep) {
+          LocalStorageService.setItem(this.firstStepToken, 'true');
+        }
       } else if (mode !== 'live') {
         this.props.fetchPayments({ mode: 'live' }).then(data => {
           data = data.data;
@@ -197,6 +230,13 @@ export default class HomeContainer extends Component {
     this.onFirstStepClose = this.onFirstStepClose.bind(this);
     this.onExtraContentMount = this.onExtraContentMount.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 500);
+    this.onInstantActivationSuccess = this.onInstantActivationSuccess.bind(
+      this
+    );
+  }
+
+  onInstantActivationSuccess() {
+    return switchToMode(this.props.user.current, 'live');
   }
 
   onExtraContentMount(node) {
@@ -474,10 +514,15 @@ export default class HomeContainer extends Component {
   }
 
   setShowOnboardingBanner() {
+    const { user } = this.props,
+      showOnboardingBannerFirstStep = user.showInstantActivation
+        ? !user.instantActivation.isL1Submitted
+        : true;
+
     this.setState(
       {
         showOnboardingBanner: true,
-        showOnboardingBannerFirstStep: true,
+        showOnboardingBannerFirstStep,
       },
       () => {
         this.setState(
@@ -491,7 +536,10 @@ export default class HomeContainer extends Component {
       }
     );
 
-    LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    if (showOnboardingBannerFirstStep) {
+      LocalStorageService.setItem(this.onboardingBannerToken, 'true');
+    }
+
     LocalStorageService.setItem(this.firstStepToken, 'true');
   }
 
@@ -541,6 +589,10 @@ export default class HomeContainer extends Component {
       isAdmin,
       analyticsFetch,
       onFilterChange,
+      showInstantActivationSuccess,
+      showKYCActivationSuccess,
+      showKYCDetails,
+      hideKYCDetailsModal,
     } = this.props;
 
     const {
@@ -582,8 +634,12 @@ export default class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       expandOnboardingBanner,
       payments,
-      showOnboardingBanner: !user.showInstantActivation && showOnboardingBanner,
+      // Handling first step in a different way if its instant activations
+      showOnboardingBanner: showOnboardingBannerFirstStep
+        ? !user.showInstantActivation || user.instantActivation.isL1Submitted
+        : showOnboardingBanner,
       isMobile,
+      showInstantActivation: user.showInstantActivation,
 
       onHideOnboardingBanner,
       onFirstStepClose,
@@ -602,6 +658,7 @@ export default class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         {user.showInstantActivation &&
+          !user.instantActivation.isL1Submitted &&
           showOnboardingBannerFirstStep && (
             <ModalMask>
               <Modal className="welcome-modal" onClose={onFirstStepClose}>
@@ -611,6 +668,16 @@ export default class HomeContainer extends Component {
               </Modal>
             </ModalMask>
           )}
+        {showInstantActivationSuccess && (
+          <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
+        )}
+        {showKYCActivationSuccess && (
+          <KycFormSuccess
+            onClose={this.props.hideKYCActivationSuccessModal}
+            isWhitelistFlow={user.instantActivation.isWhitelistFlow}
+          />
+        )}
+        {showKYCDetails && <KycDetailsModal onClose={hideKYCDetailsModal} />}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );

@@ -4,16 +4,21 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { activationDuration } from 'common/data';
 
 export default ({ onCloseClick, user }) => {
+  let activationName =
+    !user.showInstantActivation || !user.instantActivation.isL1Submitted
+      ? 'Activation'
+      : 'KYC';
+
   let modalBody = (
     <div>
       You can only use Razorpay in test mode until your account is activated.{' '}
       <br />
       <ShowWhen additionalCondition={user => user.isAllowedEdit('activation')}>
-        Please fill and submit the activation form to access live mode.
+        Please fill and submit the {activationName} Form to access live mode.
         <div class="Modal__actions text-right">
           <NavLink to="/activation" onClick={onCloseClick}>
             <button class="btn btn-primary btn-block">
-              Fill Activation Form
+              Fill {activationName} Form
             </button>
           </NavLink>
         </div>
@@ -62,7 +67,10 @@ export default ({ onCloseClick, user }) => {
 
   return (
     <div>
-      <ModalHeader title="Activation Required" onCloseClick={onCloseClick} />
+      <ModalHeader
+        title={`${activationName} Required`}
+        onCloseClick={onCloseClick}
+      />
       <div className="modal-body">{modalBody}</div>
     </div>
   );

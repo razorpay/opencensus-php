@@ -23,7 +23,7 @@ const batchStatus = {
   ),
 };
 
-@connect(null, {
+@connect(state => ({ session: state.session }), {
   batchDownload,
   fetchBatch,
   openModal,
@@ -61,16 +61,18 @@ export default class BatchList extends Component {
 
   render() {
     let {
-      mode,
-      docUrl,
-      count,
-      skip,
-      paginate,
-      onSubmit,
-      uploadUrl,
-      sampleUrl,
-      sendAll,
-    } = this.props;
+        mode,
+        docUrl,
+        count,
+        skip,
+        paginate,
+        onSubmit,
+        uploadUrl,
+        sampleUrl,
+        sendAll,
+        session,
+      } = this.props,
+      { user } = session;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -92,12 +94,14 @@ export default class BatchList extends Component {
               </a>
             )}
 
-            <button
-              class="btn btn-primary pull-right"
-              onClick={this.openUploadModal}
-            >
-              Click here to upload
-            </button>
+            {(session.mode !== 'live' || !user.isRejected) && (
+              <button
+                class="btn btn-primary pull-right"
+                onClick={this.openUploadModal}
+              >
+                Click here to upload
+              </button>
+            )}
           </div>
         </HeaderAction>
 

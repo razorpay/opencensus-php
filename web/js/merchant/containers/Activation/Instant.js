@@ -1,5 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import AsyncButton from 'react-async-button';
 
 import Form from 'component/Form';
 import Input from 'component/Input';
@@ -11,6 +13,11 @@ import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
+import User from 'merchant/models/User';
+import {
+  showInstantActivationSuccessModal,
+  showKYCDetailsModal,
+} from 'merchant/modules/home';
 
 import formFields from './L1FormMap';
 
@@ -51,6 +58,7 @@ function defaultFieldProps(f) {
 let FORM_TABS; // Maintains naming of the tabs
 let BUSINESS_CATEGORY_FIELD = 3;
 
+@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -59,6 +67,8 @@ let BUSINESS_CATEGORY_FIELD = 3;
   {
     showNotification,
     updateSession,
+    showInstantActivationSuccessModal,
+    showKYCDetailsModal,
   }
 )
 export default class ActivationWizard extends React.Component {
@@ -147,17 +157,19 @@ export default class ActivationWizard extends React.Component {
       activation_progress,
       activated,
       activation_status,
+      activation_flow,
       submitted,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
-    const user = new User({
+    const user = (this.user = new User({
       ...session.user,
       activation_progress,
       activated,
       activation_status,
+      activation_flow,
       submitted: +submitted,
-    });
+    }));
 
     this.props.updateSession({
       user,
@@ -176,13 +188,21 @@ export default class ActivationWizard extends React.Component {
       accountId: this.props.accountId,
     })
       .then(response => {
-        if (!response.data.can_submit) {
-          throw { errors: ['Some mandatory fields are required'] };
-        }
-
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-        return response;
+        const {
+          isWhitelistFlow,
+          isBlacklistFlow,
+          isGraylistFlow,
+        } = this.user.instantActivation;
+
+        if (isWhitelistFlow) {
+          this.props.showInstantActivationSuccessModal();
+        } else if (isGraylistFlow) {
+          this.props.showKYCDetailsModal();
+        }
+
+        return this.props.history.replace(`/`);
       })
       .catch(err => {
         if (err.errors.length && err.errors[0]) {
@@ -205,8 +225,18 @@ export default class ActivationWizard extends React.Component {
     const { dirty } = this.state;
     const { data } = this.props;
 
-    if (stateName === 'has_url' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['business_website'] = '';
+    if (stateName === 'has_url') {
+      if (fieldValue === '1') {
+        this.prevBusinessWebsiteVal =
+          'business_website' in dirty
+            ? dirty.business_website
+            : this.props.data.business_website;
+        sideEffectFieldsToUpdate['business_website'] = '';
+      } else {
+        sideEffectFieldsToUpdate[
+          'business_website'
+        ] = this.prevBusinessWebsiteVal;
+      }
     }
 
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
@@ -274,12 +304,6 @@ export default class ActivationWizard extends React.Component {
       return ActivationField.call(this, field);
     });
 
-    const submitBtnProps = {};
-
-    if (!this.tabValidity()) {
-      submitBtnProps.disabled = 'disabled';
-    }
-
     return (
       <div class="Activation--wizard Wizard">
         <main class={classList('form-container', isFormLocked && 'main--full')}>
@@ -293,18 +317,27 @@ export default class ActivationWizard extends React.Component {
             <div className="form-footer Input">
               <div className="Input-content">
                 <p>
-                  By submitting this form you agree to our{' '}
-                  <span className="text-primary">Terms and Conditions</span>
+                  <small>
+                    By submitting this form you agree to our{' '}
+                    <a
+                      className="text-primary"
+                      target="_blank"
+                      href="https://razorpay.com/terms/"
+                    >
+                      Terms and Conditions
+                    </a>
+                  </small>
                 </p>
                 <div className="text-right">
-                  <button
+                  <AsyncButton
                     type="button"
                     className="btn btn-primary submit-btn"
                     onClick={this.submitForm}
-                    {...submitBtnProps}
+                    disabled={!this.tabValidity()}
+                    pendingText="Submitting..."
                   >
                     Activate Account
-                  </button>
+                  </AsyncButton>
                 </div>
               </div>
             </div>

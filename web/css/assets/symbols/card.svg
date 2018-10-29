@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="24px" viewBox="0 0 26 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+    <title>Icons_Payment Gateway@2x</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="0%" y1="89.9213868%" x2="97.7781792%" y2="1.99789208%" id="linearGradient-1">
+            <stop stop-color="#B2C1FF" offset="0%"></stop>
+            <stop stop-color="#4E4DFC" offset="100%"></stop>
+        </linearGradient>
+        <path d="M18.72,14.735424 C18.72,15.8758442 17.8108072,16.8 16.6888515,16.8 L7.79114853,16.8 C6.66919281,16.8 5.76,15.8758442 5.76,14.735424 L5.76,10.7201856 L5.76,9.65342374 L5.76,9.26457599 C5.76,8.12415577 6.66919281,7.2 7.79114853,7.2 L16.6888515,7.2 C17.8108072,7.2 18.72,8.12415577 18.72,9.26457599 L18.72,14.735424 Z M6.94827759,14.579583 C6.94827759,15.1558655 7.37942649,15.622915 7.91141194,15.622915 L16.5451432,15.622915 C17.0771287,15.622915 17.5082776,15.1558655 17.5082776,14.579583 L17.5082776,11.1772332 L6.94827759,11.1772332 L6.94827759,14.579583 Z M16.5562953,8.50001669 L7.92432773,8.4813123 C7.39196987,8.4813123 6.9468512,8.82021421 6.9468512,9.45124137 L6.9468512,9.90260791 L17.5068512,9.9213123 L17.5068512,9.46994576 C17.5064359,8.8389186 17.0886532,8.50001669 16.5562953,8.50001669 Z" id="path-2"></path>
+        <filter x="-50.2%" y="-67.7%" width="231.2%" height="277.1%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="2" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.326952172   0 0 0 0 0.372941644   0 0 0 0 0.638658588  0 0 0 0.41479846 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Final-Flow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Accept-Payments" transform="translate(-628.000000, -427.000000)">
+            <g id="Group-9" transform="translate(480.000000, 289.000000)">
+                <g id="Icons_Payment-Gateway" transform="translate(148.000000, 138.000000)">
+                    <path d="M12,0 C5.3725,0 0,5.3725 0,12 C0,18.6275 5.3725,24 12,24 C18.6275,24 24,18.6275 24,12 C24,5.3725 18.6275,0 12,0 Z" id="Path" fill="url(#linearGradient-1)"></path>
+                    <g id="Combined-Shape" fill-rule="nonzero">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                        <use fill="#FFFFFF" xlink:href="#path-2"></use>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
