@@ -64,12 +64,19 @@ export default function(state = initialState, action) {
       return set(state, 'paymentPageEntity', { id: action.id });
 
     case `${FETCH_ENTITY}::SUCCESS`:
-      const entityData = action.payload.data;
+      const entityData = { ...action.payload.data };
 
       // Normalize expire_by for FE consumption
-      entityData.expire_by = entityData.expire_by
-        ? entityData.expire_by * 1000
-        : entityData.expire_by;
+      if (entityData.expire_by) {
+        entityData.expire_by *= 1000;
+      }
+
+      if (entityData.amount) {
+        entityData.amount /= 100;
+      }
+
+      entityData.stock = entityData.times_payable;
+      delete entityData.times_payable;
 
       return merge(state, {
         paymentPageEntity: entityData,

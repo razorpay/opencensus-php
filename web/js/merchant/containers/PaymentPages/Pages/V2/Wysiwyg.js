@@ -211,9 +211,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       description: description || undefined,
       times_payable: stock || undefined,
       settings: {
-        allow_multiple_units: !!allow_multiple_units ? 1 : undefined,
-        allow_social_share: allow_social_share | 0,
-        udf_schema: JSON.stringify(udf_schema.splice(2)), // To remove Email and Phone in all cases before sending to API.
+        allow_multiple_units: !!allow_multiple_units ? '1' : undefined,
+        allow_social_share: !!allow_social_share ? '1' : '0',
+        udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
       },
     };
 

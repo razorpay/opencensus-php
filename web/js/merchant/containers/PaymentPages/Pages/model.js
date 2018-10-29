@@ -5,6 +5,10 @@ function pruneReqPayload(reqPayload) {
     reqPayload.amount *= 100;
   }
 
+  if (reqPayload.amount) {
+    reqPayload.currency = 'INR'; // TODO: Get is dynamically
+  }
+
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
@@ -20,9 +24,6 @@ function pruneReqPayload(reqPayload) {
 
 export function createPaymentPage(data) {
   const reqPayload = { ...data };
-  if (reqPayload.amount) {
-    reqPayload.currency = 'INR'; // TODO: Get is dynamically
-  }
 
   pruneReqPayload(reqPayload);
 
