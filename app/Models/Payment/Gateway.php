@@ -435,7 +435,8 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
-        Payment\Gateway::FIRST_DATA
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::UPI_MINDGATE
     ];
 
     /**
@@ -1199,12 +1200,13 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
-    public static $upiValidateVpaGateways = [
+    public static $upiValidateVpaTerminals = [
         Mode::LIVE => [
-            Gateway::UPI_MINDGATE,
+            '9Q8w9weX9D1T27',
+            'AK6NMmzbL6FPe4',
         ],
         Mode::TEST => [
-            Gateway::SHARP,
+            '1000SharpTrmnl',
         ],
     ];
 
@@ -1662,10 +1664,10 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewayForValidateVpaForMode(string $mode)
+    public static function getTerminalsForValidateVpaForMode(string $mode)
     {
         // Currently we are only using MindGate for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
-        return self::$upiValidateVpaGateways[$mode][0];
+        return self::$upiValidateVpaTerminals[$mode];
     }
 }
