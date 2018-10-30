@@ -29,7 +29,7 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
-    const INSTANT_ACTIVATION_TIMESTAMP = 1540899600;
+    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
 
     /**
      * @var Application
