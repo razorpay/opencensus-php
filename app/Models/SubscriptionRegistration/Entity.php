@@ -39,9 +39,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::ENTITY_ID                 => null,
         self::AUTH_TYPE                 => null,
-        self::ENTITY_TYPE               => null,
         self::MAX_AMOUNT                => null,
         self::EXPIRE_AT                 => null,
     ];
