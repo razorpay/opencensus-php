@@ -189,11 +189,7 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          <EarlySettlementAnnouncement
-            withTour={hasNewAnalyticsTour}
-            from="Home-Desktop"
-            marginBottom={!showOnboardingBanner}
-          />
+          <EarlySettlementAnnouncement from="Home-Desktop" />
 
           <div
             className={`v2-onboarding-card${
