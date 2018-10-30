@@ -2,15 +2,15 @@
 
 namespace RZP\Models\Adjustment;
 
+use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity;
 
 class Constants
 {
     public static $createRequestTraceCodeMap = [
-        Entity::ADJUSTMENT => TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
-        Entity::PAYOUT     => TraceCode::PAYOUT_ADJUSTMENT_CREATE_REQUEST,
+        Entity::DISPUTE => TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
+        Entity::PAYOUT  => TraceCode::PAYOUT_ADJUSTMENT_CREATE_REQUEST,
     ];
 
 
