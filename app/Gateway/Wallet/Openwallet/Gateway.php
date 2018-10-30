@@ -3,9 +3,9 @@
 namespace RZP\Gateway\Wallet\Openwallet;
 
 use RZP\Constants;
-use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Wallet\Base;
 
 class Gateway extends Base\Gateway
 {
