@@ -6,16 +6,17 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
+    // for amex there are some rows that are present before actual payments
+    // we need to jump to that line to start processing
+    const START_ROW = '15';
+
     protected function getTypeName($fileName)
     {
         return self::COMBINED;
     }
 
-    public function getNumLinesToSkip(array $fileDetails)
+    public function getStartRow($fileDetails)
     {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 20,
-            FileProcessor::LINES_FROM_BOTTOM => 0
-        ];
+        return self::START_ROW;
     }
 }
