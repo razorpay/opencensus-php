@@ -89,23 +89,17 @@ export class EarlySettlementAnnouncement extends Component {
           handleClose={this.handleCloseButton}
           bannerKey={this.state.bannerKey}
           theme="primary"
+          title="Introducing Early Settlements"
+          canBeClosed={true}
         >
           <div>
-            <div class="title">
-              <span>Introducing Early Settlements</span>
-            </div>
-
-            <div class="corner" />
-
-            <div class="content">
-              <span>
-                Get your payments settled within <strong>a few hours</strong>{' '}
-                and never have a shortfall of working capital.&nbsp;
-              </span>
-              <Button.Transparent class="btn-link" onClick={this.handleRequest}>
-                Request Access <i class="i-chevron-right" />
-              </Button.Transparent>
-            </div>
+            <span>
+              Get your payments settled within <strong>a few hours</strong> and
+              never have a shortfall of working capital.&nbsp;
+            </span>
+            <Button.Transparent class="btn-link" onClick={this.handleRequest}>
+              Request Access <i class="i-chevron-right" />
+            </Button.Transparent>
           </div>
         </Announcement>
       </ShowWhen>

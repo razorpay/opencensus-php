@@ -58,7 +58,7 @@ export default class OnboardingCard extends Component {
       keysGenerated &&
       paymentsMade
     ) {
-      this.props.onIntegrationComplete();
+      this.onIntegrationComplete();
     }
   }
 

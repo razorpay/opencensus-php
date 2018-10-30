@@ -160,6 +160,24 @@ pipeline:
     when:
       event: deployment
       environment: echo
+  deploy-s3-zeta:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_DASHBOARD_URL=dashboard/zeta
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: zeta
   deploy-s3-qa-func:
     image: node:9-alpine
     environment:
@@ -279,6 +297,27 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: echo
+      event: deployment
+  deploy-zeta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: zeta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: zeta
       event: deployment
   deploy-prod:
     image: razorpay/drone-kubernetes
