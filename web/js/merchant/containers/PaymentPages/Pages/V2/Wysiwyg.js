@@ -197,8 +197,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       amount,
       title,
       description,
-      terms,
       stock,
+      terms,
+      support_email,
+      support_contact,
       settings,
     } = paymentPageEntity;
 
@@ -212,6 +214,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       description: description || undefined,
       times_payable: stock || undefined,
       terms: terms || undefined,
+      support_email: support_email || undefined,
+      support_contact: support_contact || undefined,
       settings: {
         theme: settings.theme,
         allow_multiple_units: !!settings.allow_multiple_units ? '1' : undefined,

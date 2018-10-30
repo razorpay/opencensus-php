@@ -70,8 +70,8 @@ export default class View extends React.PureComponent {
         />
 
         <Support
-          support_phone={settings.support_phone}
-          support_email={settings.support_email}
+          support_contact={paymentPageEntity.support_contact}
+          support_email={paymentPageEntity.support_email}
           updateData={this.updateData}
         />
 

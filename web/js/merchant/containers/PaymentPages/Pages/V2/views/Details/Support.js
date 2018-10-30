@@ -20,8 +20,13 @@ const emailIcon = (
 export default class extends React.PureComponent {
   state = { isEditable: false };
 
-  toggleEditMode = e => {
-    this.setState({ isEditable: !this.state.isEditable });
+  toggleEditMode = _ => {
+    const isOpen = !this.state.isEditable;
+    if (isOpen) {
+      this.openCountField = 2;
+    }
+
+    this.setState({ isEditable: isOpen });
   };
 
   removeField = fieldName => {
@@ -30,45 +35,46 @@ export default class extends React.PureComponent {
     );
     removeEle.value = '';
     removeEle.dispatchEvent(new window.Event('change', { bubbles: true }));
+
+    this.openCountField--;
+
+    if (this.openCountField === 0) {
+      this.toggleEditMode();
+    }
   };
 
   render() {
-    let { support_email, support_phone } = this.props,
-      hasSupportInfo = support_email || support_phone,
+    let { support_email, support_contact } = this.props,
+      hasSupportInfo = support_email || support_contact,
       isEditable = this.state.isEditable;
 
     let content = '';
 
-    if (isEditable) {
+    if (hasSupportInfo || isEditable) {
       content = (
         <React.Fragment>
           <label>Contact Us:</label>
-          <div class="sub-detail">
-            {emailIcon}
-            <Input
-              name="support_email"
-              placeholder="Enter support email"
-              defaultValue={support_email}
-              autoFocus={!support_email}
-              onBlur={e => {
-                this.props.updateData(e);
-              }}
-            />
-            <RemoveBtn onClick={() => this.removeField('support_email')} />
-          </div>
-          <div class="sub-detail">
-            {phoneIcon}
-            <Input
-              name="support_phone"
-              placeholder="Enter support phone"
-              defaultValue={support_phone}
-              autoFocus={support_email && !support_phone}
-              onBlur={e => {
-                this.props.updateData(e);
-              }}
-            />
-            <RemoveBtn onClick={() => this.removeField('support_phone')} />
-          </div>
+          <SupportSubField
+            name="support_email"
+            placeholder="Enter support email"
+            icon={emailIcon}
+            defaultValue={support_email}
+            autoFocus={!support_email}
+            onBlur={this.props.updateData}
+            removeField={this.removeField}
+            addButtonLabel="Add Support Email"
+          />
+
+          <SupportSubField
+            name="support_contact"
+            placeholder="Enter support phone"
+            icon={phoneIcon}
+            defaultValue={support_contact}
+            autoFocus={support_email && !support_contact}
+            onBlur={this.props.updateData}
+            removeField={this.removeField}
+            addButtonLabel="Add Support Phone"
+          />
         </React.Fragment>
       );
     } else {
@@ -87,5 +93,38 @@ export default class extends React.PureComponent {
     }
 
     return <div id="support-details">{content}</div>;
+  }
+}
+
+class SupportSubField extends React.PureComponent {
+  state = { isEditable: true };
+
+  toggleEditMode = () => {
+    const isOpen = !this.state.isEditable;
+    if (!isOpen) {
+      this.props.removeField(this.props.name);
+    }
+
+    this.setState({ isEditable: isOpen });
+  };
+
+  render() {
+    const { icon, removeField, addButtonLabel, ...rest } = this.props;
+
+    return (
+      <div class="sub-detail">
+        {this.state.isEditable ? (
+          <React.Fragment>
+            {icon}
+            <Input name={name} {...rest} />
+            <RemoveBtn onClick={this.toggleEditMode} />
+          </React.Fragment>
+        ) : (
+          <Button.Transparent class="btn-link" onClick={this.toggleEditMode}>
+            + {addButtonLabel}
+          </Button.Transparent>
+        )}
+      </div>
+    );
   }
 }
