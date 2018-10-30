@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
 import { Link } from 'react-router-dom';
-import Button from 'component/Button';
+import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
@@ -315,14 +315,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         >
           Page Settings
         </Button.Transparent>
-        <Button.Primary
+        <AsyncBtn.Primary
           onClick={this.handleSavePublish}
           disabled={!isAllowedToSubmit}
+          pendingState="Publishing"
         >
           {payment_page_id
             ? 'Save and Publish Page'
             : 'Create and Publish Page'}
-        </Button.Primary>
+        </AsyncBtn.Primary>
       </React.Fragment>
     );
 
