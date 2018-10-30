@@ -827,3 +827,21 @@ export const getArraySorterFromArray = (
     return orderMap[getValue(item1)] - orderMap[getValue(item2)];
   };
 };
+
+export const loadImage = (src, onLoad, onError) => {
+  if (!src || !Image) {
+    return;
+  }
+
+  const image = new Image();
+
+  if (onLoad) {
+    image.onload = onLoad;
+  }
+
+  if (onError) {
+    image.onerror = onError;
+  }
+
+  image.src = src;
+};

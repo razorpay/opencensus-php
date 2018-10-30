@@ -194,6 +194,36 @@ body.show-hotjar-poll #_hj_poll_container {
     }
   }
 
+  .secondary-announcement-banner {
+
+    padding: 20px;
+
+    .Announcement_Banner {
+
+      padding: 12px 24px;
+      height: auto;
+    }
+  }
+
+  .extra-content{
+
+    &.has-ob-banner {
+
+      .secondary-announcement-banner {
+
+        padding-top: 0;
+      }
+    }
+
+    &.has-ob-banner, &.has-secondary-banner {
+
+      .announcement-banner-container {
+
+        padding-bottom: 0;
+      }
+    }
+  }
+
   .home-analytics-mobile {
 
     .extra-content {
@@ -264,6 +294,92 @@ body.show-hotjar-poll #_hj_poll_container {
 
           display: none;
         }
+      }
+    }
+  }
+
+  .Modal-container--welcome-modal {
+
+    width: 90%;
+    max-width: 850px;
+    background-image: url(assets/welcome-illustration.png);
+    background-position: top right;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    .welcome-modal-content {
+
+      padding: 56px 50% 56px 56px;
+      position: relative;
+    
+      .welcome-title {
+
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+
+        &.welcome-subtitle {
+
+          margin-top: 8px;
+        }
+      }
+
+      p:nth-of-type(1), .welcome-modal-actions {
+
+        margin-top: 40px;
+      }
+
+      .welcome-modal-actions .btn-link {
+
+        margin-left: 28px;
+
+        @media (max-width: 604px) {
+
+          margin-left: 10px;
+        }
+      }
+
+      @media(max-width: 812px) {
+
+        background-color: rgba(255, 255, 255, 0.8);    
+        padding-right: 30%;    
+      }
+
+      @media(max-width: 580px) {
+
+        padding: 40px !important;
+      }
+
+      @media(max-width: 425px) { 
+
+        padding: 20px !important;
+      } 
+    }
+
+    @media(max-width: 386px) {
+
+      background-image: none;
+
+      .welcome-modal-content {
+
+        text-align: center;
+
+        .welcome-modal-actions span.btn-link {
+
+          display: block;
+          margin-top: 16px;
+          margin-left: 0;
+        }
+      }
+    }
+
+    .Modal-close {
+
+      color: white;
+
+      @media(max-width: 812px) {
+
+        color: currentColor;
       }
     }
   }

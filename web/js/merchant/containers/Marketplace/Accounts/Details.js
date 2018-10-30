@@ -1,4 +1,4 @@
-import ActivationForm from 'merchant/containers/Activation/new';
+import ActivationForm from 'merchant/containers/Activation';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
 export default function({ accountId, onSubmitSuccessCB, onClose }) {
