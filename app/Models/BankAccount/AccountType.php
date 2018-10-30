@@ -9,6 +9,8 @@ class AccountType
 
     public static function isAccountTypeValid($type)
     {
-        return (defined(__CLASS__ . '::' . strtoupper($type)));
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        return ((defined($key) === true) and (constant($key) === $type));
     }
 }
