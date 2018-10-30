@@ -49,6 +49,8 @@ class Validator extends Base\Validator
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
+    const MIN_AMOUNT = 100;
+
     /**
      * A minimum of 15 minutes of gap must exist between invoice
      * issue and expired by timestamps.
@@ -382,10 +384,10 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        if ($amount < 1)
+        if ($amount < self::MIN_AMOUNT)
         {
             throw new BadRequestValidationFailureException(
-                'The amount should be atleast 1.',
+                'The amount should be atleast '.self::MIN_AMOUNT,
                 'amount',
                 [
                     'id'                 => $invoice->getId(),
