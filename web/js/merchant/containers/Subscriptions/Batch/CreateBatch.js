@@ -31,6 +31,7 @@ export default class CreateHostedMandateBatch extends Component {
       gaEvents={gaEvents}
       maxRows={5000}
       batchType="recurring_charge"
+      docUrl="https://razorpay.com/docs/recurring-payments/"
     />
   );
 
@@ -42,6 +43,7 @@ export default class CreateHostedMandateBatch extends Component {
       maxRows={5000}
       batchType="auth_link"
       renderBatchCreationForm={AuthLinksBatchForm}
+      docUrl="https://razorpay.com/docs/recurring-payments/"
     />
   );
 
@@ -59,7 +61,7 @@ export default class CreateHostedMandateBatch extends Component {
               <div class="text-primary">
                 <strong>Batch Authorization Links</strong>
               </div>
-              <div>Create Bulk Auth links to create tokens</div>
+              <div>Create Bulk Authorization Links</div>
             </div>
             <i class="i-chevron-right pull-right text-primary" />
           </div>

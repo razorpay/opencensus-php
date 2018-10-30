@@ -99,7 +99,9 @@ export default class BatchList extends ListContainer {
               <div class="btn btn-primary">Upload New Batch</div>
               <Popover align="bottom" class="MultiBatch--popover">
                 <PopoverTitle>
-                  <h3>Upload New Batch</h3>
+                  <h4>
+                    <strong>Upload New Batch</strong>
+                  </h4>
                 </PopoverTitle>
                 <PopoverBody>
                   {this.props.renderBatchOptions(this.openUploadModal)}

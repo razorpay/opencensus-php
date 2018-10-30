@@ -229,24 +229,32 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/plans"
             component={Subscriptions}
-            additionalCondition={user => user.isAllowedView('subscriptions')}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
+            }
           />
 
           <ShowWhenRoute
             path="/recurring_payments"
             component={Subscriptions}
-            additionalCondition={user => user.isChargeAtWillEnabled}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
           />
 
           <ShowWhenRoute
             path="/tokens"
             component={Subscriptions}
-            additionalCondition={user => user.isChargeAtWillEnabled}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
           />
           <ShowWhenRoute
             path="/authlinks"
             component={Subscriptions}
-            additionalCondition={user => user.isChargeAtWillEnabled}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
           />
 
           <Route

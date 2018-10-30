@@ -22,6 +22,9 @@
     &--upload-modal
       .panel
         cursor: pointer
+        transition: background-color 400ms
+        &:hover
+          background-color: alpha($primary-color, 0.2)
         .panel-body
           display: flex
           align-items: center
@@ -36,7 +39,7 @@
             font-size: 16px
         &.auth-link
           .logo
-            background-image: url('assets/symbols/sub.svg')
+            background-image: url('assets/symbols/al.svg')
         &.recurring-charge
           .logo
-            background-image: url('assets/symbols/sub.svg')
+            background-image: url('assets/symbols/rc.svg')

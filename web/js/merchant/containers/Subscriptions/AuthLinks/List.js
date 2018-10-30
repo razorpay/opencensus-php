@@ -30,7 +30,7 @@ const customerContact = {
 };
 
 const link = {
-  title: 'Auth Link',
+  title: 'Authorization Link',
   value: item => <CopyLink url={item.short_url} />,
 };
 
@@ -60,7 +60,7 @@ export default class AuthLinksList extends ListContainer {
         />
 
         <DataTable
-          title="Auth Links"
+          title="Authorization Links"
           skip={this.state.skip}
           paginate={this.paginate}
           columns={[

@@ -191,7 +191,7 @@ export default class CreateNewAuthLinkContainer extends Component {
         if (response) {
           this.props.showNotification({
             type: 'success',
-            message: 'Authorisation Link Successfully created',
+            message: 'Authorization Link Successfully created',
           });
 
           const entityId = response.id;
@@ -221,7 +221,7 @@ export default class CreateNewAuthLinkContainer extends Component {
     return (
       <div class="PaymentLinks--Create Wizard">
         <main class="form-container">
-          <main-title>Create Authorisation Link</main-title>
+          <main-title>Create Authorization Link</main-title>
 
           <Form
             class="PaymentLinks--Create--Form"
@@ -428,7 +428,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 type="tel"
                 placeholder="0.00"
                 addonBefore="₹"
-                description="Amount of Authorisation Link Payment"
+                description="Amount of Authorization Link Payment"
                 required
                 validator={checkIfAmount}
               />
@@ -451,7 +451,7 @@ export default class CreateNewAuthLinkContainer extends Component {
             onClick={this.onCreate}
             disabled={!this.allMandatoryFieldsPresent()}
           >
-            Create Authorisation Link
+            Create Authorization Link
           </AsyncBtn.Primary>
         </footer>
       </div>
@@ -501,7 +501,7 @@ function PaymentMethod({ loading, avlblMethods }) {
       name="mandateMethod"
       options={avlblMethods}
       class="Input--vTop"
-      description="Method to be used for Authorisation Link"
+      description="Method to be used for Authorization Link"
     />
   ) : (
     <PaymentMethodPlaceHolder content={avlblMethods[0].label} />
