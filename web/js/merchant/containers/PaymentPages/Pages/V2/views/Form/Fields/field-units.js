@@ -1,3 +1,8 @@
+/*
+* Extra schema keys supported apart from the ones mentioned in 'schema' object are:
+* title, name, description, required
+*
+* */
 const str = {
   label: 'Single line text',
   icon: 'alphabet i-fix-alphabet',
@@ -11,6 +16,7 @@ const number = {
   icon: 'number i-fix-number',
   schema: {
     type: 'number',
+    pattern: 'number',
   },
 };
 

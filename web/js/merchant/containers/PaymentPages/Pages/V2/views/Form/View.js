@@ -3,6 +3,7 @@ import Button from 'component/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { FIELD_TYPES } from './Fields/helpers';
 
 import {
   updateAmount,
@@ -52,7 +53,7 @@ export default class View extends React.PureComponent {
   onGenericCreatorSubmit = formData => {
     console.log('FORM DATA.....', formData);
 
-    const { title, type, required, description } = formData;
+    const { title, field_type, required, description } = formData;
 
     this.props.updateInSchema({
       field: {
@@ -62,9 +63,9 @@ export default class View extends React.PureComponent {
           .split(' ')
           .join('_'),
         title,
-        type,
         required,
         description,
+        ...FIELD_TYPES[field_type].schema,
       },
       index: this.state.activeSchemaIndex,
     });
@@ -158,6 +159,7 @@ export default class View extends React.PureComponent {
                 selfIndex={idx}
                 field={field}
                 infoTxt={infoTxt}
+                isRemovable={['email', 'phone'].indexOf(field.name) === -1} // email and phone are non-removable from FE
                 onEditField={
                   !isDisabled
                     ? e => this.openCreator(e, CreatorType.GENERIC, idx)

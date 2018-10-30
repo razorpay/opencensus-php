@@ -3,7 +3,7 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList } from 'common/util';
-import { TYPES } from './Fields/helpers';
+import { FIELD_TYPES, mapFieldToIndex } from './Fields/helpers';
 
 const CustomTypeOption = ({ option }) => (
   <React.Fragment>
@@ -18,6 +18,7 @@ export const GenericField = ({
   infoTxt,
   onFieldDelete,
   selfIndex,
+  isRemovable,
 }) => {
   return (
     <EditLayer
@@ -46,7 +47,7 @@ export const GenericField = ({
           <div class="Field-description">{field.description}</div>
         )}
       </div>
-      {!field.required && (
+      {isRemovable && (
         <span
           class="action-btn"
           onClick={e => {
@@ -65,16 +66,20 @@ export class GenericCreator extends React.PureComponent {
   state = {
     isDynamicAmount: false,
     hasStock: false,
-    disableSubmit: !this.props.field.label,
+    disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
   };
 
+  defaultFieldIndex = this.props.field.title
+    ? mapFieldToIndex(this.props.field)
+    : '';
+
   typeOptions = [{ label: '--Select--', value: '' }].concat(
-    Object.keys(TYPES).map(i => {
+    Object.keys(FIELD_TYPES).map((i, idx) => {
       return {
-        value: TYPES[i].label,
-        label: TYPES[i].label,
-        icon: TYPES[i].icon,
+        value: idx,
+        label: FIELD_TYPES[i].label,
+        icon: FIELD_TYPES[i].icon,
       };
     })
   );
@@ -90,10 +95,10 @@ export class GenericCreator extends React.PureComponent {
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_generic')[0];
       const title = document.getElementsByName('title')[0].value;
-      const type = document.getElementsByName('type')[0].value;
+      const fieldType = document.getElementsByName('field_type')[0].value;
 
       const disableSubmit =
-        form.querySelectorAll('.is-invalid').length || !title || !type;
+        form.querySelectorAll('.is-invalid').length || !title || !fieldType;
       this.setState({ disableSubmit });
     });
   };
@@ -140,10 +145,10 @@ export class GenericCreator extends React.PureComponent {
           {/*<input name="name" hidden value={} />*/}
 
           <Input.PowerDropdown
-            name="type"
+            name="field_type"
             label="What type of field is this?"
             placeholder="Select Type"
-            defaultValue={field.type}
+            defaultValue={this.defaultFieldIndex}
             options={this.typeOptions}
             customOptionComponent={CustomTypeOption}
             customSelectedOptionComponent={CustomTypeOption}
