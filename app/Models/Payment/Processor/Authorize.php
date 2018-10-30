@@ -1019,6 +1019,17 @@ trait Authorize
 
     protected function verifyFeatureForRecurring(Merchant\Entity $merchant, Payment\Entity $payment)
     {
+        //
+        // When we are charging tokens via batch using sqs, auth type won't be set.
+        // Adding this condition to verify recurring feature enabled for batch charge tokens
+        //
+        if ($this->app->runningInQueue() === true)
+        {
+            $this->verifyRecurringEnabledForMerchant($merchant);
+
+            return;
+        }
+
         $authType = $this->app['basicauth']->getAuthType();
 
         switch ($authType)

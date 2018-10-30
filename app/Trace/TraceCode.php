@@ -810,6 +810,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
 
+    const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC         = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
+
     const MERCHANT_PAYOUT_SKIPPED                   = 'MERCHANT_PAYOUT_SKIPPED';
 
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';

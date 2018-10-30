@@ -113,6 +113,7 @@ class MailTags
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
+    const INSTANT_ACTIVATION               = 'instant_activation';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
 
