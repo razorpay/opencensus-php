@@ -12,50 +12,44 @@ Note:
 All URLs will convert to links.`;
 
 export default class extends React.PureComponent {
-  state = { isEditable: false };
-
   handleOnInput = ({ target }) => {
+    this.autoAdjustHeight(target);
+  };
+
+  autoAdjustHeight(target) {
+    if (!target) {
+      return;
+    }
+
     const content = target.value;
     const fakeEle = window.document.querySelector(
       '#description .fake-textarea'
     );
 
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 6 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
     target.style.height = this.elHeight;
-  };
+  }
+
+  componentDidMount() {
+    this.autoAdjustHeight(
+      document.body.querySelector('#description textarea[name="description"]')
+    );
+  }
 
   render() {
-    const isEditable = this.state.isEditable || this.props.description;
-
     return (
       <div id="description">
-        {isEditable ? (
-          <React.Fragment>
-            <div class="fake-textarea" />
-            <Input.Textarea
-              name="description"
-              placeholder="Enter page description"
-              info={infoTxt}
-              defaultValue={this.props.description}
-              onInput={this.handleOnInput}
-              onBlur={e => {
-                this.setState({ isEditable: false });
-                this.props.updateData(e);
-              }}
-              autoFocus
-            />
-          </React.Fragment>
-        ) : (
-          this.props.description || (
-            <Button.Transparent
-              class="btn-link"
-              onClick={() => this.setState({ isEditable: true })}
-            >
-              + Add page description
-            </Button.Transparent>
-          )
-        )}
+        <div class="fake-textarea" />
+        <Input.Textarea
+          name="description"
+          placeholder="Enter page description"
+          info={infoTxt}
+          defaultValue={this.props.description}
+          onInput={this.handleOnInput}
+          onBlur={this.props.updateData}
+          autoFocus
+        />
       </div>
     );
   }

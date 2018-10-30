@@ -55,11 +55,18 @@ export default class View extends React.PureComponent {
         <div id="description-details">
           <Title
             title={paymentPageEntity.title}
-            key={paymentPageEntity.id + '-title' || 'title'}
+            key={
+              paymentPageEntity.id ? paymentPageEntity.id + '-title' : 'title'
+            }
             updateData={this.updateData}
           />
           <Description
             description={paymentPageEntity.description}
+            key={
+              paymentPageEntity.id
+                ? paymentPageEntity.id + '-description'
+                : 'description'
+            }
             updateData={this.updateData}
           />
         </div>

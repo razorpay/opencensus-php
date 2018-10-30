@@ -192,8 +192,8 @@
             border: 1px solid $primary-color
             resize: vertical
 
-    .Input-elWrapper
-      font-size: inherit
+    .Input-el
+      font-size: 14px
 
     .title--big
       .Input-el
@@ -206,6 +206,9 @@
       min-height: 28px
       height: 28px
       max-height: 230px // Supports 720 char on desktop
+
+      &[name="description"]
+        min-height: 70px
 
     .Input
       margin: -4px -6px

@@ -85,10 +85,11 @@ export default function(state = initialState, action) {
       entityData.stock = entityData.times_payable;
       delete entityData.times_payable;
 
-      return merge(state, {
+      return {
         paymentPageEntity: entityData,
+        payment_page_id: entityData.id,
         FORM_SCHEMA: JSON.parse(entityData.settings.udf_schema), // Must have phone and email already with it. FE hardcodes only for new payment page.
-      });
+      };
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
@@ -96,10 +97,11 @@ export default function(state = initialState, action) {
     case 'UPDATE_DATA':
       if (action.fields.hasOwnProperty('id')) {
         // re-Initialise FE if ID is changed to other ID/null
-        return merge(state, {
+        return {
           ...initialState,
+          payment_page_id: action.id,
           paymentPageEntity: { id: action.id },
-        });
+        };
       } else {
         return set(
           state,

@@ -6,15 +6,28 @@ export default class extends React.PureComponent {
   state = { isEditable: false };
 
   handleOnInput = ({ target }) => {
+    this.autoAdjustHeight(target);
+  };
+
+  autoAdjustHeight(target) {
+    if (!target) {
+      return;
+    }
     const content = target.value;
     const fakeEle = window.document.querySelector(
       '#terms-details .fake-textarea'
     );
 
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 6 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 10 is the vertical padding(top+bottom) size of the textarea in css
     target.style.height = this.elHeight;
-  };
+  }
+
+  componentDidMount() {
+    this.autoAdjustHeight(
+      document.body.querySelector('#terms-details textarea[name="terms"]')
+    );
+  }
 
   render() {
     const isEditable = this.state.isEditable || this.props.terms;
