@@ -99,7 +99,7 @@ export const FormFooter = ({ amountToPay }) => (
     <img
       id="fin-logo"
       alt="pay-methods"
-      src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
+      src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
     />
     <div class="btn" type="submit" disabled>
       <div>

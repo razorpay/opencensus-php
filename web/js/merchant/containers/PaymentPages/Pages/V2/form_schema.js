@@ -1,3 +1,8 @@
+/*
+*
+* This is just the example file for UI schema for exhaustive set of supported fields
+*
+* */
 const UISCHEMA = [
   {
     name: 'name',
