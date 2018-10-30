@@ -32,6 +32,7 @@ export default class CreateHostedMandateBatch extends Component {
       maxRows={5000}
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
+      sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
     />
   );
 
@@ -44,6 +45,7 @@ export default class CreateHostedMandateBatch extends Component {
       batchType="auth_link"
       renderBatchCreationForm={AuthLinksBatchForm}
       docUrl="https://razorpay.com/docs/recurring-payments/"
+      sampleUrl="https://cdn.razorpay.com/dashboard/sample_authorization_links.csv"
     />
   );
 

@@ -9,14 +9,18 @@ export default () => (
     </h5>
     <div class="form-group send-links-form">
       <div class="checkbox rzpCheckbox next m-r">
-        <Field name="sms_notify" id="sms_notify" component={CheckBoxField} />
+        <Field
+          name="config.sms_notify"
+          id="sms_notify"
+          component={CheckBoxField}
+        />
         <label for="sms_notify" class="icon i-check">
           Send SMS
         </label>
       </div>
       <div class="checkbox rzpCheckbox next m-r">
         <Field
-          name="email_notify"
+          name="config.email_notify"
           id="email_notify"
           component={CheckBoxField}
         />
