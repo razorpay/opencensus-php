@@ -21,7 +21,6 @@ class Service extends Base\Service
     const PRE_SIGNUP_FIELDS = [
         'business_type',
         'transaction_volume',
-        'role',
         'department',
         'contact_name',
         'business_name',
