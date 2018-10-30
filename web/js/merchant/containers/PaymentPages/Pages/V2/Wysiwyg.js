@@ -118,6 +118,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           handleClose={this.props.closeModal}
           handleAction={sendLink.bind(null, id)}
           isNew={true}
+          isPaymentPagesV2={true}
           showNotification={this.props.showNotification}
           url={shortUrl}
           title={title}

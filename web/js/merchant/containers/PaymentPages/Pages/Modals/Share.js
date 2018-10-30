@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Button, { AsyncBtn } from 'component/Button';
 import Form from 'component/Form';
@@ -21,6 +22,7 @@ if (isMobileAndTablet()) {
 
 export default ({
   isNew,
+  isPaymentPagesV2,
   handleClose,
   handleAction,
   showNotification,
@@ -115,6 +117,24 @@ export default ({
     return false;
   }
 
+  const askToShare = (
+    <React.Fragment>
+      <span class="label--faded" style={{ float: 'left' }}>
+        Share via SMS or email
+      </span>
+      <Button.Transparent
+        style={{ float: 'right' }}
+        type="submit"
+        class="Button--Link"
+      >
+        <b>
+          Send
+          <i class="i i-arrow-forward" />
+        </b>
+      </Button.Transparent>
+    </React.Fragment>
+  );
+
   return (
     <div>
       <ModalHeader
@@ -129,7 +149,9 @@ export default ({
                   marginRight: 8,
                 }}
               />
-              Link created successfully
+              {isPaymentPagesV2
+                ? 'Page created successfully'
+                : 'Link created successfully'}
             </span>
           ) : (
             'Share Link'
@@ -145,9 +167,11 @@ export default ({
         <div class="ModalForm ModalForm--Share">
           {isNew && (
             <div class="Share-section">
-              <span class="label--faded">
-                Use the following url to accept payments.
-              </span>
+              {!isPaymentPagesV2 && (
+                <div class="label--faded m-b">
+                  Use the following url to accept payments.
+                </div>
+              )}
               <div>
                 <CustomClipboard
                   value={url}
@@ -168,6 +192,11 @@ export default ({
                   </Button.Primary>
                 </CustomClipboard>
               </div>
+              {isPaymentPagesV2 && (
+                <div class="label--faded m-t">
+                  You can customize this url from <b>Page Settings</b>
+                </div>
+              )}
             </div>
           )}
 
@@ -190,6 +219,17 @@ export default ({
           </div>
 
           <Form class="Share-section" onSubmit={onSubmit}>
+            {isPaymentPagesV2 && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: 8,
+                  overflow: 'auto',
+                }}
+              >
+                {askToShare}
+              </div>
+            )}
             <Input
               name="contact"
               type="tel"
@@ -213,23 +253,26 @@ export default ({
                 }
               }}
             />
-            <div
-              style={{ textAlign: 'center', marginTop: 16, overflow: 'auto' }}
-            >
-              <span class="label--faded" style={{ float: 'left' }}>
-                Share via SMS or email
-              </span>
-              <Button.Transparent
-                style={{ float: 'right' }}
-                type="submit"
-                class="Button--Link"
+            {!isPaymentPagesV2 && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: 16,
+                  overflow: 'auto',
+                }}
               >
-                <b>
-                  Send
-                  <i class="i i-arrow-forward" />
-                </b>
-              </Button.Transparent>
-            </div>
+                {askToShare}
+              </div>
+            )}
+            {isPaymentPagesV2 && (
+              <Link
+                class="Button Button--primary"
+                to="/paymentpages"
+                style={{ marginTop: 20, width: '100%', textAlign: 'center' }}
+              >
+                Back to Dashboard
+              </Link>
+            )}
           </Form>
         </div>
       </div>
