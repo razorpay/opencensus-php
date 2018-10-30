@@ -19,8 +19,10 @@ class MyOperator
 {
     const API_BASE_URL                           = 'https://developers.myoperator.co';
     const API_CALL_OUTBOUND_PATH                 = '/call/outbound';
+
     // Remote API set timeout in seconds.
     const API_TIMEOUT                            = 5;
+
     // Counter metric which gets triggered per remote API call, has status = success|failure as labels.
     const MYOPERATOR_CALL_OUTBOUND_API_RES_TOTAL = 'myoperator_call_outbound_api_res_total';
 
@@ -42,8 +44,12 @@ class MyOperator
 
     /**
      * Triggers /call/outbound call of MyOperator.
-     * @param  array  $input (Contains string contact number)
+     *
+     * @param  array $input (Contains string contact number)
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws \libphonenumber\NumberParseException
      */
     public function submitSupportCallRequest(array $input): array
     {
@@ -56,13 +62,17 @@ class MyOperator
         $resp = $this->makeCalLOutboundApiRequest($payload);
 
         return $this->validateResponse($resp);
-
     }
 
     /**
      * Splits contact number and gets normalized country code (string) and
      * contact number (integer) in favor of MyOperator API request.
+     *
+     * @param string $contact
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws \libphonenumber\NumberParseException
      */
     protected function splitContactAndGetCodeAndNumber(string $contact): array
     {
@@ -88,11 +98,13 @@ class MyOperator
             self::API_BASE_URL,
             self::API_CALL_OUTBOUND_PATH,
             $this->config['api_token']);
-        $headers  = [
+
+        $headers = [
             'Accept'       => 'application/json',
             'Content-type' => 'application/json',
         ];
-        $options  = [
+
+        $options = [
             'timeout' => self::API_TIMEOUT,
         ];
 
@@ -103,8 +115,11 @@ class MyOperator
 
     /**
      * Validates remote API response and returns array response.
+     *
      * @param  Requests_Response $resp
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
      */
     protected function validateResponse(Requests_Response $resp): array
     {
@@ -114,7 +129,10 @@ class MyOperator
         $jsonError = json_last_error();
         $success   = (($jsonError === JSON_ERROR_NONE) and ($jsonResp['status'] === 'success'));
 
-        $this->trace->info(TraceCode::MYOPERATOR_CALL_OUTBOUND_API_RES, compact('code', 'body', 'success'));
+        $this->trace->info(
+            TraceCode::MYOPERATOR_CALL_OUTBOUND_API_RES,
+            compact('code', 'body', 'success'));
+
         $this->trace->count(self::MYOPERATOR_CALL_OUTBOUND_API_RES_TOTAL, compact('success'));
 
         if ($success === false)

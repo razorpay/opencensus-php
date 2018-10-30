@@ -3485,7 +3485,7 @@ return [
 
     'testSubmitSupportCallRequest' => [
         'request'  => [
-            'url'     => '/merchants/submit_support_call_request',
+            'url'     => '/merchants/support_call',
             'method'  => 'post',
             'content' => [
                 'contact' => '9988998899',
@@ -3493,13 +3493,17 @@ return [
         ],
         'response' => [
             'content' => [
+                'status'       => 'success',
+                'code'         => '200',
+                'message'      => 'Call queued successfully',
+                'reference_id' => '1000000000000000',
             ],
         ],
     ],
 
     'testSubmitSupportCallRequestWithInvalidContact' => [
         'request'  => [
-            'url'     => '/merchants/submit_support_call_request',
+            'url'     => '/merchants/support_call',
             'method'  => 'post',
             'content' => [
                 'contact' => '9989988998899',

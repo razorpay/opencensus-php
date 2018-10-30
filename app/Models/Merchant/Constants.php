@@ -43,10 +43,6 @@ final class Constants
     const INSTANT_ACTIVATION = 'instant_activation';
 
     const IS_WHITELISTED_ACTIVATION = "is_whitelisted_activation";
-
-    // Razorx treatment constant, allows merchant to submit support call requests.
-    const TREATMENT_SUBMIT_SUPPORT_CALL_REQUEST = 'support_call_request';
-
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.

@@ -2526,18 +2526,21 @@ class Service extends Base\Service
 
         $allowCallRequest = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
-            Constants::TREATMENT_SUBMIT_SUPPORT_CALL_REQUEST,
+            RazorxTreatment::SUPPORT_CALL,
             $this->mode ?? 'live');
 
-        $this->trace->info(TraceCode::SUBMIT_SUPPORT_CALL_REQUEST, compact('input', 'allowCallRequest'));
+        $isActivated = $this->merchant->isActivated();
+
+        $this->trace->info(
+            TraceCode::SUBMIT_SUPPORT_CALL_REQUEST,
+            compact('input', 'allowCallRequest', 'isActivated'));
 
         // Dashboard also does treatment check hence happening this is a invalid request.
-        if ($allowCallRequest === 'off')
+        if (($allowCallRequest === 'off') or ($isActivated === false))
         {
             throw new Exception\BadRequestValidationFailureException('Invalid request.');
         }
 
-        // Todo: Massage and return response formatted our way.
         return $this->app->myoperator->submitSupportCallRequest($input);
     }
 }

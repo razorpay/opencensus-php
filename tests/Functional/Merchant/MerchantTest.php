@@ -3355,6 +3355,7 @@ class MerchantTest extends TestCase
     public function testSubmitSupportCallRequest()
     {
         $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
 
         $this->startTest();
     }
@@ -3362,6 +3363,7 @@ class MerchantTest extends TestCase
     public function testSubmitSupportCallRequestWithInvalidContact()
     {
         $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
 
         $this->startTest();
     }

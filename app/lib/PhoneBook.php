@@ -3,6 +3,7 @@
 namespace Lib;
 
 use App;
+use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\NumberParseException;
 
@@ -196,7 +197,7 @@ class PhoneBook
 
     /**
      * Gets underlying PhoneNumber object.
-     * @return libphonenumber\PhoneNumber|null
+     * @return PhoneNumber|null
      */
     public function getPhoneNumber()
     {

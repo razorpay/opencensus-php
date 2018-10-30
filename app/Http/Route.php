@@ -926,7 +926,7 @@ final class Route
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
 
-        'merchant_submit_support_call_request'     => ['post',     'merchants/submit_support_call_request',          'MerchantController@submitSupportCallRequest'                       ],
+        'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
     ];
 
     public static $public = [

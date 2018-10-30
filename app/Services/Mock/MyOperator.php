@@ -18,8 +18,13 @@ class MyOperator extends \RZP\Services\MyOperator
         $resp = new Requests_Response;
         $resp->success     = true;
         $resp->status_code = 200;
-        // Todo: Update with sample response.
-        $resp->body        = '{"status":"success"}';
+        $resp->body        = json_encode(
+            [
+                'status'       => 'success',
+                'code'         => '200',
+                'message'      => 'Call queued successfully',
+                'reference_id' => '1000000000000000',
+            ]);
 
         return $resp;
     }
