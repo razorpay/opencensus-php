@@ -4381,3 +4381,8 @@ ALTER TABLE pricing
     ADD COLUMN org_id VARCHAR(14) DEFAULT NULL AFTER max_fee,
     ADD INDEX `pricing_org_id_plan_id_index`   (`org_id`, `plan_id`),
     ADD INDEX `pricing_org_id_plan_name_index` (`org_id`, `plan_name`);
+
+ALTER TABLE payouts
+  ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
+
+ALTER TABLE payouts DROP FOREIGN KEY payouts_transaction_id_foreign;

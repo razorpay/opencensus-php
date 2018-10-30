@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
+    const TRANSACTION_TYPE       = 'transaction_type';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const STATUS                 = 'status';
     const CHANNEL                = 'channel';
@@ -192,7 +193,7 @@ class Entity extends Base\PublicEntity
 
     public function transaction()
     {
-        return $this->belongsTo('RZP\Models\Transaction\Entity');
+        return $this->morphTo();
     }
 
     public function batchFundTransfer()
@@ -213,6 +214,16 @@ class Entity extends Base\PublicEntity
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
     }
 
     // FeeCalculator calls `$entity->getFee()` for all the pricing entity
