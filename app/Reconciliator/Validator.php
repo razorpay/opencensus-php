@@ -76,6 +76,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
+        RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -448,6 +449,15 @@ class Validator extends Base\Core
             RequestProcessor\Base::CARD_FSS_HDFC);
 
         return ($validSubject and $validBody);
+    }
+
+    public function validateEmandateAxisEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::EMANDATE_AXIS);
+
+        return $validSubject;
     }
 
     /**
