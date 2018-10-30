@@ -112,27 +112,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
 
     protected function getApiErrorCodeMapped(array $rowDetails)
     {
-        $gatewayErrorCode = $rowDetails[Base\Reconciliate::GATEWAY_ERROR_CODE] ?? null;
-
-        $this->checkValidStatus($gatewayErrorCode);
-
         return $this->getApiErrorCodeFromDescription($rowDetails);
-    }
-
-    /**
-     * @param $status
-     * @throws Exception\GatewayErrorException
-     */
-    protected function checkValidStatus($status)
-    {
-        if (in_array($status, $this->allowedStatuses, true) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                $status,
-                'Gateway response status is invalid'
-            );
-        }
     }
 
     protected function getApiErrorCodeFromDescription(array $rowDetails): string
