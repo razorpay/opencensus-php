@@ -1184,10 +1184,7 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => 'Invalid Account type',
-                    'field'         => [
-                        'field'         => 'account_type',
-                        'account_type'  => 'special'
-                    ]
+                    'field'         => 'account_type',
                 ],
             ],
             'status_code' => 400,
