@@ -73,5 +73,6 @@ export const batchLink = item => {
     idItem(item.id)
   );
 };
+
 export const submerchant = makePropLink('id', 'name');
 export const submerchantId = item => idItem(item.id);
