@@ -42,17 +42,13 @@ class Server extends Base\Mock\Server
 
         $content = $this->getVerifyResponse($input);
 
-        $responseToEncrypt = $this->createXmlResponse($content);
-
-        $response = $this->encrypt($responseToEncrypt);
-
-        return $this->makeResponse(['encdata' => $response]);
+        return $this->makeResponse($content);
     }
 
     protected function getAuthResponse(array $input): array
     {
         $content = [
-            ResponseFields::BANK_REF_NO     => 'AB1234',
+            ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
             ResponseFields::STATUS          => 'Success',
@@ -72,7 +68,7 @@ class Server extends Base\Mock\Server
     protected function getVerifyResponse(array $input)
     {
         $content = [
-            ResponseFields::BANK_REF_NO     => 'AB1234',
+            ResponseFields::BANK_REF_NO     => 'IGAAAAGNN6',
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::REF_NO          => $input[RequestFields::REF_NO],
             ResponseFields::STATUS          => 'Success',
@@ -81,7 +77,13 @@ class Server extends Base\Mock\Server
 
         $this->content($content, $this->action);
 
-        return $content;
+        $contentToEncrypt = $this->getFormattedResponse($content);
+
+        $encryptedData = $this->encrypt($contentToEncrypt);
+
+        $this->content($encryptedData, 'verify_enc');
+
+        return $encryptedData;
     }
 
     protected function getFormattedResponse(array $requestArray)
@@ -110,28 +112,6 @@ class Server extends Base\Mock\Server
         $responseStringArray = explode('|', $decryptedString);
 
         return $this->getResponseArray($responseStringArray);
-    }
-
-    protected function createXmlResponse(array $responseArray)
-    {
-        $this->content($responseArray, 'verify');
-
-        if (is_array($responseArray) === false)
-        {
-            return $responseArray;
-        }
-
-        $responseArray = array_flip($responseArray);
-
-        $xml = new \SimpleXMLElement('<VerifyOutput></VerifyOutput>');
-
-        array_walk_recursive($responseArray, array ($xml, 'addAttribute'));
-
-        $response = $xml->asXML();
-
-        $this->content($response, 'verifyXML');
-
-        return $response;
     }
 
     private function getResponseArray($stringArray)

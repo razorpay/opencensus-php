@@ -42,7 +42,7 @@ class NetbankingSbiGatewayTest extends TestCase
 
         $this->assertTestResponse($paymentEntity);
 
-        $this->assertEquals('AB1234', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
+        $this->assertEquals('IGAAAAGNN6', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
         $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
 
@@ -225,7 +225,7 @@ class NetbankingSbiGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if ($action === 'verifyXML')
+            if ($action === 'verify_enc')
             {
                 $content = 'Invalid Status';
             }

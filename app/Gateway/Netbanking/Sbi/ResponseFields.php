@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Sbi;
 
 class ResponseFields
 {
-    const BANK_REF_NO   = 'bank_ref_no';
+    const BANK_REF_NO   = 'sbirefno';
 
     const AMOUNT        = 'amount';
 
@@ -12,8 +12,10 @@ class ResponseFields
 
     const STATUS        = 'status';
 
-    const STATUS_DESC   = 'status_desc';
+    const STATUS_DESC   = 'desc';
 
     const PAYMENT_ID    = 'payment_id';
 
+    // encrypted data field
+    const ENCDATA       = 'encdata';
 }

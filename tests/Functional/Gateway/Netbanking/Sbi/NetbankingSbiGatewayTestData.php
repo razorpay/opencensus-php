@@ -36,7 +36,7 @@ return [
         'received'          => true,
         'error_message'     => null,
         'merchant_code'     => 'RAZORPAY',
-        'bank_payment_id'   => 'AB1234',
+        'bank_payment_id'   => 'IGAAAAGNN6',
         'amount'            => 50000,
     ],
 
@@ -217,7 +217,7 @@ return [
     ],
 
     'testPaymentVerifySuccessEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => 'IGAAAAGNN6',
         'status'          => Status::SUCCESS,
     ],
 
