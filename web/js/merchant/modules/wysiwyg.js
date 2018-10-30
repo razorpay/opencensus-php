@@ -6,7 +6,7 @@ import {
   push,
   deepMerge,
 } from 'rzp/utils/immutable';
-import { fetchPaymentPageEntity } from 'merchant/containers/paymentpages/Pages/model';
+import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
 import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
