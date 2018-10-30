@@ -88,7 +88,7 @@ class Core extends Base\Core
         $traceCode = Constants::getAdjustmentCreateRequestTraceCode($source->getEntityName());
 
         $this->trace->info(
-            constant('RZP\Trace\TraceCode::' . $traceCode),
+            $traceCode,
             [
                 'input'       => $input,
                 'merchant_id' => $source->getMerchantId()
