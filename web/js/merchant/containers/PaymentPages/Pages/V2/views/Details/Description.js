@@ -48,7 +48,6 @@ export default class extends React.PureComponent {
           defaultValue={this.props.description}
           onInput={this.handleOnInput}
           onBlur={this.props.updateData}
-          autoFocus
         />
       </div>
     );
