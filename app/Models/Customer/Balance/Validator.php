@@ -21,18 +21,16 @@ class Validator extends Base\Validator
                 'Maximum wallet payment amount limit has been crossed for the customer');
         }
 
-        /*
         // Check usage limits for wallet credits except for refunds
-        if ($isRefund === false)
-        {
-            //
-            // 31/07/2018: Commenting out the monthly limit validation since there we only
-            // support Closed PPI wallets, and there is no need to validate limits on Closed
-            // instruments. Change done after approval from SHK.
-            //
-            // $this->checkMonthlyUsageLimits($newBalance);
-        }
-        */
+        // if ($isRefund === false)
+        // {
+        //
+        //     31/07/2018: Commenting out the monthly limit validation since there we only
+        //     support Closed PPI wallets, and there is no need to validate limits on Closed
+        //     instruments. Change done after approval from SHK.
+        //
+        //     $this->checkMonthlyUsageLimits($newBalance);
+        // }
     }
 
     protected function checkMonthlyUsageLimits(int $newBalance)

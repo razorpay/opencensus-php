@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Models\Adjustment\Constants;
 
 class Core extends Base\Core
 {
@@ -84,7 +85,7 @@ class Core extends Base\Core
 
     public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity
     {
-        $traceCode = strtoupper($source->getEntityName()) .'_ADJUSTMENT_CREATE_REQUEST';
+        $traceCode = Constants::getAdjustmentCreateRequestTraceCode($source->getEntityName());
 
         $this->trace->info(
             constant('RZP\Trace\TraceCode::' . $traceCode),
