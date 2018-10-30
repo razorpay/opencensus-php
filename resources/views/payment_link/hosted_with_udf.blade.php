@@ -39,7 +39,6 @@
             var data = {!!utf8_json_encode($data)!!};
 
             var templateData = {
-                schema: data.payment_link.settings.udf_schema,
                 is_test_mode: true,
                 merchant: data.merchant,
                 payment_page_data: data.payment_link,
