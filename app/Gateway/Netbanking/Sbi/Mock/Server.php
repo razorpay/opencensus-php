@@ -170,12 +170,12 @@ class Server extends Base\Mock\Server
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
                 hex2bin($this->getSecret()),
-                $this->getIv());
+                hex2bin($this->getIv()));
         }
     }
 
     private function getIv()
     {
-        return '1234567890123456';
+        return '343644ebb6c78272bce7e5417297e92b';
     }
 }

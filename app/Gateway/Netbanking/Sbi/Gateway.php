@@ -17,7 +17,7 @@ use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
 
 class Gateway extends Base\Gateway
 {
-    const TEST_IV = '1234567890123456'; // TODO: fix this value
+    const TEST_IV = '343644ebb6c78272bce7e5417297e92b';
 
     const LIVE_IV = ''; // TODO: fill in this after getting live creds
 
@@ -324,6 +324,13 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse($responseString): array
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response'   => $responseString,
+                'gateway'    => $this->gateway,
+            ]);
+
         $response = $this->jsonToArray($responseString);
 
         $responseString = $this->decrypt($response['encdata']);
@@ -468,18 +475,18 @@ class Gateway extends Base\Gateway
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
                 hex2bin($this->getSecret()),
-                $this->getIv());
+                hex2bin($this->getIv()));
         }
     }
 
     private function getIv()
     {
-        if ($this->isTestMode() === true)
+        if ($this->isLiveMode() === true)
         {
-            return self::TEST_IV;
+            return self::LIVE_IV;
         }
 
-        return self::LIVE_IV;
+        return self::TEST_IV;
     }
 
     //TODO: move this to Base/Gateway
