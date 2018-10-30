@@ -14,7 +14,6 @@ import {
   CLARIFICATION_THROUGH_CALL,
   CLARIFICATION_THROUGH_EMAIL,
   TEST_MODE,
-  LIVE_MODE,
   PERSONALISE_URL,
 } from './data';
 import {
@@ -23,6 +22,7 @@ import {
   trackGoToPersonalise,
   trackSwitchToLive,
 } from './ga';
+import SwitchToMode from './SwitchToMode';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   let className = '';
@@ -42,33 +42,17 @@ const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
   return <div className={`activation-step-icon ${className}`} />;
 };
 
-class SwitchToLive extends Component {
-  constructor(props) {
-    super(props);
-
-    this.modeToken = `rzp_mode--${props.merchantId}`;
-
-    this.switchToLive = this.switchToLive.bind(this);
-  }
-
-  switchToLive() {
-    if (!LocalStorageService.getItem(`hide-mode-dd-popover`)) {
-      LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
-    }
-
-    trackSwitchToLive(this.props.stepNum);
-    LocalStorageService.setItem(this.modeToken, LIVE_MODE);
-    window.location.reload();
-  }
-
-  render() {
-    return (
-      <a className="switch-to-live" onClick={this.switchToLive}>
-        {this.props.children}
-      </a>
-    );
-  }
-}
+const SwitchToLive = ({ stepNum, ...props }) => {
+  return (
+    <SwitchToMode
+      mode="live"
+      onSwitch={() => trackSwitchToLive(stepNum)}
+      {...props}
+    >
+      Switch To Live
+    </SwitchToMode>
+  );
+};
 
 /*
  * WrapperElement returns either a link to different tab
@@ -283,10 +267,7 @@ const Text = ({
                 </Link>
                 <span>
                   {' '}
-                  or{' '}
-                  <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
-                    Switch to live
-                  </SwitchToLive>
+                  or <SwitchToLive merchantId={merchantId} stepNum={stepNum} />
                 </span>
               </span>
             ) : (
@@ -299,9 +280,7 @@ const Text = ({
           // user has personalized, activated and is in test mode
 
           <span>
-            <SwitchToLive merchantId={merchantId} stepNum={stepNum}>
-              Switch to live
-            </SwitchToLive>
+            <SwitchToLive merchantId={merchantId} stepNum={stepNum} />
           </span>
         ) : (
           'You are all set up.'

@@ -15,6 +15,11 @@ import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
 export default connect(null, { openModal, closeModal })(
   ({ user, openModal, closeModal, changeDisplayName }) => {
+    const activationName =
+      !user.showInstantActivation || !user.instantActivation.isL1Submitted
+        ? 'Activation'
+        : 'KYC';
+
     return (
       <div class="list-group details-row-container">
         <DetailRow label="Merchant Name" value={titleCase(user.name)} />
@@ -81,7 +86,7 @@ export default connect(null, { openModal, closeModal })(
                       ('Fill');
                     }
                   }}{' '}
-                  Activation Form
+                  {activationName} Form
                 </Link>
               </span>
             )}
@@ -97,27 +102,30 @@ export default connect(null, { openModal, closeModal })(
           />
         )}
 
-        <DetailRow
-          label="Activation Form Status"
-          value={() =>
-            user.activation_status ? (
-              <ActivationStatusLabel status={user.activation_status} />
-            ) : (
-              <div className="activation-bar-content activation-status-secondary">
-                <div className="activation-bar-text">
-                  {user.activation_progress}% Completed
-                </div>
-                <div className="activation-bar">
-                  <ProgressBar
-                    type="success"
-                    max={100}
-                    value={user.activation_progress}
-                  />
-                </div>
-              </div>
-            )
-          }
-        />
+        {!user.showInstantActivation ||
+          (user.instantActivation.isL1Submitted && (
+            <DetailRow
+              label={`${activationName} Form Status`}
+              value={() =>
+                user.activation_status ? (
+                  <ActivationStatusLabel status={user.activation_status} />
+                ) : (
+                  <div className="activation-bar-content activation-status-secondary">
+                    <div className="activation-bar-text">
+                      {user.activation_progress}% Completed
+                    </div>
+                    <div className="activation-bar">
+                      <ProgressBar
+                        type="success"
+                        max={100}
+                        value={user.activation_progress}
+                      />
+                    </div>
+                  </div>
+                )
+              }
+            />
+          ))}
 
         {user.isActivated && (
           <React.Fragment>

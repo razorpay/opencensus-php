@@ -66,7 +66,7 @@ function batchActions({
   };
 }
 
-@connect(null, {
+@connect(state => ({ session: state.session }), {
   batchDownload,
   ...NotificationsActions,
 })
@@ -89,18 +89,20 @@ export default class BatchList extends Component {
 
   render() {
     let {
-      mode,
-      docUrl,
-      count,
-      skip,
-      paginate,
-      onSubmit,
-      uploadUrl,
-      viewAll,
-      issueAll,
-      issuableIdList,
-      showBatchName,
-    } = this.props;
+        mode,
+        docUrl,
+        count,
+        skip,
+        paginate,
+        onSubmit,
+        uploadUrl,
+        viewAll,
+        issueAll,
+        issuableIdList,
+        showBatchName,
+        session,
+      } = this.props,
+      { user } = session;
     let handleDownloadClick = this.dowload;
 
     return (
@@ -114,9 +116,11 @@ export default class BatchList extends Component {
               </a>
             )}
 
-            <Link class="btn btn-primary pull-right" to={uploadUrl}>
-              Click here to upload
-            </Link>
+            {(session.mode !== 'live' || !user.isRejected) && (
+              <Link class="btn btn-primary pull-right" to={uploadUrl}>
+                Click here to upload
+              </Link>
+            )}
           </div>
         </HeaderAction>
 

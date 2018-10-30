@@ -1,189 +1,83 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-import Group, { GroupItem } from 'rzp/ui/Group';
-import LocalStorageService from 'rzp/utils/localStorage';
+import { fetchKeys } from 'merchant/modules/keys';
 
-import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
+import { LIVE_MODE } from './data';
+import InstantActivationsCard from './Instant';
+import RegularActivationsCard from './Regular';
 
-import ActivationStep from './ActivationStep';
-import Integration from './Integration';
-import { onBoardingItems } from './data';
-import {
-  trackWelcomeCTAClick,
-  trackCloseOnboarding,
-  trackGoToDocumentation,
-} from './ga';
-
-@connect(state => ({ ...state.session, config: state.config.config }))
+@connect(state => ({ user: state.session.user, mode: state.session.mode }), {
+  fetchKeys,
+})
 export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, user, config, isFirstStep } = props,
-      { isActivated, isSubmitted } = user,
-      { hasPersonalised } = config;
+    const { mode, payments, user } = props;
 
     this.state = {
-      integrated: false,
-      activated: mode === 'live' && isActivated && isSubmitted,
+      integration: {
+        isLoading: true,
+        keysGenerated: false,
+        paymentsMade: false,
+        isKLA: !user.has_key_access,
+      },
     };
 
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'onboarding_card');
-      window.hj('tagRecording', [
-        isFirstStep ? 'welcome_step_opened' : 'main_step_opened',
-      ]);
-    }
+    this.paymentsRequest = new Promise((res, rej) => {
+      this.onFetchPayments = res;
 
-    this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
-    this.closeOnboarding = this.closeOnboarding.bind(this);
-  }
-
-  onIntegrationComplete() {
-    this.setState({
-      integrated: true,
+      if (!props.payments.loading) {
+        res(props.payments.items);
+      }
     });
   }
 
-  gotoNextStep = () => {
-    trackWelcomeCTAClick();
-    return this.props.onFirstStepClose && this.props.onFirstStepClose();
-  };
+  componentWillReceiveProps(nextProps) {
+    if (this.props.payments.loading && !nextProps.payments.loading) {
+      this.onFetchPayments(nextProps.payments.items);
+    }
+  }
 
-  closeOnboarding(e, fromCloseBtn) {
-    trackCloseOnboarding(`from ${fromCloseBtn ? 'close icon' : 'description'}`);
-    return this.props.onClose && this.props.onClose();
+  componentWillMount() {
+    let params = {};
+
+    const { user, mode } = this.props,
+      isKLA = !user.has_key_access;
+
+    params.mode = this.props.mode;
+
+    Promise.all([
+      (mode === LIVE_MODE && isKLA && Promise.resolve(false)) ||
+        this.props.fetchKeys(params, user.has_key_access).then(({ data }) => {
+          return !!data.items.length;
+        }),
+      this.paymentsRequest.then(payments => {
+        return !!payments.length;
+      }),
+    ]).then(resp => {
+      const { 0: keysGenerated, 1: paymentsMade } = resp;
+
+      this.setState({
+        integration: {
+          isLoading: false,
+          keysGenerated,
+          paymentsMade,
+          isKLA,
+        },
+      });
+    });
   }
 
   render() {
-    let { user, config, payments, mode, isFirstStep } = this.props;
-    let { integrated, activated } = this.state;
+    const { showInstantActivation, ...rest } = this.props,
+      props = { integration: this.state.integration, ...rest };
 
-    let FirstStep = null;
-
-    if (isFirstStep) {
-      FirstStep = (
-        <div class="media-body">
-          <div class="media-heading">
-            <span className="highlight">W</span>elcome{user.isOrgRZP
-              ? ' to Razorpay!'
-              : '!'}{' '}
-            Let's get you going.
-          </div>
-          <div className="onboarding-desc">
-            Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to
-            use! There is a lot that you can do on the Dashboard. Here are some
-            of the actions that you can take:
-          </div>
-          <div class="row">
-            {onBoardingItems(user).map((item, index) => {
-              return (
-                <div className="col-md-4" key={index}>
-                  <div className="onboarding-checklist-item">
-                    <div className="icon-cont">
-                      <i className="i i-check" />
-                    </div>
-                    <div>{item}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <button
-            class="btn btn-default onboarding-cta"
-            onClick={this.gotoNextStep}
-          >
-            <span>Okay, got it</span>
-            <i class="i i-chevron-right" />
-          </button>
-        </div>
-      );
-    } else {
-      FirstStep = (
-        <div class="media-body">
-          <div class="media-heading">
-            <span className="highlight">G</span>etting Started{' '}
-            {user.isOrgRZP ? 'with Razorpay' : ''}
-          </div>
-          <div className="onboarding-desc">
-            {mode === 'test' ? (
-              <span>
-                You are currently in test mode. Feel free to explore the
-                dashboard or do the following:
-              </span>
-            ) : (
-              <span>
-                {integrated && activated ? (
-                  <span>
-                    You are all set up. You may now{' '}
-                    <a onClick={this.closeOnboarding}>close this</a> or view our{' '}
-                    <a href="https://docs.razorpay.com/" target="_blank">
-                      documentation
-                    </a>{' '}
-                    from top right.
-                  </span>
-                ) : (
-                  <span>
-                    You are now in Live Mode. Generate live API keys and
-                    Integrate to start accepting payments.
-                  </span>
-                )}
-              </span>
-            )}
-          </div>
-          <div className="onboarding-steps">
-            <Group>
-              <ShowWhen
-                additionalCondition={user => user.isAllowedView('activation')}
-              >
-                <GroupItem>
-                  <ActivationStep mode={mode} user={user} config={config} />
-                </GroupItem>
-              </ShowWhen>
-              <GroupItem>
-                <Integration
-                  mode={mode}
-                  payments={payments}
-                  onFinish={this.onIntegrationComplete}
-                  hasKeyAccess={user.has_key_access}
-                  businessWebsite={user.business_website}
-                />
-              </GroupItem>
-            </Group>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="onboarding-card-wrapper">
-        <div
-          className={`onboarding-card-wrapper-content${
-            isFirstStep ? ' first-step' : ''
-          }`}
-        >
-          <div class="media onboarding-card">
-            {FirstStep}
-            <div class="onboarding-illustration" />
-            {(isFirstStep || (integrated && activated)) && (
-              <a
-                onClick={
-                  isFirstStep
-                    ? this.gotoNextStep
-                    : e => this.closeOnboarding(e, true)
-                }
-                className="close"
-              >
-                <i className="i i-close" />
-              </a>
-            )}
-          </div>
-        </div>
-      </div>
+    return showInstantActivation ? (
+      <InstantActivationsCard {...props} />
+    ) : (
+      <RegularActivationsCard {...props} />
     );
   }
 }

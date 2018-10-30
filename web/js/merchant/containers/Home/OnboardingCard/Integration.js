@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { fetchKeys } from 'merchant/modules/keys';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
 import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
-import { LIVE_MODE } from './data';
 import {
   trackGoToKeyGen,
   trackGoToDocumentation,
@@ -169,30 +166,13 @@ const Text = ({
   return <span>{text}</span>;
 };
 
-@connect(null, { fetchKeys })
 export default class IntegrationStep extends Component {
   constructor(props) {
     super(props);
-
-    const { mode, payments } = props;
-
-    this.state = {
-      isLoading: true,
-      keysGenerated: false,
-      paymentsMade: false,
-    };
-
-    this.paymentsRequest = new Promise((res, rej) => {
-      this.onFetchPayments = res;
-
-      if (!props.payments.loading) {
-        res(props.payments.items);
-      }
-    });
   }
 
   getStep() {
-    const { keysGenerated, paymentsMade } = this.state;
+    const { keysGenerated, paymentsMade } = this.props;
 
     if (!keysGenerated) {
       return 1;
@@ -205,47 +185,9 @@ export default class IntegrationStep extends Component {
     return 3;
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.payments.loading && !nextProps.payments.loading) {
-      this.onFetchPayments(nextProps.payments.items);
-    }
-  }
-
-  componentWillMount() {
-    let params = {};
-
-    params.mode = this.props.mode;
-
-    Promise.all([
-      this.props.fetchKeys(params).then(({ data }) => {
-        return !!data.items.length;
-      }),
-      this.paymentsRequest.then(payments => {
-        return !!payments.length;
-      }),
-    ]).then(resp => {
-      const { 0: keysGenerated, 1: paymentsMade } = resp;
-
-      this.setState(
-        {
-          isLoading: false,
-          keysGenerated,
-          paymentsMade,
-        },
-        () => {
-          const { keysGenerated, paymentsMade } = this.state;
-
-          if (this.props.mode === LIVE_MODE && keysGenerated && paymentsMade) {
-            this.props.onFinish();
-          }
-        }
-      );
-    });
-  }
-
   render() {
-    const { mode, hasKeyAccess, businessWebsite } = this.props,
-      { isLoading, keysGenerated, paymentsMade } = this.state,
+    const { mode, hasKeyAccess, businessWebsite, integration } = this.props,
+      { isLoading, keysGenerated, paymentsMade } = integration,
       isIntegrated = keysGenerated && paymentsMade,
       stepNum = this.getStep();
 
@@ -260,15 +202,15 @@ export default class IntegrationStep extends Component {
         className={`Onboarding__Step ${isLoading ? ' loading' : ''}`}
       >
         <div className="media-icon">
-          <Icon {...commonProps} {...this.state} />
+          <Icon {...commonProps} {...integration} />
         </div>
         <div className="media-body">
           <b>
-            <Title {...commonProps} {...this.state} />
+            <Title {...commonProps} {...integration} />
             {isLoading && <PlaceholderLoader />}
           </b>
           <div className="step-desc">
-            <Text {...commonProps} {...this.state} />
+            <Text {...commonProps} {...integration} />
             {isLoading && <PlaceholderLoader />}
           </div>
         </div>

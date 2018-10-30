@@ -12,6 +12,13 @@ const ENTITY_TOTALS_FETCH = 'ENTITY_TOTALS_FETCH';
 const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
+// Instant activation actions
+const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
+const SHOW_KYC_SUCCESS = 'SHOW_KYC_SUCCESS';
+const HIDE_KYC_SUCCESS = 'HIDE_KYC_SUCCESS';
+const SHOW_KYC_DETAILS = 'SHOW_KYC_DETAILS';
+const HIDE_KYC_DETAILS = 'HIDE_KYC_DETAILS';
+
 let initialState = {
   analytics: {
     loading: true,
@@ -33,6 +40,11 @@ let initialState = {
     loading: true,
     data: {},
     error: null,
+  },
+  instantActivations: {
+    showKYCActivationSuccess: false,
+    showInstantActivationSuccess: false,
+    showKYCDetails: false,
   },
 };
 
@@ -101,6 +113,32 @@ export const fetchCurrentBalance = () => {
     payload: merchantFetch('balance'),
   };
 };
+
+export const showInstantActivationSuccessModal = () => {
+  return {
+    type: SHOW_IA_SUCCESS,
+  };
+};
+
+export const showKYCActivationSuccessModal = () => {
+  return {
+    type: SHOW_KYC_SUCCESS,
+  };
+};
+
+export const hideKYCActivationSuccessModal = () => {
+  return {
+    type: HIDE_KYC_SUCCESS,
+  };
+};
+
+export const showKYCDetailsModal = () => ({
+  type: SHOW_KYC_DETAILS,
+});
+
+export const hideKYCDetailsModal = () => ({
+  type: HIDE_KYC_DETAILS,
+});
 
 export default function(state = initialState, action) {
   switch (action.type) {
@@ -180,6 +218,31 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.current_balance.data,
+      });
+
+    case `SHOW_IA_SUCCESS`:
+      return set(state, 'instantActivations', {
+        showInstantActivationSuccess: true,
+      });
+
+    case `SHOW_KYC_SUCCESS`:
+      return set(state, 'instantActivations', {
+        showKYCActivationSuccess: true,
+      });
+
+    case `HIDE_KYC_SUCCESS`:
+      return set(state, 'instantActivations', {
+        showKYCActivationSuccess: false,
+      });
+
+    case `SHOW_KYC_DETAILS`:
+      return set(state, 'instantActivations', {
+        showKYCDetails: true,
+      });
+
+    case `HIDE_KYC_DETAILS`:
+      return set(state, 'instantActivations', {
+        showKYCDetails: false,
       });
 
     default:

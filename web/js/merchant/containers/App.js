@@ -25,6 +25,7 @@ import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
+import { setTrackData } from 'rzp/utils/googleAnalytics';
 
 @withRouter
 @connect(
@@ -145,6 +146,18 @@ export default class App extends Component {
         }
       }),
     ]).then(response => {
+      if (response[0].showInstantActivation) {
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations',
+          eventAction: 'Show - Instant Activations Flow',
+        })();
+
+        if (typeof window.hj === 'function') {
+          window.hj('trigger', 'instant_activation');
+          window.hj('tagRecording', ['instant_activation']);
+        }
+      }
+
       // Fetch features before displaying other views
       fetchFeaturesAjax(response[0].current)
         .catch(_ => _)
