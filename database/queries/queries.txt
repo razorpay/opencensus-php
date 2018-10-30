@@ -4385,4 +4385,4 @@ ALTER TABLE pricing
 ALTER TABLE payouts
   ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
 
-ALTER TABLE payouts DROP FOREIGN KEY payout_transaction_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_transaction_id_foreign;
