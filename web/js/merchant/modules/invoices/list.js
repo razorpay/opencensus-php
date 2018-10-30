@@ -68,7 +68,10 @@ let initialState = {
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${INVOICES_FETCH}::PENDING`:
-      return set(state, 'loading', true);
+      return merge(state, {
+        loading: true,
+        invoices: [],
+      });
 
     case `${INVOICES_FETCH}::SUCCESS`:
       return merge(state, {
