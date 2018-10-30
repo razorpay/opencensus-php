@@ -9,7 +9,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     /*
      * Payment component error messages
      */
-
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
     const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';
@@ -1326,6 +1325,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Instant activation traces
     const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
+    const FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED    = 'FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED';
+    const MEMORY_USAGE_FTA_UPDATE_STATUS_BEGIN          = 'MEMORY_USAGE_FTA_UPDATE_STATUS_BEGIN';
+    const MEMORY_USAGE_FTA_UPDATE_STATUS_END            = 'MEMORY_USAGE_FTA_UPDATE_STATUS_END';
+    const MEMORY_USAGE_FTA_FETCHING_ENTITIES            = 'MEMORY_USAGE_FTA_FETCHING_ENTITIES';
+    const MEMORY_USAGE_FTA_ENTITIES_FETCHED             = 'MEMORY_USAGE_FTA_ENTITIES_FETCHED';
 
     // redis dual write
     const REDIS_DUAL_WRITE_STORE_ERROR                  = 'REDIS_DUAL_WRITE_STORE_ERROR';

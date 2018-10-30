@@ -1177,4 +1177,12 @@ class Repository extends Base\Repository
         $query->join(Table::REFUND, Entity::ENTITY_ID, '=', $refundId)
               ->where($refundStatus, '=', Refund\Status::PROCESSED);
     }
+
+    public function fetchTransactionCountForSettlementId(string $setlId): int
+    {
+        return $this->newQuery()
+                      ->select(Entity::ID)
+                      ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
+                      ->count();
+    }
 }
