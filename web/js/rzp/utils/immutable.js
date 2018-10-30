@@ -1,3 +1,7 @@
+function _isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
+
 const getValueFromObject = (obj, prop) => {
   return prop.split('.').reduce((prev, curr) => {
     return prev[curr];
@@ -66,13 +70,32 @@ export const set = (state, prop, value) => {
   }, state);
 };
 
-// Deep merge is still not available though. Will build on requirement
 export const merge = (state, obj) => {
   return {
     ...state,
     ...obj,
   };
 };
+
+export function deepMerge(target, source) {
+  let output = Object.assign({}, target);
+
+  if (_isObject(target) && _isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (_isObject(source[key])) {
+        if (!(key in target)) {
+          Object.assign(output, { [key]: source[key] });
+        } else {
+          output[key] = deepMerge(target[key], source[key]);
+        }
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+
+  return output;
+}
 
 export const remove = (array, itemToRemove) => {
   if (typeof itemToRemove === 'function') {

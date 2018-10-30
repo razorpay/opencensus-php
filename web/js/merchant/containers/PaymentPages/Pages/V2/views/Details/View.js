@@ -18,9 +18,16 @@ export default class View extends React.PureComponent {
       value = target.checked | 0; // Convert to 1 / 0
     }
 
-    this.props.updateData({
+    const dataToUpdate = {
       [name]: value,
-    });
+    };
+
+    if (['allow_social_share'].indexOf(target.name) > -1) {
+      // Fields with settings
+      this.props.updateData({ settings: { ...dataToUpdate } });
+    } else {
+      this.props.updateData(dataToUpdate);
+    }
   }
 
   updateData = this.updateData.bind(this);

@@ -198,8 +198,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       description,
       terms,
       stock,
-      allow_multiple_units,
-      allow_social_share,
+      settings,
     } = paymentPageEntity;
 
     // Remove Email and Phone in all cases before sending to API.
@@ -213,11 +212,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       times_payable: stock || undefined,
       terms: terms || undefined,
       settings: {
-        allow_multiple_units: !!allow_multiple_units ? '1' : undefined,
-        allow_social_share: !!allow_social_share ? '1' : '0',
+        theme: settings.theme,
+        allow_multiple_units: !!settings.allow_multiple_units ? '1' : undefined,
+        allow_social_share: !!settings.allow_social_share ? '1' : '0',
         udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
       },
     };
+
+    console.log('REQ PAYLOAD...', reqPayload);
 
     const isEditExistingId = this.props.id;
     const requestAPIPromise = isEditExistingId

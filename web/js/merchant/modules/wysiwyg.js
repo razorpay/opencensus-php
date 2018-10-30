@@ -1,4 +1,11 @@
-import { set, merge, removeItem, updateItem, push } from 'rzp/utils/immutable';
+import {
+  set,
+  merge,
+  removeItem,
+  updateItem,
+  push,
+  deepMerge,
+} from 'rzp/utils/immutable';
 import { fetchPaymentPageEntity } from 'merchant/containers/paymentpages/Pages/model';
 import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
@@ -94,10 +101,15 @@ export default function(state = initialState, action) {
           paymentPageEntity: { id: action.id },
         });
       } else {
-        return set(state, 'paymentPageEntity', {
-          ...state.paymentPageEntity,
-          ...action.fields,
-        });
+        return set(
+          state,
+          'paymentPageEntity',
+          deepMerge(
+            // Needed for settings
+            state.paymentPageEntity,
+            action.fields
+          )
+        );
       }
 
     case 'DELETE_IN_SCHEMA':

@@ -83,7 +83,9 @@ export default class View extends React.PureComponent {
     this.props.updateAmount({
       amount: amount || null,
       stock: stock || null,
-      allow_multiple_units: !!allow_multiple_units,
+      settings: {
+        allow_multiple_units: !!allow_multiple_units,
+      },
     });
 
     this.setState({ activeCreatorType: false });
