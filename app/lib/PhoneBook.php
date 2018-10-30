@@ -193,4 +193,13 @@ class PhoneBook
 
         return $this->getRawInput();
     }
+
+    /**
+     * Gets underlying PhoneNumber object.
+     * @return libphonenumber\PhoneNumber|null
+     */
+    public function getPhoneNumber()
+    {
+        return $this->phoneNumber;
+    }
 }

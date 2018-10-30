@@ -3482,4 +3482,41 @@ return [
             ],
         ],
     ],
+
+    'testSubmitSupportCallRequest' => [
+        'request'  => [
+            'url'     => '/merchants/submit_support_call_request',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSubmitSupportCallRequestWithInvalidContact' => [
+        'request'  => [
+            'url'     => '/merchants/submit_support_call_request',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9989988998899',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid contact number - 9989988998899',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

@@ -2519,4 +2519,25 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function submitSupportCallRequest(array $input): array
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        $allowCallRequest = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Constants::TREATMENT_SUBMIT_SUPPORT_CALL_REQUEST,
+            $this->mode ?? 'live');
+
+        $this->trace->info(TraceCode::SUBMIT_SUPPORT_CALL_REQUEST, compact('input', 'allowCallRequest'));
+
+        // Dashboard also does treatment check hence happening this is a invalid request.
+        if ($allowCallRequest === 'off')
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid request.');
+        }
+
+        // Todo: Massage and return response formatted our way.
+        return $this->app->myoperator->submitSupportCallRequest($input);
+    }
 }

@@ -925,6 +925,8 @@ final class Route
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
+
+        'merchant_submit_support_call_request'     => ['post',     'merchants/submit_support_call_request',          'MerchantController@submitSupportCallRequest'                       ],
     ];
 
     public static $public = [
@@ -1444,6 +1446,7 @@ final class Route
         'subscription_registration_fetch_token',
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
+        'merchant_submit_support_call_request',
     ];
 
     // These will run on internal auth with the assurance
