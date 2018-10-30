@@ -707,7 +707,6 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'action'      => 'PAYOUT',
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payout failed due to insufficient balance in wallet',
                 ],
