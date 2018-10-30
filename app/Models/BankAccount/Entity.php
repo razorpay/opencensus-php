@@ -110,7 +110,7 @@ class Entity extends Base\PublicEntity
         self::MPIN_SET,
         self::MPIN,
         self::MOBILE_BANKING_ENABLED,
-        self::CREATED_AT
+        self::CREATED_AT,
     ];
 
     protected $public = [
@@ -131,7 +131,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::BENEFICIARY_MOBILE,
-        self::BENEFICIARY_EMAIL
+        self::BENEFICIARY_EMAIL,
     ];
 
     protected $appends = [

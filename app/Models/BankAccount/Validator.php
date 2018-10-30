@@ -188,6 +188,7 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid Account type',
+                Entity::ACCOUNT_TYPE,
                 [
                     'field'        => Entity::ACCOUNT_TYPE,
                     'account_type' => $value
