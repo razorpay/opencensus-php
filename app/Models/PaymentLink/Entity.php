@@ -175,6 +175,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::EXPIRE_BY,
+        self::TIMES_PAYABLE,
+        self::TIMES_PAID,
         self::STATUS,
         self::SHORT_URL,
         self::RECEIPT,
@@ -359,6 +361,17 @@ class Entity extends Base\PublicEntity
     public function getHostedViewUrl(string $plHostedBaseUrl, string $slug = null): string
     {
         return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
+    }
+
+    /**
+     * Gets the slug part from short URL.
+     * @return string|null
+     */
+    public function getSlugFromShortUrl()
+    {
+        $parts = explode('/', $this->getShortUrl());
+
+        return end($parts) ?: null;
     }
 
     public function getCapturedPaymentsCount(): int

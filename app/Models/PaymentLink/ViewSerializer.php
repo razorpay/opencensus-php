@@ -189,6 +189,7 @@ class ViewSerializer extends Base\Core
                 'title'    => 'Email',
                 'name'     => 'email',
                 'type'     => 'string',
+                "pattern"  => '^(?i)(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$',
                 'required' => true,
                 'options'  => [
                     'keydown_restrictive' => false,
@@ -198,6 +199,7 @@ class ViewSerializer extends Base\Core
                 'title'     => 'Phone',
                 'name'      => 'phone',
                 'type'      => 'number',
+                'pattern'   => '^(?g)([0-9]){8,}$',
                 'required'  => true,
                 'minLength' => 8,
                 'options'   => [

@@ -50,7 +50,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required when currency / settings.allow multiple units is present.',
+                    'description' => 'The amount field is required when currency is present.',
                 ],
             ],
             'status_code' => 400,
@@ -231,7 +231,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required when currency / settings.allow multiple units is present.',
+                    'description' => 'The amount field is required when currency is present.',
                 ],
             ],
             'status_code' => 400,

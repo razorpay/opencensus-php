@@ -36,6 +36,7 @@ class Service extends Base\Service
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
+        $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
         $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
 
         if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)

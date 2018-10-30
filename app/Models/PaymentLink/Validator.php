@@ -22,7 +22,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'required_with:currency,settings.allow_multiple_units|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -45,7 +45,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT          => 'required_with:currency,settings.allow_multiple_units|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
@@ -92,7 +92,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        Entity::SETTINGS,
+        // Internally calls validateSettings() only.
+        'editSettings',
     ];
 
     public function validateExpireBy(string $attribute, int $value)
@@ -167,11 +168,17 @@ class Validator extends Base\Validator
      * Additionally it must and only exists if merchant has v2 tag.
      *
      * @param array $input
+     * @param bool  $isEdit - Whether is isEdit request?
      */
-    public function validateSettings(array $input)
+    public function validateSettings(array $input, bool $isEdit = false)
     {
         $attributeExists  = array_key_exists(Entity::SETTINGS, $input);
         $merchantHasV2Tag = $this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2);
+
+        if (($attributeExists === false) and ($isEdit === true))
+        {
+            return;
+        }
 
         if ($attributeExists !== $merchantHasV2Tag)
         {
@@ -194,9 +201,27 @@ class Validator extends Base\Validator
                 'Extra settings keys must not be sent - ' . implode(', ', $extraSettingsKeys) . '.');
         }
 
-        // Additionally, validates udf schema
+        // setting.allow_multiple_units should only be set when amount is sent or exist(for edit requests).
+        $amount = $input[Entity::AMOUNT] ?? $this->entity->getAmount();
+        $allowMultipleUnits = $settings[Entity::ALLOW_MULTIPLE_UNITS] ?? null;
+        if ((empty($allowMultipleUnits) === false) and (empty($amount) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                'amount is required with settings.allow_multiple_units.');
+        }
+
+        // Additionally, validates UDF schema
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
+        if (empty($udfSchema) === true)
+        {
+            throw new BadRequestValidationFailureException('settings.udf_schema is required.');
+        }
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
+    }
+
+    public function validateEditSettings(array $input)
+    {
+        $this->validateSettings($input, true);
     }
 
     /**
