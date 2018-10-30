@@ -1025,13 +1025,6 @@ trait Authorize
         //
         if ($this->app->runningInQueue() === true)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_RECURRING_VIA_BATCH,
-                [
-                    'payment'   => $payment,
-                    'merchant'  => $merchant->toArrayPublic(),
-                ]);
-
             $this->verifyRecurringEnabledForMerchant($merchant);
 
             return;
