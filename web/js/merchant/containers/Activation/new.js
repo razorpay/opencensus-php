@@ -13,6 +13,7 @@ import Button from 'component/Button';
 
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+import { showKYCActivationSuccessModal } from 'merchant/modules/home';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
@@ -30,6 +31,7 @@ const successImg = '/img/activation/submit-success.svg';
 * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
 * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
 * */
+@withRouter
 @connect(
   state => ({
     session: state.session,
@@ -38,44 +40,36 @@ const successImg = '/img/activation/submit-success.svg';
   {
     showNotification,
     updateSession,
+    showKYCActivationSuccessModal,
   }
 )
 export default class ActivationContainer extends React.Component {
-  state = {
-    data: null,
-    categories: null,
-  };
+  constructor(props) {
+    super(props);
 
-  componentWillMount() {
-    this.fetchActivationDetails(this.props.accountId); // accountId = undefined if not present
-  }
+    const { data, user } = props;
 
-  fetchActivationDetails(accountId) {
-    Promise.all([
-      merchantFetch({
-        url: 'merchant/activation',
-        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
-        mode: !!accountId ? this.props.session.mode : 'live',
-        accountId,
-      }),
-      !accountId && merchantFetch('merchant/activation/business_categories'),
-    ]).then(([data, categories]) => {
-      const someDetailsFilled = isFormTouched(data.data);
+    if (this.props.setOnCloseCb) {
+      this.props.setOnCloseCb(this.saveDirtyState);
+    }
 
-      if (!someDetailsFilled) {
-        this.preloadWelcomeAsset();
-      }
+    const someDetailsFilled = isFormTouched(data);
 
-      if (data.data.can_submit) {
-        this.preloadSuccessAsset();
-      }
+    if (!someDetailsFilled) {
+      this.preloadWelcomeAsset();
+    }
 
-      this.setState({
-        data: data.data,
-        categories: categories.data,
-        isFormTouched: someDetailsFilled,
-      });
-    });
+    if (data && data.can_submit) {
+      this.preloadSuccessAsset();
+    }
+
+    this.state = {
+      isFormTouched: someDetailsFilled,
+    };
+
+    this.activationFormName = user.showInstantActivation
+      ? 'KYC Form'
+      : 'Activation Form';
   }
 
   preloadWelcomeAsset() {
@@ -92,7 +86,9 @@ export default class ActivationContainer extends React.Component {
     const { session, accountId } = this.props;
 
     // Update data
-    this.setState({ data });
+    if (this.props.onNewData) {
+      this.props.onNewData(data);
+    }
 
     // Session need not be updated if it's linked account form
     if (accountId) {
@@ -307,35 +303,29 @@ export default class ActivationContainer extends React.Component {
     this.wizard && this.wizard.goto(null); // To save existing tab in Activation Wizard
   };
 
+  goToDashboard = () => {
+    this.props.history.replace(`/`);
+  };
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
   * */
   render() {
-    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    const IS_MODAL = this.props.onClose;
     const accountId = this.props.accountId; // If accountId present, then Welcome screen and Success screen are not required.
 
-    let { data, categories } = this.state;
+    let { data, categories } = this.props;
     let content, spinner, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
-      modalClass = 'Activation--success';
-      content = <SuccessScreen />;
-    } else if (!data) {
-      modalClass = 'spinner transparent';
-
-      content = null;
-      spinner = (
-        <div class="spinner-container">
-          <div
-            class={classList(
-              'spin-btn large page-center visible',
-              IS_MODAL && 'gray'
-            )}
-          />
-        </div>
-      );
+      if (!this.props.user.showInstantActivation) {
+        modalClass = 'Activation--success';
+        content = <SuccessScreen />;
+      } else {
+        this.props.showKYCActivationSuccessModal();
+        this.props.history.replace(`/`);
+        content = null;
+      }
     } else if (
       !accountId &&
       !this.state.isFormTouched &&
@@ -355,6 +345,7 @@ export default class ActivationContainer extends React.Component {
         business_category:
           data.business_category || (data.business_model ? 'others' : null),
       };
+
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
@@ -371,17 +362,11 @@ export default class ActivationContainer extends React.Component {
       );
     }
 
-    return IS_MODAL ? (
-      <Modal
-        class={classList(modalClass, content && 'animate-down')}
-        onClose={this.props.onClose}
-        onCloseCB={this.saveDirtyState}
-      >
-        <ModalContent>{content || spinner}</ModalContent>
-      </Modal>
-    ) : (
-      <div class="ActivationContainer">{content || spinner}</div>
-    );
+    if (modalClass) {
+      this.props.setAdditionalModalClass(modalClass);
+    }
+
+    return content;
   }
 }
 
@@ -390,7 +375,7 @@ ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
-const SuccessScreen = _ => {
+const SuccessScreen = ({ formName = 'Activation Form' }) => {
   function clickConfig(e) {
     trackGoToConfig();
   }
@@ -398,11 +383,11 @@ const SuccessScreen = _ => {
   return (
     <div class="Activation--success">
       <div class="Activation-title">
-        <side-title>Activation Form submitted Successfully!</side-title>
+        <side-title>{formName} submitted Successfully!</side-title>
         <img src={successImg} class="submit-illustration" />
       </div>
       <div class="Activation-info">
-        <i class="i i-check" /> Activation Form Submitted
+        <i class="i i-check" /> {formName} Submitted
         <p class="desc">
           Our team will review the form and submitted documents. We will reach
           out on your contact email for all updates.

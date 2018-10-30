@@ -27,7 +27,7 @@ import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetai
 import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/Entity';
 
 import PlanNew from 'merchant/containers/Plans/New';
-import ActivationContainer from 'merchant/containers/Activation/new';
+import ActivationContainer from 'merchant/containers/Activation';
 import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 
 /*

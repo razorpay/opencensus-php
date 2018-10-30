@@ -63,14 +63,17 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user } = this.props;
+    let { loading, invoices, user, mode } = this.props;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <ShowWhen
-            additionalCondition={user => user.isAllowedEdit('payment_links')}
+            additionalCondition={user =>
+              (mode !== 'live' || !user.isRejected) &&
+              user.isAllowedEdit('payment_links')
+            }
           >
             <div class="btn-toolbar pull-right">
               <NavLink class="btn btn-primary" to="/paymentlinks/new">

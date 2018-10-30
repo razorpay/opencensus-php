@@ -172,8 +172,7 @@ export default class ProfileDropdown extends Component {
             </div>
 
             {mode === 'live' &&
-              !showMobileNav &&
-              user.isNewAnalyticsEnabled && (
+              !showMobileNav && (
                 <div
                   class="media media-action"
                   onClick={() => this.showOrHideTour(true)}
