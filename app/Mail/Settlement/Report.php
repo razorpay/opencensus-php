@@ -9,8 +9,6 @@ class Report extends Base
     public function __construct(array $data)
     {
         parent::__construct($data);
-
-        $this->data['body']    = 'PFA';
     }
 
     protected function getFromHeader()
@@ -45,6 +43,13 @@ class Report extends Base
         $email =  Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS];
 
         $this->to($email);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.admin.settlement_report');
 
         return $this;
     }
