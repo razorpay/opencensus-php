@@ -26,6 +26,7 @@ const batchStatus = {
 
 @connect(
   state => ({
+    session: state.session,
     ...state.batches,
   }),
   {
@@ -69,7 +70,8 @@ export default class BatchList extends ListContainer {
   }
 
   render() {
-    let { docUrl, uploadUrl, sampleUrl, extraColumns } = this.props;
+    let { docUrl, uploadUrl, sampleUrl, extraColumns, session } = this.props,
+      { user } = session;
 
     return (
       <div class="content-wrapper batch-upload-wrapper">
@@ -105,12 +107,15 @@ export default class BatchList extends ListContainer {
               </Popover>
             </div>
           ) : (
-            <button
-              class="btn btn-primary pull-right"
-              onClick={this.openUploadModal(this.props.renderUploadModal)}
-            >
-              Click here to upload
-            </button>
+            ((session.mode !== 'live' || !user.isRejected) && (
+              <button
+                class="btn btn-primary pull-right"
+                onClick={this.openUploadModal(this.props.renderUploadModal)}
+              >
+                Click here to upload
+              </button>
+            )) ||
+            null
           )}
         </div>
 
