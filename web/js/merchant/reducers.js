@@ -36,6 +36,8 @@ import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
 
+import authLinkReducer from 'merchant/modules/auth_link';
+
 import {
   refundBatchesReducer,
   PaymentBatchIdsReducer,
@@ -53,6 +55,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
+  authLinksReducer,
   tokensReducer,
 } from 'merchant/modules/collection';
 
@@ -116,6 +119,8 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  authLinks: authLinksReducer,
+  authLink: authLinkReducer,
   tokens: tokensReducer,
   token: tokenReducer,
   batches: batchesReducer,
