@@ -1627,6 +1627,47 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithForcedEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer' => 'HDFC',
+            'payment_network' => null,
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Only one expected, since HDFC is forced
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    protected function getPreferences($orderId = null)
+    {
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ];
+
+        if ($orderId !== null)
+        {
+            $request['content']['order_id'] = $orderId;
+        }
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function testGetCheckoutPreferencesForPaidOrder()
     {
         $order = $this->fixtures->order->createPaid();
@@ -1892,7 +1933,8 @@ class MerchantTest extends TestCase
 
         $offer = $this->fixtures->create('offer', [
             'payment_method' => 'emi',
-            'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+            'error_message'  => 'Payment method used is not eligible for offer. ' .
+                                'Please try with a different payment method.',
             'display_text'   => 'Some display text',
             'percent_rate'   => 5000,
             'min_amount'     => 200000,

@@ -34,7 +34,7 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions($offers = null)
+    public function getEmiOptions($offers = null, $forceOffer = false)
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
@@ -63,7 +63,8 @@ class Service extends Base\Service
                     'offer_id'   => $emiOfferPlans[$plan->getId()],
                 ];
             }
-            else
+            // If offer is forced, there's no need to show the other EMI plans
+            else if ($forceOffer === false)
             {
                 $plans[$issuer][] = [
                     'duration'   => $duration,
