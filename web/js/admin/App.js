@@ -268,6 +268,7 @@ const links = [
 // restrict routes to other orgs
 const Heimdall_restrictRoutes = [
   '/activation',
+  '/instant-activation',
   '/operations',
   '/scrooge/reports',
 ];
