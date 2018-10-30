@@ -19,6 +19,7 @@ import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
+import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
 
@@ -27,6 +28,7 @@ import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/En
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
+import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -79,6 +81,7 @@ const entityDetailsMap = {
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
+  '/authlinks/:id(inv_.+)': { component: AuthLink },
 
   '/tokens/:id(token_.+)': { component: Token },
 
@@ -118,6 +121,9 @@ const entityModalsMap = {
     component: PaymentPagesCreate,
     featureEnabled: 'paymentpages',
     additionalCondition: user => user.isAllowedEdit('payment_pages'),
+  },
+  '/authlinks/new': {
+    component: NewAuthLink,
   },
 };
 

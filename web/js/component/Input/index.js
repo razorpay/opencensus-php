@@ -126,7 +126,7 @@ class Info extends React.Component {
   }
 }
 
-class Description extends React.Component {
+export class Description extends React.Component {
   render() {
     const text = this.props.text;
 
