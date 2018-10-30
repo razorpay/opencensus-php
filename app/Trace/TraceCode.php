@@ -1349,6 +1349,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END           = 'MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END';
     const SETTLEMENT_TRANSACTIONS_SKIPPED                       = 'SETTLEMENT_TRANSACTIONS_SKIPPED';
 
+    // New mandate entity tracecodes
+    const SUBSCRIPTION_REGISTRATION_CREATE_REQUEST          = 'SUBSCRIPTION_REGISTRATION_CREATE_REQUEST';
+    const SUBSCRIPTION_REGISTRATION_DELETE_TOKEN            = 'SUBSCRIPTION_REGISTRATION_DELETE_TOKEN';
+    const SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE = 'SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE';
+    const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN            = 'SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN';
+    const AUTH_LINK_BATCH_INPUT                             = 'AUTH_LINK_BATCH_INPUT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

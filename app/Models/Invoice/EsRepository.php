@@ -21,6 +21,7 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES,
         Entity::USER_ID,
         Entity::CREATED_AT,
+        Entity::ENTITY_TYPE,
     ];
 
     protected $queryFields = [
@@ -49,6 +50,7 @@ class EsRepository extends Base\EsRepository
         Entity::TYPES,
         Entity::MERCHANT_ID,
         Entity::USER_ID,
+        Entity::ENTITY_TYPE,
     ];
 
     public function buildQueryForType(array & $query, string $value)
@@ -71,5 +73,17 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForUserId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::USER_ID, $value);
+    }
+
+    public function buildQueryForEntityType(array & $query, $value)
+    {
+        if ($value === null)
+        {
+            $this->addNullFilterForField($query, Entity::ENTITY_TYPE);
+        }
+        else
+        {
+            $this->addTermFilter($query, Entity::ENTITY_TYPE, $value);
+        }
     }
 }
