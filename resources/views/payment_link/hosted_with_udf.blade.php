@@ -3,6 +3,8 @@
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
     $meta_description           = $payment_page_data['description']? $payment_page_data['description'] : 'Payment request by '. $data['merchant']['name'];
+    $dark_theme_color           = '#383838';
+    $light_theme_color          = '#efefef';
 ?>
 
 
@@ -22,6 +24,13 @@
         <meta property="og:description" content="{{$meta_description}}">
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
+
+
+        <style>
+            body {
+                background-color: {{($payment_page_data['settings']['theme'] === 'dark') ? $dark_theme_color : $light_theme_color}};
+            }
+        </style>
 
         @if (isset($data['environment']))
             @if ($data['environment'] !== 'production')
