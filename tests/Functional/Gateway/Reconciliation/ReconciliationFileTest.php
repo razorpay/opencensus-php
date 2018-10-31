@@ -1484,8 +1484,17 @@ class ReconciliationFileTest extends TestCase
 
         $paymentData = $this->overrideAmexPayment($gatewayPayment);
 
-        // adding 20 blanks rows before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 20 ; $row_index++)
+        // amex recon file contains 20 lines of extra data before the actual payment
+        // information. Out of these 14 contains some data and rest 6 are blank
+
+        // adding 14 rows with data before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 14; $row_index++)
+        {
+            $entries[] = ['Test' => 'Data'];
+        }
+
+        // adding 6 blank rows before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 7; $row_index++)
         {
             $entries[] = [];
         }
@@ -1505,6 +1514,73 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($transactionEntity['settled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(1, $batch['total_count']);
+    }
+
+    public function testAmexPaymentReconFailureCount()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '341111111111111';
+
+        $this->payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('amex');
+
+        $paymentData = $this->overrideAmexPayment($gatewayPayment);
+
+        //changing payment amount to fail the recon
+
+        $paymentData['Charge amount'] = '1.00';
+
+        // amex recon file contains 20 lines of extra data before the actual payment
+        // information. Out of these 14 contains some data and rest 6 are blank
+
+        // adding 14 rows with data before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 14; $row_index++)
+        {
+            $entries[] = ['Test' => 'Data'];
+        }
+
+        // adding 6 blank rows before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 7; $row_index++)
+        {
+            $entries[] = [];
+        }
+
+        $entries[] = array_keys($paymentData);
+
+        $entries[] = $paymentData;
+
+        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement');
+
+        $response = $this->runForFiles([$file], 'Amex');
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(Status::PARTIALLY_PROCESSED, $batch['status']);
+
+        $this->assertEquals(1, $batch['failure_count']);
     }
 
     private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
@@ -1526,7 +1602,7 @@ class ReconciliationFileTest extends TestCase
 
     private function overrideAmexPayment(array $gatewayPayment)
     {
-        $facade = $this->testData['facades']['testAmexPaymentRecon'];
+        $facade = $this->testData['facades']['testAmexPaymentRecon'][0];
 
         $facade['Charge reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 

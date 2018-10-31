@@ -6,7 +6,7 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
-    // for amex there are some rows that are present before actual payments
+    // in amex recon file there are some rows that are present before actual payments
     // we need to jump to that line to start processing
     const START_ROW = '15';
 
