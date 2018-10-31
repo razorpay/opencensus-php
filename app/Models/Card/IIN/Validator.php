@@ -39,6 +39,7 @@ class Validator extends Base\Validator
     protected static $binIssuerValidationRules = [
         Entity::ISSUER       => 'required|string|in:HDFC',
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
+        Entity::TYPE         => 'required|string|in:credit,debit',
     ];
 
     protected static $createValidators = array(
