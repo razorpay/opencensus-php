@@ -797,4 +797,11 @@ class ErrorCodes extends Cards\ErrorCodes
 
         return self::$invalidResultErrorCode;
     }
+
+    public static function shouldRetryRefund($authRespCode)
+    {
+        $retryAuthRespCodes = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'P'];
+
+        return (in_array($authRespCode, $retryAuthRespCodes, true) === true);
+    }
 }

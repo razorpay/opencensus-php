@@ -70,7 +70,7 @@ trait Inquiry
                  ($data['trackid'] === $input['refund']['id']) and
                  ((int) ($data['amt'] * 100) === $input['refund']['amount']) and
                  (empty($data['authRespCode']) === false) and
-                 (Hdfc\AuthRespCode::shouldRetryRefund($data['authRespCode']) === true))
+                 (Hdfc\ErrorCodes\ErrorCodes::shouldRetryRefund($data['authRespCode']) === true))
         {
             return false;
         }
