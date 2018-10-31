@@ -4,7 +4,9 @@ namespace RZP\Tests\Functional\SubscriptionRegistration;
 
 use Mail;
 use Queue;
+use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -204,6 +206,33 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getAmount(), 2000);
     }
 
+    public function testChargeEmandateToken()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $this->doAuthPayment($payment);
+
+        $this->ba->proxyAuth();
+
+        $token = $this->getDbLastEntity("token");
+
+        $chargeContent = ['amount' => 3000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContent
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity("payment");
+
+        $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
+
+        $this->assertEquals($payment->getAmount(), 3000);
+    }
+
     protected function setupPaymentRequest()
     {
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
@@ -217,6 +246,39 @@ class SubscriptionRegistrationTest extends TestCase
         $order = $this->fixtures->create('order', ['amount' => $payment['amount']]);
 
         $paymentRequest['order_id'] = $order->getPublicId();
+
+        return $payment;
+    }
+
+    protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
+    {
+        $this->mockTokenex();
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 3000,
+            'expire_by' => $expireBy,
+        ];
 
         return $payment;
     }

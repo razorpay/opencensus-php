@@ -382,7 +382,16 @@ class Processor
 
         $currentRouteName = $this->route->getCurrentRouteName();
 
-        if ($currentRouteName === 'payment_create_recurring')
+        // Adding subscription_registration_charge_token to enable
+        // token charging via dashboard.
+        if (($currentRouteName === 'payment_create_recurring') or
+            ($currentRouteName === 'subscription_registration_charge_token'))
+        {
+            return null;
+        }
+
+        // for batch charging of tokens
+        if ($this->app->runningInQueue() === true)
         {
             return null;
         }
