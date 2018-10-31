@@ -9,7 +9,7 @@ import { validateSlug } from 'rzp/utils/validators';
 export default class extends React.Component {
   state = {
     expire_by: this.props.paymentPageEntity.expire_by
-      ? moment(this.props.paymentPageEntity.expire_by)
+      ? moment(Number(this.props.paymentPageEntity.expire_by))
       : undefined,
     theme:
       this.props.paymentPageEntity.settings &&

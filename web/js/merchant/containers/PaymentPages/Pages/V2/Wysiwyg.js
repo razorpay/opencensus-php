@@ -65,15 +65,48 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
   }
 
+  componentWillUpdate(nextProps) {
+    const nextTheme =
+      nextProps.paymentPageEntity.settings &&
+      nextProps.paymentPageEntity.settings.theme;
+    const curTheme =
+      this.props.paymentPageEntity.settings &&
+      this.props.paymentPageEntity.settings.theme;
+
+    if (!nextTheme || nextTheme !== curTheme) {
+      this.changeFETheme(nextTheme);
+    }
+  }
+
+  changeFETheme(theme) {
+    const parentEl = document.getElementById('payment-pages-v2');
+
+    if (theme === 'dark') {
+      parentEl.classList.add('dark');
+      parentEl.classList.remove('light');
+    } else {
+      parentEl.classList.add('light');
+      parentEl.classList.remove('dark');
+    }
+  }
+
   fetchEntity = id => {
     const promise = this.props.fetchPaymentPage(id); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
-      promise.catch(err => {
-        this.setState({
-          isPageLoadError: ERROR.INVALID_ENTITY,
+      promise
+        .then(({ data }) => {
+          if (data) {
+            if (data.settings) {
+              this.changeFETheme(data.settings.theme);
+            }
+          }
+        })
+        .catch(err => {
+          this.setState({
+            isPageLoadError: ERROR.INVALID_ENTITY,
+          });
         });
-      });
     }
   };
 
@@ -101,6 +134,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
+
+    document.getElementById('payment-pages-v2').classList.add('theme-desktop');
   }
 
   handleClose = () => {
@@ -145,7 +180,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     payload.settings = {};
 
-    if (formData.theme) {
+    if (typeof formData.theme !== 'undefined') {
       if (formData.theme === '0') {
         payload.settings.theme = 'dark';
       } else {
@@ -157,16 +192,16 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (this.props.id) {
       editPaymentPage(this.props.id, payload)
         .then(resp => {
-          this.setState({
-            isSettingsOpened: false,
-          });
-
           if (resp.data) {
             this.props.updateData(payload);
 
             this.props.showNotification({
               type: 'success',
               message: 'Page Settings are successfully updated',
+            });
+
+            this.setState({
+              isSettingsOpened: false,
             });
           }
         })
@@ -345,7 +380,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     );
 
     return (
-      <div class="payment-pages-v2">
+      <div id="payment-pages-v2">
         {this.state.isIntroOpened && (
           <IntroMask onClose={this.handleIntroClose} />
         )}
