@@ -191,7 +191,8 @@ class Notify extends Processor\Notify
             'mode' => $this->mode,
         ];
 
-        if ($this->subscription->token !== null and $this->subscription->token->card !== null)
+        if (($this->subscription->token !== null) and
+            ($this->subscription->token->card !== null))
         {
             $this->setCardData($data);
         }

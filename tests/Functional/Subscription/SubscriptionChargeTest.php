@@ -152,7 +152,7 @@ class SubscriptionChargeTest extends TestCase
 
         $token = $this->getLastEntity('token', true);
 
-        $this->fixtures->edit("token", $token['id'], array("deleted_at"=>1000000000));
+        $this->fixtures->edit("token", $token['id'], ['deleted_at' => 1000000000]);
 
         $subscription = $this->getLastEntity('subscription', true);
 
