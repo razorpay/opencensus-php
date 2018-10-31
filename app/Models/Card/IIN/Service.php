@@ -93,8 +93,9 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bin_issuer_validation', $input);
 
-        $issuer = $input[Entity::ISSUER];
+        $issuer     = $input[Entity::ISSUER];
         $cardNumber = $input[Entity::NUMBER];
+        $cardType   = $input[Entity::TYPE];
 
         $enabledBinIssuerValidator = $this->merchant->isFeatureEnabled(Feature::BIN_ISSUER_VALIDATOR);
 
@@ -112,7 +113,7 @@ class Service extends Base\Service
 
             $iinNumber = intval(substr($cardNumber, 0, 6));
 
-            $iin = $this->repo->iin->findByIinAndIssuer($iinNumber, $issuer);
+            $iin = $this->repo->iin->findByIinWithIssuerAndType($iinNumber, $issuer, $cardType);
 
             if (empty($iin) === false)
             {
