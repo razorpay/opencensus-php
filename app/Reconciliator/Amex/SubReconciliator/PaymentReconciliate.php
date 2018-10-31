@@ -73,13 +73,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        $columnSettledAt = strtolower($row[self::COLUMN_SETTLED_AT_DATE]);
-
         $gatewaySettledAt = null;
 
         try
         {
-            $gatewaySettledAt = Carbon::createFromFormat('d/m/Y', $columnSettledAt, Timezone::IST);
+            $gatewaySettledAt = Carbon::createFromFormat('d/m/Y', $row[self::COLUMN_SETTLED_AT_DATE],
+                                                      Timezone::IST);
 
             $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
