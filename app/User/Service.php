@@ -381,10 +381,11 @@ class Service extends Base\Service
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
+            $merchantService = new Merchant\Service;
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
 
-            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
+            $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
 
             foreach ($merchants as $merchant) {
 
@@ -394,15 +395,18 @@ class Service extends Base\Service
                 {
                     if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
                     {
-                        $data['experiments']['instant_activations'] = (new Merchant\Service)->getTreatment('instant_activations');
+                        $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
                     }
                     else
                     {
                         $data['experiments']['instant_activations'] = ["result" => "off"];
                     }
+
+                    $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
+
                     $data['current'] = $currentMerchantId;
 
-                    $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
+                    $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                 }
 
                 if (((bool) $merchant['activated']) === true)
