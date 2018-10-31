@@ -105,7 +105,7 @@ class ScheduleLibraryTest extends TestCase
                 $minTime = $this->getTimeObjectFromFormatted($case['minTime']);
             }
 
-            $nextTime = Schedule\Library::computeFutureRun($schedule, $refTime, $minTime);
+            $nextTime = Schedule\Library::computeFutureRun($schedule, $refTime, $minTime, $ignoreBankHolidays = true);
 
             $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime->timestamp);
 
@@ -121,7 +121,7 @@ class ScheduleLibraryTest extends TestCase
 
             $nextRun = $this->getInitialNextRun($case['initialTime'], $schedule);
 
-            $ignoreHolidays = $case['ignoreHolidays'] ?? true;
+            $ignoreHolidays = $case['ignoreHolidays'] ?? false;
 
             $nextTime = Schedule\Library::getNextApplicableTime(
                 $initialTimestamp, $schedule, $nextRun, $ignoreHolidays);

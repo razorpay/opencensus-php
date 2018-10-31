@@ -132,6 +132,12 @@ return [
             [
                 'initialTime'      => "2018-08-14 23:01:19",
                 'expectedNextTime' => "2018-08-16 00:00:00",
+            ],
+
+            // 15th is holiday but as the ignoreHolidays flag is set
+            [
+                'initialTime'      => "2018-08-14 23:01:19",
+                'expectedNextTime' => "2018-08-15 02:00:00",
                 'ignoreHolidays'   => true,
             ],
         ],
