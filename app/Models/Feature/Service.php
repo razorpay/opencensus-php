@@ -48,10 +48,10 @@ class Service extends Base\Service
 
         $merchantValidator = new Merchant\Validator;
 
-        $merchantValidator->validateVisibleFeatures($data);
+        $merchantValidator->validateVisibleAndEditableFeatures($data);
 
-        // Do not allow the merchant to update the uneditable features in live mode. Eg: marketplace
-        $merchantValidator->validateUneditableFeatures($data);
+        // Do not allow the merchant to update the product features in live mode. Eg: marketplace
+        $merchantValidator->validateModeForProductFeatures($data);
 
         return $this->addFeatures($input);
     }
