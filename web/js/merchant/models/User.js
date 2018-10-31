@@ -78,7 +78,7 @@ export default class User {
   get isOrgRZP() {
     const org = getOrg();
 
-    if (org && org.custom_code.toLowerCase() === 'rzp') {
+    if (org && org.custom_code && org.custom_code.toLowerCase() === 'rzp') {
       return true;
     }
   }
