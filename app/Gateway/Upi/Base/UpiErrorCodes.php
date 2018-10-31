@@ -37,6 +37,8 @@ class UpiErrorCodes
         'DF'    => 'DUPLICATE RRN FOUND IN THE TRANSACTION. (BENEFICIARY)',
         'YD'    => 'DO NOT HONOUR (BENEFICIARY)',
         'K1'    => 'SUSPECTED FRAUD, DECLINE / TRANSACTIONS DECLINED BASED ON RISK SCORE BY REMITTER',
+        'NA'    => 'TRANSACTION FAILED',
+        'RNF'   => 'TRANSACTION FAILED',
     ];
 
     protected static $errorCodeMap = [
@@ -70,6 +72,8 @@ class UpiErrorCodes
         'DF'    => ErrorCode::GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND,
         'YD'    => ErrorCode::GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY,
         'K1'    => ErrorCode::GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER,
+        'NA'    => ErrorCode::BAD_REQUEST_REFUND_FAILED,
+        'RNF'   => ErrorCode::BAD_REQUEST_REFUND_FAILED,
     ];
 
     public static function getApiErrorCode($code = null)
