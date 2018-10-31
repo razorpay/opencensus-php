@@ -1600,4 +1600,74 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    /**
+     * Disables live transactions if the merchant is (instantly) activated
+     *
+     * @param Entity $merchant
+     */
+    public function disableLiveIfAlreadyActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === true)
+        {
+            $this->disableLive($merchant);
+        }
+    }
+
+    /**
+     * Disables live transactions
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function disableLive(Entity $merchant): Entity
+    {
+        if ($merchant->isLive() === false)
+        {
+            return $merchant;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_LIVE_DISABLE_REQUEST);
+
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchant->liveDisable();
+
+            $this->repo->saveOrFail($merchant);
+
+            return $merchant;
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * Enables live transactions
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function enableLive(Entity $merchant): Entity
+    {
+        // return if already live
+        if ($merchant->isLive() === true)
+        {
+            return $merchant;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_LIVE_ENABLE_REQUEST);
+
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchant->liveEnable();
+
+            $this->repo->saveOrFail($merchant);
+
+            return $merchant;
+        });
+
+        return $merchant;
+    }
 }

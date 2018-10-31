@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         // For yearly periods, anchor can be december 31st (1231).
         Entity::ANCHOR   => 'sometimes|nullable|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
-        Entity::DELAY    => 'sometimes|integer|min:0|max:30',
+        Entity::DELAY    => 'sometimes|integer|min:0|max:90',
     );
 
     protected static $editRules = array(
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         // For yearly periods, anchor can be december 31st (1231).
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
-        Entity::DELAY    => 'sometimes|integer|min:0|max:30',
+        Entity::DELAY    => 'sometimes|integer|min:0|max:90',
     );
 
     protected static $createValidators = array(

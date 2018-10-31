@@ -18,6 +18,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -444,6 +445,8 @@ class Core extends Base\Core
 
         $data = $merchantDetails->toArray();
 
+        $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST ;
+
         $notifyMerchantMail = new NotifyMerchant($data, $org);
 
         Mail::queue($notifyMerchantMail);
@@ -617,7 +620,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchantDetails->merchant);
+                (new Merchant\Activate)->activate($merchantDetails->merchant, $merchantDetails);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
@@ -681,9 +684,14 @@ class Core extends Base\Core
 
         $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
 
-        $workflow = $this->app['workflow']
-                         ->setEntity($newMerchantDetails->getEntity())
-                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+        $this->app['workflow']
+             ->setEntity($newMerchantDetails->getEntity())
+             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+
+        $merchant = $newMerchantDetails->merchant;
+
+        // If the merchant is instantly activated and the kyc gets rejected, disable live transactions
+        (new Merchant\Core)->disableLiveIfAlreadyActivated($merchant);
     }
 
     /**

@@ -306,4 +306,20 @@ return [
             ],
         ],
     ],
+
+    'testFetchPaymentByRecurringFilter' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'recurring' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
 ];

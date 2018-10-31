@@ -85,6 +85,8 @@ class Initiator extends Base\Core
 
             $limit = $this->getLimitForChannel($channel);
 
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_FETCHING_ENTITIES);
+
             $attempts = $this->repo
                              ->fund_transfer_attempt
                              ->getCreatedAttemptsBeforeTimestamp(
@@ -103,6 +105,8 @@ class Initiator extends Base\Core
                     'source_type'   => $sourceType,
                     'count'         => $attempts->count()
                 ]);
+
+            $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
             $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
@@ -170,7 +174,7 @@ class Initiator extends Base\Core
         switch ($channel)
         {
             case Channel::AXIS:
-                return 500;
+                return 400;
 
             case Channel::YESBANK:
                 return 100;
@@ -242,5 +246,22 @@ class Initiator extends Base\Core
         }
 
         return true;
+    }
+
+    public function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'memory_allocated'               => $memoryAllocated,
+                'memory_used'                    => $memoryUsed,
+                'memory_peak_usage'              => $memoryPeakUsage,
+                'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

@@ -18,6 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COMMISSION        = 'commission';
     const STATUS            = 'status';
     const AMOUNT            = 'amount';
+    const PAYER_VPA         = 'payerva';
 
     protected function getPaymentId(array $row)
     {
@@ -75,6 +76,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'vpa'                   => $row[self::PAYER_VPA],
+            'gateway_payment_id'    => $row[self::BANK_TRANS_ID],
+        ];
+    }
+
     private function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
@@ -82,6 +91,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     private final function isPaymentStatusFailed(string $status)
     {
-        return (($status === UpiStatus::REJECT) || ($status === UpiStatus::FAILURE));
+        return (($status === UpiStatus::REJECT) or ($status === UpiStatus::FAILURE));
     }
 }

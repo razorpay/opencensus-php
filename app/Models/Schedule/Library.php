@@ -45,7 +45,7 @@ class Library
                 $minTime = $settledAt;
             }
 
-            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime, true);
+            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime, $ignoreBankHolidays);
         }
 
         return $nextRun->getTimestamp();

@@ -275,6 +275,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
         }
+        else if ($method === Payment\Method::BANK_TRANSFER)
+        {
+            $rule = $this->getRelevantPricingRuleForBankTransfer($rules);
+        }
         // else if ($method === Payment\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -359,6 +363,11 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForBankTransfer($rules)
+    {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

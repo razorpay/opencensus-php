@@ -22,6 +22,8 @@ class Mutex
 
     protected $redis;
 
+    const PREFIX = 'mutex:';
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();
@@ -103,11 +105,11 @@ class Mutex
      */
     protected function acquireNoWait($resource, $ttl = 60) : bool
     {
-        $redis = Redis::getFacadeRoot();
+        $this->appendPrefix($resource);
 
         try
         {
-            $response = $redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
         }
         catch (PredisException $e)
         {
@@ -200,12 +202,12 @@ class Mutex
      */
     public function release($resource)
     {
-        $redis = Redis::getFacadeRoot();
+        $this->appendPrefix($resource);
 
         try
         {
-            if (($redis->get($resource) === $this->requestId) and
-                ($redis->del($resource) === 1))
+            if (($this->redis->get($resource) === $this->requestId) and
+                ($this->redis->del($resource) === 1))
             {
                 return true;
             }
@@ -258,5 +260,15 @@ class Mutex
                 $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
             }
         }
+    }
+
+    public function setRedisClient($client)
+    {
+        $this->redis = $client;
+    }
+
+    protected function appendPrefix(& $key)
+    {
+        $key = self::PREFIX . $key;
     }
 }

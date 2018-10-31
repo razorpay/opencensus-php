@@ -6,7 +6,6 @@ use DB;
 use Mail;
 use RZP\Constants;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use Razorpay\OAuth\Application;
@@ -388,6 +387,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
@@ -421,6 +424,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
@@ -454,6 +461,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 

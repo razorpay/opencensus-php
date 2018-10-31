@@ -7,18 +7,12 @@ use RZP\Error\ErrorCode;
 
 class GatewayTimeoutException extends GatewayRequestException
 {
+    const ERROR_CODE = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+
     public function __construct($curlErrorMessage, \Exception $previous = null, $safeRetry = false)
     {
-        $code = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
-
-        $this->error = new Error($code);
-
-        $this->code = $code;
+        parent::__construct($curlErrorMessage, $previous, $safeRetry);
 
         $this->message = 'Gateway request timed out';
-
-        $this->data['message'] = $curlErrorMessage;
-
-        $this->safeRetry = $safeRetry;
     }
 }

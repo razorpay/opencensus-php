@@ -60,20 +60,28 @@ class TerminalProcessor extends Base\Core
         return $this->repo->terminal->find($terminalId);
     }
 
-    public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer): Terminal\Entity
+    public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false): Terminal\Entity
     {
         $terminals = $this->repo->terminal->getAllBankTransferTerminals();
 
-        return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount());
+        return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
     }
 
-    protected function selectTerminalForBankAccount(Base\PublicCollection $allTerminals, string $accountNumber): Terminal\Entity
+    protected function selectTerminalForBankAccount(Base\PublicCollection $allTerminals, string $accountNumber, bool $log = false): Terminal\Entity
     {
         $matchingPrefixTerminals = $allTerminals->filter(function (Terminal\Entity $terminal) use ($accountNumber)
         {
             // We will filter the terminals which could possibly be used to make this account number.
             return $this->isTerminalValid($terminal, $accountNumber);
         });
+
+        if ($log ===  true)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_FILTERED,
+                ['matching_prefix_terminal_ids' => $matchingPrefixTerminals->getIds()]
+            );
+        }
 
          // Fallback Terminals are those terminals which are created with just Root
          // and are assigned to the Shared Merchant to get unexpected payments.
@@ -91,6 +99,14 @@ class TerminalProcessor extends Base\Core
 
             return true;
         });
+
+        if ($log ===  true)
+        {
+            $this->trace->info(
+                TraceCode::TERMINALS_FILTERED,
+                ['selected_terminal_ids' => $selectedTerminals->getIds()]
+            );
+        }
 
         if ($selectedTerminals->count() === 0)
         {

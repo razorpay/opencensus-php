@@ -11,10 +11,11 @@ use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
 use RZP\Exception\BadRequestException;
-
+use RZP\Models\SubscriptionRegistration;
 /**
  * This class is common source of invoice and related data to be sent
  * - to mail templates as payload
@@ -126,9 +127,14 @@ class ViewDataSerializer extends Base\Core
         $serialized = $this->invoice->toArrayHosted();
 
         $this->addDerivedAttributesForInvoice($serialized);
+
         $this->addFormattedAmountAttributesForInvoice($serialized);
+
         $this->addFormattedEpochAttributesForInvoice($serialized);
+
         $this->addSubscriptionAttributesForInvoice($serialized);
+
+        $this->addExternalEntityAttributesForInvoice($serialized);
 
         return $serialized;
     }
@@ -240,5 +246,41 @@ class ViewDataSerializer extends Base\Core
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
+    }
+
+    protected function addExternalEntityAttributesForInvoice(array & $serialized)
+    {
+        $externalEntity = $this->invoice->entity;
+
+        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            $order = $this->invoice->order;
+
+            $serialized[E::SUBSCRIPTION_REGISTRATION] = $externalEntity->toArrayPublic();
+
+            $serialized[Entity::ENTITY_TYPE] = E::SUBSCRIPTION_REGISTRATION;
+
+            if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+            {
+                $bankAccount = $externalEntity->entity;
+
+                if ($bankAccount !== null)
+                {
+                    $serialized
+                    [E::SUBSCRIPTION_REGISTRATION]
+                    [E::BANK_ACCOUNT] = $bankAccount->toArrayHosted();
+                }
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [E::BANK_ACCOUNT]
+                [BankAccount\Entity::BANK_NAME] = $order->getBank();
+            }
+        }
+        else
+        {
+            $serialized[Entity::ENTITY_TYPE] = null;
+        }
+
     }
 }

@@ -53,12 +53,12 @@ class Metric
         Payment\Action::CALLBACK,
         Payment\Action::CAPTURE,
         Payment\Action::REFUND,
-        Payment\Action::OTP_GENERATE,
-        Payment\Action::REVERSE,
-        Payment\Action::AUTHORIZE_PUSH,
-        Payment\Action::DEBIT,
-        Payment\Action::VALIDATE_VPA,
-        Payment\Action::OTP_RESEND,
+        // Payment\Action::OTP_GENERATE,
+        // Payment\Action::REVERSE,
+        // Payment\Action::AUTHORIZE_PUSH,
+        // Payment\Action::DEBIT,
+        // Payment\Action::VALIDATE_VPA,
+        // Payment\Action::OTP_RESEND,
     ];
 
     protected $trace;
