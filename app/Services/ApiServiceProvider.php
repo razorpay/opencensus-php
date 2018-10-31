@@ -385,23 +385,18 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\Mutex($app);
             }
 
+            // this is still required for testing,
+            // until we move redis_labs config as default connection
             $mutex = new Mutex($app);
 
-            $requestId = $app['request']->getId();
-
-            $mode = $app['rzp.mode'] ?? 'live';
-
-            $dualWrite = $app->razorx->getTreatment($requestId, 'redis_dual_write', $mode);
-
-            if (($this->app->environment('testing') === true) or
-                ($dualWrite === 'off'))
+            if ($this->app->environment('testing') === true)
             {
                 $mutex->setRedisClient(new Mock\RedisDualWrite($app));
 
                 return $mutex;
             }
 
-            $mutex->setRedisClient($this->app['redisdualwrite']);
+            $mutex->setRedisClient(Redis::Connection('redis_labs'));
 
             return $mutex;
         });
