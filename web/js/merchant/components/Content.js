@@ -137,7 +137,11 @@ export default class Content extends Component {
         window.rzpTicketSystem.addEventListener('modal-select', onModalSelect);
         window.rzpTicketSystem.openModal(actionHash, {
           chat: Boolean(window.rzp_user && window.rzp_user.activated),
-          call: Boolean(window.rzp_user && window.rzp_user.activated),
+          call: Boolean(
+            window.rzp_user &&
+              window.rzp_user.experiments.support_call &&
+              window.rzp_user.experiments.support_call.result === 'on'
+          ),
         });
       } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
         window.rzpTicketSystem.closeModal();
