@@ -164,20 +164,27 @@ class Repository extends Base\Repository
 
         $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
 
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
         $selectCols = $this->dbColumn('*');
+
+        $subQuery = Payment\Entity::query()
+                ->select($this->repo->payment->dbColumn('*'))
+                ->whereBetween($paymentAuthorizedAtColumn, [$from, $to]);
 
         return $this->newQuery()
             ->select($selectCols, 'payments.id as payment_id')
-            ->join(
-                DB::raw(
-                    "(SELECT * from payments where authorized_at between $from and $to) as payments"
-                ),
-                function ($join)
-                use($paymentTokenIdColumn, $paymentGlobalTokenIdColumn, $tokenIdColumn)
+            ->joinSub(
+                $subQuery,
+                $paymentTableName,
+                function ($join) use($paymentTokenIdColumn, $paymentGlobalTokenIdColumn, $tokenIdColumn)
                 {
                     $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
                     $join->orOn($tokenIdColumn, '=', $paymentGlobalTokenIdColumn);
-                })
+                }
+            )
             ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
             ->where($paymentRecurringColumn, '=', 1)
             ->where($paymentMethodColumn, '=', Method::EMANDATE)
