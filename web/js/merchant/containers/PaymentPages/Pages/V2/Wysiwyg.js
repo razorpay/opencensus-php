@@ -139,7 +139,21 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   handleClose = () => {
-    // TODO: Handle close button
+    this.context.confirm({
+      header: 'Discard Changes?',
+      message: () => (
+        <div class="text-semi-muted">
+          <p>
+            Do you want to discard all the changes and go back to Dashboard?
+          </p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes',
+      abortLabel: 'Cancel',
+      action: () => {
+        this.props.history.push(`/paymentpages/`);
+      },
+    });
   };
 
   initSubApps = () => {
@@ -398,6 +412,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={pageNavTitle}
           actionBtns={actionBtns}
           isPageReady={isPageReady}
+          handleClose={this.handleClose}
         />
         {!isPageLoadError &&
           isPageReady && (

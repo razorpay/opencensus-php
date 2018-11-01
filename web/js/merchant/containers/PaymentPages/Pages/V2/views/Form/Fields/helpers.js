@@ -35,7 +35,7 @@ export const FIELD_TYPES = [
 
 // TODO: Check with Pronav/Amit regarding what if keys are added/deleted in future. In this case, score based matching could be better.
 export function mapFieldToIndex(field) {
-  let selectedIndexInOptions;
+  let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
   const { title, name, required, description, ...schemaFields } = field;
@@ -74,7 +74,7 @@ export function mapFieldToIndex(field) {
     break;
   }
 
-  if (!selectedIndexInOptions) {
+  if (selectedIndexInOptions === null) {
     throw 'There is mismatch in Schema field.';
   }
 
