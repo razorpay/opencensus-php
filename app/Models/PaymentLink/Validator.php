@@ -31,10 +31,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
-        Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
-        Entity::SUPPORT_EMAIL   => 'filled|email',
-        Entity::TERMS           => 'filled|string|min:5|max:2048',
-        Entity::SETTINGS        => 'filled|array',
+        Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
+        Entity::SUPPORT_EMAIL   => 'nullable|email',
+        Entity::TERMS           => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS        => 'nullable|array',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
@@ -54,10 +54,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
-        Entity::SUPPORT_CONTACT => 'filled|string|min:8|max:255',
-        Entity::SUPPORT_EMAIL   => 'filled|email',
-        Entity::TERMS           => 'filled|string|min:5|max:2048',
-        Entity::SETTINGS        => 'filled|array',
+        Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
+        Entity::SUPPORT_EMAIL   => 'nullable|email',
+        Entity::TERMS           => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS        => 'nullable|array',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
@@ -92,8 +92,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        // Internally calls validateSettings() only.
-        'editSettings',
+        Entity::SETTINGS,
     ];
 
     public function validateExpireBy(string $attribute, int $value)
@@ -163,42 +162,28 @@ class Validator extends Base\Validator
         }
     }
 
-    /**
-     * Settings should have defined set of keys and it's udf_schema's value should be a valid JSON schema.
-     * Additionally it must and only exists if merchant has v2 tag.
-     *
-     * @param array $input
-     * @param bool  $isEdit - Whether is isEdit request?
-     */
-    public function validateSettings(array $input, bool $isEdit = false)
+    public function validateSettings(array $input)
     {
-        $attributeExists  = array_key_exists(Entity::SETTINGS, $input);
-        $merchantHasV2Tag = $this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2);
+        $settings = $input[Entity::SETTINGS] ?? null;
 
-        if (($attributeExists === false) and ($isEdit === true))
+        if (empty($settings) === true)
         {
             return;
         }
 
-        if ($attributeExists !== $merchantHasV2Tag)
+        if ($this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === false)
         {
-            $message = $attributeExists ? 'Extra attribute sent in request - settings.' : 'settings is required.';
-
-            throw new BadRequestValidationFailureException($message, Entity::SETTINGS);
+            throw new BadRequestValidationFailureException(
+                'Extra attribute sent in request - settings.',
+                Entity::SETTINGS);
         }
 
-        if ($attributeExists === false)
-        {
-            return;
-        }
-
-        $settings = $input[Entity::SETTINGS];
         $extraSettingsKeys = array_values(array_diff(array_keys($settings), Entity::SETTINGS_KEYS));
-
         if (empty($extraSettingsKeys) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Extra settings keys must not be sent - ' . implode(', ', $extraSettingsKeys) . '.');
+                'Extra settings keys must not be sent - ' . implode(', ', $extraSettingsKeys) . '.',
+                Entity::SETTINGS);
         }
 
         // setting.allow_multiple_units should only be set when amount is sent or exist(for edit requests).
@@ -212,16 +197,7 @@ class Validator extends Base\Validator
 
         // Additionally, validates UDF schema
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
-        if (empty($udfSchema) === true)
-        {
-            throw new BadRequestValidationFailureException('settings.udf_schema is required.');
-        }
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
-    }
-
-    public function validateEditSettings(array $input)
-    {
-        $this->validateSettings($input, true);
     }
 
     /**

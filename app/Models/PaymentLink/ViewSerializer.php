@@ -85,7 +85,7 @@ class ViewSerializer extends Base\Core
     {
         $settings = $this->paymentLink->getSettings()->toArray();
 
-        // Prepends default UDF schema for view. Ref: getDefaultUdfSchemaForView().
+        // Prepends default UDF schema for view.
         $defaultUdfSchemaForView = $this->getDefaultUdfSchemaForView();
         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
         array_unshift($udfSchema, ...$defaultUdfSchemaForView);
@@ -189,7 +189,7 @@ class ViewSerializer extends Base\Core
                 'title'    => 'Email',
                 'name'     => 'email',
                 'type'     => 'string',
-                "pattern"  => '^(?i)(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$',
+                'pattern'  => 'email',
                 'required' => true,
                 'options'  => [
                     'keydown_restrictive' => false,
@@ -199,7 +199,7 @@ class ViewSerializer extends Base\Core
                 'title'     => 'Phone',
                 'name'      => 'phone',
                 'type'      => 'number',
-                'pattern'   => '^(?g)([0-9]){8,}$',
+                'pattern'   => 'phone',
                 'required'  => true,
                 'minLength' => 8,
                 'options'   => [

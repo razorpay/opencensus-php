@@ -11,6 +11,21 @@ use RZP\Exception\BadRequestValidationFailureException;
 class UdfSchema
 {
     /**
+     * We do not store regular expression in settings in db. A keyword is stored
+     * which is translated to regular expression per below map for validations.
+     * FE also has the same mapping for rendering view forms.
+     */
+    const PATTERN_NAME_TO_REGEX_MAP = [
+        'email'        => '^(?i)(([^<>()[].,;:s@"]+(.[^<>()[].,;:s@"]+)*)|(".+"))@(([^<>()[].,;:s@"]+.)+[^<>()[].,;:s@"]{2,})$',
+        'number'       => '^[0-9]+$',
+        'alphabets'    => '^(?i)([a-z]+ ?)*$',
+        'alphanumeric' => '^(?i)[a-z0-9]+$',
+        'phone'        => '^([0-9]){8,}$',
+        'amount'       => '^[1-9]+(.([0-9]){1,2})?$',
+        'url'          => '^(http(s)?://.)?(www.)?[-a-zA-Z0-9@:%._+~#=]{2,256}.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)$',
+    ];
+
+    /**
      * @var string|null
      */
     public $schema;
@@ -77,6 +92,13 @@ class UdfSchema
             if ($required === true)
             {
                 $formatted['required'][] = $property;
+            }
+
+            // Remap pattern name to regular expression if exists
+            if ((isset($v['pattern']) === true) and
+                ((isset(self::PATTERN_NAME_TO_REGEX_MAP[$v['pattern']]) === true)))
+            {
+                $v['pattern'] = self::PATTERN_NAME_TO_REGEX_MAP[$v['pattern']];
             }
 
             $formatted['properties'][$property] = $v;
