@@ -89,6 +89,13 @@ class Gateway extends Base\Gateway
     {
         $enrolled = $this->processEnrollmentResponse($input, $response);
 
+        $isInternational = false;
+
+        if (isset($input['card']['international']) === true)
+        {
+            $isInternational = $input['card']['international'];
+        }
+
         //
         // Determine card enrollment status and take next action
         //
@@ -99,6 +106,22 @@ class Gateway extends Base\Gateway
 
             case Base\Enrolled::N:
                 return null;
+
+            case Base\Enrolled::U:
+                if ($isInternational === true)
+                {
+                    return null;
+                }
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_CANNOT_AUTHENTICATE_TECH_BUSINESS_REASON,
+                    $enrolled,
+                    'Invalid enrollment response',
+                    [
+                        'enrollment_status' => $enrolled
+                    ],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
 
             default:
                 throw new Exception\GatewayErrorException(

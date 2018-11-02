@@ -712,4 +712,5 @@ class PublicErrorDescription
     const GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS                              = 'Beneficiary cut-off is in progress';
     const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
     const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate RRN found for the transaction on beneficiary side.';
+    const GATEWAY_ERROR_CANNOT_AUTHENTICATE_TECH_BUSINESS_REASON                    = 'Cannot authenticate due to technical or business reasons';
 }
