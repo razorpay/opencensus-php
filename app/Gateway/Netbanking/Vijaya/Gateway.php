@@ -107,8 +107,8 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::MERCHANT_CONSTANT => Constants::MERCHANT_CONSTANT,
             RequestFields::AMOUNT            => $this->formatAmount($payment[Payment::AMOUNT]),
-            RequestFields::MERCHANT_NAME     => $input['merchant']['name'],
-            RequestFields::MERCHANT_ID       => $this->getMerchantId(),
+            RequestFields::MERCHANT_NAME     => $input['merchant']['billing_label'],
+            RequestFields::MERCHANT_ID       => Constants::MERCHANT_CONSTANT,//$this->getMerchantId(),
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::CURRENCY          => Constants::INDIAN_CURRENCY,
             RequestFields::PAYMENT_ID        => $payment[Payment::ID],
