@@ -347,11 +347,6 @@ class Gateway extends Base\Gateway
 
         $domainConstantName = strtoupper($domainType).'_'.strtoupper($this->action).'_DOMAIN';
 
-        if ($domainType == Mode::LIVE)
-        {
-            $domainConstantName = strtoupper($domainType).'_DOMAIN';
-        }
-
         return constant($urlClass . '::' .$domainConstantName);
     }
 }
