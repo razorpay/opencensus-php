@@ -18,7 +18,10 @@ export default class LiveMode extends Component {
     super(props);
 
     this.state = initialState;
-    this.switchToLive = () => switchToMode(props.merchantId, 'live');
+    this.switchToLive = () => {
+      props.track.switchToLive();
+      switchToMode(props.merchantId, 'live');
+    };
   }
 
   componentWillReceiveProps(nextProps) {
@@ -32,6 +35,7 @@ export default class LiveMode extends Component {
         showProductsModal,
         showTransactionsModal,
         onActive,
+        track,
       } = nextProps,
       { isLoading, keysGenerated, paymentsMade, isKLA } = integration,
       { isL1Submitted, isGraylistFlow, isBlacklistFlow } = instantActivation;
@@ -42,7 +46,11 @@ export default class LiveMode extends Component {
       if (!isL1Submitted) {
         content = (
           <span>
-            <Link to="/activation" className="btn-link">
+            <Link
+              to="/activation"
+              className="btn-link"
+              onClick={() => track.fillActivationForm()}
+            >
               Fill the Activation Form
             </Link>{' '}
             in order to unlock Live Payments
@@ -52,7 +60,11 @@ export default class LiveMode extends Component {
         if (!isSubmitted) {
           content = (
             <span>
-              <Link to="/activation" className="btn-link">
+              <Link
+                to="/activation"
+                className="btn-link"
+                onClick={() => track.fillKYCForm()}
+              >
                 Fill the KYC Form
               </Link>{' '}
               in order to unlock Live Payments
@@ -101,7 +113,9 @@ export default class LiveMode extends Component {
                   </div>
                   <button
                     className="btn btn-primary m-t"
-                    onClick={() => showTransactionsModal(isKLA)}
+                    onClick={() => (
+                      track.howDoIAcceptPayments(), showTransactionsModal(isKLA)
+                    )}
                   >
                     How do I accept payments?
                   </button>
@@ -112,7 +126,11 @@ export default class LiveMode extends Component {
               content = (
                 <div>
                   Track live payments in the{' '}
-                  <Link to="/payments" className="btn-link">
+                  <Link
+                    to="/payments"
+                    className="btn-link"
+                    onClick={() => track.viewTransactions()}
+                  >
                     Transactions
                   </Link>{' '}
                   tab

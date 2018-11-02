@@ -15,12 +15,13 @@ export default class InstantActivationSuccess extends Component {
   handleProductsView() {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
 
+    this.props.track.trackViewProducts();
     onClose();
     showProductsModal(() => showTransactionsModal(this.props.isKLA));
   }
 
   render() {
-    const { onClose, isKLA } = this.props;
+    const { onClose, isKLA, track } = this.props;
 
     return (
       <ModalMask>
@@ -51,7 +52,10 @@ export default class InstantActivationSuccess extends Component {
                       className="Button--secondary Button active"
                       target="_blank"
                       href="https://docs.razorpay.com/"
-                      onClick={onClose}
+                      onClick={() => {
+                        track.trackIntegration();
+                        onClose();
+                      }}
                     >
                       Read Integration Docs
                     </a>

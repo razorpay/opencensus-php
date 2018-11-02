@@ -110,13 +110,19 @@ export default class Sidebar extends Component {
   }
 
   onSidebarBannerClick() {
+    const { user } = this.props,
+      { showInstantActivation } = user;
+
     if (this.props.showMobileMenu) {
       this.props.toggleMobileMenu();
     }
 
-    return (this.props.user.isSubmitted
-      ? trackGoToConfig
-      : trackGoToActivation)();
+    return this.props.user.isSubmitted
+      ? trackGoToConfig(showInstantActivation)
+      : trackGoToActivation(
+          showInstantActivation &&
+            (!user.instantActivation.isL1Submitted ? 'L1 Form' : 'KYC Form')
+        );
   }
 
   hideSidebar() {

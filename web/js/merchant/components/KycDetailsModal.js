@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
-export default ({ onClose }) => {
+export default ({ onClose, onGiveDetails }) => {
   return (
     <ModalMask>
       <Modal
@@ -18,7 +18,11 @@ export default ({ onClose }) => {
           For your business model, you need to give a few more details to
           activate your account
         </p>
-        <Link to="/activation" className="btn btn-primary" onClick={onClose}>
+        <Link
+          to="/activation"
+          className="btn btn-primary"
+          onClick={onGiveDetails}
+        >
           Give Details
         </Link>
       </Modal>

@@ -23,7 +23,13 @@ export default class TestMode extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { mode, integration, showProductsModal, merchantId } = nextProps,
+    const {
+        mode,
+        integration,
+        showProductsModal,
+        merchantId,
+        track,
+      } = nextProps,
       { isLoading, keysGenerated, paymentsMade } = integration;
 
     let { title, status, content } = initialState;
@@ -33,7 +39,7 @@ export default class TestMode extends Component {
         <span>
           You can try out the Dashboard in{' '}
           <SwitchToMode mode="test" merchantId={merchantId}>
-            Test Mode
+            <span onClick={() => track.switchToTest()}>Test Mode</span>
           </SwitchToMode>
         </span>
       );
@@ -45,16 +51,26 @@ export default class TestMode extends Component {
         content = (
           <span>
             View all payments received in Test mode in{' '}
-            <Link to="/payments">Transactions</Link> tab
+            <Link to="/payments" onClick={() => track.viewTransactions()}>
+              Transactions
+            </Link>{' '}
+            tab
           </span>
         );
       } else if (!keysGenerated) {
         content = (
           <span>
-            <Link to="/keys" className="btn-link">
+            <Link
+              to="/keys"
+              className="btn-link"
+              onClick={() => track.generateTestKeys()}
+            >
               Generate Test Keys
             </Link>{' '}
-            and use <TestProducts onClick={showProductsModal} />
+            and use{' '}
+            <TestProducts
+              onClick={() => (track.viewTestProducts(), showProductsModal())}
+            />
           </span>
         );
       } else {
@@ -69,7 +85,10 @@ export default class TestMode extends Component {
             >
               documentation
             </a>{' '}
-            or use <TestProducts onClick={showProductsModal} />
+            or use{' '}
+            <TestProducts
+              onClick={() => (track.viewTestProducts(), showProductsModal())}
+            />
           </span>
         );
       }

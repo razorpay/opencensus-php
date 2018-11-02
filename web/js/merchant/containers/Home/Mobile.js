@@ -19,6 +19,7 @@ import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -123,7 +124,7 @@ class AnalyticsMobile extends Component {
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
-              <PersonaliseBanner />
+              <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
 

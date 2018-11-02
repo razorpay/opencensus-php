@@ -20,6 +20,7 @@ import {
 } from 'merchant/modules/home';
 
 import formFields from './L1FormMap';
+import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
 
 function defaultFieldProps(f) {
   const self = this;
@@ -190,6 +191,8 @@ export default class ActivationWizard extends React.Component {
       .then(response => {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
+        trackL1FormSuccess(this.user.activation_flow);
+
         const {
           isWhitelistFlow,
           isBlacklistFlow,
@@ -211,6 +214,8 @@ export default class ActivationWizard extends React.Component {
             message: err.errors,
           });
         }
+
+        trackL1FormError();
 
         return err;
       });
@@ -323,6 +328,7 @@ export default class ActivationWizard extends React.Component {
                       className="text-primary"
                       target="_blank"
                       href="https://razorpay.com/terms/"
+                      onClick={trackTnCClick}
                     >
                       Terms and Conditions
                     </a>
