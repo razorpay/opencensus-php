@@ -59,8 +59,10 @@ class Service extends Base\Service
             $input[Entity::USER_ID] = $this->userId;
         }
 
+        // fetching only those where entity_type is null
+        // (invoices having entity_type not null will be fetched by respective entity apis)
         $invoices = $this->repo->invoice
-                               ->fetch($input, $this->merchant->getId());
+                               ->fetchForEntityType($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();
     }

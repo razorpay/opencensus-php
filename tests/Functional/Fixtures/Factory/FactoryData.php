@@ -928,5 +928,11 @@ final class FactoryData
             'merchant_id'         => $faker->uniqueid,
             'bank_account_id'     => $faker->uniqueid,
         ]);
+
+        $factory(\RZP\Models\SubscriptionRegistration\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
+        ]);
     }
 }

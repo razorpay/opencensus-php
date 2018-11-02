@@ -324,6 +324,15 @@ class CardTest extends TestCase
         parent::startTest();
     }
 
+    public function testBinValidationInvalidType()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
+
+        parent::startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

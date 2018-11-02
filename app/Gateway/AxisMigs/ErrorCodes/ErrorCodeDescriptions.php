@@ -98,13 +98,13 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5087' => 'Unknown database type',
         '5090' => 'Illegal user name',
         '5091' => 'Illegal password error',
-        '5101' => 'Could not create and load the specified KeyStore object. If you are using a QSIDB 
+        '5101' => 'Could not create and load the specified KeyStore object. If you are using a QSIDB
                    KeyStore the database connection may have failed',
         '5103' => 'Could not create the specified javax.crypto.Cipher object.',
         // You may not have a
         // provider installed to create this type of Cipher object or the Cipher object
         // that is specified in your config file is incorrect',
-        '5104' => 'Error in call to javax.crypto.Cipher.doFinal. Either the input was too large or the 
+        '5104' => 'Error in call to javax.crypto.Cipher.doFinal. Either the input was too large or the
                    padding was bad',
         '5106' => 'The Message type specified is not supported.',
         // Check the com.qsipayments.technology.security.MessageCrypto.properties
@@ -130,11 +130,11 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5133' => 'Signature Key used is invalid',
         '5134' => 'RSA Decrypt Failed',
         '5135' => 'RSA Encrypt Failed',
-        '5136' => 'The keys stored in the keyfile given to SecureCGIParam was corrupt or one of the 
+        '5136' => 'The keys stored in the keyfile given to SecureCGIParam was corrupt or one of the
                    keys is invalid',
-        '5137' => 'The private key stored in the keyfile given to SecureCGIParam was corrupt or one 
+        '5137' => 'The private key stored in the keyfile given to SecureCGIParam was corrupt or one
                    of the keys is invalid',
-        '5138' => 'The public key stored in the keyfile given to SecureCGIParam was corrupt or one 
+        '5138' => 'The public key stored in the keyfile given to SecureCGIParam was corrupt or one
                    of the keys is invalid',
         '5140' => 'Invalid Acquirer',
         '5141' => 'Generic error for a financial transaction',
@@ -144,7 +144,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5145' => 'Generic terminal error',
         '5146' => 'Terminal near full',
         '5147' => 'Terminal Full',
-        '5148' => 'Attempted to call a method that required a reconciliation to be in progress but 
+        '5148' => 'Attempted to call a method that required a reconciliation to be in progress but
                    this was not the case',
         '5150' => 'Invalid credit card: incorrect issue number length',
         '5151' => 'Invalid Credit Card Specifications',
@@ -206,7 +206,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5428' => 'VoidPurchase Error',
         '5429' => 'QueryDR Error',
         '5430' => 'Missing Field',
-        '5431' => 'Invalid Field Digital.TRANS_NO must be provided to indicate which existing order this 
+        '5431' => 'Invalid Field Digital.TRANS_NO must be provided to indicate which existing order this
                    transaction is to be performed against',
         '5432' => 'Internal Error',
         '5433' => 'Invalid Permission',
@@ -275,7 +275,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '7004' => 'XML Parameter had an invalid index. Check input .html file',
         '7005' => 'XML [Bad Provider Class]',
         '7050' => 'SleepTimer: Time value is not in a valid format (ignored this time value)',
-        '7100' => 'No valid times and/or interval specified in StatementProcessing.properties file. 
+        '7100' => 'No valid times and/or interval specified in StatementProcessing.properties file.
                    Execution terminated',
         '7101' => 'Status file for this data file was never created – deleting',
         '7102' => 'Error loading Statement.properties file',
@@ -352,7 +352,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
                     'Requested capture amount exceeds outstanding authorized amount',
             ],
             'E5415'   => 'Excessive refund attempted',
-            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand 
+            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand
                           MS and not expected card brand MC',
             'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
             'I5426'   => 'Invalid Permission : advanceMA',
@@ -382,32 +382,32 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 
     public static $avsErrorDescriptionMap = [
         'A' => 'Address matches, postal code does not.',
-        'B' => 'Visa only: Street address match. Postal code not verified because of incompatible 
+        'B' => 'Visa only: Street address match. Postal code not verified because of incompatible
                 formats. (Acquirer sent both street address and postal code).',
-        'C' => 'Visa only: Street address and postal code not verified because of incompatible formats. 
+        'C' => 'Visa only: Street address and postal code not verified because of incompatible formats.
                 (Acquirer sent both street address and postal code).',
-        'D' => 'Visa: Street address and postal code match. Address and zip match. Amex: Card Member Name 
+        'D' => 'Visa: Street address and postal code match. Address and zip match. Amex: Card Member Name
                 incorrect, Billing Postal Code match. Z 5-digit zip match',
         'E' => 'Amex: Card Member Name incorrect, Billing Address and Postal Code match.',
-        'F' => 'Visa: Street address and Postal Code match. Applies to U.K. only. Amex: Card Member Name 
+        'F' => 'Visa: Street address and Postal Code match. Applies to U.K. only. Amex: Card Member Name
                 incorrect, Billing Address matches. A Address match only.',
-        'G' => 'Visa only. Non-AVS participant outside the U.S.; address not verified for international 
+        'G' => 'Visa only. Non-AVS participant outside the U.S.; address not verified for international
                 transaction.',
         'I' => 'Visa only. Address information not verified for international transaction.',
         'K' => 'Amex: Card Member Name matches.',
         'L' => 'Amex: Card Member Name and Billing Postal Code match.',
-        'M' => 'Visa: Street addresses and Postal Codes match. Amex: Card Member Name, Billing Address and 
+        'M' => 'Visa: Street addresses and Postal Codes match. Amex: Card Member Name, Billing Address and
                 Postal Code match.',
         'N' => 'Neither address nor postal code matches.',
         'O' => 'Amex: Card Member Name and Billing Address match.',
-        'P' => 'Visa only. Postal Codes match. Street address not verified because of incompatible formats. 
+        'P' => 'Visa only. Postal Codes match. Street address not verified because of incompatible formats.
                 (Acquirer sent both street address and postal code).',
         'R' => 'Retry, system is unable to process.',
         'S' => 'AVS currently not supported. Amex: SE not allowed AAV function.',
         'U' => 'No data from Issuer/authorisation system.',
-        'W' => 'For U.S. addresses, 9-digit postal code matches, address does not; for address outside the 
+        'W' => 'For U.S. addresses, 9-digit postal code matches, address does not; for address outside the
                 U.S., postal code matches, address does not.',
-        'X' => 'For U.S. addresses, 9-digit Postal Code and Address match; for address outside the U.S., 
+        'X' => 'For U.S. addresses, 9-digit Postal Code and Address match; for address outside the U.S.,
                 Postal Code and Address match.',
         'Y' => 'For U.S. addresses, 5-digit Postal Code and Address match.',
         'Z' => 'For U.S. addresses, 5-digit Postal Code matches, Address does not.',

@@ -196,15 +196,15 @@ class Service extends Base\Service
 
         $fileInfo = [];
 
-        $data = $progressReport->sendFTAReconReport(Report::FTA_PROGRESS);
+        $progressReport->sendFTAReconReport(Report::FTA_PROGRESS);
 
-        $data += $failureReport->sendFTAFailureReport(Report::FTA_FAILURES);
+        $failureReport->sendFTAFailureReport(Report::FTA_FAILURES);
 
-        $fileInfo += $progressReport->getFileName(Report::FTA_PROGRESS);
+        Report::notify($progressReport, $failureReport);
 
-        $fileInfo += $failureReport->getFileName(Report::FTA_FAILURES);
+        Report::sendEmail($progressReport, $failureReport);
 
-        Report::sendEmail($data, $fileInfo);
+        $data = array_merge($progressReport->getSummary(), $failureReport->getSummary());
 
         return $data;
     }

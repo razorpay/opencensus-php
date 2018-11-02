@@ -531,6 +531,44 @@ class Pricing extends Base
         $this->addPricingRulesToDb([$row]);
     }
 
+    public function createBankTransferMultiPricingPlan()
+    {
+        $pricingPlanId = 'btMultiPricing';
+
+        $rows = [
+            [
+                'id'                  => 'BtPercentPrici',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'Bank Transfer Multi Pricing',
+                'feature'             => 'payment',
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 1600,
+                'fixed_rate'          => 0,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 10000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'BtPercentFlatP',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'Bank Transfer Multi Pricing',
+                'feature'             => 'payment',
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 100,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 10000,
+                'amount_range_max'    => 1000000000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
+    }
+
     protected function addPricingRulesToDb($rows)
     {
         $repo = new Models\Pricing\Repository;

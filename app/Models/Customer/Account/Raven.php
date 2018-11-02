@@ -102,4 +102,3 @@ class Raven extends Base\Core
         return $request;
     }
 }
-

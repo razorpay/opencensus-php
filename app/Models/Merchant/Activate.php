@@ -14,9 +14,13 @@ use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
+use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 
 class Activate extends Base\Core
 {
@@ -154,6 +158,8 @@ class Activate extends Base\Core
 
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
+
+        $this->notifyMerchantForInstantActivation($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -305,32 +311,30 @@ class Activate extends Base\Core
 
         $org = $merchant->org;
 
-        $subjectName = $merchant->getBillingLabel();
-
         if ($org === null)
         {
             $org = $this->repo->org->getRazorpayOrg();
         }
 
-        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
-
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
+        $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
+
         $data = [
             'merchant' => [
-                'name'          => $merchant->getName(),
-                'website'       => $merchant->getWebsite(),
-                'billing_label' => $merchant->getBillingLabel(),
-                'email'         => $merchant->getEmail(),
-                'org'           => [
+                'name'                               => $merchant->getName(),
+                'website'                            => $merchant->getWebsite(),
+                'billing_label'                      => $merchant->getBillingLabel(),
+                'email'                              => $merchant->getEmail(),
+                Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
+                'org'                                => [
                     'business_name' => $org->getBusinessName(),
                     'custom_code'   => $org->getCustomCode(),
                 ],
             ],
             'rules'    => $this->formatPricingRules($rules),
-            'subject'  => $subject,
         ];
 
         $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
@@ -344,6 +348,35 @@ class Activate extends Base\Core
         $activationMail = new ActivationMail($data, $org->toArray());
 
         Mail::queue($activationMail);
+    }
+
+    public function notifyMerchantForInstantActivation($merchant)
+    {
+
+        $org = $merchant->org;
+
+        if ($org === null)
+        {
+            $org = $this->repo->org->getRazorpayOrg();
+        }
+
+        $data = [
+            'merchant' => [
+                Entity::NAME          => $merchant->getName(),
+                Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Entity::EMAIL         => $merchant->getEmail(),
+                'org'                 => [
+                    OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
+                    OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+                ],
+            ],
+        ];
+
+        $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
+
+        $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+
+        Mail::queue($instantActivationMail);
     }
 
     /**

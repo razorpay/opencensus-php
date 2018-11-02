@@ -164,4 +164,3 @@ class Server extends Base\Mock\Server
         return $data;
     }
 }
-

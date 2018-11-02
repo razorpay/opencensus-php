@@ -39,6 +39,9 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
+            $table->string(BankAccount::ACCOUNT_TYPE, 255)
+                  ->nullable();
+
             $table->string(BankAccount::BENEFICIARY_NAME, 120);
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)

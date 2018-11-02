@@ -13,4 +13,3 @@ class TransactionDetails
     const PAYMENT_SUCCESS           = 'Y';
     const PAYMENT_FAILED            = 'N';
 }
-

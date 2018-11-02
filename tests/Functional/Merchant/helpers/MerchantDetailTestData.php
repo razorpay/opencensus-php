@@ -770,6 +770,7 @@ return [
             'content' => [
                 'business_subcategory' => 'mutual_fund',
                 'business_category'    => 'financial_services',
+                'business_name'        => 'test'
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -786,10 +787,11 @@ return [
     ],
 
     'testCategoryDetailsSetForOthersCategory' => [
-        'request'  => [
+        'request' => [
             'content' => [
                 'business_category'    => 'others',
                 'business_subcategory' => null,
+                'business_name'        => 'test'
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',

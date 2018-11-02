@@ -22,6 +22,8 @@ class Mutex
 
     protected $redis;
 
+    const PREFIX = 'mutex:';
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();
@@ -103,6 +105,8 @@ class Mutex
      */
     protected function acquireNoWait($resource, $ttl = 60) : bool
     {
+        $this->appendPrefix($resource);
+
         try
         {
             $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
@@ -198,6 +202,8 @@ class Mutex
      */
     public function release($resource)
     {
+        $this->appendPrefix($resource);
+
         try
         {
             if (($this->redis->get($resource) === $this->requestId) and
@@ -259,5 +265,10 @@ class Mutex
     public function setRedisClient($client)
     {
         $this->redis = $client;
+    }
+
+    protected function appendPrefix(& $key)
+    {
+        $key = self::PREFIX . $key;
     }
 }

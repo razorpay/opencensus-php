@@ -37,4 +37,3 @@ class Constants
 
     const SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
 }
-
