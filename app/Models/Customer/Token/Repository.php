@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Customer\Token;
 
+use DB;
+
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
@@ -136,11 +139,59 @@ class Repository extends Base\Repository
                                               Token\Entity::RECURRING_STATUS,
                                               [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED]);
                                 });
-                       })
+                      })
                       ->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);
 
         return $query->get();
+    }
+
+    public function fetchPendingEmandateRegistration(string $gateway, int $from, int $to)
+    {
+        $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+        $paymentGlobalTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::GLOBAL_TOKEN_ID);
+
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
+        $selectCols = $this->dbColumn('*');
+
+        $subQuery = Payment\Entity::query()
+                ->select($this->repo->payment->dbColumn('*'))
+                ->whereBetween($paymentAuthorizedAtColumn, [$from, $to]);
+
+        return $this->newQuery()
+            ->select($selectCols, 'payments.id as payment_id')
+            ->joinSub(
+                $subQuery,
+                $paymentTableName,
+                function ($join) use($paymentTokenIdColumn, $paymentGlobalTokenIdColumn, $tokenIdColumn)
+                {
+                    $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
+                    $join->orOn($tokenIdColumn, '=', $paymentGlobalTokenIdColumn);
+                }
+            )
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->with(['customer', 'merchant'])
+            ->get();
     }
 }
