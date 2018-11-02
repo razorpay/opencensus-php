@@ -15,10 +15,6 @@ class ReconciliatorController extends Controller
     {
         $input = Request::all();
 
-        $this->trace->info(
-            \RZP\Trace\TraceCode::RECON_REQUEST,
-            $input);
-
         $response = $this->service()->initiateReconciliationProcess($input);
 
         return ApiResponse::generateResponse($response);

@@ -101,13 +101,13 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
             return $this->paymentStatusMappings[$row[self::COLUMN_STATUS]];
         }
 
-        throw new Exception\ReconciliationException(
-            "Invalid payment status sent",
+        $this->messenger->raiseReconAlert(
             [
-                'row'     => $row,
-                'gateway' => 'axis_emandate'
-            ]
-        );
+                'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                'message'         => 'Invalid payment status sent',
+                'row'             => $row,
+                'gateway'         => $this->gateway
+            ]);
     }
 
     protected function getApiErrorCodeMapped(array $rowDetails)
