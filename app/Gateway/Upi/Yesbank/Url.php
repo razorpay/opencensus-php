@@ -1,0 +1,13 @@
+<?php
+
+namespace RZP\Gateway\Upi\Yesbank;
+
+class Url
+{
+    const LIVE_DOMAIN          = 'https://sky.yesbank.in:444/app/upi/';
+    const TEST_DOMAIN          = 'https://uatsky.yesbank.in:444/app/uat/upi/';
+
+    const VALIDATE_VPA         = 'CheckVirtualAddress';
+    const REFUND               = 'mePayServerReqImps';
+    const VERIFY_REFUND        = 'metransactionStatusQuery';
+}

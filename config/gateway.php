@@ -52,6 +52,7 @@ return [
         'upi_hulk',
         'upi_sbi',
         'upi_npci',
+        'upi_yesbank',
         'aeps_icici',
         'wallet_olamoney',
         'wallet_payzapp',
@@ -112,6 +113,7 @@ return [
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
+    'mock_upi_yesbank'            => env('UPI_YESBANK_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
@@ -355,6 +357,14 @@ return [
             'live_client_cert' => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT'),
             'live_cert_key'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT_KEY'),
         ]
+    ],
+
+    'upi_yesbank' => [
+        'test_terminal_password'    => env('UPI_YESBANK_GATEWAY_TEST_SECURE_SECRET'),
+        'gateway_terminal_password' => env('UPI_YESBANK_GATEWAY_SECURE_SECRET'),
+        'cert_dir_name'             => env('UPI_YESBANK_GATEWAY_CERT_DIR'),
+        'client_cert'               => env('UPI_YESBANK_GATEWAY_CLIENT_CERT'),
+        'cert_key'                  => env('UPI_YESBANK_GATEWAY_CERY_KEY'),
     ],
 
     'upi_sbi' => [
