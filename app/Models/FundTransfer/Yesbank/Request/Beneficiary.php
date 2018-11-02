@@ -221,7 +221,7 @@ class Beneficiary extends Base
 
         return '<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">'
             . '<soapenv:Body>'
-            . '<NS1:maintainBeneficiaryResponse xmlns:NS1="http://BeneMaintenanceService">'
+            . '<NS1:maintainBeneResponse xmlns:NS1="http://BeneMaintenanceService">'
             . '<RequestStatus>'
             . Constants::FAILURE
             . '</RequestStatus>'
@@ -246,7 +246,7 @@ class Beneficiary extends Base
             . '<Action>'
             . Constants::BENE_FLAG
             . '</Action>'
-            . '</NS1:maintainBeneficiaryResponse>'
+            . '</NS1:maintainBeneResponse>'
             . '</soapenv:Body>'
             . '</soapenv:Envelope>';
     }
@@ -260,7 +260,7 @@ class Beneficiary extends Base
     {
         return '<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">'
                 . '<soapenv:Body>'
-                . '<NS1:maintainBeneficiaryResponse xmlns:NS1="http://BeneMaintenanceService">'
+                . '<NS1:maintainBeneResponse xmlns:NS1="http://BeneMaintenanceService">'
                 . '<RequestStatus>'
                 . Constants::SUCCESS
                 . '</RequestStatus>'
@@ -297,7 +297,7 @@ class Beneficiary extends Base
                 . '<Action>'
                 . Constants::BENE_FLAG
                 . '</Action>'
-                . '</NS1:maintainBeneficiaryResponse>'
+                . '</NS1:maintainBeneResponse>'
                 . '</soapenv:Body>'
                 . '</soapenv:Envelope>';
     }

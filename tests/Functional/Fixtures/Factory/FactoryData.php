@@ -176,6 +176,7 @@ final class FactoryData
             'payment_issuer' => 'ICIC',
             'percent_rate' => 1000,
             'fixed_rate' => 10000,
+            'org_id'    => '100000razorpay',
         ]);
 
         $factory(\RZP\Models\Transaction\Entity::class, [
@@ -926,6 +927,12 @@ final class FactoryData
             'registration_status' => 'created',
             'merchant_id'         => $faker->uniqueid,
             'bank_account_id'     => $faker->uniqueid,
+        ]);
+
+        $factory(\RZP\Models\SubscriptionRegistration\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
         ]);
     }
 }

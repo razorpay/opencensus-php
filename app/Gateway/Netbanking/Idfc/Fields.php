@@ -25,4 +25,3 @@ class Fields
     //Extra fields in Verify Response
     const STATUS_RESULT         = 'TxnStatus';
 }
-

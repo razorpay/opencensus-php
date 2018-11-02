@@ -39,6 +39,10 @@ final class Constants
         self::PURE_PLATFORM,
     ];
 
+    // Used in merchant activation elastic search flows
+    const INSTANT_ACTIVATION = 'instant_activation';
+
+    const IS_WHITELISTED_ACTIVATION = "is_whitelisted_activation";
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.
@@ -137,5 +141,16 @@ final class Constants
         Detail\Entity::BUSINESS_NAME,
         Detail\Entity::CONTACT_MOBILE,
         Detail\Entity::BUSINESS_WEBSITE,
+    ];
+
+    const ACTIVATION_MANDATORY_FIELDS = [
+        Entity::CATEGORY,
+        Entity::BILLING_LABEL,
+    ];
+
+    const INSTANT_ACTIVATION_MANDATORY_FIELDS = [
+        Entity::CATEGORY,
+        Entity::CATEGORY2,
+        Entity::BILLING_LABEL,
     ];
 }

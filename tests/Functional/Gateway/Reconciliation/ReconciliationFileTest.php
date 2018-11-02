@@ -12,6 +12,7 @@ use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
+use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
@@ -30,6 +31,7 @@ class ReconciliationFileTest extends TestCase
 {
     use BatchTestTrait;
     use VirtualAccountTrait;
+    use TestTraits\EbsReconTestTrait;
 
     protected $payment;
     protected $recurringPayment;
@@ -1121,11 +1123,6 @@ class ReconciliationFileTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    private function setFileToRequest($filename, $callee)
-    {
-        $this->testData[$callee]['request']['files']['attachment-1'] = $this->createUploadedFile($filename);
-    }
-
     public function createUploadedFile(string $url): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -1551,6 +1548,7 @@ class ReconciliationFileTest extends TestCase
 
         // adding 20 rows with data before the actual row that has to be processed
         for ($row_index = 1; $row_index < 20; $row_index++)
+
         {
             $entries[] = [];
         }

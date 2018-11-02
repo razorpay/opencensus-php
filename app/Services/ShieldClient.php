@@ -20,7 +20,7 @@ class ShieldClient implements ExternalService
     const ANALYTICS_PATH    = '/rules/analytics';
 
     const RISKS_PATH        = '/merchants/{merchant_id}/risks';
-    
+
     const LISTS_PATH        = '/merchants/{merchant_id}/lists';
 
     const LIST_ITEMS_PATH   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
@@ -32,7 +32,7 @@ class ShieldClient implements ExternalService
     const RULE_ANALYTICS    = 'rule_analytics';
 
     const RISKS             = 'risks';
-    
+
     const LISTS             = 'lists';
 
     const LIST_ITEMS        = 'list_items';
@@ -83,7 +83,7 @@ class ShieldClient implements ExternalService
 
             case self::RISKS:
                 return $this->getRisks($input, $merchantId);
-                
+
             case self::LISTS:
                 return $this->getLists($input, $merchantId);
 

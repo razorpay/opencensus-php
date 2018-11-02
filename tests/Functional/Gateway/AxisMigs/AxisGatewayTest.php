@@ -600,8 +600,8 @@ class AxisGatewayTest extends TestCase
                 $content['vpc_AcqCSCRespCode']    = 'N';
                 $content['vpc_AcqResponseCode']   = '91';
                 $content['vpc_CSCResultCode']     = 'N';
-                $content['vpc_Message']           = 'E5415-09120704: Refund Error : 
-                                                     Field in error: \'initialTransaction.orderNumber\',  
+                $content['vpc_Message']           = 'E5415-09120704: Refund Error :
+                                                     Field in error: \'initialTransaction.orderNumber\',
                                                      value \'27950\' - reason: No order identified';
                 $content['vpc_TxnResponseCode']   = '3';
                 $content['vpc_VerSecurityLevel']  = '05';

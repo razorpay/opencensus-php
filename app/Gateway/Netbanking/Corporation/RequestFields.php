@@ -12,6 +12,8 @@ class RequestFields
     const FUND_TRANSFER        = 'TT';
     const ACCOUNT_NUMBER       = 'AcctNo';
 
+    const QUERY_STRING         = 'QS';
+
     const VERIFY_DATA                   = 'data';
     const VERIFY_MERCHANT_CODE          = 'mercode';
     const VERIFY_PAYMENT_ID             = 'otcno';

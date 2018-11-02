@@ -98,9 +98,18 @@ class Repository extends Base\Repository
         Merchant\Entity $merchant,
         string $userId = null,
         string $userRole = null,
-        array $input = [])
+        array $input = [],
+        string $entityType = null)
     {
-        $invoice = $this->findByPublicIdAndMerchant($id, $merchant, $input);
+        Entity::verifyIdAndStripSign($id);
+
+        $query = $this->getQueryForFindWithParams($input);
+
+        $invoice = $query->merchantId($merchant->getId())
+                         ->where(Entity::ENTITY_TYPE, $entityType)
+                         ->findOrFailPublic($id);
+
+        $invoice->merchant()->associate($merchant);
 
         //
         // If userId is set and userRole is sellerapp we throw 403 if invoice's
@@ -430,6 +439,13 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where(Entity::ID, '!=', $invoice->getId())
                     ->first();
+    }
+
+    public function fetchForEntityType(array $input, string $merchantId, string $entityType = null)
+    {
+        $input[Entity::ENTITY_TYPE] = $entityType;
+
+        return $this->repo->invoice->fetch($input, $merchantId);
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

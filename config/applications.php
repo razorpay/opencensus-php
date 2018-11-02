@@ -86,6 +86,11 @@ return [
         'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
+    'redisdualwrite' => [
+        'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
+        'skip_dual_write'           => env('SKIP_DUAL_WRITE'),
+    ],
+
     'maxmind' => [
         'mock'      => env('MAXMIND_MOCK', false),
         'id'        => '115820',
@@ -227,5 +232,10 @@ return [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
+
+    'myoperator' => [
+        'mock'      => env('MYOPERATOR_MOCK'),
+        'api_token' => env('MYOPERATOR_API_TOKEN'),
     ],
 ];

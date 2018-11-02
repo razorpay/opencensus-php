@@ -1048,42 +1048,6 @@ return [
         ],
     ],
 
-    'testActivateMerchantWithoutBankAccount' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
-        ]
-    ],
-
-    'testActivateMerchant' => [
-        'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/activate',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'merchant',
-                'activated' => true,
-                'live' => true,
-            ],
-        ],
-    ],
-
     'testMerchantEnableLive' => [
         'request' => [
             'content' => [],
@@ -1151,6 +1115,84 @@ return [
                 'beneficiary_mobile' => '9988776655',
             ]
         ]
+    ],
+
+    'testAddBankAccountWithAccountType' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'account_type'          => 'savings',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/10000000000000/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'           => '10000000000000',
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'account_type'          => 'savings',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+            ]
+        ]
+    ],
+
+    'testAddBankAccountWithInvalidAccountType' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'account_type'          => 'special',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/10000000000000/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Invalid Account type',
+                    'field'         => 'account_type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testAddBankAccountWithMerchantDetail' => [
@@ -2723,6 +2765,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithCheckoutFeatures' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+
     'testGetCheckoutRouteWithSavedLocal' => [
         'request' => [
             'url' => '/preferences',
@@ -3403,6 +3459,68 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testAssignScheduleBulk' => [
+        'request'  => [
+            'url'     => '/merchants/schedules/bulk',
+            'method'  => 'post',
+            'content' => [
+                'schedule' => [
+                    'schedule_id' => '100001schedule',
+                    'type' => 'settlement',
+                ],
+                'merchant_ids' => ['10000000000000', '1000000000test', '1000000000000x'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 3,
+                'failed_count' => 1,
+                'failed_ids'   => ['1000000000000x']
+            ],
+        ],
+    ],
+
+    'testSubmitSupportCallRequest' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'       => 'success',
+                'code'         => '200',
+                'message'      => 'Call queued successfully',
+                'reference_id' => '1000000000000000',
+            ],
+        ],
+    ],
+
+    'testSubmitSupportCallRequestWithInvalidContact' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9989988998899',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid contact number - 9989988998899',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

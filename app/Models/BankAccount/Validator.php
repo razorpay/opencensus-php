@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -21,6 +22,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
         Entity::BENEFICIARY_NAME                => 'required|between:4,120|string',
+        Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|max:30',
@@ -177,6 +179,20 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                 $bankAccount);
+        }
+    }
+
+    public function validateAccountType($attribute, $value)
+    {
+        if (AccountType::isAccountTypeValid($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid Account type',
+                Entity::ACCOUNT_TYPE,
+                [
+                    'field'        => Entity::ACCOUNT_TYPE,
+                    'account_type' => $value
+                ]);
         }
     }
 }

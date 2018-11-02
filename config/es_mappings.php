@@ -187,6 +187,9 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'entity_type' => [
+                'type'            => 'keyword',
+            ],
         ],
     ],
 
@@ -284,6 +287,9 @@ return [
                     'activation_status' => [
                         'type' => 'keyword',
                     ],
+                    'activation_flow' => [
+                        'type' => 'keyword',
+                    ],
                     'reviewer_id' => [
                         'type'  => 'keyword',
                     ],
@@ -318,6 +324,9 @@ return [
                 'analyzer'        => 'standard',
                 'search_analyzer' => 'standard',
             ],
+            'balance' => [
+                'type' => 'integer',
+            ]
         ],
     ],
 

@@ -6,6 +6,9 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
@@ -366,7 +369,7 @@ class Validator extends Base\Validator
 
         $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
-        $validSubcategories = $subcategoryMap[$category];
+        $validSubcategories = $subcategoryMap[$category] ?? [];
 
         $isError            = false;
 
@@ -464,6 +467,107 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Throws an exception if the activation form is not submitted
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateActivationFormSubmitted()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED,
+                Entity::SUBMITTED);
+        }
+    }
+
+    /**
+     * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function blockInstantActivationCriticalFields(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
+
+        if (($merchant->isActivated() === true) and (empty($criticalInput) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED,
+                null,
+                $criticalInput);
+        }
+    }
+
+    /**
+     * Throws an exception if the merchant details are archived
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotArchived()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION,
+                Entity::ARCHIVED_AT);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function performInstantActivationValidations(array $input)
+    {
+        $merchantDetails = $this->entity;
+
+        $this->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $this->validateBusinessSubcategoryForCategory($input);
+
+        $merchantValidator = new Merchant\Validator;
+
+        $merchant = $merchantDetails->merchant;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchant);
+    }
+
+    /**
+     * Contains validations for full activation form (L2 activation form)
+     * L1 and L2 activation form have different validations
+     *
+     * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
+     * no detail will be save in db and validation exception will be thrown
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function validateFullActivationForm()
+    {
+        $this->validateIsNotLocked();
+
+        if ($this->entity->getActivationFlow() !== null)
+        {
+            $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
+
+            $activationFlowImpl->validateFullActivationForm($this->entity);
         }
     }
 }

@@ -241,7 +241,12 @@ class Processor
                 $attributes = $e->getError()->getAttributes();
             }
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = false;
+
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -249,9 +254,15 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $attributes = [Metric::LABEL_TRACE_CODE => $e->getCode()];
+            $attributes = [
+                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+                Metric::LABEL_PAYMENT_IS_CREATED => false,
+            ];
 
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+            if (isset($payment) === true)
+            {
+                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+            }
 
             $this->pushPaymentCreateErrorMetrics($attributes);
 
@@ -371,7 +382,16 @@ class Processor
 
         $currentRouteName = $this->route->getCurrentRouteName();
 
-        if ($currentRouteName === 'payment_create_recurring')
+        // Adding subscription_registration_charge_token to enable
+        // token charging via dashboard.
+        if (($currentRouteName === 'payment_create_recurring') or
+            ($currentRouteName === 'subscription_registration_charge_token'))
+        {
+            return null;
+        }
+
+        // for batch charging of tokens
+        if ($this->app->runningInQueue() === true)
         {
             return null;
         }
@@ -1154,7 +1174,7 @@ class Processor
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
-        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        if ($status !== Status::CREATED)
         {
             throw new Exception\LogicException(
                 'Payment not in the appropriate status to be marked as failed.',
@@ -1227,6 +1247,8 @@ class Processor
         $payment->setVerified(null);
 
         $payment->setVerifyBucket(0);
+
+        $payment->setVerifyAt(time() + 120);
 
         //
         // In case the gateway error exception is thrown on authenticate
@@ -2050,7 +2072,7 @@ class Processor
 
         $createdAt = $payment->getCreatedAt();
 
-        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;;
+        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
         $merchantRefundAt = $createdAt + $autoRefundDelay;
 
         $refundAt = max($minRefundAt, $merchantRefundAt);
@@ -2237,16 +2259,6 @@ class Processor
 
     }
 
-    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
-    {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         if ((isset($gatewayInput["skip_gateway_call"]) === true) and
@@ -2261,11 +2273,6 @@ class Processor
             // If the payment is a second recurring payment of a file-based emandate bank
             // we do not hit the gateway, we send a debit request asynchronously
             //
-            return false;
-        }
-
-        if ($payment->isBankTransfer() === true)
-        {
             return false;
         }
 
@@ -2399,29 +2406,5 @@ class Processor
                 Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
             ]
         );
-    }
-
-    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment)
-    {
-        if (($payment->isEmandate() === true) and
-            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
-    {
-        if (($payment->hasOrder() === true) and
-            ($payment->isTpvMethod() === true) and
-            ($this->merchant->isTPVRequired() === true) and
-            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

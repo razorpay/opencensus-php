@@ -55,4 +55,3 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                                                                      $status);
     }
 }
-

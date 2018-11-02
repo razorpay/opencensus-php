@@ -129,6 +129,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK_PAYMENT_ID, $bankPaymentId);
     }
 
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setSuccess($success)
+    {
+        $this->setAttribute(self::SUCCESS, $success);
+    }
+
+    public function setReceived($received)
+    {
+        $this->setAttribute(self::RECEIVED, $received);
+    }
+
     public function setDate($date)
     {
         $this->setAttribute(self::DATE, $date);

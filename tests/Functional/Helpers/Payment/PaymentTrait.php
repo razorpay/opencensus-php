@@ -863,6 +863,7 @@ trait PaymentTrait
         $input['gateway'] = $this->gateway;
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
+        $input['attempts'] = $refund['attempts'] ?? 0;
 
         $this->ba->scroogeAuth();
 
@@ -976,6 +977,7 @@ trait PaymentTrait
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
+            $response['attempts'] = 1;
 
             $this->scroogeRefund($response);
         }
@@ -1008,7 +1010,7 @@ trait PaymentTrait
         $this->assertEquals('refund', $refund['entity']);
 
         //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
         {
             $this->scroogeRefund($refund);
         }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Entity;
 
 /**
@@ -14,10 +15,28 @@ use RZP\Models\Merchant\Detail\Entity;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class Greylist implements ActivationFlowInterface
+class Greylist extends Base implements ActivationFlowInterface
 {
+    /**
+     * In greylist  activation flow , merchant won't get activated from basic activation form
+     * Full activation form need to be filled for activation
+     *
+     * @param Entity $merchantDetails
+     */
     public function process(Entity $merchantDetails)
     {
-        // TODO: Implement process() method.
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_GREYLIST_ACTIVATION);
+
+        return;
+    }
+
+    /**
+     * Validation specific to the greylist activation flow
+     *
+     * @param Entity $merchantDetails
+     */
+    public function validateFullActivationForm(Entity $merchantDetails)
+    {
+        return;
     }
 }
