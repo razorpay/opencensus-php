@@ -108,4 +108,3 @@ abstract class Base extends BaseCore
 
     abstract protected function createTxns(Payout\Entity $payout);
 }
-

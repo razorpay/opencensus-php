@@ -167,7 +167,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals("halted", $subscription['status']);
     }
-    
+
     public function testDailySubscriptionsWithRetry()
     {
         $planAttributes = [

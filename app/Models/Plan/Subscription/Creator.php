@@ -228,4 +228,3 @@ class Creator extends Base\Core
         $subscription->setTotalCount($totalCount);
     }
 }
-

@@ -288,7 +288,7 @@ class Server extends Base\Mock\Server
 
     public function getVerifyRefundResponseData($input)
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8" ?> 
+        $xml = '<?xml version="1.0" encoding="UTF-8" ?>
             <REFUNDSTATUS>
             <ERRORCODE>00</ERRORCODE>
             <MESSAGE>Refund Found</MESSAGE>

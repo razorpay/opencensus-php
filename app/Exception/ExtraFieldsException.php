@@ -19,7 +19,7 @@ class ExtraFieldsException extends RecoverableException
         $this->fields = $fields;
 
         $extraFields = $fields;
-        
+
         if (is_array($fields))
         {
             $this->count = count($fields);

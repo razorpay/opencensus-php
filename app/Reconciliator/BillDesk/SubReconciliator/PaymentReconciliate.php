@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_FEE                = 'charges_rsps';
     const COLUMN_GST                = 'gst_rs_ps';
     const COLUMN_SETTLED_AT         = 'settlement_date';
-    
+
     // 29/06/2017 00:31:08
     const SETTLEMENT_DATE_FORMAT    = 'd/m/Y H:i:s';
 
