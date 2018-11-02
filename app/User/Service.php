@@ -399,10 +399,17 @@ class Service extends Base\Service
                     }
                     else
                     {
-                        $data['experiments']['instant_activations'] = ["result" => "off"];
+                        $data['experiments']['instant_activations'] = ['result' => 'off'];
                     }
 
-                    $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
+                    if (((bool) $merchant['activated']) === true)
+                    {
+                        $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
+                    }
+                    else
+                    {
+                        $data['experiments']['support_call'] = ['result' => 'off'];
+                    }
 
                     $data['current'] = $currentMerchantId;
 
