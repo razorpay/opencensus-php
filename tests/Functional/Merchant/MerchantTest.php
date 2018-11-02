@@ -3351,4 +3351,20 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, $content['total_count']);
         $this->assertEquals(Channel::AXIS, $content['channel']);
     }
+
+    public function testSubmitSupportCallRequest()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestWithInvalidContact()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        $this->startTest();
+    }
 }

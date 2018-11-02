@@ -211,6 +211,10 @@ class Validator extends Base\Validator
         Constants::SKIP                  => 'integer',
     ];
 
+    protected static $submitSupportCallRequestRules = [
+        'contact' => 'required|contact_syntax',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;

@@ -238,6 +238,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerPincodeSearch();
 
         $this->registerDatabaseConnection();
+
+        $this->registerMyOperator();
     }
 
     /**
@@ -580,6 +582,17 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new IlluminateMySqlConnection($connection, $database, $prefix, $config);
+        });
+    }
+
+    protected function registerMyOperator()
+    {
+        $this->app->singleton('myoperator', function()
+        {
+            $config = $this->app->config->get('applications.myoperator');
+            $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
+
+            return new $impl($this->app->trace, $config);
         });
     }
 }
