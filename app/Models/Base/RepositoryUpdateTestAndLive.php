@@ -5,6 +5,8 @@ namespace RZP\Models\Base;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity as Merchant;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -296,8 +298,27 @@ trait RepositoryUpdateTestAndLive
             $diff = true;
         }
 
-        if ($diff)
+        if ($diff === true)
         {
+            //
+            // Temporary: https://razorpay.atlassian.net/browse/ME-711
+            // `merchant.activated_at` sometimes is out of sync, although it shouldn't.
+            // This isn't a real blocker though, hence we're tracing for further debug and
+            // continuing with the request.
+            // @todo: Remove when fixed
+            //
+            if (($this->entity === \RZP\Constants\Entity::MERCHANT) and
+                ((isset($diff1[Merchant::ACTIVATED_AT]) === true) or (isset($diff2[Merchant::ACTIVATED_AT]) === true)))
+            {
+                $this->trace->critical(
+                    TraceCode::MERCHANT_ACTIVATED_AT_OUT_OF_SYNC,
+                    [
+                        'details' => $msg
+                    ]);
+
+                return;
+            }
+
             $msg = 'Entity: ' . $this->entity . PHP_EOL . $msg;
             $msg .= '. A row in test and live database do not match' . PHP_EOL;
 

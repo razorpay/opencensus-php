@@ -19,6 +19,7 @@ class Preferences
     const MID_MONEYVIEW             = '8hXTLsmoM3F6PH';
     const MID_WEALTHY               = '8lv4idBRY4C9c0';
     const MID_PIGGY                 = '9IjdEkLQb0j2ro';
+    const MID_PIGGY_TPV             = 'BADGdiwSiwi1g2';
     const MID_SHELL                 = '9LMdTQdjgMJ6uR';
     const MID_SHELL_2               = '9R0AsTqocyuP1W';
     const MID_PAISABAZAAR           = '9dhe2WRR0XCQz6';
@@ -116,6 +117,7 @@ class Preferences
         self::MID_MONEYVIEW,
         self::MID_WEALTHY,
         self::MID_PIGGY,
+        self::MID_PIGGY_TPV,
         self::MID_PAISABAZAAR,
         self::MID_PAISABAZAAR_GOLD,
         self::MID_BPCL,
@@ -131,6 +133,7 @@ class Preferences
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [
         self::MID_PIGGY,
+        self::MID_PIGGY_TPV,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

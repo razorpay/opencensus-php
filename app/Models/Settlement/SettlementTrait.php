@@ -466,10 +466,19 @@ trait SettlementTrait
             return [null, null];
         }
 
-        list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-            $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
+        try
+        {
+            list($setl, $bankTransferAtpt) = $this->settleForMerchant(
+                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
-        return [$setl, $bankTransferAtpt];
+            return [$setl, $bankTransferAtpt];
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception);
+
+            return [null, null];
+        }
     }
 
     protected function getSettlementAmountsForMerchant($txns): array
@@ -575,19 +584,16 @@ trait SettlementTrait
 
         $bankTransferAtpt = null;
 
-        try
-        {
-            // create settlement and attempt
-            $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+        $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-            $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+        return $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt) {
+                try
+                {   // create settlement and attempt
+                    $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
-            $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
-
-            return $this->mutex->acquireAndRelease(
-                $mutexResource,
-                function () use(
-                    $merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlDetailAmounts) {
+                    $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
                     $this->traceSettlementDelayOfTransactions($setlTxns);
 
@@ -603,41 +609,40 @@ trait SettlementTrait
                     $merchantSettler->createTransaction($settlement);
 
                     $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+                }
+                catch (\Exception $ex)
+                {
+                    $traceData = [
+                        'merchant'      => $merchant->getId(),
+                        'setlAmount'    => $setlAmount,
+                    ];
 
+                    if ($settlement !== null)
+                    {
+                        $traceData['settlement_id'] = $settlement->getId();
+
+                        //
+                        // Mark it failed anyway, so that it can be retried
+                        //
+                        $settlement->setStatus(Status::FAILED);
+
+                        $this->repo->saveOrFail($settlement);
+                    }
+
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::SETTLEMENT_SKIPPED,
+                        $traceData);
+
+                    (new SlackNotification)->send('setl_skipped', $traceData, $ex);
+                }
+                finally
+                {
                     return [$settlement, $bankTransferAtpt];
-
-                    },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                }
+                },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
-        }
-        catch (\Throwable $ex)
-        {
-            $traceData = [
-                'merchant'      => $merchant->getId(),
-                'setlAmount'    => $setlAmount,
-            ];
-
-            if ($settlement !== null)
-            {
-                $traceData['settlement_id'] = $settlement->getId();
-
-                //
-                // Mark it failed anyway, so that it can be retried
-                //
-                $settlement->setStatus(Status::FAILED);
-
-                $this->repo->saveOrFail($settlement);
-            }
-
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::SETTLEMENT_SKIPPED,
-                $traceData);
-
-            (new SlackNotification)->send('setl_skipped', $traceData, $ex);
-        }
-
-        return [null, null];
     }
 
     protected function traceSettlementDelayOfTransactions($setlTxns)

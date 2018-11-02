@@ -257,6 +257,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
+    const BAD_REQUEST_INVALID_SUBCATEGORY                                       = 'The business subcategory is not valid';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
@@ -647,6 +648,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
@@ -679,4 +681,34 @@ class PublicErrorDescription
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
+
+     // ---------------------- UPI (NPCI) Error codes -------------------------------
+    const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';
+    const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Remitter CBS is offline';
+    const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_BENEFICIARY          = 'Invalid transaction or member is not able to find any appropriate response code on beneficiary side';
+    const GATEWAY_ERROR_INACTIVE_DORMANT_BENEFICIARY_ACCOUNT                        = 'Beneficiary account is inactive or dormant';
+    const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_DOES_NOT_EXIST                          = 'Beneficiary account does not exist';
+    const GATEWAY_ERROR_INVALID_BENEFICIARY_CREDENTIALS                             = 'Beneficiary credentials are invalid';
+    const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_BLOCKED                                 = 'Beneficiary account is blocked';
+    const GATEWAY_ERROR_BENEFICIARY_CBS_OFFLINE                                     = 'Beneficiary cbs is offline';
+    const GATEWAY_ERROR_BENEFICIARY_INTERNAL_EXCEPTION                              = 'Unable to process due to internal exception at server/cbs/etc on beneficiary side';
+    const GATEWAY_ERROR_BENEFICIARY_COMPLIANCE_VIOLATION                            = 'Transaction cannot be completed. Compliance violation on beneficiary side';
+    const GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED                       = 'Transaction not permitted to cardholder on beneficiary side';
+    const GATEWAY_ERROR_BENEFICIARY_EXPIRED_CARD                                    = 'Transaction is declined at beneficiary side due to Expired card';
+    const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER             = 'Invalid transaction or member is not able to find any appropriate response code on remitter side';
+    const GATEWAY_ERROR_PSP_NOT_AVAILABLE                                           = 'Psp is not available';
+    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT                         = 'Connection timeout in reqpay credit';
+    const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
+    const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
+    const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
+    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
+    const GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND                      = 'No original debit or credit request found';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
+    const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Insufficient funds in remitter account';
+    const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by remitter';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_BENEFICARY             = 'Suspected fraud or transaction is declined based on risk score by beneficiary';
+    const GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS                              = 'Beneficiary cut-off is in progress';
+    const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
+    const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate RRN found for the transaction on beneficiary side.';
 }

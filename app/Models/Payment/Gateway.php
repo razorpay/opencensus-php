@@ -198,6 +198,7 @@ class Gateway
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
+        self::UPI_ICICI,
     ];
 
     /**
@@ -435,7 +436,8 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
-        Payment\Gateway::FIRST_DATA
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::UPI_MINDGATE
     ];
 
     /**
