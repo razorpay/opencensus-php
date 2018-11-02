@@ -88,27 +88,24 @@ class MyOperator
         $code        = (($code === null) or ($code === 91)) ? '+91' : (string) $code;
         $number      = $phoneNumber->getNationalNumber();
 
-        return [$code, $number];
+        return [$code, (int) $number];
     }
 
     protected function makeCalLOutboundApiRequest(array $payload): Requests_Response
     {
-        $endpoint = sprintf(
-            '%s%s?token=%s',
-            self::API_BASE_URL,
-            self::API_CALL_OUTBOUND_PATH,
-            $this->config['api_token']);
+        $this->trace->info(TraceCode::MYOPERATOR_CALL_OUTBOUND_API_REQ, compact('payload'));
 
+        $endpoint = self::API_BASE_URL . self::API_CALL_OUTBOUND_PATH;
         $headers = [
             'Accept'       => 'application/json',
             'Content-type' => 'application/json',
         ];
-
         $options = [
             'timeout' => self::API_TIMEOUT,
         ];
-
-        $this->trace->info(TraceCode::MYOPERATOR_CALL_OUTBOUND_API_REQ, compact('payload'));
+        // MyOperator expects API token in post payload.
+        $payload += ['token' => $this->config['api_token']];
+        $payload = json_encode($payload);
 
         return Requests::post($endpoint, $headers, $payload, $options);
     }
