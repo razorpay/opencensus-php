@@ -5,7 +5,7 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 
 export default function MandatePaymentMethod({ mandate }) {
-  const { method, bank_account, card } = mandate;
+  const { method, bank_account, card, bank: issuer } = mandate;
   if (method === 'emandate') {
     return (
       <Definition>
@@ -16,6 +16,7 @@ export default function MandatePaymentMethod({ mandate }) {
           Emandate
         </strong>
         {/* token expiry of mandate */}
+        {issuer || null}
         {!!mandate.expire_at && (
           <>
             Token Expiry: <Time value={mandate.expire_at} />{' '}
@@ -37,7 +38,7 @@ export default function MandatePaymentMethod({ mandate }) {
     return !!card ? (
       <Definition>
         <strong>Card</strong>
-        <>{`${card.network} ending in ${card.last4}`}</>
+        <>{`${card.issuer}, ${card.network} ending in ${card.last4}`}</>
         <>Name on card - {card.name}</>
       </Definition>
     ) : (

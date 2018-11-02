@@ -39,7 +39,6 @@ const mandatoryBankFields = [
   'mandateBankAccountIFSC',
   'mandateBeneficiaryName',
   'mandateBankAccountNumber',
-  'mandateAuthType',
 ];
 
 @withRouter
