@@ -289,7 +289,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::REFERENCE_ID               => $input['payment']['id'],
-            RequestFields::MANDATE_REQUEST_ID         => $input['token']['id'],
+            RequestFields::MANDATE_REQUEST_ID         => $input['payment']['id'],
             RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
