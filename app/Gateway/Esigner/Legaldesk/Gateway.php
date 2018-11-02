@@ -360,6 +360,16 @@ class Gateway extends Base\Gateway
         return $this->config['live_api_key'];
     }
 
+    protected function getGatewayMerchantId2()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->getLiveMerchantId2();
+        }
+
+        return $this->getTestMerchantId2();
+    }
+
     protected function getTerminalAccessCode(array $input)
     {
         if ($this->mode === Mode::LIVE)
