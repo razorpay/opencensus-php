@@ -11,9 +11,9 @@ class RequestFields
 
     const PAYMENT_ID    = 'payment_id'; // payment_id
 
-    const REDIRECT_URL  = 'redirect_URL';
+    const REDIRECT_URL  = 'Redt_url';
 
-    const CANCEL_URL    = 'cancel_URL';
+    const CANCEL_URL    = 'Cncl_url';
 
     const CHECKSUM      = 'checkSum';
 
