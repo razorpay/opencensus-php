@@ -109,7 +109,8 @@ class RouteServiceProvider extends ServiceProvider
                                               'internal',
                                               'private',
                                               'proxy',
-                                              'device']);
+                                              'device',
+                                              'p2p']);
             }
         );
     }
