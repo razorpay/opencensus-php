@@ -369,6 +369,10 @@ final class RequestContext
         {
             $this->auth = Type::DEVICE_AUTH;
         }
+        else if ($this->setAdditionalVarsForP2pAuth() == true)
+        {
+            $this->auth = Type::PRIVATE_AUTH;
+        }
         else
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -498,6 +502,16 @@ final class RequestContext
         if (in_array($this->route, Route::$device, true) === true)
         {
             $this->keyId = $this->keyWithoutPrefix;
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function setAdditionalVarsForP2pAuth()
+    {
+        if (in_array($this->route, Route::$p2p, true) === true)
+        {
             return true;
         }
 
