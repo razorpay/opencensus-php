@@ -49,11 +49,6 @@ export const updateInSchema = ({ field, index }) => {
   };
 };
 
-export const updateAmount = amountObj => ({
-  type: 'UPDATE_DATA',
-  fields: amountObj,
-});
-
 export const addInSchema = field => ({
   type: 'ADD_IN_SCHEMA',
   field,
@@ -88,6 +83,7 @@ export default function(state = initialState, action) {
 
       entityData.settings.allow_social_share =
         entityData.settings.allow_social_share === '1';
+
       entityData.settings.allow_multiple_units =
         entityData.settings.allow_multiple_units === '1';
 

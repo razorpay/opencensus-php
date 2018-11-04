@@ -27,7 +27,7 @@ export default class extends React.PureComponent {
     );
 
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 10 is the vertical padding(top+bottom) size of the textarea in css
     target.style.height = this.elHeight;
   }
 

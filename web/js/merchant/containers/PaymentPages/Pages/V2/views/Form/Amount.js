@@ -38,35 +38,36 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                       amountToDisplay.split('.')[1]
                     }
                   </span>
-                  {paymentPageEntity.settings.allow_multiple_units && (
-                    <React.Fragment>
-                      <span style={{ margin: '0 24px' }}>×</span>
-                      <div class="Field Field--counter Field--small">
-                        <div class="Field-content">
-                          <div
-                            class="Field-wrapper Field-wrapper--counter"
-                            style={{
-                              display: 'inline-block',
-                              pointerEvents: 'none',
-                            }}
-                          >
-                            <button type="button" disabled>
-                              -
-                            </button>
-                            <input
-                              class="Field-el counter-value"
-                              name="field_1"
-                              defaultValue="1"
-                              disabled
-                            />
-                            <button type="button" disabled>
-                              +
-                            </button>
+                  {paymentPageEntity.settings &&
+                    paymentPageEntity.settings.allow_multiple_units && (
+                      <React.Fragment>
+                        <span style={{ margin: '0 24px' }}>×</span>
+                        <div class="Field Field--counter Field--small">
+                          <div class="Field-content">
+                            <div
+                              class="Field-wrapper Field-wrapper--counter"
+                              style={{
+                                display: 'inline-block',
+                                pointerEvents: 'none',
+                              }}
+                            >
+                              <button type="button" disabled>
+                                -
+                              </button>
+                              <input
+                                class="Field-el counter-value"
+                                name="field_1"
+                                defaultValue="1"
+                                disabled
+                              />
+                              <button type="button" disabled>
+                                +
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </React.Fragment>
-                  )}
+                      </React.Fragment>
+                    )}
                 </React.Fragment>;
               } else {
                 <input class="Field-el" placeholder="Enter Amount" disabled />;
@@ -121,7 +122,7 @@ export class AmountCreator extends React.PureComponent {
       hasStock: isAmountEntitySet ? !!field.stock | 0 : false,
       disableSubmit: !isAmountEntitySet,
       allowMultipleUnits: isAmountEntitySet
-        ? field.allow_multiple_units
+        ? field.settings.allow_multiple_units
         : false,
     };
 
@@ -137,14 +138,14 @@ export class AmountCreator extends React.PureComponent {
     if (stateName === 'has_dynamic_amount') {
       this.setState({
         hasDynamicAmount: value == 1 ? true : false,
-        allowMultipleUnits: 0,
+        allowMultipleUnits: false,
         hasStock: 0,
       });
 
       document.getElementsByName('amount')[0].value = '';
     } else if (name === 'allow_multiple_units') {
       this.setState({
-        allowMultipleUnits: target.checked ? 1 : 0,
+        allowMultipleUnits: target.checked,
       });
     } else if (stateName === 'has_stock') {
       this.setState({
@@ -200,7 +201,7 @@ export class AmountCreator extends React.PureComponent {
             name="allow_multiple_units"
             fieldLabel="Allow multiple purchases per customer"
             disabled={hasDynamicAmount}
-            checked={Boolean(allowMultipleUnits)}
+            checked={allowMultipleUnits}
             autoRender
           />
           <Input.Check

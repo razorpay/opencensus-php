@@ -198,7 +198,7 @@
 
     .title--big
       .Input-el
-        height: 40px
+        min-height: 40px
         font-size: 24px
         line-height: 32px
         font-weight: 600
@@ -243,8 +243,13 @@
         background: transparent
         color: #0D2366 // Same as in customer-facing view
 
-  .title--big .Input-el
-    padding: 1px 5px 2px // 1px less cuz of border
+  .title--big
+    .Input-el
+      padding: 1px 5px 2px // 1px less cuz of border
+
+    .fake-textarea
+      line-height: 32px
+      font-size: 24px
 
 
   #form-section
@@ -274,7 +279,7 @@
     .action-btn
       position absolute
       top: 8px
-      right: 2px
+      right: 8px
       font-size: 20px
       padding: 2px 8px
       cursor: pointer

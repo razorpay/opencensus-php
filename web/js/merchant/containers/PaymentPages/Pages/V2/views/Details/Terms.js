@@ -2,6 +2,8 @@ import Input from 'component/Input';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
 
+const infoText = 'Add Terms & Conditions if any';
+
 export default class extends React.PureComponent {
   state = { isEditable: false };
 
@@ -42,6 +44,7 @@ export default class extends React.PureComponent {
               name="terms"
               placeholder="Enter Terms & Conditions"
               defaultValue={this.props.terms}
+              info={infoText}
               onInput={this.handleOnInput}
               onBlur={e => {
                 this.setState({ isEditable: false });
@@ -61,7 +64,7 @@ export default class extends React.PureComponent {
               + Add Terms & Conditions
             </Button.Transparent>
             <Popover align="right" theme="dark">
-              <PopoverBody>Add Terms & Conditions if any</PopoverBody>
+              <PopoverBody>{infoText}</PopoverBody>
             </Popover>
           </span>
         )}

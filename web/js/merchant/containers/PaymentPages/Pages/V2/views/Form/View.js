@@ -6,7 +6,7 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { FIELD_TYPES } from './Fields/helpers';
 
 import {
-  updateAmount,
+  updateData,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -25,7 +25,7 @@ const CreatorType = {
 };
 
 @connect(state => ({ ...state.wysiwyg }), {
-  updateAmount,
+  updateData,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -80,11 +80,11 @@ export default class View extends React.PureComponent {
   onAmountCreatorSubmit = formData => {
     const { amount, stock, allow_multiple_units } = formData;
 
-    this.props.updateAmount({
+    this.props.updateData({
       amount: amount || null,
       stock: stock || null,
       settings: {
-        allow_multiple_units: allow_multiple_units === '1',
+        allow_multiple_units: !!allow_multiple_units,
       },
     });
 
