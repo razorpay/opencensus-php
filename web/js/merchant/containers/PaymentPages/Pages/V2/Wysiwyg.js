@@ -262,15 +262,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const reqPayload = {
       amount: amount || undefined,
       title,
-      description: description || undefined,
-      times_payable: stock || undefined,
-      terms: terms || undefined,
-      support_email: support_email || undefined,
-      support_contact: support_contact || undefined,
+      description: description || null,
+      times_payable: stock || null,
+      terms: terms || null,
+      support_email: support_email || null,
+      support_contact: support_contact || null,
       settings: {
         theme: settings.theme,
-        allow_multiple_units: !!settings.allow_multiple_units ? '1' : undefined,
-        allow_social_share: !!settings.allow_social_share ? '1' : '0',
+        allow_multiple_units: settings.allow_multiple_units ? '1' : '0',
+        allow_social_share: settings.allow_social_share ? '1' : '0',
         udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
       },
     };

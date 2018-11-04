@@ -38,7 +38,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                       amountToDisplay.split('.')[1]
                     }
                   </span>
-                  {paymentPageEntity.allow_multiple_units && (
+                  {paymentPageEntity.settings.allow_multiple_units && (
                     <React.Fragment>
                       <span style={{ margin: '0 24px' }}>×</span>
                       <div class="Field Field--counter Field--small">
@@ -186,7 +186,7 @@ export class AmountCreator extends React.PureComponent {
             defaultValue={this.defaults.amount}
             addonBefore="₹"
             autoFocus
-            pattern="^[1-9]+(.([0-9]){1,2})?$"
+            pattern="^[0-9]+(.([0-9]){1,2})?$"
             disabled={hasDynamicAmount}
           />
           <Input.Check

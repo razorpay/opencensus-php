@@ -84,7 +84,7 @@ export default class View extends React.PureComponent {
       amount: amount || null,
       stock: stock || null,
       settings: {
-        allow_multiple_units: !!allow_multiple_units,
+        allow_multiple_units: allow_multiple_units === '1',
       },
     });
 

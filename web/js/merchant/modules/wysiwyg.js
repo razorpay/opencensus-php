@@ -73,7 +73,11 @@ export default function(state = initialState, action) {
     case `${FETCH_ENTITY}::SUCCESS`:
       const entityData = { ...action.payload.data };
 
-      // Normalize expire_by for FE consumption
+      /*
+      *
+      *  Normalize expire_by for FE consumption
+      *
+      * */
       if (entityData.expire_by) {
         entityData.expire_by *= 1000;
       }
@@ -81,6 +85,11 @@ export default function(state = initialState, action) {
       if (entityData.amount) {
         entityData.amount /= 100;
       }
+
+      entityData.settings.allow_social_share =
+        entityData.settings.allow_social_share === '1';
+      entityData.settings.allow_multiple_units =
+        entityData.settings.allow_multiple_units === '1';
 
       entityData.stock = entityData.times_payable;
       delete entityData.times_payable;
