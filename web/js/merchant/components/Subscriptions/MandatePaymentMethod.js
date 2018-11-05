@@ -45,4 +45,6 @@ export default function MandatePaymentMethod({ mandate }) {
       'Card'
     );
   }
+
+  return '--';
 }

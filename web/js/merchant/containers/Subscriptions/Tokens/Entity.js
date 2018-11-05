@@ -106,12 +106,15 @@ export default class TokenEntityContainer extends Component {
             <div class="panel-heading">
               {entity.id}
               <div class="btn-toolbar pull-right">
-                <button
-                  class="btn btn-primary btn-sm"
-                  onClick={this.handleChargeNow}
-                >
-                  Charge Now
-                </button>
+                {entity &&
+                  entity.recurring_details.status !== 'rejected' && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={this.handleChargeNow}
+                    >
+                      Charge Now
+                    </button>
+                  )}
               </div>
             </div>
             <Alert type="error" message={error} />
