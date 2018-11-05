@@ -101,18 +101,8 @@ class Gateway extends Base\Gateway
                 return null;
 
             case Base\Enrolled::U:
-                $isInternational = false;
 
-                $iin = null;
-
-                if (isset($input['card']['international']))
-                {
-                    $isInternational = $input['card']['international'];
-
-                    $iin = $input['card']['iin'];
-                }
-
-                if ($isInternational === true)
+                if ($input['card'][Card\Entity::INTERNATIONAL] === true)
                 {
                     return null;
                 }
@@ -123,8 +113,8 @@ class Gateway extends Base\Gateway
                     'Invalid enrollment response',
                     [
                         'enrollment_status' => $enrolled,
-                        'isInternational' => $isInternational,
-                        'iin' => $iin
+                        'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
+                        'iin' => $input['card'][Card\Entity::IIN]
                     ],
                     null,
                     BaseGateway\Action::AUTHENTICATE);
