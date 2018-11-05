@@ -29,13 +29,13 @@ class RecurringCharge extends Base
 
     protected function processEntry(array & $entry)
     {
+        $this->paymentProcessor->flushPaymentObjects();
+
         $order = $this->createOrder($entry);
 
         $this->processPayment($entry, $order);
 
         $entry[Header::STATUS] = Status::SUCCESS;
-
-        $this->paymentProcessor->flushPaymentObjects();
     }
 
     protected function createOrder(array & $entry): Order\Entity
