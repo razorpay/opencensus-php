@@ -89,13 +89,6 @@ class Gateway extends Base\Gateway
     {
         $enrolled = $this->processEnrollmentResponse($input, $response);
 
-        $isInternational = false;
-
-        if (isset($input['card']['international']) === true)
-        {
-            $isInternational = $input['card']['international'];
-        }
-
         //
         // Determine card enrollment status and take next action
         //
@@ -108,17 +101,30 @@ class Gateway extends Base\Gateway
                 return null;
 
             case Base\Enrolled::U:
+                $isInternational = false;
+
+                $iin = null;
+
+                if (isset($input['card']['international']))
+                {
+                    $isInternational = $input['card']['international'];
+
+                    $iin = $input['card']['iin'];
+                }
+
                 if ($isInternational === true)
                 {
                     return null;
                 }
 
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_CANNOT_AUTHENTICATE_TECH_BUSINESS_REASON,
+                    ErrorCode::GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,
                     $enrolled,
                     'Invalid enrollment response',
                     [
-                        'enrollment_status' => $enrolled
+                        'enrollment_status' => $enrolled,
+                        'isInternational' => $isInternational,
+                        'iin' => $iin
                     ],
                     null,
                     BaseGateway\Action::AUTHENTICATE);
