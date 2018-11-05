@@ -84,6 +84,14 @@ class DailyFile extends Mailable
             }
         }
 
+        if (empty($this->data['summaryFile']) === false)
+        {
+            if (empty($this->data['summaryFile']['url']) === false)
+            {
+                $this->attach($this->data['summaryFile']['url'], ['as' => $this->data['summaryFile']['name']]);
+            }
+        }
+
         return $this;
     }
 
