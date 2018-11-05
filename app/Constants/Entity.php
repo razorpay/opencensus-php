@@ -154,6 +154,7 @@ class Entity
     const AXIS_GENIUS            = 'axis_genius';
     const NETBANKING             = 'netbanking';
     const CYBERSOURCE            = 'cybersource';
+    const NPCI_PAYSECURE         = 'npci_paysecure';
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
@@ -338,6 +339,7 @@ class Entity
         self::NETBANKING             => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
+        self::NPCI_PAYSECURE         => \RZP\Gateway\NpciPaySecure::class,
         self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
         self::ENACH                  => \RZP\Gateway\Enach\Base::class,
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,

@@ -64,6 +64,7 @@ class Gateway
     const UPI_HULK               = 'upi_hulk';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
+    const NPCI_PAYSECURE         = 'npci_paysecure';
 
     const CARD_FSS               = 'card_fss';
 
@@ -525,6 +526,7 @@ class Gateway
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
         self::HITACHI             => Settlement\Channel::KOTAK,
+        self::NPCI_PAYSECURE      => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -541,6 +543,7 @@ class Gateway
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::NPCI_PAYSECURE,
             self::FIRST_DATA,
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
@@ -626,6 +629,7 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
+        self::NPCI_PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
@@ -653,6 +657,7 @@ class Gateway
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
+        self::NPCI_PAYSECURE        => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
@@ -779,6 +784,9 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
+        self::NPCI_PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -859,6 +867,7 @@ class Gateway
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
+        self::NPCI_PAYSECURE,
         self::WALLET_PAYUMONEY,
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,

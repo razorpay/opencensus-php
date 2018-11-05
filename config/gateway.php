@@ -65,6 +65,7 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
+        'npci_paysecure',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
