@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Config;
+use Carbon\Carbon;
 use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
@@ -13,12 +14,14 @@ use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -561,6 +564,7 @@ class Entity extends Base\PublicEntity
 
     public function activate()
     {
+        $this->setDiwaliPromotionalFeatureIfApplicable();
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
@@ -1807,5 +1811,26 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    // delete this after 31st
+    protected function setDiwaliPromotionalFeatureIfApplicable()
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or
+            ($this->getPricingPlanId() !== Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID))
+        {
+            return;
+        }
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID    => $this->getId(),
+            Feature\Entity::ENTITY_TYPE  => 'merchant',
+            Feature\Entity::NAMES        => [Feature\Constants::DIWALI_PROMOTIONAL_PLAN],
+            Feature\Entity::SHOULD_SYNC  => true,
+        ];
+
+        (new Feature\Service)->addFeatures($featureParams);
     }
 }

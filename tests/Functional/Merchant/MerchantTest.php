@@ -1031,6 +1031,47 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $bankAccounts['count']);
     }
 
+    public function testDiwaliPromotionalPlan()
+    {
+        $this->fixtures->pricing->createDiwaliPromotionalPlan();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
+
+        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals(100, $transaction['fee']);
+
+        // mock carbon to test timestamp check
+
+        $firstDay2019 = Carbon::createFromTimestamp(1546324200);
+
+        Carbon::setTestNow($firstDay2019);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
+    }
+
     public function testSetBanks()
     {
         $this->ba->adminAuth();
