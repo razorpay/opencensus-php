@@ -1137,6 +1137,7 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();
+        $this->createPaysecureTerminals();
         $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingBobTerminals();
@@ -1331,6 +1332,20 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'       => 'demo_terminal_cybersource',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
             'recurring'                 => 1,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+    }
+
+    protected function createPaysecureTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => '1VwJebUIU7hI2d',
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::NPCI_PAYSECURE,
+            'card'                      => '1',
+            'shared'                    => '1',
+            'gateway_merchant_id'       => 'test_merchant_cybersource',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
