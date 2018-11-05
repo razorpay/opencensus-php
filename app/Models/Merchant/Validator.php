@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
@@ -11,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
@@ -988,6 +990,21 @@ class Validator extends Base\Validator
         if ($bankAccount === null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+    }
+
+    public function validateNowIsWorkingHour()
+    {
+        $now = Carbon::now(Timezone::IST);
+        $isWorkingHour = (($now->isWeekday() === true) and
+                          // Between 9 AM - 6 PM (Both inclusive)
+                          ($now->hour >= 9) and
+                          ($now->hour < 18));
+
+        if ($isWorkingHour === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
     }
 }

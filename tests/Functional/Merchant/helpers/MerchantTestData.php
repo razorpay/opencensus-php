@@ -3523,4 +3523,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSubmitSupportCallRequestOnNonWorkingHours' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
