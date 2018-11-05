@@ -1482,16 +1482,9 @@ class ReconciliationFileTest extends TestCase
         $paymentData = $this->overrideAmexPayment($gatewayPayment);
 
         // amex recon file contains 20 lines of extra data before the actual payment
-        // information. Out of these 14 contains some data and rest 6 are blank
 
-        // adding 14 rows with data before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 14; $row_index++)
-        {
-            $entries[] = ['Test' => 'Data'];
-        }
-
-        // adding 6 blank rows before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 7; $row_index++)
+        // adding 20 rows with data before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 20; $row_index++)
         {
             $entries[] = [];
         }
@@ -1500,7 +1493,8 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $paymentData;
 
-        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement');
+        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
+                                        ['Sheet 1'], 'xls');
 
         $response = $this->runForFiles([$file], 'Amex');
 
@@ -1551,16 +1545,10 @@ class ReconciliationFileTest extends TestCase
         $paymentData['Charge amount'] = '1.00';
 
         // amex recon file contains 20 lines of extra data before the actual payment
-        // information. Out of these 14 contains some data and rest 6 are blank
 
-        // adding 14 rows with data before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 14; $row_index++)
-        {
-            $entries[] = ['Test' => 'Data'];
-        }
+        // adding 20 rows with data before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 20; $row_index++)
 
-        // adding 6 blank rows before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 7; $row_index++)
         {
             $entries[] = [];
         }
@@ -1569,7 +1557,8 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $paymentData;
 
-        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement');
+        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
+            ['Sheet 1'], 'xls');
 
         $response = $this->runForFiles([$file], 'Amex');
 
