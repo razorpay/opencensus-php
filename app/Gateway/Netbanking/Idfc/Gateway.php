@@ -19,6 +19,8 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE = Fields::CHECKSUM;
 
+    const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
+
     protected $gateway              = 'netbanking_idfc';
     protected $bank                 = 'idfc';
     protected $sortRequestContent   = false;
@@ -332,7 +334,12 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getStandardRequestArray($content);
 
-        $request['options']['verify'] = __DIR__ . '/cainfo/cainfo.pem';
+        if ($this->mock === true)
+        {
+            return $request;
+        }
+
+        $request['options']['verify'] = $this->getClientCertificate();
 
         $request['headers']['Content-Type'] = 'application/json';
 
@@ -348,5 +355,49 @@ class Gateway extends Base\Gateway
         $domainConstantName = strtoupper($domainType).'_'.strtoupper($this->action).'_DOMAIN';
 
         return constant($urlClass . '::' .$domainConstantName);
+    }
+
+    protected function getClientCertificate()
+    {
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        $clientCertPath = $gatewayCertPath . '/' .
+            $this->getClientCertificateName();
+
+        if (file_exists($clientCertPath) === false)
+        {
+            $clientCertFile = fopen($clientCertPath, 'w');
+
+            $encodedCert = $this->config['live_client_certificate'];
+
+            if ($this->mode === Mode::TEST)
+            {
+                $encodedCert = $this->config['test_client_certificate'];
+            }
+
+            $key = base64_decode($encodedCert);
+
+            fwrite($clientCertFile, $key);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'clientCertPath' => $clientCertPath
+                ]);
+        }
+
+        return $clientCertPath;
+    }
+
+    protected function getClientCertificateName()
+    {
+        $certName = $this->config['client_certificate'];
+
+        return $certName;
+    }
+
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 }
