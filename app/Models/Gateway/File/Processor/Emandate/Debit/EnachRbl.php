@@ -4,9 +4,12 @@ namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
@@ -40,24 +43,22 @@ class EnachRbl extends Base
         $this->gatewayRepo = $this->repo->enach;
     }
 
-    protected function formatDataForFile($payments)
+    protected function formatDataForFile($tokens)
     {
         $rows = [];
 
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $paymentId = $payment->getId();
+            $paymentId = $token['payment_id'];
 
-            $debitDate = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)->format('d/m/Y');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
+            $debitDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('d/m/Y');
 
             $row = [
-                Headings::UTILITYCODE             => $payment->terminal->getGatewayMerchantId(),
+                Headings::UTILITYCODE             => $token->terminal->getGatewayMerchantId(),
                 Headings::TRANSACTIONTYPE         => 'ACH DR',
                 Headings::SETTLEMENTDATE          => $debitDate,
                 Headings::BENEFICIARYACHOLDERNAME => $token->getBeneficiaryName(),
-                Headings::AMOUNT                  => $this->getFormattedAmount($payment->getAmount()),
+                Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
                 Headings::DESTINATIONBANKCODE     => $token->getIfsc(),
                 Headings::BENEFICIARYACNO         => $token->getAccountNumber(),
                 Headings::TRANSACTIONREFERENCE    => $paymentId,
@@ -89,11 +90,108 @@ class EnachRbl extends Base
         return new Enach\Base\Entity;
     }
 
-    protected function getGatewayAttributes(Payment\Entity $payment): array
+    protected function getEnachGatewayAttributes($token): array
     {
         return [
             Enach\Base\Entity::ACQUIRER => self::ACQUIRER,
-            Enach\Base\Entity::UMRN     => $payment->getGlobalOrLocalTokenEntity()->getGatewayToken(),
+            Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
+    }
+
+    public function checkIfValidDataAvailable(PublicCollection $tokens)
+    {
+        if ($tokens->count() === 0)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
+        }
+    }
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+
+        $paymentIds = $tokens->pluck('payment_id')->toArray();
+
+        $this->trace->info(
+            TraceCode::EMANDATE_DEBIT_REQUEST,
+            [
+                'gateway_file_id' => $this->gatewayFile->getId(),
+                'entity_ids'      => $paymentIds,
+                'begin'           => $begin,
+                'end'             => $end,
+            ]);
+
+        return $tokens;
+    }
+
+    public function generateData(PublicCollection $tokens)
+    {
+        try
+        {
+            $data = $tokens;
+
+            // Create gateway entities
+            $this->createGatewayEntities($tokens);
+
+            return $data;
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
+    }
+
+    protected function createGatewayEntities(PublicCollection $tokens)
+    {
+        foreach ($tokens as $token)
+        {
+            $paymentId = $token['payment_id'];
+
+            $gatewayPayment = $this->gatewayRepo->findByPaymentIdAndAction(
+                $paymentId, GatewayAction::AUTHORIZE);
+
+            //
+            // If gatewayPayment already exists then skip its creation.
+            // This case will arise when we retry sending some payments to the bank
+            //
+            if ($gatewayPayment !== null)
+            {
+                continue;
+            }
+
+            $this->createEnachGatewayEntity($token);
+        }
+    }
+
+    protected function createEnachGatewayEntity($token)
+    {
+        $paymentId = $token['payment_id'];
+
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+
+        $gatewayPayment->setBank($token['bank']);
+
+        $gatewayPayment->setAmount($token['payment_amount']);
+
+        $attributes = $this->getEnachGatewayAttributes($token);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 }
