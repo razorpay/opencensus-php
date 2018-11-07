@@ -3398,6 +3398,9 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
         $this->fixtures->merchant->activate();
 
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
         $this->startTest();
     }
 
@@ -3406,6 +3409,27 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
         $this->fixtures->merchant->activate();
 
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestOnNonWorkingHours()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 8 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 8, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 5th Nov 2018, 7 PM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 19, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 4th Nov 2018, 10 AM, Sunday
+        Carbon::setTestNow(Carbon::create(2018, 11, 4, 10, null, null, Timezone::IST));
         $this->startTest();
     }
 }
