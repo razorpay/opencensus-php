@@ -13,11 +13,6 @@ class DefaultPlan
     const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
     const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
 
-    const ORG_TO_PROMOTIONAL_PLAN_ID = [
-        Org\Entity::HDFC_ORG_ID     => self::HDFC_PROMOTIONAL_PLAN_ID,
-        Org\Entity::BOB_ORG_ID      => self::BOB_PROMOTIONAL_PLAN_ID,
-    ];
-
     public static function getPricingSeedData()
     {
         $pricing1 = self::getStartupPlanSeedData();

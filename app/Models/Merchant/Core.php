@@ -68,10 +68,20 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
-        if (isset(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]) === true)
+        $planId = $org->getDefaultPricingPlanId();
+
+        if (empty($planId) === true)
         {
-            $merchant->setPricingPlan(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]);
+              throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG,
+                    null,
+                    [
+                        'org_id'      => $org->getId(),
+                    ]
+                );
         }
+
+        $merchant->setPricingPlan($planId);
 
         $merchant->org()->associate($org);
 
