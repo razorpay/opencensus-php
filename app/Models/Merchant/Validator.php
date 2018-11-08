@@ -990,4 +990,13 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
     }
+
+    public function validateNowIsWorkingHour()
+    {
+        if (is_rzp_business_hour() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
+        }
+    }
 }
