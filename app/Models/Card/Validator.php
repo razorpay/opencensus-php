@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'required|regex:(^[a-zA-Z. 0-9\']+$)|max:100',
         Entity::VAULT              => 'sometimes|string|in:tokenex',
+        Entity::INTERNATIONAL      => 'sometimes',
     );
 
     protected static $editRules = array(
@@ -22,7 +23,8 @@ class Validator extends Base\Validator
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'sometimes|alpha_space|max:100',
         Entity::VAULT_TOKEN        => 'sometimes|string',
-        Entity::VAULT              => 'required_with:vault_token|in:tokenex'
+        Entity::VAULT              => 'required_with:vault_token|in:tokenex',
+        Entity::INTERNATIONAL      => 'sometimes',
     );
 
     protected static $recurringRules = [

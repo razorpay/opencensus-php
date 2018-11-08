@@ -100,6 +100,25 @@ class Gateway extends Base\Gateway
             case Base\Enrolled::N:
                 return null;
 
+            case Base\Enrolled::U:
+
+                if ($input['card'][Card\Entity::INTERNATIONAL] === true)
+                {
+                    return null;
+                }
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,
+                    $enrolled,
+                    'Invalid enrollment response',
+                    [
+                        'enrollment_status' => $enrolled,
+                        'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
+                        'iin' => $input['card'][Card\Entity::IIN]
+                    ],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
+
             default:
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
