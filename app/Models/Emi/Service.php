@@ -34,7 +34,7 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions($offers = null, $forceOffer = false)
+    public function getEmiOptions($offers = null, $order = null)
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
@@ -53,18 +53,31 @@ class Service extends Base\Service
 
             if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
-                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
+                $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
-                $plans[$issuer][] = [
-                    'duration'   => $duration,
-                    'interest'   => 0,
-                    'subvention' => Subvention::MERCHANT,
-                    'min_amount' => $minAmount,
-                    'offer_id'   => $emiOfferPlans[$plan->getId()],
-                ];
+                if ($order->getAmount() >= $minEmiAmount)
+                {
+                    $plans[$issuer][] = [
+                        'duration'   => $duration,
+                        'interest'   => 0,
+                        'subvention' => Subvention::MERCHANT,
+                        'min_amount' => $minEmiAmount,
+                        'offer_id'   => $emiOfferPlans[$plan->getId()],
+                    ];
+                }
+                else
+                {
+                    $plans[$issuer][] = [
+                        'duration'   => $duration,
+                        'interest'   => $plan->getRate() / 100,
+                        'subvention' => Subvention::CUSTOMER,
+                        'min_amount' => $minAmount,
+                    ];
+                }
             }
             // If offer is forced, there's no need to show the other EMI plans
-            else if ($forceOffer === false)
+            else if (($order === null) or
+                     ($order->isOfferForced() === false))
             {
                 $plans[$issuer][] = [
                     'duration'   => $duration,

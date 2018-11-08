@@ -622,7 +622,7 @@ class Checkout
             $data['force_offer'] = true;
         }
 
-        $this->updateEmiOptionsUsingOffers($offers, $data, $forceOffer = $order->isOfferForced());
+        $this->updateEmiOptionsUsingOffers($offers, $data, $order);
 
         //
         // For multiple offers, we show all methods,
@@ -649,9 +649,9 @@ class Checkout
         }
     }
 
-    protected function updateEmiOptionsUsingOffers($offers, array & $data, bool $forceOffer = false)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data, Order\Entity $order = null)
     {
-        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers, $forceOffer);
+        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers, $order);
     }
 
     protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
