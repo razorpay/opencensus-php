@@ -642,7 +642,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DEBIT_PIN_CALLBACK                = 'GATEWAY_DEBIT_PIN_CALLBACK';
     const GATEWAY_PAYMENT_OTP_RESEND_REQUEST        = 'GATEWAY_PAYMENT_OTP_RESEND_REQUEST';
     const GATEWAY_PAYMENT_OTP_RESEND_RESPONSE       = 'GATEWAY_PAYMENT_OTP_RESEND_RESPONSE';
-
+    const GATEWAY_REQUEST_INPUT_RECEIVED            = 'GATEWAY_REQUEST_INPUT_RECEIVED';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
@@ -1427,6 +1427,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
         self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
+        self::GATEWAY_REQUEST_INPUT_RECEIVED            => 'Input received to make request to gateway',
 
         self::QUEUE_INVALID_CONFIG                      => 'Invalid Config used for Queue name and connection fetching',
 
