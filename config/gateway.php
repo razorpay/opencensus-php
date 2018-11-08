@@ -571,6 +571,15 @@ return [
         'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
 
+    'npci_paysecure' => [
+        'caller_id'         => env('NPCI_PAYSECURE_CALLER_ID'),
+        'token'             => env('NPCI_PAYSECURE_TOKEN'),
+        'userid'            => env('NPCI_PAYSECURE_USERID'),
+        'password'          => env('NPCI_PAYSECURE_PASSWORD'),
+        'partner_id'        => env('NPCI_PAYSECURE_PARTNER_ID'),
+        'merchant_password' => env('NPCI_PAYSECURE_MERCHANT_PASSWORD'),
+    ],
+
     'sharp' => [
     ],
 
