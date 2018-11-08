@@ -911,6 +911,7 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
             return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
                                    ->toArray();
         }
 

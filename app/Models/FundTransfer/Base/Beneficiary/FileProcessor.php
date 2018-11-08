@@ -101,6 +101,3 @@ abstract class FileProcessor extends Beneficiary
         return $data;
     }
 }
-
-
-

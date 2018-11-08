@@ -5,7 +5,7 @@ namespace RZP\Console\Commands;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
-use RZP\Models\Card\IIN\Import\XLSImporter ;
+use RZP\Models\Card\IIN\Import\XLSImporter;
 
 class IinImport extends Command
 {
@@ -54,4 +54,3 @@ class IinImport extends Command
         ];
     }
 }
-

@@ -252,4 +252,3 @@ class UpiAxisGatewayTest extends TestCase
     }
 
 }
-

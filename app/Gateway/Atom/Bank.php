@@ -63,4 +63,3 @@ class Bank
         return self::$map[$ifsc];
     }
 }
-

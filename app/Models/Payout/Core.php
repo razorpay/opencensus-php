@@ -214,6 +214,7 @@ class Core extends Base\Core
 
         return $payoutsRetried;
     }
+
     protected function createCustomerPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
@@ -286,7 +287,7 @@ class Core extends Base\Core
         return $payout;
     }
 
-    protected function createPayoutAttemptEntity(Entity $payout): FundTransferAttempt\Entity
+    public function createPayoutAttemptEntity(Entity $payout): FundTransferAttempt\Entity
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
@@ -321,9 +322,11 @@ class Core extends Base\Core
         return $customer;
     }
 
-    protected function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer)
+    public function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer)
     {
         $destId = $input[Entity::DESTINATION];
+
+        $destination = null;
 
         if ($input[Entity::METHOD] === Method::FUND_TRANSFER)
         {
@@ -335,6 +338,12 @@ class Core extends Base\Core
                 throw new Exception\BadRequestValidationFailureException(
                     "Invalid destination_id: " . $destination->getPublicId());
             }
+        }
+
+        if (empty($destination) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Destination not valid for the method " . $input[Entity::METHOD]);
         }
 
         return $destination;
@@ -431,7 +440,8 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant, then we don't check the merchant funds_on_hold and proceed with payout creation
+        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
+        // then we don't check the merchant funds_on_hold and proceed with payout creation
         if (($merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
             ($merchant->getHoldFunds() === true))
         {

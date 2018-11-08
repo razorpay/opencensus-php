@@ -472,6 +472,10 @@ return [
         'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET'),
         'live_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_LIVE_MERCHANT_ID'),
         'live_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'client_certificate'     => env('NETBANKING_IDFC_CLIENT_CERTIFICATE'),
+        'test_client_certificate' => env('NETBANKING_IDFC_TEST_CLIENT_CERTIFICATE'),
+        'live_client_certificate' => env('NETBANKING_IDFC_LIVE_CLIENT_CERTIFICATE'),
+        'cert_dir_name'           => env('NETBANKING_IDFC_CERT_DIR_NAME'),
     ],
 
     'netbanking_icici' => [

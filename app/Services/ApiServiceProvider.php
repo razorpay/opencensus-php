@@ -25,6 +25,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -34,6 +35,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -236,6 +238,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerPincodeSearch();
 
         $this->registerDatabaseConnection();
+
+        $this->registerMyOperator();
     }
 
     /**
@@ -383,23 +387,18 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\Mutex($app);
             }
 
+            // this is still required for testing,
+            // until we move redis_labs config as default connection
             $mutex = new Mutex($app);
 
-            $requestId = $app['request']->getId();
-
-            $mode = $app['rzp.mode'] ?? 'live';
-
-            $dualWrite = $app->razorx->getTreatment($requestId, 'redis_dual_write', $mode);
-
-            if (($this->app->environment('testing') === true) or
-                ($dualWrite === 'off'))
+            if ($this->app->environment('testing') === true)
             {
                 $mutex->setRedisClient(new Mock\RedisDualWrite($app));
 
                 return $mutex;
             }
 
-            $mutex->setRedisClient($this->app['redisdualwrite']);
+            $mutex->setRedisClient(Redis::Connection('redis_labs'));
 
             return $mutex;
         });
@@ -409,46 +408,50 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         Relation::morphMap([
             // heimdall
-            'org'              => Admin\Org\Entity::class,
-            'group'            => Admin\Group\Entity::class,
-            'admin'            => Admin\Admin\Entity::class,
-            'role'             => Admin\Role\Entity::class,
-            'permission'       => Admin\Permission\Entity::class,
+            'org'                       => Admin\Org\Entity::class,
+            'group'                     => Admin\Group\Entity::class,
+            'admin'                     => Admin\Admin\Entity::class,
+            'role'                      => Admin\Role\Entity::class,
+            'permission'                => Admin\Permission\Entity::class,
 
             // line items
-            'invoice'          => Invoice\Entity::class,
-            'addon'            => Addon\Entity::class,
+            'invoice'                   => Invoice\Entity::class,
+            'addon'                     => Addon\Entity::class,
 
             // transfers
-            'transfer'         => Transfer\Entity::class,
-            'reversal'         => Reversal\Entity::class,
-            'customer'         => Customer\Entity::class,
+            'transfer'                  => Transfer\Entity::class,
+            'reversal'                  => Reversal\Entity::class,
+            'customer'                  => Customer\Entity::class,
 
             // file store
-            'merchant'         => Merchant\Entity::class,
-            'merchant_detail'  => Merchant\Detail\Entity::class,
-            'batch'            => Batch\Entity::class,
-            'gateway_file'     => GatewayFile\Entity::class,
+            'merchant'                  => Merchant\Entity::class,
+            'merchant_detail'           => Merchant\Detail\Entity::class,
+            'batch'                     => Batch\Entity::class,
+            'gateway_file'              => GatewayFile\Entity::class,
 
             // transaction
-            'adjustment'       => Adjustment\Entity::class,
-            'payment'          => Payment\Entity::class,
-            'order'            => Order\Entity::class,
-            'refund'           => Payment\Refund\Entity::class,
-            'settlement'       => Settlement\Entity::class,
-            'payout'           => Payout\Entity::class,
+            'adjustment'                => Adjustment\Entity::class,
+            'payment'                   => Payment\Entity::class,
+            'order'                     => Order\Entity::class,
+            'refund'                    => Payment\Refund\Entity::class,
+            'settlement'                => Settlement\Entity::class,
+            'payout'                    => Payout\Entity::class,
+            'transaction'               => Transaction\Entity::class,
+            'customer_transaction'      => Customer\Transaction\Entity::class,
 
-            'bank_account'     => BankAccount\Entity::class,
-            'virtual_account'  => VirtualAccount\Entity::class,
+            'bank_account'              => BankAccount\Entity::class,
+            'virtual_account'           => VirtualAccount\Entity::class,
 
-            'subscription'     => Subscription\Entity::class,
-            'promotion'        => Promotion\Entity::class,
+            'subscription'              => Subscription\Entity::class,
+            'promotion'                 => Promotion\Entity::class,
 
-            'dispute'          => Dispute\Entity::class,
+            'dispute'                   => Dispute\Entity::class,
 
-            'workflow_action'  => Action\Entity::class,
+            'workflow_action'           => Action\Entity::class,
 
-            'merchant_request' => MerchantRequest\Entity::class,
+            'merchant_request'          => MerchantRequest\Entity::class,
+
+            'subscription_registration' => SubscriptionRegistration\Entity::class,
         ]);
     }
 
@@ -579,6 +582,17 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new IlluminateMySqlConnection($connection, $database, $prefix, $config);
+        });
+    }
+
+    protected function registerMyOperator()
+    {
+        $this->app->singleton('myoperator', function()
+        {
+            $config = $this->app->config->get('applications.myoperator');
+            $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
+
+            return new $impl($this->app->trace, $config);
         });
     }
 }

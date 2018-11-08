@@ -260,13 +260,26 @@ class Report extends Base\Core
             return;
         }
 
-        $count = $progressReport->count + $failureReport->count;
+        $result          = [];
 
-        $data = array_merge($progressReport->getSummary(), $failureReport->getSummary());
+        $count           = $progressReport->count + $failureReport->count;
+
+        $progressSummary = $progressReport->getSummary();
+
+        $failureSummary  = $failureReport->getSummary();
+
+        foreach ($progressSummary as $reportInfo)
+        {
+            $result['channel'][] = $reportInfo['channel'];
+
+            $result['count'][]   = $reportInfo['count'];
+        }
+
+        $result += $failureSummary;
 
         (new SlackNotification)->send(
             'fta_recon_report',
-            $data,
+            $result,
             null,
             $count);
     }
@@ -279,6 +292,7 @@ class Report extends Base\Core
             'header'  => $info,
             'subject' => $info . Carbon::today(Timezone::IST)->format('Y-m-d'),
             'date'    => Carbon::today(Timezone::IST)->format('Y-m-d'),
+            'summary' => [],
         ];
 
         $attachments = [];
@@ -357,7 +371,7 @@ class Report extends Base\Core
 
         if ($this->count !== 0)
         {
-            $this->summary[] = ['failureCount' => $this->count];
+            $this->summary['failureCount'] = $this->count;
         }
 
         fclose($this->fileHandler);

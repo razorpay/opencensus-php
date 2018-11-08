@@ -279,6 +279,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PARTIAL_PAYMENT, $partialPayment);
     }
 
+    public function setBank(string $bank)
+    {
+        return $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setMethod(string $method)
+    {
+        return $this->setAttribute(self::METHOD, $method);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

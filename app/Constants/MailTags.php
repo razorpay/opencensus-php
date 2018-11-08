@@ -62,6 +62,7 @@ class MailTags
     const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
+    const BATCH_AUTH_LINK_FILE             = 'batch_auth_link_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';

@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\FileStore;
 
 class Repository extends Base\Repository
@@ -85,7 +86,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->whereNotExists(function($query)
-                        {
+                      {
                             $idAttr            = $this->dbColumn(Entity::ID);
                             $ufhTableName      = $this->repo->file_store->getTableName();
                             $ufhEntityIdAttr   = $this->repo->file_store->dbColumn(FileStore\Entity::ENTITY_ID);
@@ -95,7 +96,7 @@ class Repository extends Base\Repository
                                   ->from($ufhTableName)
                                   ->whereRaw("$ufhEntityIdAttr = $idAttr")
                                   ->where($ufhEntityTypeAttr, $this->entity);
-                        });
+                      });
 
         $createdAtAttr = $this->dbColumn(Entity::CREATED_AT);
 
@@ -112,5 +113,12 @@ class Repository extends Base\Repository
         return $query->skip($skip)
                      ->take($take)
                      ->get();
+    }
+
+    protected function addQueryParamTypes(BuilderEx $query, array $params)
+    {
+        $typeAttribute = $this->dbColumn(Entity::TYPE);
+
+        $query->whereIn($typeAttribute, $params[Entity::TYPES]);
     }
 }

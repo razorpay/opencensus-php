@@ -110,3 +110,21 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/ap
 # Run on both beta and prod
 php artisan rzp:index test merchant
 php artisan rzp:index live merchant
+
+#26 Oct, 2018, Adds entity_type to invoice index
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_invoice_test/_mapping/api_invoice_test" -d '{
+    "properties": {
+        "entity_type": {
+            "type": "keyword"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_invoice_live/_mapping/api_invoice_live" -d '{
+    "properties": {
+        "entity_type": {
+            "type": "keyword"
+        }
+    }
+}'
+

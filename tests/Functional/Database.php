@@ -275,4 +275,3 @@ class Database
         return (env('RUN_FIXTURES', true));
     }
 }
-

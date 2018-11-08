@@ -4,8 +4,11 @@ namespace RZP\Error;
 
 class Action
 {
+    // These actions are meant to inform checkout about the next action which it should take.
     const RETRY = 'RETRY';
+
     const TOPUP = 'TOPUP';
+
     const PENDING = 'PENDING';
 
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT = self::RETRY;

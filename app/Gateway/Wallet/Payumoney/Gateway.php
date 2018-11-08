@@ -845,4 +845,3 @@ class Gateway extends Base\Gateway
         }
     }
 }
-

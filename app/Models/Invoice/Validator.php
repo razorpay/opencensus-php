@@ -14,8 +14,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -47,6 +49,8 @@ class Validator extends Base\Validator
 
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
+    const MIN_AMOUNT = 100;
+
     /**
      * A minimum of 15 minutes of gap must exist between invoice
      * issue and expired by timestamps.
@@ -76,7 +80,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT     => 'filled|boolean',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
         Entity::BILLING_START       => 'filled|epoch',
@@ -138,7 +142,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT     => 'filled|boolean',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
         Entity::BILLING_START       => 'filled|epoch',
@@ -248,16 +252,42 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
     ];
 
+    protected static $validExternalEntities = [
+        E::SUBSCRIPTION_REGISTRATION,
+    ];
+
     public function validateAmount(array $input)
     {
+        $invoice = $this->entity;
+
         if (isset($input[Entity::AMOUNT]) === false)
         {
+            return;
+        }
+
+        if (($invoice->isTypeOfSubscriptionRegistration() === true)
+            and ($invoice->entity->getMethod() == SubscriptionRegistration\Method::EMANDATE))
+        {
+            $amount = (int) $input[Entity::AMOUNT];
+
+            if($amount !== 0)
+            {
+                throw new BadRequestValidationFailureException(
+                    'The amount should be 0.',
+                    'amount',
+                    [
+                        'id'                 => $invoice->getId(),
+                        'amount'             => $input[Entity::AMOUNT],
+                    ]);
+            }
             return;
         }
 
         $this->checkIfAmountIsExpectedInInput($input);
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
+
+        $this->validateMinAmount($input[Entity::AMOUNT]);
     }
 
     /**
@@ -346,6 +376,22 @@ class Validator extends Base\Validator
                     'id'                 => $invoice->getId(),
                     'amount'             => $amount,
                     'max_amount_allowed' => $maxAmountAllowed,
+                ]);
+        }
+    }
+
+    public function validateMinAmount(int $amount)
+    {
+        $invoice = $this->entity;
+
+        if ($amount < self::MIN_AMOUNT)
+        {
+            throw new BadRequestValidationFailureException(
+                'The amount should be atleast '.self::MIN_AMOUNT,
+                'amount',
+                [
+                    'id'                 => $invoice->getId(),
+                    'amount'             => $amount,
                 ]);
         }
     }
@@ -739,6 +785,19 @@ class Validator extends Base\Validator
         if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
+        }
+    }
+
+    public function validateExternalEntity()
+    {
+        $invoice = $this->entity;
+
+        if (in_array($invoice->getEntityType(), self::$validExternalEntities) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid External Entity',
+                "entity_type"
+                );
         }
     }
 }

@@ -187,6 +187,9 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'entity_type' => [
+                'type'            => 'keyword',
+            ],
         ],
     ],
 

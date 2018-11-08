@@ -119,4 +119,3 @@ class Flow
         return $bitmap;
     }
 }
-

@@ -159,6 +159,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INACTIVE                           = 'Wallet account associated is inactive.';
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Payment failed due to wallet authentication failure';
     const BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE                       = 'Payment failed due to insufficient balance in wallet';
+    const BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE                        = 'Payout failed due to insufficient balance in wallet';
     const BAD_REQUEST_PAYMENT_WALLET_CONTACT_PAYUMONEY                          = 'Payment failed. Please contact care@payumoney.com using your registered email';
     const BAD_REQUEST_AIRTEL_MONEY_ACCOUNT_BLOCKED                              = 'Payment failed as airtel money account has been blocked. Please reset mPIN or call 400 for assistance';
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
@@ -711,4 +712,5 @@ class PublicErrorDescription
     const GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS                              = 'Beneficiary cut-off is in progress';
     const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
     const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate RRN found for the transaction on beneficiary side.';
+    const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
 }

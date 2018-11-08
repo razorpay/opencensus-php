@@ -18,7 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COMMISSION        = 'commission';
     const STATUS            = 'status';
     const AMOUNT            = 'amount';
-    const PAYER_VPA         = 'payervpa';
+    const PAYER_VPA         = 'payerva';
 
     protected function getPaymentId(array $row)
     {

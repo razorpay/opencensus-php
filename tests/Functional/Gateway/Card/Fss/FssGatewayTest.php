@@ -6,4 +6,3 @@ class FssGatewayTest extends BobGatewayTest
 {
     protected $acquirer = 'fss';
 }
-

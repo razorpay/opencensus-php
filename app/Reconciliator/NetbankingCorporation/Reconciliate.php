@@ -41,4 +41,3 @@ class Reconciliate extends Base\Reconciliate
         return false;
     }
 }
-

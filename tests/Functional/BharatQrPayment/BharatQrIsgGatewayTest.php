@@ -240,4 +240,3 @@ class BharatQrIsgGatewayTest extends TestCase
         $this->assertNull($payment);
     }
 }
-
