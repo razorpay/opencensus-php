@@ -12,6 +12,24 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'npci_paysecure';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->wsdlDetails =  [
+            'header' => [
+                'namespace' => 'https://paysecure/merchant.soap.header/',
+                'key' => 'RequestorCredentials',
+            ],
+            'body' => [
+                'namespace' => 'https://paysecure/merchant.soap/',
+                'key' => 'CallPaySecure'
+            ],
+        ];
+
+        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl.test';
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -22,7 +40,7 @@ class Gateway extends Base\Gateway
             $input
         );
 
-        $checkBinResponse = $this->checkBin();
+        $checkBinResponse = $this->checkBin2();
     }
 
 
