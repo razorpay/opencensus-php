@@ -14,4 +14,9 @@ class Fields
     const PARTNER_ID                    = 'partner_id';
     const MERCHANT_PASSWORD             = 'merchant_password';
     const CARD_BIN                      = 'card_bin';
+
+    // Response Fields
+    const STATUS        = 'status';
+    const ERROR_CODE    = 'errorcode';
+    const ERROR_MESSAGE = 'errormsg';
 }

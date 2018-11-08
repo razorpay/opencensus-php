@@ -4,6 +4,7 @@ namespace RZP\Gateway\NpciPaySecure;
 
 use SoapFault;
 use SoapHeader;
+use SoapVar;
 use SoapClient;
 
 use RZP\Exception;
@@ -12,7 +13,13 @@ use RZP\Gateway\Utility;
 
 trait RequestHandlerTrait
 {
+    use ErrorHandlerTrait;
+
     //-------------- Check BIN2 request ------------------------------------
+
+    /**
+     * @throws Exception\GatewayErrorException
+     */
     protected function checkBin2()
     {
         $requestArray = $this->getCheckBin2RequestArray();
@@ -20,6 +27,22 @@ trait RequestHandlerTrait
         $command = Constants::COMMAND_CHECKBIN2;
 
         $response = $this->sendRequest($requestArray, $command);
+
+        if ($response[Fields::STATUS] === Constants::STATUS_FAILURE)
+        {
+            $errorCode = $this->getErrorCodeMapped($response[Fields::ERROR_CODE]);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[Fields::ERROR_CODE],
+                $response[Fields::ERROR_MESSAGE],
+                [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $this->input['payment']['id'],
+                    'command'    => $command,
+                ]
+            );
+        }
     }
 
     protected function getCheckBin2RequestArray(): array
@@ -65,19 +88,10 @@ trait RequestHandlerTrait
 
             $soapClient->__setSoapHeaders($headers);
 
-            $soapCallOptions = [
-                'uri' => Url::DOMAIN
-            ];
-
-            $response = $soapClient->__soapCall(
-                $this->wsdlDetails['body']['key'],
-                array($request),
-                $soapCallOptions);
+            $response = $soapClient->CallPaySecure($requestBody);
         }
         catch (SoapFault $sf)
         {
-            $this->handleGatewayFailure($sf->getCode(), $sf->getMessage());
-
             if (Utility::checkSoapTimeout($sf))
             {
                 throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
@@ -102,20 +116,36 @@ trait RequestHandlerTrait
 
     protected function getRequestHeaders()
     {
-        $headerBody = [
-            Fields::TOKEN            => $this->config['token'],
-            Fields::VERSION          => Constants::VERSION,
-            Fields::CALLER_ID        => $this->config['caller_id'],
-            Fields::USER_CREDENTIALS =>
-                [
-                    Fields::USER_ID       => $this->config['userid'],
-                    Fields::USER_PASSWORD => $this->config['password'],
-                ],
-        ];
+        $token = new SoapVar($this->config['token'], XSD_STRING, null, null, Fields::TOKEN, '');
+        $version = new SoapVar(Constants::VERSION, XSD_STRING, null, null, Fields::VERSION, '');
+        $callerId = new SoapVar($this->config['caller_id'], XSD_STRING, null, null, Fields::CALLER_ID, '');
 
-        $header = new SoapHeader($this->wsdlDetails['header']['namespace'],
+        $userId = new SoapVar($this->config['userid'], XSD_STRING, null, null, Fields::USER_ID, '');
+        $userPassword = new SoapVar($this->config['password'], XSD_STRING, null, null, Fields::USER_PASSWORD, '');
+
+        $userCredentials = new SoapVar(
+            [$userId, $userPassword],
+            SOAP_ENC_OBJECT,
+            null,
+            null,
+            Fields::USER_CREDENTIALS,
+            ''
+        );
+
+        $credentials = new SoapVar(
+            [$token, $version, $callerId, $userCredentials],
+            SOAP_ENC_OBJECT,
+            null,
+            null,
+            Fields::USER_CREDENTIALS,
+            ''
+        );
+
+        $header = new SoapHeader(
+            $this->wsdlDetails['header']['namespace'],
             $this->wsdlDetails['header']['key'],
-            $headerBody);
+            $credentials
+        );
 
         return $header;
     }
