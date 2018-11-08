@@ -1634,7 +1634,7 @@ class MerchantTest extends TestCase
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $offer = $this->fixtures->create('offer:emi_subvention', [
-            'issuer' => 'HDFC',
+            'issuer'          => 'HDFC',
             'payment_network' => null,
         ]);
 
@@ -1647,6 +1647,29 @@ class MerchantTest extends TestCase
         // Only one expected, since HDFC is forced
         $this->assertEquals(1, count($response['methods']['emi_options']));
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    public function testGetCheckoutPreferencesWithForcedInactiveEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+            'active'          => false
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Offer is inactive now, so plans will be back to customer subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('customer', $plan['subvention']);
+        }
     }
 
     protected function getPreferences($orderId = null)

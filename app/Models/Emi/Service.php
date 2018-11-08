@@ -165,6 +165,12 @@ class Service extends Base\Service
                 return;
             }
 
+            if (($offer->isActive() === false) or
+                ($offer->isPeriodActive() === false))
+            {
+                return;
+            }
+
             $bank = $offer->getIssuer();
 
             $network = $offer->getPaymentNetwork();
