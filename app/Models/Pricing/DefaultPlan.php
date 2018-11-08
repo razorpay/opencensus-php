@@ -6,11 +6,12 @@ use RZP\Models\Admin\Org;
 
 class DefaultPlan
 {
-    const FULL_PLAN_ID             = '1AXludj60w4pSp';
-    const STARTUP_PLAN_ID          = '2atGxLIYLyHWg7';
-    const PROMOTIONAL_PLAN_ID      = '1In3Yh5Mluj605';
-    const HDFC_PROMOTIONAL_PLAN_ID = 'BAJq6FJDNJ4ZqD';
-    const BOB_PROMOTIONAL_PLAN_ID  = 'BAJvpnuxy4AUq3';
+    const FULL_PLAN_ID                = '1AXludj60w4pSp';
+    const STARTUP_PLAN_ID             = '2atGxLIYLyHWg7';
+    const PROMOTIONAL_PLAN_ID         = '1In3Yh5Mluj605';
+    const HDFC_PROMOTIONAL_PLAN_ID    = 'BAJq6FJDNJ4ZqD';
+    const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
+    const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
 
     const ORG_TO_PROMOTIONAL_PLAN_ID = [
         Org\Entity::HDFC_ORG_ID     => self::HDFC_PROMOTIONAL_PLAN_ID,

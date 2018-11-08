@@ -569,6 +569,155 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
+    public function createDiwaliPromotionalPlan()
+    {
+        $pricingPlanId = 'BI7O6FmHlzLFZm';
+
+         $rows = [
+            [
+                'id'                  => '1nvp2XPMxaRLxb',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zD0BXpxOJaqpC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emandate',
+                'payment_method_type' => 'netbanking',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100000,
+                'international'       => 0,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
+    }
+
+    public function createPromotionalPlan()
+    {
+        $pricingPlanId = '1In3Yh5Mluj605';
+
+         $rows = [
+            [
+                'id'             => '1AXp2Xd3t5aRLX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1xsdf0GGDdalfF',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1osdx0GGDdaHfF',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'emandate',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 1000,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ptex2HHEebmhH',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => 2000,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ptex2FFEebmgG',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31xbyeGCTd4',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'account',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1zE31zxyeGCTd5',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'customer',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'                  => 'BtPzrcentPrici',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'Bank Transfer Multi Pricing',
+                'feature'             => 'payment',
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 1600,
+                'fixed_rate'          => 0,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 10000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'BtPexcentFlatP',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'Bank Transfer Multi Pricing',
+                'feature'             => 'payment',
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 100,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 10000,
+                'amount_range_max'    => 1000000000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+        return $pricingPlanId;
+    }
+
+
     protected function addPricingRulesToDb($rows)
     {
         $repo = new Models\Pricing\Repository;

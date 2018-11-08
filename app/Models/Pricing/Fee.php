@@ -9,6 +9,10 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Constants\Timezone;
+use RZP\Models\Feature\Constants as Feature;
+
+use Carbon\Carbon;
 
 class Fee extends Base\Core
 {
@@ -27,6 +31,17 @@ class Fee extends Base\Core
     const DEFAULT_EMI_PLAN_ID     = 'ArGUUem5z3UADv';
 
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
+
+    // delete this after 31st dec
+    const DIWALI_END_TIMESTAMP = 1546237799;
+
+    // delete this after 31st dec
+    protected static $promotionalMethods = [
+        'card',
+        'netbanking',
+        'upi',
+        'wallet',
+    ];
 
     public function __construct()
     {
@@ -60,6 +75,20 @@ class Fee extends Base\Core
         $calculator = new FeeCalculator($entity);
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
+
+        // delete this after 31st december
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $merchant = $entity->merchant;
+
+        if ((($entity instanceof Payment\Entity) === true) and
+            ($merchant->isFeatureEnabled(Feature::DIWALI_PROMOTIONAL_PLAN) === true) and
+            ($currentTimeStamp < self::DIWALI_END_TIMESTAMP) and
+            (in_array($entity->getMethod(), self::$promotionalMethods, true) === true))
+        {
+
+            $pricingPlanId = Pricing\DefaultPlan::DIWALI_PROMOTIONAL_PLAN_ID;
+        }
 
         $pricing = $this->repo->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 

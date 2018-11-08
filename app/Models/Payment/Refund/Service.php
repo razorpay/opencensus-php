@@ -1001,6 +1001,13 @@ class Service extends Base\Service
 
     public function fetchRefundDetailsForCustomer(array $input)
     {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_INITIATED,
+            [
+                'input' => $input
+            ]
+        );
+
         (new Validator)->validateInput('customer_refund_details', $input);
 
         $mode = $input['mode'] ?? Mode::LIVE;
@@ -1046,10 +1053,19 @@ class Service extends Base\Service
             }
         }
 
-        return [
+        $return = [
             'refunds' => isset($refunds) ? $refunds->toArrayPublicCustomer() : [],
             'payment' => isset($payment) ? $payment->toArrayPublicCustomer() : [],
         ];
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_SERVED,
+            [
+                'input' => $input
+            ] + $return
+        );
+
+        return $return;
     }
 
     protected function getPaymentFromReservationIdForCustomerDetails($reservationId)

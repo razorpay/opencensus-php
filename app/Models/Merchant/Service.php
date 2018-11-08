@@ -2522,7 +2522,9 @@ class Service extends Base\Service
 
     public function submitSupportCallRequest(array $input): array
     {
-        (new Validator)->validateInput(__FUNCTION__, $input);
+        $validator = new Validator;
+        $validator->validateNowIsWorkingHour();
+        $validator->validateInput(__FUNCTION__, $input);
 
         $allowCallRequest = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
