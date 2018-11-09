@@ -79,7 +79,7 @@ class DynamicNetBankingUrlUpdater extends Job
 
             $urlFromCache = $this->getUrlFromCache($issuer);
 
-            if ($urlFromCache !== $bankUrl)
+            if (empty($urlFromCache) === false and $urlFromCache !== $bankUrl)
             {
                 $this->updateUrlInStatusCake($testId, $urlFromCache);
             }
@@ -132,11 +132,26 @@ class DynamicNetBankingUrlUpdater extends Job
 
     protected function makeRequestAndGetData($url, $requestHeaders, $content = [], $method = 'POST')
     {
-        $response = Requests::request(
-            $url,
-            $requestHeaders,
-            $content,
-            $method);
+        try
+        {
+            $response = Requests::request(
+                $url,
+                $requestHeaders,
+                $content,
+                $method);
+        }
+        catch (\Throwable $exc)
+        {
+            $data = [
+                'exception'     => $exc->getMessage(),
+                'url'           => $url,
+                'input'         => $content,
+            ];
+
+            $this->trace->error(TraceCode::STATUSCAKE_CONNECTION_FAILED, $data);
+
+            return [];
+        }
 
         $responseArray = $this->getResponseData($response);
 
@@ -152,7 +167,16 @@ class DynamicNetBankingUrlUpdater extends Job
     {
         $cacheKey = $this->getCacheKey($issuer);
 
-        $value = $this->redis->get($cacheKey);
+        try
+        {
+            $value = $this->redis->get($cacheKey);
+        }
+        catch (\Throwable $exc)
+        {
+            $this->trace->error(TraceCode::NETBANKING_URL_CACHE_MISS, [$issuer]);
+
+            return;
+        }
 
         if (empty($value) === true)
         {
@@ -168,8 +192,22 @@ class DynamicNetBankingUrlUpdater extends Job
 
         $updateData = $this->getRequestDataForUpdate($testId, $newUrl);
 
-        $responseArray = $this->makeRequestAndGetData($this->statusCakeUpdateUrl, $requestHeaders, $updateData,
-            'PUT');
+        try
+        {
+            $responseArray = $this->makeRequestAndGetData($this->statusCakeUpdateUrl, $requestHeaders, $updateData,
+                'PUT');
+        }
+        catch (\Throwable $exc)
+        {
+            $this->trace->info(TraceCode::STATUSCAKE_RETURNED_FAILURE, $updateData);
+
+            return;
+        }
+
+        if (empty($responseArray) === true)
+        {
+            return;
+        }
 
         if ($responseArray[self::SUCCESS] !== true)
         {

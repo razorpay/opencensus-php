@@ -914,7 +914,7 @@ final class Route
 
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
-        'dynamic_netbanking_url_update'            => ['post',     'payment/netbanking/statuscake/urlsync',         'GatewayController@updateNetbankingUrlInStatusCake'                 ],
+        'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
     ];
 
     public static $public = [

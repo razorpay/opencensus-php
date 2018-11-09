@@ -1047,6 +1047,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_STATUSCAKE_EDIT              = 'GATEWAY_DOWNTIME_STATUSCAKE_EDIT';
     const NETBANKING_URL_CACHE_MISS                     = 'NETBANKING_URL_CACHE_MISS';
     const STATUSCAKE_RETURNED_FAILURE                   = 'STATUSCAKE_RETURNED_FAILURE';
+    const STATUSCAKE_CONNECTION_FAILED                  = 'STATUSCAKE_CONNECTION_FAILED';
+    const STATUSCAKE_CRON_FAILED                        = 'STATUSCAKE_CRON_FAILED';
 
 // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST                = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
