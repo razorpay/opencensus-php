@@ -16,7 +16,9 @@ class Fields
     const CARD_BIN                      = 'card_bin';
 
     // Response Fields
-    const STATUS        = 'status';
-    const ERROR_CODE    = 'errorcode';
-    const ERROR_MESSAGE = 'errormsg';
+    const STATUS                = 'status';
+    const ERROR_CODE            = 'errorcode';
+    const ERROR_MESSAGE         = 'errormsg';
+    const QUALIFIED_INTERNETPIN = 'qualified_internetpin';
+    const IMPLEMENTS_REDIRECT   = 'implements_redirect';
 }

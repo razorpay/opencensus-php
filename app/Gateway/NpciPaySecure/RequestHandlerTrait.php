@@ -26,8 +26,8 @@ trait RequestHandlerTrait
 
         $command = Constants::COMMAND_CHECKBIN2;
 
-        $response = $this->sendRequest($requestArray, $command);
-
+        $response = $this->sendRequest($command, $requestArray);
+        sd($response);
         if ($response[Fields::STATUS] === Constants::STATUS_FAILURE)
         {
             $errorCode = $this->getErrorCodeMapped($response[Fields::ERROR_CODE]);
@@ -62,7 +62,7 @@ trait RequestHandlerTrait
     //-------------- Check BIN2 request end ----------------------------------
 
     //---------------- Soap Request related functions ------------------------
-    protected function sendRequest($params, $command)
+    protected function sendRequest($command, $params)
     {
         $headers        = $this->getRequestHeaders();
 

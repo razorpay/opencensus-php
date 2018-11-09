@@ -119,6 +119,7 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
+    'mock_npci_paysecure'         => env('NPCI_PAYSECURE_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
