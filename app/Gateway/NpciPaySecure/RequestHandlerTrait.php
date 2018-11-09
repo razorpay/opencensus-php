@@ -89,6 +89,9 @@ trait RequestHandlerTrait
             $soapClient->__setSoapHeaders($headers);
 
             $response = $soapClient->CallPaySecure($requestBody);
+
+            // todo: Remove this
+            $this->printLastSoapXml($soapClient);
         }
         catch (SoapFault $sf)
         {
@@ -184,4 +187,17 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
+
+    //---------------- REMOVE THIS LATER ----------------------------
+    protected function printLastSoapXml($soapClient)
+    {
+        $xml = $soapClient->__getLastRequest();
+        $dom = new \DOMDocument("1.0");
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml);
+        echo "<pre>".htmlentities($dom->saveXML())."</pre>";
+        die;
+    }
+    //---------------- REMOVE THIS LATER END -------------------------
 }
