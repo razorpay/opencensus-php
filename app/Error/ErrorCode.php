@@ -579,7 +579,6 @@ class ErrorCode
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                           = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                                   = 'BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY';
-    const BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY                                     = 'BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                           = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
     const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              = 'BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING';
@@ -611,7 +610,6 @@ class ErrorCode
     const BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED                                = 'BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED';
 
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
-    const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                                   = 'BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                      = 'BAD_REQUEST_PRICING_RATE_NOT_DEFINED';
     const BAD_REQUEST_PRICING_GATEWAY_REQUIRED                                      = 'BAD_REQUEST_PRICING_GATEWAY_REQUIRED';
     const BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED                                  = 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED';
@@ -801,8 +799,6 @@ class ErrorCode
     // Heimdall Error Codes
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
 
-    const BAD_REQUEST_ROLE_NOT_ASSIGNED                                             = 'BAD_REQUEST_ROLE_NOT_ASSIGNED';
-    const BAD_REQUEST_MERCHANT_NOT_ASSIGNED                                         = 'BAD_REQUEST_MERCHANT_NOT_ASSIGNED';
     const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS';
@@ -862,7 +858,6 @@ class ErrorCode
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
 
-    const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
     const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                                  = 'BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';

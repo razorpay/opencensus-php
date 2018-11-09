@@ -34,6 +34,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
     const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
 
+    const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
@@ -280,6 +281,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
+    const BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED                 = 'Payment failed because maximum amount limit was reached for this terminal';
+    const BAD_REQUEST_GATEWAY_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED            = 'Payment failed because maximum transaction limit was reached for this terminal';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
@@ -443,6 +446,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT          = 'No terminal gateway mapping for direct settlement';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
     const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
+    const BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY                          = 'This operation is not supported for the given business subcategory';
 
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
     const BAD_REQUEST_INVALID_COUNTRY                                           = 'Invalid country code/name passed';
@@ -484,6 +488,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';
+    const BAD_REQUEST_SETTLEMENT_VERIFICATION_IN_PROGRESS                       = 'Request failed because another settlement verification operation in progress';
 
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                           = 'Invalid Invoice Number.';
 
@@ -651,6 +656,13 @@ class PublicErrorDescription
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
 
+    // TODO: Remove when #9836 is merged
+    const BAD_REQUEST_RECON_NOT_IN_PROGRESS                                     = '';
+    const BAD_REQUEST_GENERIC_TRANSACTION_ERROR                                 = '';
+    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                = '';
+    const BAD_REQUEST_PURCHASE_ERROR                                            = '';
+    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = '';
+
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
@@ -663,10 +675,12 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
+    const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
+    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
@@ -682,9 +696,9 @@ class PublicErrorDescription
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
-  
+
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
-  
+
     // ---------------------- UPI (NPCI) Error codes -------------------------------
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';
     const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Remitter CBS is offline';
