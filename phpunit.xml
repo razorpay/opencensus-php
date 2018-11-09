@@ -129,6 +129,7 @@
           <directory>./tests/Functional/Gateway/Esigner/</directory>
           <directory>./tests/Functional/Gateway/Netbanking/</directory>
           <directory>./tests/Functional/Gateway/FirstData/</directory>
+          <directory>./tests/Functional/Gateway/NpciPaysecure/</directory>
       </testsuite>
       <testsuite name="Gateway-2 Test Suite">
           <directory>./tests/Functional/Gateway/Mobikwik/</directory>

@@ -2022,6 +2022,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedNpciPaysecureTerminal(array $attributes)
+    {
+        $termId = Shared::PAYSECURE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::NPCI_PAYSECURE,
+            'card'                      => 1,
+            'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDirectTerminalForNonTestMerchant(array $attributes)
     {
         $defaultValues = [
