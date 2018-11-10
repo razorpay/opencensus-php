@@ -4,6 +4,9 @@ namespace RZP\Tests\P2p\Service\Base;
 
 class CustomerHelper extends P2pHelper
 {
+    // Customer APIs do not have device in request
+    protected $isCustomerInContext = false;
+
     public function sendVerificationStart(array $content = [])
     {
         $this->validationJsonSchemaPath = 'customer/start_verification';

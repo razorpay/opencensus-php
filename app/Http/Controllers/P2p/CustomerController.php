@@ -1,45 +1,47 @@
 <?php
 
-namespace RZP\Http\Controllers\P2p;
+namespace Rzp\Http\Controllers\P2p;
 
+use RZP\Models\P2p;
+
+/**
+ * @property $service P2p\Customer\Service
+ */
 class CustomerController extends Controller
 {
     public function startVerification()
     {
         $input = $this->request()->all();
 
-        return $this->response([
-            'handle'            => $input['handle'],
-            'token'             => str_random(10),
-            'action'            => 'verify',
-            'method'            => 'sms',
-            'sms_destination'   => '+919876543210',
-            'sms_content'       => 'VERIFY ME'
-        ]);
+        $response = $this->service->startVerification($input);
+
+        return $this->response($response);
     }
 
-    public function verificationStatus()
+    public function getVerificationStatus()
     {
-        $token = $this->request()->route('token');
+        $input = $this->request()->all();
 
-        return $this->response([
-            'status'        => 'pending',
-            'status_url'    => url($token),
-            'expire_at'     => time() + 900,
-        ]);
+        $response = $this->service->getVerificationStatus($input);
+
+        return $this->response($response);
     }
 
     public function create()
     {
         $input = $this->request()->all();
 
-        return $this->response([
-            'id'            => 'cust_bahuthuyehumen',
-            'contact'       => '+919876543210',
-            'email'         => $input['email'],
-            'active'        => true,
-            'notes'         => $input['notes'],
-            'created_at'    => time(),
-        ]);
+        $response = $this->service->create($input);
+
+        return $this->response($response);
+    }
+
+    public function delete()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->delete($input);
+
+        return $this->response($response);
     }
 }

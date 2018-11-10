@@ -1,0 +1,116 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "id",
+        "entity",
+        "txn_id",
+        "status",
+        "amount",
+        "description",
+        "type",
+        "currency",
+        "error_description",
+        "error_code",
+        "transaction_type",
+        "rrn",
+        "created_at",
+        "completed_at",
+        "expire_at"
+    ],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "string",
+            "default": null,
+            "pattern": "^ctxn_[\\w]{14}$"
+        },
+        "entity": {
+            "$id": "#/properties/entity",
+            "type": "string",
+            "enum": [
+                "customer.transaction"
+            ],
+            "default": null
+        },
+        "txn_id": {
+            "$id": "#/properties/txn_id",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "status": {
+            "$id": "#/properties/status",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "amount": {
+            "$id": "#/properties/amount",
+            "type": "integer"
+        },
+        "description": {
+            "$id": "#/properties/description",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "type": {
+            "$id": "#/properties/type",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "currency": {
+            "$id": "#/properties/currency",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "error_description": {
+            "$id": "#/properties/error_description",
+            "type": "null"
+        },
+        "error_code": {
+            "$id": "#/properties/error_code",
+            "type": "null"
+        },
+        "transaction_type": {
+            "$id": "#/properties/transaction_type",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "rrn": {
+            "$id": "#/properties/rrn",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer",
+            "default": null
+        },
+        "completed_at": {
+            "$id": "#/properties/completed_at",
+            "type": [
+                "integer",
+                "null"
+            ],
+            "default": null
+        },
+        "expire_at": {
+            "$id": "#/properties/expire_at",
+            "type": [
+                "integer",
+                "null"
+            ],
+            "default": null
+        }
+    },
+    "actions": [
+        "initiatePay",
+        "initiateCollect",
+        "fetchAll",
+        "fetch",
+        "initiateAuthorize",
+        "authorize",
+        "reject"
+    ]
+}

@@ -8,7 +8,7 @@ class DeviceHelper extends P2pHelper
     {
         $this->validationJsonSchemaPath = 'device/create';
 
-        $request = $this->request('customers/%s/devices', ['cust_'.Constants::LOCAL_CUSTOMER]);
+        $request = $this->request('devices');
 
         $default = [
             'ip'               => '179.0.0.1',
@@ -27,5 +27,38 @@ class DeviceHelper extends P2pHelper
         $this->content($request, $default, $content);
 
         return $this->post($request);
+    }
+
+    public function fetchDevice()
+    {
+        $this->validationJsonSchemaPath = 'device/create';
+
+        $request = $this->request('devices');
+
+        return $this->get($request);
+    }
+
+    public function refreshClToken(array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'device/create';
+
+        $request = $this->request('devices/cl_token_refresh');
+
+        $default = [
+            'cl.challenge'  => 'AikxOldnJmaUbdsmHdsnaudjeGHndshsjSildsmfyneHDBd'
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
+    public function deleteDevice()
+    {
+        $this->validationJsonSchemaPath = 'device/delete';
+
+        $request = $this->request('devices');
+
+        return $this->delete($request);
     }
 }

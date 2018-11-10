@@ -21,6 +21,13 @@ class P2pHelper
     protected $expectFailureInResponse = false;
 
     /**
+     * For all APIs which start with customer id
+     * Only Customer APIs do not have customer context
+     * @var bool
+     */
+    protected $isCustomerInContext = true;
+
+    /**
      * P2pHelper constructor.
      */
     public function __construct(Fixtures\Fixtures $fixtures)
@@ -107,13 +114,13 @@ class P2pHelper
     /**
      * Creates the request with URI and Auth
      *
-     * @param string $uri
+     * @param string $uri Without Customer Prefix
      * @param array $parameter
      * @return P2pRequest
      */
     protected function request(string $uri, array $parameter = []): P2pRequest
     {
-        $request = new P2pRequest(vsprintf($uri, $parameter));
+        $request = new P2pRequest($this->makeUri($uri, $parameter));
 
         $request->server([
             'PHP_AUTH_USER' => 'rzp_test_TheTestAuthKey',
@@ -142,7 +149,7 @@ class P2pHelper
     }
 
     /**
-     * Make a Gate Request
+     * Make a Get Request
      *
      * @param P2pRequest $request
      * @return array
@@ -161,6 +168,17 @@ class P2pHelper
     protected function post(P2pRequest $request): array
     {
         return $this->send($request->method('post'));
+    }
+
+    /**
+     * Make a Delete Request
+     *
+     * @param P2pRequest $request
+     * @return array
+     */
+    protected function delete(P2pRequest $request): array
+    {
+        return $this->send($request->method('delete'));
     }
 
     /**
@@ -237,5 +255,18 @@ class P2pHelper
         }
 
         $this->throwTestingException('Json schema validation failed', $errors);
+    }
+
+    protected function makeUri(string $uri, array $parameters)
+    {
+        $prefix = 'v1/p2p/';
+
+        if ($this->isCustomerInContext === true)
+        {
+            $prefix .= 'customers/cust_%s/';
+            $parameters = array_merge([Constants::LOCAL_CUSTOMER], $parameters);
+        }
+
+        return vsprintf($prefix . $uri , $parameters);
     }
 }

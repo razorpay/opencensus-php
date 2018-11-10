@@ -54,7 +54,7 @@ class P2pRequest
     {
         $response = $this->call(
                         $this->method,
-                        $this->makeUri(),
+                        $this->uri,
                         $this->data,
                         [],
                         [],
@@ -67,10 +67,5 @@ class P2pRequest
     public function trace()
     {
         return [$this->method, $this->uri, $this->data, $this->server];
-    }
-
-    protected function makeUri()
-    {
-        return 'v1/p2p/' . $this->uri;
     }
 }

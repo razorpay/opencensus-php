@@ -1,0 +1,128 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "id",
+        "entity",
+        "ifsc",
+        "bank_name",
+        "beneficiary_name",
+        "masked_account_number",
+        "creds",
+        "cl.registration_format",
+        "refreshed_at",
+        "created_at"
+    ],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "string",
+            "default": null,
+            "pattern": "^ba_(.*){14}$"
+        },
+        "entity": {
+            "$id": "#/properties/entity",
+            "type": "string",
+            "enum": [
+                "bank_account"
+            ],
+            "default": null
+        },
+        "ifsc": {
+            "$id": "#/properties/ifsc",
+            "type": "string",
+            "default": null,
+            "pattern": "^[\\w]{11}$"
+        },
+        "bank_name": {
+            "$id": "#/properties/bank_name",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "beneficiary_name": {
+            "$id": "#/properties/beneficiary_name",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "masked_account_number": {
+            "$id": "#/properties/masked_account_number",
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "creds": {
+            "$id": "#/properties/creds",
+            "type": "array",
+            "items": {
+                "$id": "#/properties/creds/items",
+                "type": "object",
+                "required": [
+                    "type",
+                    "set",
+                    "length",
+                    "format",
+                    "cl.format"
+                ],
+                "properties": {
+                    "type": {
+                        "$id": "#/properties/creds/items/properties/type",
+                        "type": "string",
+                        "enum": [
+                            "upipin",
+                            "atmpin",
+                            "otp",
+                            "sms"
+                        ],
+                        "default": null
+                    },
+                    "set": {
+                        "$id": "#/properties/creds/items/properties/set",
+                        "type": "boolean"
+                    },
+                    "length": {
+                        "$id": "#/properties/creds/items/properties/length",
+                        "type": "integer"
+                    },
+                    "format": {
+                        "$id": "#/properties/creds/items/properties/format",
+                        "type": "string",
+                        "pattern": "^(.*)$"
+                    },
+                    "cl.format": {
+                        "$id": "#/properties/creds/items/properties/cl.format",
+                        "type": "string",
+                        "pattern": "^(.*)$"
+                    }
+                }
+            }
+        },
+        "cl.registration_format": {
+            "$id": "#/properties/cl.registration_format",
+            "type": "string",
+            "enum": [
+                "FORMAT1",
+                "FORMAT2"
+            ],
+            "default": null
+        },
+        "refreshed_at": {
+            "$id": "#/properties/refreshed_at",
+            "type": "integer"
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer"
+        }
+    },
+    "actions" : [
+        "fetchBanks",
+        "retrieve",
+        "fetchAll",
+        "fetch",
+        "initiateSetUpiPin",
+        "setUpiPin",
+        "initiateFetchBalance",
+        "fetchBalance"
+    ]
+}

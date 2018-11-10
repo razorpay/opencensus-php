@@ -5,9 +5,9 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Device\Service
+ * @property $service P2p\Beneficiary\Service
  */
-class DeviceController extends Controller
+class BeneficiaryController extends Controller
 {
     public function create()
     {
@@ -18,29 +18,20 @@ class DeviceController extends Controller
         return $this->response($response);
     }
 
-    public function fetch()
+    public function validate()
     {
         $input = $this->request()->all();
 
-        $response = $this->service->fetch($input);
+        $response = $this->service->validate($input);
 
         return $this->response($response);
     }
 
-    public function refreshClToken()
+    public function fetchAll()
     {
         $input = $this->request()->all();
 
-        $response = $this->service->refreshClToken($input);
-
-        return $this->response($response);
-    }
-
-    public function delete()
-    {
-        $input = $this->request()->all();
-
-        $response = $this->service->delete($input);
+        $response = $this->service->fetchAll($input);
 
         return $this->response($response);
     }

@@ -10,8 +10,35 @@ class DeviceTest extends TestCase
     {
         $helper = $this->getDeviceHelper();
 
-        //$helper->withSchemaValidated();
+        $helper->withSchemaValidated();
 
         $helper->postCreateDevice();
+    }
+
+    public function testDeviceFetch()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->fetchDevice();
+    }
+
+    public function testDeviceRefreshToken()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->refreshClToken();
+    }
+
+    public function testDeviceDelete()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->deleteDevice();
     }
 }

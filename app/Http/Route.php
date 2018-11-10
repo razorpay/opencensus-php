@@ -640,7 +640,7 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
 
         // UPI
-        'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
+        'p2p_fetch_private'                        => ['get',      'p2ps/{id}',                                      'P2pController@getP2p'                                              ],
         'vpa_fetch_private'                        => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
         'device_create'                            => ['post',     'upi/devices',                                    'DeviceController@createDevice'                                     ],

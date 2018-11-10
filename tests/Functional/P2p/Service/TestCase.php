@@ -27,4 +27,24 @@ class TestCase extends Functional\TestCase
     {
         return new Base\DeviceHelper($this->fixtures);
     }
+
+    protected function getBankAccountHelper(): Base\BankAccountHelper
+    {
+        return new Base\BankAccountHelper($this->fixtures);
+    }
+
+    protected function getVpaHelper(): Base\VpaHelper
+    {
+        return new Base\VpaHelper($this->fixtures);
+    }
+
+    protected function getBeneficiaryHelper(): Base\BeneficiaryHelper
+    {
+        return new Base\BeneficiaryHelper($this->fixtures);
+    }
+
+    protected function getTransactionHelper(): Base\TransactionHelper
+    {
+        return new Base\TransactionHelper($this->fixtures);
+    }
 }
