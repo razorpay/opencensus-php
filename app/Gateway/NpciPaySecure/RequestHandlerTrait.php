@@ -13,7 +13,6 @@ use RZP\Gateway\Utility;
 
 trait RequestHandlerTrait
 {
-    use ErrorHandlerTrait;
 
     //-------------- Check BIN2 request ------------------------------------
 
@@ -27,22 +26,8 @@ trait RequestHandlerTrait
         $command = Constants::COMMAND_CHECKBIN2;
 
         $response = $this->sendRequest($command, $requestArray);
-        sd($response);
-        if ($response[Fields::STATUS] === Constants::STATUS_FAILURE)
-        {
-            $errorCode = $this->getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
-                [
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $this->input['payment']['id'],
-                    'command'    => $command,
-                ]
-            );
-        }
+        return $response;
     }
 
     protected function getCheckBin2RequestArray(): array
@@ -58,7 +43,6 @@ trait RequestHandlerTrait
 
         return $this->getRequestContents($body);
     }
-
     //-------------- Check BIN2 request end ----------------------------------
 
     //---------------- Soap Request related functions ------------------------

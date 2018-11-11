@@ -13,4 +13,7 @@ class Constants
     // Statuses
     const STATUS_SUCCESS    = 'success';
     const STATUS_FAILURE    = 'failure';
+
+    const VALUE_TRUE  = 'TRUE';
+    const VALUE_FALSE = 'FALSE';
 }
