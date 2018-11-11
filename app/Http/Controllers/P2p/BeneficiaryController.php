@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Beneficiary\Service
- */
+ * @property  P2p\Beneficiary\Service $service
+*/
 class BeneficiaryController extends Controller
 {
     public function create()

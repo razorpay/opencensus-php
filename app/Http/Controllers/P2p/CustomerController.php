@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Customer\Service
- */
+ * @property  P2p\Customer\Service $service
+*/
 class CustomerController extends Controller
 {
     public function startVerification()

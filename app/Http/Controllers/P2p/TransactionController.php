@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Transaction\Service
- */
+ * @property  P2p\Transaction\Service $service
+*/
 class TransactionController extends Controller
 {
     public function initiatePay()

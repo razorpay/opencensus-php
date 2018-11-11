@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\BankAccount\Service
- */
+ * @property  P2p\BankAccount\Service $service
+*/
 class BankAccountController extends Controller
 {
     public function fetchBanks()

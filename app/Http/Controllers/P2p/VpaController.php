@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Vpa\Service
- */
+ * @property  P2p\Vpa\Service $service
+*/
 class VpaController extends Controller
 {
     public function fetchHandles()

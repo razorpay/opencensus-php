@@ -5,8 +5,8 @@ namespace Rzp\Http\Controllers\P2p;
 use RZP\Models\P2p;
 
 /**
- * @property $service P2p\Device\Service
- */
+ * @property  P2p\Device\Service $service
+*/
 class DeviceController extends Controller
 {
     public function create()
