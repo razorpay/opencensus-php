@@ -31,22 +31,20 @@ class Axis extends Base
         $this->gatewayRepo = $this->repo->netbanking;
     }
 
-    protected function formatDataForFile($payments)
+    protected function formatDataForFile($tokens)
     {
         $rows = [];
 
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $paymentId = $payment->getId();
+            $paymentId = $token['payment_id'];
 
-            $debitDate = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)->format('d/m/Y');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
+            $debitDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('d/m/Y');
 
             $row = [
                 Headings::PAYMENT_ID                  => $paymentId,
                 Headings::DEBIT_DATE                  => $debitDate,
-                Headings::GATEWAY_MERCHANT_ID         => $payment->terminal->getGatewayMerchantId(),
+                Headings::GATEWAY_MERCHANT_ID         => $token->terminal->getGatewayMerchantId(),
                 Headings::CUSTOMER_UID                => $token->getGatewayToken(),
                 Headings::CUSTOMER_NAME               => $token->customer->getName(),
                 // If the account number starts with 0 and the file is
@@ -55,7 +53,7 @@ class Axis extends Base
                 // Adding a `'` in the start ensures that MS-Excel
                 // treats it as a string and not an integer.
                 Headings::DEBIT_ACCOUNT               => '\'' . $token->getAccountNumber(),
-                Headings::AMOUNT                      => $this->getFormattedAmount($payment->getAmount()),
+                Headings::AMOUNT                      => $this->getFormattedAmount($token['payment_amount']),
                 Headings::ADDITIONAL_INFO_1           => '',
                 Headings::ADDITIONAL_INFO_2           => '',
                 Headings::UNDERLYING_REFERENCE_NUMBER => '',
