@@ -393,14 +393,7 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
-                    {
-                        $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
-                    }
-                    else
-                    {
-                        $data['experiments']['instant_activations'] = ['result' => 'off'];
-                    }
+                    $data = $this->updateInstantActivationExperiment($user, $data);
 
                     if (((bool) $merchant['activated']) === true)
                     {
@@ -497,5 +490,43 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    /**
+     * @param $user
+     * @param array $data
+     *
+     * @return mixed
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function updateInstantActivationExperiment($user, array $data)
+    {
+        if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
+        {
+            // with activation_flow set always return result on
+            // merchants who  submitted L2 form ,  before 100% instant activation launch and after instant activation launch date
+            // should not be shown instant activation .
+            if($data['activation_flow'] !== null)
+            {
+                $data['experiments']['instant_activations'] = ['result' => 'on'];
+            }
+            else if (((bool) $data['activated']) === false and
+                ((bool) $data['submitted']) === true)
+            {
+                $data['experiments']['instant_activations'] = ['result' => 'off'];
+            }
+            else
+            {
+                $merchantService = new Merchant\Service;
+
+                $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
+            }
+        }
+        else
+        {
+            $data['experiments']['instant_activations'] = ['result' => 'off'];
+        }
+
+        return $data;
     }
 }
