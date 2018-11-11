@@ -50,6 +50,14 @@ class RejectionReasons
     const DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES = 'dating_or_matchmaking_or_escort_services';
     const MULTIPLE_VERTICALS                       = 'multiple_verticals';
     const DUPLICATE_OR_ERRENOUS_CREATION           = 'duplicate_or_errenous_creation';
+    const CRYPTOCURRENCY                           = 'cryptocurrency';
+    const EARN_MONEY_ONLINE                        = 'earn_money_online';
+    const TECHNICAL_SUPPORT                        = 'technical_support';
+    const IMPROPER_DOCUMENTATION                   = 'improper_documentation';
+    const BETTING                                  = 'betting';
+    const SALE_OF_LIVESTOCK_PETS                   = 'sale_of_livestock_or_pets';
+    const STOCK_TRADING_TIPS                       = 'stock_trading_tips';
+    const AUCTIONING                               = 'auctioning';
 
     /*
      * Reason Descriptions
@@ -83,6 +91,14 @@ class RejectionReasons
     const DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES_DESCRIPTION = 'Merchant into dating/matchmaking/escort services';
     const MULTIPLE_VERTICALS_DESCRIPTION                       = 'Merchant into multiple verticals';
     const DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION           = 'Archived due to duplicate account/errenous creation';
+    const CRYPTOCURRENCY_DESCRIPTION                           = 'Merchant into cryptocurrency business';
+    const EARN_MONEY_ONLINE_DESCRIPTION                        = 'Merchant into earn money online business';
+    const TECHNICAL_SUPPORT_DESCRIPTION                        = 'Merchant into technical support';
+    const IMPROPER_DOCUMENTATION_DESCRIPTION                   = 'Merchants having improper documentation';
+    const BETTING_DESCRIPTION                                  = 'Merchant into betting';
+    const SALE_OF_LIVESTOCK_PETS_DESCRIPTION                   = 'Merchant into sale of livestock/pets';
+    const STOCK_TRADING_TIPS_DESCRIPTION                       = 'Merchant into stock trading tips providing service';
+    const AUCTIONING_DESCRIPTION                               = 'Merchant into Auctioning';
 
     // Reason codes descriptions mapping
     const REASON_CODES_DESCRIPTIONS_MAPPING = [
@@ -115,6 +131,14 @@ class RejectionReasons
         self::DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES => self::DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES_DESCRIPTION,
         self::MULTIPLE_VERTICALS                       => self::MULTIPLE_VERTICALS_DESCRIPTION,
         self::DUPLICATE_OR_ERRENOUS_CREATION           => self::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+        self::CRYPTOCURRENCY                           => self::CRYPTOCURRENCY_DESCRIPTION,
+        self::EARN_MONEY_ONLINE                        => self::EARN_MONEY_ONLINE_DESCRIPTION,
+        self::TECHNICAL_SUPPORT                        => self::TECHNICAL_SUPPORT_DESCRIPTION,
+        self::IMPROPER_DOCUMENTATION                   => self::IMPROPER_DOCUMENTATION_DESCRIPTION,
+        self::BETTING                                  => self::BETTING_DESCRIPTION,
+        self::SALE_OF_LIVESTOCK_PETS                   => self::SALE_OF_LIVESTOCK_PETS_DESCRIPTION,
+        self::STOCK_TRADING_TIPS                       => self::STOCK_TRADING_TIPS_DESCRIPTION,
+        self::AUCTIONING                               => self::AUCTIONING_DESCRIPTION,
     ];
 
     const REJECTION_REASONS_MAPPING = [
@@ -159,6 +183,34 @@ class RejectionReasons
             [
                 self::CODE        => self::NOT_REGISTERED_IN_INDIA,
                 self::DESCRIPTION => self::NOT_REGISTERED_IN_INDIA_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::CRYPTOCURRENCY,
+                self::DESCRIPTION => self::CRYPTOCURRENCY_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::EARN_MONEY_ONLINE,
+                self::DESCRIPTION => self::EARN_MONEY_ONLINE_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::TECHNICAL_SUPPORT,
+                self::DESCRIPTION => self::TECHNICAL_SUPPORT_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::BETTING,
+                self::DESCRIPTION => self::BETTING_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::SALE_OF_LIVESTOCK_PETS,
+                self::DESCRIPTION => self::SALE_OF_LIVESTOCK_PETS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::STOCK_TRADING_TIPS,
+                self::DESCRIPTION => self::STOCK_TRADING_TIPS_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::AUCTIONING,
+                self::DESCRIPTION => self::AUCTIONING_DESCRIPTION,
             ],
         ],
 
@@ -243,6 +295,10 @@ class RejectionReasons
             [
                 self::CODE        => self::DUPLICATE_OR_ERRENOUS_CREATION,
                 self::DESCRIPTION => self::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+            ],
+            [
+                self::CODE        => self::IMPROPER_DOCUMENTATION,
+                self::DESCRIPTION => self::IMPROPER_DOCUMENTATION_DESCRIPTION,
             ],
         ],
     ];
