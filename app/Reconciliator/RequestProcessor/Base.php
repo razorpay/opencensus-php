@@ -101,7 +101,7 @@ class Base extends Core
         self::PAYTM                  => [],
         self::KOTAK                  => ['bankalerts@kotak.com'],
         self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE             => ['noreply@fcemail.in'],
+        self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],

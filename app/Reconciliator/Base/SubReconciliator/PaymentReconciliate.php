@@ -341,6 +341,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                     'message'    => 'Verification/Authorization threw an exception. -> ' . $ex->getMessage(),
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -373,6 +374,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                         'message'    => 'Verify returned failed. Payment is still in failed state.',
                         'payment_id' => $this->payment->getId(),
+                        'amount'     => $this->payment->getAmount(),
                         'gateway'    => $this->gateway
                     ]);
 
@@ -389,6 +391,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_FAILED_VERIFY,
                         'message'       => 'Verify command failed or unable to recognize the response.',
                         'payment_id'    => $this->payment->getId(),
+                        'amount'        => $this->payment->getAmount(),
                         'verify_status' => $verifyResponse,
                         'gateway'       => $this->gateway
                     ]);
@@ -407,6 +410,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'message'       => 'Verify command failed or unable to recognize the response.',
                         'payment_id'    => $this->payment->getId(),
+                        'amount'        => $this->payment->getAmount(),
                         'gateway'       => $this->gateway,
                         'verify_status' => $verifyResponse,
                     ]);
@@ -472,6 +476,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'trace_code'      => TraceCode::RECON_INFO_ALERT,
                 'message'         => 'Payment status is failed. Doing force authorize',
                 'payment_id'      => $this->payment->getId(),
+                'amount'          => $this->payment->getAmount(),
                 'gateway'         => $this->gateway
             ]);
 

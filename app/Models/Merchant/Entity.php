@@ -141,6 +141,7 @@ class Entity extends Base\PublicEntity
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
+    const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -1018,7 +1019,7 @@ class Entity extends Base\PublicEntity
 
     protected function getBrandColorAttribute()
     {
-        $storedBrandColor = $this->attributes[self::BRAND_COLOR];
+        $storedBrandColor = $this->attributes[self::BRAND_COLOR] ?? null;
 
         if ($storedBrandColor === null)
         {
@@ -1117,7 +1118,7 @@ class Entity extends Base\PublicEntity
 
     protected function getTransactionReportEmailAttribute()
     {
-        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL]);
+        $emails = explode(',', $this->attributes[self::TRANSACTION_REPORT_EMAIL] ?? null);
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));

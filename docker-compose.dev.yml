@@ -90,4 +90,4 @@ services:
     ports:
       - 29102:9102
       - 29125:9125/udp
-    command: ["-statsd.mapping-config=/tmp/statsd_mapping.yml"]
+    command: ["--statsd.mapping-config=/tmp/statsd_mapping.yml"]

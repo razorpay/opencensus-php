@@ -6,9 +6,9 @@ use Cache;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Core extends Base\Core
 {
@@ -85,6 +85,66 @@ class Core extends Base\Core
             'success_count' => $successCount,
             'failure_count' => $failureCount,
         ];
+    }
+
+    public function updateBankTransferTerminal(array $input)
+    {
+        $rows = $input['rows'] ?? 1000;
+
+        $payments = $this->repo->payment->fetchPaymentsWithoutTerminal(Method::BANK_TRANSFER, $rows);
+
+        $this->trace->info(
+            TraceCode::PAYMENTS_SELECTED,
+            ['payment_ids' => $payments->getIds()]
+        );
+
+        $successCount = 0;
+
+        $failureCount = 0;
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $bankTransfer = $payment->bankTransfer;
+
+                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer, true);
+
+                $payment->associateTerminal($terminal);
+
+                $this->repo->saveOrFail($payment);
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_TERMINAL_UPDATED,
+                    ['payment_id' => $payment->getId()]
+                );
+
+                $successCount++;
+            }
+            catch (\Throwable $e)
+            {
+                $failureCount++;
+
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::PAYMENT_TERMINAL_UPDATE_FAILURE,
+                    ['payment_id' => $payment->getId()]
+                );
+            }
+        }
+
+        $summary = [
+            'success_count' => $successCount,
+            'failure_count' => $failureCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TERMINAL_UPDATE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
     }
 
     public function updateMdr(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
