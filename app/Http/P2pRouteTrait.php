@@ -18,7 +18,7 @@ trait P2pRouteTrait
             [
                 'get',
                 'p2p/customers/verification/{token}',
-                'P2p\CustomerController@verificationStatus'
+                'P2p\CustomerController@getVerificationStatus'
             ],
         Requests::P2P_CUSTOMER_CREATE =>
             [

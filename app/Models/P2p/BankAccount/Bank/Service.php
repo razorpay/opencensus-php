@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\BankAccount\Bank;
+namespace RZP\Models\P2p\BankAccount\Bank;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
@@ -8,10 +8,14 @@ use RZP\Models\P2p\Base;
 /**
  * @property  Core          $core
  * @property  Validator     $validator
+ * @property  Processor     $processor
  */
 class Service extends Base\Service
 {
-    public function fetchAll(): array
+    public function fetchAll(array $input): array
     {
+        $response = $this->processor->fetchAll($input);
+
+        return $response;
     }
 }

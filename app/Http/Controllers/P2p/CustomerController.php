@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Http\Controllers\P2p;
+namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
 
@@ -20,7 +20,7 @@ class CustomerController extends Controller
 
     public function getVerificationStatus()
     {
-        $input = $this->request()->all();
+        $input['token'] = $this->request()->route('token');
 
         $response = $this->service->getVerificationStatus($input);
 
@@ -38,7 +38,7 @@ class CustomerController extends Controller
 
     public function delete()
     {
-        $input = $this->request()->all();
+        $input['id'] = $this->request()->route('id');
 
         $response = $this->service->delete($input);
 

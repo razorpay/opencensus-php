@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Http\Controllers\P2p;
+namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
 
@@ -20,7 +20,7 @@ class DeviceController extends Controller
 
     public function fetch()
     {
-        $input = $this->request()->all();
+        $input = 'device_charpanchkhoye';
 
         $response = $this->service->fetch($input);
 
@@ -29,7 +29,7 @@ class DeviceController extends Controller
 
     public function refreshClToken()
     {
-        $input = $this->request()->all();
+        $input = 'device_charpanchkhoye';
 
         $response = $this->service->refreshClToken($input);
 
@@ -38,7 +38,7 @@ class DeviceController extends Controller
 
     public function delete()
     {
-        $input = $this->request()->all();
+        $input = 'device_charpanchkhoye';
 
         $response = $this->service->delete($input);
 

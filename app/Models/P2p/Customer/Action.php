@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Customer;
+namespace RZP\Models\P2p\Customer;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;

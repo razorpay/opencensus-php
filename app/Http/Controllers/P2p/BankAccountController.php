@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Http\Controllers\P2p;
+namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
 
