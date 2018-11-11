@@ -147,6 +147,8 @@ class Server extends Base\Mock\Server
                 $content['Message']['VERes'] = $responseClass->invalidVersionFormat($paymentId, $cardNo);
 
                 break;
+            case CardNumber::UNKNOWN_ENROLLED:
+                $content['Message']['VERes'] = $responseClass->unknownEnrolledResponse($paymentId);
         }
 
         return $content;

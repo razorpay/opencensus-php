@@ -117,6 +117,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $record = $this->emptyRow;
 
+        $beneName = $this->normalizeString($ba->getBeneficiaryName(), 200);
+
+        $beneAddress = $this->normalizeString($ba->getBeneficiaryAddress1(), 70);
+
         // `Payment detail 1` is sent with settlement id
         // `Payment detail 2` os sent with batch id
         // Payment detail 1 & 2 will be sent in the reverse file
@@ -124,9 +128,9 @@ class NodalAccount extends NodalBase\FileProcessor
         $record[Headings::BENEFICIARY_CODE]              = $ba->getId();
         $record[Headings::BENEFICIARY_ACCOUNT_NUMBER]    = $ba->getAccountNumber();
         $record[Headings::INSTRUMENT_AMOUNT]             = number_format($amount, 2, '.', '');
-        $record[Headings::BENEFICIARY_NAME]              = substr($ba->getBeneficiaryName(), 0, 200);
+        $record[Headings::BENEFICIARY_NAME]              = $beneName;
 
-        $record[Headings::BENE_ADDRESS_1]                = $ba->getBeneficiaryAddress1() ?: 'NA';
+        $record[Headings::BENE_ADDRESS_1]                = $beneAddress;
         $record[Headings::BENE_ADDRESS_2]                = 'NA';
         $record[Headings::BENE_ADDRESS_3]                = 'NA';
 
@@ -243,5 +247,29 @@ class NodalAccount extends NodalBase\FileProcessor
         $settlementMail = new SettlementMail($data);
 
         Mail::queue($settlementMail);
+    }
+
+    /**
+     * Currently csv file is generated like excel in `creator`. Which will not consider delimiter being part of string.
+     * Also base on observation its understood that file should not contain special characters.
+     * So this method will take care of those things.
+     *
+     * {@inheritdoc}
+     */
+    protected function normalizeString($string, int $length = 0, string $default = 'NA'): string
+    {
+        if (empty($string) === true)
+        {
+            return $default;
+        }
+
+        $normalizedString = preg_replace("/\r\n|\r|\n|,|'/", ' ', $string);
+
+        if ($length > 0)
+        {
+            $normalizedString = substr($normalizedString, 0, $length);
+        }
+
+        return $normalizedString;
     }
 }

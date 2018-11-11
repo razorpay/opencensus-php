@@ -1031,6 +1031,47 @@ class MerchantTest extends TestCase
         $this->assertEquals(2, $bankAccounts['count']);
     }
 
+    public function testDiwaliPromotionalPlan()
+    {
+        $this->fixtures->pricing->createDiwaliPromotionalPlan();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
+
+        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals(100, $transaction['fee']);
+
+        // mock carbon to test timestamp check
+
+        $firstDay2019 = Carbon::createFromTimestamp(1546324200);
+
+        Carbon::setTestNow($firstDay2019);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
+    }
+
     public function testSetBanks()
     {
         $this->ba->adminAuth();
@@ -3350,5 +3391,45 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $content['register_count']);
         $this->assertEquals(1, $content['total_count']);
         $this->assertEquals(Channel::AXIS, $content['channel']);
+    }
+
+    public function testSubmitSupportCallRequest()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestWithInvalidContact()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestOnNonWorkingHours()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 8 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 8, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 5th Nov 2018, 7 PM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 19, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 4th Nov 2018, 10 AM, Sunday
+        Carbon::setTestNow(Carbon::create(2018, 11, 4, 10, null, null, Timezone::IST));
+        $this->startTest();
     }
 }

@@ -41,4 +41,3 @@ class MerchantInvoiceController extends Controller
         return ApiResponse::json([]);
     }
 }
-

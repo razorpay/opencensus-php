@@ -52,7 +52,12 @@ class BharatQrPaymentTest extends TestCase
 
         $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
-        $request['content'] = $content;
+        // This method tests if the request that contains plain text as input is getting handled properly
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
 
         $response = $this->makeRequestAndGetContent($request);
 

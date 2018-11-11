@@ -2027,10 +2027,13 @@ trait Authorize
             if (($token !== null) and
                 ($token->isLocal() === true) and
                 ($token->isRecurring() === true) and
-                ($this->app['basicauth']->isPrivateAuth() === true) and
                 (isset($input['token']) === true))
             {
-                $type = Payment\RecurringType::AUTO;
+                if (($this->app['basicauth']->isPrivateAuth() === true) or
+                    ($this->app->runningInQueue() === true))
+                {
+                    $type = Payment\RecurringType::AUTO;
+                }
             }
         }
 

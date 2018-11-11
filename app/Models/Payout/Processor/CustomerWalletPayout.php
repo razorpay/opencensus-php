@@ -105,4 +105,3 @@ class CustomerWalletPayout extends Base
         return $transactionData;
     }
 }
-

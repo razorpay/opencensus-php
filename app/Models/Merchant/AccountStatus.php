@@ -20,6 +20,7 @@ final class AccountStatus
     const PENDING_NEEDS_CLARIFICATION = 'pending_needs_clarification';
     const DEAD                        = 'dead';
     const INSTANTLY_ACTIVATED         = 'instantly_activated';
+    const REJECTED                    = 'rejected';
 
     public static function isValid($value)
     {
