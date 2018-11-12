@@ -1596,6 +1596,8 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Rental agreement number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
+        $facade['Merchant Account Number'] = 'razorpay amex';
+
         return $facade;
     }
 }
