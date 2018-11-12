@@ -3301,6 +3301,97 @@ class MerchantTest extends TestCase
         $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
     }
 
+    public function testFetchingLinkedAcountsForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'         => 'parentaccount1',
+            'email'      => 'parentaccount1@razorpay.com',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'linkdaccount01',
+            'email'      => 'linkdaccount01@razorpay.com',
+            'parent_id'  => 'parentaccount1'
+        ]);
+
+        $this->fixtures->create(
+        'feature',
+        [
+            'entity_id'     => 'parentaccount1',
+            'entity_type'   => 'merchant',
+            'name'          => 'marketplace'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testPartnerAcountsForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'            => 'parentaccount1',
+            'email'         => 'parentaccount1@razorpay.com',
+            'partner_type'  => 'aggregator',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'submerchant001',
+            'email'      => 'submerchant001@razorpay.com'
+        ]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => 'parentaccount1',
+            'user_id'     => $user['id'],
+            'role'        => 'owner'
+        ]);
+
+        $this->createOAuthApplication([
+            'id'            => '10000000000App',
+            'merchant_id'   => 'parentaccount1',
+            'type'          => 'partner'
+        ]);
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => 'submerchant001',
+            'entity_id'   => '10000000000App',
+            'entity_type' => 'application',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testReferredAccountForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'            => 'parentaccount1',
+            'email'         => 'parentaccount1@razorpay.com'
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'refaccount0001',
+            'email'      => 'refaccount0001@razorpay.com'
+        ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => 'parentaccount1',
+                'entity_type'   => 'merchant',
+                'name'          => 'aggregator'
+            ]);
+
+        DB::table('tagging_tagged')
+            ->insert([
+                'taggable_id'       => 'refaccount0001',
+                'taggable_type'     => 'merchant',
+                'tag_name'          => '',
+                'tag_slug'          => 'ref-parentaccount1',
+            ]);
+
+        $this->startTest();
+    }
+
     public function testNegativeBeneficiaryRegisterBetweenTimestampAxis()
     {
         Mail::fake();
