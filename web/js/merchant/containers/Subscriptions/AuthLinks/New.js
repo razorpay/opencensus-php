@@ -39,7 +39,6 @@ const mandatoryBankFields = [
   'mandateBankAccountIFSC',
   'mandateBeneficiaryName',
   'mandateBankAccountNumber',
-  'mandateAuthType',
 ];
 
 @withRouter
@@ -119,7 +118,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   handleDateChange = fieldName => date => {
     this.setState({
-      [fieldName]: Number(date.format('X')),
+      [fieldName]: Number(date.endOf('day').format('X')),
     });
   };
 

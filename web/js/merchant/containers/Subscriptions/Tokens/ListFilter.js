@@ -9,34 +9,6 @@ export default props => (
       <Field name="id" component="input" class="form-control input-sm" />
     </div>
 
-    <div class="form-group list-filter-item">
-      <label>Batch Id</label>
-      <Field name="batch_id" component="input" class="form-control input-sm" />
-    </div>
-
-    <div class="form-group list-filter-item">
-      <label>Email</label>
-      <Field
-        name="customer_email"
-        component="input"
-        class="form-control input-sm"
-      />
-    </div>
-
-    <div class="form-group list-filter-item">
-      <label>Contact</label>
-      <Field
-        name="customer_contact"
-        component="input"
-        class="form-control input-sm"
-      />
-    </div>
-
-    <div className="form-group list-filter-item">
-      <label>Notes</label>
-      <Field name="notes" component="input" class="form-control input-sm" />
-    </div>
-
     <div class="form-group list-filter-item count">
       <label>Count</label>
       <Field
