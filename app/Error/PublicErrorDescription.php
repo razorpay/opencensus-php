@@ -281,8 +281,6 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
-    const BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED                 = 'Payment failed because maximum amount limit was reached for this terminal';
-    const BAD_REQUEST_GATEWAY_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED            = 'Payment failed because maximum transaction limit was reached for this terminal';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
@@ -336,6 +334,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
     const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
     const BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED                              = 'Payment has already been acknowledged.';
+    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                = 'Payment failed';
+    const BAD_REQUEST_PURCHASE_ERROR                                            = 'Payment failed during purchase';
+    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = 'Payment failed due to max count of deferred payments reached';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
@@ -655,13 +656,6 @@ class PublicErrorDescription
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
-
-    // TODO: Remove when #9836 is merged
-    const BAD_REQUEST_RECON_NOT_IN_PROGRESS                                     = '';
-    const BAD_REQUEST_GENERIC_TRANSACTION_ERROR                                 = '';
-    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                = '';
-    const BAD_REQUEST_PURCHASE_ERROR                                            = '';
-    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = '';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
