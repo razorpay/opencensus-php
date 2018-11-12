@@ -1,0 +1,122 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "request",
+        "cl"
+    ],
+    "properties": {
+        "request": {
+            "type": "object",
+            "required": [
+                "url",
+                "method"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "method": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                }
+            }
+        },
+        "cl": {
+            "type": "object",
+            "required": [
+                "txnId",
+                "txnAmount",
+                "note",
+                "refurl",
+                "payerAddr",
+                "payeeAddr",
+                "payeeName",
+                "mobileNumber",
+                "appId",
+                "deviceId",
+                "account",
+                "CredAllowed"
+            ],
+            "properties": {
+                "txnId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "txnAmount": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "note": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "refurl": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "payerAddr": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "payeeAddr": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "payeeName": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "mobileNumber": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "appId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "deviceId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "account": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "CredAllowed": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "subtype",
+                            "dLength",
+                            "dFormat"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "dLength": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "dFormat": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

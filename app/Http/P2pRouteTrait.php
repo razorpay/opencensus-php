@@ -194,7 +194,7 @@ trait P2pRouteTrait
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH =>
             [
-                'post',
+                'get',
                 'p2p/customers/{customer_id}/transactions/{transaction_id}',
                 'P2p\TransactionController@fetch'
             ],
@@ -208,7 +208,7 @@ trait P2pRouteTrait
             [
                 'post',
                 'p2p/customers/{customer_id}/transactions/{transaction_id}/authorize',
-                'P2p\TransactionController@authorize'
+                'P2p\TransactionController@authorizeTransaction'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT =>
             [

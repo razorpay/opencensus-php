@@ -1,0 +1,27 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "status",
+        "status_url",
+        "expire_at"
+    ],
+    "properties": {
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "completed"
+            ]
+        },
+        "status_url": {
+            "type": "string",
+            "format": "url"
+        },
+        "expire_at": {
+            "type": "integer"
+        }
+    }
+}

@@ -54,7 +54,7 @@ class TransactionController extends Controller
         return $this->response($response);
     }
 
-    public function authorize()
+    public function authorizeTransaction()
     {
         $input = $this->request()->all();
 

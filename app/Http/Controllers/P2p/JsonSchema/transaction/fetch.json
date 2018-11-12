@@ -1,0 +1,79 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "id",
+        "entity",
+        "txn_id",
+        "status",
+        "amount",
+        "description",
+        "type",
+        "currency",
+        "error_description",
+        "error_code",
+        "transaction_type",
+        "rrn",
+        "created_at",
+        "completed_at",
+        "expire_at"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "entity": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "txn_id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "status": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "amount": {
+            "type": "integer"
+        },
+        "description": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "currency": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "error_description": {
+            "type": "null"
+        },
+        "error_code": {
+            "type": "null"
+        },
+        "transaction_type": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "rrn": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "created_at": {
+            "type": "integer"
+        },
+        "completed_at": {
+            "type": "integer"
+        },
+        "expire_at": {
+            "type": "null"
+        }
+    }
+}
