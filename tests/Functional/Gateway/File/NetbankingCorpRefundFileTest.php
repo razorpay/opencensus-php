@@ -71,7 +71,7 @@ class NetbankingCorpRefundFileTest extends TestCase
 
             $mid = $mid = $this->app['config']['gateway']['netbanking_corporation']['test_merchant_id'];
 
-            $fileName = $mid . '_' . $date . '_' . 'CORPBANK.txt';
+            $fileName = $mid . '_' . $date . '_' . 'OLT_REFUNDS.txt';
 
             $testData = [
                 'body'        => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_CORPORATION],

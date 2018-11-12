@@ -16,24 +16,12 @@ class Corporation extends Base
 {
     use FileHandler;
 
-    const FILE_NAME                  = 'CORPBANK';
+    const FILE_NAME                  = 'OLT_REFUNDS';
     const EXTENSION                  = FileStore\Format::TXT;
     const FILE_TYPE                  = FileStore\Type::CORPORATION_NETBANKING_REFUND;
     const GATEWAY                    = Payment\Gateway::NETBANKING_CORPORATION;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::CORP;
-
-    const HEADERS = [
-        'MERCHANT_CODE',
-        'TXN_EXECUTED_DATE',
-        'BANK_TXN_ID',
-        'MERCHANT_TXN_ID',
-        'TXN_ORG_AMOUNT',
-        'BILLER_NAME',
-        'TXN_REFUND_AMOUNT',
-        'TXN_REFUND_DATE',
-        'REFUND_REASON'
-    ];
 
     private $mid;
 
@@ -43,6 +31,9 @@ class Corporation extends Base
 
         // MID remains same for all rows
         $this->setMerchantId($data[0]);
+
+        $count  = 0;
+        $amount = 0;
 
         foreach ($data as $row)
         {
@@ -72,11 +63,21 @@ class Corporation extends Base
                 $refundDate,
                 $refundReason
             ];
+
+            ++$count;
+
+            $amount = $amount + $row['refund']['amount'];
         }
 
-        $initialLine = $this->getInitialLine();
+        $totalRefundedAmount = number_format($amount / 100, 2, '.', '');
+
+        $initialLine = 'HREC|' . $count . '|' . $totalRefundedAmount . "\r\n";
 
         $formattedData = $this->getTextData($formattedData, $initialLine);
+
+        $finalLine = 'TREC**';
+
+        $formattedData = $formattedData . "\r\n" . $finalLine;
 
         return $formattedData;
     }
