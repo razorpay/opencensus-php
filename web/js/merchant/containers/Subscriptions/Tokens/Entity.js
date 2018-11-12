@@ -107,6 +107,7 @@ export default class TokenEntityContainer extends Component {
               {entity.id}
               <div class="btn-toolbar pull-right">
                 {entity &&
+                  entity.recurring_details &&
                   entity.recurring_details.status !== 'rejected' && (
                     <button
                       class="btn btn-primary btn-sm"
