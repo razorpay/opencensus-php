@@ -49,14 +49,14 @@ class Gateway extends Base\Gateway
 
         $this->handleFailure($checkBin2Response, 'checkbin2');
 
-//        if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
-//        {
-//            $this->initiate2();
-//        }
-//        else
-//        {
-//            $this->initiate();
-//        }
+        if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
+        {
+            $this->initiate2();
+        }
+        else
+        {
+            $this->initiate();
+        }
     }
 
 

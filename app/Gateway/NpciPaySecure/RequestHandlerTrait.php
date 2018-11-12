@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\NpciPaySecure;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Isg\Field;
 use SoapFault;
 use SoapHeader;
 use SoapVar;
@@ -44,18 +47,97 @@ trait RequestHandlerTrait
         return $this->getRequestContents($body);
     }
     //-------------- Check BIN2 request end ----------------------------------
+    //-------------- Initiate request ----------------------------------------
+    protected function initiate()
+    {
 
+    }
+
+    protected function initiate2()
+    {
+        $requestArray = $this->getInitiateRequestArray();
+
+        //todo: Fill these later from payment_analytics table
+        $extraParameters = [
+            Fields::BROWSER_USERAGENT => '',
+            Fields::IP_ADDRESS        => '',
+            Fields::HTTP_ACCEPT       => '',
+        ];
+
+        $requestArray = array_merge($requestArray, $extraParameters);
+
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_INITIATE_2;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
+    }
+
+    protected function getInitiateRequestArray(): array
+    {
+        $card = $this->input['card'];
+
+        $paymentDate = Carbon::createFromTimestamp($this->input['payment']['created_at'], Timezone::IST);
+
+        $time = $paymentDate->format('His');
+
+        $date = $paymentDate->format('md');
+
+        // Random 6 digit number
+        $systemTraceAuditNumber = sprintf("%06d", mt_rand(1, 999999));
+
+        $requestArray = [
+            Fields::CARD_NO                           => $card['number'],
+            Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
+            Fields::LANGUAGE_CODE                     => 'en',
+            Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
+            Fields::CURRENCY_CODE                     => '356',
+            Fields::CVD2                              => $card['cvv'],
+            // todo: fetch this correctly from card BIN
+            Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
+            Fields::TID                               => $this->config['terminal_id'],
+            // todo: Identify what we should pass here
+            Fields::STAN                              => $systemTraceAuditNumber,
+            Fields::TRAN_TIME                         => $time,
+            Fields::TRAN_DATE                         => $date,
+            Fields::MCC                               => $this->input['merchant']['category'],
+            Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
+            Fields::RETRIEVAL_REF_NUMBER              => $this->generateRrn($systemTraceAuditNumber),
+            // todo: Confirm this
+            Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
+            Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
+            // todo: Check if these values are okay
+            Fields::TERMINAL_CITY                     => 'Bangalore',
+            Fields::TERMINAL_STATE_CODE               => 'KA',
+            Fields::TERMINAL_COUNTRY_CODE             => 'IN',
+            Fields::MERCHANT_POSTAL_CODE              => '560030',
+            Fields::MERCHANT_TELEPHONE                => '9999999999',
+            Fields::ORDER_ID                          => $this->input['payment']['id'],
+            Fields::CUSTOM1                           => $this->input['callbackUrl'],
+            Fields::CUSTOM2                           => $this->input['payment']['id'],
+        ];
+
+        return $requestArray;
+    }
+
+    protected function generateRrn($stan)
+    {
+        $dt = Carbon::now('Asia/Kolkata');
+
+        $jd = str_pad($dt->format('z') + 1, 3, 0, STR_PAD_LEFT);
+
+        return substr($dt->format('y'), -1) . $jd . $dt->format('H') . $stan;
+    }
+
+    //-------------- Initiate request end ------------------------------------
     //---------------- Soap Request related functions ------------------------
     protected function sendRequest($command, $params)
     {
         $headers        = $this->getRequestHeaders();
 
         $requestBody    = $this->getRequestBody($params, $command);
-
-        $request = [
-            'headers' => $headers,
-            'body'    => $requestBody,
-        ];
 
         try
         {
@@ -73,9 +155,10 @@ trait RequestHandlerTrait
             $soapClient->__setSoapHeaders($headers);
 
             $response = $soapClient->CallPaySecure($requestBody);
+            sd($response);
 
             // todo: Remove this
-            $this->printLastSoapXml($soapClient);
+//            $this->printLastSoapXml($soapClient);
         }
         catch (SoapFault $sf)
         {
