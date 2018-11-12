@@ -42,7 +42,7 @@ class CreateQuboleMerchantDetailsView extends Migration
 
         $columnStr = implode(',', $columns);
 
-        $statement = 'CREATE VIEW qubole_merchant_details_view AS 
+        $statement = 'CREATE ALGORITHM=MERGE VIEW qubole_merchant_details_view AS 
                         SELECT ' . $columnStr .
                         ' FROM ' . Table::MERCHANT_DETAIL;
 

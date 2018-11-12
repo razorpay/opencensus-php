@@ -27,7 +27,7 @@ class CreateQuboleCardsView extends Migration
 
         $columnStr = implode(',', $columns);
 
-        $statement = 'CREATE VIEW qubole_cards_view AS
+        $statement = 'CREATE ALGORITHM=MERGE VIEW qubole_cards_view AS
                         SELECT ' . $columnStr .
                         ' FROM ' . Table::CARD;
 
