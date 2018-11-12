@@ -65,7 +65,17 @@ class Canara extends Base
 
         $count['total'] = $count['refunds'] + $count['claims'];
 
-        $date = Carbon::now(Timezone::IST)->format('jS F Y');
+        $sampleRefund = $data['refunds'][0];
+
+        $sampleClaim = $data['claims'][0];
+
+        $paymentCreatedAt = $sampleClaim['payment']['authorized_at'];
+
+        $refundCreatedAt = $sampleRefund['refund']['created_at'];
+
+        $date['payment'] = Carbon::createFromTimestamp($paymentCreatedAt)->format('jS F Y');
+
+        $date['refund'] = Carbon::createFromTimestamp($refundCreatedAt)->format('jS F Y');
 
         return [
             'bankName'    => 'Canara',
