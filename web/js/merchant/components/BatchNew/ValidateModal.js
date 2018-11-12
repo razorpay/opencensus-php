@@ -6,7 +6,7 @@ import FileStaged from 'merchant/components/File/Staged';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-const MAX_FILE_SIZE = 5242880; // 5MB in bytes.
+const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 export default class BatchValidateModal extends Component {
   state = {
@@ -36,6 +36,7 @@ export default class BatchValidateModal extends Component {
       closeModal,
       files,
       fileUploadProgress,
+      maxFileSize = DEFAULT_MAX_FILE_SIZE,
       onSampleFileDownload = () => {},
       onErrorReportDownload = () => {},
     } = this.props;
@@ -48,7 +49,7 @@ export default class BatchValidateModal extends Component {
             accept={['csv', 'xlsx']}
             size="large"
             uploadedFileName="Upload File here"
-            maxSize={MAX_FILE_SIZE}
+            maxSize={maxFileSize}
             onBiggerFileSize={onBiggerFileSize}
             onFileChange={onFileChange}
             onCloseClick={onCloseClick}
