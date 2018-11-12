@@ -31,7 +31,7 @@ class TerminalBankFilter extends Terminal\Filter
 
         if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TERMINAL_BANKS_FILTER) === false)
         {
-            if (count($applicableTerminals) !== count($terminals))
+            if (($this->isLiveMode() === true) and (count($applicableTerminals) !== count($terminals)))
             {
                 $terminalData = array_pluck($terminals, 'gateway', 'id');
 

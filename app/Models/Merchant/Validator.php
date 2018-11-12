@@ -187,8 +187,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $featureValidators = [
-        'visible_features',
-        'uneditable_features',
+        'visible_and_editable_features',
+        'mode_for_product_features',
     ];
 
     protected static $editEmailValidators = [
@@ -209,6 +209,10 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $submitSupportCallRequestRules = [
+        'contact' => 'required|contact_syntax',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -233,7 +237,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateUneditableFeatures(array $input)
+    public function validateModeForProductFeatures(array $input)
     {
         $requestedFeatures = array_keys($input['features']);
 
@@ -513,19 +517,13 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
-        if ($merchant->merchantDetail->isSubmitted() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
-        }
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
 
         $this->validateIsNotActivated($merchant);
 
-        if ($merchant->merchantDetail->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
-        }
+        $detailValidator->validateIsNotArchived();
 
         // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
@@ -533,11 +531,17 @@ class Validator extends Base\Validator
             return;
         }
 
-        $attributes = [
-            Entity::CATEGORY,
-            Entity::BILLING_LABEL,
-            Entity::TRANSACTION_REPORT_EMAIL
-        ];
+        $this->validateActivationMandatoryAttributes();
+    }
+
+    /**
+     * @param array $attributes
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateMandatoryAttributes(array $attributes)
+    {
+        $merchant = $this->entity;
 
         $website = $merchant->merchantDetail->getWebsite();
 
@@ -562,7 +566,52 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateVisibleFeatures(array $input)
+    public function validateActivationMandatoryAttributes()
+    {
+        $attributes = Constants::ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateInstantActivationMandatoryAttributes()
+    {
+        $attributes = Constants::INSTANT_ACTIVATION_MANDATORY_FIELDS;
+
+        $this->validateMandatoryAttributes($attributes);
+    }
+
+    public function validateBeforeInstantlyActivate()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $this->validateIsNotActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+
+        // LA's should directly be activated. They should not go through the instant activations flow
+        if ($merchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED,
+                Entity::PARENT_ID,
+                [
+                    Entity::PARENT_ID => $merchant->getParentId(),
+                ]);
+        }
+
+        $this->validateInstantActivationMandatoryAttributes();
+    }
+
+    /**
+     * Ensures that the merchant feature requested is a visible feature and an editable feature.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateVisibleAndEditableFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 
@@ -723,6 +772,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED);
         }
+
+        $this->validateHasBankAccount();
     }
 
     protected function validateEnableReceiptEmails()
@@ -894,6 +945,58 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
                 Entity::ACTIVATED);
+        }
+    }
+
+    public function validateBeforeKycVerified()
+    {
+        $merchant = $this->entity;
+
+        $detailValidator = $merchant->merchantDetail->getValidator();
+
+        $detailValidator->validateActivationFormSubmitted();
+
+        $this->validateIsActivated($merchant);
+
+        $detailValidator->validateIsNotArchived();
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                Entity::ACTIVATED);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateHasBankAccount()
+    {
+        $merchant = $this->entity;
+
+        $bankAccount = $merchant->bankAccount;
+
+        if ($bankAccount === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+    }
+
+    public function validateNowIsWorkingHour()
+    {
+        if (is_rzp_business_hour() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
     }
 }

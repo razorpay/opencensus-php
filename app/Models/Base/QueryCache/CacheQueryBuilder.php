@@ -109,4 +109,3 @@ class CacheQueryBuilder extends RememberableQueryBuilder
         return true;
     }
 }
-

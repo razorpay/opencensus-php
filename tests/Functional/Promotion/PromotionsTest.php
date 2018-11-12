@@ -122,4 +122,3 @@ class PromotionsTest extends TestCase
         $this->startTest();
     }
 }
-

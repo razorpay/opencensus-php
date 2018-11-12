@@ -10,18 +10,21 @@ class Status
 
     const SUCCESS = 'SUCCESS';
 
+    // Only in case of payment
     const PENDING = 'PENDING';
 
-    const FAILURE = 'FAILURE';
+    // Only in case of payment
+    const EXPIRED = 'EXPIRED';
 
     const TIMEOUT = 'TIMEOUT';
 
-    const EXPIRED = 'EXPIRED';
+    const FAILURE = 'FAILURE';
 
     const REFUND_SUCCESS = 'SUCCESS';
 
     const REFUND_FAILED = 'FAILED';
 
+    // Status in validate VPA
     const VPA_AVAILABLE = 'VE';
 
     const VPA_NOT_AVAILABLE = 'VN';

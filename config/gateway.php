@@ -204,11 +204,13 @@ return [
     ],
 
     'atom' => [
-        'test_authorize_hash_secret'  => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
-        'test_callback_hash_secret'   => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
-        'test_merchant_id'            => env('ATOM_TEST_MERCHANT_ID'),
-        'test_secure_password'        => env('ATOM_TEST_SECURE_PASSWORD'),
-        'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
+        'test_authorize_hash_secret'   => env('ATOM_GATEWAY_TEST_AUTHORIZE_HASH_SECRET'),
+        'test_callback_hash_secret'    => env('ATOM_GATEWAY_TEST_CALLBACK_HASH_SECRET'),
+        'test_merchant_id'             => env('ATOM_TEST_MERCHANT_ID'),
+        'test_secure_password'         => env('ATOM_TEST_SECURE_PASSWORD'),
+        'test_access_code'             => env('ATOM_TEST_ACCESS_CODE'),
+        'test_request_encryption_key'  => env('ATOM_TEST_REQUEST_ENCRYPTION_KEY'),
+        'test_response_encryption_key' => env('ATOM_TEST_RESPONSE_ENCRYPTION_KEY'),
     ],
 
     'mpi_blade' => [
@@ -478,7 +480,13 @@ return [
 
     'netbanking_idfc' => [
         'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET')
+        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET'),
+        'live_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'client_certificate'     => env('NETBANKING_IDFC_CLIENT_CERTIFICATE'),
+        'test_client_certificate' => env('NETBANKING_IDFC_TEST_CLIENT_CERTIFICATE'),
+        'live_client_certificate' => env('NETBANKING_IDFC_LIVE_CLIENT_CERTIFICATE'),
+        'cert_dir_name'           => env('NETBANKING_IDFC_CERT_DIR_NAME'),
     ],
 
     'netbanking_icici' => [

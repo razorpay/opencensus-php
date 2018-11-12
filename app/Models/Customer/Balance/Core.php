@@ -14,17 +14,19 @@ class Core extends Base\Core
     /**
      * Debit an amount from customer_balance account
      *
-     * @param  string $customerId
-     * @param  int    $amount
+     * @param string $customerId
+     * @param int    $amount
+     * @param string $source
+     *
      * @return Entity
      */
-    public function debit(string $customerId, int $amount) : Entity
+    public function debit(string $customerId, int $amount, string $source) : Entity
     {
         $balance = $this->repo
                         ->customer_balance
                         ->lockForUpdate($customerId);
 
-        $balance->getValidator()->validateBalanceForDebit($amount);
+        $balance->getValidator()->validateBalanceForDebit($amount, $source);
 
         $balance->deductBalance($amount);
 

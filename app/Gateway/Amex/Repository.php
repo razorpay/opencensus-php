@@ -12,4 +12,19 @@ class Repository extends AxisMigs\Repository
     {
         $query->where('amex', '=', '1');
     }
+
+    /**
+     * Used in Payment Reconciliate for fetching
+     * payment by given gateway vpc_TransacationNo
+     * for authorize Action
+     * @param string $referenceNumber
+     * @return Entity
+     */
+    public function findPaymentForGateway(string $referenceNumber)
+    {
+        return $this->newQuery()
+            ->where(Entity::VPC_TRANSACTION_NUMBER, '=', $referenceNumber)
+            ->where(Entity::ACTION, '=' ,'authorize')
+            ->firstOrFail();
+    }
 }

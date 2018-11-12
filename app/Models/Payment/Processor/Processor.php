@@ -382,7 +382,16 @@ class Processor
 
         $currentRouteName = $this->route->getCurrentRouteName();
 
-        if ($currentRouteName === 'payment_create_recurring')
+        // Adding subscription_registration_charge_token to enable
+        // token charging via dashboard.
+        if (($currentRouteName === 'payment_create_recurring') or
+            ($currentRouteName === 'subscription_registration_charge_token'))
+        {
+            return null;
+        }
+
+        // for batch charging of tokens
+        if ($this->app->runningInQueue() === true)
         {
             return null;
         }
@@ -1165,7 +1174,7 @@ class Processor
 
         $this->segment->trackPayment($payment, $traceCode, $segmentCustomProperties);
 
-        if (($status !== Status::CREATED) and ($status !== Status::AUTHORIZED))
+        if ($status !== Status::CREATED)
         {
             throw new Exception\LogicException(
                 'Payment not in the appropriate status to be marked as failed.',
@@ -1238,6 +1247,8 @@ class Processor
         $payment->setVerified(null);
 
         $payment->setVerifyBucket(0);
+
+        $payment->setVerifyAt(time() + 120);
 
         //
         // In case the gateway error exception is thrown on authenticate

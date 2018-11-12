@@ -4068,6 +4068,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4133,6 +4140,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                        ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4201,6 +4215,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4257,6 +4278,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4320,6 +4348,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'range' => [
@@ -4379,6 +4414,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'range' => [
@@ -4428,6 +4470,13 @@ return [
                 'bool' => [
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [

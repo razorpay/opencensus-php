@@ -96,6 +96,7 @@ class Constants
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
     const GOOGLE_PAY                      = 'google_pay';
     const EMANDATE_MRN                    = 'emandate_mrn';
+    const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -231,6 +232,7 @@ class Constants
         self::TERMINAL_BANKS_FILTER           => true,
         self::EMANDATE_MRN                    => true,
         self::GOOGLE_PAY                      => true,
+        self::DIWALI_PROMOTIONAL_PLAN         => true,
     ];
 
     // Entity type constants
@@ -310,6 +312,8 @@ class Constants
     /**
      * Features that merchants can enable/disable
      * Must be defined in the visibleFeaturesMap
+     * The features defined here which are a part of the PRODUCT_FEATURES array,
+     * will not be editable by the merchant in the live mode.
      *
      * @var array
      */

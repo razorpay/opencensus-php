@@ -707,17 +707,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function shouldMigrateToIpay(): bool
-    {
-        if (($this->input['payment']['created_at'] > Constants::IPAY_MIGRATION_CHECK_SOFT) or
-            (Carbon::now(Timezone::IST)->getTimestamp() > Constants::IPAY_MIGRATION_CHECK_HARD))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $this->setTerminalInRequest($request);
@@ -725,28 +714,13 @@ class Gateway extends Base\Gateway
         // Create xml from the fields
         $request['content'] = Utility::createXml($request['data']);
 
-        if ($this->shouldMigrateToIpay() === true)
-        {
-            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
-
-            $payment = $this->input['payment'];
-
-            if ($this->secondDebitRecurringFlag === true or
-                ((isset($payment['auth_type']) === true) and ($payment['auth_type'] === AuthType::PIN)))
-            {
-                $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
-            }
-        }
-        else
-        {
-            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
-        }
+        $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
 
         $request['url'] = $domain . $request['url'];
 
         $this->requestVar = $request;
 
-        try 
+        try
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);

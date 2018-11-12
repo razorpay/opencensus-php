@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Card\Fss;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Card\Fss\Status;
+use RZP\Exception\GatewayErrorException;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -161,6 +163,50 @@ class BobGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function ()
         {
             $this->doAuthPayment();
+        });
+    }
+
+    public function testPaymentVerifyResponseCaptured()
+    {
+        if ($this->acquirer !== 'fss')
+        {
+            $this->markTestSkipped();
+        }
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['result'] = 'FAILURE';
+            }
+        }, $this->gateway);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->doAuthPayment($this->payment);
+        }, GatewayErrorException::class);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $paymentEntity['status']);
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result'] = 'CAPTURED';
+            }
+        }, $this->gateway);
+
+        $data = [];
+        $data['exception']['class'] = 'RZP\Exception\PaymentVerificationException';
+        $data['exception']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED';
+        $data['response']['status_code'] = 400;
+        $data['response']['content']['error']['code'] = 'BAD_REQUEST_ERROR';
+
+        $this->runRequestResponseFlow($data, function () use ($paymentEntity)
+        {
+            $this->verifyPayment($paymentEntity['id']);
         });
     }
 

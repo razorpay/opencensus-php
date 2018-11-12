@@ -42,7 +42,7 @@ class Refunded extends Base
 
         return $this;
     }
-  
+
     protected function getSenderEmail(): string
     {
         return ($this->isMerchantEmail() === true) ?
