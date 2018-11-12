@@ -87,6 +87,12 @@ export const disputeStatusMap = {
   lost: 'label-lost',
 };
 
+export const tokenStatusMap = {
+  confirmed: 'label-success',
+  initiated: 'label-info',
+  rejected: 'label-danger',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
@@ -99,6 +105,7 @@ const entityMap = {
   plan: planStatusMap,
   activation: activationStatusMap,
   dispute: disputeStatusMap,
+  token: tokenStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -112,5 +119,6 @@ export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
 export const PlanStatusLabel = StatusLabel(planStatusMap);
 export const ActivationStatusLabel = StatusLabel(activationStatusMap);
 export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
+export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

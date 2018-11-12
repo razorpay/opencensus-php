@@ -7,6 +7,7 @@ export AssignBanks from './AssignBanks';
 export AssignMerchantHandle from './AssignMerchantHandle';
 export AddAdjustment from './AddAdjustment';
 export CreateOffer from './CreateOffer';
+export CreateVA from './CreateVA';
 export EditMerchant from './EditMerchant';
 export EditMerchantEmail from './EditMerchantEmail';
 export EditBankAccountDetails from './EditBankAccountDetails';

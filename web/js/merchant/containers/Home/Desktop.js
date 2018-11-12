@@ -18,6 +18,8 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchant/modules/session';
+import Announcement from 'merchant/components/Announcements/Instant';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -31,7 +33,7 @@ import {
   trackSettleNow,
 } from './ga';
 
-@connect(state => ({ user: state.session.user }), {
+@connect(state => ({ user: state.session.user, config: state.config }), {
   showOrHideTour,
   openModal,
 })
@@ -100,6 +102,8 @@ class AnalyticsDesktop extends Component {
   render() {
     const {
       mode,
+      user,
+      config,
       current_balance,
       tabsMeta,
       isAdmin,
@@ -115,6 +119,7 @@ class AnalyticsDesktop extends Component {
       expandOnboardingBanner,
       payments,
       showOnboardingBanner,
+      showInstantActivation,
 
       onHideOnboardingBanner,
       onFirstStepClose,
@@ -133,9 +138,21 @@ class AnalyticsDesktop extends Component {
 
     const { onShowTour, onHideNewAnalyticsBanner } = this;
 
+    const hasSecondaryBanner =
+      showInstantActivation && config.config && !config.config.hasPersonalised;
+
     return (
       <div className="home-analytics-desktop">
-        <div ref={node => onExtraContentMount(node)} className="extra-content">
+        <div
+          ref={node => onExtraContentMount(node)}
+          className={`extra-content${
+            showOnboardingBanner ? ' has-ob-banner' : ''
+          }${
+            !showOnboardingBanner && hasSecondaryBanner
+              ? ' has-secondary-banner'
+              : ''
+          }`}
+        >
           {!isAdmin && (
             <div>
               {hasNewAnalyticsTour && (
@@ -168,11 +185,11 @@ class AnalyticsDesktop extends Component {
             </div>
           )}
 
-          <EarlySettlementAnnouncement
-            withTour={hasNewAnalyticsTour}
-            from="Home-Desktop"
-            marginBottom={!showOnboardingBanner}
-          />
+          {showInstantActivation && (
+            <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
+          <EarlySettlementAnnouncement from="Home-Desktop" />
 
           <div
             className={`v2-onboarding-card${
@@ -185,9 +202,16 @@ class AnalyticsDesktop extends Component {
                 onClose={onHideOnboardingBanner}
                 onFirstStepClose={onFirstStepClose}
                 isFirstStep={showOnboardingBannerFirstStep}
+                showInstantActivation={showInstantActivation}
               />
             )}
           </div>
+
+          {hasSecondaryBanner && (
+            <div className="secondary-announcement-banner">
+              <PersonaliseBanner />
+            </div>
+          )}
         </div>
         <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>

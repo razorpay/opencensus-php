@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 6</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50.0004167%" y1="95.7495783%" x2="78.1977598%" y2="-8.82361547%" id="linearGradient-1">
+            <stop stop-color="#30E8C4" offset="0%"></stop>
+            <stop stop-color="#32E77A" offset="100%"></stop>
+        </linearGradient>
+        <text id="text-2" font-family="PingFangSC-Semibold, PingFang SC" font-size="14" font-weight="500">
+            <tspan x="8" y="18">₹</tspan>
+        </text>
+        <filter x="-55.6%" y="-25.0%" width="255.6%" height="170.0%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="2" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0954483696 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Batch-Upload" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-6" fill-rule="nonzero">
+            <g id="Icon_Payment-Links">
+                <circle id="Oval" fill="url(#linearGradient-1)" cx="12" cy="12" r="12"></circle>
+                <g id="₹" fill="#FFFFFF">
+                    <use fill-opacity="1" filter="url(#filter-3)" xlink:href="#text-2"></use>
+                    <use xlink:href="#text-2"></use>
+                    <use fill-opacity="1" xlink:href="#text-2"></use>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

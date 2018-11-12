@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Form from 'component/Form';
+import { connect } from 'react-redux';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
@@ -8,7 +9,6 @@ import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
-
 import {
   addDropShield,
   removeDropShield,
@@ -89,6 +89,9 @@ let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
+@connect(state => ({
+  user: state.session.user,
+}))
 export default class ActivationWizard extends React.Component {
   state = {
     isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
@@ -121,6 +124,10 @@ export default class ActivationWizard extends React.Component {
         window.hj('tagRecording', ['activation_form_open']);
       }
     }
+
+    this.formName = props.user.showInstantActivation
+      ? 'KYC Form'
+      : 'Activation Form';
   }
 
   prepareTabs(props) {
@@ -877,7 +884,7 @@ export default class ActivationWizard extends React.Component {
       <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
         <ModalAsideNav
-          title="Activation Form"
+          title={this.formName}
           description={
             !this.isLinkedAccountForm &&
             !isFormSubmitted && (

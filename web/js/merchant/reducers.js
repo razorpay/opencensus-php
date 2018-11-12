@@ -34,13 +34,15 @@ import {
 import submerchantReducer from 'merchant/modules/submerchant';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
+import tokenReducer from 'merchant/modules/token';
+
+import authLinkReducer from 'merchant/modules/auth_link';
 
 import {
   refundBatchesReducer,
-  paymentLinkBatchesReducer,
   PaymentBatchIdsReducer,
-  paymentBatchesReducer,
   batchDetailsReducer,
+  batchesReducer,
 } from 'merchant/modules/batches';
 
 import {
@@ -53,6 +55,8 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
+  authLinksReducer,
+  tokensReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -73,7 +77,6 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
-  paymentlinkbatches: paymentLinkBatchesReducer,
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
   batchDetails: batchDetailsReducer,
@@ -89,7 +92,6 @@ export default combineReducers({
   order: orderReducer,
   payments: paymentsReducer,
   payment: paymentReducer,
-  paymentBatches: paymentBatchesReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   disputes: disputesReducer,
@@ -117,4 +119,9 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  authLinks: authLinksReducer,
+  authLink: authLinkReducer,
+  tokens: tokensReducer,
+  token: tokenReducer,
+  batches: batchesReducer,
 });

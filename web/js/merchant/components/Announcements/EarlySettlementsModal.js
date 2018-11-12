@@ -8,10 +8,7 @@ import trackESAnnouncements from './ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
   initialValues: {
@@ -97,6 +94,7 @@ export default class RequestEarlyAccessForm extends Component {
       'https://hooks.zapier.com/hooks/catch/1088429/lbq8rx/',
       2
     );
+    this.createFreshdeskTicket();
   };
 
   handleCancelPricing = () => {
@@ -105,6 +103,58 @@ export default class RequestEarlyAccessForm extends Component {
       0
     );
   };
+
+  createFreshdeskTicket() {
+    const TSYS_AUTH_TOKEN = '4d482bcf908b56771a86db388bae8ee7639b0f81';
+    const apiUrl =
+      'https://bmwloans.razorpay.com/ticketing/api/fd/ticket/create';
+    // Sandbox API URL - Bussiness operations group id = 42000097437
+    // const apiUrl = 'http://localhost:4000/api/fd/ticket/create';
+
+    let { formData, pricing } = this.state;
+    let item =
+      formData.interested_in === 'automatic' ? 'Automatic' : 'On demand';
+
+    axios({
+      method: 'post',
+      baseURL: apiUrl,
+      headers: {
+        sendImmediately: true,
+        Authorization: 'Basic ' + TSYS_AUTH_TOKEN,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        priority: 3,
+        email: this.props.user.user.email,
+        phone: this.props.user.contact_mobile,
+        subject: `Razorpay | Early Settlement Request [${
+          this.props.user.current
+        }]`,
+        type: 'Service request',
+        group_id: 1000097912,
+        ticketType: 'early_settlement',
+        description: `<div dir="ltr"><div>Hey,<br><br>We have received a request for ${
+          formData.interested_in
+        } Early Settlement for <strong>${
+          this.props.user.name
+        }</strong>. The pricing agreed to is <strong>${pricing}%.</strong><br><br>We will update you once the changes have been approved.<br><br>Cheers,<br>Team Razorpay</div></div>`,
+        custom_fields: {
+          cf_requester_category: 'Merchant',
+          cf_requestor_subcategory: 'Account configuration/changes',
+          cf_subcategory: 'Early settlement',
+          cf_item: item,
+          cf_ticket_queue: 'Merchant',
+          cf_merchant_id: this.props.user.current,
+          cf_category: 'Account configuration/changes',
+          cf_product: 'Early settlement',
+        },
+      },
+    }).then(response => {
+      if (response.status == 200) {
+        // console.log('success');
+      }
+    });
+  }
 
   postESRequest(webhookUrl, nextScreen) {
     let { formData, pricing } = this.state;

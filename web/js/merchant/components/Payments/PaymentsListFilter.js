@@ -1,13 +1,25 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
-export default props => {
+export default ({ showBatchIdFilter, ...props }) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
+
+      {/* used in emndate payments */}
+      {showBatchIdFilter && (
+        <div className="form-group list-filter-item">
+          <label>Batch Id</label>
+          <Field
+            name="batch_id"
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      )}
 
       <div class="form-group list-filter-item">
         <label>Status</label>

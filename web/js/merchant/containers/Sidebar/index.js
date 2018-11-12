@@ -18,7 +18,7 @@ const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
-const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
+const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -31,6 +31,7 @@ const BASE_ROUTES = {
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
+  chargeAtWill: '/recurring_payments',
   request: '#request',
 };
 
@@ -74,6 +75,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
+    const user = this.props.user;
 
     if (location.state && location.state.was404) {
       routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
@@ -98,8 +100,12 @@ export default class Sidebar extends Component {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
       this.prevRoute = 'paymentlinks';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
-      routes.subscriptions = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
-      this.prevRoute = 'subscriptions';
+      routes[
+        user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'
+      ] = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
+      this.prevRoute = user.isChargeAtWillEnabled
+        ? 'recurring_payments'
+        : 'subscriptions';
     }
   }
 
@@ -123,6 +129,9 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     let isMerchant = !!user.current;
 
+    const { showInstantActivation } = user,
+      { isL1Submitted, isBlacklistFlow } = user.instantActivation;
+
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -136,11 +145,16 @@ export default class Sidebar extends Component {
               if (!isMerchant) {
                 null;
               } else {
-                let actionCopy;
+                let actionCopy,
+                  actionContent = null;
 
                 if (user.activation_progress < 100) {
                   // If user form is still unfilled
                   actionCopy = 'Activate your account';
+
+                  if (isL1Submitted) {
+                    actionCopy = 'Submit KYC';
+                  }
                 } else if (user.isSubmitted) {
                   actionCopy = 'Form submitted';
                 } else if (user.activation_progress == 100) {
@@ -151,53 +165,65 @@ export default class Sidebar extends Component {
                 }
 
                 <div class="nav">
-                  <ShowWhen
-                    additionalCondition={user =>
-                      user.isAllowedEdit('activation') &&
-                      !user.isPartner() &&
-                      (!user.isSubmitted || !config.hasPersonalised)
-                    }
-                  >
-                    <Link
-                      className="activation-status-link"
-                      to={!user.isSubmitted ? '/activation' : '/config'}
-                      onClick={this.onSidebarBannerClick}
+                  {!isBlacklistFlow && (
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isAllowedEdit('activation') &&
+                        !user.isPartner() &&
+                        (!user.isSubmitted || !config.hasPersonalised)
+                      }
                     >
-                      <div
-                        className={classList(
-                          'activation-status',
-                          user.isSubmitted && !config.hasPersonalised
-                            ? 'not-personalised'
-                            : ''
-                        )}
+                      <Link
+                        className="activation-status-link"
+                        to={!user.isSubmitted ? '/activation' : '/config'}
+                        onClick={this.onSidebarBannerClick}
                       >
-                        <div className="clearfix">
-                          <div className="pull-left">{actionCopy}</div>
-                          <div className="pull-right">
-                            <i className="i i-chevron-right" />
+                        <div
+                          className={classList(
+                            'activation-status',
+                            user.isSubmitted && !config.hasPersonalised
+                              ? 'not-personalised'
+                              : ''
+                          )}
+                        >
+                          <div className="clearfix">
+                            <div className="pull-left">{actionCopy}</div>
+                            <div className="pull-right">
+                              <i className="i i-chevron-right" />
+                            </div>
                           </div>
+                          {do {
+                            if (showInstantActivation && !isL1Submitted) {
+                              actionContent = (
+                                <div className="activation-status-secondary">
+                                  Form not Completed
+                                </div>
+                              );
+                            } else {
+                              actionContent = !user.isSubmitted ? (
+                                <div className="activation-bar-content activation-status-secondary">
+                                  <div className="activation-bar-text">
+                                    {user.activation_progress}% Complete
+                                  </div>
+                                  <div className="activation-bar">
+                                    <ProgressBar
+                                      type="success"
+                                      max={100}
+                                      value={user.activation_progress}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="activation-status-secondary">
+                                  Personalise your Account
+                                </div>
+                              );
+                            }
+                          }}
                         </div>
-                        {!user.isSubmitted ? (
-                          <div className="activation-bar-content activation-status-secondary">
-                            <div className="activation-bar-text">
-                              {user.activation_progress}% Complete
-                            </div>
-                            <div className="activation-bar">
-                              <ProgressBar
-                                type="success"
-                                max={100}
-                                value={user.activation_progress}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="activation-status-secondary">
-                            Personalise your Account
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                  </ShowWhen>
+                      </Link>
+                    </ShowWhen>
+                  )}
 
                   <MainNavLink
                     label="Partner Dashboard"
@@ -274,7 +300,13 @@ export default class Sidebar extends Component {
                     additionalCondition={user =>
                       user.isAllowedView('subscriptions')
                     }
-                    to={routes.subscriptions}
+                    to={
+                      routes[
+                        user.isChargeAtWillEnabled
+                          ? 'chargeAtWill'
+                          : 'subscriptions'
+                      ]
+                    }
                   />
                   <MainNavLink
                     label="Smart Collect"

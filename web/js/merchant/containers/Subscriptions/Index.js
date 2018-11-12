@@ -10,8 +10,17 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
+
 import ActivationBanner from 'merchant/components/ActivationBanner';
-import AddOnsList from 'merchant/containers/AddOns/List';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+
+import HostedEmanadateBatches from './Batch/List';
+import RecurringPayments from './RecurringPayments/List';
+import TokensList from './Tokens/List';
+import AuthLinksList from './AuthLinks/List';
+
+const heading =
+  'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
 
 @connect(
   state => {
@@ -78,9 +87,8 @@ export default class SubscriptionsController extends Component {
   };
 
   render() {
-    let featureEnabled = this.props.user.isSubscriptionsEnabled;
-
-    if (!featureEnabled) {
+    const { isSubscriptionsEnabled, isChargeAtWillEnabled } = this.props.user;
+    if (!isSubscriptionsEnabled && !isChargeAtWillEnabled) {
       return (
         <FeatureOnboarding
           heading={`${this.prefix}Subscriptions`}
@@ -95,27 +103,51 @@ export default class SubscriptionsController extends Component {
 
     return (
       <div>
-        {this.props.mode === 'test' && (
-          <ActivationBanner
-            productName={`${this.prefix}Subscriptions`}
-            productDocs="https://razorpay.com/docs/subscriptions"
-            feature="subscriptions"
-            symbol="sub"
-            onActivate={this.openActivationModal}
-          />
-        )}
+        {this.props.mode === 'test' &&
+          !isChargeAtWillEnabled && (
+            <ActivationBanner
+              productName={`${this.prefix}Subscriptions`}
+              productDocs="https://razorpay.com/docs/subscriptions"
+              feature="subscriptions"
+              symbol="sub"
+              onActivate={this.openActivationModal}
+            />
+          )}
         <tabbed-container>
           <header id="subscriptions-header">
-            <NavLink to="/subscriptions">Subscriptions</NavLink>
-            <NavLink to="/plans">Plans</NavLink>
-            {/* <NavLink to="/addons">Add Ons</NavLink> */}
+            <ShowWhen additionalCondition={user => !user.isChargeAtWillEnabled}>
+              <NavLink exact to="/subscriptions">
+                Subscriptions
+              </NavLink>
+              <NavLink to="/plans">Plans</NavLink>
+            </ShowWhen>
+
+            <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
+              <NavLink to="/recurring_payments">Payments</NavLink>
+              <NavLink to="/tokens">Tokens</NavLink>
+              <NavLink to="/authlinks">Authorization Links</NavLink>
+              <NavLink exact to="/subscriptions/batchuploads">
+                Batch Upload
+              </NavLink>
+            </ShowWhen>
           </header>
           <TestModeBanner />
           <content>
             <Switch>
-              <Route path="/subscriptions" component={SubscriptionsList} />
+              <ShowWhenRoute
+                path="/subscriptions/batchuploads"
+                component={HostedEmanadateBatches}
+                additionalCondition={user => user.isChargeAtWillEnabled}
+              />
+              <ShowWhenRoute
+                path="/subscriptions"
+                component={SubscriptionsList}
+                additionalCondition={user => !user.isChargeAtWillEnabled}
+              />
               <Route path="/plans" component={PlansList} />
-              {/* <Route path="/addons" component={AddOnsList} /> */}
+              <Route path="/tokens" component={TokensList} />
+              <Route path="/recurring_payments" component={RecurringPayments} />
+              <Route path="/authlinks" component={AuthLinksList} />
             </Switch>
           </content>
         </tabbed-container>

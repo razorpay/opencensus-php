@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -17,6 +17,8 @@ import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
+import Announcement from 'merchant/components/Announcements/Instant';
+import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 
@@ -24,6 +26,7 @@ import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
   state => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
+    config: state.config,
   }),
   { openModal }
 )
@@ -46,6 +49,7 @@ class AnalyticsMobile extends Component {
 
   render() {
     const {
+      config,
       current_balance,
       onExtraContentMount,
       isAdmin,
@@ -58,12 +62,14 @@ class AnalyticsMobile extends Component {
       endDate,
       oldestTransactionDate,
       mode,
+      user,
       showGroupingByPtfm,
       tabsMeta,
       analyticsFetch,
       onFilterChange,
       expandOnboardingBanner,
       showOnboardingBanner,
+      showInstantActivation,
       payments,
       onHideOnboardingBanner,
       onFirstStepClose,
@@ -75,6 +81,9 @@ class AnalyticsMobile extends Component {
       windowWidth,
     } = this.props;
 
+    const hasSecondaryBanner =
+      showInstantActivation && config.config && !config.config.hasPersonalised;
+
     return (
       <div className="home-analytics-mobile">
         <EarlySettlementAnnouncement
@@ -82,7 +91,20 @@ class AnalyticsMobile extends Component {
           marginBottom={!showOnboardingBanner}
         />
 
-        <div ref={node => onExtraContentMount(node)} className="extra-content">
+        <div
+          ref={node => onExtraContentMount(node)}
+          className={`extra-content${
+            showOnboardingBanner ? ' has-ob-banner' : ''
+          }${
+            !showOnboardingBanner && hasSecondaryBanner
+              ? ' has-secondary-banner'
+              : ''
+          }`}
+        >
+          {showInstantActivation && (
+            <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''
@@ -94,9 +116,16 @@ class AnalyticsMobile extends Component {
                 onClose={onHideOnboardingBanner}
                 onFirstStepClose={onFirstStepClose}
                 isFirstStep={showOnboardingBannerFirstStep}
+                showInstantActivation={showInstantActivation}
               />
             )}
           </div>
+
+          {hasSecondaryBanner && (
+            <div className="secondary-announcement-banner">
+              <PersonaliseBanner />
+            </div>
+          )}
 
           <Header className="clearfix" title="" showMode={false}>
             <div
@@ -165,9 +194,7 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360
-                        ? 40
-                        : 57
+                      : windowWidth > 360 ? 40 : 57
                     : 0
                 }
               />
