@@ -37,7 +37,24 @@
       {
           $ctaLabel = 'PROCEED TO PAY';
           $ctaHref = $invoice['short_url'];
-          $headerLabel = $merchant['name'] . ' has sent you ' . ($invoice['type_label']=== 'Invoice' ? 'an ' : 'a ') . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+
+          if (isset($invoice['entity_type']) === true and $invoice['entity_type'] === 'subscription_registration')
+          {
+            $invoice['type_label'] = 'Authorization Link';
+            $method = $invoice['subscription_registration']['method'];
+
+            $ctaLabel = ($method === 'card' ? 'PAY AND ' : ''). 'AUTHORIZE';
+
+            $displayMethod =$method === 'card' ? 'card' : 'bank account';
+
+            $headerLabel .= $merchant['name'] . ' has sent you ' . $displayMethod . ' authorization link';
+
+          }
+          else
+          {
+            $headerLabel = $merchant['name'] . ' has sent you ' . ($invoice['type_label']=== 'Invoice' ? 'an ' : 'a ') . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+          }
+
       }
       elseif ($status === 'expired')
       {

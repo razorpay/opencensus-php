@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
@@ -136,45 +137,60 @@ abstract class NodalAccount extends Base\Core
 
     protected function updateAttemptStatus(Base\PublicCollection $attempts)
     {
-        foreach ($attempts as $attempt)
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_BEGIN);
+
+        try
         {
-            $txnsCount = $this->getTransactionsCount($attempt);
-
-            $source = $attempt->source;
-
-            $this->count++;
-
-            $this->type      = $source->getEntity();
-
-            $this->channel   = $attempt->getChannel();
-
-            $this->tax       += $source->getTax();
-
-            $this->fees      += $source->getFees();
-
-            $this->amount    += $source->getAmount();
-
-            $this->txnsCount += $txnsCount;
-
-            if ($this->batchFundTransfer === null)
+            foreach ($attempts as $attempt)
             {
-                $this->createBatchFundTransferEntity();
+                $txnsCount = $this->getTransactionsCount($attempt);
+
+                $source = $attempt->source;
+
+                $this->count++;
+
+                $this->type      = $source->getEntity();
+
+                $this->channel   = $attempt->getChannel();
+
+                $this->tax       += $source->getTax();
+
+                $this->fees      += $source->getFees();
+
+                $this->amount    += $source->getAmount();
+
+                $this->txnsCount += $txnsCount;
+
+                if ($this->batchFundTransfer === null)
+                {
+                    $this->createBatchFundTransferEntity();
+                }
+
+                $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
+
+                $attempt->setStatus(Attempt\Status::INITIATED);
+
+                $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
+
+                $attempt->source->setStatus(Attempt\Status::INITIATED);
+
+                $this->trace->info(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
+                    ['fta_id' => $attempt->getId()]);
             }
-
-            $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->setStatus(Attempt\Status::INITIATED);
-
-            $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->source->setStatus(Attempt\Status::INITIATED);
-
-            $this->trace->info(
-                TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
-                ['fta_id' => $attempt->getId()]);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATE_FAILED
+            );
         }
 
         $this->updateBatchFundTransferEntity();
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
     }
 
     /**
@@ -234,10 +250,7 @@ abstract class NodalAccount extends Base\Core
         switch ($sourceType)
         {
             case Attempt\Type::SETTLEMENT:
-
-                $source = $attempt->source;
-
-                return $source->setlTransactions->count();
+                return $this->repo->transaction->fetchTransactionCountForSettlementId($attempt->getSourceId());
 
             default:
                 return 1;
@@ -319,5 +332,23 @@ abstract class NodalAccount extends Base\Core
         $this->trace->count(
             Metric::ATTEMPTS_INITIATE_FAILURE_TOTAL,
             $dimensions);
+    }
+
+
+    protected function traceMemoryUsage(string $traceCode)
+    {
+        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+        $memoryUsed = get_human_readable_size(memory_get_usage());
+        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'memory_allocated'               => $memoryAllocated,
+                'memory_used'                    => $memoryUsed,
+                'memory_peak_usage'              => $memoryPeakUsage,
+                'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
+            ]);
     }
 }

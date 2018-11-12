@@ -10,6 +10,7 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::TYPE        => 'sometimes|string|custom',
+            Entity::TYPES       => 'sometimes|sequential_array|custom',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
             Entity::STATUS      => 'sometimes|in:created,processing,processed',
         ],
@@ -18,6 +19,7 @@ class Fetch extends BaseFetch
     const ACCESSES = [
         AuthType::PROXY_AUTH => [
             Entity::TYPE,
+            Entity::TYPES,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -28,5 +30,10 @@ class Fetch extends BaseFetch
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validateTypes($attribute, $value)
+    {
+        Type::validateTypes($value);
     }
 }

@@ -721,7 +721,7 @@ class Repository extends Base\Repository
     /**
      * Raw sql query :
      *
-     *  select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
+     *  select FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
      *  COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
      *  COUNT(CASE
      *      WHEN transactions.reconciled_at is not null
@@ -786,7 +786,7 @@ class Repository extends Base\Repository
     /**
      * Raw sql query :
      *
-     *  select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
+     *  select FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
      *  COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
      *  COUNT(CASE
      *  WHEN transactions.reconciled_at is not null
@@ -907,7 +907,7 @@ class Repository extends Base\Repository
                     ELSE '. $terminalGatewayColumn . '
                   END) gateway, '. $paymentMethodColumn;
 
-        $dateCol = 'STRAIGHT_JOIN FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
+        $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
         $query = $this->newQuery()
                       ->selectRaw($dateCol . ',' . $params);
@@ -920,7 +920,7 @@ class Repository extends Base\Repository
      * This query is used in union query of all gateways.
      *
      * Payments:
-     * select STRAIGHT_JOIN transactions.created_at,payments.id as payment_id,
+     * select transactions.created_at,payments.id as payment_id,
      * payments.method as payment_method,payments.amount as payment_amount,
      * payments.status as payment_status,payments.disputed as payment_disputed,
      * payments.merchant_id as payment_merchant_id,
@@ -943,7 +943,7 @@ class Repository extends Base\Repository
      * order by `transactions`.`created_at` asc limit 100
      *
      * Refunds:
-     * select STRAIGHT_JOIN transactions.created_at,refunds.id as refund_id,
+     * select transactions.created_at,refunds.id as refund_id,
      * refunds.amount as refund_amount,refunds.status as refund_status,
      * payments.id as payment_id,payments.method as payment_method,
      * payments.amount as payment_amount,payments.status as payment_status,
@@ -1077,12 +1077,12 @@ class Repository extends Base\Repository
 
         if (empty($refundParams) === false)
         {
-            $selectParams = 'STRAIGHT_JOIN ' . $refundProcessedAtColumn . ',';
+            $selectParams = $refundProcessedAtColumn . ',';
             $selectParams .= (implode(',', $refundParams)) . ',';
         }
         else
         {
-            $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAtColumn . ',';
+            $selectParams = $transactionsCreatedAtColumn . ',';
         }
 
         $paymentParams = implode(',', $paymentParams);
@@ -1090,9 +1090,9 @@ class Repository extends Base\Repository
         $gatewayCol = '('.
             'CASE '.
             'WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")' .
-                'THEN '. $terminalGatewayAcquirerColumn .
-                'ELSE '. $terminalGatewayColumn .
-            'END' .
+                ' THEN '. $terminalGatewayAcquirerColumn .
+                ' ELSE '. $terminalGatewayColumn .
+            ' END' .
         ') gateway';
 
         $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
@@ -1176,5 +1176,13 @@ class Repository extends Base\Repository
 
         $query->join(Table::REFUND, Entity::ENTITY_ID, '=', $refundId)
               ->where($refundStatus, '=', Refund\Status::PROCESSED);
+    }
+
+    public function fetchTransactionCountForSettlementId(string $setlId): int
+    {
+        return $this->newQuery()
+                      ->select(Entity::ID)
+                      ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
+                      ->count();
     }
 }

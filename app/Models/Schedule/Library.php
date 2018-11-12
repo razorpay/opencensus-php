@@ -45,7 +45,7 @@ class Library
                 $minTime = $settledAt;
             }
 
-            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime, true);
+            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime, $ignoreBankHolidays);
         }
 
         return $nextRun->getTimestamp();
@@ -61,7 +61,7 @@ class Library
      * @param  Carbon $minTime          The minimum time that needs to pass from the
      *                                  referenceTime to get the next_run. This field
      *                                  does not apply to anchored schedules.
-     * @param  bool   $considerHolidays
+     * @param  bool   $ignoreBankHolidays
      *
      * @return Carbon
      *
@@ -71,7 +71,7 @@ class Library
         Entity $schedule,
         Carbon $referenceTime,
         Carbon $minTime = null,
-        bool $considerHolidays = false)
+        bool $ignoreBankHolidays = false)
     {
         if ($schedule->getAnchor() !== null)
         {
@@ -93,7 +93,7 @@ class Library
             $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $minTime);
         }
 
-        if ($considerHolidays === true)
+        if ($ignoreBankHolidays === false)
         {
             // If anchor date is a holiday, don't wait till next anchor
             // date. Settlement on the next working day.

@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Models\Adjustment\Constants;
 
 class Core extends Base\Core
 {
@@ -82,20 +83,22 @@ class Core extends Base\Core
         }
     }
 
-    public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity
+    public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity
     {
+        $traceCode = Constants::getAdjustmentCreateRequestTraceCode($source->getEntityName());
+
         $this->trace->info(
-            TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
+            $traceCode,
             [
                 'input'       => $input,
-                'merchant_id' => $dispute->getMerchantId()
+                'merchant_id' => $source->getMerchantId()
             ]);
 
-        (new Validator)->validateMerchantBalance($dispute->merchant, $dispute, $input);
+        (new Validator)->validateMerchantBalance($source->merchant, $source, $input);
 
-        $adjustment = $this->createAdjustment($input, $dispute->merchant);
+        $adjustment = $this->createAdjustment($input, $source->merchant);
 
-        $adjustment->entity()->associate($dispute);
+        $adjustment->entity()->associate($source);
 
         $this->repo->saveOrFail($adjustment);
 

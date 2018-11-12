@@ -82,4 +82,3 @@ class EntityMappingTest extends TestCase
         ];
     }
 }
-

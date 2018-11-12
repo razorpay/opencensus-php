@@ -90,6 +90,7 @@ class Validator extends Base\Validator
         'payment_amount'        => 'required|integer|min:100',
         'payment_base_amount'   => 'required|integer|min:100',
         'payment_created_at'    => 'required|epoch',
+        'attempts'              => 'sometimes|integer'
     ];
 
     protected $payment;
