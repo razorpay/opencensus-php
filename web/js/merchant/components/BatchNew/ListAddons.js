@@ -1,8 +1,3 @@
-import { Component } from 'react';
-import { Link } from 'react-router-dom';
-
-import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
-
 /**
  * Render this component when there are not batch row.
  */
@@ -14,8 +9,10 @@ export const EmptyComponent = (uploadUrl, openModalFunc) => () => (
       bulk. Simply upload a file containing all the information and accept
       payments instantly.
     </h5>
-    <button class="btn btn-default" onClick={openModalFunc}>
-      Start Uploading
-    </button>
+    {openModalFunc && (
+      <button class="btn btn-default" onClick={openModalFunc}>
+        Start Uploading
+      </button>
+    )}
   </div>
 );

@@ -140,7 +140,10 @@ export default class BatchList extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           onSubmit={this.search}
-          EmptyComponent={EmptyComponent(uploadUrl, this.openUploadModal)}
+          EmptyComponent={EmptyComponent(
+            uploadUrl,
+            !this.props.multiBatch ? this.openUploadModal : undefined
+          )}
           {...this.props}
         />
       </div>
