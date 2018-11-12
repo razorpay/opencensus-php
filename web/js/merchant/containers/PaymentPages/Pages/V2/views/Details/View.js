@@ -12,7 +12,7 @@ import Terms from './Terms';
 export default class View extends React.PureComponent {
   updateData({ target }) {
     let { name, value } = target;
-    console.log('NAME...', name);
+    // console.log('NAME...', name);
 
     if (target.type === 'checkbox') {
       value = target.checked | 0; // Convert to 1 / 0

@@ -241,8 +241,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   // Handles both Create and Edit payment page.
   handleSavePublish = () => {
     const { FORM_SCHEMA, paymentPageEntity } = this.props;
-
-    console.log('Handle Create..', paymentPageEntity);
+    // console.log('Handle Create..', paymentPageEntity);
 
     const {
       amount,
@@ -260,7 +259,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
     const reqPayload = {
-      amount: amount || undefined,
+      amount: amount || null,
       title,
       description: description || null,
       times_payable: stock || null,
@@ -274,8 +273,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
       },
     };
-
-    console.log('REQ PAYLOAD...', reqPayload);
+    // console.log('REQ PAYLOAD...', reqPayload);
 
     const isEditExistingId = this.props.id;
     const requestAPIPromise = isEditExistingId

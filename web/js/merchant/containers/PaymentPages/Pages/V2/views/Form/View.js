@@ -51,7 +51,7 @@ export default class View extends React.PureComponent {
   };
 
   onGenericCreatorSubmit = formData => {
-    console.log('FORM DATA.....', formData);
+    // console.log('FORM DATA.....', formData);
 
     const { title, field_type, required, description } = formData;
 

@@ -33,8 +33,13 @@ export default class extends React.PureComponent {
     const removeEle = document.querySelector(
       `#support-details input[name="${fieldName}"]`
     );
-    removeEle.value = '';
-    removeEle.dispatchEvent(new window.Event('change', { bubbles: true }));
+
+    this.props.updateData({
+      target: {
+        name: fieldName,
+        value: '',
+      },
+    });
 
     this.openCountField--;
 

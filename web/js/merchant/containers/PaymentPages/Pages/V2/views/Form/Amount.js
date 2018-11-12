@@ -5,7 +5,7 @@ import { classList, getFormattedAmount } from 'common/util';
 import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
-  console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
+  // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
   let cls = 'Field Field--disabled Field--required';
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');

@@ -182,15 +182,15 @@
 
         .Input-el
           background: transparent
-          border: none
           resize: none
+          border: 1px solid transparent
 
           &:hover
-            border: 1px solid #e2e2e2
+            border-color: #e2e2e2
 
           &:focus
             background: #fff
-            border: 1px solid $primary-color
+            border-color: $primary-color
             resize: vertical
 
     .Input-el
@@ -198,15 +198,16 @@
 
     .title--big
       .Input-el
-        min-height: 40px
+        min-height: 42px
         font-size: 24px
         line-height: 32px
         font-weight: 600
 
     textarea.Input-el
-      min-height: 28px
-      height: 28px
+      min-height: 30px
+      height: 30px
       max-height: 230px // Supports 720 char on desktop
+      line-height: 22px
 
       &[name="description"]
         min-height: 70px
