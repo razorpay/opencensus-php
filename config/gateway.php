@@ -579,6 +579,8 @@ return [
         'password'          => env('NPCI_PAYSECURE_PASSWORD'),
         'partner_id'        => env('NPCI_PAYSECURE_PARTNER_ID'),
         'merchant_password' => env('NPCI_PAYSECURE_MERCHANT_PASSWORD'),
+        'terminal_id'       => env('NPCI_PAYSECURE_TERMINAL_ID'),
+        'merchant_id'       => env('NPCI_PAYSECURE_MERCHANT_ID'),
     ],
 
     'sharp' => [
