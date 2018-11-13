@@ -566,6 +566,8 @@ return [
     'netbanking_equitas' => [
         'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
         'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
+        'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
+        'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => [
