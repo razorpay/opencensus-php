@@ -503,15 +503,16 @@ class Service extends Base\Service
     {
         if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
         {
+            //
             // with activation_flow set always return result on
-            // merchants who  submitted L2 form ,  before 100% instant activation launch and after instant activation launch date
-            // should not be shown instant activation .
-            if($data['activation_flow'] !== null)
+            // merchants who  submitted L2 form, before 100% instant activation launch and after instant activation launch date
+            // should not be shown instant activation.
+            //
+            if ($data['activation_flow'] !== null)
             {
                 $data['experiments']['instant_activations'] = ['result' => 'on'];
             }
-            else if (((bool) $data['activated']) === false and
-                ((bool) $data['submitted']) === true)
+            else if (((bool) $data['submitted']) === true)
             {
                 $data['experiments']['instant_activations'] = ['result' => 'off'];
             }

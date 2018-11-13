@@ -94,7 +94,7 @@ export default class TokenEntityContainer extends Component {
   };
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity = {}, error } = this.props;
     return (
       <div class="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -106,16 +106,16 @@ export default class TokenEntityContainer extends Component {
             <div class="panel-heading">
               {entity.id}
               <div class="btn-toolbar pull-right">
-                {entity &&
-                  entity.recurring_details &&
-                  entity.recurring_details.status !== 'rejected' && (
-                    <button
-                      class="btn btn-primary btn-sm"
-                      onClick={this.handleChargeNow}
-                    >
-                      Charge Now
-                    </button>
-                  )}
+                {(entity.method === 'card' ||
+                  (entity.recurring_details &&
+                    entity.recurring_details.status !== 'rejected')) && (
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onClick={this.handleChargeNow}
+                  >
+                    Charge Now
+                  </button>
+                )}
               </div>
             </div>
             <Alert type="error" message={error} />

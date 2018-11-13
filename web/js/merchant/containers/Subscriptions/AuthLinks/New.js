@@ -398,7 +398,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                   <Input.ToCalendar
                     name="mandateExpireAt"
                     placeholder="Expiry (DD-MM-YYYY)"
-                    allowToday
                     disablePastDates
                     placement="topLeft"
                     size="half_big"

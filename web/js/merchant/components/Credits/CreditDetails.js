@@ -26,7 +26,7 @@ export default class CreditDetails extends Component {
   render() {
     const {
       title,
-      creditItems,
+      creditItems = [],
       totalCredits,
       description,
       onManageAlert,
