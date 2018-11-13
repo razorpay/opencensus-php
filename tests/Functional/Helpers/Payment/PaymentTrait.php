@@ -38,6 +38,7 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
     use PaymentFirstDataTrait;
+    use PaymentPaysecureTrait;
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
