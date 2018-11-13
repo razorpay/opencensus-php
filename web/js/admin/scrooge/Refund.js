@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import Table, { PageTable } from 'ui/Table';
 import Collection from 'model/collection';
-import { adminFetch } from 'common/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import { Link } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
 import { formatDate, getFormattedAmount } from 'common/util';
+import { openModal } from 'common/modal';
+import { ModalContent } from 'component/Modal';
+import Field, { SelectField } from 'ui/Field';
+import Form from 'ui/Form';
 
 export default class RefundsList extends Component {
   state = {
@@ -24,31 +28,98 @@ export default class RefundsList extends Component {
 
   render() {
     return (
-      <div class="limited box">
-        <header>
-          Refund Details
-          {/* <AsyncButton class="btn">Process</AsyncButton> */}
-          <Link
-            to={`/scrooge/refunds${location.search}`}
-            class="link"
-            style={{ float: 'right', fontSize: 14, marginTop: 10 }}
-          >
-            Return to Refunds List
-          </Link>
-        </header>
-        <Duplex
-          pending={this.state.loading}
-          model={this.data}
-          fields={fields}
-        />
-        {this.data && (
-          <ToggleEntityRow label="Logs">
-            <Table items={this.data.state_machine_logs} fields={logFields} />
-          </ToggleEntityRow>
-        )}
+      <div class="entity-page">
+        <main class="limited box">
+          <header>
+            Refund Details
+            {/* <AsyncButton class="btn">Process</AsyncButton> */}
+            <Link
+              to={`/scrooge/refunds${location.search}`}
+              class="link"
+              style={{ float: 'right', fontSize: 14, marginTop: 10 }}
+            >
+              Return to Refunds List
+            </Link>
+          </header>
+          <Duplex
+            pending={this.state.loading}
+            model={this.data}
+            fields={fields}
+          />
+          {this.data && (
+            <ToggleEntityRow label="Logs">
+              <Table items={this.data.state_machine_logs} fields={logFields} />
+            </ToggleEntityRow>
+          )}
+        </main>
+        <aside class="container">
+          {this.data &&
+            !this.state.loading && (
+              <div>
+                <div class="header">
+                  <b>ACTIONS</b>
+                </div>
+                <AsyncButton
+                  confirm
+                  class="btn btn-default"
+                  onClick={this.retry}
+                >
+                  Retry Refund
+                </AsyncButton>
+                <button class="btn btn-default" onClick={this.statusModal}>
+                  Update Status
+                </button>
+              </div>
+            )}
+        </aside>
       </div>
     );
   }
+
+  retry = () => {
+    return adminPost(`live/refunds/${this.data.id}/retry`).then(data => {
+      if (data) {
+        notifySuccess('Refund retry request is successful');
+      }
+    });
+  };
+
+  statusModal = () => {
+    openModal(
+      <ModalContent header="Update Status">
+        <Form onSubmit={this.updateStatus}>
+          <SelectField name="event" label="Event">
+            {this.data.available_status_update_events.map((e, i) => (
+              <option key={i} value={e}>
+                {e}
+              </option>
+            ))}
+          </SelectField>
+          <Field name="arn" label="ARN" />
+          <button>Update</button>
+        </Form>
+      </ModalContent>
+    );
+  };
+
+  updateStatus = data => {
+    return adminPost({
+      url: 'live/scrooge/refunds/bulk-status-update',
+      data: [
+        {
+          event: data.event,
+          refund_id: this.data.id,
+          gateway_keys: {
+            arn: data.arn,
+          },
+        },
+      ],
+    }).then(data => {
+      if (data) {
+        notifySuccess('Update status request is successful');
+      }
+    });
+  };
 }
 
 const fields = [
