@@ -300,7 +300,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $driver = 'npci_paysecure';
+        $driver = 'paysecure';
 
         $server = $this->gateway->server($driver);
 

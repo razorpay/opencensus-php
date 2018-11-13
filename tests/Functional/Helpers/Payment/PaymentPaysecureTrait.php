@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 trait PaymentPaysecureTrait
 {
-    protected function runPaymentCallbackFlowNpciPaysecure($response, &$callback = null)
+    protected function runPaymentCallbackFlowPaysecure($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 

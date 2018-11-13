@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Gateway\NpciPaySecure\Mock;
+namespace RZP\Gateway\Paysecure\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\NpciPaySecure;
+use RZP\Gateway\Paysecure;
 
-class Gateway extends NpciPaySecure\Gateway
+class Gateway extends Paysecure\Gateway
 {
     use Base\Mock\GatewayTrait;
 

@@ -1342,7 +1342,7 @@ class DatabaseSeeder extends Seeder
         DB::table(Table::TERMINAL)->insert([
             'id'                        => '1VwJebUIU7hI2d',
             'merchant_id'               => Account::TEST_ACCOUNT,
-            'gateway'                   => Gateway::NPCI_PAYSECURE,
+            'gateway'                   => Gateway::PAYSECURE,
             'card'                      => '1',
             'shared'                    => '1',
             'gateway_merchant_id'       => 'test_merchant_cybersource',

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\NpciPaySecure;
+namespace RZP\Gateway\Paysecure;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;

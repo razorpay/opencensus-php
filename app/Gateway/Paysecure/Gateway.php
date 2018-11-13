@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\NpciPaySecure;
+namespace RZP\Gateway\Paysecure;
 
 use function GuzzleHttp\Psr7\parse_query;
 use RZP\Exception;
@@ -13,7 +13,7 @@ class Gateway extends Base\Gateway
     use Base\AuthorizeFailed;
     use RequestHandlerTrait;
 
-    protected $gateway = 'npci_paysecure';
+    protected $gateway = 'paysecure';
 
     public function __construct()
     {

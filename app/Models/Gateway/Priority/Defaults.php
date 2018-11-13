@@ -19,7 +19,7 @@ class Defaults
             *
             */
             Mode::LIVE => [
-                Gateway::NPCI_PAYSECURE,
+                Gateway::PAYSECURE,
                 Gateway::HDFC,
                 Gateway::AXIS_MIGS,
                 Gateway::AMEX,

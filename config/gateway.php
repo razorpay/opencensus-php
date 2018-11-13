@@ -65,7 +65,7 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
-        'npci_paysecure',
+        'paysecure',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -119,7 +119,7 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
-    'mock_npci_paysecure'         => env('NPCI_PAYSECURE_MOCK'),
+    'mock_paysecure'         => env('PAYSECURE_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -572,15 +572,15 @@ return [
         'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
 
-    'npci_paysecure' => [
-        'caller_id'         => env('NPCI_PAYSECURE_CALLER_ID'),
-        'token'             => env('NPCI_PAYSECURE_TOKEN'),
-        'userid'            => env('NPCI_PAYSECURE_USERID'),
-        'password'          => env('NPCI_PAYSECURE_PASSWORD'),
-        'partner_id'        => env('NPCI_PAYSECURE_PARTNER_ID'),
-        'merchant_password' => env('NPCI_PAYSECURE_MERCHANT_PASSWORD'),
-        'terminal_id'       => env('NPCI_PAYSECURE_TERMINAL_ID'),
-        'merchant_id'       => env('NPCI_PAYSECURE_MERCHANT_ID'),
+    'paysecure' => [
+        'caller_id'         => env('PAYSECURE_CALLER_ID'),
+        'token'             => env('PAYSECURE_TOKEN'),
+        'userid'            => env('PAYSECURE_USERID'),
+        'password'          => env('PAYSECURE_PASSWORD'),
+        'partner_id'        => env('PAYSECURE_PARTNER_ID'),
+        'merchant_password' => env('PAYSECURE_MERCHANT_PASSWORD'),
+        'terminal_id'       => env('PAYSECURE_TERMINAL_ID'),
+        'merchant_id'       => env('PAYSECURE_MERCHANT_ID'),
     ],
 
     'sharp' => [

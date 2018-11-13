@@ -1,0 +1,87 @@
+<?php
+
+namespace RZP\Gateway\Paysecure\Mock;
+
+use RZP\Gateway\Base;
+use RZP\Gateway\Paysecure;
+
+class Server extends Base\Mock\Server
+{
+    public function getGatewayResponse($command, $params)
+    {
+        $response = $this->runCommandRequest($command, $params);
+
+        return $response;
+    }
+
+    protected function runCommandRequest($command, $contentArray)
+    {
+        switch ($command)
+        {
+            case Paysecure\Constants::COMMAND_CHECKBIN2:
+                return $this->getCheckBin2Response($contentArray);
+            case Paysecure\Constants::COMMAND_INITIATE_2:
+                return $this->getInitiate2Response($contentArray);
+        }
+    }
+
+    protected function getCheckBin2Response($data)
+    {
+        // todo: Use constants here
+        $response = [
+            Paysecure\Fields::STATUS                => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE            => '0',
+            Paysecure\Fields::ERROR_MESSAGE         => '',
+            Paysecure\Fields::QUALIFIED_INTERNETPIN => 'TRUE',
+            Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'TRUE',
+        ];
+
+        $this->content($response, 'checkbin2');
+
+        return $response;
+    }
+
+    protected function getInitiate2Response($data)
+    {
+        $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
+
+        $redirectUrl .= '&AccuCardholderId=89172389132&AccuGuid=6089d50e-e012-1160-8b3b-0ab8de556755'
+                      . '&AccuHkey=5629y50g-e743-0022-5i2b-9aw8de632896';
+
+        $response = [
+            Paysecure\Fields::STATUS                      => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE                  => '0',
+            Paysecure\Fields::ERROR_MESSAGE               => '',
+            Paysecure\Fields::TRAN_ID                     => '100000000000000000000000025236',
+            Paysecure\Fields::REDIRECT_URL                => $redirectUrl,
+            Paysecure\Fields::AUTHENTICATION_NOT_REQUIRED => 'FALSE',
+        ];
+
+        $this->content($response, 'initiate2');
+
+        return $response;
+    }
+
+    public function authorize($input)
+    {
+        $response = $this->getAuthResponse($input);
+
+        return $this->makePostResponse($response);
+    }
+
+    protected function getAuthResponse($input)
+    {
+        $content = [
+            Paysecure\Fields::ACCU_GUID          => $input[ Paysecure\Fields::ACCU_GUID ],
+            Paysecure\Fields::SESSION            => $input[ Paysecure\Fields::SESSION ],
+            Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            Paysecure\Fields::ACCU_REQUEST_ID    => $input[ Paysecure\Fields::ACCU_REQUEST_ID],
+        ];
+
+        return [
+            'url' => $input[Paysecure\Fields::ACCU_RETURN_URL],
+            'method' => 'post',
+            'content' => $content
+        ];
+    }
+}

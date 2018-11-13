@@ -172,7 +172,7 @@ class Shared
         self::SBIBUDDY_RAZORPAY_TERMINAL         => Gateway::WALLET_SBIBUDDY,
         self::SHARP_RAZORPAY_TERMINAL            => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL       => Gateway::FIRST_DATA,
-        self::PAYSECURE_RAZORPAY_TERMINAL        => Gateway::NPCI_PAYSECURE,
+        self::PAYSECURE_RAZORPAY_TERMINAL        => Gateway::PAYSECURE,
         self::AEPS_ICICI_RAZORPAY_TERMINAL       => Gateway::AEPS_ICICI,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,

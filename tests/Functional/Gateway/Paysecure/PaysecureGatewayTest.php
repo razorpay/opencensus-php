@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\NpciPaysecure;
+namespace RZP\Tests\Functional\Gateway\Paysecure;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class NpciPaysecureGatewayTest extends TestCase
+class PaysecureGatewayTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -17,9 +17,9 @@ class NpciPaysecureGatewayTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
-        $this->fixtures->create('terminal:shared_npci_paysecure_terminal');
+        $this->fixtures->create('terminal:shared_paysecure_terminal');
 
-        $this->gateway = 'npci_paysecure';
+        $this->gateway = 'paysecure';
 
         $this->setMockGatewayTrue();
 
