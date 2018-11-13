@@ -72,14 +72,58 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        // $this->validateRequestId();
+        parent::callback($input);
+
+        // Check payment status
+        if ($input['gateway'][Fields::ACCU_RESPONSE_CODE] !== Constants::STATUS_CALLBACK_SUCCESS)
+        {
+            $traceData = [
+                'gateway'    => $this->gateway,
+                'response'   => $input['gateway'],
+                'payment_id' => $input['payment']['id'],
+            ];
+
+            $internalErrorCode = ErrorCodes::getErrorCodeMapped($input['gateway'][Fields::ACCU_RESPONSE_CODE]);
+
+            throw new Exception\GatewayErrorException(
+                $internalErrorCode,
+                $input['gateway'][Fields::ERROR_CODE],
+                $input['gateway'][Fields::ERROR_MESSAGE],
+                $traceData
+            );
+        }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        sd($gatewayPayment->toArray());
+        // Validates the request by checking hashe
+        $this->validateRequestId($gatewayPayment);
+
+        $response = $this->authorizeTransaction($gatewayPayment);
+
+        if ($response[Fields::STATUS] !== Constants::STATUS_SUCCESS)
+        {
+            $traceData = [
+                'gateway'    => $this->gateway,
+                'response'   => $input['gateway'],
+                'payment_id' => $input['payment']['id'],
+            ];
+
+            // todo: map error code for authorize response
+            $internalErrorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
+
+            throw new Exception\GatewayErrorException(
+                $internalErrorCode,
+                $input['gateway'][Fields::ERROR_CODE],
+                $input['gateway'][Fields::ERROR_MESSAGE],
+                $traceData
+            );
+        }
+
+        return $this->getCallbackResponseData($input);
     }
 
+    // ------------ Auth request helpers -----------------
     protected function getGatewayPaymentAttributes($response, $flow = 'redirect')
     {
         $redirectUrl = $response[Fields::REDIRECT_URL];
@@ -142,8 +186,29 @@ class Gateway extends Base\Gateway
 
         return $redirectArray;
     }
+    // ------------ Auth request helpers end -----------------
 
-    // ------------ General helpers -----------------
+    // ------------ Callback request helpers -----------------
+    /**
+     * @param Entity $gatewayPayment
+     * @throws Exception\RuntimeException
+     */
+    protected function validateRequestId(Entity $gatewayPayment)
+    {
+        $dataToHash = [
+            $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
+            $this->input['gateway'][Fields::ACCU_GUID],
+            $this->input['payment']['id'],
+            $this->input['gateway'][Fields::ACCU_RESPONSE_CODE],
+        ];
+
+        $hash = $this->generateHashOfData($dataToHash, $gatewayPayment[Entity::HKEY]);
+
+        $this->compareHashes($this->input['gateway'][Fields::ACCU_REQUEST_ID], $hash);
+    }
+    // ------------ Callback request helpers end -------------
+
+    // ------------ General helpers --------------------------
     protected function createGatewayPaymentEntity(array $content)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();

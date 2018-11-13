@@ -18,10 +18,6 @@ trait RequestHandlerTrait
 {
 
     //-------------- Check BIN2 request ------------------------------------
-
-    /**
-     * @throws Exception\GatewayErrorException
-     */
     protected function checkBin2()
     {
         $requestArray = $this->getCheckBin2RequestArray();
@@ -132,6 +128,24 @@ trait RequestHandlerTrait
     }
 
     //-------------- Initiate request end ------------------------------------
+    //-------------- Authorize request related functions ---------------------
+    protected function authorizeTransaction($gatewayPayment)
+    {
+        $requestArray = [
+            Fields::TRAN_ID       => $gatewayPayment[ Entity::GATEWAY_TRANSACTION_ID ],
+            Fields::AUTH_AMOUNT   => $this->input['payment']['amount'],
+            Fields::CURRENCY_CODE => '356',
+        ];
+
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_AUTHORIZE;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
+    }
+    //-------------- Authorize request end -----------------------------------
     //---------------- Soap Request related functions ------------------------
     protected function sendRequest($command, $params)
     {
@@ -155,10 +169,9 @@ trait RequestHandlerTrait
             $soapClient->__setSoapHeaders($headers);
 
             $response = $soapClient->CallPaySecure($requestBody);
-            sd($response);
 
             // todo: Remove this
-//            $this->printLastSoapXml($soapClient);
+            // $this->printLastSoapXml($soapClient);
         }
         catch (SoapFault $sf)
         {
@@ -173,6 +186,7 @@ trait RequestHandlerTrait
         }
 
         $arrayResponse = $this->convertToArray($response);
+        sd($arrayResponse);
 
         $this->app['trace']->info(
             TraceCode::GATEWAY_RESPONSE,

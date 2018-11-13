@@ -73,4 +73,7 @@ class Fields
 
     // Callback attributes
     const ACCU_RESPONSE_CODE = 'AccuResponseCode';
+
+    // Authorize response
+    const APPRCODE = 'apprcode';
 }

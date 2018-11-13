@@ -27,6 +27,8 @@ class Server extends Base\Mock\Server
                 return $this->getCheckBin2Response($contentArray);
             case Paysecure\Constants::COMMAND_INITIATE_2:
                 return $this->getInitiate2Response($contentArray);
+            case Paysecure\Constants::COMMAND_AUTHORIZE:
+                return $this->getAuthorizeResponse($contentArray);
         }
     }
 
@@ -63,6 +65,20 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($response, 'initiate2');
+
+        return $response;
+    }
+
+    protected function getAuthorizeResponse($data)
+    {
+        $response = [
+            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE    => '00',
+            Paysecure\Fields::ERROR_MESSAGE => '',
+            Paysecure\Fields::APPRCODE      => '183217',
+        ];
+
+        $this->content($response, 'authorize');
 
         return $response;
     }

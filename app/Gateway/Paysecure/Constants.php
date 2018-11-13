@@ -18,6 +18,8 @@ class Constants
     const STATUS_SUCCESS    = 'success';
     const STATUS_FAILURE    = 'failure';
 
+    const STATUS_CALLBACK_SUCCESS = 'ACCU000';
+
     const VALUE_TRUE  = 'TRUE';
     const VALUE_FALSE = 'FALSE';
 }
