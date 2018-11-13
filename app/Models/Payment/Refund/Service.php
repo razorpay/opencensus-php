@@ -1002,10 +1002,13 @@ class Service extends Base\Service
 
     public function fetchRefundDetailsForCustomer(array $input)
     {
+        $traceInput = $input;
+        unset($traceInput['captcha']);
+
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_INITIATED,
             [
-                'input' => $input
+                'input' => $traceInput
             ]
         );
 
@@ -1062,7 +1065,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_SERVED,
             [
-                'input' => $input
+                'input' => $traceInput
             ] + $return
         );
 
