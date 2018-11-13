@@ -335,8 +335,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
     const BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED                              = 'Payment has already been acknowledged.';
     const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                = 'Payment failed';
-    const BAD_REQUEST_PURCHASE_ERROR                                            = 'Payment failed during purchase';
-    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = 'Payment failed due to max count of deferred payments reached';
+    const BAD_REQUEST_PURCHASE_ERROR                                            = 'Payment failed';
+    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = 'Payment failed';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
