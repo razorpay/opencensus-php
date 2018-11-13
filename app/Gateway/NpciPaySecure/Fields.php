@@ -49,6 +49,13 @@ class Fields
     const IP_ADDRESS                        = 'IPAddress';
     const HTTP_ACCEPT                       = 'HTTPAccept';
 
+    // Redirect Request
+    const ACCU_CARDHOLDER_ID = 'AccuCardholderId';
+    const ACCU_GUID          = 'AccuGuid';
+    const ACCU_RETURN_URL    = 'AccuReturnURL';
+    const SESSION            = 'session';
+    const ACCU_REQUEST_ID    = 'AccuRequestId';
+
     // Response Fields
     const STATUS                = 'status';
     const ERROR_CODE            = 'errorcode';
@@ -62,4 +69,5 @@ class Fields
     const TRAN_ID                     = 'tran_id';
     const REDIRECT_URL                = 'RedirectURL';
     const AUTHENTICATION_NOT_REQUIRED = 'AuthenticationNotRequired';
+    const ACCU_HKEY                   = 'AccuHkey';
 }

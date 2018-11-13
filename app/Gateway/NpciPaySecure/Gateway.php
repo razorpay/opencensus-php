@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\NpciPaySecure;
 
+use function GuzzleHttp\Psr7\parse_query;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 
 class Gateway extends Base\Gateway
 {
@@ -51,7 +53,9 @@ class Gateway extends Base\Gateway
 
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
-            $this->initiate2();
+            $response = $this->initiate2();
+
+            return $this->getRedirectRequest($response);
         }
         else
         {
@@ -59,9 +63,58 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getRedirectRequest($response)
+    {
+        $redirectUrl = $response[Fields::REDIRECT_URL];
 
+        $parsed = parse_url($redirectUrl);
+
+        $parsed = parse_query($parsed['query']);
+
+        $hkey = $parsed[Fields::ACCU_HKEY];
+
+        $cardholderId = $parsed[ Fields::ACCU_CARDHOLDER_ID ];
+        $guid         = $parsed[ Fields::ACCU_GUID ];
+        $redirectUrl    = strtok($redirectUrl, '?');
+        $session      = $this->input['payment']['id'];
+
+        $dataToHash = [
+            $response[Fields::TRAN_ID],
+            $cardholderId,
+            $guid,
+            $session,
+        ];
+
+        $hash = $this->generateHashOfData($dataToHash, $hkey);
+
+        // todo: Check if hexadecimal format is required here
+        $hash = base64_encode($hash);
+
+        $requestContent = [
+            Fields::ACCU_CARDHOLDER_ID => $cardholderId,
+            Fields::ACCU_GUID          => $guid,
+            Fields::ACCU_RETURN_URL    => $this->input['callbackUrl'],
+            Fields::SESSION            => $session,
+            Fields::ACCU_REQUEST_ID    => $hash,
+        ];
+
+        $redirectArray = [
+            'url'     => $redirectUrl,
+            'method'  => 'post',
+            'content' => $requestContent,
+        ];
+
+        return $redirectArray;
+    }
 
     // ------------ General helpers -----------------
+    protected function generateHashOfData($dataToHash, $key)
+    {
+        $str = implode('&', $dataToHash);
+
+        return hash_hmac(HashAlgo::SHA256, $str, $key);
+    }
+
     /**
      * @param $response
      * @param $action
