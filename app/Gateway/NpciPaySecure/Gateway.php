@@ -35,6 +35,7 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array $input
+     * @return array|void
      * @throws Exception\GatewayErrorException
      */
     public function authorize(array $input)
@@ -61,6 +62,11 @@ class Gateway extends Base\Gateway
         {
             $this->initiate();
         }
+    }
+
+    public function callback(array $input)
+    {
+        sd($input);
     }
 
     protected function getRedirectRequest($response)

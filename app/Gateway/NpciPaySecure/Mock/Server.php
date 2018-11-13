@@ -43,7 +43,7 @@ class Server extends Base\Mock\Server
 
     protected function getInitiate2Response($data)
     {
-        $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
+        $redirectUrl = $this->route->getUrlWithPublicAuth('mock_npci_paysecure_payment');
 
         $redirectUrl .= '&AccuCardholderId=89172389132&AccuGuid=6089d50e-e012-1160-8b3b-0ab8de556755'
                       . '&AccuHkey=5629y50g-e743-0022-5i2b-9aw8de632896';

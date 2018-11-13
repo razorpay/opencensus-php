@@ -28,10 +28,8 @@ class NpciPaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaRedirect()
     {
-//        sd($this->payment);
         $authResponse = $this->doAuthPayment($this->payment);
         sd($this->getDbLastEntityToArray('payment'));
-        sd($authResponse);
     }
 
     /**
