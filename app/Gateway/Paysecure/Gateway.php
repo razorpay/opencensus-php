@@ -2,11 +2,11 @@
 
 namespace RZP\Gateway\Paysecure;
 
-use function GuzzleHttp\Psr7\parse_query;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -56,17 +56,47 @@ class Gateway extends Base\Gateway
         {
             $response = $this->initiate2();
 
+            $content = $this->getGatewayPaymentAttributes($response);
+
+            $this->createGatewayPaymentEntity($content);
+
             return $this->getRedirectRequest($response);
         }
         else
         {
-            $this->initiate();
+            // $this->initiate();
+
+            // $this->createGatewayPaymentEntity();
         }
     }
 
     public function callback(array $input)
     {
-        sd($input);
+        // $this->validateRequestId();
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        sd($gatewayPayment->toArray());
+    }
+
+    protected function getGatewayPaymentAttributes($response, $flow = 'redirect')
+    {
+        $redirectUrl = $response[Fields::REDIRECT_URL];
+
+        $parsed = parse_url($redirectUrl);
+
+        parse_str($parsed['query'], $parsed);
+
+        $hkey = $parsed[Fields::ACCU_HKEY];
+
+        $content = [
+            Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
+            Entity::HKEY                   => $hkey,
+            Entity::FLOW                   => $flow,
+        ];
+
+        return $content;
     }
 
     protected function getRedirectRequest($response)
@@ -75,13 +105,13 @@ class Gateway extends Base\Gateway
 
         $parsed = parse_url($redirectUrl);
 
-        $parsed = parse_query($parsed['query']);
+        parse_str($parsed['query'], $parsed);
 
         $hkey = $parsed[Fields::ACCU_HKEY];
 
         $cardholderId = $parsed[ Fields::ACCU_CARDHOLDER_ID ];
         $guid         = $parsed[ Fields::ACCU_GUID ];
-        $redirectUrl    = strtok($redirectUrl, '?');
+        $redirectUrl  = strtok($redirectUrl, '?');
         $session      = $this->input['payment']['id'];
 
         $dataToHash = [
@@ -114,6 +144,21 @@ class Gateway extends Base\Gateway
     }
 
     // ------------ General helpers -----------------
+    protected function createGatewayPaymentEntity(array $content)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $gatewayPayment->fill($content);
+
+        $gatewayPayment->setPaymentId($this->input['payment']['id']);
+
+        $gatewayPayment->setAction($this->action);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
     protected function generateHashOfData($dataToHash, $key)
     {
         $str = implode('&', $dataToHash);

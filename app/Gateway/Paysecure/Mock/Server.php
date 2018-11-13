@@ -4,9 +4,14 @@ namespace RZP\Gateway\Paysecure\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Gateway\Paysecure;
+use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
+    const HKEY = '5629y50g-e743-0022-5i2b-9aw8de632896';
+
+    const TRAN_ID = '100000000000000000000000025236';
+
     public function getGatewayResponse($command, $params)
     {
         $response = $this->runCommandRequest($command, $params);
@@ -46,13 +51,13 @@ class Server extends Base\Mock\Server
         $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
 
         $redirectUrl .= '&AccuCardholderId=89172389132&AccuGuid=6089d50e-e012-1160-8b3b-0ab8de556755'
-                      . '&AccuHkey=5629y50g-e743-0022-5i2b-9aw8de632896';
+                      . '&AccuHkey=' . self::HKEY;
 
         $response = [
             Paysecure\Fields::STATUS                      => Paysecure\Constants::STATUS_SUCCESS,
             Paysecure\Fields::ERROR_CODE                  => '0',
             Paysecure\Fields::ERROR_MESSAGE               => '',
-            Paysecure\Fields::TRAN_ID                     => '100000000000000000000000025236',
+            Paysecure\Fields::TRAN_ID                     => self::TRAN_ID,
             Paysecure\Fields::REDIRECT_URL                => $redirectUrl,
             Paysecure\Fields::AUTHENTICATION_NOT_REQUIRED => 'FALSE',
         ];
@@ -69,19 +74,36 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($response);
     }
 
+    protected function generateHashOfData($dataToHash)
+    {
+        $str = implode('&', $dataToHash);
+
+        return hash_hmac(HashAlgo::SHA256, $str, self::HKEY);
+    }
+
     protected function getAuthResponse($input)
     {
         $content = [
-            Paysecure\Fields::ACCU_GUID          => $input[ Paysecure\Fields::ACCU_GUID ],
-            Paysecure\Fields::SESSION            => $input[ Paysecure\Fields::SESSION ],
+            Paysecure\Fields::ACCU_GUID          => $input[Paysecure\Fields::ACCU_GUID],
+            Paysecure\Fields::SESSION            => $input[Paysecure\Fields::SESSION],
             Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
-            Paysecure\Fields::ACCU_REQUEST_ID    => $input[ Paysecure\Fields::ACCU_REQUEST_ID],
         ];
 
+        $dataToHash = [
+            self::TRAN_ID,
+            $input[Paysecure\Fields::ACCU_GUID],
+            $input[Paysecure\Fields::SESSION],
+            $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
+        ];
+
+        $hash = $this->generateHashOfData($dataToHash);
+
+        $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+
         return [
-            'url' => $input[Paysecure\Fields::ACCU_RETURN_URL],
-            'method' => 'post',
-            'content' => $content
+            'url'     => $input[ Paysecure\Fields::ACCU_RETURN_URL ],
+            'method'  => 'post',
+            'content' => $content,
         ];
     }
 }

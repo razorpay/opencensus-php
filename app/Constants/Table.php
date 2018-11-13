@@ -149,6 +149,7 @@ class Table
     const CYBERSOURCE           = 'cybersource';
     const CARD_FSS              = 'card_fss';
     const ISG                   = 'isg';
+    const PAYSECURE             = 'paysecure';
 
     // Sessions table
     const SESSION               = 'sessions';
