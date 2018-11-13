@@ -134,7 +134,7 @@ class EmiPlan extends Base
         [
             'id'                => '40101010101011',
             'duration'          => '12',
-            'rate'              => '900',
+            'rate'              => '1400',
             'methods'           => 'creditcard',
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
