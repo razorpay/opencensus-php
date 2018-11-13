@@ -235,7 +235,7 @@ class Database
         if ($driver === 'mysql')
         {
             $query = "SELECT GROUP_CONCAT(Concat(table_schema,'.',TABLE_NAME) SEPARATOR ';') as query
-                  FROM INFORMATION_SCHEMA.TABLES where table_schema in ('$database');";
+                  FROM INFORMATION_SCHEMA.TABLES where table_schema in ('$database') and table_type != 'VIEW';";
 
             $results = $this->db->select($query);
         }

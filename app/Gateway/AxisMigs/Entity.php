@@ -6,6 +6,8 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
+    const TERMINAL_ID = 'terminal_id';
+
     protected $fields = array(
         'id',
         'payment_id',

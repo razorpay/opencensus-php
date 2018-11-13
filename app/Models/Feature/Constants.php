@@ -97,6 +97,8 @@ class Constants
     const GOOGLE_PAY                      = 'google_pay';
     const EMANDATE_MRN                    = 'emandate_mrn';
     const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
+    const CUSTOMER_ADDRESS                = 'customer_address';
+    const IRCTC_METHODS                   = 'irctc_methods';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -126,6 +128,8 @@ class Constants
 
     const CHECKOUT_FEATURES = [
         self::GOOGLE_PAY,
+        self::CUSTOMER_ADDRESS,
+        self::IRCTC_METHODS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -230,9 +234,11 @@ class Constants
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
         self::TERMINAL_BANKS_FILTER           => true,
-        self::EMANDATE_MRN                    => true,
         self::GOOGLE_PAY                      => true,
+        self::EMANDATE_MRN                    => true,
         self::DIWALI_PROMOTIONAL_PLAN         => true,
+        self::CUSTOMER_ADDRESS                => true,
+        self::IRCTC_METHODS                   => true,
     ];
 
     // Entity type constants

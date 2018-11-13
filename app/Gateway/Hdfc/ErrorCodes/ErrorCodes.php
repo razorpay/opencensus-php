@@ -668,7 +668,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '88' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'PTLF Error',
         '89' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Invalid Route Service',
         '91' => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
-        '94' => ErrorCode::BAD_REQUEST_GENERIC_TRANSACTION_ERROR, //Duplicate Transaction
+        '94' => ErrorCode::GATEWAY_ERROR_DUPLICATE_TRANSACTION, //Duplicate Transaction
 
         'N0' => ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED, //Unable to Authorise
         'N1' => ErrorCode::GATEWAY_ERROR_INVALID_PAN_LENGTH, //'Invalid pan lengtfh',
@@ -774,10 +774,10 @@ class ErrorCodes extends Cards\ErrorCodes
         '32' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Partial Reversal'
 
         // Denied by risk
-        'D' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Total Amount limit set for the terminal for transactions has been crossed
-        'E' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED, //Total transaction limit set for the terminal has been crossed
-        'F' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum debit amount limit set for the terminal for a day has been crossed
-        'G' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum credit amount limit set for the terminal for a day has been crossed
+        'D' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Total Amount limit set for the terminal for transactions has been crossed
+        'E' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED, //Total transaction limit set for the terminal has been crossed
+        'F' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum debit amount limit set for the terminal for a day has been crossed
+        'G' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum credit amount limit set for the terminal for a day has been crossed
         'H' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Maximum debit amount set for per card for rolling 24 hrs has been crossed
         'I' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Maximum credit amount set for per card for rolling 24 hrs has been crossed
         'J' => ErrorCode::BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED, //Maximum transaction set for per card for rolling 24 hrs has been crossed

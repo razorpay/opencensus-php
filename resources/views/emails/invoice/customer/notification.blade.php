@@ -41,13 +41,14 @@
           if (isset($invoice['entity_type']) === true and $invoice['entity_type'] === 'subscription_registration')
           {
             $invoice['type_label'] = 'Authorization Link';
+            $method = $invoice['subscription_registration']['method'];
 
-            $headerLabel = $merchant['name'] . ' has sent you an Authorization Link';
+            $ctaLabel = ($method === 'card' ? 'PAY AND ' : ''). 'AUTHORIZE';
 
-            if ($invoice['subscription_registration']['method'] === 'card')
-            {
-                $headerLabel .= ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
-            }
+            $displayMethod =$method === 'card' ? 'card' : 'bank account';
+
+            $headerLabel .= $merchant['name'] . ' has sent you ' . $displayMethod . ' authorization link';
+
           }
           else
           {

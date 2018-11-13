@@ -89,6 +89,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::ICIC]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::INDB]);
+                unset($gateways[IFSC::IDFB]);
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::CSBK]);
                 unset($gateways[Netbanking::BARB_R]);
@@ -1001,10 +1002,13 @@ class Service extends Base\Service
 
     public function fetchRefundDetailsForCustomer(array $input)
     {
+        $traceInput = $input;
+        unset($traceInput['captcha']);
+
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_INITIATED,
             [
-                'input' => $input
+                'input' => $traceInput
             ]
         );
 
@@ -1061,7 +1065,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::CUSTOMER_TRACK_REFUND_STATUS_SERVED,
             [
-                'input' => $input
+                'input' => $traceInput
             ] + $return
         );
 

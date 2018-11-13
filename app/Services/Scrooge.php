@@ -29,15 +29,16 @@ class Scrooge
 
     protected $auth;
 
-    const BaseUrl = 'refund';
+    const RefundBaseURL = 'refund';
+    const RefundsBaseURL = 'refunds';
+    const ListBaseURL = 'list';
 
     const URLS = [
-        'initiate'      => '',
-        'retry'         => 'retry',
-        'reports'       => 'list/reports',
-        'bulkupdate'    => 'bulk-status-update',
-        'refunds'       => 'list/refunds',
-        'refund'        => '',
+        'retry'                 => 'retry',
+        'get_reports'           => 'reports',
+        'bulk_status_update'    => 'bulk-status-update',
+        'get_refunds'           => 'refunds',
+        'status_update'         => 'status-update'
     ];
 
     // Headers
@@ -84,7 +85,7 @@ class Scrooge
      */
     public function initiateRefund(array $input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::BaseUrl, 'POST', $input, $throwExceptionOnFailure);
+        return $this->sendRequest(self::RefundBaseURL, 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -95,9 +96,7 @@ class Scrooge
      */
     public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
     {
-        $retryUrl = self::BaseUrl . '/' . $input['id'] . '/' . self::URLS['retry'];
-
-        return $this->sendRequest($retryUrl, 'POST', $input, $throwExceptionOnFailure);
+        return $this->sendRequest(self::RefundBaseURL . '/' . $input['id'] . '/' . self::URLS['retry'], 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -107,7 +106,17 @@ class Scrooge
      */
     public function getReports(array $input): array
     {
-        return $this->sendRequest(self::URLS['reports'], 'POST', $input);
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_reports'], 'POST', $input);
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     */
+    public function updateRefundStatus(string $id, array $input): array
+    {
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS['status_update'], 'POST', $input);
     }
 
     /**
@@ -117,9 +126,7 @@ class Scrooge
      */
     public function bulkUpdateRefundStatus(array $input): array
     {
-        $bulkUpdateUrl = self::BaseUrl . '/' . self::URLS['bulkupdate'];
-
-        return $this->sendRequest($bulkUpdateUrl, 'PUT', $input);
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'], 'POST', $input);
     }
 
     /**
@@ -129,7 +136,7 @@ class Scrooge
      */
     public function getRefunds(array $input): array
     {
-        return $this->sendRequest(self::URLS['refunds'], 'POST', $input);
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], 'POST', $input);
     }
 
     /**
@@ -139,7 +146,7 @@ class Scrooge
      */
     public function getRefund(string $id): array
     {
-        return $this->sendRequest(self::BaseUrl . '/' . $id, 'GET');
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id, 'GET');
     }
 
     /**
