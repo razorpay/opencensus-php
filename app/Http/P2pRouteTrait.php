@@ -130,7 +130,7 @@ trait P2pRouteTrait
             ],
         Requests::P2P_CUSTOMER_VPA_FETCH =>
             [
-                'post',
+                'get',
                 'p2p/customers/{customer_id}/vpa/{vpa_id}',
                 'P2p\VpaController@fetch'
             ],
@@ -148,7 +148,7 @@ trait P2pRouteTrait
             ],
         Requests::P2P_CUSTOMER_VPA_DELETE =>
             [
-                'post',
+                'delete',
                 'p2p/customers/{customer_id}/vpa/{vpa_id}',
                 'P2p\VpaController@delete'
             ],

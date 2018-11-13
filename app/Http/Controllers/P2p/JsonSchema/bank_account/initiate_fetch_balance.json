@@ -1,0 +1,83 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "cl"
+    ],
+    "properties": {
+        "cl": {
+            "type": "object",
+            "required": [
+                "account",
+                "mobileNumber",
+                "appId",
+                "deviceId",
+                "note",
+                "txnId",
+                "CredAllowed"
+            ],
+            "properties": {
+                "account": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "mobileNumber": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "appId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "deviceId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "note": {
+                    "type": "string",
+                    "enum": [
+                        "Balance enquiry"
+                    ],
+                    "default": null,
+                    "pattern": "^(.*)$"
+                },
+                "txnId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "CredAllowed": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "subtype",
+                            "dLength",
+                            "dType"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "dLength": {
+                                "type": "integer",
+                                "pattern": "^(.*)$"
+                            },
+                            "dType": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

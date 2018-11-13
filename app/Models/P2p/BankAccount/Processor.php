@@ -62,35 +62,84 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::FETCH, $input);
 
-        return [];
+        return [
+
+        ];
     }
 
     public function initiateSetUpiPin(array $input): array
     {
         $this->initialize(Action::INITIATE_SET_UPI_PIN, $input);
 
-        return [];
+        return [
+            'cl' => [
+            'registration_format' => 'FORMAT1',
+            'mobileNumber'        => '+919123456780',
+            'appId'               => 'com.razorpay',
+            'deviceId'            => '5878323242',
+            'note'                => 'Set UPI Pin',
+            'txnId'               => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            'CredAllowed'         => [
+                [
+                    'type'        => 'PIN',
+                    'subtype'     => 'MPIN',
+                    'dLength'     => 6,
+                    'dFormat'     => 'NUM'
+                ],
+                [
+                    'type'        => 'OTP',
+                    'subtype'     => 'ATMPIN',
+                    'dLength'     => 4,
+                    'dFormat'     => 'NUM'
+                ]
+            ]
+            ]
+        ];
     }
 
     public function setUpiPin(array $input): array
     {
         $this->initialize(Action::SET_UPI_PIN, $input);
 
-        return [];
+        return [
+            'id'      => 'ba_AtIZbXUOTDp1ND',
+            'success' => true
+        ];
     }
 
     public function initiateFetchBalance(array $input): array
     {
         $this->initialize(Action::INITIATE_FETCH_BALANCE, $input);
 
-        return [];
+        return [
+            'cl' => [
+                'account'      => '12*********3456',
+                'mobileNumber' => '987654321',
+                'appId'        => 'com.razorpay',
+                'deviceId'     => '5878323242',
+                'note'         => 'Balance enquiry',
+                'txnId'        => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+                'CredAllowed'  => [
+                [
+                    'type'     => 'PIN',
+                    'subtype'  => 'MPIN',
+                    'dLength'  => 6,
+                    'dType'    => 'NUM',
+                ]
+                ],
+            ]
+        ];
     }
 
     public function fetchBalance(array $input): array
     {
         $this->initialize(Action::FETCH_BALANCE, $input);
 
-        return [];
+        return [
+            'id'       => 'ba_AtIZbXUOTDp1ND',
+            'balance'  => 2928200,
+            'currency' => 'INR'
+        ];
     }
 
     // TODO: To be removed

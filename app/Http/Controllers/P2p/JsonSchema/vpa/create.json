@@ -23,7 +23,6 @@
             "enum": [
                 "vpa"
             ],
-            "default": null,
             "pattern": "^(.*)$"
         },
         "address": {

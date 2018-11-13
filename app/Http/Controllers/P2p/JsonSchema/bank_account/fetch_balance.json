@@ -1,0 +1,28 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "id",
+        "balance",
+        "currency"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^ba_(.*){14}$"
+        },
+        "balance": {
+            "type": "integer"
+        },
+        "currency": {
+            "type": "string",
+            "enum": [
+                "INR"
+            ],
+            "default": null,
+            "pattern": "^(.*)$"
+        }
+    }
+}
