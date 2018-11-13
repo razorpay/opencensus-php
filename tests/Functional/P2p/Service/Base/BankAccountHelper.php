@@ -17,11 +17,11 @@ class BankAccountHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function fetch()
+    public function fetch(string $bankId)
     {
         $this->validationJsonSchemaPath = 'bank_account/fetch';
 
-        $request = $this->request('bank_accounts');
+        $request = $this->request('bank_accounts/%s', [$bankId]);
 
         return $this->get($request);
     }

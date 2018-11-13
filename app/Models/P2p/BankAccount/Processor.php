@@ -62,9 +62,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::FETCH, $input);
 
-        return [
-
-        ];
+        return $this->bankAccount('ba_AtIZbXUOTDp1ND');
     }
 
     public function initiateSetUpiPin(array $input): array

@@ -32,7 +32,7 @@ class Processor extends Base\Processor
         $input['refreshed_at'] = time();
 
         return array_merge([
-            'id'               => $id,
+            'id'               => $input['id'],
             'contact'          => '+919876543210',
             'handle'           => 'razorsharp',
             'ip'               => '179.0.0.1',
@@ -52,7 +52,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::REFRESH_CL_TOKEN, $input);
 
-        return [];
+        return $this->fetch($input);
     }
 
     public function delete(array $input): array
@@ -60,7 +60,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::DELETE, $input);
 
         return [
-            'id'               => $id,
+            'id'               => $input['id'],
             'success'          => true,
         ];
     }

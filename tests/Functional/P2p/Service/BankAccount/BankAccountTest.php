@@ -6,6 +6,17 @@ use RZP\Tests\P2p\Service\TestCase;
 
 class BankAccountTest extends TestCase
 {
+    public function testRetrieve()
+    {
+        $ifsc = 'ACME000001';
+
+        $helper = $this->getBankAccountHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->retrieve($ifsc);
+    }
+
     public function testFetchBanks()
     {
         $helper = $this->getBankAccountHelper();
@@ -17,22 +28,13 @@ class BankAccountTest extends TestCase
 
     public function testFetch()
     {
-        $helper = $this->getBankAccountHelper();
-
-        $helper->withSchemaValidated();
-
-        $helper->fetch();
-    }
-
-    public function testRetrieve()
-    {
-        $ifsc = 'ACME000001';
+        $bankId = 'ba_AtIZbXUOTDp1ND';
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->retrieve($ifsc);
+        $helper->fetch($bankId);
     }
 
     public function testSetUpiPin()

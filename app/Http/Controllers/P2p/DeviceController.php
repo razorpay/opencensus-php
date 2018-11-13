@@ -20,7 +20,7 @@ class DeviceController extends Controller
 
     public function fetch()
     {
-        $input = 'device_charpanchkhoye';
+        $input['id'] = 'device_charpanchkhoye';
 
         $response = $this->service->fetch($input);
 
@@ -29,7 +29,7 @@ class DeviceController extends Controller
 
     public function refreshClToken()
     {
-        $input = 'device_charpanchkhoye';
+        $input['id'] = 'device_charpanchkhoye';
 
         $response = $this->service->refreshClToken($input);
 
@@ -38,7 +38,7 @@ class DeviceController extends Controller
 
     public function delete()
     {
-        $input = 'device_charpanchkhoye';
+        $input['id'] = 'device_charpanchkhoye';
 
         $response = $this->service->delete($input);
 

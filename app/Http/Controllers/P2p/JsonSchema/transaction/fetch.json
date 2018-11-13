@@ -53,27 +53,27 @@
             "pattern": "^(.*)$"
         },
         "error_description": {
-            "type": "null"
+            "type": ["string", "null"]
         },
         "error_code": {
-            "type": "null"
+            "type": ["string", "null"]
         },
         "transaction_type": {
             "type": "string",
             "pattern": "^(.*)$"
         },
         "rrn": {
-            "type": "string",
+            "type": ["string", "null"],
             "pattern": "^(.*)$"
         },
         "created_at": {
-            "type": "integer"
+            "type": ["integer", "null"]
         },
         "completed_at": {
-            "type": "integer"
+            "type": ["integer", "null"]
         },
         "expire_at": {
-            "type": "null"
+            "type": ["integer", "null"]
         }
     }
 }
