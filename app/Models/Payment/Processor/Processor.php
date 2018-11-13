@@ -282,7 +282,8 @@ class Processor
     {
         assert($this->subscription->isExternal() === true);
 
-        if ($this->subscription->hasCurrentInvoice() === true)
+        if (($this->subscription->hasCurrentInvoice() === true) and
+            (isset($input[Payment\Entity::ORDER_ID]) === false))
         {
             $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
 
