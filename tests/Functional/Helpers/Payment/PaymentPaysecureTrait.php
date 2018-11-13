@@ -13,13 +13,12 @@ trait PaymentPaysecureTrait
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
-            sd($request);
         }
         else
         {
             assert (false, 'Mock is not enabled');
         }
 
-        return $this->submitPaymentCallbackRedirect($request);
+        return $this->submitPaymentCallbackRequest($request);
     }
 }

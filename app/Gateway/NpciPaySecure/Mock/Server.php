@@ -64,9 +64,24 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        sd($input);
-//        $response = $this->getAuthResponse($input);
-//
-//        return $this->makePostResponse($response);
+        $response = $this->getAuthResponse($input);
+
+        return $this->makePostResponse($response);
+    }
+
+    protected function getAuthResponse($input)
+    {
+        $content = [
+            NpciPaySecure\Fields::ACCU_GUID          => $input[ NpciPaySecure\Fields::ACCU_GUID ],
+            NpciPaySecure\Fields::SESSION            => $input[ NpciPaySecure\Fields::SESSION ],
+            NpciPaySecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            NpciPaySecure\Fields::ACCU_REQUEST_ID    => $input[ NpciPaySecure\Fields::ACCU_REQUEST_ID],
+        ];
+
+        return [
+            'url' => $input[NpciPaySecure\Fields::ACCU_RETURN_URL],
+            'method' => 'post',
+            'content' => $content
+        ];
     }
 }
