@@ -12,7 +12,7 @@ import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
-const mode = 'test';
+const mode = 'live';
 
 export default class RefundsList extends Component {
   state = {
@@ -148,7 +148,16 @@ const fields = [
   ],
   item => ['Payment Gateway Captured', item.payment_gateway_captured],
   item => ['ARN', item.arn],
-  item => ['Attempts', item.attempts],
+  item => [
+    'Attempts',
+    <React.Fragment>
+      {item.attempts}
+      <br />
+      <span class="link" onClick={showAttemptsData.bind(item)}>
+        Click to View
+      </span>
+    </React.Fragment>,
+  ],
   item => ['Bank', item.bank],
   item => ['Is Reconciled', item.is_reconciled],
   item => ['On Hold Reason', item.on_hold_reason],
@@ -158,4 +167,27 @@ const logFields = [
   ['Date', item => formatDate(item.created_at)],
   ['From', item => item.from],
   ['To', item => item.to],
+];
+
+const showAttemptsData = function(e) {
+  e.stopPropagation();
+  openModal(
+    <ModalContent header="Attempts Data">
+      <Table items={this.attempts_data} fields={attemptsDataFields} />
+    </ModalContent>
+  );
+};
+
+const attemptsDataFields = [
+  ['Number', item => item.attempt_number],
+  ['Action', item => item.action],
+  ['Type', item => item.type],
+  ['Status', item => item.status],
+  ['Error Code', item => item.error_code],
+  ['Request Status', item => item.request_status_code],
+  ['Created At', item => formatDate(item.created_at)],
+  [
+    'Gateway Response',
+    item => <pre class="duplex-json">{item.gateway_response}</pre>,
+  ],
 ];
