@@ -254,6 +254,9 @@ return [
         'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
         'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
         'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
+        'test_access_code'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'   => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'enach_rbl' => [],
