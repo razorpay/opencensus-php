@@ -7,7 +7,7 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 import { Link } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
 import { formatDate, getFormattedAmount } from 'common/util';
-import { openModal } from 'common/modal';
+import { openModal, notifySuccess, notifyError } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
@@ -83,14 +83,20 @@ export default class RefundsList extends Component {
   }
 
   retry = () => {
-    return adminPost(`${mode}/refunds/${this.data.id}/retry`).then(data => {
-      if (data) {
-        notifySuccess('Refund retry request is successful');
+    return adminPost(`${mode}/refunds/rfnd_${this.data.id}/retry`).then(
+      data => {
+        if (data) {
+          notifySuccess('Refund retry request is successful');
+        }
       }
-    });
+    );
   };
 
   statusModal = () => {
+    let events = this.data.available_status_update_events;
+    if (!events || !events.length) {
+      return notifyError('No status updates available');
+    }
     openModal(
       <ModalContent header="Update Status">
         <Form onSubmit={this.updateStatus}>
@@ -110,17 +116,12 @@ export default class RefundsList extends Component {
 
   updateStatus = data => {
     return adminPost({
-      url: `${mode}/scrooge/refunds/bulk-status-update`,
+      url: `${mode}/scrooge/refunds/${this.data.id}/status-update`,
       data: {
-        refunds: [
-          {
-            event: data.event,
-            refund_id: this.data.id,
-            gateway_keys: {
-              arn: data.arn,
-            },
-          },
-        ],
+        event: data.event,
+        gateway_keys: {
+          arn: data.arn,
+        },
       },
     }).then(data => {
       if (data) {
