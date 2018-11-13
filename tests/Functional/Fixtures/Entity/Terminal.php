@@ -1803,6 +1803,16 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAxisTpvTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiAxisTerminal($attributes);
+    }
+
     public function createSharedUpiIciciIntentTerminal(array $attributes)
     {
         $attributes = [
