@@ -12,18 +12,22 @@ import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
+const mode = 'test';
+
 export default class RefundsList extends Component {
   state = {
     loading: true,
   };
 
   componentWillMount() {
-    adminFetch('live/scrooge/refunds/' + this.props.match.params.id).then(d => {
-      this.data = d;
-      this.setState({
-        loading: false,
-      });
-    });
+    adminFetch(`${mode}/scrooge/refunds/` + this.props.match.params.id).then(
+      d => {
+        this.data = d;
+        this.setState({
+          loading: false,
+        });
+      }
+    );
   }
 
   render() {
@@ -60,10 +64,12 @@ export default class RefundsList extends Component {
                   <b>ACTIONS</b>
                 </div>
                 <AsyncButton
-                  confirm
+                  confirm="Perform this action?"
                   class="btn btn-default"
+                  pendingClass="btn btn-default btn-pending"
                   onClick={this.retry}
                 >
+                  <span class="spin-btn" style={{ marginRight: -18 }} />
                   Retry Refund
                 </AsyncButton>
                 <button class="btn btn-default" onClick={this.statusModal}>
@@ -77,7 +83,7 @@ export default class RefundsList extends Component {
   }
 
   retry = () => {
-    return adminPost(`live/refunds/${this.data.id}/retry`).then(data => {
+    return adminPost(`${mode}/refunds/${this.data.id}/retry`).then(data => {
       if (data) {
         notifySuccess('Refund retry request is successful');
       }
@@ -104,16 +110,18 @@ export default class RefundsList extends Component {
 
   updateStatus = data => {
     return adminPost({
-      url: 'live/scrooge/refunds/bulk-status-update',
-      data: [
-        {
-          event: data.event,
-          refund_id: this.data.id,
-          gateway_keys: {
-            arn: data.arn,
+      url: `${mode}/scrooge/refunds/bulk-status-update`,
+      data: {
+        refunds: [
+          {
+            event: data.event,
+            refund_id: this.data.id,
+            gateway_keys: {
+              arn: data.arn,
+            },
           },
-        },
-      ],
+        ],
+      },
     }).then(data => {
       if (data) {
         notifySuccess('Update status request is successful');
