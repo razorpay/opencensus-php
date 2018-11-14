@@ -1165,6 +1165,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'admin_lead_verify',
         'admin_authentication',
         'admin_forgot_password',
         'admin_lock_old_accounts',
@@ -1574,7 +1575,6 @@ final class Route
         'iin_add',
         'emi_plan_add',
         'dummy_critical_error',
-        'admin_lead_verify',
         'merchant_tag_add',
         'merchant_tag_delete',
         'merchant_update_key_access',
@@ -2233,12 +2233,12 @@ final class Route
             'user_change_password',
             'user_fetch',
             'invitation_action',
-            'merchant_admin_lead_put',
             'invitation_fetch_by_token',
             'user_resend_verification',
             'user_reset_password_token',
             // Called during signup flow
             'admin_authentication',
+            'admin_lead_verify',
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',
