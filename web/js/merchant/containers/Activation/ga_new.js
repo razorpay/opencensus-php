@@ -3,9 +3,15 @@ import { mainFormTabs } from 'component/merchant/Activation/ActivationFormMap';
 
 const eventCategory = 'Dashboard - Activation Form v2';
 
-export const track = setTrackData({
+export let track = setTrackData({
   eventCategory,
 });
+
+export const setInstantActivationsTracking = () => {
+  track = setTrackData({
+    eventCategory: 'Dashboard - Instant Activations KYC',
+  });
+};
 
 /* Utility to create eventAction based on  api response and event. */
 function _pipeActionWithType(action, result) {
@@ -88,13 +94,18 @@ export const trackSave = data => {
 
 /* Track 'Submit' btn in footer of activation form */
 export const trackSubmit = data => {
+  let eventLabel = _pipeLabelWithError(
+    mainFormTabs[data.tabId],
+    data.type,
+    data.error
+  );
+
   track({
     eventAction: _pipeActionWithType('Click - Submit', data.type), // type = Success / Error
-    eventLabel: _pipeLabelWithError(
-      mainFormTabs[data.tabId],
-      data.type,
-      data.error
-    ),
+    eventLabel: data.activationFlow
+      ? ((eventLabel && eventLabel + ' | ') || '') +
+        `Instant Activation | ${data.activationFlow}`
+      : eventLabel,
   });
 };
 
@@ -121,6 +132,32 @@ export const trackGoToConfig = () => {
   track({
     eventAction: 'Go to - Config',
     eventLabel: 'From Activation Success Modal',
+  });
+};
+
+/* Instant Activations Tracking, L1 form is instant activation form */
+
+const trackIA = setTrackData({
+  eventCategory: 'Dashboard - Instant Activations Activate Account',
+});
+
+export const trackL1FormSuccess = businessCategory => {
+  // businessCategory is blackist, whitelist and graylist
+  trackIA({
+    eventAction: 'Click - Activate Account (Success)',
+    eventLabel: businessCategory,
+  });
+};
+
+export const trackL1FormError = () => {
+  trackIA({
+    eventAction: 'Click - Activate Account (Error)',
+  });
+};
+
+export const trackTnCClick = () => {
+  trackIA({
+    eventAction: 'Click - Terms and Conditions',
   });
 };
 

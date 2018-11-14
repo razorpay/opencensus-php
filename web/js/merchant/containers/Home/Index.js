@@ -34,7 +34,12 @@ import {
   trackError,
   trackDatesChange,
   trackPlatformAnalyticsHidden,
+  trackActivateAccount,
+  trackTryDashboard,
+  trackIAClose,
+  iaActivations,
 } from './ga';
+
 import Desktop from './Desktop';
 import Mobile from './Mobile';
 
@@ -59,7 +64,7 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const KycFormSuccess = ({ onClose, isWhitelistFlow }) => (
+const KycFormSuccess = ({ onClose, onGoToDashboard, isWhitelistFlow }) => (
   <InstantActivationSuccess
     title="KYC under review"
     subtitle="Your KYC Form has been submitted"
@@ -75,6 +80,7 @@ const KycFormSuccess = ({ onClose, isWhitelistFlow }) => (
       </div>
     }
     onClose={onClose}
+    onGoToDashboard={onGoToDashboard}
   />
 );
 
@@ -595,6 +601,8 @@ export default class HomeContainer extends Component {
       hideKYCDetailsModal,
     } = this.props;
 
+    const { activation_flow } = user;
+
     const {
       startDate,
       endDate,
@@ -661,23 +669,65 @@ export default class HomeContainer extends Component {
           !user.instantActivation.isL1Submitted &&
           showOnboardingBannerFirstStep && (
             <ModalMask>
-              <Modal className="welcome-modal" onClose={onFirstStepClose}>
+              <Modal
+                className="welcome-modal"
+                onClose={() => {
+                  trackIAClose();
+                  onFirstStepClose();
+                }}
+              >
                 <ModalContent>
-                  <WelcomeModal onClose={onFirstStepClose} />
+                  <WelcomeModal
+                    onClose={() => {
+                      trackTryDashboard();
+                      onFirstStepClose();
+                    }}
+                    onActivate={() => {
+                      trackActivateAccount();
+                      onFirstStepClose();
+                    }}
+                  />
                 </ModalContent>
               </Modal>
             </ModalMask>
           )}
         {showInstantActivationSuccess && (
-          <InstantActivationSuccess onClose={this.onInstantActivationSuccess} />
+          <InstantActivationSuccess
+            onClose={() => {
+              iaActivations.trackClose(activation_flow);
+              this.onInstantActivationSuccess();
+            }}
+            onGoToDashboard={() => {
+              iaActivations.trackGoToDashboard();
+              this.onInstantActivationSuccess();
+            }}
+          />
         )}
         {showKYCActivationSuccess && (
           <KycFormSuccess
-            onClose={this.props.hideKYCActivationSuccessModal}
+            onClose={() => {
+              iaActivations.trackClose(activation_flow);
+              this.props.hideKYCActivationSuccessModal();
+            }}
+            onGoToDashboard={() => {
+              iaActivations.trackClose(activation_flow);
+              this.onInstantActivationSuccess();
+            }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
           />
         )}
-        {showKYCDetails && <KycDetailsModal onClose={hideKYCDetailsModal} />}
+        {showKYCDetails && (
+          <KycDetailsModal
+            onClose={() => {
+              iaActivations.trackCloseKYCDetails();
+              hideKYCDetailsModal();
+            }}
+            onGiveDetails={() => {
+              iaActivations.trackGiveKYCDetails();
+              hideKYCDetailsModal();
+            }}
+          />
+        )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
       </div>
     );

@@ -595,6 +595,7 @@ export default class ActivationWizard extends React.Component {
         onAction &&
           onAction.trackSubmit({
             type: true,
+            activationFlow: data.data && data.data.activation_flow,
           });
       }
     });

@@ -24,6 +24,7 @@ import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
+import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 import {
   trackPresetChange,
@@ -209,7 +210,7 @@ class AnalyticsDesktop extends Component {
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
-              <PersonaliseBanner />
+              <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
         </div>

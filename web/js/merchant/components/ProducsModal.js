@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
-export default ({ onClose, onBack }) => {
+export default ({ onClose, onBack, track }) => {
   return (
     <ModalMask>
       <Modal className="products-suite-modal" onClose={onClose}>
         <div className="product-suite">
           <h1>
-            <i class="i i-arrow-back cursor-pointer" onClick={onBack} />
+            <i className="i i-arrow-back cursor-pointer" onClick={onBack} />
             <span>Our Product Suite</span>
           </h1>
           <p>
@@ -28,7 +28,12 @@ export default ({ onClose, onBack }) => {
             </li>
             */}
             <li>
-              <Link to="/paymentlinks">
+              <Link
+                to="/paymentlinks"
+                onClick={() => {
+                  track.trackProductClick('Payment Links');
+                }}
+              >
                 <img src="/dist/css/assets/symbols/pl.svg" />
                 <p className="text-primary">Payment Links</p>
                 <p>Create & share Payment Links via SMS, Email etc.</p>
@@ -36,7 +41,12 @@ export default ({ onClose, onBack }) => {
               </Link>
             </li>
             <li>
-              <Link to="/invoices">
+              <Link
+                to="/invoices"
+                onClick={() => {
+                  track.trackProductClick('Invoices');
+                }}
+              >
                 <img src="/dist/css/assets/symbols/inv.svg" />
                 <p className="text-primary">Invoices</p>
                 <p>Create & send GST compliant Invoices</p>

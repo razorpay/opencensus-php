@@ -310,7 +310,7 @@ export default class SubscriptionDetailsContainer extends Component {
       affirmativePendingLabel: 'Charging...',
       abortLabel: "No, don't!",
       action: () => {
-        return paymentManualAttempt(invoiceId)
+        return paymentManualAttempt(subscriptionId, invoiceId)
           .then(response => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Subscriptions',
