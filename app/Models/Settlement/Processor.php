@@ -322,7 +322,7 @@ class Processor extends Base\Core
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
-        $txns = $this->repo->transaction->fetchUnsettledTransactions(
+        $txns = $this->repo->transaction->fetchTransactionsForSettlement(
                     $settledAtCutOff, $channel, $inMids, $notInMids);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
