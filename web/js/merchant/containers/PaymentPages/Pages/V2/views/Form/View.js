@@ -39,7 +39,6 @@ export default class View extends React.PureComponent {
 
     this.creatorStructure = {
       width,
-      top: offset(e.target).top,
       left: offset(parent).left - 44,
     };
 
@@ -196,10 +195,10 @@ const Creator = ({ children, creatorStructure }) => {
         showCloseBtn={false}
         style={{
           width: creatorStructure.width,
-          top: creatorStructure.top,
+          top: '50%',
           left: creatorStructure.left,
-          margin: '12px 0 80px',
-          transform: 'none',
+          margin: '12px 0 0',
+          transform: 'translateY(-50%)',
         }}
       >
         <ModalContent class="paymentlinks-creator">{children}</ModalContent>
