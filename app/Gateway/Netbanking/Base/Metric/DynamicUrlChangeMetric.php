@@ -17,8 +17,6 @@ class DynamicUrlChangeMetric
 
     const BANK_NEW_URL           = 'bank_new_url';
 
-    const CHANGED                = 'changed';
-
     public function getDimensions($input, $oldUrl, $newUrl)
     {
         $bank = $this->getBank($input);
@@ -29,7 +27,6 @@ class DynamicUrlChangeMetric
             self::BANK_ID       => $bank,
             self::BANK_OLD_URL  => $oldUrl,
             self::BANK_NEW_URL  => $newUrl,
-            self::CHANGED       => $changed ? '1' : '0',
         ];
 
         return $dimensions;
@@ -49,8 +46,8 @@ class DynamicUrlChangeMetric
     {
         $dimensions = $this->getDimensions($input, $oldUrl, $newUrl);
 
-        $dynamicUrlMetric = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
+//        $dynamicUrlMetric = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 
-        $dynamicUrlMetric->count(self::NETBANKING_DYNAMIC_URL, 1, $dimensions);
+        app('trace')->count(self::NETBANKING_DYNAMIC_URL, $dimensions);
     }
 }
