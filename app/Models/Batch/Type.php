@@ -100,6 +100,16 @@ class Type
         self::AUTH_LINK,
     ];
 
+    /**
+     * Following batch types get processed via Keubernetes Job, this is used for long
+     * running batches.
+     *
+     * @var array
+     */
+    public static $kubernetesJobGroup = [
+        self::PAYMENT_LINK,
+    ];
+
     public static function exists(string $type)
     {
         $key = __CLASS__ . '::' . strtoupper($type);
@@ -132,6 +142,11 @@ class Type
     public static function isQueueGroup(string $type): bool
     {
         return in_array($type, self::$queueGroup, true);
+    }
+
+    public static function isKubernetesJobGroup(string $type): bool
+    {
+        return in_array($type, self::$kubernetesJobGroup, true);
     }
 
     public static function isAppType(string $type): bool
