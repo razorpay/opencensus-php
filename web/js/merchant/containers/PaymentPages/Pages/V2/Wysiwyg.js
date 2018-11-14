@@ -175,6 +175,21 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={title}
           description={description}
           trackerFn={function() {}}
+          AddonAction={
+            <div class="label--faded m-t">
+              You can customize this url from{' '}
+              <Button.Transparent
+                type="submit"
+                class="Button--Link"
+                onClick={() => {
+                  this.props.closeModal();
+                  this.setState({ isSettingsOpened: true });
+                }}
+              >
+                Page Settings
+              </Button.Transparent>
+            </div>
+          }
         />
       ),
     });
@@ -202,8 +217,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
+    const isEditExistingId = this.props.id;
+
     // In edit mode
-    if (this.props.id) {
+    if (isEditExistingId) {
       editPaymentPage(this.props.id, payload)
         .then(resp => {
           if (resp.data) {
@@ -217,6 +234,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             this.setState({
               isSettingsOpened: false,
             });
+
+            const entityId = resp.data.id;
+
+            this.openPPShareView(
+              entityId,
+              resp.data.short_url,
+              resp.data.title,
+              resp.data.description
+            );
           }
         })
         .catch(({ errors }) => {
@@ -283,23 +309,23 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return requestAPIPromise
       .then(resp => {
         if (resp.data) {
+          const entityId = resp.data.id;
+
           if (isEditExistingId) {
             this.props.showNotification({
               type: 'success',
               message: 'Paymentpage is successfully Saved and Published',
             });
           } else {
-            const entityId = resp.data.id;
-
             this.props.history.push(`/paymentpages/${entityId}/edit`);
-
-            this.openPPShareView(
-              entityId,
-              resp.data.short_url,
-              resp.data.title,
-              resp.data.description
-            );
           }
+
+          this.openPPShareView(
+            entityId,
+            resp.data.short_url,
+            resp.data.title,
+            resp.data.description
+          );
         } else {
           throw new Error(resp.errors);
         }

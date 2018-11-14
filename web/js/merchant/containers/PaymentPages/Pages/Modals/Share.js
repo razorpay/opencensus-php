@@ -29,6 +29,7 @@ export default ({
   url,
   title,
   description,
+  AddonAction,
   ...props
 }) => {
   function onSubmit(formData) {
@@ -192,11 +193,7 @@ export default ({
                   </Button.Primary>
                 </CustomClipboard>
               </div>
-              {isPaymentPagesV2 && (
-                <div class="label--faded m-t">
-                  You can customize this url from <b>Page Settings</b>
-                </div>
-              )}
+              {AddonAction}
             </div>
           )}
 
