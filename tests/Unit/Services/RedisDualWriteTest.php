@@ -21,12 +21,16 @@ class RedisDualWriteTest extends TestCase
 
     public function testMutexAcquireMethod()
     {
-        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['set'])->getMock();
+        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set'])->getMock();
+
+        $requestId = $this->app['request']->getId();
 
         $redisMock->expects($this->exactly(2))->method('set')->will($this->returnValue(true));
 
+        $redisMock->expects($this->exactly(2))->method('get')->will($this->returnValue($requestId));
+
         Redis::shouldReceive('connection')
-               ->times(2)
+               ->times(4)
                ->andReturn($redisMock);
 
         $response = $this->mutex->acquire('test', 60);
@@ -36,15 +40,18 @@ class RedisDualWriteTest extends TestCase
 
     public function testMutexAcquireMethodException()
     {
-        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['set', 'del'])->getMock();
+        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set', 'del'])->getMock();
+
+        $requestId = $this->app['request']->getId();
 
         $redisMock->expects($this->exactly(1))->method('set')->willThrowException(new \Predis\Response\ServerException('Internal Error'));
 
+        $redisMock->expects($this->exactly(2))->method('get')->will($this->returnValue($requestId));
+
         $redisMock->expects($this->exactly(2))->method('del')->will($this->returnValue(true));
 
-
         Redis::shouldReceive('connection')
-               ->times(2)
+               ->times(4)
                ->andReturn($redisMock);
 
         $response = $this->mutex->acquire('test', 60);
@@ -94,14 +101,14 @@ class RedisDualWriteTest extends TestCase
 
         $redisMock->expects($this->exactly(2))->method('set')->will($this->returnValue(true));
 
-        $redisMock->expects($this->exactly(3))->method('get')->will($this->returnValue($requestId));
+        $redisMock->expects($this->exactly(5))->method('get')->will($this->returnValue($requestId));
 
         $redisMock->expects($this->exactly(2))->method('del')->will($this->returnValue(1));
 
         $redisMock->expects($this->exactly(1))->method('ttl')->will($this->returnValue(60));
 
         Redis::shouldReceive('connection')
-               ->times(8)
+               ->times(10)
                ->andReturn($redisMock);
 
         $response = $this->mutex->acquire('test', 60);

@@ -14,6 +14,7 @@ final class Shield
     const INPUT                   = 'input';
     const MERCHANT_NAME           = 'merchant_name';
     const MERCHANT_CATEGORY       = 'merchant_category';
+    const MERCHANT_CATEGORY_CODE  = 'merchant_category_code';
     const MERCHANT_RISK_THRESHOLD = 'merchant_risk_threshold';
     const MERCHANT_WEBSITE        = 'merchant_website';
     const ID                      = 'id';
