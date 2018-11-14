@@ -1,3 +1,4 @@
+import { classList } from 'common/util';
 import Input from 'component/Input';
 
 export default class extends React.Component {
@@ -14,7 +15,7 @@ export default class extends React.Component {
     const fakeEle = window.document.querySelector('#title .fake-textarea');
 
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 6 is the vertical padding(top+bottom) size of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
     target.style.height = this.elHeight;
   }
 
@@ -25,8 +26,14 @@ export default class extends React.Component {
   }
 
   render() {
+    const ele = document.body.querySelector('#title textarea[name="title"]');
+    const hasVal = ele ? ele.value : this.props.title;
+
     return (
-      <div id="title" class="title title--big">
+      <div
+        id="title"
+        class={classList('title title--big', !hasVal && 'Input-highlight')}
+      >
         <div class="fake-textarea" />
         <Input.Textarea
           name="title"

@@ -1,5 +1,5 @@
+import { classList } from 'common/util';
 import Input from 'component/Input';
-import Button from 'component/Button';
 
 const DESC_LIMIT = {
   DESKTOP: 720,
@@ -27,7 +27,7 @@ export default class extends React.PureComponent {
     );
 
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 10 is the vertical padding(top+bottom) size of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + 22 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
     target.style.height = this.elHeight;
   }
 
@@ -38,8 +38,13 @@ export default class extends React.PureComponent {
   }
 
   render() {
+    const ele = document.body.querySelector(
+      '#description textarea[name="description"]'
+    );
+    const hasVal = ele ? ele.value : this.props.description;
+
     return (
-      <div id="description">
+      <div id="description" class={classList(!hasVal && 'Input-highlight')}>
         <div class="fake-textarea" />
         <Input.Textarea
           name="description"
