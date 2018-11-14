@@ -1,0 +1,25 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "address",
+        "beneficiary_name",
+        "validated"
+    ],
+    "properties": {
+        "address": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)@(.*)$"
+        },
+        "beneficiary_name": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "validated": {
+            "type": "boolean"
+        }
+    }
+}

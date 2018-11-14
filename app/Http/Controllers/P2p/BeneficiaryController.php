@@ -18,7 +18,7 @@ class BeneficiaryController extends Controller
         return $this->response($response);
     }
 
-    public function validate()
+    public function validateBeneficiary()
     {
         $input = $this->request()->all();
 

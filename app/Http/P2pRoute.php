@@ -171,8 +171,8 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BENEFICIARIES_VALIDATE =>
             [
                 'post',
-                'customers/{customer_id}/beneficiaries',
-                'BeneficiaryController@validate'
+                'customers/{customer_id}/beneficiaries/validate',
+                'BeneficiaryController@validateBeneficiary'
             ],
         Requests::P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL =>
             [
