@@ -40,7 +40,10 @@ export default class View extends React.PureComponent {
       return null;
     }
 
-    if (paymentPageEntity.id && !paymentPageEntity.title) {
+    if (
+      paymentPageEntity.id &&
+      typeof paymentPageEntity.title === 'undefined'
+    ) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
