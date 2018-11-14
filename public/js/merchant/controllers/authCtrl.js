@@ -174,16 +174,10 @@ app
         $scope.signup.data.invitation = $location.search().invitation;
 
         // Get invitation details
-        var data = {
-          route_name: 'invitation_fetch_by_token',
-          url_params: {
-            '{token}': $scope.signup.data.invitation,
-          },
-        };
-        var request = $http.get('/guest/generic', {
-          params: data,
-        });
-        request
+        $http
+          .get(
+            '/user/api/live/invitations/token/' + $scope.signup.data.invitation
+          )
           .success(function(data) {
             if (data.success) {
               $scope.signup.data.email = data.data.email;
@@ -198,19 +192,11 @@ app
         $scope.signup.data.merchant_invitation = $location.search().merchant_invitation;
 
         // Get invitation details
-        $http({
-          url: '/admin/generic',
-
-          method: 'GET',
-
-          params: {
-            route_name: 'admin_lead_verify',
-
-            url_params: {
-              '{token}': $scope.signup.data.merchant_invitation,
-            },
-          },
-        })
+        $http
+          .get(
+            '/user/api/live/admin-lead/verify/' +
+              $scope.signup.data.merchant_invitation
+          )
           .success(function(data) {
             if (data.success) {
               var form_data = data.data.form_data;
