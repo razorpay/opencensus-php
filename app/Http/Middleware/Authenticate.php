@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\P2pRoute;
 use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 
@@ -113,7 +114,7 @@ class Authenticate
         {
             $ret = $this->ba->privateAuth();
         }
-        else if (in_array($route, Route::$p2p, true) === true)
+        else if (in_array($route, P2pRoute::$p2p, true) === true)
         {
             // Currently we are going with private auth for all p2p apis
             // as these are serve over s2s, later according to use case

@@ -12,8 +12,6 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 final class Route
 {
-    use P2pRouteTrait;
-
     protected static $apiRoutes = [
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
@@ -640,7 +638,7 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
 
         // UPI
-        'p2p_fetch_private'                        => ['get',      'p2ps/{id}',                                      'P2pController@getP2p'                                              ],
+        'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'vpa_fetch_private'                        => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
         'device_create'                            => ['post',     'upi/devices',                                    'DeviceController@createDevice'                                     ],
@@ -2622,7 +2620,7 @@ final class Route
         // only if the same is not required in route parameters in which case it will be there in $parameters already.
         if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
         {
-            if (str_contains(self::getAllRoutes()[$routeName][1], '{x_entity_id}') === false)
+            if (str_contains(self::$apiRoutes[$routeName][1], '{x_entity_id}') === false)
             {
                 $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
             }
@@ -2731,7 +2729,7 @@ final class Route
         $doNotLogUrls = [
             'v1/payments/create/jsonp',
             'payments/create/jsonp',
-            self::getAllRoutes()['payment_create_jsonp'][1],
+            self::$apiRoutes['payment_create_jsonp'][1],
             'v1/payments',
             'v1/payments/create',
             'v1/payments/create/recurring',
@@ -2768,7 +2766,7 @@ final class Route
 
     protected function addRoute($name)
     {
-        $info = self::getAllRoutes()[$name];
+        $info = self::$apiRoutes[$name];
 
         $methods = explode(',', $info[0]);
         $uri     = $info[1];
@@ -2827,12 +2825,12 @@ final class Route
 
     public function getApiRouteInCategory($category)
     {
-        return array_intersect_key(self::getAllRoutes(), array_flip(self::$$category));
+        return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
     }
 
     public static function getApiRoute($name)
     {
-        return self::getAllRoutes()[$name];
+        return self::$apiRoutes[$name];
     }
 
     public function isWorkflowExecuteOrApproveCall()
@@ -2909,10 +2907,5 @@ final class Route
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac('sha1', $string, $secret);
-    }
-
-    protected static function getAllRoutes()
-    {
-        return array_merge(self::$apiRoutes, self::$p2pRoutes);
     }
 }

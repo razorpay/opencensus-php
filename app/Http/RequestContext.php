@@ -510,7 +510,7 @@ final class RequestContext
 
     protected function setAdditionalVarsForP2pAuth()
     {
-        if (in_array($this->route, Route::$p2p, true) === true)
+        if (in_array($this->route, P2pRoute::$p2p, true) === true)
         {
             return true;
         }

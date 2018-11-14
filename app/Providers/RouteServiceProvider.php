@@ -3,6 +3,7 @@
 namespace RZP\Providers;
 
 use RZP\Http\Route;
+use RZP\Http\P2pRoute;
 use RZP\Http\Response\Response;
 use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -30,6 +31,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->route = $this->app['api.route'];
 
+        $this->p2pRoute = $this->app['api.p2p.route'];
+
         parent::boot();
     }
 
@@ -43,6 +46,11 @@ class RouteServiceProvider extends ServiceProvider
         $this->app->singleton('api.route', function($app)
         {
             return new Route($app);
+        });
+
+        $this->app->singleton('api.p2p.route', function($app)
+        {
+            return new P2pRoute($app);
         });
 
         $this->app->singleton('api.response', function ($app)
@@ -94,6 +102,23 @@ class RouteServiceProvider extends ServiceProvider
                 $this->mapApiRoutes($router);
             });
 
+
+        $routeGroupP2pParams = [
+            'prefix'        => 'p2p/v1',
+            'namespace'     => $this->namespace . '\\P2p',
+            'middleware'    => [
+                'throttle',
+                'auth',
+            ],
+        ];
+
+        $router->group(
+            $routeGroupP2pParams,
+            function ($router)
+            {
+                $this->mapP2pRoutes($router);
+            });
+
         $this->route->defineAllExtraRoutes();
     }
 
@@ -109,8 +134,17 @@ class RouteServiceProvider extends ServiceProvider
                                               'internal',
                                               'private',
                                               'proxy',
-                                              'device',
-                                              'p2p']);
+                                              'device']);
+            }
+        );
+    }
+
+    protected function mapP2pRoutes(Router $router)
+    {
+        $router->group(
+            [],
+            function($router) {
+                $this->p2pRoute->addRouteGroups(['p2p']);
             }
         );
     }
