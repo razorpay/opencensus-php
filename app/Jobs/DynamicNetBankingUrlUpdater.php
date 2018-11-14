@@ -28,6 +28,8 @@ class DynamicNetBankingUrlUpdater extends Job
 
     const SUCCESS   = 'Success';
 
+    const STATUS    = 'Status';
+
     const ISSUES    = 'Issues';
 
     protected $app = null;
