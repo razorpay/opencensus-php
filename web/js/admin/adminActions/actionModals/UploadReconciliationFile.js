@@ -37,6 +37,7 @@ const gateWayOptions = [
   'Netbanking Icici',
   'Netbanking Corporation',
   'Netbanking Federal',
+  'Netbanking Idfc',
   'Netbanking Rbl',
   'Netbanking Indusind',
   'Netbanking Pnb',
