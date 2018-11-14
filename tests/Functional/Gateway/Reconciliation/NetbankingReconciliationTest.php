@@ -597,7 +597,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->mockReconContentFunction(
             function(& $content, $action = '')
             {
-                $content[1][4] = '1.00';
+                $content[0][4] = '1.00';
             });
 
         $fileContents = $this->generateFile('corporation', []);
@@ -661,7 +661,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->mockReconContentFunction(
             function(& $content, $action = '')
             {
-                $content[1][5] = 'F';
+                $content[0][5] = 'F';
             });
 
         $fileContents = $this->generateFile('corporation', []);

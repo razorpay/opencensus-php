@@ -2093,7 +2093,7 @@ trait Authorize
             ($this->ba->isProxyAuth() === true) and
             (isset($input[Payment\Entity::TOKEN]) === true))
         {
-            $gatewayInput['test_success'] = $input['test_success'];
+            $gatewayInput['test_success'] = boolval($input['test_success']);
         }
     }
 

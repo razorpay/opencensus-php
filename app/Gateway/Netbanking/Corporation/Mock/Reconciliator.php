@@ -18,7 +18,7 @@ class Reconciliator extends Mock\Reconciliator
 
         $this->fileExtension = 'txt';
 
-        $this->fileToWriteName = '12345_' . Carbon::now(Timezone::IST)->format('dmY') . '_CORPBANK';
+        $this->fileToWriteName = '12345_' . Carbon::now(Timezone::IST)->format('dmY') . '_OLT';
 
         parent::__construct();
     }
@@ -46,19 +46,25 @@ class Reconciliator extends Mock\Reconciliator
 
         $netbanking = $input[0]['netbanking'];
 
-        $data = [ReconciliationFields::getPaymentColumnHeaders()];
-
         $data[] = [ '12345',
                     Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('dmY'),
                     $netbanking['bank_payment_id'],
                     $payment['id'],
-                    number_format($payment['amount']/100, 2, '.', ''),
+                    number_format($payment['amount'] / 100, 2, '.', ''),
                     'S',
         ];
 
         $this->content($data);
 
-        return $this->generateText($data, '|');
+        $initialLine = 'HREC|' . $data[0][4] . '|1' . "\r\n";
+
+        $formattedData = $this->generateText($data, '|');
+
+        $finalLine = 'TREC**';
+
+        $formattedData = $initialLine . $formattedData . $finalLine;
+
+        return $formattedData;
     }
 
     //Overriding this base class create file as it creates and excel file

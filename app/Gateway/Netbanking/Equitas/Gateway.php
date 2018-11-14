@@ -173,6 +173,11 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($hashString);
     }
 
+    protected function getLiveSecret()
+    {
+        return $this->input['config']['live_hash_secret'];
+    }
+
     protected function getHashOfString($str)
     {
         return strval(crc32($str));
