@@ -420,12 +420,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::VPA                        => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $upiAxisEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_axis',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $upiHulkTerminalRules = [
