@@ -25,21 +25,17 @@ export default class Form extends Component {
     e.preventDefault();
 
     if (!this.state.pending) {
-      if (this.props.onSubmit instanceof Promise) {
+      let returnValue = this.props.onSubmit(serialize(e.target));
+      if (returnValue instanceof Promise) {
         this.setState({
           pending: true,
         });
 
-        this.props
-          .onSubmit(serialize(e.target))
-          .catch(e => notifyError(e.message))
-          .then(() => {
-            this.setState({
-              pending: false,
-            });
+        returnValue.catch(e => notifyError(e.message)).then(() => {
+          this.setState({
+            pending: false,
           });
-      } else {
-        this.props.onSubmit(serialize(e.target));
+        });
       }
     }
   }
