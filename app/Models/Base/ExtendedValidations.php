@@ -26,6 +26,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
     const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
 
+    const PAN_NUMBER_REGEX       = '/[A-Za-z]{5}\d{4}[A-Za-z]{1}/';
+
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
      * custom rules for integer data type. This list is used by framework for
@@ -462,5 +464,26 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         $isString = $this->validateString($attribute, $value);
 
         return (($isString === true) and (Gstin::isValid($value) === true));
+    }
+
+    protected function validatePan($attribute, $value)
+    {
+        if (is_string($value) === false)
+        {
+            throw new BadRequestValidationFailureException("The $attribute must be a string");
+        }
+
+        $match = preg_match(self::PAN_NUMBER_REGEX, $value);
+
+        //
+        // This should be compared against 1 and not 0 because
+        // preg_match returns either 0 or false in case of failure.
+        //
+        if ($match !== 1)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PAN_FORMAT);
+        }
+
+        return true;
     }
 }
