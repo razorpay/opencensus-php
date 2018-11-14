@@ -2542,6 +2542,7 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
+        'subscription_test_charge',
     ];
 
     /**
