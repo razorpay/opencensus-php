@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
-export default ({ onClose, title, subtitle, content }) => {
+export default ({ onClose, onGoToDashboard, title, subtitle, content }) => {
   return (
     <ModalMask>
       <Modal className="instant-activations-success" onClose={onClose}>
@@ -21,7 +21,7 @@ export default ({ onClose, title, subtitle, content }) => {
               verification.
             </p>
           )}
-          <button className="btn btn-primary" onClick={onClose}>
+          <button className="btn btn-primary" onClick={onGoToDashboard}>
             Go to Dashboard
           </button>
         </modal-body>

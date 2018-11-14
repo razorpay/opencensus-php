@@ -8,6 +8,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 import KycForm from './new';
 import InstantActivation from './Instant';
+import { setInstantActivationsTracking } from './ga_new';
 
 @connect(state => ({ user: state.session.user, session: state.session }))
 export default class ActivationContainer extends Component {
@@ -23,6 +24,10 @@ export default class ActivationContainer extends Component {
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
     this.setAdditionalModalClass = this.setAdditionalModalClass.bind(this);
     this.handleNewData = this.handleNewData.bind(this);
+
+    if (props.user.showInstantActivation) {
+      setInstantActivationsTracking();
+    }
   }
 
   setAdditionalModalClass(additionalModalClass) {

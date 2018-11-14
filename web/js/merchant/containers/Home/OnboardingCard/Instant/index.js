@@ -8,6 +8,15 @@ import TransactionsModal from 'merchant/components/TransactionsHelperModal';
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+import {
+  trackTestModeCard,
+  trackLiveModeCard,
+  trackActivationCard,
+  trackDotClick,
+  trackTransactionsHelper,
+  trackProductsModal,
+  trackClose,
+} from './ga';
 
 let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
 
@@ -36,6 +45,7 @@ export default class OnboardingCardInstant extends Component {
     const hideProductsModal = (this.hideProductsModal = this.hideProductsModal.bind(
       this
     ));
+    this.onClose = this.onClose.bind(this);
 
     if (showProductsModalOnLoad) {
       this.hideProductsModal = () => {
@@ -82,6 +92,8 @@ export default class OnboardingCardInstant extends Component {
   }
 
   hideProductsModal(onHide) {
+    trackProductsModal.trackClose();
+
     this.setState(
       {
         showProducts: false,
@@ -91,6 +103,8 @@ export default class OnboardingCardInstant extends Component {
   }
 
   handleProductsModalBack() {
+    trackProductsModal.trackProductsBack();
+
     this.hideProductsModal(
       () => (
         this.onCloseProductsModal && this.onCloseProductsModal(),
@@ -107,14 +121,22 @@ export default class OnboardingCardInstant extends Component {
   }
 
   hideTransactionsModal() {
+    trackTransactionsHelper.trackClose();
+
     this.setState({
       showTransactionsHelper: false,
       isKLA: false,
     });
   }
 
+  onClose(e) {
+    trackClose();
+
+    return this.props.onClose && this.props.onClose(e);
+  }
+
   render() {
-    const { mode, user, integration, onClose } = this.props,
+    const { mode, user, integration } = this.props,
       {
         has_key_access: hasKeyAccess,
         business_website: businessWebsite,
@@ -156,6 +178,7 @@ export default class OnboardingCardInstant extends Component {
           <ProductsModal
             onClose={this.hideProductsModal}
             onBack={this.handleProductsModalBack}
+            track={trackProductsModal}
           />
         )}
         {showTransactionsHelper && (
@@ -164,6 +187,7 @@ export default class OnboardingCardInstant extends Component {
             isKLA={isKLA}
             showProductsModal={this.showProductsModal}
             showTransactionsModal={this.showTransactionsModal}
+            track={trackTransactionsHelper}
           />
         )}
         <div
@@ -174,10 +198,12 @@ export default class OnboardingCardInstant extends Component {
             <TestModeCard
               {...commonModeCardProps}
               onActive={() => this.setActiveStep(0)}
+              track={trackTestModeCard}
             />
             <ActivationStatusCard
               {...activationCardProps}
               onActive={() => this.setActiveStep(1)}
+              track={trackActivationCard}
             />
             <LiveModeCard
               instantActivation={instantActivation}
@@ -187,6 +213,7 @@ export default class OnboardingCardInstant extends Component {
               showTransactionsModal={this.showTransactionsModal}
               onActive={() => this.setActiveStep(2)}
               {...commonModeCardProps}
+              track={trackLiveModeCard}
             />
           </div>
           <div className="onboarding-illustration-top">
@@ -198,7 +225,7 @@ export default class OnboardingCardInstant extends Component {
           </div>
           {isAccepted &&
             integration.paymentsMade && (
-              <div className="btn-close cursor-pointer" onClick={onClose}>
+              <div className="btn-close cursor-pointer" onClick={this.onClose}>
                 &times;
               </div>
             )}
@@ -210,7 +237,9 @@ export default class OnboardingCardInstant extends Component {
                 activeStep === stepNum ? ' active' : ''
               }`}
               key={stepNum}
-              onClick={() => this.setActiveStep(stepNum)}
+              onClick={() => (
+                trackDotClick(stepNum), this.setActiveStep(stepNum)
+              )}
             />
           ))}
         </div>

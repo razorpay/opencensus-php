@@ -5,12 +5,14 @@ const track = setTrackData({
   eventLabel: 'from Sidebar Banner',
 });
 
-export const trackGoToActivation = () =>
+export const trackGoToActivation = goToForm =>
   track({
-    eventAction: 'Go To - Activation form',
+    eventAction: `Go To - ${goToForm || 'Activation form'}`,
   });
 
-export const trackGoToConfig = () =>
+export const trackGoToConfig = showInstantActivation =>
   track({
-    eventAction: 'Go To - Config',
+    eventAction: `Go To - Config${
+      showInstantActivation ? ' | Instant Activation' : ''
+    }`,
   });

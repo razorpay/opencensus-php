@@ -24,6 +24,7 @@ export default class ActivationCard extends Component {
         isActivated,
         isRejected,
         onActive,
+        track,
       } = nextProps,
       {
         isL1Submitted,
@@ -40,7 +41,11 @@ export default class ActivationCard extends Component {
         <div>
           Give a few details to start transacting immediately
           <div>
-            <Link to="/activation" className="btn btn-primary">
+            <Link
+              to="/activation"
+              className="btn btn-primary"
+              onClick={() => track.activateAccount()}
+            >
               Activate Account
             </Link>
           </div>
@@ -58,7 +63,11 @@ export default class ActivationCard extends Component {
             <div>
               For your business model, we need a few more details for activation
             </div>
-            <Link to="/activation" className="btn btn-primary">
+            <Link
+              to="/activation"
+              className="btn btn-primary"
+              onClick={() => track.fillKyc()}
+            >
               Fill KYC Form
             </Link>
           </div>
@@ -81,7 +90,11 @@ export default class ActivationCard extends Component {
         <span>
           We do not support your selected business model. In case you entered it
           wrong, change it{' '}
-          <Link to="/activation" className="btn-link">
+          <Link
+            to="/activation"
+            className="btn-link"
+            onClick={() => track.refillActivationForm()}
+          >
             here
           </Link>
         </span>
