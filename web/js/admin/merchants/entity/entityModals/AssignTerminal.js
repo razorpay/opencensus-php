@@ -44,6 +44,7 @@ const gatewayMapping = {
   netbanking_icici: 'Netbanking ICICI',
   netbanking_federal: 'Netbanking Federal',
   netbanking_indusind: 'Netbanking Indusind',
+  netbanking_idfc: 'Netbanking Idfc',
   netbanking_rbl: 'Netbanking RBL',
   netbanking_pnb: 'Netbanking PNB',
   netbanking_obc: 'Netbanking OBC',
