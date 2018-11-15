@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     use SoftDeletes;
+
 
     const CUSTOMER_ID       = "customer_id";
 
@@ -24,6 +28,9 @@ class Entity extends Base\PublicEntity
     const RECURRING_STATUS  = "recurring_status";
     const FAILURE_REASON    = "failure_reason";
     const MAX_AMOUNT        = "max_amount";
+    const TOKEN_ID          = "token_id";
+    const TOKEN             = "token";
+    const NOTES             = "notes";
 
     //
     // Auth Type is aadhaar or netbanking
@@ -42,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_TYPE                 => null,
         self::MAX_AMOUNT                => null,
         self::EXPIRE_AT                 => null,
+        self::NOTES                     => [],
     ];
 
     protected $visible = [
@@ -52,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
+        self::NOTES,
         self::EXPIRE_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -62,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::METHOD,
         self::ENTITY,
+        self::NOTES,
         self::RECURRING_STATUS,
         self::FAILURE_REASON,
         self::MAX_AMOUNT,
@@ -74,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
         self::EXPIRE_AT,
+        self::NOTES,
     ];
 
     protected $dates = [
@@ -118,6 +129,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function token()
+    {
+        return $this->belongsTo(Customer\Token\Entity::class);
     }
 
     //

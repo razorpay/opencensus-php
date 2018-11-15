@@ -311,6 +311,7 @@ class Entity
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT       => \RZP\Models\VirtualAccount::class,
+        self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
