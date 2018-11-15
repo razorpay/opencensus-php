@@ -309,7 +309,7 @@ class Activate extends Base\Core
     {
         $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
 
-        $org = $merchant->org ?? $this->repo->org->getRazorpayOrg();
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $plan = $plan->toArrayPublic();
 
@@ -347,7 +347,7 @@ class Activate extends Base\Core
 
     public function notifyMerchantForInstantActivation($merchant)
     {
-        $org = $merchant->org ?? $this->repo->org->getRazorpayOrg();
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
             'merchant' => [

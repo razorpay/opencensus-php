@@ -468,22 +468,9 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validatePan($attribute, $value)
     {
-        if (is_string($value) === false)
-        {
-            throw new BadRequestValidationFailureException("The $attribute must be a string");
-        }
+        $isAlphaNum = $this->validateAlphaNum($attribute, $value);
 
-        $match = preg_match(self::PAN_NUMBER_REGEX, $value);
-
-        //
-        // This should be compared against 1 and not 0 because
-        // preg_match returns either 0 or false in case of failure.
-        //
-        if ($match !== 1)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PAN_FORMAT);
-        }
-
-        return true;
+        return (($isAlphaNum === true) and
+                (preg_match(self::PAN_NUMBER_REGEX, $value) === 1));
     }
 }
