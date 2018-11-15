@@ -306,7 +306,6 @@ export default class TransferNew extends Component {
                       beforeOptionsComponent={() => (
                         <div class="heading">Recent</div>
                       )}
-                      onClick={this.handleClick}
                       onChange={this.handleSelect}
                       onKeyDown={this.handleKeyDown}
                     />
