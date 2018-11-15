@@ -75,6 +75,7 @@ fi
 
 main() {
   initialize
+  touch /app/ready
   app_type=$1
 
   ## Now, based on the app type, call the specific functions
