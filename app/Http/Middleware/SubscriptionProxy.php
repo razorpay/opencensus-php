@@ -238,7 +238,7 @@ class SubscriptionProxy
         // If it's on the proxy list but not on the feature proxy list,
         // that means we can redirect without checking for the feature
         //
-        if ($this->isSubscriptionFeatureProxyRoute() === false)
+        if ($this->route->isSubscriptionFeatureProxyRoute() === false)
         {
             return true;
         }
