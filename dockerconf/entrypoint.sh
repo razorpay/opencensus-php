@@ -1,6 +1,21 @@
 #!/bin/sh
 set -euo pipefail
 
+# Apache exits abruptly on SIGTERM and SIGWINCH has to be sent for it to gracefully stop.
+trap term_to_winch SIGTERM
+
+term_to_winch() {
+  echo "Caught SIGTERM signal!"
+  # We do this so before graceful shutdown we remove the pod from the service by failing the readiness probe.
+  rm -f /app/public/commit.txt
+  # Wait for readiness probe to fail so no additional requests are received
+  sleep 12
+  # Translate the SIGTERM we caught to a SIGWINCH for the child processes
+  kill -s SIGWINCH "$CHILD"
+  wait "$CHILD"
+  echo "Child exited"
+}
+
 fix_permissions(){
   echo  "$(date) Fix permissions"
   cd /app/ && chmod 777 -R storage
@@ -10,13 +25,13 @@ configure(){
   ALOHOMORA_BIN=$(which alohomora)
   echo "casting alohomora - vault,env.php,apache"
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
+  $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 
   ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
-    $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/newrelic.ini.j2"
+    $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "dockerconf/newrelic.ini.j2"
     cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
   fi
 
@@ -40,7 +55,9 @@ start_apache(){
   echo "$(date) Apache"
   mkdir /tmp/run
   chown 0775 /tmp/run/
-  /usr/sbin/httpd -D FOREGROUND
+  /usr/sbin/httpd -D FOREGROUND &
+  CHILD=$!
+  wait "$CHILD"
 }
 
 initialize(){
@@ -56,7 +73,7 @@ fi
 
 ## Do the basic initialization and get the app type
 
-function main {
+main() {
   initialize
   app_type=$1
 
@@ -73,7 +90,7 @@ function main {
     command=$2
     batch_id=$3
     mode=$4
-    php artisan ${command} ${batch_id} ${mode}
+    php artisan "${command}" "${batch_id}" "${mode}"
   elif [[ "${app_type}" == "sqs" ]]; then
     sleep_time=$2
     #['sqs', '10']
@@ -83,7 +100,7 @@ function main {
         exit -1
     else
       echo "starting sqs listener"
-      php artisan queue:work ${app_type} --sleep=${sleep_time}
+      php artisan queue:work "${app_type}" --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs_multi_default" ]]; then
     queue_name=$2
@@ -95,9 +112,10 @@ function main {
         exit -1
     else
       echo "starting sqs listener"
-      php artisan queue:work ${app_type} --queue=${APP_MODE}-${queue_name} --sleep=${sleep_time}
+      php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   fi
 
 }
-main $@
+
+main "$@"
