@@ -235,6 +235,15 @@ class SubscriptionProxy
         }
 
         //
+        // If it's on the proxy list but not on the feature proxy list,
+        // that means we can redirect without checking for the feature
+        //
+        if ($this->isSubscriptionFeatureProxyRoute() === false)
+        {
+            return true;
+        }
+
+        //
         // Doing this check separately so we don't end up
         // fetching merchant features for every single request
         //
