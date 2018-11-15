@@ -459,6 +459,7 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
+        Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_MINDGATE
     ];

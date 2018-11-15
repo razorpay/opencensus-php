@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Base;
+namespace RZP\Gateway\Base;
 
 use RZP\Models\Payment\Gateway;
 
