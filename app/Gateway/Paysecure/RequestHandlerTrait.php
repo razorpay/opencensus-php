@@ -149,8 +149,6 @@ trait RequestHandlerTrait
     //---------------- Soap Request related functions ------------------------
     protected function sendRequest($command, $params)
     {
-        $headers        = $this->getRequestHeaders();
-
         $requestBody    = $this->getRequestBody($params, $command);
 
         try
@@ -164,9 +162,12 @@ trait RequestHandlerTrait
 
             ini_set("default_socket_timeout", 30);
 
-            $soapClient = new SoapClient($this->wsdlDetails['wsdl_file'], $soapClientOptions);
+            $request = [
+                'wsdl' => $this->wsdlDetails['wsdl_file'],
+                'options' => $soapClientOptions
+            ];
 
-            $soapClient->__setSoapHeaders($headers);
+            $soapClient = $this->getSoapClientObject($request);
 
             $response = $soapClient->CallPaySecure($requestBody);
 
@@ -186,7 +187,6 @@ trait RequestHandlerTrait
         }
 
         $arrayResponse = $this->convertToArray($response);
-        sd($arrayResponse);
 
         $this->app['trace']->info(
             TraceCode::GATEWAY_RESPONSE,

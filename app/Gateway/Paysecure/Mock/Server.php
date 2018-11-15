@@ -12,13 +12,6 @@ class Server extends Base\Mock\Server
 
     const TRAN_ID = '100000000000000000000000025236';
 
-    public function getGatewayResponse($command, $params)
-    {
-        $response = $this->runCommandRequest($command, $params);
-
-        return $response;
-    }
-
     protected function runCommandRequest($command, $contentArray)
     {
         switch ($command)
@@ -32,7 +25,7 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function getCheckBin2Response($data)
+    protected function getCheckbin2Response($data)
     {
         // todo: Use constants here
         $response = [
@@ -121,5 +114,35 @@ class Server extends Base\Mock\Server
             'method'  => 'post',
             'content' => $content,
         ];
+    }
+
+    protected function getWsdlFile()
+    {
+        return dirname(__DIR__) . '/Mock/wsdl/rupay.wsdl.test';
+    }
+
+    // @codingStandardsIgnoreStart
+    public function CallPaySecure($request)
+    {
+        $data = html_entity_decode($request->strXML);
+
+        // XML to array
+        $xml = simplexml_load_string($data, "SimpleXMLElement", LIBXML_NOCDATA);
+
+        $data = Paysecure\XmlSerializer::xmlToArray($xml);
+
+        $functionName = 'get' . camel_case($request->strCommand) . 'Response';
+
+        $response = $this->{$functionName}($data);
+
+        $obj = new \stdClass();
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0"?><paysecure></paysecure>');
+
+        Paysecure\XmlSerializer::arrayToXml($response, $xml);
+
+        $obj->CallPaySecureResult = $xml->asXML();
+
+        return $obj;
     }
 }

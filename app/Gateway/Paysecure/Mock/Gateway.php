@@ -14,8 +14,14 @@ class Gateway extends Paysecure\Gateway
         return $this->authorizeMock($input);
     }
 
-    protected function sendRequest($command, $params)
+    protected function getSoapClientObject($request)
     {
-        return (new Server())->getGatewayResponse($command, $params);
+        $soapClient = new SoapClient($request['wsdl'], $request['options']);
+
+        $headers = $this->getRequestHeaders();
+
+        $soapClient->__setSoapHeaders($headers);
+
+        return $soapClient;
     }
 }

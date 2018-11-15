@@ -209,6 +209,18 @@ class Gateway extends Base\Gateway
     // ------------ Callback request helpers end -------------
 
     // ------------ General helpers --------------------------
+
+    protected function getSoapClientObject($request)
+    {
+        $soapClient = new SoapClient($request['wsdl'], $request['options']);
+
+        $headers = $this->getRequestHeaders();
+
+        $soapClient->__setSoapHeaders($headers);
+
+        return $soapClient;
+    }
+
     protected function createGatewayPaymentEntity(array $content)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
