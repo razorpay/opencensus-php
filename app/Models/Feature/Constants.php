@@ -46,7 +46,6 @@ class Constants
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
-    const TERMINAL_BANKS_FILTER           = 'terminal_banks_filter';
     const TPV                             = 'tpv';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
@@ -233,7 +232,6 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
-        self::TERMINAL_BANKS_FILTER           => true,
         self::GOOGLE_PAY                      => true,
         self::EMANDATE_MRN                    => true,
         self::DIWALI_PROMOTIONAL_PLAN         => true,
