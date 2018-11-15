@@ -341,6 +341,11 @@ class Netbanking
                 IFSC::CORP,
             ]
         ],
+        Gateway::NETBANKING_EQUITAS => [
+            'retail' => [
+                IFSC::ESFB
+            ]
+        ],
         Gateway::NETBANKING_AIRTEL => [
             'retail' => [
                 IFSC::AIRP,

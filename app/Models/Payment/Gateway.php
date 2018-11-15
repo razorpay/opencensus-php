@@ -1142,6 +1142,7 @@ class Gateway
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
