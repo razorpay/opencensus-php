@@ -2,7 +2,7 @@ import Input from 'component/Input';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
 
-const infoText = 'Add Terms & Conditions if any';
+const infoText = 'Add Terms & Conditions';
 
 export default class extends React.PureComponent {
   state = { isEditable: false };
@@ -50,6 +50,14 @@ export default class extends React.PureComponent {
                 this.setState({ isEditable: false });
                 this.props.updateData(e);
               }}
+              validator={function(val) {
+                if (!val) {
+                  return;
+                } else if (val.length < 5) {
+                  return 'Value should be minimum 5 characters';
+                }
+              }}
+              minLength="5"
               autoFocus
             />
           </React.Fragment>

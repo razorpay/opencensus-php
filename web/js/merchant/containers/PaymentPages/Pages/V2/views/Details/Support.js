@@ -2,6 +2,7 @@ import Input from 'component/Input';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
 import RemoveBtn from '../RemoveBtn';
+import { isEmail } from 'rzp/utils/validators';
 
 const phoneIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -68,6 +69,13 @@ export default class extends React.PureComponent {
             onBlur={this.props.updateData}
             removeField={this.removeField}
             addButtonLabel="Add Support Email"
+            validator={val => {
+              if (!val) {
+                return;
+              } else if (!isEmail(val)) {
+                return 'Invalid Email';
+              }
+            }}
           />
 
           <SupportSubField

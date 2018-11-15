@@ -43,6 +43,7 @@ export default class extends React.Component {
           onInput={this.handleOnInput}
           onBlur={this.props.updateData}
           maxLength="40"
+          required
         />
         <div class="title-underline" />
       </div>

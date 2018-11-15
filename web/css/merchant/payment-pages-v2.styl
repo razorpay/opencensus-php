@@ -200,8 +200,13 @@
             border-color: $primary-color
             resize: vertical
 
-    .Input-el
-      font-size: 14px
+    .Input
+      .Input-error
+        line-height: 14px
+        font-size: 14px
+
+      .Input-el
+        font-size: 14px
 
     .title--big
       .Input-el
@@ -209,6 +214,15 @@
         font-size: 24px
         line-height: 32px
         font-weight: 600
+        padding: 1px 5px 2px // 1px less cuz of border
+
+      .Input-error
+        line-height: 14px
+        margin-top: -8px
+
+      .fake-textarea
+        line-height: 32px
+        font-size: 24px
 
     textarea.Input-el
       min-height: 30px
@@ -251,13 +265,12 @@
         background: transparent
         color: #0D2366 // Same as in customer-facing view
 
-  .title--big
-    .Input-el
-      padding: 1px 5px 2px // 1px less cuz of border
+    .Input-error
+      margin: -2px 0 4px
 
-    .fake-textarea
-      line-height: 32px
-      font-size: 24px
+    svg
+      vertical-align: top
+      margin-top: 7px
 
 
   #form-section
