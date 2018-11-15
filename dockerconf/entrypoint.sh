@@ -2,8 +2,7 @@
 set -euo pipefail
 
 # Apache exits abruptly on SIGTERM and SIGWINCH has to be sent for it to gracefully stop.
-trap term_to_winch SIGTERM
-
+# This should only run on apache starts not during queue jobs
 term_to_winch() {
   echo "Caught SIGTERM signal!"
   # We do this so before graceful shutdown we remove the pod from the service by failing the readiness probe.
@@ -49,6 +48,7 @@ configure_dark(){
 }
 
 start_apache(){
+  trap term_to_winch SIGTERM
   echo "$(date) Starting Apache"
   export PATH=$PATH:/app/:/app/vendor/bin/
   # start httpd
@@ -67,17 +67,19 @@ initialize(){
 
 ### Check that atleast either webapp or supervisor is specified
 if [ "$#" -eq 0 ]; then
-    echo "Specify app type: < web | supervisor >"
+    echo "Specify app type: < web | web-dark | batch-job | sqs | sqs_multi_default >"
     exit -1
 fi
 
 ## Do the basic initialization and get the app type
-
 main() {
   initialize
-  touch /app/ready
   app_type=$1
-
+  # This is used as the readiness probe for
+  # non-web deployments, such as queues
+  # php artisan queue workers terminate gracefully when
+  # SIGTERM is passed to them: https://github.com/illuminate/queue/blob/fa963ecc830b13feb4d2d5f154b8a280a1c23aa2/Worker.php#L522-L529
+  touch /app/ready
   ## Now, based on the app type, call the specific functions
   if [[ "${app_type}" == "web" ]]; then
     echo "Starting web app"
