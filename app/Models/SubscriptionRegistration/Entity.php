@@ -14,8 +14,7 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     use SoftDeletes;
-
-
+    
     const CUSTOMER_ID       = "customer_id";
 
     //
