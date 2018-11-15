@@ -15,13 +15,13 @@
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
         @include('hostedpage.partials.robot')
-        <meta name="description" content="{{$meta_description}}">
+        <meta name="description" content="{{{ $meta_description }}}">
 
-        <meta property="og:title" content="Payment request by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">
+        <meta property="og:title" content="Payment request by {{{ $data['merchant']['name'] }}} for {{{ $payment_page_data['title'] }}}">
         <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
-        <meta property="og:description" content="{{$meta_description}}">
+        <meta property="og:description" content="{{{ $meta_description }}}">
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
 
