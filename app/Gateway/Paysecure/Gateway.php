@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new SoapClient($request['wsdl'], $request['options']);
+        $soapClient = new \SoapClient($request['wsdl'], $request['options']);
 
         $headers = $this->getRequestHeaders();
 
