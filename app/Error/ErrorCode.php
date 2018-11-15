@@ -551,6 +551,7 @@ class ErrorCode
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                         = 'BAD_REQUEST_REFUND_NOT_IN_CREATED';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                            = 'BAD_REQUEST_REFUND_NOT_SCROOGE';
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                          = 'BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS';
+    const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                                   = 'BAD_REQUEST_REFUND_INVALID_STATE_UPDATE';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                        = 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD';
