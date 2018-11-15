@@ -259,7 +259,7 @@ class P2pHelper
 
     protected function makeUri(string $uri, array $parameters)
     {
-        $prefix = 'p2p/v1/';
+        $prefix = 'v1/upi/';
 
         if ($this->isCustomerInContext === true)
         {

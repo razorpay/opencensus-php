@@ -104,7 +104,7 @@ class RouteServiceProvider extends ServiceProvider
 
 
         $routeGroupP2pParams = [
-            'prefix'        => 'p2p/v1',
+            'prefix'        => 'v1/upi',
             'namespace'     => $this->namespace . '\\P2p',
             'middleware'    => [
                 'throttle',

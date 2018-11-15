@@ -116,10 +116,7 @@ class Authenticate
         }
         else if (in_array($route, P2pRoute::$p2p, true) === true)
         {
-            // Currently we are going with private auth for all p2p apis
-            // as these are serve over s2s, later according to use case
-            // or merchant requirements, we can change the authorization.
-            // But in the end
+            // TODO: We will later separate out routes according to the auth
             $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)
