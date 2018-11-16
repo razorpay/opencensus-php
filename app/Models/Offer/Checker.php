@@ -123,7 +123,7 @@ class Checker extends Base\Core
 
         $card = $this->payment->card;
 
-        $result = ($offerPaymentMethodType === $card->getType());
+        $result = (strtolower($offerPaymentMethodType) === strtolower($card->getType()));
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
             'result'            => $result,
