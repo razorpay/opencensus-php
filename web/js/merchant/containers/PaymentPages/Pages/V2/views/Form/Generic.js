@@ -12,14 +12,7 @@ const CustomTypeOption = ({ option }) => (
   </React.Fragment>
 );
 
-export const GenericField = ({
-  field,
-  onEditField,
-  infoTxt,
-  onFieldDelete,
-  selfIndex,
-  isRemovable,
-}) => {
+export const GenericField = ({ field, onEditField, infoTxt }) => {
   return (
     <EditLayer
       class={classList(
@@ -47,17 +40,7 @@ export const GenericField = ({
           <div class="Field-description">{field.description}</div>
         )}
       </div>
-      {isRemovable && (
-        <span
-          class="action-btn"
-          onClick={e => {
-            onFieldDelete(selfIndex);
-            e.stopPropagation();
-          }}
-        >
-          ×
-        </span>
-      )}
+      {onEditField && <i class="i i-edit" />}
     </EditLayer>
   );
 };
@@ -110,6 +93,7 @@ export class GenericCreator extends React.PureComponent {
       field,
       allFieldsLabelList,
       selfIndex,
+      onFieldDelete,
     } = this.props;
     const { hasDescription, disableSubmit } = this.state;
 
@@ -174,12 +158,26 @@ export class GenericCreator extends React.PureComponent {
           )}
         </div>
         <footer>
-          <button type="button" class="btn-link" onClick={onClose}>
-            Cancel
-          </button>
-          <Button.Primary type="submit" disabled={disableSubmit}>
-            Add
-          </Button.Primary>
+          {!!selfIndex && (
+            <Button.Transparent
+              class="Button--danger"
+              type="button"
+              onClick={e => {
+                onFieldDelete(selfIndex);
+                e.stopPropagation();
+              }}
+            >
+              Delete
+            </Button.Transparent>
+          )}
+          <div class="group-right">
+            <button class="btn-link" type="button" onClick={onClose}>
+              Cancel
+            </button>
+            <Button.Primary type="submit" disabled={disableSubmit}>
+              Add
+            </Button.Primary>
+          </div>
         </footer>
       </Form>
     );

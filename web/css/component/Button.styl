@@ -61,6 +61,13 @@
         display: inline-block // To avoid putting text-decoration
         text-decoration: none
 
+  &.Button--danger
+    color: $textDangerColor
+
+    &:not(:disabled)
+      &:hover
+        color: #c72f2f
+
 .Button--primary
   background-color: $primary-color
   color: #fff

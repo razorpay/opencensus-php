@@ -89,6 +89,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   return isAmountEntitySet ? (
     <EditLayer class={cls} onClick={onAddAmount}>
       {content}
+      <i class="i i-edit" />
     </EditLayer>
   ) : (
     <div class={cls}>{content}</div>

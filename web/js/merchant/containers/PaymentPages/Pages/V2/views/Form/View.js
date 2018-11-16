@@ -73,6 +73,7 @@ export default class View extends React.PureComponent {
   };
 
   onGenericFieldDelete = idx => {
+    this.onCreatorClose();
     this.props.deleteInSchema(idx);
   };
 
@@ -122,13 +123,20 @@ export default class View extends React.PureComponent {
           />
         );
       } else if (activeCreatorType === CreatorType.GENERIC) {
+        const field = FORM_SCHEMA[this.state.activeSchemaIndex] || {};
+        let isRemovable = true;
+        if (['email', 'phone'].indexOf(field.name) > -1) {
+          isRemovable = false;
+        }
+
         editorContent = (
           <GenericCreator
-            field={FORM_SCHEMA[this.state.activeSchemaIndex] || {}}
+            field={field}
             selfIndex={this.state.activeSchemaIndex}
             allFieldsLabelList={FORM_SCHEMA.map(f => f.title)}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
+            onFieldDelete={isRemovable ? this.onGenericFieldDelete : undefined}
           />
         );
       }
@@ -159,11 +167,8 @@ export default class View extends React.PureComponent {
             return (
               <GenericField
                 key={field.name}
-                onFieldDelete={this.onGenericFieldDelete}
-                selfIndex={idx}
                 field={field}
                 infoTxt={infoTxt}
-                isRemovable={['email', 'phone'].indexOf(field.name) === -1} // email and phone are non-removable from FE
                 onEditField={
                   !isDisabled
                     ? e => this.openCreator(e, CreatorType.GENERIC, idx)

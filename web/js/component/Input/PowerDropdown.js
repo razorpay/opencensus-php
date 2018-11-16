@@ -113,7 +113,17 @@ export default class extends React.Component {
         <Label text={label} />
         <div class="Input-content">
           <div class="Input-elWrapper Select-elWrapper">
-            <div onClick={this.toggleExpansion}>
+            <div
+              onClick={this.toggleExpansion}
+              onKeyPress={e => {
+                if (e.which === 13) {
+                  this.toggleExpansion(e);
+                }
+              }}
+              tabIndex="0"
+              onFocus={this.focus}
+              onBlur={this.blur}
+            >
               <input
                 class="Input-el"
                 readOnly
