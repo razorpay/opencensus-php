@@ -303,6 +303,15 @@ return [
         'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
     ],
 
+    'upi_yesbank' => [
+      'test_merchant_id'        => env('UPI_YESBANK_TEST_MERCHANT_ID'),
+      'live_merchant_id'        => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
+      'test_mcc'                => env('UPI_YESBANK_TEST_MCC'),
+      'live_mcc'                => env('UPI_YESBANK_LIVE_MCC'),
+      'test_merchant_key'       => env('UPI_YESBANK_TEST_MERCHANT_KEY'),
+      'live_merchant_key'       => env('UPI_YESBANK_LIVE_MERCHANT_KEY'),
+    ],
+
     'aeps_icici' => [
         'terminal_id'                  => env('AEPS_ICICI_TEST_TERMINAL_ID'),
         'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
@@ -357,14 +366,6 @@ return [
             'live_client_cert' => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT'),
             'live_cert_key'    => env('UPI_MINDGATE_CASHBACK_LIVE_CLIENT_CERT_KEY'),
         ]
-    ],
-
-    'upi_yesbank' => [
-        'test_terminal_password'    => env('UPI_YESBANK_GATEWAY_TEST_SECURE_SECRET'),
-        'gateway_terminal_password' => env('UPI_YESBANK_GATEWAY_SECURE_SECRET'),
-        'cert_dir_name'             => env('UPI_YESBANK_GATEWAY_CERT_DIR'),
-        'client_cert'               => env('UPI_YESBANK_GATEWAY_CLIENT_CERT'),
-        'cert_key'                  => env('UPI_YESBANK_GATEWAY_CERY_KEY'),
     ],
 
     'upi_sbi' => [

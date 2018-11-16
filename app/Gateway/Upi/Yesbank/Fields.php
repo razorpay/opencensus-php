@@ -65,5 +65,48 @@ class Fields
     const PYACCNO                = 'pyaccno';
     const PUAADHAR               = 'puaadhar';
     const PYACCNAME              = 'pyaccname';
+    const PAYER_VPA              = 'payer_vpa';
+    const NPCI_TXN_ID            = 'npci_txn_id';
+    const CUST_REF_ID            = 'cust_ref_id';
+    const PAYER_ACC_NO           = 'payer_acc_no';
+    const PAYER_IFSC_NO          = 'payer_ifsc_no';
+    const PAYER_ACC_NAME         = 'payer_account_name';
+    const ERROR_CODE             = 'error_code';
+    const RESPONSE_ERROR_CODE    = 'response_error_code';
+    const PAYEE_ACC_NAME         = 'payee_account_name';
 
+    const PAYOUT = [
+      self::YBLREFNO,
+      self::ORDERNO,
+      self::AMOUNT,
+      self::DATE,
+      self::STATUSCODE,
+      self::STATUSDESC,
+      self::RESPCODE,
+      self::APPROVALNUM,
+      self::PAYER_VPA,
+      self::NPCI_TXN_ID,
+      self::CUST_REF_ID,
+      self::PAYER_ACC_NO,
+      self::PAYER_IFSC_NO,
+      self::PAYER_ACC_NAME,
+      self::ERROR_CODE,
+      self::RESPONSE_ERROR_CODE,
+      self::TRANSFER_TYPE,
+      self::PAYEE_VPA,
+      self::PAYEE_IFSC,
+      self::PAYEE_ACC_NO,
+      self::PAYEE_AADHAR,
+      self::PAYEE_ACC_NAME,
+      self::ADD1,
+      self::ADD2,
+      self::ADD3,
+      self::ADD4,
+      self::ADD5,
+      self::ADD6,
+      self::ADD7,
+      self::ADD8,
+      self::ADD9,
+      self::ADD10,
+    ];
 }

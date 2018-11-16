@@ -51,4 +51,43 @@ trait Vpa
 
         return $response;
     }
+
+    public function payoutVpa(array $input)
+    {
+        $action = Payment\Action::PAYOUT_VPA;
+
+        // This will throw bad request validation error
+        (new Payment\Validator)->validateInput($action, $input);
+
+        $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
+
+        $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
+
+        // Input, GatewayInput and Response are currently same, we are using different variable
+        // names as make sure there usage are not mixed, and later they all can be different.
+        $gatewayData = $input;
+
+        $success = false;
+
+        foreach ($terminals as $terminal)
+        {
+            try
+            {
+                $gateway = $terminal->getGateway();
+
+                $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+
+                $success = true;
+                break;
+            }
+            catch (Exception\GatewayErrorException $exception)
+            {
+                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
+            }
+        }
+
+        $response['success'] = $success;
+
+        return $response;
+    }
 }

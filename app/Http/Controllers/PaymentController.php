@@ -429,6 +429,21 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayoutVpa()
+    {
+        $input = Request::all();
+
+        $this->trace->info(
+            TraceCode::VPA_PAYOUT_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $data = $this->service()->payoutVpa($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentFlowsPrivate()
     {
         $input = Request::all();

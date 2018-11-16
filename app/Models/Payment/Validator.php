@@ -163,6 +163,12 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $payoutVpaRules = [
+        'vpa'    => 'sometimes|string|filled|max:100|custom',
+        'amount' => 'sometimes|integer',
+        'upi_id' => 'sometimes',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

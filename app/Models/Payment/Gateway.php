@@ -1210,6 +1210,14 @@ class Gateway
             'AK6NMmzbL6FPe4',
         ],
         Mode::TEST => [
+            '100UpiYesbankT',
+        ],
+    ];
+
+    public static $payoutVpaTerminals =[
+        Mode::LIVE => [],
+
+        Mode::TEST => [
             '1000SharpTrmnl',
         ],
     ];
@@ -1673,5 +1681,11 @@ class Gateway
         // Currently we are only using MindGate for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
+    }
+
+    public static function getTerminalsForPayoutVpaForMode(string $mode)
+    {
+        // Currently we have yes bank available for payout
+        return self::$payoutVpaTerminals[$mode];
     }
 }

@@ -1524,4 +1524,12 @@ class Service extends Base\Service
 
         return $payment;
     }
+
+    public function payoutVpa($input)
+    {
+        $data = $this->getNewProcessor()->payoutVpa($input);
+
+        return $data;
+    }
+
 }

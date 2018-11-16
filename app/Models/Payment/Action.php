@@ -40,6 +40,7 @@ class Action
     const VALIDATE_PUSH                 = 'validate_push';
     const AUTHORIZE_PUSH                = 'authorize_push';
     const OTP_RESEND                    = 'otp_resend';
+    const PAYOUT_VPA                    = 'payout_vpa';
 
     protected $merchant;
 

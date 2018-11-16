@@ -8,6 +8,6 @@ class Url
     const TEST_DOMAIN          = 'https://uatsky.yesbank.in:444/app/uat/upi/';
 
     const VALIDATE_VPA         = 'CheckVirtualAddress';
-    const REFUND               = 'mePayServerReqImps';
-    const VERIFY_REFUND        = 'metransactionStatusQuery';
+    const PAYOUT               = 'mePayServerReqImps';
+    const VERIFY_PAYOUT        = 'metransactionStatusQuery';
 }

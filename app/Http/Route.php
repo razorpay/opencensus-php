@@ -112,6 +112,9 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
+        // This route is created for temporary testing and usage of payouts to a vpa, type in the route defines whether
+        // we are making a payout or verifying the payout
+        'vpa_payout'                               => ['post',     'payout/vpa/{type}',                              'PaymentController@postPayoutVpa'                                   ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_mark_processed_bulk'               => ['put',      'refunds/status/processed',                       'RefundController@putRefundMarkProcessedBulk'                       ],
@@ -1152,6 +1155,7 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'vpa_payout'
     ];
 
     // Only routes defined in internalApps go here

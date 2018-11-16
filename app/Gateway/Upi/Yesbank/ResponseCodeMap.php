@@ -1,0 +1,53 @@
+<?php
+
+namespace RZP\Gateway\Upi\Yesbank;
+
+use RZP\Error\ErrorCode;
+
+class ResponseCodeMap
+{
+    const CODESMAP = [
+        'MT01' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,
+        'MT02' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,
+        'MT03' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+        'MT04' => ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED,
+        'MT05' => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED,
+        'MT06' => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
+        'MT07' => ErrorCode::GATEWAY_ERROR_INACTIVE_DORMANT_REMITTER_ACCOUNT,
+        'MT08' => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
+        'MT09' => ErrorCode::GATEWAY_ERROR_INACTIVE_DORMANT_BENEFICIARY_ACCOUNT,
+        'MT10' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, // not sure about mapping
+        'MT11' => ErrorCode::GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED,
+        'MT12' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        'MT13' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        'MT14' => ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST,
+        'MT15' => ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST,
+        'MT16' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+        'MT17' => ErrorCode::BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED,
+        'MT18' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        'MT19' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_ACCOUNT_DOES_NOT_EXIST,
+        'MT20' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        'MT21' => ErrorCode::GATEWAY_ERROR_REMITTER_CUTOFF_IN_PROGRESS,
+        'MT22' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS,
+        'MT23' => ErrorCode::GATEWAY_ERROR_REMITTER_CBS_OFFLINE,
+        'MT24' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_CBS_OFFLINE,
+        'MT25' => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+        'MT26' => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+        'MT27' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED,
+        'MT28' => ErrorCode::GATEWAY_ERROR_REMITTER_TRANSACTION_NOT_PERMITTED,
+        'MT29' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED,
+        'MT30' => ErrorCode::GATEWAY_ERROR_BENEFICIARY_ACCOUNT_BLOCKED,
+        'MT31' => ErrorCode::GATEWAY_ERROR_REMITTER_ACCOUNT_BLOCKED,
+    ];
+
+    public static function getApiErrorCode($code)
+    {
+        if ((empty($code) === true) or
+            (isset(self::CODESMAP[$code]) === false))
+        {
+            return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        }
+
+        return self::CODESMAP[$code];
+    }
+}
