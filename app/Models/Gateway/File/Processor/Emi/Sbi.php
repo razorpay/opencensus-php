@@ -185,7 +185,7 @@ class Sbi extends Base
                     $this->strpad($this->getAuthCode($emiPayment), 6) .
                     Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                     $this->strpad('Razor Pay', 40) .
-                    $this->strpad($mid, 16) .
+                    $this->numpad($mid, 16) .
                     $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
                     $this->strpad($tid, 8) .
                     str_pad(str_pad($rate, 2, '0', STR_PAD_LEFT), 7, '0', STR_PAD_RIGHT) .
