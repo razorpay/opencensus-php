@@ -9,20 +9,20 @@ use RZP\Models\P2p;
 */
 class DeviceController extends Controller
 {
-    public function create()
+    public function startVerification()
     {
         $input = $this->request()->all();
 
-        $response = $this->service->create($input);
+        $response = $this->service->startVerification($input);
 
         return $this->response($response);
     }
 
-    public function fetch()
+    public function getVerificationStatus()
     {
-        $input['id'] = 'device_charpanchkhoye';
+        $input['token'] = $this->request()->route('token');
 
-        $response = $this->service->fetch($input);
+        $response = $this->service->getVerificationStatus($input);
 
         return $this->response($response);
     }
@@ -36,11 +36,11 @@ class DeviceController extends Controller
         return $this->response($response);
     }
 
-    public function delete()
+    public function deregister()
     {
         $input['id'] = 'device_charpanchkhoye';
 
-        $response = $this->service->delete($input);
+        $response = $this->service->deregister($input);
 
         return $this->response($response);
     }

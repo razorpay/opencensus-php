@@ -6,13 +6,8 @@ class Requests
 {
     const P2P_CUSTOMER_START_VERIFICATION                   = 'p2p_customer_start_verification';
     const P2P_CUSTOMER_VERIFICATION_STATUS                  = 'p2p_customer_verification_status';
-    const P2P_CUSTOMER_CREATE                               = 'p2p_customer_create';
-    const P2P_CUSTOMER_DELETE                               = 'p2p_customer_delete';
-
-    const P2P_CUSTOMER_DEVICE_CREATE                        = 'p2p_customer_device_create';
-    const P2P_CUSTOMER_DEVICE_FETCH                         = 'p2p_customer_device_fetch';
-    const P2P_CUSTOMER_DEVICE_REFRESH_TOKEN                 = 'p2p_customer_device_refresh_token';
-    const P2P_CUSTOMER_DEVICE_DELETE                        = 'p2p_customer_device_delete';
+    const P2P_CUSTOMER_REFRESH_TOKEN                        = 'p2p_customer_refresh_token';
+    const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
 
     const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';
     const P2P_CUSTOMER_BA_RETRIEVE                          = 'p2p_customer_ba_retrieve';

@@ -26,9 +26,9 @@ class Constants
 
     // ------------------- CUSTOMERS -------------------
 
-    const GLOBAL_CUSTOMER                                    = 'AglobalCustom1';
+    const RZP_LOCAL_CUSTOMER                                 = 'ArzpLocalCust1';
 
-    const GLOBAL_CUSTOMER_2                                  = 'AglobalCustom2';
+    const RZP_LOCAL_CUSTOMER_2                               = 'ArzpLocalCust2';
 
     // Belongs to GLOBAL_CUSTOMER
     const LOCAL_CUSTOMER                                     = 'AlocalCustom01';
@@ -46,11 +46,6 @@ class Constants
     const LOCAL_CUSTOMERL_BANK_ACCOUNT                       = 'ALC01bankAc001';
     // Belongs to LOCAL_CUSTOMER_2
     const LOCAL_CUSTOMER_2_BANK_ACCOUNT                      = 'ALC02bankAc001';
-
-    // Belongs to GLOBAL_CUSTOMER and NO account
-    const GLOBAL_CUSTOMER_DEFAULT_VPA                        = 'AGC1defaultVpa';
-    // Belongs to GLOBAL_CUSTOMER_2 and NO account
-    const GLOBAL_CUSTOMER_2_DEFAULT_VPA                      = 'AGC2defaultVpa';
 
     // Belongs to LOCAL_CUSTOMER and LOCAL_BANK_ACCOUNT
     const LOCAL_CUSTOMER_VPA                                 = 'ALC01custVpa01';

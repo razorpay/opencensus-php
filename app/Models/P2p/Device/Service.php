@@ -12,16 +12,16 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
-    public function create(array $input): array
+    public function startVerification(array $input): array
     {
-        $response = $this->processor->create($input);
+        $response = $this->processor->startVerification($input);
 
         return $response;
     }
 
-    public function fetch(array $input): array
+    public function getVerificationStatus(array $input): array
     {
-        $response = $this->processor->fetch($input);
+        $response = $this->processor->getVerificationStatus($input);
 
         return $response;
     }
@@ -33,9 +33,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function delete(array $input): array
+    public function deregister(array $input): array
     {
-        $response = $this->processor->delete($input);
+        $response = $this->processor->deregister($input);
 
         return $response;
     }

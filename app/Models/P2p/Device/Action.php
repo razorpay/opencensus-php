@@ -7,11 +7,11 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const CREATE               = 'create';
+    const START_VERIFICATION       = 'startVerification';
 
-    const FETCH                = 'fetch';
+    const GET_VERIFICATION_STATUS  = 'getVerificationStatus';
 
-    const REFRESH_CL_TOKEN     = 'refreshClToken';
+    const REFRESH_CL_TOKEN         = 'refreshClToken';
 
-    const DELETE               = 'delete';
+    const DEREGISTER               = 'deregister';
 }

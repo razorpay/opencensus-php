@@ -20,51 +20,25 @@ final class P2pRoute
             [
                 'post',
                 'customers/verification/start',
-                'CustomerController@startVerification',
+                'DeviceController@startVerification',
             ],
         Requests::P2P_CUSTOMER_VERIFICATION_STATUS =>
             [
                 'get',
                 'customers/verification/{token}',
-                'CustomerController@getVerificationStatus'
+                'DeviceController@getVerificationStatus'
             ],
-        Requests::P2P_CUSTOMER_CREATE =>
+        Requests::P2P_CUSTOMER_REFRESH_TOKEN =>
             [
                 'post',
-                'customers',
-                'CustomerController@create'
-            ],
-        Requests::P2P_CUSTOMER_DELETE =>
-            [
-                'delete',
-                'customers',
-                'CustomerController@delete'
-            ],
-
-        /*************** Devices ******************/
-        Requests::P2P_CUSTOMER_DEVICE_CREATE =>
-            [
-                'post',
-                'customers/{customer_id}/devices',
-                'DeviceController@create'
-            ],
-        Requests::P2P_CUSTOMER_DEVICE_FETCH =>
-            [
-                'get',
-                'customers/{customer_id}/devices',
-                'DeviceController@fetch'
-            ],
-        Requests::P2P_CUSTOMER_DEVICE_REFRESH_TOKEN =>
-            [
-                'post',
-                'customers/{customer_id}/devices/cl_token_refresh',
+                'customer/cl_token_refresh',
                 'DeviceController@refreshClToken'
             ],
-        Requests::P2P_CUSTOMER_DEVICE_DELETE =>
+        Requests::P2P_CUSTOMER_DEREGISTER =>
             [
                 'delete',
-                'customers/{customer_id}/devices',
-                'DeviceController@delete'
+                'customer/deregister',
+                'DeviceController@deregister'
             ],
 
         /*************** Bank Account **************/
@@ -77,43 +51,43 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BA_RETRIEVE =>
             [
                 'get',
-                'customers/{customer_id}/bank_accounts/bank/{bank_code}',
+                'customer/bank_accounts/bank/{bank_code}',
                 'BankAccountController@retrieve'
             ],
         Requests::P2P_CUSTOMER_BA_FETCH_ALL =>
             [
                 'get',
-                'customers/{customer_id}/bank_accounts',
+                'customer/bank_accounts',
                 'BankAccountController@fetchAll'
             ],
         Requests::P2P_CUSTOMER_BA_FETCH =>
             [
                 'get',
-                'customers/{customer_id}/bank_accounts/{ba_id}',
+                'customer/bank_accounts/{ba_id}',
                 'BankAccountController@fetch'
             ],
         Requests::P2P_CUSTOMER_BA_INITIATE_SET_UPI_PIN =>
             [
                 'get',
-                'customers/{customer_id}/bank_accounts/{ba_id}/upipin/initiate',
+                'customer/bank_accounts/{ba_id}/upipin/initiate',
                 'BankAccountController@initiateSetUpiPin'
             ],
         Requests::P2P_CUSTOMER_BA_SET_UPI_PIN =>
             [
                 'post',
-                'customers/{customer_id}/bank_accounts/{ba_id}/upi_pin',
+                'customer/bank_accounts/{ba_id}/upi_pin',
                 'BankAccountController@setUpiPin'
             ],
         Requests::P2P_CUSTOMER_BA_INITIATE_FETCH_BALANCE =>
             [
                 'get',
-                'customers/{customer_id}/bank_accounts/{ba_id}/balance/initiate',
+                'customer/bank_accounts/{ba_id}/balance/initiate',
                 'BankAccountController@initiateFetchBalance'
             ],
         Requests::P2P_CUSTOMER_BA_FETCH_BALANCE =>
             [
                 'post',
-                'customers/{customer_id}/bank_accounts/{ba_id}/balance/',
+                'customer/bank_accounts/{ba_id}/balance/',
                 'BankAccountController@fetchBalance'
             ],
 
@@ -127,37 +101,37 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_CREATE =>
             [
                 'post',
-                'customers/{customer_id}/vpa',
+                'customer/vpa',
                 'VpaController@create'
             ],
         Requests::P2P_CUSTOMER_VPA_FETCH_ALL =>
             [
                 'get',
-                'customers/{customer_id}/vpa',
+                'customer/vpa',
                 'VpaController@fetchAll'
             ],
         Requests::P2P_CUSTOMER_VPA_FETCH =>
             [
                 'get',
-                'customers/{customer_id}/vpa/{vpa_id}',
+                'customer/vpa/{vpa_id}',
                 'VpaController@fetch'
             ],
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT =>
             [
                 'post',
-                'customers/{customer_id}/vpa/{vpa_id}/assign/{ba_id}',
+                'customer/vpa/{vpa_id}/assign/{ba_id}',
                 'VpaController@assignBankAccount'
             ],
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY =>
             [
                 'post',
-                'customers/{customer_id}/vpa/available',
+                'customer/vpa/available',
                 'VpaController@checkAvailability'
             ],
         Requests::P2P_CUSTOMER_VPA_DELETE =>
             [
                 'delete',
-                'customers/{customer_id}/vpa/{vpa_id}',
+                'customer/vpa/{vpa_id}',
                 'VpaController@delete'
             ],
 
@@ -165,19 +139,19 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BENEFICIARIES =>
             [
                 'post',
-                'customers/{customer_id}/beneficiaries',
+                'customer/beneficiaries',
                 'BeneficiaryController@create'
             ],
         Requests::P2P_CUSTOMER_BENEFICIARIES_VALIDATE =>
             [
                 'post',
-                'customers/{customer_id}/beneficiaries/validate',
+                'customer/beneficiaries/validate',
                 'BeneficiaryController@validateBeneficiary'
             ],
         Requests::P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL =>
             [
                 'get',
-                'customers/{customer_id}/beneficiaries',
+                'customer/beneficiaries',
                 'BeneficiaryController@fetchAll'
             ],
 
@@ -185,43 +159,43 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY =>
             [
                 'post',
-                'customers/{customer_id}/transactions/pay/initiate',
+                'customer/transactions/pay/initiate',
                 'TransactionController@initiatePay'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_COLLECT =>
             [
                 'post',
-                'customers/{customer_id}/transactions/collect/initiate',
+                'customer/transactions/collect/initiate',
                 'TransactionController@initiateCollect'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH_ALL =>
             [
                 'get',
-                'customers/{customer_id}/transactions/',
+                'customer/transactions/',
                 'TransactionController@fetchAll'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH =>
             [
                 'get',
-                'customers/{customer_id}/transactions/{transaction_id}',
+                'customer/transactions/{transaction_id}',
                 'TransactionController@fetch'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE =>
             [
                 'get',
-                'customers/{customer_id}/transactions/{transaction_id}/authorize/initiate',
+                'customer/transactions/{transaction_id}/authorize/initiate',
                 'TransactionController@initiateAuthorize'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE =>
             [
                 'post',
-                'customers/{customer_id}/transactions/{transaction_id}/authorize',
+                'customer/transactions/{transaction_id}/authorize',
                 'TransactionController@authorizeTransaction'
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT =>
             [
                 'post',
-                'customers/{customer_id}/transactions/{transaction_id}/reject',
+                'customer/transactions/{transaction_id}/reject',
                 'TransactionController@reject'
             ],
     ];
@@ -229,13 +203,8 @@ final class P2pRoute
     public static $p2p = [
         Requests::P2P_CUSTOMER_START_VERIFICATION,
         Requests::P2P_CUSTOMER_VERIFICATION_STATUS,
-        Requests::P2P_CUSTOMER_CREATE,
-        Requests::P2P_CUSTOMER_DELETE,
-
-        Requests::P2P_CUSTOMER_DEVICE_CREATE,
-        Requests::P2P_CUSTOMER_DEVICE_FETCH,
-        Requests::P2P_CUSTOMER_DEVICE_REFRESH_TOKEN,
-        Requests::P2P_CUSTOMER_DEVICE_DELETE,
+        Requests::P2P_CUSTOMER_REFRESH_TOKEN,
+        Requests::P2P_CUSTOMER_DEREGISTER,
 
         Requests::P2P_BANKS_FETCH_ALL,
         Requests::P2P_CUSTOMER_BA_RETRIEVE,

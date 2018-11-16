@@ -6,22 +6,24 @@ use RZP\Tests\P2p\Service\TestCase;
 
 class DeviceTest extends TestCase
 {
-    public function testDeviceCreate()
+    public function testStartVerification()
     {
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->postCreateDevice();
+        $helper->startVerification();
     }
 
-    public function testDeviceFetch()
+    public function testCustomerVerificationStatus()
     {
+        $token = str_random(16);
+
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->fetchDevice();
+        $helper->fetchVerificationStatus($token);
     }
 
     public function testDeviceRefreshToken()
@@ -33,12 +35,12 @@ class DeviceTest extends TestCase
         $helper->refreshClToken();
     }
 
-    public function testDeviceDelete()
+    public function testDeviceDeregister()
     {
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->deleteDevice();
+        $helper->deregisterDevice();
     }
 }

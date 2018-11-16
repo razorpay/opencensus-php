@@ -263,10 +263,10 @@ class P2pHelper
 
         if ($this->isCustomerInContext === true)
         {
-            $prefix .= 'customers/cust_%s/';
-            $parameters = array_merge([Constants::LOCAL_CUSTOMER], $parameters);
+            $prefix .= 'customer/';
+
         }
 
-        return vsprintf($prefix . $uri , $parameters);
+        return $prefix . $uri;
     }
 }
