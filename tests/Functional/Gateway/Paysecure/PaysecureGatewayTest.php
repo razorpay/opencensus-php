@@ -29,7 +29,35 @@ class PaysecureGatewayTest extends TestCase
     public function testPaymentAuthViaRedirect()
     {
         $authResponse = $this->doAuthPayment($this->payment);
-        sd($this->getDbLastEntityToArray('payment'));
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'id'      => substr($authResponse['razorpay_payment_id'], 4),
+                'status'  => 'authorized',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id'             => $payment['id'],
+                'received'               => true,
+                'status'                 => 'success',
+                'gateway_transaction_id' => '100000000000000000000000025236',
+                'error_code'             => '00',
+                'error_message'          => '',
+                'flow'                   => 'redirect',
+                'apprcode'               => 'apprcode',
+            ],
+            $gatewayPayment
+        );
     }
 
     /**
