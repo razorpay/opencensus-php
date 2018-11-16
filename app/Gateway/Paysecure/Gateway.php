@@ -15,6 +15,13 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'paysecure';
 
+    protected $map = [
+        Fields::ERROR_CODE    => Entity::ERROR_CODE,
+        Fields::ERROR_MESSAGE => Entity::ERROR_MESSAGE,
+        Fields::STATUS        => Entity::STATUS,
+        Fields::APPRCODE      => Entity::APPRCODE,
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -119,6 +126,14 @@ class Gateway extends Base\Gateway
                 $traceData
             );
         }
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $attributes[Entity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $this->getCallbackResponseData($input);
     }

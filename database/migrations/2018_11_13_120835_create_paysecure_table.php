@@ -54,6 +54,9 @@ class CreatePaysecureTable extends Migration
             $table->string(Paysecure::AUTH_NOT_REQUIRED, 5)
                 ->nullable();
 
+            $table->string(Paysecure::APPRCODE, 10)
+                ->nullable();
+
             $table->integer(Paysecure::CREATED_AT);
 
             $table->integer(Paysecure::UPDATED_AT);
