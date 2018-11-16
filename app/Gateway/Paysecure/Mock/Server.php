@@ -145,4 +145,9 @@ class Server extends Base\Mock\Server
 
         return $obj;
     }
+
+    public function RequestorCredentials($request)
+    {
+        return;
+    }
 }

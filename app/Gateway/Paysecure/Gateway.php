@@ -29,11 +29,11 @@ class Gateway extends Base\Gateway
         $this->wsdlDetails =  [
             'header' => [
                 'namespace' => 'https://paysecure/merchant.soap.header/',
-                'key' => 'RequestorCredentials',
+                'key'       => 'RequestorCredentials',
             ],
             'body' => [
                 'namespace' => 'https://paysecure/merchant.soap/',
-                'key' => 'CallPaySecure'
+                'key'       => 'CallPaySecure',
             ],
         ];
 

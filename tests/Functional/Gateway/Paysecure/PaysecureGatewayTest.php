@@ -13,6 +13,8 @@ class PaysecureGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
+
         parent::setUp();
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
@@ -54,7 +56,7 @@ class PaysecureGatewayTest extends TestCase
                 'error_code'             => '00',
                 'error_message'          => '',
                 'flow'                   => 'redirect',
-                'apprcode'               => 'apprcode',
+                'apprcode'               => '183217',
             ],
             $gatewayPayment
         );
@@ -66,7 +68,41 @@ class PaysecureGatewayTest extends TestCase
      */
     public function testUnqualifiedPin()
     {
-        $authResponse = $this->doAuthPayment($this->payment);
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'checkbin2')
+                {
+                    $content['status']                = 'failure';
+                    $content['qualified_internetpin'] = 'FALSE';
+                    $content['errorcode']             = '410';
+                    $content['errormsg']              = 'Invalid BIN';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEmpty($gatewayPayment);
     }
 
     public function testPaymentAuthViaPinPad()
