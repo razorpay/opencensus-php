@@ -860,6 +860,7 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_CORPORATION
     ];
 
     /**
