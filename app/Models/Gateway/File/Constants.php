@@ -31,6 +31,7 @@ class Constants
     const OBC              = 'obc';
     const ISG              = 'isg';
     const SBI              = 'sbi';
+    const CORPORATION      = 'corporation';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -42,6 +43,7 @@ class Constants
             self::CSB,
             self::ISG,
             self::HDFC_EMANDATE,
+            self::CORPORATION
         ],
         Type::CLAIM => [
         ],
@@ -104,6 +106,7 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
+            self::CORPORATION   => ['ibank@corpbank.co.in', 'settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -116,7 +119,7 @@ class Constants
             self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
-            self::IDFC     => ['settlements@razorpay.com'],
+            self::IDFC     => ['idfc.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

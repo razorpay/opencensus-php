@@ -554,7 +554,7 @@ class Server extends Base\Mock\Server
 
         $txn = $this->getRepo()->findByGatewayTransactionIdAndStatus(
               $gatewayTxnId, 'authorized');
-    
+
         if ($txn === null)
         {
             $txn = $this->getRepo()->findByPaymentIdAndStatus(

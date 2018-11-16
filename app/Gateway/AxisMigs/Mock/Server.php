@@ -9,6 +9,7 @@ use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Gateway\AxisMigs\Action;
 
 class Server extends Base\Mock\Server
 {
@@ -212,7 +213,16 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $payment = $this->getGatewayPaymentEntity($input);
+        $refund = $this->getRefundEntity($input);
+
+        if ($refund != null)
+        {
+            $payment = $this->getGatewayPaymentEntity(['vpc_MerchTxnRef' => $refund['payment_id']]);
+        }
+        else
+        {
+            $payment = $this->getGatewayPaymentEntity($input);
+        }
 
         $content = array(
             'vpc_AcqResponseCode'   => '00',
@@ -232,6 +242,12 @@ class Server extends Base\Mock\Server
             'vpc_FoundMultipleDRs'  => 'N',
         );
 
+        if ($refund != null)
+        {
+            $content['vpc_RefundedAmount'] = $refund['amount'];
+            $content['vpc_DRExists']       = 'N';
+        }
+
         $this->content($content, 'verify');
 
         return $this->prepareResponse($content);
@@ -240,6 +256,19 @@ class Server extends Base\Mock\Server
     protected function getGatewayPaymentEntity($input)
     {
         return $this->getRepo()->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+    }
+
+    protected function getRefundEntity($input)
+    {
+        try
+        {
+            return $this->getRefundRepo()->findByMerchantTxnRef($input['vpc_MerchTxnRef']);
+        }
+
+        catch (\Exception $e)
+        {
+            return null;
+        }
     }
 
     protected function addMessageAndResponseCode(array & $content, array $input)
@@ -292,5 +321,10 @@ class Server extends Base\Mock\Server
     protected function getRepo()
     {
         return new AxisMigs\Repository;
+    }
+
+    protected function getRefundRepo()
+    {
+        return new AxisMigs\Mock\Repository;
     }
 }

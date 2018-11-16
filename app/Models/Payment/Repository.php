@@ -44,6 +44,7 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
+        Entity::RECURRING          => 'sometimes|boolean|in:0,1',
         self::EXPAND . '.*'        => 'filled|string|in:card',
     ];
 
@@ -58,6 +59,7 @@ class Repository extends Base\Repository
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
         Entity::BATCH_ID        => 'sometimes|string|size:20',
+        Entity::RECURRING       => 'sometimes|boolean',
         // @codingStandardsIgnoreLine
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
@@ -1316,7 +1318,7 @@ class Repository extends Base\Repository
                     ->with(['localToken', 'globalToken', 'customer', 'merchant'])
                     ->get();
     }
-
+  
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);

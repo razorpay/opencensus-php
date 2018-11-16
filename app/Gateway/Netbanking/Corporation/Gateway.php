@@ -105,10 +105,12 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestDataAndCreateGatewayPayment($input)
     {
+        $merchantName = $input['merchant']->getBillingLabel();
+
         $data = [
             // Setting this as the merchant code shared with us
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
-            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
+            RequestFields::CUSTOMER_ID          => $merchantName,
             RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,

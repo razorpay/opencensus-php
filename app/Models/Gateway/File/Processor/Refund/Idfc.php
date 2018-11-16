@@ -101,7 +101,7 @@ class Idfc extends Base
     protected function getDateFromTimestramp($timestramp)
     {
         $time = Carbon::createFromTimestamp($timestramp,Timezone::IST)
-            ->format('m/d/Y H:i:s');
+            ->format('m/d/Y');
 
         return $time;
     }

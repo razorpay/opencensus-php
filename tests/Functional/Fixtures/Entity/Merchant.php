@@ -53,7 +53,8 @@ class Merchant extends Base
                                 [
                                     'id'            => '10000000000000',
                                     'email'         => 'test@razorpay.com',
-                                    'billing_label' => 'Test Merchant'
+                                    'billing_label' => 'Test Merchant',
+                                    'activated_at'  => time(),
                                 ]);
 
         // Merchant on whom all shared terminals are created

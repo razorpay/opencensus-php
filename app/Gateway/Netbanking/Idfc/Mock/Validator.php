@@ -32,4 +32,3 @@ class Validator extends Base\Validator
         Fields::CHECKSUM                => 'required|string',
     ];
 }
-

@@ -254,6 +254,9 @@ return [
         'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
         'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
         'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
+        'test_access_code'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'   => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'enach_rbl' => [],
@@ -469,7 +472,13 @@ return [
 
     'netbanking_idfc' => [
         'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET')
+        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET'),
+        'live_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'client_certificate'     => env('NETBANKING_IDFC_CLIENT_CERTIFICATE'),
+        'test_client_certificate' => env('NETBANKING_IDFC_TEST_CLIENT_CERTIFICATE'),
+        'live_client_certificate' => env('NETBANKING_IDFC_LIVE_CLIENT_CERTIFICATE'),
+        'cert_dir_name'           => env('NETBANKING_IDFC_CERT_DIR_NAME'),
     ],
 
     'netbanking_icici' => [
@@ -557,6 +566,8 @@ return [
     'netbanking_equitas' => [
         'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
         'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
+        'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
+        'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => [

@@ -187,8 +187,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $featureValidators = [
-        'visible_features',
-        'uneditable_features',
+        'visible_and_editable_features',
+        'mode_for_product_features',
     ];
 
     protected static $editEmailValidators = [
@@ -209,6 +209,10 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $submitSupportCallRequestRules = [
+        'contact' => 'required|contact_syntax',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -233,7 +237,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateUneditableFeatures(array $input)
+    public function validateModeForProductFeatures(array $input)
     {
         $requestedFeatures = array_keys($input['features']);
 
@@ -600,7 +604,14 @@ class Validator extends Base\Validator
         $this->validateInstantActivationMandatoryAttributes();
     }
 
-    public function validateVisibleFeatures(array $input)
+    /**
+     * Ensures that the merchant feature requested is a visible feature and an editable feature.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateVisibleAndEditableFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 
@@ -977,6 +988,15 @@ class Validator extends Base\Validator
         if ($bankAccount === null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+    }
+
+    public function validateNowIsWorkingHour()
+    {
+        if (is_rzp_business_hour() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
     }
 }

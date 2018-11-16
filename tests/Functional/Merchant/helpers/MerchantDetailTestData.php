@@ -770,6 +770,7 @@ return [
             'content' => [
                 'business_subcategory' => 'mutual_fund',
                 'business_category'    => 'financial_services',
+                'business_name'        => 'test'
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -786,10 +787,11 @@ return [
     ],
 
     'testCategoryDetailsSetForOthersCategory' => [
-        'request'  => [
+        'request' => [
             'content' => [
                 'business_category'    => 'others',
                 'business_subcategory' => null,
+                'business_name'        => 'test'
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
@@ -837,14 +839,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
         ],
     ],
 

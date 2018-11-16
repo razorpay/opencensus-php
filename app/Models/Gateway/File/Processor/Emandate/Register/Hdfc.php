@@ -26,9 +26,9 @@ class Hdfc extends Base
         $begin = $this->gatewayFile->getBegin();
         $end   = $this->gatewayFile->getEnd();
 
-        $payments = $this->repo->payment->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
+        $tokens = $this->repo->token->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
 
-        $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
+        $paymentIds = $tokens->pluck('payment_id')->toArray();
 
         $this->trace->info(
             TraceCode::EMANDATE_REGISTER_REQUEST,
@@ -39,7 +39,7 @@ class Hdfc extends Base
                 'end'             => $end,
             ]);
 
-        return $payments;
+        return $tokens;
     }
 
     public function generateData(PublicCollection $payments)
@@ -47,15 +47,15 @@ class Hdfc extends Base
         return $payments;
     }
 
-    protected function formatDataForFile($payments)
+    protected function formatDataForFile($tokens)
     {
         $rows = [];
 
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $token = $payment->getGlobalOrLocalTokenEntity();
+            $paymentId = $token['payment_id'];
 
-            $data = Fields::getEmandateRegistrationData($token, $payment->getId(), $payment->merchant);
+            $data = Fields::getEmandateRegistrationData($token, $paymentId, $token->merchant);
 
             $startDate = Carbon::createFromTimestamp($data[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('d/m/Y');

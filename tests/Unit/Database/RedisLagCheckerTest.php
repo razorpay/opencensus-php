@@ -89,4 +89,3 @@ class RedisLagCheckerTest extends TestCase
         $this->assertNull($result);
     }
 }
-

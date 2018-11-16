@@ -12,6 +12,8 @@ class Reconciliate extends Base\Reconciliate
      */
     const SUCCESS = [
         'razorpayreports'               => self::PAYMENT,
+        'razorpaysireports'             => self::PAYMENT,
+        'razorpaybrokerreports'         => self::PAYMENT,
         'razorpaysoftwarepvtltdreports' => self::PAYMENT,
     ];
 

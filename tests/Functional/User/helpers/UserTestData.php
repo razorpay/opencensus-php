@@ -234,7 +234,7 @@ return [
             ],
         ],
     ],
-    
+
     'testResendVerificationMail' => [
         'request' => [
             'url'     => '/users/resend-verification',

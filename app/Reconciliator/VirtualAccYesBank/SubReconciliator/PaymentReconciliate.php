@@ -85,6 +85,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             ]
         );
 
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::BANK_TRANSFER_UNEXPECTED,
+                'message'       => 'Unexpected bank transfer',
+                'info_code'     => 'PAYMENT_ABSENT',
+                'utr'           => $row[self::COLUMN_UTR],
+                'row'           => $row,
+            ]);
     }
 
     /**

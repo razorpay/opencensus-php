@@ -228,11 +228,13 @@ class Processor extends VirtualAccount\Processor
             $order = $this->virtualAccount->entity;
 
             $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+        }
 
-            if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
-            {
-                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $order);
-            }
+        $merchant = $this->virtualAccount->merchant;
+
+        if ($merchant->isFeeBearerCustomer() === true)
+        {
+            $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $merchant);
         }
 
         return $paymentArray;

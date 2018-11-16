@@ -240,24 +240,50 @@ class ActivationTest extends TestCase
         $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = $this->testData['changeActivationStatus'];
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
 
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
-        $this->startTest();
+        $this->startTest($testData);
 
-        // under_review to needs_clarification
-        $this->changeActivationStatusFromUnderReviewToActivated(
+        // @todo: Lock the form once submitted. Change this to assertTrue then
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');
+        $this->assertFalse($merchantDetail->isLocked());
+
+        // under_review to rejected
+        $this->changeActivationStatus(
             $testData['request']['content'],
-            $testData['response']['content']);
-
-        $this->startTest();
+            $testData['response']['content'],
+            'rejected');
+        $this->startTest($testData);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertFalse($merchant->isLive());
+        $this->assertTrue($merchant->getHoldFunds());
 
+        // rejected to under_review
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'under_review');
+        $this->startTest($testData);
+
+        // under_review to activated
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertTrue($merchant->isLive());
         $this->assertFalse($merchant->getHoldFunds());
+
+        // Changing activation_status to activated should lock the form
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');
+        $this->assertTrue($merchantDetail->isLocked());
     }
 
     /**
@@ -282,11 +308,34 @@ class ActivationTest extends TestCase
         $this->startTest();
     }
 
-    protected function changeActivationStatusFromUnderReviewToActivated(& $requestContent, & $responseContent)
+    public function testPostInstantActivationFetaureCheck()
     {
-        $requestContent['activation_status'] = 'activated';
+        $merchantId = '1cXSLlUU8V9sXl';
 
-        $responseContent['activation_status'] = 'activated';
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->fixtures->edit('merchant', '1cXSLlUU8V9sXl', ['pricing_plan_id' => '1In3Yh5Mluj605', 'international' => 0]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
+    }
+
+    protected function changeActivationStatus(& $requestContent, & $responseContent, $newStatus)
+    {
+        $requestContent['activation_status'] = $newStatus;
+
+        $responseContent['activation_status'] = $newStatus;
     }
 
     protected function getInstantlyActivatedMerchantData()

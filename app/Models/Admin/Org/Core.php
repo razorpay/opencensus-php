@@ -39,6 +39,12 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::EDIT_ORG);
 
+        if (empty($input[Entity::DEFAULT_PRICING_PLAN_ID]) === false)
+        {
+            // validate if the pricing id belongs to same org
+            $this->repo->pricing->getPricingPlanByIdAndOrgId($input[Entity::DEFAULT_PRICING_PLAN_ID], $org->getId());
+        }
+
         $org->edit($input);
 
         $this->repo->transactionOnLiveAndTest(function() use($org, $input)

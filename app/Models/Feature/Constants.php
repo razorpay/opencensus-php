@@ -46,7 +46,6 @@ class Constants
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
-    const TERMINAL_BANKS_FILTER           = 'terminal_banks_filter';
     const TPV                             = 'tpv';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
@@ -96,6 +95,9 @@ class Constants
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
     const GOOGLE_PAY                      = 'google_pay';
     const EMANDATE_MRN                    = 'emandate_mrn';
+    const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
+    const CUSTOMER_ADDRESS                = 'customer_address';
+    const IRCTC_METHODS                   = 'irctc_methods';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -125,6 +127,8 @@ class Constants
 
     const CHECKOUT_FEATURES = [
         self::GOOGLE_PAY,
+        self::CUSTOMER_ADDRESS,
+        self::IRCTC_METHODS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -228,9 +232,11 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
-        self::TERMINAL_BANKS_FILTER           => true,
-        self::EMANDATE_MRN                    => true,
         self::GOOGLE_PAY                      => true,
+        self::EMANDATE_MRN                    => true,
+        self::DIWALI_PROMOTIONAL_PLAN         => true,
+        self::CUSTOMER_ADDRESS                => true,
+        self::IRCTC_METHODS                   => true,
     ];
 
     // Entity type constants
@@ -310,6 +316,8 @@ class Constants
     /**
      * Features that merchants can enable/disable
      * Must be defined in the visibleFeaturesMap
+     * The features defined here which are a part of the PRODUCT_FEATURES array,
+     * will not be editable by the merchant in the live mode.
      *
      * @var array
      */

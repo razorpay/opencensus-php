@@ -309,4 +309,18 @@ class CustomerController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    /**
+     * @param string $customerId
+     *
+     * @return mixed
+     */
+    public function postCustomerWalletPayout(string $customerId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processCustomerWalletPayout($customerId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -43,11 +43,11 @@ class MutexTest extends TestCase
         $payment = $this->defaultAuthPayment();
 
         Redis::shouldReceive('set')
-            ->once()
-            ->andReturn(null);
+                ->once()
+                ->andReturn(null);
 
         Redis::shouldReceive('get')
-                ->once()
+                ->twice()
                 ->andReturnUsing(function()
                 {
                     return null;
@@ -72,7 +72,7 @@ class MutexTest extends TestCase
                 ->andReturn(null);
 
         Redis::shouldReceive('get')
-                ->once()
+                ->twice()
                 ->andReturnUsing(function()
                 {
                     return null;
@@ -111,7 +111,7 @@ class MutexTest extends TestCase
                 });
 
         Redis::shouldReceive('get')
-                ->once()
+                ->twice()
                 ->andReturnUsing(function()
                 {
                     return 'false_id';
@@ -124,6 +124,8 @@ class MutexTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
+        $this->requestId = NULL;
+
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturnUsing(function ($resource, $requestId)
@@ -134,7 +136,7 @@ class MutexTest extends TestCase
                 });
 
         Redis::shouldReceive('get')
-                ->once()
+                ->twice()
                 ->andReturnUsing(function()
                 {
                     return $this->requestId;

@@ -606,7 +606,7 @@ class Gateway extends Base\Gateway
 
         $status = $verifyResponse[Fields::RESULT];
 
-        $verify->gatewaySuccess = ($status === Status::SUCCESS);
+        $verify->gatewaySuccess = (($status === Status::SUCCESS) or ($status === Status::CAPTURED));
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
 
@@ -792,8 +792,8 @@ class Gateway extends Base\Gateway
 
         $status = $attributes[Entity::STATUS];
 
-        if (empty($status) === false and
-            trim($status) !== Status::CAPTURED)
+        if ((empty($status) === false) and
+            (trim($status) !== Status::CAPTURED))
         {
             // Error message is sent as status.
             if ($this->isErrorMessage($status) === true)

@@ -36,6 +36,8 @@ class Type
 
     const ENTITY_MAPPING        = 'entity_mapping';
 
+    const AUTH_LINK             = 'auth_link';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -95,6 +97,17 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::PARTNER_SUBMERCHANTS,
         self::ENTITY_MAPPING,
+        self::AUTH_LINK,
+    ];
+
+    /**
+     * Following batch types get processed via Keubernetes Job, this is used for long
+     * running batches.
+     *
+     * @var array
+     */
+    public static $kubernetesJobGroup = [
+        self::PAYMENT_LINK,
     ];
 
     public static function exists(string $type)
@@ -118,9 +131,22 @@ class Type
         }
     }
 
+    public static function validateTypes(array $types)
+    {
+        foreach ($types as $row)
+        {
+            self::validateType($row);
+        }
+    }
+
     public static function isQueueGroup(string $type): bool
     {
         return in_array($type, self::$queueGroup, true);
+    }
+
+    public static function isKubernetesJobGroup(string $type): bool
+    {
+        return in_array($type, self::$kubernetesJobGroup, true);
     }
 
     public static function isAppType(string $type): bool

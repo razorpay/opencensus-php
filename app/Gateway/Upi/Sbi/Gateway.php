@@ -55,9 +55,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        // We validate the input VPA before initiating the collect request
-        $this->validateVpa($input, $gatewayPayment);
-
         $request = $this->getCollectRequestData($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -122,7 +119,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    private function validateVpa(array $input, Base\Entity $gatewayPayment)
+    public function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
 
@@ -131,9 +128,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $responseContent = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE);
-
-        // Update the gateway payment entity
-        $this->updateGatewayPaymentEntity($gatewayPayment, $responseContent);
 
         $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
     }
@@ -177,15 +171,15 @@ class Gateway extends Base\Gateway
         $this->setVerifyStatus($verify);
     }
 
-    private function getValidateVpaRequest(array $input): array
+    private function getValidateVpaRequest(array $payment): array
     {
         $content = [
             RequestFields::REQUEST_INFO => [
                 RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
-                RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                RequestFields::PSP_REFERENCE_NO => random_alpha_string(10),
             ],
             RequestFields::PAYEE_TYPE => [
-                RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA]
+                RequestFields::VIRTUAL_ADDRESS => $payment[Payment\Entity::VPA]
             ],
             RequestFields::VA_REQUEST_TYPE => Constants::VA_REQUEST_TYPE
         ];
@@ -355,7 +349,6 @@ class Gateway extends Base\Gateway
                 'encrypted'  => true,
                 'response'   => $body,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         $encryptedResponse = $this->jsonToArray($body)[ResponseFields::RESPONSE];
@@ -367,7 +360,6 @@ class Gateway extends Base\Gateway
                 'encrypted'  => false,
                 'response'   => $response,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         return $response;
@@ -400,7 +392,6 @@ class Gateway extends Base\Gateway
             [
                 'encrypted'  => false,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'content'    => $content
             ]);
 
@@ -422,7 +413,6 @@ class Gateway extends Base\Gateway
             [
                 'encrypted'  => true,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'request'    => $request
             ]);
 
@@ -505,6 +495,11 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId;
+    }
+
+    protected function getLiveMerchantId()
+    {
+        return $this->terminal['gateway_merchant_id'];
     }
 
     /**

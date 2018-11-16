@@ -72,9 +72,10 @@ class Org extends Base
         $permissions = (new PermissionEntity)->getAllPermissions();
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
-            'id'               => self::HDFC_ORG,
-            'email'            => 'admin@hdfc.com',
-            'cross_org_access' => true,
+            'id'                      => self::HDFC_ORG,
+            'email'                   => 'admin@hdfc.com',
+            'cross_org_access'        => true,
+            'default_pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
         ]);
 
         $org->permissions()->attach($permissions);
@@ -138,9 +139,10 @@ class Org extends Base
 
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
-            'id'               => self::RZP_ORG,
-            'email'            => 'admin@razorpay.com',
-            'cross_org_access' => true,
+            'id'                      => self::RZP_ORG,
+            'email'                   => 'admin@razorpay.com',
+            'cross_org_access'        => true,
+            'default_pricing_plan_id' => '1In3Yh5Mluj605',
         ]);
 
         $org->permissions()->attach($permissions);

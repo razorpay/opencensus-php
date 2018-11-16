@@ -1512,4 +1512,60 @@ class OrderTest extends TestCase
 
         return $feesArray;
     }
+
+    public function testForceAuthorizeAndAutoCaptureOrder()
+    {
+        $this->testCreateAutoCaptureOrder();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'created');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+
+        $server = $this->mockServer('axis_migs')
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content) {
+                            $content['vpc_TxnResponseCode'] = '5';
+                        })->mock();
+
+        $this->setMockServer($server, 'axis_migs');
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $content = $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('axis_migs', true);
+
+        $this->fixtures->merchant->edit($payment['merchant_id'],
+            [
+                'auto_capture_late_auth' => 1
+            ]);
+
+        $content = ['vpc_TransactionNo' => ($gatewayPayment['vpc_TransactionNo'] + 1)];
+
+        $this->resetMockServer();
+
+        $server = $this->mockServer('axis_migs')
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content) {
+                            $content['vpc_TxnResponseCode'] = '0';
+                        })->mock();
+
+        $this->setMockServer($server, 'axis_migs');
+
+        $this->forceAuthorizeFailedPayment($payment['id'], $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
 }

@@ -352,7 +352,7 @@ class Gateway extends Base\Gateway
 
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
-        $this->checkApprovalCode($reverseEntity);
+        $this->checkApprovalCode($reverseEntity, $response, $reverseFields);
 
         return [
             Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
@@ -483,6 +483,16 @@ class Gateway extends Base\Gateway
         return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
     }
 
+    /**
+     * This returns the formatted response expected by Scrooge service.
+     * gatewayResponse key should be a string only, scrooge will save as it is in DB.
+     *
+     * @param bool $success
+     * @param string $statusCode
+     * @param string $gatewayResponse
+     * @param array $refundFields
+     * @return array
+     */
     protected function prepareScroogeResponse(bool $success,
                                               $statusCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
                                               $gatewayResponse = '',
@@ -2101,7 +2111,7 @@ class Gateway extends Base\Gateway
             $this->repo->saveOrFail($gatewayPayment);
         }
 
-        $this->checkApprovalCode($gatewayPayment);
+        $this->checkApprovalCode($gatewayPayment, $response, $attributes);
     }
 
     protected function mockApprovalCodeForS2s(array & $input)
