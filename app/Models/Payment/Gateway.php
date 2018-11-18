@@ -1018,59 +1018,24 @@ class Gateway
             Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
             Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
             Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-            //TODO this list is not accurate
+            //TODO this list is not accurate keeping hdfc for test cases
             Gateway::ENACH_RBL          => [
-                IFSC::ABHY,
-                IFSC::ANDB,
-                IFSC::UTIB,
-                IFSC::BKID,
-                IFSC::MAHB,
-                IFSC::BCBM,
-                IFSC::CNRB,
-                IFSC::CBIN,
-                IFSC::CITI,
-                IFSC::DCBL,
-                IFSC::BKDN,
-                IFSC::FDRL,
-                IFSC::HDFC,
-                IFSC::ICIC,
-                IFSC::IBKL,
-                IFSC::IDFB,
-                IFSC::INDB,
-                IFSC::KKBK,
-                IFSC::ORBC,
-                Netbanking::PUNB_R,
-                IFSC::RATN,
-                IFSC::SRCB,
-                IFSC::SCBL,
-                IFSC::SVCB,
-                IFSC::SYNB,
-                IFSC::ADCC,
-                IFSC::COSB,
-                IFSC::HSBC,
-                IFSC::SUTB,
-                IFSC::UCBA,
-                IFSC::UBIN,
-                IFSC::YESB,
-                IFSC::DBSS,
-                IFSC::BGBX,
-                IFSC::CORP,
-                IFSC::VARA,
-                IFSC::KVBL,
-                IFSC::CSBX,
-                IFSC::TMBL,
-                IFSC::KAIJ,
-                Netbanking::BARB_R,
-                IFSC::TACX,
-                IFSC::SIBL,
-                IFSC::ESFB,
-                IFSC::ACUX,
+                IFSC::HDFC
             ]
         ],
         AuthType::AADHAAR => [
             // This is added here just for test cases
             // We are using UTIB in test cases
-            Gateway::ESIGNER_DIGIO      => [
+            Gateway::ESIGNER_DIGIO     => [
+                IFSC::UTIB,
+            ],
+            Gateway::ESIGNER_LEGALDESK => [
+                IFSC::UTIB,
+            ],
+            Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
+        ],
+        AuthType::AADHAAR_FP => [
+            Gateway::ESIGNER_DIGIO     => [
                 IFSC::UTIB,
             ],
             Gateway::ESIGNER_LEGALDESK => [
@@ -1108,6 +1073,7 @@ class Gateway
      */
     public static $fileBasedEMandateRegistrationGatewaysForAuthType = [
         AuthType::AADHAAR    => [Gateway::ENACH_RBL],
+        AuthType::AADHAAR_FP => [Gateway::ENACH_RBL],
         AuthType::NETBANKING => [Gateway::NETBANKING_HDFC]
     ];
 
