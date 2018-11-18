@@ -98,6 +98,7 @@ class Constants
     const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
     const CUSTOMER_ADDRESS                = 'customer_address';
     const IRCTC_METHODS                   = 'irctc_methods';
+    const SKIP_CVV                        = 'skip_cvv';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -237,6 +238,7 @@ class Constants
         self::DIWALI_PROMOTIONAL_PLAN         => true,
         self::CUSTOMER_ADDRESS                => true,
         self::IRCTC_METHODS                   => true,
+        self::SKIP_CVV                        => true,
     ];
 
     // Entity type constants
