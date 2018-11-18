@@ -1478,7 +1478,7 @@ trait Authorize
      */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true)
+        if ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)
         {
             $method = $payment->getMethod();
 
@@ -1528,7 +1528,6 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-
                     break;
 
                 case Payment\Method::CARD:
@@ -1536,30 +1535,26 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $authType = '3ds';
+
+                        if ($this->canRunIvrFlow($payment) === true)
                         {
+                            $authType = 'otp';
                             $gateway = Payment\Gateway::MPI_BLADE;
-                            $authType = '3ds';
-
-                            if ($this->canRunIvrFlow($payment) === true)
-                            {
-                                $authType = 'otp';
-                                $gateway = Payment\Gateway::MPI_BLADE;
-                            }
-
-                            if ($this->canRunAxisExpressPay($payment) === true)
-                            {
-                                $authType = 'otp';
-                                $gateway = Payment\Gateway::MPI_ENSTAGE;
-                            }
-
-                            $gatewayInput['authenticate'] = [
-                                'gateway'   => $gateway,
-                                'auth_type' => $authType,
-                            ];
                         }
-                    }
 
+                        if ($this->canRunAxisExpressPay($payment) === true)
+                        {
+                            $authType = 'otp';
+                            $gateway = Payment\Gateway::MPI_ENSTAGE;
+                        }
+
+                        $gatewayInput['authenticate'] = [
+                            'gateway'   => $gateway,
+                            'auth_type' => $authType,
+                        ];
+                    }
                     break;
             }
         }

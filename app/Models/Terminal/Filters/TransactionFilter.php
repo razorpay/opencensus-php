@@ -40,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
+        'capability',
     ];
 
     public function methodFilter($terminal)
@@ -784,5 +785,38 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT);
+    }
+
+    public function capabilityFilter(Terminal\Entity $terminal)
+    {
+        if ($terminal->getCapability() === Terminal\Capability::ALL)
+        {
+            return true;
+        }
+
+        $payment = $this->input['payment'];
+
+        switch ($payment->getMethod())
+        {
+            case Method::CARD:
+            case Method::EMI:
+                $allowedNetworks = [Network::MAES, Network::VISA, Network::MC];
+
+                if (in_array($this->input['card']->getNetworkCode(), $allowedNetworks, true) === true)
+                {
+                    return true;
+                }
+                break;
+
+            case Method::EMANDATE:
+                // Only Enach RBL gateway supports only authorization
+                if ($terminal->getGateway() === Gateway::ENACH_RBL)
+                {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 }

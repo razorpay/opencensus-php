@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     const CARDLESS_EMI                  = 'cardless_emi';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
-    const RECURRING                     = 'recurring';
+    const CAPABILITY                    = 'capability';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
     const CURRENCY                      = 'currency';
@@ -124,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::TPV,
         self::TYPE,
+        self::CAPABILITY,
         self::MODE,
         self::CORPORATE,
         self::EXPECTED,
@@ -181,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::CAPABILITY,
         self::EXPECTED,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -218,33 +220,34 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::CATEGORY                    => null,
-        self::NETWORK_CATEGORY            => null,
-        self::GATEWAY_MERCHANT_ID         => null,
-        self::GATEWAY_TERMINAL_ID         => null,
-        self::GATEWAY_TERMINAL_PASSWORD   => null,
-        self::GATEWAY_TERMINAL_PASSWORD2  => null,
-        self::GATEWAY_ACCESS_CODE         => null,
-        self::GATEWAY_SECURE_SECRET       => null,
-        self::GATEWAY_SECURE_SECRET2      => null,
-        self::GATEWAY_RECON_PASSWORD      => null,
-        self::EMI                         => false,
-        self::TPV                         => 0,
-        self::BANK_TRANSFER               => 0,
-        self::TYPE                        => [
+        self::CATEGORY                   => null,
+        self::NETWORK_CATEGORY           => null,
+        self::GATEWAY_MERCHANT_ID        => null,
+        self::GATEWAY_TERMINAL_ID        => null,
+        self::GATEWAY_TERMINAL_PASSWORD  => null,
+        self::GATEWAY_TERMINAL_PASSWORD2 => null,
+        self::GATEWAY_ACCESS_CODE        => null,
+        self::GATEWAY_SECURE_SECRET      => null,
+        self::GATEWAY_SECURE_SECRET2     => null,
+        self::GATEWAY_RECON_PASSWORD     => null,
+        self::EMI                        => false,
+        self::TPV                        => 0,
+        self::BANK_TRANSFER              => 0,
+        self::TYPE                       => [
             Type::NON_RECURRING => '1'
         ],
-        self::MODE                      => Mode::DUAL,
-        self::CORPORATE                 => 0,
-        self::EXPECTED                  => 0,
-        self::CURRENCY                  => self::DEFAULT_CURRENCY,
-        self::EMI_DURATION              => null,
-        self::GATEWAY_ACQUIRER          => null,
-        self::INTERNATIONAL             => 0,
-        self::ENABLED                   => true,
-        self::USED                      => false,
-        self::EMI_SUBVENTION            => null,
-        self::CARDLESS_EMI              => 0,
+        self::CAPABILITY                 => Capability::ALL,
+        self::MODE                       => Mode::DUAL,
+        self::CORPORATE                  => 0,
+        self::EXPECTED                   => 0,
+        self::CURRENCY                   => self::DEFAULT_CURRENCY,
+        self::EMI_DURATION               => null,
+        self::GATEWAY_ACQUIRER           => null,
+        self::INTERNATIONAL              => 0,
+        self::ENABLED                    => true,
+        self::USED                       => false,
+        self::EMI_SUBVENTION             => null,
+        self::CARDLESS_EMI               => 0,
     ];
 
     protected $casts = [
@@ -538,6 +541,11 @@ class Entity extends Base\PublicEntity
     public function setEnabledBanks(array $banksToEnable)
     {
         $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
+    }
+
+    public function setCapability($Capability)
+    {
+        $this->setAttribute(self::CAPABILITY, $capability);
     }
 
     // ---------------------- END SETTERS ----------------------

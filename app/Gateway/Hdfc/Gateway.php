@@ -39,6 +39,7 @@ use RZP\Models\Payment\RecurringType;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Base\Action as BaseAction;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Terminal\Entity as Terminal;
 
 class Gateway extends Base\Gateway
 {
@@ -180,7 +181,6 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
-
     protected $authSecondRecurringRequest = [
         'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_second_recurring',
@@ -208,8 +208,35 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
+    protected $preAuthorizeRequest = [
+        'url' => Hdfc\Urls::PRE_AUTH_URL,
+        'type' => 'pre_authorization',
+        'fields' => [
+            'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
+            'expyear', 'cvv2', 'type', 'member', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
+        ],
+        'headers' => ['Content-Type:text/xml'],
+        'xml' => '',
+        'data' => []
+    ];
+
+    /**
+     * Response received after sending preAuthorizeRequest
+     * @var array
+     */
+    protected $preAuthorizeResponse = [
+        'fields' => [
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+             'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt',
+            ],
+        'type' => 'pre_authorization',
+        'xml' => '',
+        'data' => [],
+        'error' => null
+    ];
+
     protected $debitPinAuthenticationRequest = [
-        'url' => Hdfc\Urls::DEBIT_PIN_AUTHENTICATION_URL,
+        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => 'debit_pin_authentication',
         'fields' => [
             'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
@@ -362,6 +389,22 @@ class Gateway extends Base\Gateway
             return $this->authorizeDebitPin($input);
         }
 
+        if ($input['terminal']['capability'] === Terminal\Capability::AUTHORIZE)
+        {
+            $authenticationGateway = $this->decideAuthenticationGateway($input);
+
+            $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+            if ($authResponse !== null)
+            {
+                $this->persistCardDetailsTemporarily($input);
+
+                return $authResponse;
+            }
+
+            return $this->decideAuthStepAfterEnroll(Payment\Result::NOT_ENROLLED);
+        }
+
         $status = $this->enrollCard($input);
 
         return $this->decideAuthStepAfterEnroll($status);
@@ -492,7 +535,20 @@ class Gateway extends Base\Gateway
 
             $this->verifyCallback($input);
         }
+        else if ($input['terminal'][Terminal::CAPABILITY] === Terminal\Capability::AUTHORIZE)
+        {
+            $this->setCardNumberAndCvv($input);
 
+            $mpiEntity = $this->app['repo']
+                              ->mpi
+                              ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+
+            $input['authenticate'] = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+            $this->postPreAuthRequest($input);
+        }
         else
         {
             $this->validateCallbackGatewayFields($input, $network);

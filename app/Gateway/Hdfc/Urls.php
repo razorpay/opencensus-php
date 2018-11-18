@@ -17,5 +17,5 @@ class Urls
     const AUTH_ENROLLED_URL              = '/servlet/MPIPayerAuthenticationXMLServlet';
     const SUPPORT_PAYMENT_URL            = '/servlet/TranPortalXMLServlet';
 
-    const AUTH_NOT_ENROLLED_URL_DEBIT_SI = '/servlet/PreAuthenticationXMLServlet';
+    const PRE_AUTH_URL                   = '/servlet/PreAuthenticationXMLServlet';
 }
