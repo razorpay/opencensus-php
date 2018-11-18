@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     const CARDLESS_EMI                  = 'cardless_emi';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
-    const CAPABILITY                    = 'capability';
+    const CAPABILITY                    = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
     const CURRENCY                      = 'currency';
