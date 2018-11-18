@@ -48,7 +48,12 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutToVpa()
     {
-        $request = $this->getPayoutRequest();
+        $attributes = [
+            'vpa'       => 'Raj1@yesb',
+            'amount'    => '100',
+        ];
+
+        $request = $this->getPayoutRequest($attributes, 'pay');
 
         $this->ba->privateAuth();
 
@@ -61,25 +66,35 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['vpa']);
         $this->assertNotNull($gatewayEntity['received']);
         $this->assertNotNull($gatewayEntity['merchant_reference']);
-        $this->assertNotNull($gatewayEntity['gateway_merchant_id']);
+        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
         $this->assertNotNull($gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
         $this->assertEquals('pay', $gatewayEntity['type']);
         $this->assertEquals($gatewayEntity['action'], 'payout');
+
+        return $response;
     }
 
     public function testPayoutToVpaFailed()
     {
-        $request = $this->getPayoutRequest();
+        $attributes = [
+            'vpa'       => 'Raj1@yesb',
+            'amount'    => '100',
+        ];
+
+        $request = $this->getPayoutRequest($attributes, 'pay');
 
         $this->ba->privateAuth();
 
         $this->mockServerContentFunction(
             function (& $content, $action = null)
             {
-                $content['statuscode']  = 'F';
-                $content['error_code'] = 'MT01';
+                if ($action === 'payout')
+                {
+                    $content['statuscode']  = 'F';
+                    $content['respcode'] = 'MT01';
+                }
             });
 
         $response = $this->makeRequestAndGetContent($request);
@@ -91,7 +106,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['vpa']);
         $this->assertNotNull($gatewayEntity['received']);
         $this->assertNotNull($gatewayEntity['merchant_reference']);
-        $this->assertNotNull($gatewayEntity['gateway_merchant_id']);
+        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
         $this->assertNotNull($gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
@@ -99,17 +114,165 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals($gatewayEntity['action'], 'payout');
     }
 
-    protected function getPayoutRequest()
+    public function testPayoutVpaVerify()
     {
+        $response = $this->testPayoutToVpa();
+
         $attributes = [
-            'vpa'       => 'Raj1@yesb',
-            'amount'    => '100',
+            'merchant_reference' => $response['merchant_reference'],
         ];
 
+        $this->ba->privateAuth();
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['success']);
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($gatewayEntity['vpa']);
+        $this->assertNotNull($gatewayEntity['received']);
+        $this->assertNotNull($gatewayEntity['merchant_reference']);
+        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
+        $this->assertNotNull($gatewayEntity['status_code']);
+        $this->assertNotNull($gatewayEntity['npci_txn_id']);
+        $this->assertNotNull($gatewayEntity['npci_reference_id']);
+        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals($gatewayEntity['action'], 'payout');
+    }
+
+    public function testPayoutVpaVerifyForFailedPayout()
+    {
+        $this->testPayoutToVpaFailed();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('F', $gatewayEntity['status_code']);
+
+        $attributes = [
+            'merchant_reference' => $gatewayEntity['merchant_reference'],
+        ];
+
+        $this->ba->privateAuth();
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['success']);
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($gatewayEntity['vpa']);
+        $this->assertNotNull($gatewayEntity['received']);
+        $this->assertNotNull($gatewayEntity['merchant_reference']);
+        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
+        $this->assertEquals('S', $gatewayEntity['status_code']);
+        $this->assertNotNull($gatewayEntity['npci_txn_id']);
+        $this->assertNotNull($gatewayEntity['npci_reference_id']);
+        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals($gatewayEntity['action'], 'payout');
+    }
+
+    public function testPayoutVpaVerifyForTimedOutPayout()
+    {
+        $this->testPayoutToVpaFailed();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('F', $gatewayEntity['status_code']);
+
+        $attributes = [
+            'merchant_reference' => $gatewayEntity['merchant_reference'],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'payout_verify')
+                {
+                    $content['status_code']  = 'T';
+                    $content['timed_out_txn_status'] = 'RCC';
+                }
+            });
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['success']);
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($gatewayEntity['vpa']);
+        $this->assertNotNull($gatewayEntity['received']);
+        $this->assertNotNull($gatewayEntity['merchant_reference']);
+        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
+        $this->assertEquals('S', $gatewayEntity['status_code']);
+        $this->assertNotNull($gatewayEntity['npci_txn_id']);
+        $this->assertNotNull($gatewayEntity['npci_reference_id']);
+        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals($gatewayEntity['action'], 'payout');
+    }
+
+    public function testPayoutVpaVerifyFailed()
+    {
+        $this->testPayoutToVpaFailed();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('F', $gatewayEntity['status_code']);
+
+        $attributes = [
+            'merchant_reference' => $gatewayEntity['merchant_reference'],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'payout_verify')
+                {
+                    $content['statuscode']  = 'F';
+                    $content['respcode'] = 'MT01';
+                }
+            });
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('F', $gatewayEntity['status_code']);
+    }
+
+    public function testPayoutVpaVerifyForIncorrectPayoutReference()
+    {
+        $attributes = [
+            'merchant_reference' => '1234',
+        ];
+
+        $this->ba->privateAuth();
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse($response['success']);
+    }
+
+    protected function getPayoutRequest(array $attributes, string $type)
+    {
         $raw = json_encode($attributes);
 
         $request = [
-            'url'      => '/payout/vpa/pay',
+            'url'      => '/payout/vpa/' . $type,
             'method'   => 'post',
             'raw'      => $raw,
             'server'   => [

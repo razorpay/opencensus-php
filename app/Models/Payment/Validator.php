@@ -164,9 +164,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutVpaRules = [
-        'vpa'    => 'sometimes|string|filled|max:100|custom',
-        'amount' => 'sometimes|integer',
-        'upi_id' => 'sometimes',
+        'vpa'    => 'required|string|filled|max:100|custom',
+        'amount' => 'required|integer',
+    ];
+
+    protected static $payoutVpaVerifyRules = [
+        'merchant_reference'    => 'required|string',
     ];
 
     protected static $createValidators = [

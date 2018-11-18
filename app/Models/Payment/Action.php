@@ -41,6 +41,7 @@ class Action
     const AUTHORIZE_PUSH                = 'authorize_push';
     const OTP_RESEND                    = 'otp_resend';
     const PAYOUT_VPA                    = 'payout_vpa';
+    const PAYOUT_VPA_VERIFY             = 'payout_vpa_verify';
 
     protected $merchant;
 

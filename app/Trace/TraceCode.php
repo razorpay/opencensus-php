@@ -695,6 +695,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
     const VPA_DELETED                               = 'VPA_DELETED';
     const VPA_PAYOUT_REQUEST                        = 'VPA_PAYOUT_REQUEST';
+    const VPA_PAYOUT_VERIFY_REQUEST                 = 'VPA_PAYOUT_VERIFY_REQUEST';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';

@@ -304,12 +304,21 @@ return [
     ],
 
     'upi_yesbank' => [
-      'test_merchant_id'        => env('UPI_YESBANK_TEST_MERCHANT_ID'),
-      'live_merchant_id'        => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
-      'test_mcc'                => env('UPI_YESBANK_TEST_MCC'),
-      'live_mcc'                => env('UPI_YESBANK_LIVE_MCC'),
-      'test_merchant_key'       => env('UPI_YESBANK_TEST_MERCHANT_KEY'),
-      'live_merchant_key'       => env('UPI_YESBANK_LIVE_MERCHANT_KEY'),
+      'test_merchant_id'            => env('UPI_YESBANK_TEST_MERCHANT_ID'),
+      'live_merchant_id'            => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
+      'test_mcc'                    => env('UPI_YESBANK_TEST_MCC'),
+      'live_mcc'                    => env('UPI_YESBANK_LIVE_MCC'),
+      'test_merchant_key'           => env('UPI_YESBANK_TEST_MERCHANT_KEY'),
+      'live_merchant_key'           => env('UPI_YESBANK_LIVE_MERCHANT_KEY'),
+      'test_client_id'              => env('UPI_YESBANK_TEST_CLIENT_ID'),
+      'live_client_id'              => env('UPI_YESBANK_LIVE_CLIENT_ID'),
+      'test_client_secret'          => env('UPI_YESBANK_TEST_CLIENT_SECRET'),
+      'live_client_secret'          => env('UPI_YESBANK_LIVE_CLIENT_SECRET'),
+      'test_terminal_password'      => env('UPI_YESBANK_TEST_TERMINAL_PASSWORD'),
+      'gateway_terminal_password'   => env('UPI_YESBANK_GATEWAY_TERMINAL_PASSWORD'),
+      'test_username'               => env('UPI_YESBANK_TEST_USERNAME'),
+      'live_username'               => env('UPI_YESBANK_LIVE_USERNAME'),
+      'cert_dir_name'               => env('UPI_YESBANK_CERTIFICATE_DIRECTORY_NAME')
     ],
 
     'aeps_icici' => [

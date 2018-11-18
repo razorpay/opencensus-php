@@ -43,6 +43,7 @@ class Fields
     const ADD8             = 'add8';
     const ADD9             = 'add9';
     const ADD10            = 'add10';
+    const REFERENCE_ID     = 'reference_id';
 
     const YBLREFNO               = 'yblrefno';
     const ORDERNO                = 'orderno';
@@ -58,7 +59,6 @@ class Fields
     const PRIFSC                 = 'prifsc';
     const PRACCNAME              = 'praccname';
     const ERRORCODE              = 'errorcode';
-    const RESPERRORCODE          = 'resperrorcode';
     const TRANSFERTYPE           = 'transfertype';
     const PYFVADDR               = 'pyfvaddr';
     const PYIFSCCODE             = 'pyifsccode';
@@ -74,6 +74,7 @@ class Fields
     const ERROR_CODE             = 'error_code';
     const RESPONSE_ERROR_CODE    = 'response_error_code';
     const PAYEE_ACC_NAME         = 'payee_account_name';
+    const TIMED_OUT_TXN_STATUS   = 'timed_out_txn_status';
 
     const PAYOUT = [
       self::YBLREFNO,
@@ -108,5 +109,39 @@ class Fields
       self::ADD8,
       self::ADD9,
       self::ADD10,
+    ];
+
+    const PAYOUT_VERIFY = [
+        self::YBLREFNO,
+        self::ORDERNO,
+        self::AMOUNT,
+        self::DATE,
+        self::STATUSCODE,
+        self::STATUSDESC,
+        self::RESPCODE,
+        self::APPROVALNUM,
+        self::PAYER_VPA,
+        self::NPCI_TXN_ID,
+        self::REFERENCE_ID,
+        self::CUST_REF_ID,
+        self::PAYER_ACC_NO,
+        self::PAYER_IFSC_NO,
+        self::PAYER_ACC_NAME,
+        self::PAYEE_VPA,
+        self::PAYEE_IFSC,
+        self::PAYEE_ACC_NO,
+        self::PAYEE_AADHAR,
+        self::PAYEE_ACC_NAME,
+        self::TIMED_OUT_TXN_STATUS,
+        self::ADD1,
+        self::ADD2,
+        self::ADD3,
+        self::ADD4,
+        self::ADD5,
+        self::ADD6,
+        self::ADD7,
+        self::ADD8,
+        self::ADD9,
+        self::ADD10,
     ];
 }

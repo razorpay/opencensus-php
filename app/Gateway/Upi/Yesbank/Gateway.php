@@ -19,6 +19,7 @@ use RZP\Models\Base\UniqueIdEntity;
 
 class Gateway extends Mindgate\Gateway
 {
+    use RequestTrait;
     /**
      * Default request timeout duration in seconds.
      * @var  integer
@@ -26,8 +27,6 @@ class Gateway extends Mindgate\Gateway
     const TIMEOUT = 20;
 
     const ACQUIRER = 'yesbank';
-
-    const HASH_ALGO = 'sha256';
 
     protected $gateway = 'upi_yesbank';
 
@@ -43,222 +42,34 @@ class Gateway extends Mindgate\Gateway
         Entity::AMOUNT                  => Entity::AMOUNT,
         Entity::PAYMENT_ID              => Entity::PAYMENT_ID,
         Entity::MERCHANT_REFERENCE      => Entity::MERCHANT_REFERENCE,
-        Entity::GATEWAY_MERCHANT_ID     => Entity::MERCHANT_REFERENCE,
 
-
-        Fields::STATUSCODE              => Entity::STATUS_CODE,
-        Fields::YBLREFNO                => Entity::GATEWAY_MERCHANT_ID,
+        Fields::YBLREFNO                => Entity::GATEWAY_PAYMENT_ID,
         Fields::NPCI_TXN_ID             => Entity::NPCI_TXN_ID,
         Fields::CUST_REF_ID             => Entity::NPCI_REFERENCE_ID,
         Fields::PAYEE_ACC_NAME          => Entity::NAME,
         Fields::PAYEE_ACC_NO            => Entity::ACCOUNT_NUMBER,
-        Fields::PAYEE_IFSC              => Entity::IFSC
+        Fields::PAYEE_IFSC              => Entity::IFSC,
+        Fields::STATUSCODE              => Entity::STATUS_CODE
     ];
 
-    /**
-     * Authorizes a payment using UPI Gateway
-     * @param  array  $input
-     * @return boolean
-     */
     public function authorize(array $input)
     {
-        if ($this->isLiveMode() === true)
-        {
-            throw new Exception\LogicException('Live payment authorize not available on UPI Yesbank');
-        }
-
-        parent::authorize($input);
-
-        $attributes = $this->getGatewayEntityAttributes($input);
-
-        $payment = $this->createGatewayPaymentEntity($attributes);
-
-        return [
-            'data'   => [
-                'vpa'   => ''
-            ]
-        ];
+        throw new Exception\LogicException('Live payment authorize not available on UPI Yesbank');
     }
 
-    /**
-     * Handles the S2S callback
-     *
-     * @param  array $input
-     *
-     * @return array
-     * @throws Exception\GatewayErrorException
-     * @throws Exception\LogicException
-     */
     public function callback(array $input) :array
     {
-        if ($this->isLiveMode() === true)
-        {
-            throw new Exception\LogicException('Live payment callback not available on UPI Yesbank');
-        }
-
-        parent::callback($input);
-
-        $gatewayPayment = $this->getRepository()->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
-
-        $expectedAmount = $input['payment']['amount'];
-        $actualAmount   = $input['gateway'][Fields::AMOUNT];
-
-        $this->assertAmount($expectedAmount, $actualAmount);
-
-        $this->checkResponseStatus($input['gateway'], Status::SUCCESS);
-
-        $gatewayPayment->fill($this->getMappedAttributes($input['gateway']));
-
-        $gatewayPayment->saveOrFail();
-
-        return [
-            'acquirer' => [
-                Payment\Entity::VPA => $gatewayPayment->getVpa()
-            ]
-        ];
-    }
-
-
-    /**
-     * We only store the VPA, bank and provider because the rest of the fields
-     * are filled by the response
-     * @param  array  $input ,
-     * @return Array
-     */
-    protected function getGatewayEntityAttributes( array $input,
-        string $action = Action::AUTHORIZE,
-        string $type = Base\Type::PAY): array
-    {
-        return [
-            Entity::VPA                 => $input[Entity::VPA],
-            Entity::TYPE                => $type,
-            Entity::ACTION              => $action,
-            Entity::MERCHANT_REFERENCE  => $input[Entity::MERCHANT_REFERENCE],
-            Entity::AMOUNT              => $input[Entity::AMOUNT],
-            // Upi table has a dependency on payments table but currently no payment is present in the context
-            // so adding a dummy value till there is a platform for payout
-            Entity::PAYMENT_ID          => $input[Entity::MERCHANT_REFERENCE],
-        ];
-    }
-
-    public function verifyRefund(array $input)
-    {
-        parent::verify($input);
-
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
-
-        $processedRefunds = $this->getProcessedRefunds();
-
-        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
-        {
-            return false;
-        }
-
-        if (in_array($input['refund']['id'], $processedRefunds) === true)
-        {
-            return true;
-        }
+        throw new Exception\LogicException('Live payment callback not available on UPI Yesbank');
     }
 
     public function refund(array $input)
     {
-        parent::refund($input);
+        throw new Exception\LogicException('Live payment refund not available on UPI Yesbank');
+    }
 
-        $repo = $this->getRepository();
-
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
-
-        $rrn = $gatewayPayment[Entity::NPCI_REFERENCE_ID];
-        $vpa = $input['payment']['vpa'];
-
-        $content = [
-            Fields::PGMERCHANT_ID       => $this->getGatewayMerchantId(),
-            Fields::ORDERNO             => $input['refund']['id'],
-            Fields::TXN_NOTE            => 'Refund for RRN : ' . $rrn,
-            Fields::AMOUNT              => (string) ($input['refund']['amount'] / 100),
-            Fields::CURRENCY            => 'INR',
-            Fields::PAYMENT_TYPE        => 'P2P',
-            Fields::TXN_TYPE            => 'Pay',
-            Fields::MCC                 => '7399',
-            Fields::EXP_TIME            => '',
-            Fields::PAYEE_ACC_NO        => '',
-            Fields::PAYEE_AADHAR        => '',
-            Fields::PAYEE_MB_NO         => '',
-            Fields::PAYEE_VPA           => $vpa,
-            Fields::SUBMERCHANT_ID      => '',
-            Fields::WHITELISTED_ACC     => '',
-            Fields::PAYEE_MMID          => '',
-            Fields::REF_URL             => 'https://razorpay.com',
-            Fields::TRANSFER_TYPE       => 'UPI',
-            Fields::PAYEE_NAME          => 'Razorpay Customer',
-            Fields::PAYEE_ADDRESS       => '',
-            Fields::PAYEE_EMAIL         => '',
-            Fields::PAYER_ACCNO         => '',
-            Fields::PAYER_IFSC          => '',
-            Fields::PAYER_MB_NO         => '',
-            Fields::PAYYE_VPA_TYPE      => 'VPA',
-            Fields::MCC                 => '172.21.14.99',
-            Fields::ADD1                => '',
-            Fields::ADD2                => '',
-            Fields::ADD3                => '',
-            Fields::ADD4                => '',
-            Fields::ADD5                => '',
-            Fields::ADD6                => '',
-            Fields::ADD7                => '',
-            Fields::ADD8                => '',
-            Fields::ADD9                => '',
-            Fields::ADD10               => '',
-        ];
-
-        $decryptedContent = implode('|', $content);
-
-        $encrypted = $this->encryptString($decryptedContent);
-
-        $content = [
-            Fields::PGMERCHANTID    => $this->getGatewayMerchantId(),
-            Fields::REQUESTMSG      => $encrypted,
-        ];
-
-        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'refund');
-
-        $traceRequest['decrypted_content'] = $decryptedContent;
-        $traceRequest['headers'] = $request['headers'] = [
-            'Content-Type' => 'application/json'
-        ];
-
-        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::GATEWAY_REFUND_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $responseArray = $this->jsonToArray($response->body);
-
-        \mc::dd($responseArray);
-        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
-
-        if (isset($responseArray['data']) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                $responseArray[Fields::ERROR_CODE],
-                $responseArray['message']);
-        }
-
-        $decryptedResp = $this->getMgDecryptedContent($responseArray['data']);
-
-        $this->traceGatewayPaymentResponse($decryptedResp, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
-
-        if ((isset($decryptedResp[Fields::RESPONSE_CODE]) === false) or
-            ($decryptedResp[Fields::RESPONSE_CODE] !== '00'))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $decryptedResp[Fields::ERROR_CODE] ?? '',
-                $decryptedResp['message'] ?? '');
-        }
-
-        $decryptedResp['received'] = true;
-
-        $this->createGatewayPaymentEntity($decryptedResp, Action::REFUND);
+    public function verify(array $input)
+    {
+        throw new Exception\LogicException('Live payment verify not available on UPI Yesbank');
     }
 
     public function payoutVpa(array $input)
@@ -287,7 +98,7 @@ class Gateway extends Mindgate\Gateway
         $traceRequest['decryptedContent'] = $decryptedContent;
 
         $traceRequest['headers'] = $request['headers'] = [
-            'Content-Type' => 'application/json'
+            'Content-Type' => 'application/json',
         ];
 
         $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_REQUEST);
@@ -300,7 +111,93 @@ class Gateway extends Mindgate\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
 
-        $this->checkResponseForError($responseArray);
+        $this->checkResponseForError($responseArray, $gatewayPayment);
+
+        return [
+          'vpa'                => $input[Entity::VPA],
+          'merchant_reference' => $input[Entity::MERCHANT_REFERENCE]
+        ];
+    }
+
+    public function payoutVpaVerify(array $input)
+    {
+        parent::action($input, Action::PAYOUT_VERIFY);
+
+        $gatewayEntity = $this->repo->fetchByMerchantReference($input[Entity::MERCHANT_REFERENCE]);
+
+        if ($gatewayEntity === null)
+        {
+            throw new Exception\LogicException(
+                'No payout exists with the merchant reference',
+                null,
+                [
+                    'merchant_reference' => $input[Entity::MERCHANT_REFERENCE]
+                ]
+            );
+        }
+        else
+        {
+            $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
+
+            $decryptedContent = implode('|', $request);
+
+            $encrypted = $this->encrypt($decryptedContent);
+
+            $content = [
+                Fields::PGMERCHANTID    => $this->getGatewayMerchantId(),
+                Fields::REQUESTMSG      => $encrypted,
+            ];
+
+            $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'verify_payout');
+
+            $traceRequest['decryptedContent'] = $decryptedContent;
+
+            $traceRequest['headers'] = $request['headers'] = [
+                'Content-Type' => 'application/json'
+            ];
+
+            $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
+
+            $this->assertAmount($this->getIntegerFormattedAmount($responseArray[Fields::AMOUNT]) ,
+                $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT]));
+
+            if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+                    null,
+                    null,
+                    [
+                      'response' => $responseArray,
+                      'input'    => $input,
+                    ]
+                );
+            }
+
+            $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
+
+            $this->checkResponseForError($responseArray, $gatewayEntity);
+        }
+    }
+
+    protected function getGatewayEntityAttributes( array $input,
+        string $action = Action::AUTHORIZE,
+        string $type = Base\Type::PAY): array
+    {
+        return [
+            Entity::VPA                 => $input[Entity::VPA],
+            Entity::TYPE                => $type,
+            Entity::ACTION              => $action,
+            Entity::MERCHANT_REFERENCE  => $input[Entity::MERCHANT_REFERENCE],
+            Entity::AMOUNT              => $input[Entity::AMOUNT],
+            // Upi table has a dependency on payments table but currently no payment is present in the context
+            // so adding a dummy value till there is a platform for payout
+            Entity::PAYMENT_ID          => $input[Entity::MERCHANT_REFERENCE],
+        ];
     }
 
     protected function getPayoutRequest(array $input)
@@ -308,7 +205,7 @@ class Gateway extends Mindgate\Gateway
         $content = [
             Fields::PGMERCHANT_ID       => $this->getGatewayMerchantId(),
             Fields::ORDERNO             => $input[Entity::MERCHANT_REFERENCE],
-            Fields::TXN_NOTE            => 'Payout to customer VPA',
+            Fields::TXN_NOTE            => 'Payout to Razorpay customer VPA',
             Fields::AMOUNT              => $this->formatAmount($input['amount']),
             Fields::CURRENCY            => Currency::INR,
             Fields::PAYMENT_TYPE        => Type::P2P,
@@ -316,13 +213,14 @@ class Gateway extends Mindgate\Gateway
             Fields::MCC                 => $this->getMerchantCategoryCode($input),
             Fields::EXP_TIME            => '',
             Fields::PAYEE_ACC_NO        => '',
+            Fields::PAYEE_IFSC          => '',
             Fields::PAYEE_AADHAR        => '',
             Fields::PAYEE_MB_NO         => '',
             Fields::PAYEE_VPA           => $input[Entity::VPA],
             Fields::SUBMERCHANT_ID      => '',
             Fields::WHITELISTED_ACC     => '',
             Fields::PAYEE_MMID          => '',
-            Fields::REF_URL             => 'https://razorpay.com',
+            Fields::REF_URL             => 'https://razorpay.com', // not sure about this
             Fields::TRANSFER_TYPE       => Type::UPI,
             Fields::PAYEE_NAME          => 'Razorpay Customer',
             Fields::PAYEE_ADDRESS       => '',
@@ -342,7 +240,7 @@ class Gateway extends Mindgate\Gateway
             Fields::ADD9                => 'NA',
             Fields::ADD10               => 'NA',
         ];
-s($content);
+
         return $content;
     }
 
@@ -392,15 +290,10 @@ s($content);
             ]);
     }
 
-    protected function processPayoutResponse()
-    {
-
-    }
-
     protected function createGatewayPaymentEntity($attributes, $action = null)
-    {s($attributes);
+    {
         $attr = $this->getMappedAttributes($attributes);
-s($attr);
+
         $entity = $this->getNewGatewayPaymentEntity();
 
         $action = $action ?? $this->action;
@@ -420,7 +313,7 @@ s($attr);
         return $entity;
     }
 
-    protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
+    protected function parseGatewayResponse($responseBody, $type = Action::PAYOUT)
     {
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
@@ -457,25 +350,61 @@ s($attr);
         return $result;
     }
 
-    protected function checkResponseForError(array $responseArray)
+    protected function checkResponseForError(array $responseArray, $gatewayEntity)
     {
-        if ($responseArray[Fields::STATUSCODE] !== Status::SUCCESS)
+        switch ($responseArray[Fields::STATUSCODE])
         {
-            $gatewayErrorCode = $responseArray[Fields::ERROR_CODE];
+            case Status::SUCCESS:
+                break;
 
-            $apiErrorCode = ResponseCodeMap::getApiErrorCode($gatewayErrorCode);
+            case Status::TIMEOUT:
+                // time out status indicate the actual state of payout, whether it was a success
+                // or a return of payout has been initiated, so we are storing the actual
+                // time out code. later action can be taken on these codes appropriately.
+                $attributes[Entity::STATUS_CODE] = $responseArray[Fields::TIMED_OUT_TXN_STATUS];
 
-            $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($gatewayErrorCode);
+                $this->updateGatewayPaymentEntity($gatewayEntity, $attributes);
+                break;
 
-            throw new Exception\GatewayErrorException(
-                $apiErrorCode,
-                $gatewayErrorCode,
-                $gatewayErrorCodeDesc,
-                [
-                    'gateway'  => $this->gateway,
-                    'response' => $responseArray,
-                ]
-            );
+            default:
+                $gatewayErrorCode = $responseArray[Fields::RESPCODE];
+
+                $apiErrorCode = ResponseCodeMap::getApiErrorCode($gatewayErrorCode);
+
+                $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($gatewayErrorCode);
+
+                throw new Exception\GatewayErrorException(
+                    $apiErrorCode,
+                    $gatewayErrorCode,
+                    $gatewayErrorCodeDesc,
+                    [
+                        'gateway'  => $this->gateway,
+                        'response' => $responseArray,
+                    ]
+                );
         }
+    }
+
+    protected function getPayoutVerifyRequest($input, $gatewayEntity)
+    {
+        $request = [
+            Fields::PGMERCHANT_ID       => $this->getGatewayMerchantId(),
+            Fields::ORDER_ID            => $input[Entity::MERCHANT_REFERENCE],
+            Fields::YBLREFNO            => $gatewayEntity[Entity::GATEWAY_PAYMENT_ID],
+            Fields::CUST_REF_ID         => $gatewayEntity[Entity::NPCI_REFERENCE_ID],
+            Fields::REFERENCE_ID        => '',
+            Fields::ADD1                => '',
+            Fields::ADD2                => '',
+            Fields::ADD3                => '',
+            Fields::ADD4                => '',
+            Fields::ADD5                => '',
+            Fields::ADD6                => '',
+            Fields::ADD7                => '',
+            Fields::ADD8                => '',
+            Fields::ADD9                => 'NA',
+            Fields::ADD10               => 'NA',
+        ];
+
+        return $request;
     }
 }
