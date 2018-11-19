@@ -74,7 +74,8 @@ class UpiSbiGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals([Constants::SUCCESS => true], $response);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
 
         // The payment should now be authorized
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
@@ -225,14 +226,10 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
 
-        $data = $this->testData['testRejectedCollect'];
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($content)
-            {
-                $this->makeS2SCallbackAndGetContent($content);
-            });
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
@@ -295,7 +292,8 @@ class UpiSbiGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals([Constants::SUCCESS => true], $response);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
 
         // The payment should now be authorized
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
@@ -395,14 +393,10 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = $this->getS2SAmountMismatchContent($upiEntity);
 
-        $data = $this->testData[__FUNCTION__];
+        $response =$this->makeS2SCallbackAndGetContent($content);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($content)
-            {
-                $this->makeS2SCallbackAndGetContent($content);
-            });
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);

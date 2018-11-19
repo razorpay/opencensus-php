@@ -465,6 +465,15 @@ class Gateway extends Base\Gateway
         return $callback;
     }
 
+    public function postProcessServerCallback($input): array
+    {
+        return [
+            'pspRefNo' => $input['gateway'][ResponseFields::API_RESPONSE]['pspRefNo'],
+            'status'   => 'SUCCESS',
+            'message'  => 'Request Processed Successfully'
+        ];
+    }
+
     /**
      * @param array $response
      * @return mixed
