@@ -31,7 +31,8 @@
             "type": "string",
             "enum": [
                 "FORMAT1",
-                "FORMAT2"
+                "FORMAT2",
+                "FORMAT3"
             ]
         },
         "refreshed_at": {

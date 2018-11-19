@@ -156,22 +156,30 @@ class Processor extends Base\Processor
                     'set' => true,
                     'length' => 6,
                     'format' => 'numeric',
-                    'cl.format' => 'NUM'
+                    'cl' => [
+                        'format' => 'NUM'
+                    ]
                 ],
                 [
                     'type' => 'atmpin',
                     'length' => 6,
                     'format' => 'numeric',
-                    'cl.format' => 'NUM'
+                    'cl' => [
+                        'format' => 'NUM'
+                    ]
                 ],
                 [
                     'type' => 'otp',
                     'length' => 6,
                     'format' => 'numeric',
-                    'cl.format' => 'NUM'
-                ]
+                    'cl' => [
+                        'format' => 'NUM'
+                    ]
+                ],
             ],
-            'cl.registration_format' => 'FORMAT1',
+            'cl' => [
+                'registration_format' => 'FORMAT1',
+            ],
             'refreshed_at'  => 1609622306,
             'created_at' => 1509622306
         ];

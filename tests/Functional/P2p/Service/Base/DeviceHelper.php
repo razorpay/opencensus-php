@@ -26,8 +26,10 @@ class DeviceHelper extends P2pHelper
                 'type'             => 'mobile',
                 'geo_code'         => '12.971599,77.594566',
                 'app_name'         => 'com.razorpay',
-                'cl.capability'    => '52000002000100040006',
-                'cl.challenge'     => 'AUnhIkGYnGBK=='
+                'cl'               => [
+                    'capability'       => '52000002000100040006',
+                    'challenge'        => 'AUnhIkGYnGBK=='
+                ]
             ]
         ];
 
@@ -56,7 +58,9 @@ class DeviceHelper extends P2pHelper
         $request = $this->request('cl_token_refresh');
 
         $default = [
-            'cl.challenge'  => 'AikxOldnJmaUbdsmHdsnaudjeGHndshsjSildsmfyneHDBd'
+            'cl' => [
+                'challenge'  => 'AikxOldnJmaUbdsmHdsnaudjeGHndshsjSildsmfyneHDBd'
+            ]
         ];
 
         $this->content($request, $default, $content);

@@ -3,6 +3,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://example.com/root.json",
     "type": "object",
+    "additionalProperties": false,
     "required": [
         "id",
         "entity",
@@ -11,14 +12,14 @@
         "beneficiary_name",
         "masked_account_number",
         "creds",
-        "cl.registration_format",
+        "cl",
         "refreshed_at",
         "created_at"
     ],
     "properties": {
         "id": {
             "type": "string",
-            "pattern": "^(.*)$"
+            "pattern": "^ba_(.*){14}$"
         },
         "entity": {
             "type": "string",
@@ -26,7 +27,7 @@
         },
         "ifsc": {
             "type": "string",
-            "pattern": "^(.*)$"
+            "pattern": "^(.*){11}$"
         },
         "bank_name": {
             "type": "string",
@@ -48,11 +49,18 @@
                     "type",
                     "length",
                     "format",
-                    "cl.format"
+                    "cl"
                 ],
                 "properties": {
                     "type": {
                         "type": "string",
+                        "enum": [
+                            "upipin",
+                            "atmpin",
+                            "otp",
+                            "sms"
+                        ],
+                        "default": null,
                         "pattern": "^(.*)$"
                     },
                     "set": {
@@ -65,18 +73,38 @@
                         "type": "string",
                         "pattern": "^(.*)$"
                     },
-                    "cl.format": {
-                        "type": "string"
+                    "cl": {
+                        "type": "object",
+                        "required": [
+                            "format"
+                        ],
+                        "properties": {
+                            "format": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            }
+                        }
                     }
                 }
             }
         },
-        "cl.registration_format": {
-            "type": "string",
-            "enum": [
-                "FORMAT1",
-                "FORMAT2"
-            ]
+        "cl": {
+            "type": "object",
+            "required": [
+                "registration_format"
+            ],
+            "properties": {
+                "registration_format": {
+                    "type": "string",
+                    "enum": [
+                        "FORMAT1",
+                        "FORMAT2",
+                        "FORMAT3"
+                    ],
+                    "default": null,
+                    "pattern": "^(.*)$"
+                }
+            }
         },
         "refreshed_at": {
             "type": "integer"

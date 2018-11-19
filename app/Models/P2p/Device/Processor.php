@@ -40,8 +40,10 @@ class Processor extends Base\Processor
         return [
             'contact'        => '+919876543210',
             'handle'         => 'razorsharp',
-            'cl.token'       => '52000002000100040006',
-            'cl.payload'     => 'AUnhIkGYnGBK==',
+            'cl'             => [
+                'token'      => '52000002000100040006',
+                'payload'    => 'AUnhIkGYnGBK==',
+            ],
             'refreshed_at'   => time()
         ];
     }

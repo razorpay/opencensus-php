@@ -10,8 +10,7 @@
         "os_version",
         "app_name",
         "handle",
-        "cl.token",
-        "cl.payload",
+        "cl",
         "created_at"
     ],
     "properties": {
@@ -45,13 +44,21 @@
             "type": "string",
             "pattern": "^(.*)$"
         },
-        "cl.token": {
-            "$id": "#/properties/cl.token",
-            "type": ["string", "null"]
-        },
-        "cl.payload": {
-            "$id": "#/properties/cl.payload",
-            "type": ["string", "null"]
+        "cl": {
+            "$id": "#/properties/cl",
+            "type": "object"
+            "required": [
+                "token",
+                "payload"
+            ],
+            "properties": {
+                "token": {
+                    "type": ["null", "string"]
+                },
+                "payload": {
+                    "type": ["null", "string"]
+                }
+            }
         },
         "created_at": {
             "$id": "#/properties/created_at",

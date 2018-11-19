@@ -11,7 +11,7 @@
         "beneficiary_name",
         "masked_account_number",
         "creds",
-        "cl.registration_format",
+        "cl",
         "refreshed_at",
         "created_at"
     ],
@@ -59,10 +59,9 @@
                 "type": "object",
                 "required": [
                     "type",
-                    "set",
                     "length",
                     "format",
-                    "cl.format"
+                    "cl"
                 ],
                 "properties": {
                     "type": {
@@ -89,22 +88,40 @@
                         "type": "string",
                         "pattern": "^(.*)$"
                     },
-                    "cl.format": {
-                        "$id": "#/properties/creds/items/properties/cl.format",
-                        "type": "string",
-                        "pattern": "^(.*)$"
+                    "cl": {
+                        "$id": "#/properties/creds/items/properties/cl",
+                        "type": "object",
+                        "required": [
+                            "format"
+                        ],
+                        "properties": {
+                            "format": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            }
+                        }
                     }
                 }
             }
         },
-        "cl.registration_format": {
-            "$id": "#/properties/cl.registration_format",
-            "type": "string",
-            "enum": [
-                "FORMAT1",
-                "FORMAT2"
+        "cl": {
+            "$id": "#/properties/cl",
+            "type": "object",
+            "required": [
+                "registration_format"
             ],
-            "default": null
+            "properties": {
+                "registration_format": {
+                    "type": "string",
+                    "enum": [
+                        "FORMAT1",
+                        "FORMAT2",
+                        "FORMAT3"
+                    ],
+                    "default": null,
+                    "pattern": "^(.*)$"
+                }
+            }
         },
         "refreshed_at": {
             "$id": "#/properties/refreshed_at",
