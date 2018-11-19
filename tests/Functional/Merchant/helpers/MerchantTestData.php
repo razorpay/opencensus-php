@@ -1273,7 +1273,7 @@ return [
         ]
     ],
 
-    'testAddBankAccountWithInvalidIFSC' => [
+    'testAddBankAccountWithInvalidIfsc' => [
         'request' => [
             'content' => [
                 'ifsc_code'             => 'IIC0001206',
@@ -2305,7 +2305,7 @@ return [
         ],
     ],
 
-    'testGetNetbankingDowntimeInfoWithIssuerNA' => [
+    'testGetNetbankingDowntimeInfoWithIssuerNa' => [
         'request' => [
             'url' => '/methods/downtime',
             'method' => 'get',
@@ -3483,6 +3483,18 @@ return [
         ],
     ],
 
+    'testFetchingLinkedAcountsForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['linkdaccount01']
+            ]
+        ]
+    ],
+
     'testSubmitSupportCallRequest' => [
         'request'  => [
             'url'     => '/merchants/support_call',
@@ -3497,6 +3509,30 @@ return [
                 'code'         => '200',
                 'message'      => 'Call queued successfully',
                 'reference_id' => '1000000000000000',
+            ],
+        ],
+    ],
+
+    'testPartnerAcountsForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['submerchant001']
+            ],
+        ],
+    ],
+
+    'testReferredAccountForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['refaccount0001']
             ],
         ],
     ],

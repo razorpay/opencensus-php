@@ -526,6 +526,28 @@ class Pricing extends Base
             'payment_issuer'      => null,
             'percent_rate'        => 50,
             'fixed_rate'          => 80,
+            'org_id'              => '100000razorpay',
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createPricingPlanForDifferentOrg($orgId)
+    {
+        $pricingPlanId = '1hDYlICxbxOCYx';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 50,
+            'fixed_rate'          => 80,
+            'org_id'              => $orgId,
         ];
 
         $this->addPricingRulesToDb([$row]);

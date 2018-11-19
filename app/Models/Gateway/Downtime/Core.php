@@ -160,11 +160,20 @@ class Core extends Base\Core
             Entity::BEGIN   => $now,
         ];
 
-        if ($payment->isMethodCardOrEmi() === true)
+        switch ($payment->getMethod())
         {
-            $this->fillCardDetails($params, $payment);
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+                $this->fillCardDetails($params, $payment);
 
-            return $params;
+                return $params;
+                break;
+
+            case Payment\Method::UPI:
+                $this->fillUpiDetails($params, $payment);
+
+                return $params;
+                break;
         }
 
         return [];
@@ -200,6 +209,11 @@ class Core extends Base\Core
         {
             $params[Entity::ISSUER][] = $issuer;
         }
+    }
+
+    protected function fillUpiDetails(array & $params, Payment\Entity $payment)
+    {
+        $params[Entity::METHOD] = [Payment\Method::UPI];
     }
 
     /**

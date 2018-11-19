@@ -29,6 +29,7 @@ class Entity extends Base\Entity
     const FROM_EMAIL       = 'from_email';
     const SIGNATURE_EMAIL  = 'signature_email';
     const CROSS_ORG_ACCESS = 'cross_org_access';
+    const DEFAULT_PRICING_PLAN_ID  = 'default_pricing_plan_id';
 
     const WORKFLOW_PERMISSIONS = 'workflow_permissions';
 
@@ -70,6 +71,7 @@ class Entity extends Base\Entity
         self::CUSTOM_CODE,
         self::FROM_EMAIL,
         self::SIGNATURE_EMAIL,
+        self::DEFAULT_PRICING_PLAN_ID,
     ];
 
     protected $visible = [
@@ -91,6 +93,7 @@ class Entity extends Base\Entity
         self::SIGNATURE_EMAIL,
         self::PERMISSIONS,
         self::WORKFLOW_PERMISSIONS,
+        self::DEFAULT_PRICING_PLAN_ID,
     ];
 
     protected $public = [
@@ -111,6 +114,7 @@ class Entity extends Base\Entity
         self::SIGNATURE_EMAIL,
         self::PERMISSIONS,
         self::WORKFLOW_PERMISSIONS,
+        self::DEFAULT_PRICING_PLAN_ID,
     ];
 
     protected $guarded = [
@@ -123,7 +127,8 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::CROSS_ORG_ACCESS => false,
+        self::CROSS_ORG_ACCESS         => false,
+        self::DEFAULT_PRICING_PLAN_ID  => null,
     ];
 
     protected $publicSetters = [
@@ -235,6 +240,11 @@ class Entity extends Base\Entity
     public function getCustomCode()
     {
         return $this->getAttribute(self::CUSTOM_CODE);
+    }
+
+    public function getDefaultPricingPlanId()
+    {
+        return $this->getAttribute(self::DEFAULT_PRICING_PLAN_ID);
     }
 
     public function isCrossOrgAccessEnabled()

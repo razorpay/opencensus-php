@@ -237,6 +237,8 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    // The 2 commented banks are mentioned at the bottom
+    // with their retail versions
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -251,6 +253,7 @@ class Gateway
         IFSC::AUCX,
         IFSC::BACB,
         IFSC::BACX,
+        // IFSC::BARB,
         IFSC::BCBM,
         IFSC::BGBX,
         IFSC::BHSX,
@@ -258,6 +261,7 @@ class Gateway
         IFSC::BKDN,
         IFSC::BKID,
         IFSC::BNPA,
+        IFSC::BORX,
         IFSC::BURX,
         IFSC::CBIN,
         IFSC::CHAS,
@@ -273,6 +277,7 @@ class Gateway
         IFSC::CSBK,
         IFSC::CSBX,
         IFSC::CURX,
+        IFSC::CZCX,
         IFSC::DBSS,
         IFSC::DCBL,
         IFSC::DCDX,
@@ -286,6 +291,7 @@ class Gateway
         IFSC::EUCX,
         IFSC::FDRL,
         IFSC::FGCB,
+        IFSC::FSCX,
         IFSC::GCBX,
         IFSC::GCUX,
         IFSC::GDCX,
@@ -301,14 +307,20 @@ class Gateway
         IFSC::IUCB,
         IFSC::JASB,
         IFSC::JHAX,
+        IFSC::JONX,
+        IFSC::JSBL,
         IFSC::JSBP,
         IFSC::JSCX,
         IFSC::JUCX,
         IFSC::KAAX,
         IFSC::KAIJ,
+        IFSC::KALX,
         IFSC::KARB,
+        IFSC::KARX,
         IFSC::KASX,
         IFSC::KBCX,
+        IFSC::KCOB,
+        IFSC::KCUB,
         IFSC::KDCX,
         IFSC::KDIX,
         IFSC::KHAX,
@@ -329,9 +341,16 @@ class Gateway
         IFSC::MERX,
         IFSC::MHSX,
         IFSC::MOGX,
+        IFSC::MPRX,
+        IFSC::MSAX,
+        IFSC::MSNU,
         IFSC::MSOX,
         IFSC::NAIX,
         IFSC::NALX,
+        // This is not in the IFSC package yet
+        // Cleanup post the 1.2.4 release
+        'NBMX',
+        IFSC::NCBX,
         IFSC::NCCX,
         IFSC::NDCX,
         IFSC::NICB,
@@ -341,6 +360,8 @@ class Gateway
         IFSC::NSGX,
         IFSC::NVSX,
         IFSC::ORBC,
+        IFSC::OSMX,
+        IFSC::PABX,
         IFSC::PALX,
         IFSC::PATX,
         IFSC::PCUX,
@@ -349,6 +370,8 @@ class Gateway
         IFSC::PMCB,
         IFSC::PRTH,
         IFSC::PSRX,
+        IFSC::PUGX,
+        // IFSC::PUNB,
         IFSC::RAMX,
         IFSC::RATN,
         IFSC::RCUX,
@@ -395,6 +418,7 @@ class Gateway
         IFSC::UBIN,
         IFSC::UCBA,
         IFSC::UCBS,
+        IFSC::UCBX,
         IFSC::UCUX,
         IFSC::UKGX,
         IFSC::UMSX,
@@ -435,6 +459,7 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
+        Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_MINDGATE
     ];
@@ -835,6 +860,8 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_CORPORATION,
+        self::NETBANKING_IDFC,
     ];
 
     /**
@@ -1117,6 +1144,7 @@ class Gateway
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

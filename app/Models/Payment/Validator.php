@@ -163,6 +163,10 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $callbackUrlValidationRules = [
+        'callback_url' => 'sometimes|url',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

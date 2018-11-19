@@ -137,7 +137,7 @@ class Repository extends Base\Repository
                                     $query->where(Token\Entity::RECURRING, '=', "0")
                                           ->whereIn(
                                               Token\Entity::RECURRING_STATUS,
-                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED]);
+                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED]);
                                 });
                       })
                       ->with('customer');
@@ -227,7 +227,8 @@ class Repository extends Base\Repository
             ->select($selectCols,
                     'payments.id as payment_id',
                     'payments.amount as payment_amount',
-                    'payments.created_at as payment_created_at')
+                    'payments.created_at as payment_created_at',
+                    'payments.email as payment_email')
             ->joinSub(
                 $payments,
                 $paymentTableName,
