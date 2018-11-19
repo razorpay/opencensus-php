@@ -393,7 +393,7 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    $data = $this->updateInstantActivationExperiment($user, $data);
+                    $data = $this->updateInstantActivationExperiment($data);
 
                     if (((bool) $merchant['activated']) === true)
                     {
@@ -493,17 +493,20 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $user
      * @param array $data
      *
      * @return mixed
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function updateInstantActivationExperiment($user, array $data)
+    public function updateInstantActivationExperiment(array $data)
     {
         $enableInstantActivations = true;
 
-        if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
+        if (isset($data['created_at']) === false)
+        {
+            $enableInstantActivations = true;
+        }
+        else if ($data['created_at'] > self::INSTANT_ACTIVATION_TIMESTAMP)
         {
             //
             // with activation_flow set always return result on
