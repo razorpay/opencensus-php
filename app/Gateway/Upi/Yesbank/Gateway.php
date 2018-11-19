@@ -49,7 +49,8 @@ class Gateway extends Mindgate\Gateway
         Fields::PAYEE_ACC_NAME          => Entity::NAME,
         Fields::PAYEE_ACC_NO            => Entity::ACCOUNT_NUMBER,
         Fields::PAYEE_IFSC              => Entity::IFSC,
-        Fields::STATUSCODE              => Entity::STATUS_CODE
+        Fields::STATUSCODE              => Entity::STATUS_CODE,
+        Fields::TIMED_OUT_TXN_STATUS    => Entity::STATUS_CODE
     ];
 
     public function authorize(array $input)

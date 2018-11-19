@@ -33,8 +33,6 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/YesbankGatewayTestData.php';
-
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
@@ -212,7 +210,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['received']);
         $this->assertNotNull($gatewayEntity['merchant_reference']);
         $this->assertNotNull($gatewayEntity['gateway_payment_id']);
-        $this->assertEquals('S', $gatewayEntity['status_code']);
+        $this->assertEquals('RCC', $gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
         $this->assertEquals('pay', $gatewayEntity['type']);
