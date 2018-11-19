@@ -345,6 +345,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
+    public function getCapability()
+    {
+        return $this->getAttribute(self::CAPABILITY);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
