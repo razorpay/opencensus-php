@@ -70,6 +70,69 @@
             </tr>
             @endif
 
+            @if (isset($invoice['entity_type']) === true and $invoice['entity_type'] === 'subscription_registration' and $invoice['subscription_registration']['method'] === 'emandate')
+                @if ($invoice['subscription_registration']['expire_at'] or $invoice['subscription_registration']['max_amount'])
+                <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                    @if ($is_test_mode)
+                        <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
+                    @else
+                        <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};"></td>
+                    @endif
+
+                    <td colspan="2" class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2;">
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                            <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #9B9B9B; font-weight: bold; text-transform: uppercase;">MANDATE DETAILS</label>
+                            <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                                @if ($invoice['subscription_registration']['expire_at'])
+                                    <div>Mandate End Date: {{epoch_format($invoice['subscription_registration']['expire_at'])}}</div>
+                                @endif
+
+                                @if ($invoice['subscription_registration']['max_amount'])
+                                    <div>Mandate Max Amount: {{$invoice['currency']}} {{number_format($invoice['subscription_registration']['max_amount'] / 100, 2)}}</div>
+                                @endif
+                            </div>
+                        </div>
+                    </td>
+
+                    @if ($is_test_mode)
+                        <td class="last" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%;"></td>
+                    @else
+                        <td class="last" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};"></td>
+                    @endif
+
+                </tr>
+                @endif
+
+                @if(isset($invoice['subscription_registration']['bank_account']) and $invoice['subscription_registration']['bank_account']['bank_name'])
+                <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                    @if ($is_test_mode)
+                        <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
+                    @else
+                        <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};"></td>
+                    @endif
+
+                    <td colspan="2" class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2;">
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                            <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #9B9B9B; font-weight: bold; text-transform: uppercase;">BANK DETAILS</label>
+                            <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
+                                <div>Bank: {{$invoice['subscription_registration']['bank_account']['bank_name']}}</div>
+                                <div>Name on Account: {{$invoice['subscription_registration']['bank_account']['name']}}</>
+                                <div>IFSC: {{$invoice['subscription_registration']['bank_account']['ifsc']}}</div>
+                                <div>Account Number: {{$invoice['subscription_registration']['bank_account']['account_number']}}</>
+                            </div>
+                        </div>
+                    </td>
+
+                    @if ($is_test_mode)
+                        <td class="last" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%;"></td>
+                    @else
+                        <td class="last" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};"></td>
+                    @endif
+
+                </tr>
+                @endif
+            @endif
+
             <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                 @if ($invoice['description'] || $is_test_mode)
                     <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>

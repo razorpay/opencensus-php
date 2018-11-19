@@ -1,0 +1,245 @@
+<?php
+
+namespace RZP\Services;
+
+use Maclof\Kubernetes\Client;
+use Maclof\Kubernetes\Models\Job;
+use RZP\Models\Batch as BatchModel;
+use RZP\Services\Batch as BatchService;
+use RZP\Trace\TraceCode;
+
+class KubernetesClient
+{
+    /**
+     * Credentials to talk to Kubernetes
+     */
+    protected $masterUrl;
+    protected $caCert;
+    protected $token;
+    protected $imagePath;
+    protected $namespace;
+    protected $iamRole;
+    protected $mock;
+    protected $gitCommitHash;
+    protected $appMode;
+    protected $appEnv;
+
+    protected $config;
+    protected $client;
+
+    protected $commitFilePath = 'commit.txt';
+
+    /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+
+    public function __construct($app)
+    {
+        $this->trace        = $app['trace'];
+        $this->config       = $app['config']->get('applications.kubernetes_client');
+
+        $this->masterUrl        = $this->config['cluster_url'];
+        $this->caCert           = $this->config['ca_cert'];
+        $this->token            = $this->config['token'];
+        $this->imagePath        = $this->config['image_path'];
+        $this->namespace        = $this->config['namespace'];
+        $this->iamRole          = $this->config['iam_role'];
+        $this->mock             = $this->config['mock'];
+        $this->gitCommitHash    = $this->config['git_commit_hash'];
+        $this->appMode          = $this->config['app_mode'];
+        $this->appEnv           = $this->config['app_env'];
+
+        $this->commitFilePath = public_path($this->commitFilePath);
+
+    }
+
+    public function getDockerImage()
+    {
+        $dockerImage = $this->imagePath;
+
+        // Read the latest commit id from the environment variable
+        if ($this->gitCommitHash !== false)
+        {
+            $dockerImage .= ":".$this->gitCommitHash;
+        }
+        // in case environment variable not there make another attempt to read from commit.txt file
+        else
+        {
+            if ($this->commitFilePath !== null && file_exists($this->commitFilePath)) {
+                $dockerImage .= ":".file_get_contents($this->commitFilePath);
+            }
+        }
+
+        return trim($dockerImage);
+
+    }
+
+    public function createJob(string $mode, string $batchId, array $params)
+    {
+        try
+        {
+            // Call the batch service process method directly when kubernetes mock is set to true
+            // No need to create Kubernetes job
+            if ($this->mock === true)
+            {
+                $batchService = new BatchService();
+                $batchService->process($batchId, $mode, $params);
+
+                return;
+            }
+
+            // Create Job Spec
+            $jobSpec = $this->generateJobSpec($mode, $batchId, $params);
+
+            $job = new Job($jobSpec);
+
+            $this->client = new Client([
+                'master'  => $this->masterUrl,
+                'ca_cert' => $this->caCert,
+                'token'   => $this->token,
+            ]);
+
+            // Set Namespace if provided
+            if ($this->namespace !== null and file_exists($this->namespace))
+            {
+                $this->trace->info(
+                    TraceCode::KUBERNETES_BATCH_NAMESPACE,
+                    [
+                        BatchModel\Entity::ID   => $batchId,
+                        'namespace'   => file_get_contents($this->namespace),
+                    ]);
+                $this->client->setNamespace(file_get_contents($this->namespace));
+            }
+
+            if ($this->client->jobs()->exists($job->getMetadata('name')))
+            {
+
+                $this->trace->error(
+                    TraceCode::KUBERNETES_BATCH_JOB_EXISTS,
+                    [
+                        BatchModel\Entity::ID   => $batchId,
+                    ]);
+
+            }
+            else
+            {
+                $response = $this->client->jobs()->create($job);
+
+                $this->trace->info(
+                    TraceCode::KUBERNETES_BATCH_JOB_CREATED,
+                    [
+                        BatchModel\Entity::ID   => $batchId,
+                        'kubernetes_response'   => $response,
+                    ]);
+            }
+
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::KUBERNETES_BATCH_JOB_ERROR,
+                [
+                    BatchModel\Entity::ID   => $batchId,
+                ]);
+        }
+
+    }
+
+    private function generateJobSpec(string $mode, string $batchId, array $params)
+    {
+        $metaName = strtolower('batch-'.$batchId);
+        $dockerImage = $this->getDockerImage();
+
+        $jobSpec = [
+            'metadata' => [
+                'name' => $metaName,
+                'labels' => [
+                    'name' => 'batch-job',
+                ]
+            ],
+            'spec' => [
+                'template' => [
+                    'metadata' => [
+                        'labels' => [
+                            'name' => 'batch-job',
+                        ],
+                        'annotations' => [
+                            'iam.amazonaws.com/role' => $this->iamRole
+                        ]
+                    ],
+                    'spec' => [
+                        'containers' => [
+                            [
+                                'env' => [
+                                    [
+                                        'name' => 'APP_MODE',
+                                        'value' => $this->appMode
+                                    ]
+                                ],
+                                'name'  => 'batch',
+                                'image' => $dockerImage,
+                                'resources' => [
+                                    'requests' => [
+                                        'cpu' => '100m',
+                                        'memory' => '150Mi'
+                                    ]
+                                ],
+                                'livenessProbe' => [
+                                    'exec' => [
+                                        'command' => ["cat", $this->commitFilePath]
+                                    ],
+                                    'initialDelaySeconds' => 180,
+                                    'periodSeconds' => 2,
+                                    'successThreshold' => 1
+                                ],
+                                'readinessProbe' => [
+                                    'exec' => [
+                                        'command' => ["cat", $this->commitFilePath]
+                                    ],
+                                    'initialDelaySeconds' => 180,
+                                    'periodSeconds' => 2,
+                                    'successThreshold' => 1
+                                ],
+                                'imagePullPolicy' => 'IfNotPresent',
+                                'args' => ["batch-job", "batch:process", $batchId, $mode],
+                                'backoffLimit' => 4,
+                                'volumeMounts' => [
+                                    [
+                                        'name' => 'trace',
+                                        'mountPath' => '/app/storage/logs/'
+                                    ]
+                                ],
+                            ],
+                        ],
+                        'volumes' => [
+                            [
+                                'name' => 'trace',
+                                'hostPath' => [
+                                    'path' => '/var/log/fluentd/'.$this->appEnv.'/api/trace',
+                                    'type' => '',
+                                ]
+                            ]
+                        ],
+                        'restartPolicy' => 'Never',
+                        'dnsPolicy' => 'Default',
+                        'nodeSelector' => [
+                            'node-role.kubernetes.io/worker-generic' => ''
+                        ],
+                        'imagePullSecrets' => [
+                            [
+                                'name' => 'registry',
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        return $jobSpec;
+    }
+
+}

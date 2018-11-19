@@ -402,7 +402,7 @@ return [
         [
             'payment_options' => [
                 'method' => Method::NETBANKING,
-                'bank'   => 'HDFC',
+                'bank'   => 'SBIN',
             ],
             'fixtures' => [
                 [
@@ -412,7 +412,7 @@ return [
                     'type'        => 'filter',
                     'filter_type' => 'select',
                     'group'       => 'method_filter',
-                    'issuer'      => 'HDFC',
+                    'issuer'      => 'SBIN',
                 ],
             ],
             'expected_terminal_ids' => [

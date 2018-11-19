@@ -1346,7 +1346,6 @@ trait Authorize
             switch ($method)
             {
                 case Payment\Method::EMANDATE:
-                {
                     //
                     // Todo: During NPCI eMandate integration, we need to have one more condition
                     // here to check if the auth method is aadhaar.
@@ -1390,11 +1389,11 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-                }
+
+                    break;
 
                 case Payment\Method::CARD:
                 case Payment\Method::EMI:
-                {
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
@@ -1410,7 +1409,8 @@ trait Authorize
                             $gatewayInput['authenticate']['gateway'] = $authGateway;
                         }
                     }
-                }
+
+                    break;
             }
         }
     }
@@ -2093,7 +2093,7 @@ trait Authorize
             ($this->ba->isProxyAuth() === true) and
             (isset($input[Payment\Entity::TOKEN]) === true))
         {
-            $gatewayInput['test_success'] = $input['test_success'];
+            $gatewayInput['test_success'] = boolval($input['test_success']);
         }
     }
 

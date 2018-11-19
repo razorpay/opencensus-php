@@ -80,7 +80,8 @@ class Entity extends Base\PublicEntity
     const ISSUER_LENGTH             = 20;
     const DISPLAY_TEXT_LENGTH       = 255;
 
-    const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. Please try with a different payment method.';
+    const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. ' .
+                                    'Please try with a different payment method.';
 
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
@@ -264,6 +265,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function isPeriodActive()
+    {
+        $now = Carbon::now()->getTimestamp();
+
+        return (($now >= $this->getStartsAt()) and
+                ($now <= $this->getEndsAt()));
+    }
+
     public function getPercentRate()
     {
         return $this->getAttribute(self::PERCENT_RATE);
@@ -387,7 +396,7 @@ class Entity extends Base\PublicEntity
             $percentDiscount = $emiPlan->getMerchantPayback();
         }
 
-        return  $this->getDiscountedAmount($amount, $percentDiscount);
+        return $this->getDiscountedAmount($amount, $percentDiscount);
     }
 
     public function getDiscountAmountForPayment(int $amount, $payment): int
@@ -401,7 +410,7 @@ class Entity extends Base\PublicEntity
             $percentDiscount = $emiPlan->getMerchantPayback();
         }
 
-        return  $this->getDiscount($amount, $percentDiscount);
+        return $this->getDiscount($amount, $percentDiscount);
     }
 
     protected function getDiscountedAmount(int $amount, $percentDiscount = null)
@@ -464,10 +473,9 @@ class Entity extends Base\PublicEntity
             $emiDurations = array_unique(array_merge($existingEmiDurations, $emiDurations));
         }
 
-        $emiDurations = array_map(function ($emiDuration)
-                            {
-                                return (int) $emiDuration;
-                            }, $emiDurations);
+        $emiDurations = array_map(function ($emiDuration) {
+            return (int) $emiDuration;
+        }, $emiDurations);
 
         $this->attributes[self::EMI_DURATIONS] = json_encode(array_unique(array_values($emiDurations)));
     }

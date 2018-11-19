@@ -45,7 +45,7 @@ class Reconciliate extends Base\Reconciliate
      * @return bool Whether the given file is present in the gateway's
      *              exclude list or not.
      */
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         $fileName = strtolower($fileDetails['file_name']);
 

@@ -325,6 +325,33 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Checks if input status is other than processed.
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    public function validateScroogeEditRefund(array $input)
+    {
+        $refund = $this->entity;
+
+        //
+        // For now, edit refund is supporting only status update.
+        // Checking if refund is moved to another state apart from Processed, throw exception.
+        // For scrooge gateways, refund status can only be updated to `processed`.
+        //
+        if ($input[Payment\Entity::STATUS] !== Status::PROCESSED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_UPDATE,
+                Entity::STATUS,
+                [
+                    'refund_id' => $refund->getId(),
+                    'status'    => $refund->getStatus(),
+                ]);
+        }
+    }
+
     public function validateScroogeGatewayRefund(Payment\Entity $payment)
     {
         $refund = $this->entity;

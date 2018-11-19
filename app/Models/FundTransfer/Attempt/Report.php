@@ -429,7 +429,7 @@ class Report extends Base\Core
 
             $this->merchantInfo[] = [
                 'merchant_name' => $merchantName,
-                'amount'        => $record->source->getAmount()
+                'amount'        => $record->source->getAmount()/100
             ];
 
             fputcsv($this->fileHandler, $data);

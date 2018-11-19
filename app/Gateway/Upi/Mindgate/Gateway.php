@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
@@ -878,7 +879,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $scroogeResponse = new Base\ScroogeResponse();
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
 
         if ($this->isUnprocessedRefund($input) === true)
         {

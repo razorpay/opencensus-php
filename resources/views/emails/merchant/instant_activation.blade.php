@@ -26,7 +26,7 @@
     <dl>
         <dt style="padding: 0.5%"><b>Payments without integration</b></dt>
 
-        <dd>In case you do not have a website or an app, you can start receiving payments right away using Razorpay products</dd>
+        <dd>In case you do not have a website or an app, you can start receiving payments right away using {{{$merchant['org']['business_name']}}} products</dd>
         <dd><a href="https://{{{$merchant['org']['hostname']}}}/#/app/dashboard?products" target="_blank">View products</a></dd>
 
     </dl>
