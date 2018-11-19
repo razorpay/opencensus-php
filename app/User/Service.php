@@ -530,16 +530,9 @@ class Service extends Base\Service
 
         $data['instant_activations'] = $enableInstantActivations;
 
-        if ($enableInstantActivations === true)
-        {
-            $data['experiments']['instant_activations'] = ['result' => 'on'];
-        }
-        else
-        {
-            $data['experiments']['instant_activations'] = ['result' => 'off'];
-        }
-
-        $this->trace->info(TraceCode::RAZORX_EXPERIMENTS, $data['experiments']);
+        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
+            'instant_activations' => $data['instant_activations'],
+        ]);
 
         return $data;
     }
