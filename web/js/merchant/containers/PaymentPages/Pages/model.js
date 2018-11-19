@@ -1,11 +1,12 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 
-export function createPaymentPage(params) {
-  const reqPayload = { ...params };
+function pruneReqPayload(reqPayload) {
+  if (reqPayload.amount) {
+    reqPayload.amount *= 100;
+  }
 
   if (reqPayload.amount) {
     reqPayload.currency = 'INR'; // TODO: Get is dynamically
-    reqPayload.amount *= 100;
   }
 
   reqPayload.expire_by &&
@@ -19,6 +20,12 @@ export function createPaymentPage(params) {
   if (reqPayload.description) {
     reqPayload.description = reqPayload.description.trim();
   }
+}
+
+export function createPaymentPage(data) {
+  const reqPayload = { ...data };
+
+  pruneReqPayload(reqPayload);
 
   return merchantFetch({
     url: 'payment_links',
@@ -28,10 +35,15 @@ export function createPaymentPage(params) {
 }
 
 export function editPaymentPage(id, data) {
+  const reqPayload = { ...data };
+
+  // In paymentpages v2, following 4 fields can also be edited via this API.
+  pruneReqPayload(reqPayload);
+
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: data,
+    data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },
@@ -40,7 +52,7 @@ export function editPaymentPage(id, data) {
 
 export function fetchPaymentPageEntity(id) {
   return merchantFetch({
-    url: `payment_links/${id}`,
+    url: `payment_links/${id}/details`,
     params: {
       expand: ['user'],
     },

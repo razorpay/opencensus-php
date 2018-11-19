@@ -5,8 +5,8 @@ import { classList, getFormattedAmount } from 'common/util';
 import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
-  console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
-  const cls = 'Field Field--disabled Field--required';
+  // console.log('PAYMENTPAGE ENTITY..', paymentPageEntity);
+  let cls = 'Field Field--disabled Field--required';
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
@@ -15,6 +15,10 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
     amountToDisplay = getFormattedAmount(
       Number(paymentPageEntity.amount || 0) * 100
     );
+
+    if (!paymentPageEntity.amount) {
+      cls += ' Field--small';
+    }
   }
 
   const content = (
@@ -34,31 +38,36 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                       amountToDisplay.split('.')[1]
                     }
                   </span>
-                  {paymentPageEntity.allow_multiple_units && (
-                    <React.Fragment>
-                      <span style={{ margin: '0 24px' }}>×</span>
-                      <div
-                        class="Field-wrapper Field-wrapper--counter"
-                        style={{
-                          display: 'inline-block',
-                          pointerEvents: 'none',
-                        }}
-                      >
-                        <button type="button" disabled>
-                          -
-                        </button>
-                        <input
-                          class="Field-el counter-value"
-                          name="field_1"
-                          defaultValue="1"
-                          disabled
-                        />
-                        <button type="button" disabled>
-                          +
-                        </button>
-                      </div>
-                    </React.Fragment>
-                  )}
+                  {paymentPageEntity.settings &&
+                    paymentPageEntity.settings.allow_multiple_units && (
+                      <React.Fragment>
+                        <span style={{ margin: '0 24px' }}>×</span>
+                        <div class="Field Field--counter Field--small">
+                          <div class="Field-content">
+                            <div
+                              class="Field-wrapper Field-wrapper--counter"
+                              style={{
+                                display: 'inline-block',
+                                pointerEvents: 'none',
+                              }}
+                            >
+                              <button type="button" disabled>
+                                -
+                              </button>
+                              <input
+                                class="Field-el counter-value"
+                                name="field_1"
+                                defaultValue="1"
+                                disabled
+                              />
+                              <button type="button" disabled>
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    )}
                 </React.Fragment>;
               } else {
                 <input class="Field-el" placeholder="Enter Amount" disabled />;
@@ -80,6 +89,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
   return isAmountEntitySet ? (
     <EditLayer class={cls} onClick={onAddAmount}>
       {content}
+      <i class="i i-edit" />
     </EditLayer>
   ) : (
     <div class={cls}>{content}</div>
@@ -91,20 +101,11 @@ export const FormFooter = ({ amountToPay }) => (
     <img
       id="fin-logo"
       alt="pay-methods"
-      src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
+      src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
     />
     <div class="btn" type="submit" disabled>
       <div>
         <span>Pay ₹{getFormattedAmount(Number(amountToPay || 0) * 100)}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-        >
-          <path d="M0 0h24v24H0z" fill="none" />
-          <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-        </svg>
       </div>
     </div>
   </div>
@@ -122,7 +123,7 @@ export class AmountCreator extends React.PureComponent {
       hasStock: isAmountEntitySet ? !!field.stock | 0 : false,
       disableSubmit: !isAmountEntitySet,
       allowMultipleUnits: isAmountEntitySet
-        ? field.allow_multiple_units
+        ? field.settings.allow_multiple_units
         : false,
     };
 
@@ -138,14 +139,14 @@ export class AmountCreator extends React.PureComponent {
     if (stateName === 'has_dynamic_amount') {
       this.setState({
         hasDynamicAmount: value == 1 ? true : false,
-        allowMultipleUnits: 0,
+        allowMultipleUnits: false,
         hasStock: 0,
       });
 
       document.getElementsByName('amount')[0].value = '';
     } else if (name === 'allow_multiple_units') {
       this.setState({
-        allowMultipleUnits: target.checked ? 1 : 0,
+        allowMultipleUnits: target.checked,
       });
     } else if (stateName === 'has_stock') {
       this.setState({
@@ -157,14 +158,10 @@ export class AmountCreator extends React.PureComponent {
       const form = document.getElementsByName('form_creator_amount')[0];
       const amount = document.getElementsByName('amount')[0].value;
 
-      if (
+      const disableSubmit =
         form.querySelectorAll('.is-invalid').length ||
-        (!amount && !this.state.hasDynamicAmount)
-      ) {
-        this.setState({ disableSubmit: true });
-      } else {
-        this.setState({ disableSubmit: false });
-      }
+        (!amount && !this.state.hasDynamicAmount);
+      this.setState({ disableSubmit });
     });
   };
 
@@ -191,7 +188,7 @@ export class AmountCreator extends React.PureComponent {
             defaultValue={this.defaults.amount}
             addonBefore="₹"
             autoFocus
-            pattern="^[1-9]+(.([0-9]){1,2})?$"
+            pattern="^[0-9]+(.([0-9]){1,2})?$"
             disabled={hasDynamicAmount}
           />
           <Input.Check
@@ -205,7 +202,7 @@ export class AmountCreator extends React.PureComponent {
             name="allow_multiple_units"
             fieldLabel="Allow multiple purchases per customer"
             disabled={hasDynamicAmount}
-            checked={Boolean(allowMultipleUnits)}
+            checked={allowMultipleUnits}
             autoRender
           />
           <Input.Check

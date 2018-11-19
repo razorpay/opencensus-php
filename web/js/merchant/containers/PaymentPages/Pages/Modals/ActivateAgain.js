@@ -107,6 +107,7 @@ export default class ActivateAgainModal extends React.Component {
 
   render() {
     let msg = [];
+    const { isPaymentPagesV2Enabled } = this.props;
 
     this.props.expireBy && msg.push('change the expiry to a later date');
     this.props.timesPayable &&
@@ -181,7 +182,9 @@ export default class ActivateAgainModal extends React.Component {
 
             {this.props.timesPayable && (
               <div class="ModalForm-field">
-                <div class="Input-label">Times Payable</div>
+                <div class="Input-label">
+                  {isPaymentPagesV2Enabled ? 'Total Stock' : 'Times Payable'}
+                </div>
 
                 <div class="InputGroup Input">
                   <Input.Check

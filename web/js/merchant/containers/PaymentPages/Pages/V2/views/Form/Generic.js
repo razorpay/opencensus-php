@@ -3,7 +3,14 @@ import Input from 'component/Input';
 import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList } from 'common/util';
-import { TYPES } from './Fields/helpers';
+import { FIELD_TYPES, mapFieldToIndex } from './Fields/helpers';
+
+const CustomTypeOption = ({ option }) => (
+  <React.Fragment>
+    <i class={classList('i', option.icon && 'i-' + option.icon)} />
+    {option.label}
+  </React.Fragment>
+);
 
 export const GenericField = ({ field, onEditField, infoTxt }) => {
   return (
@@ -33,6 +40,7 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
           <div class="Field-description">{field.description}</div>
         )}
       </div>
+      {onEditField && <i class="i i-edit" />}
     </EditLayer>
   );
 };
@@ -41,15 +49,20 @@ export class GenericCreator extends React.PureComponent {
   state = {
     isDynamicAmount: false,
     hasStock: false,
-    disableSubmit: !this.props.field.label,
+    disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
   };
 
-  typeOptions = ['--Select--'].concat(
-    Object.keys(TYPES).map(i => {
+  defaultFieldIndex = this.props.field.title
+    ? mapFieldToIndex(this.props.field)
+    : '';
+
+  typeOptions = [{ label: '--Select--', value: '' }].concat(
+    Object.keys(FIELD_TYPES).map((i, idx) => {
       return {
-        name: TYPES[i].label,
-        label: TYPES[i].label,
+        value: idx,
+        label: FIELD_TYPES[i].label,
+        icon: FIELD_TYPES[i].icon,
       };
     })
   );
@@ -65,18 +78,23 @@ export class GenericCreator extends React.PureComponent {
     setTimeout(() => {
       const form = document.getElementsByName('form_creator_generic')[0];
       const title = document.getElementsByName('title')[0].value;
-      const type = document.getElementsByName('type')[0].value;
+      const fieldType = document.getElementsByName('field_type')[0].value;
 
-      if (form.querySelectorAll('.is-invalid').length || !title || !type) {
-        this.setState({ disableSubmit: true });
-      } else {
-        this.setState({ disableSubmit: false });
-      }
+      const disableSubmit =
+        form.querySelectorAll('.is-invalid').length || !title || !fieldType;
+      this.setState({ disableSubmit });
     });
   };
 
   render() {
-    const { onClose, onSubmit, field } = this.props;
+    const {
+      onClose,
+      onSubmit,
+      field,
+      allFieldsLabelList,
+      selfIndex,
+      onFieldDelete,
+    } = this.props;
     const { hasDescription, disableSubmit } = this.state;
 
     return (
@@ -92,15 +110,32 @@ export class GenericCreator extends React.PureComponent {
             defaultValue={field.title}
             placeholder="Enter field title"
             pattern="^[0-9a-zA-Z]+(?: [0-9a-zA-Z]+)*$"
+            validator={function(val) {
+              if (!val) {
+                return;
+              }
+
+              const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);
+
+              if (
+                sameTitleFieldIndex > -1 &&
+                sameTitleFieldIndex !== selfIndex
+              ) {
+                return 'Label cannot be same as other field';
+              }
+            }}
             autoFocus
           />
           {/*<input name="name" hidden value={} />*/}
-          <Input.Select
-            name="type"
+
+          <Input.PowerDropdown
+            name="field_type"
             label="What type of field is this?"
-            defaultValue={field.type}
             placeholder="Select Type"
+            defaultValue={this.defaultFieldIndex}
             options={this.typeOptions}
+            customOptionComponent={CustomTypeOption}
+            customSelectedOptionComponent={CustomTypeOption}
           />
         </div>
         <div class="section section-2">
@@ -123,12 +158,26 @@ export class GenericCreator extends React.PureComponent {
           )}
         </div>
         <footer>
-          <button type="button" class="btn-link" onClick={onClose}>
-            Cancel
-          </button>
-          <Button.Primary type="submit" disabled={disableSubmit}>
-            Add
-          </Button.Primary>
+          {!!selfIndex && (
+            <Button.Transparent
+              class="Button--danger"
+              type="button"
+              onClick={e => {
+                onFieldDelete(selfIndex);
+                e.stopPropagation();
+              }}
+            >
+              Delete
+            </Button.Transparent>
+          )}
+          <div class="group-right">
+            <button class="btn-link" type="button" onClick={onClose}>
+              Cancel
+            </button>
+            <Button.Primary type="submit" disabled={disableSubmit}>
+              Add
+            </Button.Primary>
+          </div>
         </footer>
       </Form>
     );

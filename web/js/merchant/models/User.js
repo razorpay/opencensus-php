@@ -199,6 +199,10 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
+  get isPaymentPagesV2() {
+    return this.findTag('paymentpagesv2');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
@@ -248,6 +252,10 @@ export default class User {
 
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
+  }
+
+  get isPaymentPagesV2Enabled() {
+    return this.findTag('paymentpagesv2');
   }
 }
 

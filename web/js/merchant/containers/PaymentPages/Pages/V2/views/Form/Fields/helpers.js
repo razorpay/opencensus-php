@@ -9,7 +9,7 @@ import fUnits from './field-units';
 *
 * */
 
-export const TYPES = [
+export const TYPES_not_now = [
   {
     label: 'Text',
     options: [
@@ -24,30 +24,79 @@ export const TYPES = [
   fUnits.dropdown,
 ];
 
-export default function getFieldShell(type, validation) {
-  return {
-    name: '__0__', // Dummy quantum name
-    label: '',
-    type: 'string', // Default is type string
-    require: false,
-    description: '',
-  };
+export const FIELD_TYPES = [
+  fUnits.str,
+  fUnits.number,
+  fUnits.email,
+  fUnits.phone,
+  fUnits.url,
+  fUnits.textarea,
+];
+
+// TODO: Check with Pronav/Amit regarding what if keys are added/deleted in future. In this case, score based matching could be better.
+export function mapFieldToIndex(field) {
+  let selectedIndexInOptions = null;
+
+  // Removing the fixed schema fields
+  const { title, name, required, description, ...schemaFields } = field;
+
+  for (let i = 0; i < FIELD_TYPES.length; i++) {
+    const FIELD_TYPES_keys = Object.keys(FIELD_TYPES[i].schema);
+    const FIELD_TYPES_opts_keys = FIELD_TYPES[i].schema.options
+      ? Object.keys(FIELD_TYPES[i].schema.options)
+      : {};
+
+    const field_keys = Object.keys(schemaFields);
+    const field_opts_keys = schemaFields.options
+      ? Object.keys(schemaFields.options)
+      : {};
+
+    if (
+      FIELD_TYPES_keys.length !== field_keys.length ||
+      FIELD_TYPES_opts_keys.length !== field_opts_keys.length
+    ) {
+      continue;
+    }
+
+    for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
+      if (FIELD_TYPES_keys[j] !== field_keys[j]) {
+        break;
+      }
+    }
+
+    for (let j = 0; j < FIELD_TYPES_opts_keys.length; j++) {
+      if (FIELD_TYPES_opts_keys[j] !== field_opts_keys[j]) {
+        break;
+      }
+    }
+
+    selectedIndexInOptions = i;
+    break;
+  }
+
+  if (selectedIndexInOptions === null) {
+    throw 'There is mismatch in Schema field.';
+  }
+
+  return selectedIndexInOptions;
 }
 
-export function createEmailField() {
-  return {
-    name: 'email',
-    required: true,
-    title: 'Email',
-    ...fUnits.email,
-  };
-}
+export const FIELD_CONST = {
+  get email() {
+    return {
+      name: 'email',
+      required: true,
+      title: 'Email',
+      ...fUnits.email.schema,
+    };
+  },
 
-export function createPhoneField() {
-  return {
-    name: 'phone',
-    title: 'Phone',
-    required: true,
-    ...fUnits.phone,
-  };
-}
+  get phone() {
+    return {
+      name: 'phone',
+      title: 'Phone',
+      required: true,
+      ...fUnits.phone.schema,
+    };
+  },
+};

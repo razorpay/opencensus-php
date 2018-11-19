@@ -163,3 +163,13 @@ export function validateGSTIN(gstin) {
   // Implicit is better than explicit.
   return undefined;
 }
+
+export function validateSlug(val) {
+  if (!val) {
+    return;
+  }
+
+  const slugRegex = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/;
+
+  return slugRegex.test(val);
+}

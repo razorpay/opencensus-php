@@ -1,9 +1,13 @@
-import { set, merge, removeItem, updateItem, push } from 'rzp/utils/immutable';
-import { fetchPaymentPageEntity } from 'merchant/containers/paymentpages/Pages/model';
 import {
-  createEmailField,
-  createPhoneField,
-} from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+  set,
+  merge,
+  removeItem,
+  updateItem,
+  push,
+  deepMerge,
+} from 'rzp/utils/immutable';
+import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
+import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
@@ -12,7 +16,7 @@ export const fetchPaymentPage = id => {
     return {
       type: 'UPDATE_DATA',
       fields: {
-        id: null,
+        id: null, // To handle case where intial UI schema to be shown
       },
     };
   } else {
@@ -45,11 +49,6 @@ export const updateInSchema = ({ field, index }) => {
   };
 };
 
-export const updateAmount = amountObj => ({
-  type: 'UPDATE_DATA',
-  fields: amountObj,
-});
-
 export const addInSchema = field => ({
   type: 'ADD_IN_SCHEMA',
   field,
@@ -58,7 +57,7 @@ export const addInSchema = field => ({
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
-  FORM_SCHEMA: [createEmailField(), createPhoneField()],
+  FORM_SCHEMA: [FIELD_CONST.email, FIELD_CONST.phone], // Email and Phone not to be sent in udf_schema in all cases.
 };
 
 export default function(state = initialState, action) {
@@ -67,20 +66,57 @@ export default function(state = initialState, action) {
       return set(state, 'paymentPageEntity', { id: action.id });
 
     case `${FETCH_ENTITY}::SUCCESS`:
-      const entityData = action.payload.data;
-      return set(state, 'paymentPageEntity', entityData);
+      const entityData = { ...action.payload.data };
+
+      /*
+      *
+      *  Normalize expire_by for FE consumption
+      *
+      * */
+      if (entityData.expire_by) {
+        entityData.expire_by *= 1000;
+      }
+
+      if (entityData.amount) {
+        entityData.amount /= 100;
+      }
+
+      entityData.settings.allow_social_share =
+        entityData.settings.allow_social_share === '1';
+
+      entityData.settings.allow_multiple_units =
+        entityData.settings.allow_multiple_units === '1';
+
+      entityData.stock = entityData.times_payable;
+      delete entityData.times_payable;
+
+      return {
+        paymentPageEntity: entityData,
+        payment_page_id: entityData.id,
+        FORM_SCHEMA: JSON.parse(entityData.settings.udf_schema), // Must have phone and email already with it. FE hardcodes only for new payment page.
+      };
 
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
     case 'UPDATE_DATA':
       if (action.fields.hasOwnProperty('id')) {
-        return set(state, 'paymentPageEntity', { id: action.id });
+        // re-Initialise FE if ID is changed to other ID/null
+        return {
+          ...initialState,
+          payment_page_id: action.id,
+          paymentPageEntity: { id: action.id },
+        };
       } else {
-        return set(state, 'paymentPageEntity', {
-          ...state.paymentPageEntity,
-          ...action.fields,
-        });
+        return set(
+          state,
+          'paymentPageEntity',
+          deepMerge(
+            // Needed for settings
+            state.paymentPageEntity,
+            action.fields
+          )
+        );
       }
 
     case 'DELETE_IN_SCHEMA':

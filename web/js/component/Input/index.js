@@ -5,6 +5,7 @@ import CalendarPicker from './Calendar';
 import TimePicker from './Time';
 import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
+import PowerDropdown from './PowerDropdown';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -58,6 +59,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     validator,
@@ -83,6 +85,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     checkboxMaskLabel,
@@ -351,6 +354,9 @@ export default class Field extends React.Component {
                 {allProps.addonBefore}
               </span>
             )}
+            {allProps.addonValueBefore && (
+              <span class="Input-valueBefore">{allProps.addonValueBefore}</span>
+            )}
             {InputComponent}
             {allProps.addonAfter && (
               <span class="Input-addons Input-addons--after">
@@ -593,6 +599,7 @@ Field.Group = ({ label, className, children, ...otherProps }) => {
 
 Field.PairList = PairList;
 Field.EditablePairsList = EditablePairsList;
+Field.PowerDropdown = PowerDropdown;
 
 const ToCalendar = _ => (
   <CalendarPicker

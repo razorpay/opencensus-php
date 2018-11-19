@@ -3,9 +3,10 @@ import Button from 'component/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
+import { FIELD_TYPES } from './Fields/helpers';
 
 import {
-  updateAmount,
+  updateData,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -24,7 +25,7 @@ const CreatorType = {
 };
 
 @connect(state => ({ ...state.wysiwyg }), {
-  updateAmount,
+  updateData,
   deleteInSchema,
   updateInSchema,
   addInSchema,
@@ -38,7 +39,6 @@ export default class View extends React.PureComponent {
 
     this.creatorStructure = {
       width,
-      top: offset(e.target).top,
       left: offset(parent).left - 44,
     };
 
@@ -50,9 +50,9 @@ export default class View extends React.PureComponent {
   };
 
   onGenericCreatorSubmit = formData => {
-    console.log('FORM DATA.....', formData);
+    // console.log('FORM DATA.....', formData);
 
-    const { title, type, required, description } = formData;
+    const { title, field_type, required, description } = formData;
 
     this.props.updateInSchema({
       field: {
@@ -62,9 +62,9 @@ export default class View extends React.PureComponent {
           .split(' ')
           .join('_'),
         title,
-        type,
         required,
         description,
+        ...FIELD_TYPES[field_type].schema,
       },
       index: this.state.activeSchemaIndex,
     });
@@ -72,13 +72,20 @@ export default class View extends React.PureComponent {
     this.setState({ activeCreatorType: false });
   };
 
+  onGenericFieldDelete = idx => {
+    this.onCreatorClose();
+    this.props.deleteInSchema(idx);
+  };
+
   onAmountCreatorSubmit = formData => {
     const { amount, stock, allow_multiple_units } = formData;
 
-    this.props.updateAmount({
+    this.props.updateData({
       amount: amount || null,
       stock: stock || null,
-      allow_multiple_units: !!allow_multiple_units,
+      settings: {
+        allow_multiple_units: !!allow_multiple_units,
+      },
     });
 
     this.setState({ activeCreatorType: false });
@@ -89,16 +96,17 @@ export default class View extends React.PureComponent {
     const activeCreatorType = this.state.activeCreatorType;
     const { paymentPageEntity } = this.props;
 
-    if (paymentPageEntity.id && !paymentPageEntity.title) {
+    if (!paymentPageEntity) {
+      return null;
+    }
+
+    if (
+      paymentPageEntity.id &&
+      typeof paymentPageEntity.title === 'undefined'
+    ) {
       return (
         <div class="spinner-container">
           <div class="spin-btn large visible" />
-        </div>
-      );
-    } else if (paymentPageEntity.id && !paymentPageEntity) {
-      return (
-        <div class="spinner-container">
-          <b>{paymentPageEntity.id}</b> ID doesn't exist
         </div>
       );
     }
@@ -115,11 +123,20 @@ export default class View extends React.PureComponent {
           />
         );
       } else if (activeCreatorType === CreatorType.GENERIC) {
+        const field = FORM_SCHEMA[this.state.activeSchemaIndex] || {};
+        let isRemovable = true;
+        if (['email', 'phone'].indexOf(field.name) > -1) {
+          isRemovable = false;
+        }
+
         editorContent = (
           <GenericCreator
-            field={FORM_SCHEMA[this.state.activeSchemaIndex] || {}}
+            field={field}
+            selfIndex={this.state.activeSchemaIndex}
+            allFieldsLabelList={FORM_SCHEMA.map(f => f.title)}
             onClose={this.onCreatorClose}
             onSubmit={this.onGenericCreatorSubmit}
+            onFieldDelete={isRemovable ? this.onGenericFieldDelete : undefined}
           />
         );
       }
@@ -149,7 +166,7 @@ export default class View extends React.PureComponent {
 
             return (
               <GenericField
-                key={idx}
+                key={field.name}
                 field={field}
                 infoTxt={infoTxt}
                 onEditField={
@@ -183,10 +200,10 @@ const Creator = ({ children, creatorStructure }) => {
         showCloseBtn={false}
         style={{
           width: creatorStructure.width,
-          top: creatorStructure.top,
+          top: '50%',
           left: creatorStructure.left,
-          margin: '12px 0 80px',
-          transform: 'none',
+          margin: '12px 0 0',
+          transform: 'translateY(-50%)',
         }}
       >
         <ModalContent class="paymentlinks-creator">{children}</ModalContent>

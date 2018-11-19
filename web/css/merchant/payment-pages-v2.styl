@@ -1,5 +1,5 @@
 .Modal-mask.Modal-mask--payment-pages-v2-intro
-  background-color: rgba(17,30,60,0.8);
+  background-color: rgba(17,30,60,0.8)
   text-align: center
   z-index: 999999 // Has to be highest
 
@@ -27,26 +27,85 @@
     background: transparent
 
 .Modal-mask--payment-pages-v2-creator
+  .Modal-container
+    top: 40%
+    overflow: visible
+
   footer
     padding: 16px
     background: #f6f6f6
     border-top: 1px solid #e0e0e0
-    text-align: right
+    overflow: auto
+
+    .group-right
+      float: right
+      margin-top: -4px;
 
     button
       margin-right: 30px
+      margin-top: 4px
 
     .Button--primary
       margin-right: 0
       padding: 8px 32px
 
+.Modal-mask--paymentpages-settings
+  background: #fff
+
+  .main-title
+    font-weight: 600
+    padding: 16px 24px 4px
+    font-size: 18px
+
+  .Modal-container
+    width: 400px
+
+  .settings-section
+    padding: 24px
+
+    .Input
+      margin-top: 0
+
+    &:not(:last-of-type)
+      border-bottom: 1px solid #ececec
+
+  .Input .Input-valueBefore + .Input-el
+    padding-left: 182px
+
+  .Input
+    margin-bottom: 0
+
+  .Input-content
+    margin-top: 4px
+
+  .Input--theme, .Input--expiryby
+    .Input-label, .Input-content
+      display: inline-block
+
+    .Input-content
+      margin-left: 28px
+      margin-top: -4px
+      vertical-align: middle
+
+  footer
+    padding: 16px 24px
+    background: #f6f6f6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    .Button--transparent
+      padding: 10px 20px
+
+    button:last-of-type
+      margin-right: 0
 
 
 #wysiwyg-root
-  padding-top: 30px;
+  padding-top: 30px
   animation: 0.3s fadein ease-in
 
-.payment-pages-v2
+/* Paymentpages v2 styles*/
+#payment-pages-v2
   .spinner-container
     text-align: center
     padding: 100px 0
@@ -59,6 +118,7 @@
     position: fixed
     width: 100%
     z-index: 2
+    min-width: 854px
 
     .page-size
       width: 100%
@@ -76,6 +136,10 @@
         font-weight: 600
         padding-left: 8px
 
+        span
+          opacity: 0.35
+          font-weight: 400
+
       .page-action
         float: right
         margin-right: 56px
@@ -83,6 +147,8 @@
         button
           line-height: 10px
           padding: 10px 28px
+          height: 32px
+          vertical-align: top
 
     .close-btn
       font-size: 24px
@@ -102,6 +168,7 @@
     padding-left: 0
 
 
+  // Wysiwyg elements
   #details-section
     label
       display: inherit
@@ -122,31 +189,54 @@
 
         .Input-el
           background: transparent
-          border: none
           resize: none
+          border: 1px solid transparent
 
+        .Input-highlight .Input-el
+          &[name="title"], &[name="description"]
+            border-color: #eee
+
+        .Input-el.Input-el
           &:hover
-            border: 1px solid #e2e2e2
+            border-color: #e2e2e2
 
           &:focus
             background: #fff
-            border: 1px solid $primary-color
+            border-color: $primary-color
             resize: vertical
 
-    .Input-elWrapper
-      font-size: inherit
+    .Input
+      .Input-error
+        line-height: 14px
+        font-size: 14px
+
+      .Input-el
+        font-size: 14px
 
     .title--big
       .Input-el
-        height: 40px
+        min-height: 42px
         font-size: 24px
         line-height: 32px
         font-weight: 600
+        padding: 1px 5px 2px // 1px less cuz of border
+
+      .Input-error
+        line-height: 14px
+        margin-top: -8px
+
+      .fake-textarea
+        line-height: 32px
+        font-size: 24px
 
     textarea.Input-el
-      min-height: 28px
-      height: 28px
+      min-height: 30px
+      height: 30px
       max-height: 230px // Supports 720 char on desktop
+      line-height: 22px
+
+      &[name="description"]
+        min-height: 70px
 
     .Input
       margin: -4px -6px
@@ -154,7 +244,6 @@
       .Input-el
         padding: 3px 5px
         position: relative
-
 
   #share-details, #support-details, #terms-details
     .wysiwyg-edit-layer
@@ -181,8 +270,12 @@
         background: transparent
         color: #0D2366 // Same as in customer-facing view
 
-  .title--big .Input-el
-    padding: 1px 5px 2px // 1px less cuz of border
+    .Input-error
+      margin: -2px 0 4px
+
+    svg
+      vertical-align: top
+      margin-top: 7px
 
 
   #form-section
@@ -193,6 +286,15 @@
         top: 50%
         transform: translate(-50%, -50%)
 
+    .i-fix-sort
+      font-size: 10px
+
+    .i-fix-number
+      font-size: 10px
+
+    .i-fix-alphabet
+      font-size: 11px
+
   .wysiwyg-edit-layer
     position: relative
     margin: -4px -6px
@@ -200,13 +302,26 @@
     border-radius: 2px
     cursor: pointer
 
+    .i
+      position absolute
+      top: 13px
+      right: 4px
+      font-size: 20px
+      padding: 2px 8px
+      cursor: pointer
+      visibility: hidden
+      color: #bfbfbf
+
+      &:hover
+        color: $textDangerColor
+
     &:not(.disable-hover):hover
       background-color: #fff
       box-shadow: 0 5px 13px 0 rgba(0,0,0,0.14)
 
     &:hover
-      .close-btn
-        opacity: 0.5
+      .i
+        visibility: visible
 
       .Input-info
         transform: translateY(-50%)
@@ -241,7 +356,8 @@
         border-bottom-color: #2c3243
 
 
-.UI-form
+/* Overriding styles of UI-form */
+#payment-pages-v2 .UI-form
   .wysiwyg-edit-layer
     &.Field
       margin: 24px -44px -8px
@@ -271,6 +387,7 @@
         bottom: -16px
 
 
+/* Styles for creator modal */
 .paymentlinks-creator
   .section
     padding: 24px
@@ -305,6 +422,7 @@
 
       .Input
         padding-right: 44px
+        vertical-align: top
 
       .Input-el:not([type=checkbox])
         min-width: 200px
@@ -355,7 +473,8 @@
       margin: -8px 4px
 
 
-.fakeTextArea
+/* Style for extendable-on-keypress text area */
+.fake-textarea
   overflow: hidden
   word-wrap: break-word
   white-space: pre-wrap

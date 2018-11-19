@@ -1,5 +1,11 @@
+/*
+* Extra schema keys supported apart from the ones mentioned in 'schema' object are:
+* title, name, description, required
+*
+* */
 const str = {
   label: 'Single line text',
+  icon: 'alphabet i-fix-alphabet',
   schema: {
     type: 'string',
   },
@@ -7,13 +13,16 @@ const str = {
 
 const number = {
   label: 'Number',
+  icon: 'number i-fix-number',
   schema: {
     type: 'number',
+    pattern: 'number',
   },
 };
 
 const email = {
   label: 'Email',
+  icon: 'email-at',
   schema: {
     type: 'string',
     pattern: 'email',
@@ -25,6 +34,7 @@ const email = {
 
 const phone = {
   label: 'Phone No.',
+  icon: 'phone',
   schema: {
     type: 'number',
     pattern: 'phone',
@@ -40,6 +50,7 @@ const phone = {
 
 const url = {
   label: 'Link / URL',
+  icon: 'link',
   schema: {
     type: 'string',
     pattern: 'url',
@@ -51,9 +62,12 @@ const url = {
 
 const textarea = {
   label: 'Large text area',
-  type: 'string',
-  options: {
-    cmp: 'textarea',
+  icon: 'sort i-fix-sort',
+  schema: {
+    type: 'string',
+    options: {
+      cmp: 'textarea',
+    },
   },
 };
 

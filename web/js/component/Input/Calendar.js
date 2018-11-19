@@ -30,13 +30,13 @@ class CalendarWrapper extends React.Component {
 
   // value is moment object
   onChange = value => {
-    // Custom function to execute component specific functionality.
-    this.props.onChange && this.props.onChange(value);
-
     // To modify the selected date from calendar, eg. endOf or startOf
     if (value && this.props.postSelectionValue) {
       value = this.props.postSelectionValue(value);
     }
+
+    // Custom function to execute component specific functionality.
+    this.props.onChange && this.props.onChange(value);
 
     this.setState({
       value,
@@ -236,8 +236,9 @@ export function dateCalculator(date, curSelectedTS, onCalculation) {
         curSelectedTS.valueOf() - curSelectedTS.startOf('day').valueOf(); // Offset since start of day
     }
 
-    // TODO: Currently, it's calculating 'endOf'. For ToCalendar, it must be startOf. Make configurable.
-    newSelectedTS = date.endOf('day').valueOf() + offsetTime;
+    newSelectedTS = offsetTime
+      ? date.startOf('day').valueOf() + offsetTime
+      : date.endOf('day').valueOf();
   } else {
     newSelectedTS = null;
   }

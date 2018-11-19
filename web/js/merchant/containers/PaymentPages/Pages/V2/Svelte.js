@@ -11,11 +11,8 @@ export default class Svelte extends React.Component {
     const { payment_page_id } = this.props;
 
     this.templateData = {
-      data: {
-        is_test_mode: this.props.isTestMode,
-        merchant: this.props.merchantData,
-      },
-
+      is_test_mode: this.props.isTestMode,
+      merchant: this.props.merchantData,
       context: {
         page_title: payment_page_id
           ? 'Edit Payment Page - ' + payment_page_id

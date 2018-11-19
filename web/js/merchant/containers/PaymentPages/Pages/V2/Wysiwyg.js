@@ -2,18 +2,25 @@ import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
-import Button from 'component/Button';
+import { Link } from 'react-router-dom';
+import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
+import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
-import { createPaymentPage, sendLink } from '../model';
+import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { fetchPaymentPage } from 'merchant/modules/wysiwyg';
+import { fetchPaymentPage, updateData } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+
+const ERROR = {
+  SCRIPT: 1,
+  INVALID_ENTITY: 2,
+};
 
 @withRouter
 @connect(
@@ -24,6 +31,7 @@ import { showNotification } from 'rzp/modules/notifications';
     ...state.wysiwyg,
   }),
   {
+    updateData,
     fetchPaymentPage,
     showNotification,
     closeModal,
@@ -38,15 +46,69 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
 
   componentWillMount() {
-    this.props.fetchPaymentPage(this.props.id);
+    this.fetchEntity(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchPaymentPage(nextProps.id);
+      this.fetchEntity(nextProps.id);
       this.props.closeModal();
+
+      this.setState({
+        isPageLoadError: null,
+        isIntroOpened: false,
+      });
+
+      if (!nextProps.id) {
+        this.setState({ isIntroOpened: true });
+      }
     }
   }
+
+  componentWillUpdate(nextProps) {
+    const nextTheme =
+      nextProps.paymentPageEntity.settings &&
+      nextProps.paymentPageEntity.settings.theme;
+    const curTheme =
+      this.props.paymentPageEntity.settings &&
+      this.props.paymentPageEntity.settings.theme;
+
+    if (!nextTheme || nextTheme !== curTheme) {
+      this.changeFETheme(nextTheme);
+    }
+  }
+
+  changeFETheme(theme) {
+    const parentEl = document.getElementById('payment-pages-v2');
+
+    if (theme === 'dark') {
+      parentEl.classList.add('dark');
+      parentEl.classList.remove('light');
+    } else if (theme === 'light') {
+      parentEl.classList.add('light');
+      parentEl.classList.remove('dark');
+    }
+  }
+
+  fetchEntity = id => {
+    const promise = this.props.fetchPaymentPage(id); // Auto reinitialise store if id doesn't exist.
+
+    if (promise instanceof Promise) {
+      promise
+        .then(({ data }) => {
+          if (data) {
+            if (data.settings) {
+              this.changeFETheme(data.settings.theme || 'light');
+            }
+          }
+        })
+        .catch(err => {
+          this.setState({
+            isPageLoadError: ERROR.INVALID_ENTITY,
+          });
+        });
+    }
+  };
 
   componentDidMount() {
     // Insert script in local
@@ -60,13 +122,38 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
+    script.onerror = () => {
+      this.setState({
+        isPageLoadError: ERROR.SCRIPT,
+      });
+    };
+
+    // TODO: Change to prod CDN url
+    // script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
     script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
+    // script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
+
+    document.getElementById('payment-pages-v2').classList.add('theme-desktop');
   }
 
   handleClose = () => {
-    console.log('Handle close button');
+    this.context.confirm({
+      header: 'Discard Changes?',
+      message: () => (
+        <div class="text-semi-muted">
+          <p>
+            Do you want to discard all the changes and go back to Dashboard?
+          </p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes',
+      abortLabel: 'Cancel',
+      action: () => {
+        this.props.history.push(`/paymentpages/`);
+      },
+    });
   };
 
   initSubApps = () => {
@@ -82,50 +169,156 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           handleClose={this.props.closeModal}
           handleAction={sendLink.bind(null, id)}
           isNew={true}
+          isPaymentPagesV2={true}
           showNotification={this.props.showNotification}
           url={shortUrl}
           title={title}
           description={description}
           trackerFn={function() {}}
+          AddonAction={
+            <div class="label--faded m-t">
+              You can customize this url from{' '}
+              <Button.Transparent
+                type="submit"
+                class="Button--Link"
+                onClick={() => {
+                  this.props.closeModal();
+                  this.setState({ isSettingsOpened: true });
+                }}
+              >
+                Page Settings
+              </Button.Transparent>
+            </div>
+          }
         />
       ),
     });
   };
 
-  handleCreate = () => {
-    console.log('Handle Create..', this.props.paymentPageEntity);
+  // Handles both in save and edit mode.
+  handleSaveSettings = formData => {
+    const payload = {};
+
+    if (formData.expire_by) {
+      payload.expire_by = formData.expire_by;
+    }
+
+    if (formData.slug) {
+      payload.slug = formData.slug.trim();
+    }
+
+    payload.settings = {};
+
+    if (typeof formData.theme !== 'undefined') {
+      if (formData.theme === '0') {
+        payload.settings.theme = 'dark';
+      } else {
+        payload.settings.theme = 'light';
+      }
+    }
+
+    const isEditExistingId = this.props.id;
+
+    // In edit mode
+    if (isEditExistingId) {
+      editPaymentPage(this.props.id, payload)
+        .then(resp => {
+          if (resp.data) {
+            this.props.updateData(payload);
+
+            this.props.showNotification({
+              type: 'success',
+              message: 'Page Settings are successfully updated',
+            });
+
+            this.setState({
+              isSettingsOpened: false,
+            });
+
+            const entityId = resp.data.id;
+
+            this.openPPShareView(
+              entityId,
+              resp.data.short_url,
+              resp.data.title,
+              resp.data.description
+            );
+          }
+        })
+        .catch(({ errors }) => {
+          this.setState({
+            isSettingsOpened: false,
+          });
+
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    } else {
+      this.props.updateData(payload);
+
+      this.setState({
+        isSettingsOpened: false,
+      });
+    }
+  };
+
+  // Handles both Create and Edit payment page.
+  handleSavePublish = () => {
+    const { FORM_SCHEMA, paymentPageEntity } = this.props;
+    // console.log('Handle Create..', paymentPageEntity);
 
     const {
       amount,
       title,
       description,
       stock,
-      allow_multiple_units,
-      allow_social_share,
-    } = this.props.paymentPageEntity;
+      terms,
+      support_email,
+      support_contact,
+      settings,
+    } = paymentPageEntity;
 
+    // Remove Email and Phone in all cases before sending to API.
+    const udf_schema = [...FORM_SCHEMA];
+
+    // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
     const reqPayload = {
-      amount: amount || undefined,
+      amount: amount || null,
       title,
-      description: description || undefined,
-      times_payable: stock || undefined,
+      description: description || null,
+      times_payable: stock || null,
+      terms: terms || null,
+      support_email: support_email || null,
+      support_contact: support_contact || null,
       settings: {
-        allow_multiple_units: allow_multiple_units | 0,
-        allow_social_share: allow_social_share | 0,
+        theme: settings.theme,
+        allow_multiple_units: settings.allow_multiple_units ? '1' : '0',
+        allow_social_share: settings.allow_social_share ? '1' : '0',
+        udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
       },
     };
+    // console.log('REQ PAYLOAD...', reqPayload);
 
-    if (this.state.id) {
-      console.log('USE UPDATE API TO UPDATE THE STUFF... NOT POST API..');
-      return;
-    }
+    const isEditExistingId = this.props.id;
+    const requestAPIPromise = isEditExistingId
+      ? editPaymentPage(this.props.id, reqPayload)
+      : createPaymentPage(reqPayload);
 
-    return createPaymentPage(reqPayload)
+    return requestAPIPromise
       .then(resp => {
         if (resp.data) {
           const entityId = resp.data.id;
 
-          this.props.history.push(`/paymentpages/${entityId}/edit`);
+          if (isEditExistingId) {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Paymentpage is successfully Saved and Published',
+            });
+          } else {
+            this.props.history.push(`/paymentpages/${entityId}/edit`);
+          }
 
           this.openPPShareView(
             entityId,
@@ -175,18 +368,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }, 100);
   };
 
-  render() {
-    const { isPageReady } = this.state;
-    const { paymentPageEntity, id: payment_page_id } = this.props;
+  togglePageSettings = () => {
+    this.setState({
+      isSettingsOpened: !this.state.isSettingsOpened,
+    });
+  };
 
-    console.log('paymentPageEntity.....', paymentPageEntity);
+  render() {
+    const { isPageReady, isPageLoadError } = this.state;
+    const { paymentPageEntity, id: payment_page_id } = this.props;
 
     const merchantData = {
       name: this.props.user.name,
       brand_color: this.props.config.brand_color,
-      image:
-        'https://cdn.razorpay.com/logos/AjkWrnqhycTNfR_medium.png' ||
-        this.props.user.logo_url,
+      image: this.props.user.logo_url,
     };
 
     const isAllowedToSubmit =
@@ -195,49 +390,84 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       paymentPageEntity.title;
     const actionBtns = (
       <React.Fragment>
-        <Button.Primary
-          onClick={this.handleCreate}
+        <Button.Transparent
+          type="button"
+          style={{ color: '#fff' }}
+          onClick={this.togglePageSettings}
+        >
+          Page Settings
+        </Button.Transparent>
+        <AsyncBtn.Primary
+          onClick={this.handleSavePublish}
           disabled={!isAllowedToSubmit}
+          pendingState="Publishing"
         >
           {payment_page_id
             ? 'Save and Publish Page'
             : 'Create and Publish Page'}
-        </Button.Primary>
+        </AsyncBtn.Primary>
       </React.Fragment>
     );
 
     const pageNavTitle = payment_page_id ? (
       <>
-        Edit Payment Page{' '}
-        <span style={{ opacity: 0.35, fontWeight: 400 }}>
-          {' '}
-          - {payment_page_id}
-        </span>
+        Edit Payment Page <span> - {payment_page_id}</span>
       </>
     ) : (
       'Create New Payment Page'
     );
 
+    let themeColor;
+    if (paymentPageEntity.settings) {
+      themeColor =
+        paymentPageEntity.settings.theme === 'dark' ? '#383838' : '#efefef';
+    }
+
     return (
-      <div class="payment-pages-v2">
+      <div id="payment-pages-v2" style={{ backgroundColor: themeColor }}>
         {this.state.isIntroOpened && (
           <IntroMask onClose={this.handleIntroClose} />
+        )}
+
+        {this.state.isSettingsOpened && (
+          <PPSettingsView
+            handleClose={this.togglePageSettings}
+            paymentPageEntity={paymentPageEntity}
+            handleAction={this.handleSaveSettings}
+            isNew={this.props.id}
+          />
         )}
 
         <Header
           title={pageNavTitle}
           actionBtns={actionBtns}
-          handleClose={this.handleClose}
           isPageReady={isPageReady}
+          handleClose={this.handleClose}
         />
-        {isPageReady && (
-          <Svelte
-            payment_page_id={payment_page_id}
-            isTestMode={this.props.mode.toLowerCase() === 'test'}
-            merchantData={merchantData}
-            onMount={this.initSubApps}
-          />
-        )}
+        {!isPageLoadError &&
+          isPageReady && (
+            <Svelte
+              payment_page_id={payment_page_id}
+              isTestMode={this.props.mode.toLowerCase() === 'test'}
+              merchantData={merchantData}
+              onMount={this.initSubApps}
+            />
+          )}
+        {do {
+          if (isPageLoadError) {
+            if (isPageLoadError === ERROR.SCRIPT) {
+              <div class="page-center">
+                Some network error has occurred. Please reload the page.
+              </div>;
+            } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
+              <div class="page-center">
+                Payment page with id <b>{payment_page_id}</b> doesn't exist.
+                <br />
+                Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
+              </div>;
+            }
+          }
+        }}
       </div>
     );
   }
@@ -249,11 +479,11 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
       <div class="page-size">
         <div class="page-title">{title}</div>
 
-        {actionBtns &&
-          isPageReady && <div class="page-action">{actionBtns}</div>}
+        {isPageReady &&
+          !!actionBtns && <div class="page-action">{actionBtns}</div>}
 
-        {handleClose &&
-          isPageReady && (
+        {isPageReady &&
+          !!handleClose && (
             <span class="close-btn" onClick={handleClose}>
               ×
             </span>
