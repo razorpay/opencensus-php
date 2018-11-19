@@ -518,15 +518,15 @@ class Service extends Base\Service
             }
             else
             {
-                $merchantService = new Merchant\Service;
-
-                $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
+                $data['experiments']['instant_activations'] = ['result' => 'on'];
             }
         }
         else
         {
             $data['experiments']['instant_activations'] = ['result' => 'off'];
         }
+
+        $this->trace->info(TraceCode::RAZORX_EXPERIMENTS, $data['experiments']);
 
         return $data;
     }
