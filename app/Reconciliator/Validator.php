@@ -110,7 +110,7 @@ class Validator extends Base\Core
                                                             ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached RECON file for SRS/"],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached RECON file for RazorPay/"],
         RequestProcessor\Base::PAYZAPP                 => [
                                                              "/Please find Merchant payout report attached for Date "
                                                              ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
