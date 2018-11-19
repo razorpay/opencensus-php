@@ -501,6 +501,8 @@ class Service extends Base\Service
      */
     public function updateInstantActivationExperiment($user, array $data)
     {
+        $enableInstantActivations = true;
+
         if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
         {
             //
@@ -510,16 +512,27 @@ class Service extends Base\Service
             //
             if ($data['activation_flow'] !== null)
             {
-                $data['experiments']['instant_activations'] = ['result' => 'on'];
+                $enableInstantActivations = true;
             }
             else if (((bool) $data['submitted']) === true)
             {
-                $data['experiments']['instant_activations'] = ['result' => 'off'];
+                $enableInstantActivations = false;
             }
             else
             {
-                $data['experiments']['instant_activations'] = ['result' => 'on'];
+                $enableInstantActivations = true;
             }
+        }
+        else
+        {
+            $enableInstantActivations = false;
+        }
+
+        $data['instant_activations'] = $enableInstantActivations;
+
+        if ($enableInstantActivations === true)
+        {
+            $data['experiments']['instant_activations'] = ['result' => 'on'];
         }
         else
         {
