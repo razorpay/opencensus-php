@@ -15,27 +15,27 @@ class Entity extends Base\PublicEntity
 
     use SoftDeletes;
     
-    const CUSTOMER_ID       = "customer_id";
+    const CUSTOMER_ID       = 'customer_id';
 
     //
     // Method can be of card or emandate
     //
-    const METHOD            = "method";
-    const ENTITY_TYPE       = "entity_type";
-    const BANK              = "bank";
-    const ENTITY_ID         = "entity_id";
-    const RECURRING_STATUS  = "recurring_status";
-    const FAILURE_REASON    = "failure_reason";
-    const MAX_AMOUNT        = "max_amount";
-    const TOKEN_ID          = "token_id";
-    const TOKEN             = "token";
-    const NOTES             = "notes";
+    const METHOD            = 'method';
+    const ENTITY_TYPE       = 'entity_type';
+    const BANK              = 'bank';
+    const ENTITY_ID         = 'entity_id';
+    const RECURRING_STATUS  = 'recurring_status';
+    const FAILURE_REASON    = 'failure_reason';
+    const MAX_AMOUNT        = 'max_amount';
+    const TOKEN_ID          = 'token_id';
+    const TOKEN             = 'token';
+    const NOTES             = 'notes';
 
     //
     // Auth Type is aadhaar or netbanking
     //
-    const AUTH_TYPE         = "auth_type";
-    const EXPIRE_AT         = "expire_at";
+    const AUTH_TYPE         = 'auth_type';
+    const EXPIRE_AT         = 'expire_at';
     const DELETED_AT        = 'deleted_at';
 
     protected static $sign = 'subr';

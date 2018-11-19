@@ -16,9 +16,9 @@ class Repository extends Base\Repository
     public function findByTokenIdAndMerchant(string $tokenId, string $merchantId)
     {
         $subscriptionRegistration = $this->newQuery()
-                      ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(Entity::TOKEN_ID, '=', $tokenId)
-                      ->first();
+                                         ->merchantId($merchantId)
+                                         ->where(Entity::TOKEN_ID, '=', $tokenId)
+                                         ->first();
 
         return $subscriptionRegistration;
     }

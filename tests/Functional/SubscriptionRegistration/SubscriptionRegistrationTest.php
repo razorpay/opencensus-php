@@ -11,10 +11,12 @@ use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
 class SubscriptionRegistrationTest extends TestCase
 {
     use PaymentTrait;
+    use InvoiceTestTrait;
     use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
@@ -256,6 +258,33 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getNotesJson(), $invoice->getNotesJson());
     }
 
+    public function testPayAuthLink()
+    {
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $payment = $this->setupPaymentRequest();
+
+        unset($payment['notes']);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+
+        $token = $this->getDbLastEntity('token');
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals($subr->token->getPublicId(), $token->getPublicId());
+
+        $this->assertEquals($invoice->getNotesJson(), $subr->getNotesJson());
+    }
+
     protected function setupPaymentRequest()
     {
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
@@ -268,7 +297,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $order = $this->fixtures->create('order', ['amount' => $payment['amount']]);
 
-        $paymentRequest['order_id'] = $order->getPublicId();
+        $payment['order_id'] = $order->getPublicId();
 
         return $payment;
     }

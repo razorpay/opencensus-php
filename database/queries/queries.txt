@@ -4412,5 +4412,6 @@ ALTER TABLE balance
 
 ALTER TABLE subscription_registrations
     ADD COLUMN notes TEXT AFTER expire_at,
-    ADD COLUMN token_id CHAR(14) AFTER customer_id;
+    ADD COLUMN token_id CHAR(14) AFTER customer_id,
+     ADD INDEX subr_token_id_index (token_id);
 
