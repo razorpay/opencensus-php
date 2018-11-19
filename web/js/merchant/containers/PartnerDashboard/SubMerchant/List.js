@@ -68,7 +68,7 @@ const activationStatus = {
   value: submerchant =>
     submerchant.details && submerchant.details.activation_status ? (
       <>
-        {submerchant.details.activation_status === 'activated' && (
+        {submerchant.details.activation_status === 'instantly_activated' && (
           <>
             <i class="i i-info-circle" />&nbsp;
             <Popover align="right" theme="dark">
@@ -79,7 +79,7 @@ const activationStatus = {
             </Popover>
           </>
         )}
-        <ActivationStatusLabel status={'instantly_activated'} />
+        <ActivationStatusLabel status={submerchant.details.activation_status} />
       </>
     ) : (
       <span class="status-label label label-warning">Not Submitted</span>
