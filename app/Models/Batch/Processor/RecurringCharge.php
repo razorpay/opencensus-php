@@ -14,6 +14,8 @@ class RecurringCharge extends Base
 {
     const RESPONSE_PAYMENT_ID = 'razorpay_payment_id';
 
+    const RUPEE_CURRENCY_FIELD = 'inr_in_rupee';
+
     protected $paymentProcessor;
 
     protected $orderCore;
@@ -30,6 +32,8 @@ class RecurringCharge extends Base
     protected function processEntry(array & $entry)
     {
         $this->paymentProcessor->flushPaymentObjects();
+
+        $this->processCurrencyAndAmount($entry);
 
         $order = $this->createOrder($entry);
 
@@ -94,5 +98,21 @@ class RecurringCharge extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function processCurrencyAndAmount(array & $entry)
+    {
+        $currency = $entry[Header::RECURRING_CHARGE_CURRENCY];
+
+        if ($currency == self::RUPEE_CURRENCY_FIELD)
+        {
+            $entry[Header::RECURRING_CHARGE_CURRENCY] = 'INR';
+
+            $amount = $entry[Header::RECURRING_CHARGE_AMOUNT];
+
+            $amount = $amount*100;
+
+            $entry[Header::RECURRING_CHARGE_AMOUNT] = $amount;
+        }
     }
 }

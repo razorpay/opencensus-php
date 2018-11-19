@@ -85,6 +85,53 @@ class RecurringChargeTest extends TestCase
         $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
     }
 
+    public function testCreateBatchOfRecurringChargeWithRupeeAmount()
+    {
+        $entries = $this->getBatchFileEntriesWithRupee();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        $entities = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $entities['success_count']);
+
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('processed', $batch['status']);
+
+        $this->assertEquals(20000, $batch['processed_amount']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('random receipt', $order['receipt']);
+
+        $this->assertEquals('INR', $order['currency']);
+
+        $this->assertEquals($order['notes']['notes_1'], 'random notes');
+
+        $this->assertEquals($order['notes']['notes_2'], 123);
+
+        $this->assertEquals($order['notes']['notes_3'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('INR', $payment['currency']);
+
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+
+        $this->assertEquals(10000, $payment['amount']);
+
+        $this->assertEquals('random description', $payment['description']);
+
+        $this->assertEquals($batch['id'], 'batch_'.$payment['batch_id']);
+    }
+
     protected function getDefaultVirtualAccountFileEntries()
     {
         return [
@@ -107,6 +154,40 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
                 Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
                 Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
+                Batch\Header::RECURRING_CHARGE_RECEIPT     => 'random receipt',
+                Batch\Header::RECURRING_CHARGE_DESCRIPTION => 'random description',
+                'notes[notes_1]'                           => 'random notes',
+                'notes[notes_2]'                           =>  123,
+                'notes[notes_3]'                           =>  true,
+                'notes[notes_4]'                           =>  '',
+                'notes[notes_5]'                           =>  null
+
+            ],
+        ];
+    }
+
+    protected function getBatchFileEntriesWithRupee()
+    {
+        return [
+            [
+                Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
+                Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
+                Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
+                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'inr_in_rupee',
+                Batch\Header::RECURRING_CHARGE_RECEIPT     => '',
+                Batch\Header::RECURRING_CHARGE_DESCRIPTION => null,
+                'notes[notes_1]'                           => null,
+                'notes[notes_2]'                           => null,
+                'notes[notes_3]'                           => null,
+                'notes[notes_4]'                           => null,
+                'notes[notes_5]'                           => null,
+
+            ],
+            [
+                Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
+                Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
+                Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
+                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'inr_in_rupee',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => 'random receipt',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => 'random description',
                 'notes[notes_1]'                           => 'random notes',
