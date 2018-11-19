@@ -98,7 +98,7 @@ class RejectionReasons
     const BETTING_DESCRIPTION                                  = 'Merchant into betting';
     const SALE_OF_LIVESTOCK_PETS_DESCRIPTION                   = 'Merchant into sale of livestock/pets';
     const STOCK_TRADING_TIPS_DESCRIPTION                       = 'Merchant into stock trading tips providing service';
-    const AUCTIONING_DESCRIPTION                               = 'Merchant into Auctioning';
+    const AUCTIONING_DESCRIPTION                               = 'Merchant into auctioning';
 
     // Reason codes descriptions mapping
     const REASON_CODES_DESCRIPTIONS_MAPPING = [
