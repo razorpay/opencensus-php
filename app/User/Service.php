@@ -532,6 +532,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
             'instant_activations' => $data['instant_activations'],
+            'merchant_id'         => $data['id'] ?? '',
         ]);
 
         return $data;
