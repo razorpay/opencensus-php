@@ -448,11 +448,21 @@ class Processor extends Base\Core
 
     protected function getMerchantsToSkipForUsualSettlement(): array
     {
+        // MIDs that have daily settlements feature enabled
         $dailySetlMids = $this->getMerchantsOnDailySettlement();
 
+        //
+        // MIDs that have been harcoded to be skipped
+        // Todo: Deprecate this in favour of feature based fetch
+        //
         $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
 
-        $skipMids = array_merge($dailySetlMids, $skipMfIds);
+        // MIDs that have the block_settlements feature enabled
+        $skipSetlFeatureMids = $this->repo
+                                    ->feature
+                                    ->findMerchantIdsHavingFeatures([Feature\Constants::BLOCK_SETTLEMENTS]);
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids);
 
         return $skipMids;
     }
