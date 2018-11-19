@@ -15,7 +15,7 @@
     "postinstall": "cd web && npm i",
     "start": "node signup.js; cd web && npm start",
     "build": "node signup.js; cd web && npm run build",
-    "test": "node test.js"
+    "test": "node test.js; cd web && npm run test"
   },
   "lint-staged": {
     "*.js": [
