@@ -972,6 +972,7 @@ class SettlementTest extends TestCase
 
         // Assert linked account settlement
         $lastSetl = $this->getLastEntity('settlement', true);
+
         $this->assertEquals($transfer['to_id'], $lastSetl['merchant_id']);
         $this->assertEquals(5000, $lastSetl['amount']);
 

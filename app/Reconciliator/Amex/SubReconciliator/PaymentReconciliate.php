@@ -12,9 +12,10 @@ use RZP\Gateway\Amex\Entity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_GATEWAY_PAYMENT_ID     = 'reference_number';
-    const COLUMN_AMOUNT                 = 'charge_amount';
-    const COLUMN_SETTLED_AT_DATE        = 'settlement_date';
+    const COLUMN_GATEWAY_PAYMENT_ID         = 'reference_number';
+    const COLUMN_AMOUNT                     = 'charge_amount';
+    const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
+    const COLUMN_MERCHANT_ACCOUNT_NUMBER    = 'merchant_account_number';
 
     protected function getPaymentId(array $row)
     {
@@ -23,7 +24,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === true)
         {
             $paymentId = $this->repo->amex
-                ->findPaymentForGateway($row[self::COLUMN_GATEWAY_PAYMENT_ID])
+                ->findPaymentForGateway($row[self::COLUMN_GATEWAY_PAYMENT_ID],
+                                        $row[self::COLUMN_MERCHANT_ACCOUNT_NUMBER])
                 ->getPaymentId();
         }
 

@@ -1273,7 +1273,7 @@ return [
         ]
     ],
 
-    'testAddBankAccountWithInvalidIFSC' => [
+    'testAddBankAccountWithInvalidIfsc' => [
         'request' => [
             'content' => [
                 'ifsc_code'             => 'IIC0001206',
@@ -2305,7 +2305,7 @@ return [
         ],
     ],
 
-    'testGetNetbankingDowntimeInfoWithIssuerNA' => [
+    'testGetNetbankingDowntimeInfoWithIssuerNa' => [
         'request' => [
             'url' => '/methods/downtime',
             'method' => 'get',

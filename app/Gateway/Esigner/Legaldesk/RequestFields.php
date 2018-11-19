@@ -34,6 +34,10 @@ class RequestFields
     const MANDATE_TYPE_CATEGORY_CODE = 'mandate_type_category_code';
     const ESIGN_TYPE                 = 'esign_type';
     const CALLBACK_URL               = 'callback_url';
+    const INSTRUCTING_AGENT_NAME     = 'instructing_agent_name';
+    const INSTRUCTING_AGENT_ID       = 'instructing_agent_id';
+    const CREDITOR_NAME              = 'creditor_name';
+    const CREDITOR_ACCOUNT_ID        = 'creditor_account_id';
 
     const EMANDATE_ID = 'emandate_id';
 }

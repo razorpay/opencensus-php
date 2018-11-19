@@ -864,6 +864,8 @@ trait PaymentTrait
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
         $input['attempts'] = $refund['attempts'] ?? 0;
+        $input['amount'] = $refund['amount'] ?? $input['amount'];
+        $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
 
         $this->ba->scroogeAuth();
 

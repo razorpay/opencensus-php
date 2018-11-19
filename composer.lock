@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f06241c77ad675065e4ecb2e84ff49c",
+    "content-hash": "90253f1c0672d34f306b8e45d1ba112d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -1565,16 +1565,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.16",
+            "version": "8.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "04425318e27b3a41ef9910fc0a9e43c9d3c3e725"
+                "reference": "f493bd5820c95beab6153822c50dfb4a0df66619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/04425318e27b3a41ef9910fc0a9e43c9d3c3e725",
-                "reference": "04425318e27b3a41ef9910fc0a9e43c9d3c3e725",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/f493bd5820c95beab6153822c50dfb4a0df66619",
+                "reference": "f493bd5820c95beab6153822c50dfb4a0df66619",
                 "shasum": ""
             },
             "require": {
@@ -1629,7 +1629,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-10-18T08:12:16+00:00"
+            "time": "2018-11-13T21:18:41+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -3080,6 +3080,57 @@
                 "laravel"
             ],
             "time": "2018-03-09T13:14:19+00:00"
+        },
+        {
+            "name": "maclof/kubernetes-client",
+            "version": "0.11.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maclof/kubernetes-client.git",
+                "reference": "b53f864a9f1a585c4d0365580004f439aa3a80fa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maclof/kubernetes-client/zipball/b53f864a9f1a585c4d0365580004f439aa3a80fa",
+                "reference": "b53f864a9f1a585c4d0365580004f439aa3a80fa",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "~5.0|~6.0",
+                "illuminate/support": "~4.0|~5.0",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "mockery/mockery": "0.9.9",
+                "phpunit/phpunit": "4.8.36",
+                "satooshi/php-coveralls": "1.0.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Maclof\\Kubernetes\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marc Lough",
+                    "homepage": "http://maclof.com"
+                }
+            ],
+            "description": "A simple yet elegant client for accessing and controlling a Kubernetes cluster.",
+            "keywords": [
+                "Guzzle",
+                "cluster",
+                "container",
+                "docker",
+                "guzzlehttp",
+                "kubernetes"
+            ],
+            "time": "2018-05-09T21:53:52+00:00"
         },
         {
             "name": "mailgun/mailgun-php",

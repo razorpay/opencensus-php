@@ -4382,6 +4382,10 @@ ALTER TABLE pricing
     ADD INDEX `pricing_org_id_plan_id_index`   (`org_id`, `plan_id`),
     ADD INDEX `pricing_org_id_plan_name_index` (`org_id`, `plan_name`);
 
+ALTER TABLE transactions
+    CHANGE reference1 reconciled_type VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
 ALTER TABLE orgs
     ADD COLUMN default_pricing_plan_id VARCHAR (14) DEFAULT NULL AFTER signature_email,
     ALGORITHM=INPLACE, LOCK=NONE;

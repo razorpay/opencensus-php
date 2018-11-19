@@ -952,7 +952,7 @@ class MerchantTest extends TestCase
         // $this->assertEquals('ICIC0001206', $detail['bank_branch_ifsc']);
     }
 
-    public function testAddBankAccountWithInvalidIFSC()
+    public function testAddBankAccountWithInvalidIfsc()
     {
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -1336,7 +1336,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetNetbankingDowntimeInfoWithIssuerNA()
+    public function testGetNetbankingDowntimeInfoWithIssuerNa()
     {
         $this->ba->publicAuth();
 
@@ -1627,6 +1627,112 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithForcedEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Only one expected, since HDFC is forced
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+            'active'          => false
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Offer is inactive now, so plans will be back to customer subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('customer', $plan['subvention']);
+        }
+    }
+
+    public function testGetCheckoutPreferencesWithEmiSubventionOfferUnderMinAmount()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+            'emi_durations'   => [
+                6,
+                9,
+            ],
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 7000]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        $hdfcPlans = $response['methods']['emi_options']['HDFC'];
+
+        // Amount is under the minimum amount for EMI subvention offers,
+        // so plans show up as customer subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('customer', $plan['subvention']);
+        }
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 700000]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        $hdfcPlans = $response['methods']['emi_options']['HDFC'];
+
+        // Amount is above the minimum amount for EMI subvention offers,
+        // so plans show up as merchant subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('merchant', $plan['subvention']);
+        }
+    }
+
+    protected function getPreferences($orderId = null)
+    {
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ];
+
+        if ($orderId !== null)
+        {
+            $request['content']['order_id'] = $orderId;
+        }
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function testGetCheckoutPreferencesForPaidOrder()
     {
         $order = $this->fixtures->order->createPaid();
@@ -1892,7 +1998,8 @@ class MerchantTest extends TestCase
 
         $offer = $this->fixtures->create('offer', [
             'payment_method' => 'emi',
-            'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+            'error_message'  => 'Payment method used is not eligible for offer. ' .
+                                'Please try with a different payment method.',
             'display_text'   => 'Some display text',
             'percent_rate'   => 5000,
             'min_amount'     => 200000,
@@ -1980,9 +2087,7 @@ class MerchantTest extends TestCase
 
         $offer = $this->fixtures->create('offer:emi_subvention');
 
-        $order = $this->fixtures->order->createWithOffers([
-            $offer
-        ]);
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 400000]);
 
         $this->ba->publicAuth();
 
@@ -2002,7 +2107,7 @@ class MerchantTest extends TestCase
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1, $offer2
-        ]);
+        ], ['amount' => 400000]);
 
         $this->ba->publicAuth();
 

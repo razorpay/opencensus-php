@@ -28,4 +28,11 @@ class RedisDualWrite extends BaseRedisDualWrite
 
         return $redis->del($key);
     }
+
+    public function ttl($key)
+    {
+        $redis = Redis::getFacadeRoot();
+
+        return $redis->ttl($key);
+    }
 }

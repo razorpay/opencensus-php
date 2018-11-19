@@ -37,11 +37,12 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
 COPY --chown=apache:www-data . /app/
 
 RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
+RUN cp dockerconf/default.conf /etc/apache2/conf.d/default.conf
 
 # This step can't run without some classes from above step
 RUN composer dump-autoload -o && php artisan optimize
 
 EXPOSE 80
-#Apache exits abruptly on sigterm and sigwinch has to be sent for it to gracefully-stop.
-#https://github.com/Yelp/dumb-init#signal-rewriting
-ENTRYPOINT [ "/usr/bin/dumb-init", "--rewrite", "15:28", "/app/dockerconf/entrypoint.sh"]
+
+# https://github.com/Yelp/dumb-init
+ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.sh"]
