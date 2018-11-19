@@ -65,7 +65,7 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::FIRST_DATA         => ["/Statement for Merchant MID No. razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/^RAZOR_VA_REPORT$/"],
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["Confidential | Cash Management MIS Report E-Collect"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Confidential \| Cash Management MIS Report E-Collect/"],
         RequestProcessor\Base::HITACHI            => ["/RAZORPAY RBL SETTLED REPORT for the date of [0-9]{2}-"
                                                      . "[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::UPI_ICICI          => [

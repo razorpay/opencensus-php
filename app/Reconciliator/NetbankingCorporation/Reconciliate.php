@@ -31,7 +31,7 @@ class Reconciliate extends Base\Reconciliate
         return '|';
     }
 
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         if (preg_match('/[0-9]{5}_[0-9]{8}_olt/', $fileDetails['file_name']) === 0)
         {
