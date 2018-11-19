@@ -79,8 +79,11 @@ export const testChargeSubscription = (subscriptionId, success) => {
 };
 
 // Manual Attempt for pending invoice payment
-export const paymentManualAttempt = invoiceId =>
-  merchantFetch({ url: `invoices/${invoiceId}/charge`, method: 'post' });
+export const paymentManualAttempt = (subscriptionId, invoiceId) =>
+  merchantFetch({
+    url: `subscriptions/${subscriptionId}/invoices/${invoiceId}/charge`,
+    method: 'post',
+  });
 
 // List Reducer
 export const subscriptionsReducer = makeActionCollectionReducer(

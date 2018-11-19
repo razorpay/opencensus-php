@@ -1,24 +1,12 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
 
 import FileUpload from 'merchant/components/File/Upload';
-import FileStaged from 'merchant/components/File/Staged';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-const MAX_FILE_SIZE = 1048576; // 1MB in bytes.
+const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 export default class BatchValidateModal extends Component {
-  state = {
-    shouldLoadMore: false,
-  };
-
-  handleLoadMore = () => {
-    this.setState({
-      shouldLoadMore: !this.state.loadMore,
-    });
-  };
-
   render() {
     const {
       status,
@@ -29,13 +17,12 @@ export default class BatchValidateModal extends Component {
       docUrl,
       batchType,
       maxRows,
-      onLoadMore,
       onFileChange,
       onBiggerFileSize,
       onCloseClick,
-      closeModal,
       files,
       fileUploadProgress,
+      maxFileSize = DEFAULT_MAX_FILE_SIZE,
       onSampleFileDownload = () => {},
       onErrorReportDownload = () => {},
     } = this.props;
@@ -48,7 +35,7 @@ export default class BatchValidateModal extends Component {
             accept={['csv', 'xlsx']}
             size="large"
             uploadedFileName="Upload File here"
-            maxSize={MAX_FILE_SIZE}
+            maxSize={maxFileSize}
             onBiggerFileSize={onBiggerFileSize}
             onFileChange={onFileChange}
             onCloseClick={onCloseClick}
@@ -79,38 +66,29 @@ export default class BatchValidateModal extends Component {
             <p>
               Upload a batch file to continue. Please note the following things
               before proceeding further:{' '}
-              {!this.state.shouldLoadMore && (
-                <span class="btn-link clickable" onClick={this.handleLoadMore}>
-                  Load More
-                </span>
-              )}
             </p>
-            {this.state.shouldLoadMore && (
-              <Fragment>
-                <ol>
-                  <li>The amount mentioned should be in paise.</li>
-                  {batchType && (
-                    <li>
-                      The receipt id for all {titleCase(batchType)}s should be
-                      unique.
-                    </li>
-                  )}
-                  {maxRows && (
-                    <li>The number of rows should not exceed {maxRows}.</li>
-                  )}
-                </ol>
-                <p>
-                  In case of any issues, please{' '}
-                  <a
-                    class="btn-link"
-                    href={sampleUrl}
-                    onClick={onSampleFileDownload}
-                  >
-                    download sample file
-                  </a>
-                </p>
-              </Fragment>
-            )}
+            <ol>
+              <li>The amount mentioned should be in paise.</li>
+              {batchType && (
+                <li>
+                  The receipt id for all {titleCase(batchType)}s should be
+                  unique.
+                </li>
+              )}
+              {maxRows && (
+                <li>The number of rows should not exceed {maxRows}.</li>
+              )}
+            </ol>
+            <p>
+              In case of any issues, please{' '}
+              <a
+                class="btn-link"
+                href={sampleUrl}
+                onClick={onSampleFileDownload}
+              >
+                download sample file
+              </a>
+            </p>
           </div>
         ) : null}
 

@@ -11,13 +11,10 @@ import Input from 'component/Input';
 import Alert from 'rzp/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
-@connect(
-  state => ({ user: state.session.user }),
-  {
-    closeModal,
-    fetchCurrentBalance,
-  }
-)
+@connect(state => ({ user: state.session.user }), {
+  closeModal,
+  fetchCurrentBalance,
+})
 export default class OndemandModal extends Component {
   constructor(props) {
     super(props);

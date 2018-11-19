@@ -3,7 +3,7 @@ import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { openModal, notifySuccess, notifyDone } from 'common/modal';
 import { adminFetch, adminPut } from 'common/fetch';
-import DiffModal from './DiffModal';
+import DiffContent from './DiffContent';
 import Comments from './Comments';
 import RequestForm from './RequestForm';
 import RequestActions from './RequestActions';
@@ -83,11 +83,6 @@ export default class RequestEntity extends Component {
     );
   }
 
-  openDiffModal = () => {
-    const { id } = this.props.match.params;
-    openModal(<DiffModal id={id} />);
-  };
-
   handleUploadForm = body => {
     const { id } = this.props.match.params;
 
@@ -147,6 +142,7 @@ export default class RequestEntity extends Component {
     const { levels, checkers, comments } = this;
     const data = this.data.toJS();
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
+    const { id } = this.props.match.params;
 
     return (
       <div class="requests-container">
@@ -154,13 +150,6 @@ export default class RequestEntity extends Component {
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
           {this.getEntityIdNugget(data.entity_id, data.entity_name)}
-          <button
-            class="pull-right"
-            style={{ margin: '0' }}
-            onClick={this.openDiffModal}
-          >
-            View Changes
-          </button>
         </header>
         <div class="box-container">
           <main class="container requests-content">
@@ -216,6 +205,15 @@ export default class RequestEntity extends Component {
                       </div>
                     );
                   })}
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="heading">
+                <b>Changes</b>
+              </div>
+              <div>
+                <DiffContent id={id} />
               </div>
             </div>
 

@@ -10,6 +10,7 @@ const baseUrl = {
   trf: '/route/transfers/',
   disp: '/disputes/',
   acc: '/submerchants/',
+  token: '/tokens/',
   // rvrsl: '/route/reversals/',
 };
 
@@ -22,6 +23,8 @@ const sources = {
 
 const batchBaseUrls = {
   payment_link: 'paymentlinks',
+  auth_link: 'subscriptions',
+  recurring_charge: 'subscriptions',
 };
 
 export const idItem = id => <code>{id}</code>;
@@ -54,6 +57,7 @@ export const batch = item => idItem(item.id);
 export const settlement = makeIdLink('settlement');
 export const order = makeIdLink('order');
 export const dispute = makeIdLink('dispute');
+export const token = makeIdLink('token');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
@@ -69,5 +73,6 @@ export const batchLink = item => {
     idItem(item.id)
   );
 };
+
 export const submerchant = makePropLink('id', 'name');
 export const submerchantId = item => idItem(item.id);

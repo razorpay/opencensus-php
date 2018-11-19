@@ -77,6 +77,7 @@ export const activationStatusMap = {
   rejected: 'label-danger',
   needs_clarification: 'label-pending',
   under_review: 'label-info',
+  instantly_activated: 'label-muted',
 };
 
 export const disputeStatusMap = {
@@ -85,6 +86,12 @@ export const disputeStatusMap = {
   under_review: 'label-warning',
   closed: 'label-muted',
   lost: 'label-lost',
+};
+
+export const tokenStatusMap = {
+  confirmed: 'label-success',
+  initiated: 'label-info',
+  rejected: 'label-danger',
 };
 
 const entityMap = {
@@ -99,6 +106,7 @@ const entityMap = {
   plan: planStatusMap,
   activation: activationStatusMap,
   dispute: disputeStatusMap,
+  token: tokenStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -112,5 +120,6 @@ export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
 export const PlanStatusLabel = StatusLabel(planStatusMap);
 export const ActivationStatusLabel = StatusLabel(activationStatusMap);
 export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
+export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

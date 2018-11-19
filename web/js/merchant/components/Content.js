@@ -137,7 +137,11 @@ export default class Content extends Component {
         window.rzpTicketSystem.addEventListener('modal-select', onModalSelect);
         window.rzpTicketSystem.openModal(actionHash, {
           chat: Boolean(window.rzp_user && window.rzp_user.activated),
-          call: Boolean(window.rzp_user && window.rzp_user.activated),
+          call: Boolean(
+            window.rzp_user &&
+              window.rzp_user.experiments.support_call &&
+              window.rzp_user.experiments.support_call.result === 'on'
+          ),
         });
       } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
         window.rzpTicketSystem.closeModal();
@@ -220,6 +224,7 @@ export default class Content extends Component {
             featureEnabled="paymentpages"
             additionalCondition={user => user.isAllowedView('payment_pages')}
           />
+
           <ShowWhenRoute
             path="/subscriptions"
             component={Subscriptions}
@@ -228,9 +233,34 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/plans"
             component={Subscriptions}
-            additionalCondition={user => user.isAllowedView('subscriptions')}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && !user.isChargeAtWillEnabled
+            }
           />
-          {/*<Route path="/addons" component={Subscriptions} />*/}
+
+          <ShowWhenRoute
+            path="/recurring_payments"
+            component={Subscriptions}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
+          />
+
+          <ShowWhenRoute
+            path="/tokens"
+            component={Subscriptions}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
+          />
+          <ShowWhenRoute
+            path="/authlinks"
+            component={Subscriptions}
+            additionalCondition={user =>
+              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+            }
+          />
+
           <Route
             path="/customers"
             render={() => (

@@ -78,7 +78,7 @@ export default class User {
   get isOrgRZP() {
     const org = getOrg();
 
-    if (org && org.custom_code.toLowerCase() === 'rzp') {
+    if (org && org.custom_code && org.custom_code.toLowerCase() === 'rzp') {
       return true;
     }
   }
@@ -137,6 +137,32 @@ export default class User {
     return !!parseInt(this.activated);
   }
 
+  get instantActivation() {
+    return {
+      activation_flow: this.activation_flow,
+
+      get isWhitelistFlow() {
+        return this.activation_flow === 'whitelist';
+      },
+
+      get isBlacklistFlow() {
+        return this.activation_flow === 'blacklist';
+      },
+
+      get isGraylistFlow() {
+        return this.activation_flow === 'greylist';
+      },
+
+      get isL1Submitted() {
+        return !!this.activation_flow;
+      },
+    };
+  }
+
+  get isAccepted() {
+    return this.activation_status === 'activated';
+  }
+
   get needsClarification() {
     return this.activation_status === 'needs_clarification';
   }
@@ -165,9 +191,8 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
-  // TODO: Remove this code when confirmed no rollbacks
-  get isNewAnalyticsEnabled() {
-    return true;
+  get isChargeAtWillEnabled() {
+    return this.findTag('Hosted_emandate');
   }
 
   get isAgentRole() {
@@ -180,6 +205,16 @@ export default class User {
     return (this.features || []).map(object => {
       return object[pluckKey];
     });
+  }
+
+  get showInstantActivation() {
+    return (
+      this.isOrgRZP &&
+      (!!this.activation_flow ||
+        (this.experiments &&
+          this.experiments.instant_activations &&
+          this.experiments.instant_activations.result === 'on'))
+    );
   }
 
   /* Check case-insensitive tag check existence */

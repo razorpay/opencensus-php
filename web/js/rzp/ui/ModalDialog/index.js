@@ -31,7 +31,9 @@ export default class ModalDialog extends Component {
           onRequestClose={props.disableClose ? null : props.closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={false}
-          class={`Modal ${props.size ? `Modal--${props.size}` : ''}`}
+          class={`Modal ${props.size ? `Modal--${props.size}` : ''}${
+            props.className ? ` ${props.className}` : ''
+          }`}
           contentLabel="Modal"
           ariaHideApp={false}
         >

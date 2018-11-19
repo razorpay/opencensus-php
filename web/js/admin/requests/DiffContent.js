@@ -4,7 +4,7 @@ import { adminFetch } from 'common/fetch';
 import { openModal } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 
-export default class DiffModal extends Component {
+export default class DiffContent extends Component {
   state = {
     items: [],
     pending: true,
@@ -16,34 +16,36 @@ export default class DiffModal extends Component {
     adminFetch(`live/w-actions/${id}/diff`).then(response => {
       let items = [...this.state.items];
 
-      Object.keys(response.new).forEach(key => {
-        const isUrl = key.indexOf('url') > -1;
-        items.push({
-          property: key,
-          old: isUrl ? (
-            <a href={response.old[key]} target="_blank" class="diff-link">
-              {response.old[key]}
-            </a>
-          ) : (
-            JSON.stringify(response.old[key])
-          ),
-          new: isUrl ? (
-            <a href={response.new[key]} target="_blank" class="diff-link">
-              {response.new[key]}
-            </a>
-          ) : (
-            JSON.stringify(response.new[key])
-          ),
+      this.setState({ pending: false });
+      if (response) {
+        Object.keys(response.new).forEach(key => {
+          const isUrl = key.indexOf('url') > -1;
+          items.push({
+            property: key,
+            old: isUrl ? (
+              <a href={response.old[key]} target="_blank" class="diff-link">
+                {response.old[key]}
+              </a>
+            ) : (
+              JSON.stringify(response.old[key])
+            ),
+            new: isUrl ? (
+              <a href={response.new[key]} target="_blank" class="diff-link">
+                {response.new[key]}
+              </a>
+            ) : (
+              JSON.stringify(response.new[key])
+            ),
+          });
         });
-      });
-
-      this.setState({ items, pending: false });
+        this.setState({ items });
+      }
     });
   }
 
   render() {
     return (
-      <ModalContent header="Changes">
+      <ModalContent header={this.props.header}>
         {this.state.pending ? (
           <div class="spinner center" />
         ) : (

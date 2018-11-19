@@ -1,10 +1,7 @@
 import { trackLinkClick } from './ga';
 import { Link } from 'react-router-dom';
-import { getUser } from 'merchant/store';
 
-export default () => {
-  const user = getUser();
-
+export default ({ user }) => {
   return (
     <React.Fragment>
       {!user.isOrgRZP && (

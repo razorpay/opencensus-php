@@ -28,6 +28,7 @@ import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
+import { setTrackData } from 'rzp/utils/googleAnalytics';
 
 @withRouter
 @connect(
@@ -148,6 +149,18 @@ export default class App extends Component {
         }
       }),
     ]).then(response => {
+      if (response[0].showInstantActivation) {
+        setTrackData({
+          eventCategory: 'Dashboard - Instant Activations',
+          eventAction: 'Show - Instant Activations Flow',
+        })();
+
+        if (typeof window.hj === 'function') {
+          window.hj('trigger', 'instant_activation');
+          window.hj('tagRecording', ['instant_activation']);
+        }
+      }
+
       // Fetch features before displaying other views
       fetchFeaturesAjax(response[0].current)
         .catch(_ => _)
@@ -407,11 +420,8 @@ export default class App extends Component {
               config={config.config}
               org_custom_code={org.custom_code}
             />
-            <Content
-              user={this.props.user}
-              modeFormatted={this.props.modeFormatted}
-            />
-            <Footer showMobileNav={this.props.windowWidth < 950} />
+            <Content user={user} modeFormatted={modeFormatted} />
+            <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
           </React.Fragment>
         )}
 

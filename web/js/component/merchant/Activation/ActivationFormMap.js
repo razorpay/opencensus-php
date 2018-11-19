@@ -11,6 +11,7 @@ import {
   validatePANCard,
   isUrlLenient,
 } from 'rzp/utils/validators';
+import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -111,6 +112,9 @@ const businessModel = [
       name: 'business_category',
       _cmp: Input.Select,
       options: [],
+      _disabledWhen: function(form) {
+        return form.props.user.isActivated;
+      },
     },
     {
       label: 'Business Model',
@@ -127,6 +131,9 @@ const businessModel = [
             : props.data.business_category;
 
         return businessCategory === 'others'; // If businessCategory is selected to others, then Business Model is to be filled
+      },
+      _disabledWhen: function(form) {
+        return form.props.user.isActivated;
       },
     },
     {
@@ -172,6 +179,9 @@ const businessModel = [
 
         // 'Others' business_category has no sub_category
         return hasBusinessCategory;
+      },
+      _disabledWhen: function(form) {
+        return !!form.props.user.showInstantActivation;
       },
     },
   ],
@@ -594,7 +604,11 @@ const uploadFields = [
       <span>
         Upload<b> both sides </b>of the government issued photo ID (Passport /
         Aadhaar / Driving License / Election Card). You can use{' '}
-        <a href="http://www.pdfjoiner.com" target="_blank">
+        <a
+          href="http://www.pdfjoiner.com"
+          target="_blank"
+          onClick={() => trackLinkClick('pdfjoiner.com')}
+        >
           pdfjoiner.com
         </a>{' '}
         to join 2 different photos.

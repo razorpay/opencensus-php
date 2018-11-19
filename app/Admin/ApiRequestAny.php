@@ -393,5 +393,13 @@ class ApiRequestAny
 
             $this->options['headers']['Cookie'] = 'rzp_utm=' . $cookie;
         }
+
+        // Forward razorx cookies cause this will be available only in testing mode.
+        if (empty($_COOKIE['razorx']) === false)
+        {
+            $cookie = $_COOKIE['razorx'];
+
+            $this->options['headers']['Cookie'] = 'razorx=' . $cookie;
+        }
     }
 }

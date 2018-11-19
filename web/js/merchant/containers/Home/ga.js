@@ -95,3 +95,53 @@ export const trackSettleNow = () => {
     eventLabel: 'Home',
   });
 };
+
+const iaWelcomeTrack = setTrackData({
+  eventCategory: 'Dashboard - Instant Activations Welcome',
+});
+
+export const trackActivateAccount = () => {
+  iaWelcomeTrack({
+    eventAction: 'Click - Activate Account',
+  });
+};
+
+export const trackTryDashboard = () => {
+  iaWelcomeTrack({
+    eventAction: 'Click - Try out the dashboard',
+  });
+};
+
+export const trackIAClose = () => {
+  iaWelcomeTrack({
+    eventAction: 'Click - Close button',
+  });
+};
+
+const iaActivationsTrack = setTrackData({
+  eventCategory: 'Dashboard - Instant Activations Activate Account',
+});
+
+export const iaActivations = {
+  trackGoToDashboard() {
+    iaActivationsTrack({
+      eventAction: 'Click - Go to Dashboard',
+    });
+  },
+  trackClose(businessType) {
+    iaActivationsTrack({
+      eventAction: 'Click - Close',
+      eventLabel: businessType,
+    });
+  },
+  trackGiveKYCDetails() {
+    iaActivationsTrack({
+      eventAction: 'Click - Give details',
+    });
+  },
+  trackCloseKYCDetails() {
+    iaActivationsTrack({
+      eventAction: 'Click - Give details close',
+    });
+  },
+};

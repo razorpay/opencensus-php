@@ -29,6 +29,8 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
+    const INSTANT_ACTIVATION_TIMESTAMP = 1540901700;
+
     /**
      * @var Application
      */
@@ -354,6 +356,7 @@ class Service extends Base\Service
         // with the user account
         $data['pre_signup'] = [];
         $data['pre_signup_complete'] = true;
+        $data['experiments'] = [];
 
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
@@ -378,10 +381,11 @@ class Service extends Base\Service
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
+            $merchantService = new Merchant\Service;
             // Fetch merchant details for current merchant
             $data = $data + (new MerchantDetails\Service)->fetchDetails();
 
-            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
+            $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
 
             foreach ($merchants as $merchant) {
 
@@ -389,9 +393,20 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
+                    $data = $this->updateInstantActivationExperiment($user, $data);
+
+                    if (((bool) $merchant['activated']) === true)
+                    {
+                        $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
+                    }
+                    else
+                    {
+                        $data['experiments']['support_call'] = ['result' => 'off'];
+                    }
+
                     $data['current'] = $currentMerchantId;
 
-                    $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
+                    $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                 }
 
                 if (((bool) $merchant['activated']) === true)
@@ -475,5 +490,44 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    /**
+     * @param $user
+     * @param array $data
+     *
+     * @return mixed
+     * @throws \Razorpay\Api\Errors\BadRequestError
+     */
+    public function updateInstantActivationExperiment($user, array $data)
+    {
+        if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
+        {
+            //
+            // with activation_flow set always return result on
+            // merchants who  submitted L2 form, before 100% instant activation launch and after instant activation launch date
+            // should not be shown instant activation.
+            //
+            if ($data['activation_flow'] !== null)
+            {
+                $data['experiments']['instant_activations'] = ['result' => 'on'];
+            }
+            else if (((bool) $data['submitted']) === true)
+            {
+                $data['experiments']['instant_activations'] = ['result' => 'off'];
+            }
+            else
+            {
+                $merchantService = new Merchant\Service;
+
+                $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
+            }
+        }
+        else
+        {
+            $data['experiments']['instant_activations'] = ['result' => 'off'];
+        }
+
+        return $data;
     }
 }

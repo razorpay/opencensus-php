@@ -10,6 +10,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
+import { isOrgRazorpay } from 'admin/user';
 
 const defaultFilters = {
   account_status: '',
@@ -102,6 +103,9 @@ export default class MerchantList extends Component {
             >
               <option value="">All</option>
               <option value="activated">Activated</option>
+              {isOrgRazorpay() && (
+                <option value="instantly_activated">Instantly Activated</option>
+              )}
               <option value="pending">Pending Activation</option>
               <option value="dead">Dead</option>
               <option value="archived">Archived</option>
