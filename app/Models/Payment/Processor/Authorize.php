@@ -16,6 +16,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -340,8 +341,8 @@ trait Authorize
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
-        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
-            ($gatewayInput["skip_gateway_call"] === true))
+        if ((isset($gatewayInput['skip_gateway_call']) === true) and
+            ($gatewayInput['skip_gateway_call'] === true))
         {
             return $this->processCreated($payment);
         }
@@ -1210,11 +1211,24 @@ trait Authorize
             );
         }
 
-        if ($payment->getAuthType() === null)
+        $authType = $payment->getAuthType();
+
+        if ($authType === null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The auth_type field is required when method is ' . Method::EMANDATE
             );
+        }
+
+        if ((in_array($authType, [Payment\AuthType::AADHAAR, Payment\AuthType::AADHAAR_FP], true) === true) and
+            ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected auth_type is invalid',
+                Payment\Entity::AUTH_TYPE,
+                [
+                    Payment\Entity::AUTH_TYPE => $authType,
+                ]);
         }
 
         $bank = $payment->getBank();
@@ -1223,7 +1237,7 @@ trait Authorize
 
         if (in_array(
                 $bank,
-                Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                Payment\Gateway::getAvailableEmandateBanksForAuthType($authType),
                 true) === false)
         {
             throw new Exception\BadRequestException(
