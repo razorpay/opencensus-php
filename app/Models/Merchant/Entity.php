@@ -1669,7 +1669,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        return in_array($tagName, $tagNames, true) === true;
+        return in_array(strtolower($tagName), $tagNames, true) === true;
     }
 
     public function toArrayUser()
