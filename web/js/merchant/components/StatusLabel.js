@@ -77,6 +77,7 @@ export const activationStatusMap = {
   rejected: 'label-danger',
   needs_clarification: 'label-pending',
   under_review: 'label-info',
+  instantly_activated: 'label-muted',
 };
 
 export const disputeStatusMap = {
