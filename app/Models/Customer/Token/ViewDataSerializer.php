@@ -26,7 +26,7 @@ class ViewDataSerializer extends Base\Core
         $tokenData[Constants\Entity::CUSTOMER] = $this->token->customer->toArrayPublic();
 
         $subscriptionRegistration = $this->repo->subscription_registration
-                                                ->findByTokenIdAndMerchant(
+                                               ->findByTokenIdAndMerchant(
                                                     $this->token->getId(),
                                                     $this->merchant->getId());
 

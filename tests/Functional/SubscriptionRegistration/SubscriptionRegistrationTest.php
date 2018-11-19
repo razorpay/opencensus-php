@@ -285,6 +285,28 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($invoice->getNotesJson(), $subr->getNotesJson());
     }
 
+    public function testFetchSingleToken()
+    {
+       $this->testPayAuthLink();
+
+        $this->ba->proxyAuth();
+
+        $token = $this->getDbLastEntity("token");
+
+        $invoice = $this->getDbLastEntity("invoice");
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId(),
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey("subscription_registration", $content);
+
+        $this->assertEquals($content['subscription_registration']['notes'], $invoice->getNotes()->toArray());
+    }
+
     protected function setupPaymentRequest()
     {
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
