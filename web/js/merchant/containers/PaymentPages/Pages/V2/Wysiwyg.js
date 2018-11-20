@@ -179,6 +179,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           title={title}
           description={description}
           trackerFn={function() {}}
+          closeModal={this.props.closeModal}
           AddonAction={
             <div class="label--faded m-t">
               You can customize this url from{' '}
