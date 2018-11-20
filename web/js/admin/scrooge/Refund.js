@@ -37,7 +37,7 @@ export default class RefundsList extends Component {
           <header>
             Refund Details
             {/* <AsyncButton class="btn">Process</AsyncButton> */}
-            {location.search ? (
+            {location.search && (
               <Link
                 to={`/scrooge/refunds${location.search}`}
                 class="link"
@@ -45,8 +45,6 @@ export default class RefundsList extends Component {
               >
                 Return to Refunds List
               </Link>
-            ) : (
-              ''
             )}
           </header>
           <Duplex
