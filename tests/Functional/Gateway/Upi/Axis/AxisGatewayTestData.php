@@ -98,4 +98,26 @@ return [
             ],
         ],
     ],
+
+    'testFailedTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank'           => 'RATN',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
 ];

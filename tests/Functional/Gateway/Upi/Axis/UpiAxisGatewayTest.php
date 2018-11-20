@@ -117,6 +117,39 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
+    public function testFailedTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = '111';
+        }, $this->gateway);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+    }
+
     public function testVerifyPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);

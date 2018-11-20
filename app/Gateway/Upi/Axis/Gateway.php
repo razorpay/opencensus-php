@@ -231,8 +231,6 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
-
             $content = $this->jsonToArray($responseBody);
 
             $trace['content'] = $content;
