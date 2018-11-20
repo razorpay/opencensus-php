@@ -182,6 +182,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
+    const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
@@ -688,6 +689,8 @@ class PublicErrorDescription
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
+    const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                  = 'Multiple refunds found at gateway';
+    const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 

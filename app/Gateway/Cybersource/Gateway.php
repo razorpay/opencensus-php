@@ -1120,6 +1120,11 @@ class Gateway extends Base\Gateway
             F::CVN              => $input['card']['cvv'] ?? null,
         ];
 
+        if ($input['merchant']->isFeatureEnabled('skip_cvv') === true)
+        {
+            $content[F::CARD][F::CVN] = null;
+        }
+
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
             F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)

@@ -189,7 +189,6 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
-        self::NETBANKING_EQUITAS,
         self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
@@ -459,6 +458,7 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
+        Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_MINDGATE
     ];
@@ -859,6 +859,8 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_CORPORATION,
+        self::NETBANKING_IDFC,
     ];
 
     /**
@@ -1141,6 +1143,7 @@ class Gateway
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

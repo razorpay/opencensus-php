@@ -57,14 +57,19 @@ class Processor extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
 
-        $data = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function ()
-            {
-                return $this->createDailySettlements();
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function ()
+                {
+                    return $this->createDailySettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
 
         return $data;
     }
@@ -448,22 +453,30 @@ class Processor extends Base\Core
 
     protected function getMerchantsToSkipForUsualSettlement(): array
     {
+        // MIDs that have daily settlements feature enabled
         $dailySetlMids = $this->getMerchantsOnDailySettlement();
 
+        //
+        // MIDs that have been hardcoded to be skipped
+        // Todo: Deprecate this in favour of feature based fetch
+        //
         $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
 
-        $skipMids = array_merge($dailySetlMids, $skipMfIds);
+        // MIDs that have the block_settlements feature enabled
+        $skipSetlFeatureMids = $this->repo
+                                    ->feature
+                                    ->findMerchantIdsHavingFeatures([Feature\Constants::BLOCK_SETTLEMENTS]);
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids);
 
         return $skipMids;
     }
 
     protected function getMerchantsOnDailySettlement()
     {
-        $features = [Feature\Constants::DAILY_SETTLEMENT];
-
-        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures($features);
-
-        $mids = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        $mids = $this->repo
+                     ->feature
+                     ->findMerchantIdsHavingFeatures([Feature\Constants::DAILY_SETTLEMENT]);
 
         return $mids;
     }

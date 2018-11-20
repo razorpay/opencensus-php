@@ -1,0 +1,21 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "deleted"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "default": null,
+            "pattern": "^vpa_[\\w]{14}$"
+        },
+        "deleted": {
+            "type": "boolean"
+        }
+    }
+}

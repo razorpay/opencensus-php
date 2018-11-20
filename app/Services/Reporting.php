@@ -366,7 +366,7 @@ class Reporting implements ExternalService
             {
                 $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
 
-                $scheduleTask->updateNextRunAndLastRun(false);
+                $scheduleTask->updateNextRunAndLastRun();
 
                 $this->repo->saveOrFail($scheduleTask);
             }

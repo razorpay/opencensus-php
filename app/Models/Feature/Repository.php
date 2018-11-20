@@ -50,6 +50,17 @@ class Repository extends BaseRepository
                     ->get();
     }
 
+    public function findMerchantIdsHavingFeatures(array $featureNames): array
+    {
+        /** @var PublicCollection $featureEntities */
+        $featureEntities = $this->findMerchantsHavingFeatures($featureNames);
+
+        $merchantIds = $featureEntities->pluck(Entity::ENTITY_ID)
+                                       ->toArray();
+
+        return $merchantIds;
+    }
+
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)

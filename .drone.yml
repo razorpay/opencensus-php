@@ -730,6 +730,7 @@ pipeline:
     cluster: kluster-api
     auth_mode: client-cert
     deployment:
+      - api-web
       - api-sqs-es-sync
       - api-sqs-gen-test
       - api-sqs-invoice-email
