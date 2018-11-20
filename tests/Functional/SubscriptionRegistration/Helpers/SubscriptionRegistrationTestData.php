@@ -366,10 +366,11 @@ return [
                     'name'    => 'test',
                 ],
                 'description' => 'test description',
-                'notes'       => ['note_key_1' => 'note_value_1'],
-
+                'notes'       => [
+                    'note_key_1' => 'note_value_1',
+                ],
                 'subscription_registration' => [
-                    'method' => 'emandate',
+                    'method'  => 'emandate',
                 ],
             ],
         ],
@@ -381,7 +382,6 @@ return [
                     'contact' => '9999999999',
                     'name'    => 'test',
                 ],
-
                 'status'       => 'issued',
                 'sms_status'   => 'pending',
                 'email_status' => 'pending',
@@ -389,7 +389,9 @@ return [
                 'currency'     => 'INR',
                 'payment_id'   => null,
                 'type'         => 'link',
-                'notes'       => ['note_key_1' => 'note_value_1'],
+                'notes'        => [
+                    'note_key_1' => 'note_value_1',
+                ],
             ],
         ],
     ],
