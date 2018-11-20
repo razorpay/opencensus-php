@@ -346,7 +346,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'F');
+        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'ACT001');
+
+        $this->fixtures->edit('netbanking', $netbanking->getId(), ['bank_payment_id' => null]);
 
         $fileContents = $this->generateFile('idfc', []);
 
@@ -361,6 +363,12 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($netbankingEntity['bank_payment_id']);
+
+        $this->assertEquals($netbankingEntity['status'], 'SUC000');
     }
 
     public function testObcManualReconciliation()
