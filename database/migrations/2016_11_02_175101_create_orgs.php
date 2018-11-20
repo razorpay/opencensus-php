@@ -61,6 +61,9 @@ class CreateOrgs extends Migration
             $table->string(Org::SIGNATURE_EMAIL)
                   ->nullable();
 
+            $table->char(Org::DEFAULT_PRICING_PLAN_ID, Org::ID_LENGTH)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);
 

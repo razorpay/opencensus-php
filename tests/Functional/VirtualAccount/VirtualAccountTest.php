@@ -395,7 +395,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Root and handle from alpha numeric shared terminal will be used.
-        $this->assertStringStartsWith("RZRPRPAY", $vba['account_number']);
+        $this->assertStringStartsWith("RZRPAY", $vba['account_number']);
 
         $terminalAttributes = [
             'gateway'               => Gateway::BT_DASHBOARD,

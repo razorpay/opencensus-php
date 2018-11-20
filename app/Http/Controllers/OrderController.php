@@ -39,4 +39,3 @@ class OrderController extends Controller
         return ApiResponse::json($payments);
     }
 }
-

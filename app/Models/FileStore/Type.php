@@ -28,6 +28,7 @@ class Type
 
     const IDFC_NETBANKING_REFUND            = 'idfc_netbanking_refund';
     const IDFC_NETBANKING_CLAIMS            = 'idfc_netbanking_claims';
+    const IDFC_NETBANKING_SUMMARY           = 'idfc_netbanking_summary';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
@@ -165,6 +166,7 @@ class Type
             self::INDUSIND_NETBANKING_CLAIM,
             self::IDFC_NETBANKING_REFUND,
             self::IDFC_NETBANKING_CLAIMS,
+            self::IDFC_NETBANKING_SUMMARY,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -267,6 +269,7 @@ class Type
         self::BOB_NETBANKING_CLAIMS,
         self::IDFC_NETBANKING_REFUND,
         self::IDFC_NETBANKING_CLAIMS,
+        self::IDFC_NETBANKING_SUMMARY,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,

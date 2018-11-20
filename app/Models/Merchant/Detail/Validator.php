@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
@@ -51,13 +52,13 @@ class Validator extends Base\Validator
         Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
-        Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
+        Entity::COMPANY_PAN                     => 'sometimes|pan',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
-        Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
+        Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
@@ -119,13 +120,13 @@ class Validator extends Base\Validator
         Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
-        Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
+        Entity::COMPANY_PAN                     => 'sometimes|pan',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
-        Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
+        Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,22',
@@ -209,7 +210,7 @@ class Validator extends Base\Validator
     protected static $instantActivationRules = [
         Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY => 'sometimes|max:255|custom',
-        Entity::PROMOTER_PAN         => 'required|alpha_num|max:15',
+        Entity::PROMOTER_PAN         => 'required|pan',
         Entity::BUSINESS_NAME        => 'required|string|max:255',
         Entity::BUSINESS_MODEL       => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE     => 'sometimes|active_url|max:255|nullable',
@@ -470,11 +471,28 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Throws an exception if the activation form is not submitted
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateActivationFormSubmitted()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED,
+                Entity::SUBMITTED);
+        }
+    }
+
+    /**
      * Block the merchant from updating the instant activation critical fields if the merchant is already activated.
      *
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function blockInstantActivationCriticalFields(array $input)
     {
@@ -489,6 +507,46 @@ class Validator extends Base\Validator
                 null,
                 $criticalInput);
         }
+    }
+
+    /**
+     * Throws an exception if the merchant details are archived
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotArchived()
+    {
+        $merchantDetail = $this->entity;
+
+        if ($merchantDetail->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION,
+                Entity::ARCHIVED_AT);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function performInstantActivationValidations(array $input)
+    {
+        $merchantDetails = $this->entity;
+
+        $this->validateIsNotLocked();
+
+        // validates if the business subcategory belongs to the business category
+        $this->validateBusinessSubcategoryForCategory($input);
+
+        $merchantValidator = new Merchant\Validator;
+
+        $merchant = $merchantDetails->merchant;
+
+        //
+        // Block a whitelisted (and hence, activated) merchant from submitting the instant activation form again.
+        // However, a non activated merchant (blacklisted and greylisted merchants) can still submit the form.
+        //
+        $merchantValidator->validateIsNotActivated($merchant);
     }
 
     /**

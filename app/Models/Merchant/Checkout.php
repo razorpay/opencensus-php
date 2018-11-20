@@ -86,6 +86,8 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
+        $this->fillEnabledFeatures($merchant, $data);
+
         return $data;
     }
 
@@ -620,7 +622,7 @@ class Checkout
             $data['force_offer'] = true;
         }
 
-        $this->updateEmiOptionsUsingOffers($offers, $data);
+        $this->updateEmiOptionsUsingOffers($offers, $data, $order);
 
         //
         // For multiple offers, we show all methods,
@@ -647,9 +649,9 @@ class Checkout
         }
     }
 
-    protected function updateEmiOptionsUsingOffers($offers, array & $data)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data, Order\Entity $order = null)
     {
-        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers);
+        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers, $order);
     }
 
     protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
@@ -781,6 +783,17 @@ class Checkout
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+        }
+    }
+
+    protected function fillEnabledFeatures(Merchant\Entity $merchant, array & $data)
+    {
+        foreach (Feature\Constants::CHECKOUT_FEATURES as $feature)
+        {
+            if ($merchant->isFeatureEnabled($feature) === true)
+            {
+                $data['features'][$feature] = true;
+            }
         }
     }
 }

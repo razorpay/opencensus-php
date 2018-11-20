@@ -128,6 +128,20 @@ class PaymentValidationTest extends TestCase
         $this->verifyPayment($payment['id']);
     }
 
+
+    public function testInvalidCallbackUrl()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['callback_url'] = 'invalidUrl';
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+                $this->doAuthPayment($payment);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class,
+        'The callback url format is invalid.');
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

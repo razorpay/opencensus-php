@@ -68,10 +68,20 @@ class Core extends Base\Core
 
         $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
 
-        if (isset(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]) === true)
+        $planId = $org->getDefaultPricingPlanId();
+
+        if (empty($planId) === true)
         {
-            $merchant->setPricingPlan(Pricing\DefaultPlan::ORG_TO_PROMOTIONAL_PLAN_ID[$org->getId()]);
+              throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG,
+                    null,
+                    [
+                        'org_id'      => $org->getId(),
+                    ]
+                );
         }
+
+        $merchant->setPricingPlan($planId);
 
         $merchant->org()->associate($org);
 
@@ -229,7 +239,7 @@ class Core extends Base\Core
 
         $merchant->edit($input);
 
-        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+        $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
@@ -421,7 +431,7 @@ class Core extends Base\Core
 
         if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
         {
-            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
 
             (new Methods\Core)->validatePricingForInternational($merchant, $plan);
         }
@@ -1549,6 +1559,11 @@ class Core extends Base\Core
     {
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
+        $oldData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $category  = $subcategoryMetaData[Entity::CATEGORY];
         $category2 = $subcategoryMetaData[Entity::CATEGORY2];
 
@@ -1557,18 +1572,14 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $newData = [
+            Entity::CATEGORY2 => $merchant->getCategory2(),
+            Entity::CATEGORY  => $merchant->getCategory(),
+        ];
+
         $this->trace->info(
             TraceCode::MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA,
-            [
-                'old_data' => [
-                    Entity::CATEGORY2 => $merchant->getCategory2(),
-                    Entity::CATEGORY  => $merchant->getCategory(),
-                ],
-                'new_data' => [
-                    Entity::CATEGORY2 => $category2,
-                    Entity::CATEGORY  => $category,
-                ],
-            ]);
+            compact('oldData', 'newData'));
 
         return $merchant;
     }
@@ -1596,6 +1607,76 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_EDIT, ['input' => $preSignupInput]);
 
         $merchant = $this->edit($merchant, $preSignupInput);
+
+        return $merchant;
+    }
+
+    /**
+     * Disables live transactions if the merchant is (instantly) activated
+     *
+     * @param Entity $merchant
+     */
+    public function disableLiveIfAlreadyActivated(Entity $merchant)
+    {
+        if ($merchant->isActivated() === true)
+        {
+            $this->disableLive($merchant);
+        }
+    }
+
+    /**
+     * Disables live transactions
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function disableLive(Entity $merchant): Entity
+    {
+        if ($merchant->isLive() === false)
+        {
+            return $merchant;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_LIVE_DISABLE_REQUEST);
+
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchant->liveDisable();
+
+            $this->repo->saveOrFail($merchant);
+
+            return $merchant;
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * Enables live transactions
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function enableLive(Entity $merchant): Entity
+    {
+        // return if already live
+        if ($merchant->isLive() === true)
+        {
+            return $merchant;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_LIVE_ENABLE_REQUEST);
+
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchant->liveEnable();
+
+            $this->repo->saveOrFail($merchant);
+
+            return $merchant;
+        });
 
         return $merchant;
     }

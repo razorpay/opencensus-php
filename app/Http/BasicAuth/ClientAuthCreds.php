@@ -81,7 +81,7 @@ class ClientAuthCreds extends AuthCreds
         //
         $keyId = substr($key, -14);
 
-        $keyId = $keyId ?? '';
+        $keyId = $keyId ?: '';
 
         $this->creds[self::KEY_ID] = $keyId;
     }

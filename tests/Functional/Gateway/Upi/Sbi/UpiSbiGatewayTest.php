@@ -124,6 +124,8 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testFailedVpaValidation()
     {
+        $this->markTestSkipped();
+
         $this->payment[Payment\Entity::VPA] = Constants::VALIDATION_FAIL_VPA;
 
         $data = $this->testData[__FUNCTION__];
@@ -151,6 +153,28 @@ class UpiSbiGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testValidateVpaSuccess()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     /**
      * When we verify a payment whose vpa validation failed,
      * we should be getting a response that says no transaction found.
@@ -158,6 +182,8 @@ class UpiSbiGatewayTest extends TestCase
      */
     public function testFailedVpaValidationVerify()
     {
+        $this->markTestSkipped();
+
         $payment = $this->testFailedVpaValidation();
 
         $this->mockFailedVpaValidationVerify();

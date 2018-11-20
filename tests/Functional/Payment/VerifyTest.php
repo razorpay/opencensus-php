@@ -936,7 +936,7 @@ class VerifyTest extends TestCase
                 {
                     foreach ($paymentArray as $payment)
                     {
-                        if ($payment['id'] . '_verify' === $arg)
+                        if ('mutex:' . $payment['id'] . '_verify' === $arg)
                         {
                             return null;
                         }

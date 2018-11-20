@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\P2pRoute;
 use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 
@@ -111,6 +112,11 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true) === true)
         {
+            $ret = $this->ba->privateAuth();
+        }
+        else if (in_array($route, P2pRoute::$p2p, true) === true)
+        {
+            // TODO: We will later separate out routes according to the auth
             $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)

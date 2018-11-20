@@ -343,13 +343,23 @@ class Validator extends Base\Validator
             return;
         }
 
-        $supportedBanks = Netbanking::getSupportedBanks();
+        $supportedBanks = [];
 
-        // @fixme: make it generic
-        if ((isset($input['method']) === true) and
-            ($input['method'] === Payment\Method::EMANDATE))
+        $method = isset($input['method']) ? $input['method'] : null;
+
+        switch ($method)
         {
-            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+            case Payment\Method::EMANDATE:
+                $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+                break;
+
+            case Payment\Method::UPI:
+                $supportedBanks = Payment\Processor\Upi::getAllUpiBanks();
+                break;
+
+            case Payment\Method::NETBANKING:
+            default:
+                $supportedBanks = Netbanking::getSupportedBanks();
         }
 
         $bank = $input[Entity::BANK];

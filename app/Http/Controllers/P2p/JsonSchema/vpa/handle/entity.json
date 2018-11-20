@@ -1,0 +1,34 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "handle",
+        "merchant_id",
+        "acquirer",
+        "active"
+    ],
+    "properties": {
+        "handle": {
+            "$id": "#/properties/handle",
+            "type": "string"
+        },
+        "merchant_id": {
+            "$id": "#/properties/merchant_id",
+            "type": "string",
+            "default": null
+        },
+        "acquirer": {
+            "$id": "#/properties/acquirer",
+            "type": "string"
+        },
+        "active": {
+            "$id": "#/properties/active",
+            "type": "boolean"
+        }
+    },
+    "actions" : [
+        "fetchAll"
+    ]
+}

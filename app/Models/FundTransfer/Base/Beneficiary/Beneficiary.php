@@ -19,7 +19,6 @@ abstract class Beneficiary extends BaseCore
      * @return array with keys 'signed_url'
      *                         'local_file_path'
      *                         'file_name'
-     *                         'merchants_count'
      */
     public function register(PublicCollection $bankAccounts, array $input = []): array
     {
@@ -39,7 +38,7 @@ abstract class Beneficiary extends BaseCore
         $beneficiaryFileMail = new BeneficiaryFileMail(
             $data,
             $this->channel,
-            $data['merchants_count']);
+            $data['register_count']);
 
         Mail::queue($beneficiaryFileMail);
     }

@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
 {
+    use OAuthTrait;
+
     public function setUp()
     {
         $this->fixtures->create('merchant:nodal_account');
@@ -50,7 +53,8 @@ class Merchant extends Base
                                 [
                                     'id'            => '10000000000000',
                                     'email'         => 'test@razorpay.com',
-                                    'billing_label' => 'Test Merchant'
+                                    'billing_label' => 'Test Merchant',
+                                    'activated_at'  => time(),
                                 ]);
 
         // Merchant on whom all shared terminals are created
@@ -484,6 +488,11 @@ class Merchant extends Base
         return $this->edit($id, ['international' => '0']);
     }
 
+    public function markPartner($type = 'fully_managed', $id = '10000000000000')
+    {
+        return $this->edit($id, ['partner_type' => $type]);
+    }
+
     public function addFeatures($featureNames, $id = '10000000000000')
     {
         $features = collect();
@@ -592,6 +601,23 @@ class Merchant extends Base
         $this->createGroups();
         $this->createAdmins();
         $this->createMerchantsAndSyncToEs();
+    }
+
+    public function createDummyPartnerApp(array $attributes = [])
+    {
+        $defaults = [
+            'id'          => '8ckeirnw84ifke',
+            'merchant_id' => '10000000000000',
+            'name'        => 'Internal',
+            'website'     => 'https://www.razorpay.com',
+            'logo_url'    => '/logo/app_logo.png',
+            'category'    => null,
+            'type'        => 'partner',
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->createOAuthApplication($attributes);
     }
 
     private function createGroups()

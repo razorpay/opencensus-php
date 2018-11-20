@@ -163,6 +163,10 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $callbackUrlValidationRules = [
+        'callback_url' => 'sometimes|url',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -466,7 +470,7 @@ class Validator extends Base\Validator
             if ($amount > 10000000)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Amount for UPI payment cannot be greater than 100000000');
+                    'Amount for UPI payment cannot be greater than ₹100000.00');
             }
 
             if ((isset($input['_']['flow']) === true) and
@@ -571,16 +575,21 @@ class Validator extends Base\Validator
         $supported = false;
         $bank = $input['bank'];
 
-        if ($input['method'] === Payment\Method::NETBANKING)
-        {
-            $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
-        }
+        $method = $input['method'];
 
-        if ($input['method'] === Payment\Method::EMANDATE)
+        switch ($method)
         {
-            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+            case Payment\Method::EMANDATE:
+                $supported = Payment\Gateway::isSupportedEmandateBank($bank);
+                break;
 
-            $supported = in_array($bank, $supportedBanks, true);
+            case Payment\Method::UPI:
+                $supported = Payment\Processor\Upi::isSupportedUpiBank($bank);
+                break;
+
+            case Payment\Method::NETBANKING:
+                $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
+                break;
         }
 
         //

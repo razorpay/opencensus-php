@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
@@ -56,6 +57,9 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
+    const MRN                       = 'mrn';
+
+    const CUSTOMER                  = 'customer';
 
     //
     // These values goes in the account_type field
@@ -158,8 +162,10 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::RECURRING_DETAILS,
         self::AUTH_TYPE,
+        self::MRN,
         self::USED_AT,
         self::CREATED_AT,
+        self::CUSTOMER,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -189,6 +195,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CARD,
+        self::MRN,
         // TODO: Remove this after deciding on how to expose
         self::RECURRING_DETAILS
     ];
@@ -527,6 +534,17 @@ class Entity extends Base\PublicEntity
         if ($this->hasCard())
         {
             $array[self::CARD] = $this->card->toArrayToken();
+        }
+    }
+
+    protected function setPublicMrnAttribute(array & $array)
+    {
+        $array[self::MRN] = null;
+
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::EMANDATE_MRN) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $array[self::MRN] = $this->getGatewayToken();
         }
     }
 

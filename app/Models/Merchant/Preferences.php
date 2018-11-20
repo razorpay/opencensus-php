@@ -19,6 +19,7 @@ class Preferences
     const MID_MONEYVIEW             = '8hXTLsmoM3F6PH';
     const MID_WEALTHY               = '8lv4idBRY4C9c0';
     const MID_PIGGY                 = '9IjdEkLQb0j2ro';
+    const MID_PIGGY_TPV             = 'BADGdiwSiwi1g2';
     const MID_SHELL                 = '9LMdTQdjgMJ6uR';
     const MID_SHELL_2               = '9R0AsTqocyuP1W';
     const MID_PAISABAZAAR           = '9dhe2WRR0XCQz6';
@@ -32,6 +33,7 @@ class Preferences
     const MID_ANGEL_BROKING         = 'AC4DJNMIX9xXOz';
     const MID_SHELLHATCH            = 'A7W1rwbYMRmn6M';
     const MID_PAISABAZAAR_MARKETING = 'B1uh6CFFBKk35S';
+    const MID_FLYREMIT              = 'BFnwkJtHkMqswv';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -116,6 +118,7 @@ class Preferences
         self::MID_MONEYVIEW,
         self::MID_WEALTHY,
         self::MID_PIGGY,
+        self::MID_PIGGY_TPV,
         self::MID_PAISABAZAAR,
         self::MID_PAISABAZAAR_GOLD,
         self::MID_BPCL,
@@ -127,10 +130,12 @@ class Preferences
         self::MID_ANGEL_BROKING,
         self::MID_SHELLHATCH,
         self::MID_PAISABAZAAR_MARKETING,
+        self::MID_FLYREMIT,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [
         self::MID_PIGGY,
+        self::MID_PIGGY_TPV,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

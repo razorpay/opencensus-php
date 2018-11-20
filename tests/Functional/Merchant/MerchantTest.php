@@ -891,6 +891,31 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithAccountType()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+    }
+
+    public function testAddBankAccountWithInvalidAccountType()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testAddBankAccountWithMerchantDetail()
     {
         Mail::fake();
@@ -927,7 +952,7 @@ class MerchantTest extends TestCase
         // $this->assertEquals('ICIC0001206', $detail['bank_branch_ifsc']);
     }
 
-    public function testAddBankAccountWithInvalidIFSC()
+    public function testAddBankAccountWithInvalidIfsc()
     {
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -1004,6 +1029,47 @@ class MerchantTest extends TestCase
         // The old account should get SOFT deleted as there are settlements
         // attached to it.
         $this->assertEquals(2, $bankAccounts['count']);
+    }
+
+    public function testDiwaliPromotionalPlan()
+    {
+        $this->fixtures->pricing->createDiwaliPromotionalPlan();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
+
+        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals(100, $transaction['fee']);
+
+        // mock carbon to test timestamp check
+
+        $firstDay2019 = Carbon::createFromTimestamp(1546324200);
+
+        Carbon::setTestNow($firstDay2019);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(1000, $transaction['fee']);
     }
 
     public function testSetBanks()
@@ -1270,7 +1336,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetNetbankingDowntimeInfoWithIssuerNA()
+    public function testGetNetbankingDowntimeInfoWithIssuerNa()
     {
         $this->ba->publicAuth();
 
@@ -1561,6 +1627,112 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithForcedEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Only one expected, since HDFC is forced
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+            'active'          => false
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Offer is inactive now, so plans will be back to customer subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('customer', $plan['subvention']);
+        }
+    }
+
+    public function testGetCheckoutPreferencesWithEmiSubventionOfferUnderMinAmount()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'payment_network' => null,
+            'emi_durations'   => [
+                6,
+                9,
+            ],
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 7000]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        $hdfcPlans = $response['methods']['emi_options']['HDFC'];
+
+        // Amount is under the minimum amount for EMI subvention offers,
+        // so plans show up as customer subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('customer', $plan['subvention']);
+        }
+
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 700000]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        $hdfcPlans = $response['methods']['emi_options']['HDFC'];
+
+        // Amount is above the minimum amount for EMI subvention offers,
+        // so plans show up as merchant subvention
+        foreach ($response['methods']['emi_options']['HDFC'] as $plan)
+        {
+            $this->assertEquals('merchant', $plan['subvention']);
+        }
+    }
+
+    protected function getPreferences($orderId = null)
+    {
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+            ],
+        ];
+
+        if ($orderId !== null)
+        {
+            $request['content']['order_id'] = $orderId;
+        }
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function testGetCheckoutPreferencesForPaidOrder()
     {
         $order = $this->fixtures->order->createPaid();
@@ -1826,7 +1998,8 @@ class MerchantTest extends TestCase
 
         $offer = $this->fixtures->create('offer', [
             'payment_method' => 'emi',
-            'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+            'error_message'  => 'Payment method used is not eligible for offer. ' .
+                                'Please try with a different payment method.',
             'display_text'   => 'Some display text',
             'percent_rate'   => 5000,
             'min_amount'     => 200000,
@@ -1914,9 +2087,7 @@ class MerchantTest extends TestCase
 
         $offer = $this->fixtures->create('offer:emi_subvention');
 
-        $order = $this->fixtures->order->createWithOffers([
-            $offer
-        ]);
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 400000]);
 
         $this->ba->publicAuth();
 
@@ -1936,7 +2107,7 @@ class MerchantTest extends TestCase
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1, $offer2
-        ]);
+        ], ['amount' => 400000]);
 
         $this->ba->publicAuth();
 
@@ -1974,6 +2145,19 @@ class MerchantTest extends TestCase
 
         $headers = $response->headers->all();
         $this->assertArrayNotHasKey('x-frame-options', $headers);
+    }
+
+    public function testGetCheckoutRouteWithCheckoutFeatures()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['google_pay']);
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['features']['google_pay']);
     }
 
     public function testPutPaytmMethod()
@@ -2200,7 +2384,10 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
+
+        $this->assertArrayHasKey('total_count', $content);
+
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
@@ -2276,7 +2463,8 @@ class MerchantTest extends TestCase
         Carbon::setTestNow();
 
         $this->assertArrayHasKey('signed_url', $content);
-        $this->assertEquals(2, $content['merchants_count']);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(2, $content['total_count']);
         $this->assertEquals(Channel::KOTAK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
@@ -3175,9 +3363,9 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertArrayHasKey('register_count', $content);
 
-        $this->assertEquals(1, $content['merchants_count']);
+        $this->assertEquals(1, $content['register_count']);
 
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
@@ -3216,5 +3404,228 @@ class MerchantTest extends TestCase
         $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
 
         $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
+    }
+
+    public function testFetchingLinkedAcountsForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'         => 'parentaccount1',
+            'email'      => 'parentaccount1@razorpay.com',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'linkdaccount01',
+            'email'      => 'linkdaccount01@razorpay.com',
+            'parent_id'  => 'parentaccount1'
+        ]);
+
+        $this->fixtures->create(
+        'feature',
+        [
+            'entity_id'     => 'parentaccount1',
+            'entity_type'   => 'merchant',
+            'name'          => 'marketplace'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testPartnerAcountsForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'            => 'parentaccount1',
+            'email'         => 'parentaccount1@razorpay.com',
+            'partner_type'  => 'aggregator',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'submerchant001',
+            'email'      => 'submerchant001@razorpay.com'
+        ]);
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => 'parentaccount1',
+            'user_id'     => $user['id'],
+            'role'        => 'owner'
+        ]);
+
+        $this->createOAuthApplication([
+            'id'            => '10000000000App',
+            'merchant_id'   => 'parentaccount1',
+            'type'          => 'partner'
+        ]);
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => 'submerchant001',
+            'entity_id'   => '10000000000App',
+            'entity_type' => 'application',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testReferredAccountForMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'            => 'parentaccount1',
+            'email'         => 'parentaccount1@razorpay.com'
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'         => 'refaccount0001',
+            'email'      => 'refaccount0001@razorpay.com'
+        ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => 'parentaccount1',
+                'entity_type'   => 'merchant',
+                'name'          => 'aggregator'
+            ]);
+
+        DB::table('tagging_tagged')
+            ->insert([
+                'taggable_id'       => 'refaccount0001',
+                'taggable_type'     => 'merchant',
+                'tag_name'          => '',
+                'tag_slug'          => 'ref-parentaccount1',
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testNegativeBeneficiaryRegisterBetweenTimestampAxis()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0123456']);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'HDFC0153496']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(2, $content['register_count']);
+        $this->assertEquals(3, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class, function ($mail)
+        {
+            return $mail->hasTo(['abc@d.com', 'efg@h.com']);
+        });
+    }
+
+    public function testBeneficiaryRegisterBetweenTimestampAxisWithInvalidIfsc()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $twentythirdOct2018 = Carbon::createFromDate(2017, 10, 23, Timezone::IST);
+
+        Carbon::setTestNow($twentythirdOct2018);
+
+        $this->fixtures->create('bank_account', ['ifsc_code'  => 'UTIB0CCH274']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/axis',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $twentythirdOct2018->timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertEquals(0, $content['register_count']);
+        $this->assertEquals(1, $content['total_count']);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+    }
+
+    public function testSubmitSupportCallRequest()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestWithInvalidContact()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
+    public function testSubmitSupportCallRequestOnNonWorkingHours()
+    {
+        $this->ba->proxyAuth();
+        $this->fixtures->merchant->activate();
+
+        // 5th Nov 2018, 8 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 8, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 5th Nov 2018, 7 PM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 19, null, null, Timezone::IST));
+        $this->startTest();
+
+        // 4th Nov 2018, 10 AM, Sunday
+        Carbon::setTestNow(Carbon::create(2018, 11, 4, 10, null, null, Timezone::IST));
+        $this->startTest();
     }
 }

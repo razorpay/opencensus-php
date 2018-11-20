@@ -34,7 +34,7 @@ class Processor extends Base\Core
 
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
-    const MUTEX_LOCK_TIMEOUT    = 900;
+    const MUTEX_LOCK_TIMEOUT    = 1800;
 
     public function __construct()
     {
@@ -322,7 +322,7 @@ class Processor extends Base\Core
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
-        $txns = $this->repo->transaction->fetchUnsettledTransactions(
+        $txns = $this->repo->transaction->fetchTransactionsForSettlement(
                     $settledAtCutOff, $channel, $inMids, $notInMids);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
@@ -448,22 +448,30 @@ class Processor extends Base\Core
 
     protected function getMerchantsToSkipForUsualSettlement(): array
     {
+        // MIDs that have daily settlements feature enabled
         $dailySetlMids = $this->getMerchantsOnDailySettlement();
 
+        //
+        // MIDs that have been hardcoded to be skipped
+        // Todo: Deprecate this in favour of feature based fetch
+        //
         $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
 
-        $skipMids = array_merge($dailySetlMids, $skipMfIds);
+        // MIDs that have the block_settlements feature enabled
+        $skipSetlFeatureMids = $this->repo
+                                    ->feature
+                                    ->findMerchantIdsHavingFeatures([Feature\Constants::BLOCK_SETTLEMENTS]);
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids);
 
         return $skipMids;
     }
 
     protected function getMerchantsOnDailySettlement()
     {
-        $features = [Feature\Constants::DAILY_SETTLEMENT];
-
-        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures($features);
-
-        $mids = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        $mids = $this->repo
+                     ->feature
+                     ->findMerchantIdsHavingFeatures([Feature\Constants::DAILY_SETTLEMENT]);
 
         return $mids;
     }

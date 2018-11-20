@@ -166,6 +166,8 @@ class EsRepository extends Base\EsRepository
     {
         $activationStatusAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_STATUS;
 
+        $archivedAtAttr       = E::MERCHANT_DETAIL . '.' . DetailEntity::ARCHIVED_AT;
+
         //
         // For different value of account status (Refer AccountStatus.php)
         // we need to build query accordingly.
@@ -195,17 +197,16 @@ class EsRepository extends Base\EsRepository
 
             case AccountStatus::ARCHIVED:
 
-                $archivedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ARCHIVED_AT;
                 $this->addNotNullFilterForField($query, $archivedAtAttr);
 
                 break;
 
             case AccountStatus::ACTIVATED:
 
-                $this->addNotNullFilterForField($query, Entity::ACTIVATED_AT);
+                $this->addTermFilter($query, $activationStatusAttr, DetailStatus::ACTIVATED);
 
                 $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
-                $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
+                $this->addNullFilterForField($query, $archivedAtAttr);
 
                 break;
 
@@ -275,9 +276,17 @@ class EsRepository extends Base\EsRepository
 
             case AccountStatus::INSTANTLY_ACTIVATED:
 
-                 $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::INSTANTLY_ACTIVATED));
+                $this->addTermFilter($query, $activationStatusAttr, DetailStatus::INSTANTLY_ACTIVATED);
 
-                 break;
+                break;
+
+            case AccountStatus::REJECTED:
+
+                $this->addTermFilter($query, $activationStatusAttr, DetailStatus::REJECTED);
+
+                $this->addNullFilterForField($query, $archivedAtAttr);
+
+                break;
 
             default:
 

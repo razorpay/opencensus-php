@@ -6,14 +6,18 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Merchant;
-use RZP\Models\Batch\Type;
-use RZP\Models\Batch\Entity;
-use RZP\Models\Batch\Status;
-use RZP\Models\Batch\Header;
 use RZP\Services\AuthService;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Batch\Helpers\OauthMigration as H;
+use RZP\Models\Batch\{Type, Entity, Status, Header};
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Feature\{
+    Constants as FConstants,
+    Type as FType,
+    Entity as FEntity,
+    Core as FCore
+};
 
 class OauthMigrationToken extends Base
 {
@@ -23,9 +27,19 @@ class OauthMigrationToken extends Base
     protected $authService;
 
     /**
+     * @var FCore
+     */
+    protected $featureCore;
+
+    /**
+     * @var AccessMap\Core
+     */
+    protected $accessMapCore;
+
+    /**
      * @var OAuthApp\Entity
      */
-    protected $clientApp;
+    protected $appId;
 
     /**
      * @var OAuthClient\Entity
@@ -37,6 +51,10 @@ class OauthMigrationToken extends Base
         parent::__construct($batch);
 
         $this->authService = $this->app['authservice'];
+
+        $this->accessMapCore = (new AccessMap\Core);
+
+        $this->featureCore = (new FCore);
     }
 
     protected function processEntry(array & $entry)
@@ -58,8 +76,34 @@ class OauthMigrationToken extends Base
 
             $this->connectMerchantToPartner($subMerchant);
 
+            $this->assignS2SIfApplicable($entry);
+
             $this->updateOutputData($entry, $token);
         });
+    }
+
+    /**
+     * Assign 'allow_s2s_apps' feature to a pure platform sub-merchant
+     * if the batch is run for competitor's apps as the s2s routes
+     * don't work for them via oauth if the feature is not assigned.
+     * This is done to keep a check on competitors' sub-merchant onboarding.
+     *
+     * @param array $entry
+     */
+    protected function assignS2SIfApplicable(array $entry)
+    {
+        if (in_array($this->appId, FType::S2S_APPLICATION_IDS, true) === false)
+        {
+            return;
+        }
+
+        $featureParams = [
+            FEntity::ENTITY_TYPE => E::MERCHANT,
+            FEntity::ENTITY_ID   => $entry[Header::MERCHANT_ID],
+            FEntity::NAME        => FConstants::ALLOW_S2S_APPS
+        ];
+
+        $this->featureCore->create($featureParams, true);
     }
 
     protected function performPreProcessingActions()
@@ -76,7 +120,7 @@ class OauthMigrationToken extends Base
         /** @var OAuthClient\Entity $client */
         $this->client = (new OAuthClient\Repository)->findOrFail($clientId);
 
-        $this->clientApp = $this->client->application;
+        $this->appId = $this->client->application->getId();
     }
 
     /**
@@ -102,11 +146,9 @@ class OauthMigrationToken extends Base
 
     protected function connectMerchantToPartner(Merchant\Entity $subMerchant)
     {
-        $appId = $this->clientApp->getId();
+        $mapInput = [OAuthClient\Entity::APPLICATION_ID => $this->appId];
 
-        $mapInput = [OAuthClient\Entity::APPLICATION_ID => $appId];
-
-        (new AccessMap\Core)->addMappingForOAuthApp($subMerchant, $mapInput);
+        $this->accessMapCore->addMappingForOAuthApp($subMerchant, $mapInput);
     }
 
     protected function updateOutputData(array & $entry, array $token)
@@ -115,6 +157,7 @@ class OauthMigrationToken extends Base
         $entry[Header::ACCESS_TOKEN]  = $token[Header::ACCESS_TOKEN];
         $entry[Header::REFRESH_TOKEN] = $token[Header::REFRESH_TOKEN];
         $entry[Header::PUBLIC_TOKEN]  = $token[Header::PUBLIC_TOKEN];
+        $entry[Header::EXPIRES_IN]    = $token[Header::EXPIRES_IN];
 
         $entry = array_only($entry, Header::HEADER_MAP[Type::OAUTH_MIGRATION_TOKEN][Header::OUTPUT]);
     }

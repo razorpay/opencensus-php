@@ -173,6 +173,11 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($hashString);
     }
 
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
+    }
+
     protected function getHashOfString($str)
     {
         return strval(crc32($str));
@@ -284,39 +289,8 @@ class Gateway extends Base\Gateway
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
-    }
 
-    public function forceAuthorizeFailed($input)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                                       $input['payment']['id'],
-                                       Payment\Action::AUTHORIZE);
-
-        // If it's already authorized on gateway side, We just return.
-        if (($gatewayPayment->getReceived() === true) and
-            ($gatewayPayment->getStatus() === Status::YES))
-        {
-            return true;
-        }
-
-        if (empty($input['gateway']['gateway_payment_id']) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
-                null,
-                $input);
-        }
-
-        $attrs = [
-            Base\Entity::STATUS          => Status::YES,
-            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
-        ];
-
-        $gatewayPayment->fill($attrs);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return true;
+        $verify->payment = $this->saveVerifyResponse($verify);
     }
 
     protected function getVerifyMatchStatus(Verify $verify)
@@ -346,6 +320,21 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    protected function saveVerifyResponse(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function getVerifyAttributesToSave(array $content, $gatewayPayment)
@@ -380,14 +369,15 @@ class Gateway extends Base\Gateway
 
     protected function validateVerifyResponse($content)
     {
-        if ($content[ResponseFields::VERIFY_CHECKSUM_STATUS] === Constants::FALSE)
+        if ((isset($content[ResponseFields::VERIFY_CHECKSUM_STATUS]) === true) and
+            ($content[ResponseFields::VERIFY_CHECKSUM_STATUS] === Constants::FALSE))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED);
         }
 
-        if (isset($content[ResponseFields::VERIFY_ERROR_MESSAGE]) === true and
-            isset($content[ResponseFields::VERIFY_ERROR_CODE]) === true)
+        if ((isset($content[ResponseFields::VERIFY_ERROR_MESSAGE]) === true) and
+            (isset($content[ResponseFields::VERIFY_ERROR_CODE]) === true))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);

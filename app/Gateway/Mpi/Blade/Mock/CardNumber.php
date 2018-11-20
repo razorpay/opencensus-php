@@ -16,6 +16,7 @@ class CardNumber
     const INVALID_ECI             = '5200000000000031';
     const INTERNATIONAL_MAESTRO   = '5893163050216758';
     const INVALID_PARES           = '4539074965827394';
+    const UNKNOWN_ENROLLED        = '4539074965827311';
 
     public static function getAccId($cardNumber)
     {
