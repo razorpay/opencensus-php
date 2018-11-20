@@ -1698,10 +1698,7 @@ class Processor
         {
             $invoiceNotes = json_decode($invoice->getNotesJson(), true);
 
-            if (empty($invoiceNotes) === false)
-            {
-                $payment->setNotes($invoiceNotes);
-            }
+            $payment->setNotes($invoiceNotes);
         }
     }
 
