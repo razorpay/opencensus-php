@@ -80,6 +80,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
     const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
 
+    const DEFAULT_THEME                = 'light';
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,

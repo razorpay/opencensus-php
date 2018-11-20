@@ -315,7 +315,7 @@ class Validator extends Base\Validator
             }
             else if ($paymentAmountWithoutFee !== ($paymentUnits * $paymentLinkAmount))
             {
-                $errorMsg = 'Payment amount should be multiple of units and per payment link\'s amount.';
+                $errorMsg = 'Payment amount should be multiple of number of units and payment link\'s unit amount.';
             }
         }
 

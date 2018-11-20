@@ -91,6 +91,9 @@ class ViewSerializer extends Base\Core
         array_unshift($udfSchema, ...$defaultUdfSchemaForView);
         $settings[Entity::UDF_SCHEMA] = json_encode($udfSchema);
 
+        // Puts other settings defaults
+        $settings += [Entity::THEME => Entity::DEFAULT_THEME];
+
         return $settings;
     }
 
