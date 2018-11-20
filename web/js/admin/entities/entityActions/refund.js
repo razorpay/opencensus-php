@@ -7,10 +7,13 @@ import Field, { SelectField } from 'ui/Field';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
+import { Link } from 'react-router-dom';
 
 // refund Actions
 export default ({ entity, mode, updateEntity }) => {
-  function retryRefund(body) {
+  let scroogeRefundID = entity.id.replace('rfnd_', '');
+
+  function retryRefund() {
     return adminPost(`${mode}/refunds/${entity.id}/retry`).then(data => {
       if (data) {
         notifySuccess('Refund retry request is successful');
@@ -45,27 +48,39 @@ export default ({ entity, mode, updateEntity }) => {
 
   return (
     <div class="refund-actions">
-      <ShowWhen permission="retry_refund_failed">
-        {(entity.status === 'created' || entity.status === 'failed') && (
-          <AsyncButton
-            class="btn btn-default text-primary"
-            pendingClass="btn btn-default text-primary btn-pending"
-            confirm="Are you sure you want retry this refund?"
-            onClick={retryRefund}
-          >
-            Retry Refund
-            <span class="spin-btn" />
-          </AsyncButton>
-        )}
-      </ShowWhen>
+      {entity.is_scrooge ? (
+        <Link
+          to={'/scrooge/refund/' + scroogeRefundID}
+          class="btn"
+          target={'_blank'}
+        >
+          <i class="i-external-link"> Open on ODS</i>
+        </Link>
+      ) : (
+        <div>
+          <ShowWhen permission="retry_refund_failed">
+            {(entity.status === 'created' || entity.status === 'failed') && (
+              <AsyncButton
+                class="btn btn-default text-primary"
+                pendingClass="btn btn-default text-primary btn-pending"
+                confirm="Are you sure you want retry this refund?"
+                onClick={retryRefund}
+              >
+                Retry Refund
+                <span class="spin-btn" />
+              </AsyncButton>
+            )}
+          </ShowWhen>
 
-      <ShowWhen permission="edit_refund">
-        {entity.status !== 'processed' && (
-          <button class="btn" onClick={openEditRefund}>
-            Edit
-          </button>
-        )}
-      </ShowWhen>
+          <ShowWhen permission="edit_refund">
+            {entity.status !== 'processed' && (
+              <button class="btn" onClick={openEditRefund}>
+                Edit
+              </button>
+            )}
+          </ShowWhen>
+        </div>
+      )}
     </div>
   );
 };
