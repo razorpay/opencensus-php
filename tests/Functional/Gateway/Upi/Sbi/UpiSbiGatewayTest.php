@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
@@ -98,6 +99,15 @@ class UpiSbiGatewayTest extends TestCase
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['upi']['expiry_time'] = 10;
+
+        $this->mockServerRequestFunction(
+            function($content, $action)
+            {
+                if ($action === 'authorize')
+                {
+                    $this->assertEquals('10', $content[RequestFields::EXPIRY_TIME]);
+                }
+            });
 
         $response = $this->doS2SUpiPayment($payment);
 
