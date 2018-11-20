@@ -452,7 +452,7 @@ class Processor extends Base\Core
         $dailySetlMids = $this->getMerchantsOnDailySettlement();
 
         //
-        // MIDs that have been harcoded to be skipped
+        // MIDs that have been hardcoded to be skipped
         // Todo: Deprecate this in favour of feature based fetch
         //
         $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
@@ -469,11 +469,9 @@ class Processor extends Base\Core
 
     protected function getMerchantsOnDailySettlement()
     {
-        $features = [Feature\Constants::DAILY_SETTLEMENT];
-
-        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures($features);
-
-        $mids = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        $mids = $this->repo
+                     ->feature
+                     ->findMerchantIdsHavingFeatures([Feature\Constants::DAILY_SETTLEMENT]);
 
         return $mids;
     }
