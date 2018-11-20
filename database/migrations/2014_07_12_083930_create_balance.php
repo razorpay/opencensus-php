@@ -24,6 +24,18 @@ class CreateBalance extends Migration
             $table->char(Balance::ID, Balance::ID_LENGTH)
                   ->primary();
 
+            $table->char(Balance::MERCHANT_ID, Balance::ID_LENGTH)
+                  ->nullable(); //remove this once the migration is done
+
+            $table->string(Balance::TYPE, 255)
+                  ->nullable();
+
+            $table->char(Balance::CURRENCY, 3)
+                  ->nullable(); //remove this once the migration is done
+
+            $table->string(Balance::NAME, 255)
+                  ->nullable();
+
             $table->bigInteger(Balance::BALANCE)
                   ->default(0);
 
