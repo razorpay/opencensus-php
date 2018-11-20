@@ -1,7 +1,6 @@
 import { snakeToTitleCase } from 'common/util';
 
 import Field, { TextAreaField, SelectField, SwitchField } from 'ui/Field';
-import { ConfigurationOptions } from 'aws-sdk/lib/config';
 
 const CONFIG_TYPE_LABEL = 'Report to customized';
 const FILE_FORMAT_LABEL = 'File Format';

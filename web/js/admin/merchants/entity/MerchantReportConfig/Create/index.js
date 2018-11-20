@@ -11,6 +11,7 @@ import Form from 'ui/Form';
 import Model from '../../model';
 
 import ConfigDetails from './ConfigDetails';
+import DataDetails from './DataDetails';
 
 @observer
 export default class CreateMerchantReportConfig extends Component {
@@ -46,17 +47,18 @@ export default class CreateMerchantReportConfig extends Component {
   render() {
     const merchantId = this.props.merchantId;
     const { details } = this.model.merchant;
+    console.log({ details });
     return (
       <ModalContent header="Create New Report Config">
         <div class="box">
           <div class="heading">Merchant Id: {merchantId}</div>
-          {!Object.keys(details).length ? (
-            <div class="spinner center" />
-          ) : (
+          {Object.keys(details).length ? (
             [
               <EntityRow label="Merchant Name" value={details.name} />,
               <EntityRow label="Registered Email" value={details.email} />,
             ]
+          ) : (
+            <div class="spinner center" />
           )}
         </div>
 
@@ -69,7 +71,14 @@ export default class CreateMerchantReportConfig extends Component {
                 configTypes={this.state.configTypes}
               />
 
-              <div>Page 2</div>
+              {Object.keys(details).length ? (
+                <DataDetails
+                  partnerType={details.partner_type}
+                  reportEmails={details.transaction_report_email}
+                />
+              ) : (
+                <div class="spinner center" />
+              )}
             </TabsContainer>
           </Form>
         </div>
