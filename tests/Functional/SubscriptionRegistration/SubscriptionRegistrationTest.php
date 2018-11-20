@@ -239,7 +239,7 @@ class SubscriptionRegistrationTest extends TestCase
     {
         $this->startTest();
 
-        $order = $this->getDbLastEntity("order");
+        $order = $this->getDbLastEntity('order');
 
         $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
 
@@ -291,9 +291,9 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $token = $this->getDbLastEntity("token");
+        $token = $this->getDbLastEntity('token');
 
-        $invoice = $this->getDbLastEntity("invoice");
+        $invoice = $this->getDbLastEntity('invoice');
 
         $request = [
             'method'  => 'GET',
@@ -302,7 +302,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey("subscription_registration", $content);
+        $this->assertArrayHasKey('subscription_registration', $content);
 
         $this->assertEquals($content['subscription_registration']['notes'], $invoice->getNotes()->toArray());
     }
