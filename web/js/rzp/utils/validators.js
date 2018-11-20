@@ -47,8 +47,7 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
-export const isInteger = value => {
-  value = value || '';
+export const isInteger = (value = '') => {
   let integerRegExp = new RegExp(/^[0-9]+$/);
 
   return integerRegExp.test(value);

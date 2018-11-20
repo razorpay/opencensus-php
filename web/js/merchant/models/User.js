@@ -213,11 +213,7 @@ export default class User {
 
   get showInstantActivation() {
     return (
-      this.isOrgRZP &&
-      (!!this.activation_flow ||
-        (this.experiments &&
-          this.experiments.instant_activations &&
-          this.experiments.instant_activations.result === 'on'))
+      this.isOrgRZP && (!!this.activation_flow || this.instant_activations)
     );
   }
 

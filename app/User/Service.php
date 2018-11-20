@@ -393,7 +393,7 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    $data = $this->updateInstantActivationExperiment($user, $data);
+                    $data = $this->updateInstantActivationExperiment($data);
 
                     if (((bool) $merchant['activated']) === true)
                     {
@@ -493,15 +493,20 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $user
      * @param array $data
      *
      * @return mixed
      * @throws \Razorpay\Api\Errors\BadRequestError
      */
-    public function updateInstantActivationExperiment($user, array $data)
+    public function updateInstantActivationExperiment(array $data)
     {
-        if ($user->created_at > self::INSTANT_ACTIVATION_TIMESTAMP)
+        $enableInstantActivations = true;
+
+        if (isset($data['created_at']) === false)
+        {
+            $enableInstantActivations = true;
+        }
+        else if ($data['created_at'] > self::INSTANT_ACTIVATION_TIMESTAMP)
         {
             //
             // with activation_flow set always return result on
@@ -510,23 +515,28 @@ class Service extends Base\Service
             //
             if ($data['activation_flow'] !== null)
             {
-                $data['experiments']['instant_activations'] = ['result' => 'on'];
+                $enableInstantActivations = true;
             }
             else if (((bool) $data['submitted']) === true)
             {
-                $data['experiments']['instant_activations'] = ['result' => 'off'];
+                $enableInstantActivations = false;
             }
             else
             {
-                $merchantService = new Merchant\Service;
-
-                $data['experiments']['instant_activations'] = $merchantService->getTreatment('instant_activations');
+                $enableInstantActivations = true;
             }
         }
         else
         {
-            $data['experiments']['instant_activations'] = ['result' => 'off'];
+            $enableInstantActivations = false;
         }
+
+        $data['instant_activations'] = $enableInstantActivations;
+
+        $this->trace->info(TraceCode::ENABLE_INSTANT_ACTIVATIONS, [
+            'instant_activations' => $data['instant_activations'],
+            'merchant_id'         => $data['id'] ?? '',
+        ]);
 
         return $data;
     }

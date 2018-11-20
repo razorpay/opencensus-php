@@ -27,6 +27,7 @@ class TraceCode
     const USER_LOGIN                                = 'USER_LOGIN';
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
+    const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
 
     const ADMIN_LOGIN                               = 'ADMIN_LOGIN';
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
