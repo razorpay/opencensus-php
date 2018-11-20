@@ -136,6 +136,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     document.head.appendChild(script);
 
     document.getElementById('payment-pages-v2').classList.add('theme-desktop');
+
+    if (!this.props.id) {
+      this.changeFETheme('light');
+    }
   }
 
   handleClose = () => {
