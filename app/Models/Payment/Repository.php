@@ -231,7 +231,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEmiPaymentsAndMerchantsWithCardTerminalsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
     {
         $tRepo = $this->repo->terminal;
 
@@ -246,18 +246,15 @@ class Repository extends Base\Repository
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
         return $this->newQuery()
-            ->join($tTableName, $paymentTerminalId, '=', $terminalId)
-            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-            ->where(Entity::STATUS, '=', Status::CAPTURED)
-            ->where(Entity::BANK, '=', $bank)
-            ->where(Entity::METHOD, '=', Method::EMI)
-            ->where($terminalEmi, '=', false)
-            ->with('card.globalCard')
-            ->with('emiPlan')
-            ->with('merchant.merchantDetail')
-            ->with('merchant.terminals')
-            ->select($paymentData)
-            ->get();
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where(Entity::BANK, '=', $bank)
+                    ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
+                    ->with($relations)
+                    ->select($paymentData)
+                    ->get();
     }
 
     public function fetchCreatedPaymentsWithInternalError($timestamp)
@@ -1318,7 +1315,7 @@ class Repository extends Base\Repository
                     ->with(['localToken', 'globalToken', 'customer', 'merchant'])
                     ->get();
     }
-  
+
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);

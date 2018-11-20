@@ -13,7 +13,7 @@ class Entity extends Base\PublicEntity
     {
         assertTrue($this->mode === null);
 
-        return '654321';
+        return '000000';
     }
 
     //Dummy functions to make tests pass

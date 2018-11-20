@@ -42,10 +42,16 @@ class Sbi extends Base
 
         $emiPaymentsForBank = $this->repo
                                    ->payment
-                                   ->fetchEmiPaymentsAndMerchantsWithCardTerminalsBetween(
+                                   ->fetchEmiPaymentsWithRelationsBetween(
                                         $begin,
                                         $end,
-                                        static::BANK_CODE);
+                                        static::BANK_CODE,
+                                       [
+                                           'card.globalCard',
+                                           'emiPlan',
+                                           'merchant.merchantDetail',
+                                           'merchant.terminals'
+                                       ]);
 
         return $emiPaymentsForBank;
     }
@@ -129,7 +135,7 @@ class Sbi extends Base
                  */
                 foreach ($terminals as $terminal)
                 {
-                    if (($terminal[Terminal\Entity::GATEWAY] === Payment\Gateway::SBI_EMI) and
+                    if (($terminal[Terminal\Entity::GATEWAY] === Payment\Gateway::EMI_SBI) and
                         ($terminal->isEnabled() === true))
                     {
                         if (empty($mid) === true)
@@ -223,7 +229,7 @@ class Sbi extends Base
 
         $textRows = array_merge($header, $body);
 
-        return $this->getTxtFromRows($textRows);
+        return implode("\r\n", $textRows);
     }
 
     // @codingStandardsIgnoreLine
@@ -277,35 +283,5 @@ class Sbi extends Base
     private function strpad($str, $length)
     {
         return strtoupper(str_pad($str, $length, ' ', STR_PAD_RIGHT));
-    }
-
-    private function getTxtFromRows(array $rows): string
-    {
-        $txt = '';
-
-        $totalElements = count($rows);
-
-        try
-        {
-            foreach ($rows as $index => $row)
-            {
-                $txt .= $row;
-
-                // Don't add newline for the last line
-                if ($index < $totalElements - 1)
-                {
-                    //
-                    // Double quote is required to suggest new line
-                    // Single quote will NOT work
-                    //
-                    $txt .= "\r\n";
-                }
-            }
-            return $txt;
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e);
-        }
     }
 }

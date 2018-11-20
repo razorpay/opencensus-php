@@ -95,7 +95,7 @@ class Gateway
     const BT_DASHBOARD       = 'bt_dashboard';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
-    const SBI_EMI            = 'sbi_emi';
+    const EMI_SBI            = 'emi_sbi';
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
