@@ -35,7 +35,7 @@ class Reconciliate extends Base\Reconciliate
         return self::COMBINED;
     }
 
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         if (strpos($fileDetails[FileProcessor::FILE_NAME], 'detailed') !== false)
         {

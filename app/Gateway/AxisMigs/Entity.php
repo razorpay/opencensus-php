@@ -6,6 +6,15 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
+    const VPC_ACQ_RESPONSE_CODE     = 'vpc_AcqResponseCode';
+    const VPC_BATCH_NO              = 'vpc_BatchNo';
+    const VPC_MERCH_TXN_REF         = 'vpc_MerchTxnRef';
+    const VPC_MERCHANT              = 'vpc_Merchant';
+    const VPC_MESSAGE               = 'vpc_Message';
+    const VPC_SHOP_TRANSACTION_NO   = 'vpc_ShopTransactionNo';
+    const VPC_TRANSACTION_NO        = 'vpc_TransactionNo';
+    const VPC_TXN_RESPONSE_CODE     = 'vpc_TxnResponseCode';
+
     const TERMINAL_ID = 'terminal_id';
 
     protected $fields = array(

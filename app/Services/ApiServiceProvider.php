@@ -240,6 +240,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerDatabaseConnection();
 
         $this->registerMyOperator();
+
+        $this->registerKubernetesClient();
     }
 
     /**
@@ -593,6 +595,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
 
             return new $impl($this->app->trace, $config);
+        });
+    }
+
+    protected function registerKubernetesClient()
+    {
+        $this->app->singleton('k8s_client', function($app)
+        {
+            return new KubernetesClient($app);
         });
     }
 }

@@ -218,6 +218,19 @@ return [
         'secret'   => env('RAZORX_SECRET'),
     ],
 
+    'kubernetes_client' => [
+        'mock'              => env('KUBERNETES_MOCK', false),
+        'cluster_url'       => 'https://'.env('KUBERNETES_SERVICE_HOST').':'.env('KUBERNETES_PORT_443_TCP_PORT'),
+        'ca_cert'           => env('KUBERNETES_CA_CERT'),
+        'token'             => env('KUBERNETES_TOKEN'),
+        'namespace'         => env('KUBERNETES_NAMESPACE'),
+        'iam_role'          => env('KUBERNETES_IAM_ROLE') ?: env('APP_ENV')."-api",
+        'image_path'        => env('KUBERNETES_IMAGE_PATH'),
+        'git_commit_hash'   => env('GIT_COMMIT_HASH', false),
+        'app_mode'          => env('APP_MODE'),
+        'app_env'           => env('APP_ENV'),
+    ],
+
     'otpelf' => [
         'mock'    => env('OTPELF_MOCK', false),
         'url'     => env('OTPELF_BASE_URL'),

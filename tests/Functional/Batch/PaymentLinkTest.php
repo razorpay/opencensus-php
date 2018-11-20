@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -15,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -102,6 +104,40 @@ class PaymentLinkTest extends TestCase
 
         // TODO:
         // - Open and verify output file contents with expectations
+    }
+
+
+    public function testCreateBatchOfPaymentLinkWithKubernetes()
+    {
+        Queue::fake();
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('On');
+
+        $k8s_client = Mockery::mock(KubernetesClient::class)->makePartial();
+        $this->app->instance('k8s_client', $k8s_client);
+
+
+        // Just asserting that job is created in kubernetes client for batch entity
+        // of payment link type.
+        $k8s_client->shouldReceive('createJob')
+            ->once()
+            ->andReturn(null);
+
+        $this->startTest();
+
+        //Queue::assertPushed(BatchJob::class);
     }
 
     /**

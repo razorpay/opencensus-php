@@ -47,6 +47,7 @@ class ProviderCode
     const DBS                = 'dbs';
     const DCB                = 'dcb';
     const DENABANK           = 'denabank';
+    const DLB                = 'dlb';
     const EAZYPAY            = 'eazypay';
     const EQUITAS            = 'equitas';
     const EZEEPAY            = 'ezeepay';
@@ -166,6 +167,7 @@ class ProviderCode
         self::DBS                => IFSC::DBSS,
         self::DCB                => IFSC::DCBL,
         self::DENABANK           => IFSC::BKDN,
+        self::DLB                => IFSC::DLXB,
         self::EAZYPAY            => IFSC::ICIC,
         self::EQUITAS            => IFSC::ESFB,
         self::EZEEPAY            => 'NPCI',

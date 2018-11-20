@@ -103,6 +103,8 @@ class Scrooge
      * @param array $input
      *
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
      */
     public function getReports(array $input): array
     {
@@ -121,18 +123,23 @@ class Scrooge
 
     /**
      * @param array $input
-     *
+     * @param bool $throwExceptionOnFailure
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
      */
-    public function bulkUpdateRefundStatus(array $input): array
+    public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'], 'POST', $input);
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
+                            'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
      * @param array $input
      *
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
      */
     public function getRefunds(array $input): array
     {
@@ -143,6 +150,8 @@ class Scrooge
      * @param string $id
      *
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
      */
     public function getRefund(string $id): array
     {

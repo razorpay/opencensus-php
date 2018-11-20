@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         ConfigKey::DISABLE_MAGIC                        => 'filled|boolean',
         ConfigKey::BLOCK_SMART_COLLECT                  => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK                        => 'filled|boolean',
+        ConfigKey::BLOCK_AADHAAR_REG                    => 'filled|boolean',
         ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
         ConfigKey::MERCHANT_ENACH_CONFIGS               => 'filled|array',
     ];

@@ -1,0 +1,53 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "required": [
+        "ifsc",
+        "name",
+        "upi_iin",
+        "upi_format",
+        "refreshed_at",
+        "spoc"
+    ],
+    "properties": {
+        "ifsc": {
+            "$id": "#/properties/ifsc",
+            "type": "string",
+            "pattern": "^[\\w]{13}$"
+        },
+        "name": {
+            "$id": "#/properties/name",
+            "type": "string"
+        },
+        "upi_iin": {
+            "$id": "#/properties/upi_iin",
+            "type": "string",
+            "pattern": "^[\\d]{6}$"
+        },
+        "upi_format": {
+            "$id": "#/properties/upi_format",
+            "type": "string",
+            "enum": [
+                "FORMAT1",
+                "FORMAT2",
+                "FORMAT3"
+            ]
+        },
+        "refreshed_at": {
+            "$id": "#/properties/refreshed_at",
+            "type": "integer"
+        },
+        "spoc": {
+            "$id": "#/properties/spoc",
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "actions" : [
+        "fetchAll"
+    ]
+}

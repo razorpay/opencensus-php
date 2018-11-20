@@ -1477,8 +1477,6 @@ class TerminalSelectionTest extends TestCase
             'enabled_banks' => ['HDFC'],
         ]);
 
-        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
-
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
         $payment = $this->doAuthPayment($payment);
 
@@ -1488,9 +1486,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testNetbankingTerminalNotSelectedWithoutEnabledBanks()
     {
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
-
-        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal', [
+            'enabled_banks' => [],
+        ]);
 
         $this->makeRequestAndCatchException(function ()
         {

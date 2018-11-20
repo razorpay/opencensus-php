@@ -2545,6 +2545,12 @@ final class Route
         'subscription_test_charge',
     ];
 
+    // These routes are redirected after a feature check
+    // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
+    const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
+        'subscription_test_charge',
+    ];
+
     /**
      * @var Router
      */
@@ -2875,6 +2881,13 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::S2S_PAYMENT_ROUTES, true) === true);
+    }
+
+    public function isSubscriptionFeatureProxyRoute(): bool
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        return (in_array($currentRoute, self::SUBSCRIPTION_FEATURE_PROXY_ROUTES, true) === true);
     }
 
     public function isSubscriptionProxyRoute(): bool
