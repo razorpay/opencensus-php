@@ -70,7 +70,10 @@ const activationStatus = {
       <>
         {submerchant.details.activation_status === 'instantly_activated' && (
           <>
-            <i class="i i-info-circle" />&nbsp;
+            <ActivationStatusLabel
+              status={submerchant.details.activation_status}
+            />&nbsp;
+            <i class="i i-info-circle" />
             <Popover align="right" theme="dark">
               <PopoverBody>
                 The merchant can accept live payments but settlements will be on
@@ -79,7 +82,6 @@ const activationStatus = {
             </Popover>
           </>
         )}
-        <ActivationStatusLabel status={submerchant.details.activation_status} />
       </>
     ) : (
       <span class="status-label label label-warning">Not Submitted</span>

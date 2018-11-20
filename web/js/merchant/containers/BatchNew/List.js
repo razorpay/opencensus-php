@@ -48,6 +48,7 @@ export default class BatchList extends ListContainer {
       .batchDownload(id)
       .then(response => {
         windowRef.location.href = response.data.url;
+        windowRef.close();
       })
       .catch(({ errors }) => {
         windowRef.close();
