@@ -459,6 +459,7 @@ class Gateway
         Payment\Gateway::SHARP,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE
     ];
 
