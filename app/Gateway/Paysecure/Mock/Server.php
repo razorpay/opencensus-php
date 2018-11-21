@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::ERROR_CODE            => '0',
             Paysecure\Fields::ERROR_MESSAGE         => '',
             Paysecure\Fields::QUALIFIED_INTERNETPIN => 'TRUE',
-            Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'TRUE',
+            Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'FALSE',
         ];
 
         $this->content($response, 'checkbin2');
@@ -55,6 +55,23 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::TRAN_ID                     => self::TRAN_ID,
             Paysecure\Fields::REDIRECT_URL                => $redirectUrl,
             Paysecure\Fields::AUTHENTICATION_NOT_REQUIRED => 'FALSE',
+        ];
+
+        $this->content($response, 'initiate2');
+
+        return $response;
+    }
+
+    protected function getInitiateResponse($data)
+    {
+        $response = [
+            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE    => '0',
+            Paysecure\Fields::ERROR_MESSAGE => '',
+            Paysecure\Fields::TRAN_ID       => self::TRAN_ID,
+            Paysecure\Fields::GUID          => '07222ddf-5215-12d3-9309-da713843d30a',
+            Paysecure\Fields::MODULUS       => '99FE9064CD6CD3CBA87C0DF728B31E18B5',
+            Paysecure\Fields::EXPONENT      => '010001',
         ];
 
         $this->content($response, 'initiate2');

@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->initiate2();
 
-            $this->handleFailure($response, 'initiate');
+            $this->handleFailure($response, 'initiate2');
 
             $content = $this->getGatewayPaymentAttributes($response);
 
@@ -73,8 +73,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            // $this->initiate();
+            $response = $this->initiate();
 
+            $this->handleFailure($response, 'initiate');
             // $this->createGatewayPaymentEntity();
         }
     }

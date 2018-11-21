@@ -46,7 +46,15 @@ trait RequestHandlerTrait
     //-------------- Initiate request ----------------------------------------
     protected function initiate()
     {
+        $requestArray = $this->getInitiateRequestArray();
 
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_INITIATE;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
     }
 
     protected function initiate2()
@@ -82,7 +90,7 @@ trait RequestHandlerTrait
         $date = $paymentDate->format('md');
 
         // Random 6 digit number
-        $systemTraceAuditNumber = sprintf("%06d", mt_rand(1, 999999));
+        $systemTraceAuditNumber = sprintf('%06d', mt_rand(1, 999999));
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
@@ -94,7 +102,6 @@ trait RequestHandlerTrait
             // todo: fetch this correctly from card BIN
             Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
             Fields::TID                               => $this->config['terminal_id'],
-            // todo: Identify what we should pass here
             Fields::STAN                              => $systemTraceAuditNumber,
             Fields::TRAN_TIME                         => $time,
             Fields::TRAN_DATE                         => $date,
@@ -104,7 +111,6 @@ trait RequestHandlerTrait
             // todo: Confirm this
             Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
-            // todo: Check if these values are okay
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
@@ -159,8 +165,6 @@ trait RequestHandlerTrait
                 'exceptions'          => true,
                 'connection_timeout'   => 30,
             ];
-
-            ini_set("default_socket_timeout", 30);
 
             $request = [
                 'wsdl' => $this->wsdlDetails['wsdl_file'],
@@ -273,11 +277,11 @@ trait RequestHandlerTrait
     protected function printLastSoapXml($soapClient)
     {
         $xml = $soapClient->__getLastRequest();
-        $dom = new \DOMDocument("1.0");
+        $dom = new \DOMDocument('1.0');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
         $dom->loadXML($xml);
-        echo "<pre>".htmlentities($dom->saveXML())."</pre>";
+        echo '<pre>' . htmlentities($dom->saveXML()) . '</pre>';
         die;
     }
     //---------------- REMOVE THIS LATER END -------------------------
