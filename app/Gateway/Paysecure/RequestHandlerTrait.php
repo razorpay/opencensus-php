@@ -53,12 +53,13 @@ trait RequestHandlerTrait
     {
         $requestArray = $this->getInitiateRequestArray();
 
-        //todo: Fill these later from payment_analytics table
+        //todo: Check what value to pass in http_accept
         $extraParameters = [
-            Fields::BROWSER_USERAGENT => '',
-            Fields::IP_ADDRESS        => '',
-            Fields::HTTP_ACCEPT       => '',
+            Fields::BROWSER_USERAGENT => $this->input['paymentAnalytics']['user_agent'],
+            Fields::IP_ADDRESS        => $this->input['paymentAnalytics']['ip'],
+            Fields::HTTP_ACCEPT       => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         ];
+        sd($extraParameters);
 
         $requestArray = array_merge($requestArray, $extraParameters);
 

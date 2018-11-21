@@ -7,128 +7,135 @@ use RZP\Error\ErrorCode;
 class ErrorCodes
 {
     // Check BIN responses
-    const ERROR_CODE_01 = '01';
-    const ERROR_CODE_02 = '02';
-    const ERROR_CODE_400 = '400';
-    const ERROR_CODE_401 = '401';
-    const ERROR_CODE_402 = '402';
-    const ERROR_CODE_406 = '406';
-    const ERROR_CODE_407 = '407';
-    const ERROR_CODE_408 = '408';
-    const ERROR_CODE_410 = '410';
+    const EC_01 = '01';
+    const EC_02 = '02';
+    const EC_400 = '400';
+    const EC_401 = '401';
+    const EC_402 = '402';
+    const EC_406 = '406';
+    const EC_407 = '407';
+    const EC_408 = '408';
+    const EC_410 = '410';
+    const EC_412 = '412';
 
     // Callback responses
-    const ERROR_ACCU000 = 'ACCU000';
-    const ERROR_ACCU200 = 'ACCU200';
-    const ERROR_ACCU400 = 'ACCU400';
-    const ERROR_ACCU600 = 'ACCU600';
-    const ERROR_ACCU700 = 'ACCU700';
-    const ERROR_ACCU800 = 'ACCU800';
-    const ERROR_ACCU999 = 'ACCU999';
+    const ACCU000 = 'ACCU000';
+    const ACCU200 = 'ACCU200';
+    const ACCU400 = 'ACCU400';
+    const ACCU600 = 'ACCU600';
+    const ACCU700 = 'ACCU700';
+    const ACCU800 = 'ACCU800';
+    const ACCU999 = 'ACCU999';
 
     // Authorize responses
-    const ERROR_CODE_13 = '13';
-    const ERROR_CODE_41 = '41';
-    const ERROR_CODE_42 = '42';
-    const ERROR_CODE_43 = '43';
-    const ERROR_CODE_51 = '51';
-    const ERROR_CODE_54 = '54';
-    const ERROR_CODE_55 = '55';
-    const ERROR_CODE_57 = '57';
-    const ERROR_CODE_58 = '58';
-    const ERROR_CODE_59 = '59';
-    const ERROR_CODE_60 = '60';
-    const ERROR_CODE_61 = '61';
-    const ERROR_CODE_62 = '62';
-    const ERROR_CODE_65 = '65';
-    const ERROR_CODE_91 = '91';
-    const ERROR_CODE_92 = '92';
-    const ERROR_CODE_96 = '96';
-    const ERROR_CODE_110 = '110';
-    const ERROR_CODE_120 = '120';
-    const ERROR_CODE_399 = '399';
+    const EC_13 = '13';
+    const EC_41 = '41';
+    const EC_42 = '42';
+    const EC_43 = '43';
+    const EC_51 = '51';
+    const EC_54 = '54';
+    const EC_55 = '55';
+    const EC_57 = '57';
+    const EC_58 = '58';
+    const EC_59 = '59';
+    const EC_60 = '60';
+    const EC_61 = '61';
+    const EC_62 = '62';
+    const EC_65 = '65';
+    const EC_91 = '91';
+    const EC_92 = '92';
+    const EC_96 = '96';
+    const EC_110 = '110';
+    const EC_120 = '120';
+    const EC_399 = '399';
 
     protected $descriptionMappings = [
         // Check BIN error codes
-        self::ERROR_CODE_01 => 'Missing Parameter',
-        self::ERROR_CODE_02 => 'Invalid Command',
-        self::ERROR_CODE_400 => 'General Error',
-        self::ERROR_CODE_401 => 'Command is Null or Empty',
-        self::ERROR_CODE_402 => 'XML is Null or Empty',
-        self::ERROR_CODE_406 => 'Not Authenticated',
-        self::ERROR_CODE_407 => 'Not Authorized',
-        self::ERROR_CODE_408 => 'XML Data Error',
-        self::ERROR_CODE_410 => 'Invalid BIN',
+        self::EC_01   => 'Missing Parameter',
+        self::EC_02   => 'Invalid Command',
+        self::EC_400  => 'General Error',
+        self::EC_401  => 'Command is Null or Empty',
+        self::EC_402  => 'XML is Null or Empty',
+        self::EC_406  => 'Not Authenticated',
+        self::EC_407  => 'Not Authorized',
+        self::EC_408  => 'XML Data Error',
+        self::EC_410  => 'Invalid BIN',
+        self::EC_412  => 'Issuer Authentication Failure',
+
         // Callback error codes
-        self::ERROR_ACCU200 => 'User pressed cancel button',
-        self::ERROR_ACCU400 => 'User was inactive',
-        self::ERROR_ACCU600 => 'Invalida data posted to Paysecure',
-        self::ERROR_ACCU700 => 'Card issuer error',
-        self::ERROR_ACCU800 => 'General error',
-        self::ERROR_ACCU999 => 'Modal popup was opened successfully',
+        self::ACCU200 => 'User pressed cancel button',
+        self::ACCU400 => 'User was inactive',
+        self::ACCU600 => 'Invalida data posted to Paysecure',
+        self::ACCU700 => 'Card issuer error',
+        self::ACCU800 => 'General error',
+        self::ACCU999 => 'Modal popup was opened successfully',
+
         // Authorize error codes
-        self::ERROR_CODE_13 => 'Amount Error',
-        self::ERROR_CODE_41 => 'DECLINED (lost card)',
-        self::ERROR_CODE_42 => 'DECLINED (no account)',
-        self::ERROR_CODE_43 => 'DECLINED (stolen)',
-        self::ERROR_CODE_51 => 'NON SUFFICIENT FUNDS',
-        self::ERROR_CODE_54 => 'EXPIRED CARD',
-        self::ERROR_CODE_55 => 'WRONG PIN',
-        self::ERROR_CODE_57 => 'DECLINED (cardholder not allowed)',
-        self::ERROR_CODE_58 => 'DECLINED (terminal not allowed)',
-        self::ERROR_CODE_59 => 'DECLINED (fraud)',
-        self::ERROR_CODE_60 => 'DECLINED (contact acquirer)',
-        self::ERROR_CODE_61 => 'DECLINED (exceeds with)',
-        self::ERROR_CODE_62 => 'DECLINED (restricted card)',
-        self::ERROR_CODE_65 => 'DECLINED (exceeds frequency)',
-        self::ERROR_CODE_91 => 'ERROR',
-        self::ERROR_CODE_92 => 'NO ROUTING AVAILABLE',
-        self::ERROR_CODE_96 => 'SYSTEM ERROR',
-        self::ERROR_CODE_110 => 'NO ACCT',
-        self::ERROR_CODE_120 => 'ACCT CLOSED',
-        self::ERROR_CODE_399 => 'SYSTEM UNAVAILABLE',
+        self::EC_13   => 'Amount Error',
+        self::EC_41   => 'DECLINED (lost card)',
+        self::EC_42   => 'DECLINED (no account)',
+        self::EC_43   => 'DECLINED (stolen)',
+        self::EC_51   => 'NON SUFFICIENT FUNDS',
+        self::EC_54   => 'EXPIRED CARD',
+        self::EC_55   => 'WRONG PIN',
+        self::EC_57   => 'DECLINED (cardholder not allowed)',
+        self::EC_58   => 'DECLINED (terminal not allowed)',
+        self::EC_59   => 'DECLINED (fraud)',
+        self::EC_60   => 'DECLINED (contact acquirer)',
+        self::EC_61   => 'DECLINED (exceeds with)',
+        self::EC_62   => 'DECLINED (restricted card)',
+        self::EC_65   => 'DECLINED (exceeds frequency)',
+        self::EC_91   => 'ERROR',
+        self::EC_92   => 'NO ROUTING AVAILABLE',
+        self::EC_96   => 'SYSTEM ERROR',
+        self::EC_110  => 'NO ACCT',
+        self::EC_120  => 'ACCT CLOSED',
+        self::EC_399  => 'SYSTEM UNAVAILABLE',
     ];
 
     // todo: Add correct mappings for these
     protected static $errorCodeMappings = [
         // Check BIN error code mappings
-        self::ERROR_CODE_01 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_02 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_400 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_401 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_402 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_406 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_407 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_408 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ERROR_CODE_410 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_01   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_02   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_400  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_401  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_402  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_406  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_407  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_408  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_410  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_412  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+
         // Callback error code mappings
-        self::ERROR_ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_ACCU400 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_ACCU600 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_ACCU800 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_ACCU999 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU400 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU600 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU800 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU999 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+
         // Authorize error code mappings
-        self::ERROR_CODE_13 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_41 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_42 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_43 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_51 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_54 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_55 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_57 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_58 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_59 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_60 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_61 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_62 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_65 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_91 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_92 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_96 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_110 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_120 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ERROR_CODE_399 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_41   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_43   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_51   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_54   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_55   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_57   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_58   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_59   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_60   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_61   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_65   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_91   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_92   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_96   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_110  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_120  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_399  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
     ];
 
     public static function getErrorCodeMapped($errorCode)
