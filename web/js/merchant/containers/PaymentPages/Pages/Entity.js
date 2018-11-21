@@ -61,10 +61,6 @@ const inActiveStatusReasonMap = {
   closeModal,
 })
 export class PaymentPagesEntity extends React.Component {
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
-
   getStatsTable(paymentPageEntity) {
     return [
       [
@@ -109,6 +105,8 @@ export class PaymentPagesEntity extends React.Component {
       paymentPagePayments,
       paymentsListLoading,
       editPaymentPage,
+      toggleManualActivation,
+      reActivateLink,
     } = this.props;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
@@ -182,9 +180,7 @@ export class PaymentPagesEntity extends React.Component {
                           class="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={
-                            isActive
-                              ? this.toggleManualActivation
-                              : this.reActivateLink
+                            isActive ? toggleManualActivation : reActivateLink
                           }
                         >
                           {isActive ? 'Deactivate' : 'Activate'}
@@ -358,9 +354,14 @@ export class PaymentPagesEntity extends React.Component {
   updatePPInReduxList,
   showNotification,
   closeModal,
+  openModal,
 })
 @connect(state => ({ user: state.session.user }))
 export default class extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   state = {
     paymentPageEntity: {},
     paymentPagePayments: [],
@@ -611,7 +612,7 @@ export default class extends React.Component {
       size: 'medium',
       component: (
         <ActivateAgain
-          isPaymentPagesV2Enabled={user.isPaymentPagesV2Enabled}
+          isPaymentPagesV2Enabled={this.props.user.isPaymentPagesV2Enabled}
           reactivationTimeGap={reactivationTimeGap}
           expireBy={
             isExpired || hasExpiredInCompletedState
@@ -712,6 +713,7 @@ export default class extends React.Component {
         fetchEntity={this.fetchEntity}
         fetchEntityPayments={this.fetchEntityPayments}
         editPaymentPage={this.editPaymentPage}
+        toggleManualActivation={this.toggleManualActivation}
         reActivateLink={this.reActivateLink}
       />
     ) : (
@@ -721,6 +723,7 @@ export default class extends React.Component {
         fetchEntity={this.fetchEntity}
         fetchEntityPayments={this.fetchEntityPayments}
         editPaymentPage={this.editPaymentPage}
+        toggleManualActivation={this.toggleManualActivation}
         reActivateLink={this.reActivateLink}
       />
     );

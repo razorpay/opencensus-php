@@ -52,10 +52,6 @@ const inActiveStatusReasonMap = {
   closeModal,
 })
 export default class PaymentPagesV2Entity extends React.Component {
-  static contextTypes = {
-    confirm: PropTypes.func,
-  };
-
   getStatsTable(paymentPageEntity) {
     return [
       [
@@ -97,7 +93,13 @@ export default class PaymentPagesV2Entity extends React.Component {
   };
 
   render() {
-    let { createdByUser, paymentPageEntity, editPaymentPage } = this.props;
+    let {
+      createdByUser,
+      paymentPageEntity,
+      editPaymentPage,
+      toggleManualActivation,
+      reActivateLink,
+    } = this.props;
 
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
@@ -209,9 +211,7 @@ export default class PaymentPagesV2Entity extends React.Component {
                           class="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={
-                            isActive
-                              ? this.toggleManualActivation
-                              : this.reActivateLink
+                            isActive ? toggleManualActivation : reActivateLink
                           }
                         >
                           {isActive ? 'Deactivate' : 'Activate'}
