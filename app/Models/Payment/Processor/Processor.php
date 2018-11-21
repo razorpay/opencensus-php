@@ -1698,7 +1698,7 @@ class Processor
         {
             $invoiceNotes = json_decode($invoice->getNotesJson(), true);
 
-            $payment->setNotes($invoiceNotes);
+            $payment->setNotes($invoice->getNotes()->toArray());
         }
     }
 
