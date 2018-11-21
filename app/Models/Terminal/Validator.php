@@ -74,7 +74,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
-        Payment\Gateway::SBI_EMI,
+        Payment\Gateway::EMI_SBI,
     ];
 
     protected static $createValidators = [

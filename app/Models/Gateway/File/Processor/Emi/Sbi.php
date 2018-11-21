@@ -46,12 +46,12 @@ class Sbi extends Base
                                         $begin,
                                         $end,
                                         static::BANK_CODE,
-                                       [
+                                        [
                                            'card.globalCard',
                                            'emiPlan',
                                            'merchant.merchantDetail',
                                            'merchant.terminals'
-                                       ]);
+                                        ]);
 
         return $emiPaymentsForBank;
     }
@@ -150,9 +150,10 @@ class Sbi extends Base
                                 'Multiple SBI MIDs found for merchant',
                                 null,
                                 [
-                                    'payment_id' => $emiPayment['id'],
-                                    'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
-                                    'terminal' => $terminal['id'],
+                                    'gateway'       => 'emi_sbi',
+                                    'payment_id'    => $emiPayment['id'],
+                                    'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                                    'terminal'      => $terminal['id'],
                                 ]);
                         }
                     }
@@ -164,8 +165,9 @@ class Sbi extends Base
                         'No SBI MID found for merchant',
                         null,
                         [
-                            'payment_id' => $emiPayment['id'],
-                            'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                            'gateway'       => 'emi_sbi',
+                            'payment_id'    => $emiPayment['id'],
+                            'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
                         ]);
                 }
 
@@ -206,9 +208,18 @@ class Sbi extends Base
                     $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
                     $this->strpad('', 108);
 
-                if (strlen(end($body)) !== 450)
+                $rowLength = strlen(end($body));
+
+                if ($rowLength !== 450)
                 {
-                    throw new LogicException('Row not formatted properly', null, ['length' => strlen(end($body))]);
+                    throw new LogicException(
+                        'Row not formatted properly',
+                        null,
+                        [
+                            'gateway'       => 'emi_sbi',
+                            'length'        => $rowLength,
+                            'payment_id'    => $emiPayment['id'],
+                        ]);
                 }
             }
             catch (\Exception $e)
