@@ -1696,7 +1696,6 @@ class Processor
 
         if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
         {
-            $invoiceNotes = json_decode($invoice->getNotesJson(), true);
 
             $payment->setNotes($invoice->getNotes()->toArray());
         }
