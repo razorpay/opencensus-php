@@ -224,11 +224,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
     ];
 
-    protected static $sbiEmiTerminalRules = [
+    protected static $emiSbiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:sbi_emi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::ENABLED                    => 'required|in:0',
+    ];
+
+    protected static $emiSbiEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:sbi_emi',
+        Entity::ENABLED                    => 'required|in:0,1',
     ];
 
     protected static $axisMigsEditTerminalRules = [
