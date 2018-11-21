@@ -1303,6 +1303,26 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedHitachiEmiTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $attributes = [
+            'id'                        => 'ShrdHtchEmiTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'RR0000001',
+            'gateway_terminal_id'       => 'RR0001',
+            'card'                      => 1,
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+            'emi_subvention'            => 'customer',
+        ];
+
+        return $this->create($attributes);
+    }
+
     public function createSharedMobikwikTerminal()
     {
         $termId = \RZP\Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;

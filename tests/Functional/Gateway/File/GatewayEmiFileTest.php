@@ -237,6 +237,7 @@ class GatewayEmiFileTest extends TestCase
         Queue::fake();
 
         $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+        $this->fixtures->create('terminal:shared_hitachi_emi_terminal');
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
             'merchant_id' => '10000000000000',
@@ -276,6 +277,10 @@ class GatewayEmiFileTest extends TestCase
         $this->ba->publicAuth();
 
         $this->makeEmiPaymentOnCard('4726426854804947', 9);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('hitachi', $payment['gateway']);
 
         $this->makeEmiPaymentOnCard('4726426854804947', 12);
 
