@@ -61,7 +61,7 @@ class Fixtures
         ];
 
         $apiMerchant = $this->create('merchant', $merchantData);
-        $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl']);
+        $apiBalance = $this->create('balance', ['id' => '1cXSLlUU8V9sXl', 'merchant_id' => '1cXSLlUU8V9sXl']);
 
         $this->create('pricing:default_plan');
         $this->create('pricing:zero_pricing_plan');
