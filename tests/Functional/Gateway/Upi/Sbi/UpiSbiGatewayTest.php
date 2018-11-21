@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
@@ -88,6 +89,35 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+        $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
+    }
+
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $this->mockServerRequestFunction(
+            function($content, $action)
+            {
+                if ($action === 'authorize')
+                {
+                    $this->assertEquals('10', $content[RequestFields::EXPIRY_TIME]);
+                }
+            });
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
     }
 
     /**
