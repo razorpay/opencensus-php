@@ -105,6 +105,82 @@ class PaysecureGatewayTest extends TestCase
         $this->assertEmpty($gatewayPayment);
     }
 
+    public function testInititiate2Failure()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'initiate2')
+                {
+                    $content['status']                = 'failure';
+                    $content['errorcode']             = '406';
+                    $content['errormsg']              = 'Not Authenticated';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEmpty($gatewayPayment);
+    }
+
+    public function testInititiateFailure()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'initiate')
+                {
+                    $content['status']                = 'failure';
+                    $content['errorcode']             = '406';
+                    $content['errormsg']              = 'Not Authenticated';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEmpty($gatewayPayment);
+    }
+
     public function testPaymentAuthViaPinPad()
     {
         $authResponse = $this->doAuthPayment($this->payment);
