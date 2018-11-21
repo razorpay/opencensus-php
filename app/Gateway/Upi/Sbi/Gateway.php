@@ -310,7 +310,7 @@ class Gateway extends Base\Gateway
                 RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
                 RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ],
-            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
+            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE,
         ];
 
         return $this->getStandardRequestArray($content);

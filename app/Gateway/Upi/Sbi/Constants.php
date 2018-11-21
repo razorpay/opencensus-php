@@ -9,7 +9,7 @@ class Constants
      */
     const NOT_APPLICABLE   = 'NA';
 
-    const TRANSACTION_NOTE = 'Collect from ';
+    const TRANSACTION_NOTE = 'Collect from Razorpay';
 
     /**
      * Used in refund API - always P2P
