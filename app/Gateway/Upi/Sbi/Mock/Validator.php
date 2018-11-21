@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         RequestFields::ADDITIONAL_INFO . '.' . RequestFields::ADDITIONAL_INFO9  => 'required|string|in:NA',
         RequestFields::ADDITIONAL_INFO . '.' . RequestFields::ADDITIONAL_INFO10 => 'required|string|in:NA',
         RequestFields::AMOUNT                                                   => 'required|string',
-        RequestFields::EXPIRY_TIME                                              => 'required|string|in:5',
+        RequestFields::EXPIRY_TIME                                              => 'required|string',
         RequestFields::PAYER_TYPE                                               => 'required|array|size:1',
         RequestFields::PAYER_TYPE . '.' . RequestFields::VIRTUAL_ADDRESS        => 'required|string',
         RequestFields::REQUEST_INFO                                             => 'required|array|size:2',
