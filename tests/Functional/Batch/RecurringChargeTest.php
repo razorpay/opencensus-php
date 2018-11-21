@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Batch;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Batch;
+use RZP\Models\Settings;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 
@@ -87,6 +88,11 @@ class RecurringChargeTest extends TestCase
 
     public function testCreateBatchOfRecurringChargeWithRupeeAmount()
     {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::BATCH)
+                         ->upsert('recurring_charge_batch_amount_as_rupee',"1")->save();
+
         $entries = $this->getBatchFileEntriesWithRupee();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
@@ -173,7 +179,7 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
                 Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
                 Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
-                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'inr_in_rupee',
+                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => '',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => null,
                 'notes[notes_1]'                           => null,
@@ -187,7 +193,7 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
                 Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => 'cust_100000customer',
                 Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
-                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'inr_in_rupee',
+                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => 'random receipt',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => 'random description',
                 'notes[notes_1]'                           => 'random notes',
