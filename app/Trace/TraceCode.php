@@ -406,6 +406,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_RECON_ROW                      = 'EMANDATE_DEBIT_RECON_ROW';
     const EMANDATE_DEBIT_RESPONSE                       = 'EMANDATE_DEBIT_RESPONSE';
     const EMANDATE_FUNCTION_NOT_IMPLEMENTED             = 'EMANDATE_FUNCTION_NOT_IMPLEMENTED';
+    const EMANDATE_RECON_ROW_FAILED                     = 'EMANDATE_RECON_ROW_FAILED';
 
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
@@ -1526,6 +1527,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
 
         self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
+
+        self::EMANDATE_RECON_ROW_FAILED                 => 'E-mandate reconciliation failed for a row'
     ];
 
     /**
