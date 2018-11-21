@@ -57,14 +57,19 @@ class Processor extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
 
-        $data = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function ()
-            {
-                return $this->createDailySettlements();
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function ()
+                {
+                    return $this->createDailySettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
 
         return $data;
     }

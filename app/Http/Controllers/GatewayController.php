@@ -60,7 +60,7 @@ class GatewayController extends Controller
         }
     }
 
-    protected function handleServerCallback($input, $gatewayDriver)
+    protected function processServerCallbackWithGatewayResponse($input, $gatewayDriver)
     {
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
@@ -70,30 +70,24 @@ class GatewayController extends Controller
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        if ($mode === null)
-        {
-            throw new Exception\LogicException(
-                'Payment id not found in either database',
-                null,
-                [
-                    'gateway'    => $gatewayDriver,
-                    'payment_id' => $paymentId
-                ]);
-        }
-
-        \Database\DefaultConnection::set($mode);
-
-        $this->app['basicauth']->setMode($mode);
-
-        $paymentId = Payment\Entity::getSignedId($paymentId);
-
         $postInput = [
-            'gateway'   => $input,
+            'gateway' => $input,
         ];
 
         try
         {
-            $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+            if ($mode === null)
+            {
+                $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+            }
+            else
+            {
+                $this->app['basicauth']->setModeAndDbConnection($mode);
+
+                $paymentId = Payment\Entity::getSignedId($paymentId);
+
+                $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+            }
 
             $response = $gateway->postProcessServerCallback($postInput);
         }
@@ -158,7 +152,6 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            case Gateway::UPI_SBI:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -194,8 +187,10 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
-                $data = $this->handleServerCallback($input, $gateway);
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                break;
 
         }
 
