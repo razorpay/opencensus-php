@@ -144,26 +144,51 @@
     line-height: 32px
     padding: 0 12px
     font-size: 14px
-    overflow: hidden
-    white-space: nowrap
-    text-overflow: ellipsis
     cursor: pointer
 
     &:last-of-type
       border-bottom-left-radius: 2px
       border-bottom-right-radius: 2px
 
+    .display-label
+      width: 85%
+      display: inline-block
+      pointer-events: none
+      user-select: none
+
+    .Input-list
+      top: 0;
+      left: -100%;
+      visibility: hidden
+
+      &:hover
+        visibility: visible
+
     &:hover
       background: #f6f6f6
+
+      .Input-list
+        visibility: visible
+
+    &.selected
+      background: #eff5fe
 
   &.is-focused .Input-el
     border-color: #528ff0
 
   i
+    display: inline-block
+    vertical-align: top
     font-size: 16px
-    vertical-align: middle
     margin-right: 8px
+    margin-top: 11px
+    pointer-events: none
 
+  .i-chevron-right
+    position: absolute
+    top: 10px
+    right: 4px
+    margin: 0
 
 .Input--pair
   .Input-pair
@@ -493,6 +518,48 @@ textarea.Input-el
   &:-moz-placeholder /* Firefox 18- */
     opacity: 0.8
     text-transform: initial
+
+/**/
+.Input--enum-list
+  .btn-link
+    margin: 8px
+    font-size: 13px
+
+    i
+      margin-right: 4px
+      display: inline-block
+
+  .Input-enum-option
+    overflow: auto
+
+    &.is-focused
+      z-index: 2
+
+    .Input-el
+      padding-right: 32px
+      border-radius: 0
+      position: relative
+
+    &:not(:nth-of-type(1))
+      margin-top: -1px
+
+    &:nth-of-type(1) .Input-el
+      border-top-left-radius: 2px
+      border-top-right-radius: 2px
+
+    &:last-of-type .Input-el
+      border-bottom-left-radius: 2px
+      border-bottom-right-radius: 2px
+
+    .Input-el-btn
+      font-size: 20px
+      position: absolute
+      right: 12px
+      top: 5px
+      width: 20px
+      line-height: 20px
+      text-align: center
+      cursor: pointer
 
 /* Calendar picker styles */
 .Input--Calendar-content

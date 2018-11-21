@@ -52,6 +52,7 @@ export default class View extends React.PureComponent {
   onGenericCreatorSubmit = formData => {
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
+    console.log('FIELD SCHEMA...', fieldSchema);
     if (!fieldSchema) {
       throw 'Invalid field data';
     }

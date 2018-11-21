@@ -6,6 +6,7 @@ import TimePicker from './Time';
 import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
 import PowerDropdown from './PowerDropdown';
+import EnumList from './EnumList';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -600,6 +601,7 @@ Field.Group = ({ label, className, children, ...otherProps }) => {
 Field.PairList = PairList;
 Field.EditablePairsList = EditablePairsList;
 Field.PowerDropdown = PowerDropdown;
+Field.EnumList = EnumList;
 
 const ToCalendar = _ => (
   <CalendarPicker

@@ -295,6 +295,15 @@
     .i-fix-alphabet
       font-size: 11px
 
+    .i-fix-arrow-down
+      font-size: 13px
+      &::before
+        border-radius: 50%
+        border: 1px solid
+        border-color: inherit
+        width: 24px
+        height: 20px
+
   .wysiwyg-edit-layer
     position: relative
     margin: -4px -6px
@@ -406,11 +415,18 @@
   .section-1
     border-bottom: 1px solid #efefef
 
-    & > div
+    & > div:not(.dropdown-options)
       width: 50%
       display: inline-block
       padding: 0
       margin: 0
+
+    .dropdown-options
+      margin-top: 12px
+
+      .Input-content
+        max-height: 232px
+        overflow-y: scroll
 
   form[name="form_creator_generic"]
     .Input:not(.Input--checkbox) .Input-content

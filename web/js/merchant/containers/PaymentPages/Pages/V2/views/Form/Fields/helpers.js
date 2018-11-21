@@ -9,9 +9,10 @@ import fUnits from './field-units';
 *
 * */
 
-export const TYPES_not_now = [
+export const FIELD_TYPES = [
   {
     label: 'Text',
+    icon: 'sort i-fix-sort',
     options: [
       fUnits.str,
       fUnits.number,
@@ -24,16 +25,8 @@ export const TYPES_not_now = [
   fUnits.dropdown,
 ];
 
-export const FIELD_TYPES = [
-  fUnits.str,
-  fUnits.number,
-  fUnits.email,
-  fUnits.phone,
-  fUnits.url,
-  fUnits.textarea,
-];
-
-// TODO: Check with Pronav/Amit regarding what if keys are added/deleted in future. In this case, score based matching could be better.
+// TODO: To add support to return indicies tree
+// Note: If schema for a given field is changed, then this fn. will break.
 export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
 
@@ -81,10 +74,25 @@ export function mapFieldToIndex(field) {
   return selectedIndexInOptions;
 }
 
+export function getFieldFromIndices(indicesString) {
+  let FIELD;
+  const indicesTree = String(indicesString).split('');
+
+  if (indicesTree.length === 1) {
+    FIELD = FIELD_TYPES[indicesTree[0]];
+  } else {
+    FIELD = FIELD_TYPES[indicesTree[0]].options[indicesTree[1]];
+  }
+
+  return FIELD && FIELD.schema;
+}
+
 export function constructFieldSchema(fieldData) {
   const { title, required, description, field_type } = fieldData;
 
-  if (!title || !FIELD_TYPES[field_type]) {
+  const SCHEMA = getFieldFromIndices(field_type);
+
+  if (!title || !SCHEMA) {
     return false;
   }
 
@@ -97,7 +105,7 @@ export function constructFieldSchema(fieldData) {
     title,
     required: typeof required !== 'undefined' ? required : undefined,
     description: typeof description !== 'undefined' ? description : undefined,
-    ...FIELD_TYPES[field_type].schema,
+    ...SCHEMA,
   };
 }
 
