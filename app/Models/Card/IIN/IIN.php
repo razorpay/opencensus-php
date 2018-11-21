@@ -138,7 +138,8 @@ class IIN
             "53765210",
         ],
         Bank\IFSC::SBIN => [
-            '47264268', // TODO: fix bin range
+            '47264268',
+            '55676300', // TODO: fix bin range
         ],
     );
 

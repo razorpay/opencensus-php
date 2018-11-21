@@ -8,6 +8,7 @@ use Queue;
 
 use Carbon\Carbon;
 use RZP\Jobs\BeamJob;
+use RZP\Models\Payment;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Tests\Functional\TestCase;
@@ -238,6 +239,7 @@ class GatewayEmiFileTest extends TestCase
 
         $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
         $this->fixtures->create('terminal:shared_hitachi_emi_terminal');
+        $this->fixtures->create('terminal:shared_blade_terminal');
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
             'merchant_id' => '10000000000000',
@@ -256,9 +258,22 @@ class GatewayEmiFileTest extends TestCase
                 'trivia'        => 'random trivia'
             ]);
 
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '556763',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
         $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
-            'gateway'               => 'sbi_emi',
+            'gateway'               => Payment\Gateway::EMI_SBI,
             'gateway_merchant_id'   => '250000002',
             'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
@@ -276,7 +291,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+        $this->makeEmiPaymentOnCard('5567630000002004', 9);
 
         $payment = $this->getLastPayment(true);
 
@@ -296,6 +311,17 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\r\n", $fileContent);
+
+        $this->assertEquals(3, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
 
         $expectedFileContent = [
             'type'        => 'sbi_emi_file',
@@ -344,7 +370,7 @@ class GatewayEmiFileTest extends TestCase
 
         $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
-            'gateway'               => 'sbi_emi',
+            'gateway'               => Payment\Gateway::EMI_SBI,
             'gateway_merchant_id'   => '250000002',
             'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
@@ -357,7 +383,7 @@ class GatewayEmiFileTest extends TestCase
         // duplicate `sbi_emi` terminal
         $terminal = $this->fixtures->create('terminal', [
             'merchant_id'           => '10000000000000',
-            'gateway'               => 'sbi_emi',
+            'gateway'               => Payment\Gateway::EMI_SBI,
             'gateway_merchant_id'   => '250000003',
             'gateway_terminal_id'   => '38R00001',
             'enabled'               => 0,
@@ -385,6 +411,17 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\n", $fileContent);
+
+        $this->assertEquals(1, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
 
         $expectedFileContent = [
             'type'        => 'sbi_emi_file',
@@ -449,6 +486,17 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\n", $fileContent);
+
+        $this->assertEquals(1, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
 
         $expectedFileContent = [
             'type'        => 'sbi_emi_file',
