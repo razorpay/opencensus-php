@@ -278,6 +278,15 @@ class Gateway extends Base\Gateway
             Fields::S_ID            => '',
         ];
 
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $accNumber = bin2hex($this->encrypt($input['order']['account_number']));
+
+            $data[Fields::ACCOUNT_NUM] = $accNumber;
+
+            $data[Fields::IFSC_CODE] = $input['order']['bank'];
+        }
+
         $dataStr = implode('', $data);
 
         $checksum = $this->encrypt($dataStr);
