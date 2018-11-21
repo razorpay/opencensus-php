@@ -306,4 +306,22 @@ class BladeGatewayTest extends TestCase
             'iReqDetail' => 'VEReq.pan',
         ];
     }
+
+    public function testUnknownEnrolledResponse()
+    {
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::UNKNOWN_ENROLLED,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card',
+                'international'=> true
+            ]
+        ]);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+    }
 }

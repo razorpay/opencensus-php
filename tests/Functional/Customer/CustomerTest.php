@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Customer;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 use Mockery;
 
 class CustomerTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -358,7 +360,7 @@ class CustomerTest extends TestCase
     }
 
 
-    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata=false)
+    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata = false)
     {
         $content = [
             'contact' => $contact,
@@ -387,6 +389,71 @@ class CustomerTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    public function testCustomerWalletPayoutInsufficientWalletBalance()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 200]);
+
+        $this->startTest();
+    }
+
+    /**
+     * Merchant will not have sufficient balance to debit the incurred fees.
+     */
+    public function testCustomerWalletPayoutInsufficientMerchantBalance()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 100]);
+
+        $this->startTest();
+    }
+
+    public function testCustomerWalletPayout()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 1000]);
+
+        $payout = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $payout['id']);
+
+        // Assert Customer transactions.
+        $customerTransaction = $payout->transaction;
+
+        $this->assertEquals(800, $customerTransaction->getAmount());
+
+        $this->assertEquals(800, $customerTransaction->getDebit());
+
+        $this->assertEquals(200, $customerTransaction->getBalance());
+
+        // Assert Fund Transfer Attempt.
+        $fundTransferAttempt = $this->getDbEntities('fund_transfer_attempt', ['source_id' => $payout->getId()])->first();
+
+        $this->assertEquals($fundTransferAttempt->getChannel(), $payout->getChannel());
+
+        $this->assertEquals(true, $fundTransferAttempt->isStatusCreated());
+
+        // Merchant Adjustments for fee.
+        $adjustment = $this->getDbEntities('adjustment', ['entity_id' => $payout->getId(),
+                                                                 'entity_type' => 'payout',
+                                                                 'merchant_id' => '10000000000000'])->first();
+        $this->assertNotEmpty($adjustment);
+
+        $this->assertEquals($adjustment->getAmount(), -600);
+
+        $merchantFeeDebitTransaction = $adjustment->transaction;
+
+        $this->assertNotEmpty($merchantFeeDebitTransaction);
+
+        $this->assertEquals($merchantFeeDebitTransaction->getAmount(), 600);
+        $this->assertEquals($merchantFeeDebitTransaction->getBalance(), 400);
     }
 
     protected function mockRaven()

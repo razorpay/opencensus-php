@@ -88,6 +88,16 @@ class Provider
         return substr($ifsc, 0, 4);
     }
 
+    public static function getRoot(Terminal\Entity $terminal): string
+    {
+        return $terminal->getGatewayMerchantId();
+    }
+
+    public static function getHandle(Terminal\Entity $terminal): string
+    {
+        return $terminal->getGatewayMerchantId2() ?: '';
+    }
+
     public static function validateLiveProvider(string $provider)
     {
         if (in_array($provider, self::LIVE_PROVIDERS, true) === false)

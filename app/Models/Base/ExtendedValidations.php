@@ -26,6 +26,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
     const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038
 
+    const PAN_NUMBER_REGEX       = '/[A-Za-z]{5}\d{4}[A-Za-z]{1}/';
+
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
      * custom rules for integer data type. This list is used by framework for
@@ -56,7 +58,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(PublicEntity::SIGNED_PUBLIC_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because
@@ -77,7 +79,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
             throw new BadRequestValidationFailureException("The $attribute must be a string");
         }
 
-        $match = preg_match('/[a-zA-Z0-9]{14}\b/', $id);
+        $match = preg_match(UniqueIdEntity::UNSIGNED_ID_REGEX, $id);
 
         //
         // This should be compared against 1 and not 0 because
@@ -462,5 +464,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         $isString = $this->validateString($attribute, $value);
 
         return (($isString === true) and (Gstin::isValid($value) === true));
+    }
+
+    protected function validatePan($attribute, $value)
+    {
+        $isAlphaNum = $this->validateAlphaNum($attribute, $value);
+
+        return (($isAlphaNum === true) and
+                (preg_match(self::PAN_NUMBER_REGEX, $value) === 1));
     }
 }

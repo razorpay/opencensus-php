@@ -51,6 +51,8 @@ class UpiAxisGatewayTest extends TestCase
 
         $upi = $this->getDBLastEntity('upi');
 
+        $this->assertNotNull($upi[Entity::NPCI_TXN_ID]);
+
         $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content);
@@ -73,12 +75,79 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertNotNull($upi['status_code']);
 
         $this->assertNotNull($upi['npci_reference_id']);
-        $this->assertNotNull($upi['gateway_payment_id']);
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($payment->getPublicId(), $payment['amount']);
 
         return $payment;
+    }
+
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIAXISTpvl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
+    }
+
+    public function testFailedTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = '111';
+        }, $this->gateway);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
     }
 
     public function testVerifyPayment()
@@ -251,4 +320,3 @@ class UpiAxisGatewayTest extends TestCase
     }
 
 }
-

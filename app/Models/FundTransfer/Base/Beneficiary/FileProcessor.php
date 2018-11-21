@@ -34,17 +34,29 @@ abstract class FileProcessor extends Beneficiary
      */
     protected function registerBeneficiary(PublicCollection $bankAccounts): array
     {
-        $data = $this->getData($bankAccounts);
+        $file          = new FileStore\Creator;
+
+        $fileCreated   = false;
+
+        $totalCount    = $bankAccounts->count();
+
+        $data          = $this->getData($bankAccounts);
+
+        $registerCount = count($data);
 
         $this->trace->info(TraceCode::BENEFICIARY_REGISTER_DATA_FETCHED);
 
-        $file = $this->generateFile($data);
+        if ($registerCount !== 0)
+        {
+            $file        = $this->generateFile($data);
 
-        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
+            $fileCreated = true;
 
-        $merchantCount = count($data);
+            $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
 
-        $response = $this->makeResponse($file, $merchantCount);
+        }
+
+        $response = $this->makeResponse($file, $totalCount, $registerCount, $fileCreated);
 
         $this->trace->info(TraceCode::BENEFICIARY_REGISTER_RESPONSE, ['response' => $response]);
 
@@ -55,26 +67,37 @@ abstract class FileProcessor extends Beneficiary
      * Creates summary response for the bene addition process
      *
      * @param FileStore\Creator $file
-     * @param int               $merchantCount
+     * @param int $totalCount
+     * @param int $registerCount
+     * @param bool $fileCreated
      * @return array
      */
-    protected function makeResponse(FileStore\Creator $file, int $merchantCount): array
+    protected function makeResponse(
+        FileStore\Creator $file,
+        int $totalCount,
+        int $registerCount,
+        bool $fileCreated
+    ): array
     {
-        $fileDetails   = $file->get();
+        $fileInfo = [];
 
-        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+        if ($fileCreated !== false)
+        {
+            $fileDetails   = $file->get();
+
+            $fileInfo = [
+                'signed_url'      => $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'],
+                'file_name'       => basename($fileDetails['local_file_path']),
+                'local_file_path' => $fileDetails['local_file_path'],
+            ];
+        }
 
         $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $fileDetails['local_file_path'],
-            'file_name'       => basename($fileDetails['local_file_path']),
-            'merchants_count' => $merchantCount,
-            'channel'         => $this->channel,
-        ];
+            'channel'        => $this->channel,
+            'total_count'    => $totalCount,
+            'register_count' => $registerCount,
+        ] + $fileInfo;
 
         return $data;
     }
 }
-
-
-

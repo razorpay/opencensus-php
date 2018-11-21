@@ -4,9 +4,13 @@ namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base as ModelBase;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
@@ -40,24 +44,22 @@ class EnachRbl extends Base
         $this->gatewayRepo = $this->repo->enach;
     }
 
-    protected function formatDataForFile($payments)
+    protected function formatDataForFile($tokens)
     {
         $rows = [];
 
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $paymentId = $payment->getId();
+            $paymentId = $token['payment_id'];
 
-            $debitDate = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)->format('d/m/Y');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
+            $debitDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('d/m/Y');
 
             $row = [
-                Headings::UTILITYCODE             => $payment->terminal->getGatewayMerchantId(),
+                Headings::UTILITYCODE             => $token->terminal->getGatewayMerchantId(),
                 Headings::TRANSACTIONTYPE         => 'ACH DR',
                 Headings::SETTLEMENTDATE          => $debitDate,
                 Headings::BENEFICIARYACHOLDERNAME => $token->getBeneficiaryName(),
-                Headings::AMOUNT                  => $this->getFormattedAmount($payment->getAmount()),
+                Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
                 Headings::DESTINATIONBANKCODE     => $token->getIfsc(),
                 Headings::BENEFICIARYACNO         => $token->getAccountNumber(),
                 Headings::TRANSACTIONREFERENCE    => $paymentId,
@@ -89,11 +91,11 @@ class EnachRbl extends Base
         return new Enach\Base\Entity;
     }
 
-    protected function getGatewayAttributes(Payment\Entity $payment): array
+    protected function getGatewayAttributes(ModelBase\PublicEntity $token): array
     {
         return [
             Enach\Base\Entity::ACQUIRER => self::ACQUIRER,
-            Enach\Base\Entity::UMRN     => $payment->getGlobalOrLocalTokenEntity()->getGatewayToken(),
+            Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
     }
 }

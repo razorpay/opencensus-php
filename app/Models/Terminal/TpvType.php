@@ -23,4 +23,3 @@ class TpvType
         return (in_array($tpv, [TpvType::BOTH_TPV_NON_TPV, TpvType::NON_TPV_ONLY], true) === true);
     }
 }
-

@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Batch\Helpers;
 
-use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
+use RZP\Models\User\Entity as User;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
 
 class SubMerchant
@@ -11,16 +12,25 @@ class SubMerchant
     /**
      * Returns input for sub merchant creation
      *
-     * @param  array  $entry
+     * @param  array $entry
+     * @param  string $userId
+     * @param  bool $emailAsDummy
      *
      * @return array
      */
-    public static function getSubMerchantInput(array $entry): array
+    public static function getSubMerchantInput(
+        array $entry,
+        string $userId,
+        bool $emailAsDummy = true): array
     {
+        $merchantEmailAsDummy = (($emailAsDummy === true) || (empty($entry[Header::MERCHANT_EMAIL])));
+
+        $merchantEmail =  $merchantEmailAsDummy === true ? null : $entry[Header::MERCHANT_EMAIL];
+
         return [
-            Merchant\Entity::ID    => Merchant\Entity::generateUniqueId(),
-            Merchant\Entity::NAME  => $entry[Header::MERCHANT_NAME],
-            Merchant\Entity::EMAIL => $entry[Header::MERCHANT_EMAIL],
+            User::USER_ID   => $userId,
+            Merchant::EMAIL => $merchantEmail,
+            Merchant::NAME  => $entry[Header::MERCHANT_NAME],
         ];
     }
 
@@ -28,15 +38,24 @@ class SubMerchant
      * Returns input for sub merchant detail entity creation
      *
      * @param  array  $e
+     * @param  Merchant $partner
+     * @param  bool $emailAsDummy
      *
      * @return array
      */
-    public static function getSubMerchantDetailInput(array $e): array
+    public static function getSubMerchantDetailInput(array $e, Merchant $partner, bool $emailAsDummy = true): array
     {
+        $merchantEmailAsDummy = (($emailAsDummy === true) || (empty($e[Header::MERCHANT_EMAIL])));
+
+        $transactionReportEmail =
+            $merchantEmailAsDummy === true ? $partner->getEmail() : $e[Header::TRANSACTION_REPORT_EMAIL];
+
+        $contactEmail = $merchantEmailAsDummy === true ? $partner->getEmail() : $e[Header::CONTACT_EMAIL];
+
         return [
             MDEntity::CONTACT_NAME                => $e[Header::CONTACT_NAME],
-            MDEntity::CONTACT_EMAIL               => $e[Header::CONTACT_EMAIL],
-            MDEntity::TRANSACTION_REPORT_EMAIL    => $e[Header::TRANSACTION_REPORT_EMAIL],
+            MDEntity::CONTACT_EMAIL               => $contactEmail,
+            MDEntity::TRANSACTION_REPORT_EMAIL    => $transactionReportEmail,
             MDEntity::CONTACT_MOBILE              => $e[Header::CONTACT_MOBILE],
             MDEntity::BUSINESS_TYPE               => $e[Header::ORGANIZATION_TYPE],
             MDEntity::BUSINESS_NAME               => $e[Header::BUSINESS_NAME],

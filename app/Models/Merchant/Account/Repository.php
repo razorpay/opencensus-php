@@ -11,41 +11,19 @@ class Repository extends Merchant\Repository
     protected $entity = 'account';
 
     protected $entityFetchParamRules = [
-        Entity::PARENT_ID => 'sometimes|string|size:14',
+        Entity::ID                 => 'sometimes|string|min:14',
+        Entity::EMAIL              => 'sometimes|email',
+        Entity::PARENT_ID          => 'sometimes|string|size:14',
+        EsRepository::SEARCH_HITS  => 'filled|boolean',
+        EsRepository::QUERY        => 'filled|string|min:2|max:100',
     ];
 
-    public function getAccounts(string $parentId, array $input): Base\PublicCollection
+    protected function addQueryParamId($query, $params)
     {
-        $skip  = 0;
+        $id = $params[Entity::ID];
 
-        // Send all the linked accounts. Dashboard applies a local filter.
-        $count = 1000;
+        Entity::stripSignWithoutValidation($id);
 
-        if (isset($input[Fetch::SKIP]) === true)
-        {
-            $skip = $input[Fetch::SKIP];
-
-            unset($input[Fetch::SKIP]);
-        }
-
-        if (isset($input[Fetch::COUNT]) === true)
-        {
-            $count = $input[Fetch::COUNT];
-
-            unset($input[Fetch::COUNT]);
-        }
-
-        $query = $this->newQuery()
-                      ->whereNull(Entity::SUSPENDED_AT)
-                      ->where(Entity::PARENT_ID, $parentId);
-
-        foreach ($input as $attribute => $value)
-        {
-            $query = $query->where($attribute, $value);
-        }
-
-        return $query->take($count)
-                     ->skip($skip)
-                     ->get();
+        $query->where(Entity::ID, '=', $id);
     }
 }

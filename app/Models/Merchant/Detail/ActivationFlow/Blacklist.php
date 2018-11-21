@@ -3,8 +3,9 @@
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Entity;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
 
 /**
  * Class BlacklistActivationFlow
@@ -16,7 +17,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  *
  * @package RZP\Models\Merchant\Detail\ActivationFlow
  */
-class Blacklist implements ActivationFlowInterface
+class Blacklist extends Base implements ActivationFlowInterface
 {
     /**
      * In blacklist activation flow , merchant won't get activated from basic (L1) activation form
@@ -26,6 +27,8 @@ class Blacklist implements ActivationFlowInterface
      */
     public function process(Entity $merchantDetails)
     {
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_BLACKLIST_ACTIVATION);
+
         return;
     }
 
@@ -35,13 +38,15 @@ class Blacklist implements ActivationFlowInterface
      *
      * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
      *
-     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\BadRequestException
      */
     public function validateFullActivationForm(Entity $merchantDetails)
     {
-        throw new BadRequestValidationFailureException(
+        throw new BadRequestException(
             ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
             Entity::BUSINESS_SUBCATEGORY,
-            [Entity::BUSINESS_SUBCATEGORY => $merchantDetails->getBusinessSubcategory(),]);
+            [
+                Entity::BUSINESS_SUBCATEGORY => $merchantDetails->getBusinessSubcategory(),
+            ]);
     }
 }

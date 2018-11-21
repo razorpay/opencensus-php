@@ -10,10 +10,12 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\UpiErrorCodes;
 
 class Gateway extends Base\Gateway
 {
@@ -85,8 +87,6 @@ class Gateway extends Base\Gateway
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
-
-        $this->validateVpa($input['payment']);
 
         parent::action($input, Action::AUTHORIZE);
 
@@ -190,6 +190,23 @@ class Gateway extends Base\Gateway
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+        }
+    }
+
+    private function checkRefundResponseStatus(string $status, string $successStatus = Status::SUCCESS, array $response = [])
+    {
+        if ($status !== $successStatus)
+        {
+            $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE]);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[ResponseFields::RESPCODE],
+                UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]),
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ]);
         }
     }
 
@@ -588,7 +605,28 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($refund, $response);
 
-        $this->checkResponseStatus($response[ResponseFields::STATUS], Status::REFUND_SUCCESS);
+        $this->checkRefundResponseStatus($response[ResponseFields::STATUS], Status::REFUND_SUCCESS, $response);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+        ];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                ResponseFields::UPI_TXN_ID          => $response[ResponseFields::UPI_TXN_ID] ?? null,
+                ResponseFields::NPCI_UPI_TXN_ID     => $response[ResponseFields::NPCI_UPI_TXN_ID] ?? null,
+                ResponseFields::PAYER_VA            => $response[ResponseFields::PAYER_VA] ?? null,
+                ResponseFields::TXN_AUTH_DATE       => $response[ResponseFields::TXN_AUTH_DATE] ?? null,
+                ResponseFields::RESPCODE            => $response[ResponseFields::RESPCODE] ?? null,
+            ];
+        }
+
+        return [];
     }
 
     public function verify(array $input)
@@ -677,7 +715,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input): array
     {
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'],
             Action::AUTHORIZE
@@ -842,36 +879,44 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if ($content['status'] === Status::SUCCESS)
+        $errorCode = UpiErrorCodes::getApiErrorCode($content[ResponseFields::RESPCODE]);
+
+        $scroogeResponse->setStatusCode($errorCode)
+                        ->setGatewayResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
+        if ($content[ResponseFields::STATUS] === Status::REFUND_SUCCESS)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        if (($content['status'] === Status::FAILURE) or
-            ($content['status'] === Status::REFUND_FAILED))
+        if (($content[ResponseFields::STATUS] === Status::FAILURE) or
+            ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
+                                   ->toArray();
         }
 
-        throw new Exception\LogicException(
-            'Shouldn\'t reach here',
-            null,
-            [
-                'gateway_status' => $content['status'],
-                'refund_id'      => $input['refund']['id'],
-            ]);
+        $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::SUCCESS, $content);
     }
 
     private function checkGatewaySuccess(Verify $verify)

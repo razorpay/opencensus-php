@@ -2,9 +2,10 @@
 
 namespace RZP\Gateway\Wallet\Openwallet;
 
-use RZP\Gateway\Wallet\Base;
+use RZP\Constants;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Wallet\Base;
 
 class Gateway extends Base\Gateway
 {
@@ -31,7 +32,7 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $customerTxn = (new Customer\Transaction\Core)
-                            ->createForCustomerDebit($input['payment'], $input['merchant']);
+                            ->createForCustomerDebit($input['payment'], $input['merchant'], Constants\Entity::PAYMENT);
 
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_RESPONSE,

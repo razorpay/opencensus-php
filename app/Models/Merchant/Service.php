@@ -82,9 +82,19 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input): array
+    /**
+     * We need the merchant param for batch. This can be removed once the code is restructured
+     * in a way that batch can call just core class functions.
+     *
+     * @param  array       $input
+     * @param  Entity|null $merchant
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function createSubMerchant(array $input, Entity $merchant = null): array
     {
-        $merchant = $this->merchant;
+        $merchant = $merchant ?? $this->merchant;
 
         $isLinkedAccount = (bool) ($input['account'] ?? false);
 
@@ -299,9 +309,9 @@ class Service extends Base\Service
             return;
         }
 
-        $orgId = $this->auth->getOrgId();
+        $orgId = $subMerchant['org']['id'];
 
-        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+        $org = $this->repo->org->find($orgId)->toArrayPublic();
 
         $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
 
@@ -2094,8 +2104,10 @@ class Service extends Base\Service
 
             unset($input['dashboard_access']);
 
+            /** @var  Core */
             $merchantCore = $this->core();
 
+            /** @var Entity */
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
 
             $newUser = null;
@@ -2506,5 +2518,31 @@ class Service extends Base\Service
         $response = ['result' => $result];
 
         return $response;
+    }
+
+    public function submitSupportCallRequest(array $input): array
+    {
+        $validator = new Validator;
+        $validator->validateNowIsWorkingHour();
+        $validator->validateInput(__FUNCTION__, $input);
+
+        $allowCallRequest = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::SUPPORT_CALL,
+            $this->mode ?? 'live');
+
+        $isActivated = $this->merchant->isActivated();
+
+        $this->trace->info(
+            TraceCode::SUBMIT_SUPPORT_CALL_REQUEST,
+            compact('input', 'allowCallRequest', 'isActivated'));
+
+        // Dashboard also does treatment check hence happening this is a invalid request.
+        if (($allowCallRequest === 'off') or ($isActivated === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid request.');
+        }
+
+        return $this->app->myoperator->submitSupportCallRequest($input);
     }
 }

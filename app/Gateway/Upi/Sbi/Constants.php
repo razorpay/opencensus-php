@@ -9,11 +9,6 @@ class Constants
      */
     const NOT_APPLICABLE   = 'NA';
 
-    /**
-     * Collect request expiry time in minutes
-     */
-    const EXPIRY_TIME      = '5';
-
     const TRANSACTION_NOTE = 'Collect from ';
 
     /**

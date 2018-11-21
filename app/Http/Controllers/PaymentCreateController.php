@@ -11,6 +11,7 @@ use View;
 
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class PaymentCreateController extends Controller
@@ -583,6 +584,11 @@ class PaymentCreateController extends Controller
         if ((empty($input['callback_url']) === false) and
             ($this->app['basicauth']->isPublicAuth()))
         {
+            $callbackInput['callback_url'] = $input['callback_url'];
+
+            // This will throw bad request validation error
+            (new Payment\Validator)->validateInput('callback_url_validation', $callbackInput);
+
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
     }

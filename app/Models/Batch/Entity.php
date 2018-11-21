@@ -75,6 +75,11 @@ class Entity extends Base\PublicEntity
 
     const TOKEN = 'token';
 
+    /**
+     * For filtering multiple types
+     */
+    const TYPES                      = 'types';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';

@@ -456,6 +456,7 @@ pipeline:
       - api-sqs-emails
       - api-sqs-gen-live
       - api-sqs-main
+      - api-sqs-shield
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
@@ -491,6 +492,7 @@ pipeline:
       - api-canary-sqs-batch
       - api-canary-sqs-emails
       - api-canary-sqs-gen-live
+      - api-canary-sqs-shield
       - api-canary-sqs-main
       - api-canary-sqs-subscription-charge
       - api-canary-sqs-webhooks-failure
@@ -552,6 +554,7 @@ pipeline:
       - api-sqs-batch
       - api-sqs-emails
       - api-sqs-gen-live
+      - api-sqs-shield
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
@@ -612,6 +615,7 @@ pipeline:
       - api-sqs-batch
       - api-sqs-emails
       - api-sqs-gen-live
+      - api-sqs-shield
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
@@ -671,6 +675,7 @@ pipeline:
       - api-sqs-batch
       - api-sqs-emails
       - api-sqs-gen-live
+      - api-sqs-shield
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
@@ -725,10 +730,18 @@ pipeline:
     cluster: kluster-api
     auth_mode: client-cert
     deployment:
+      - api-web
       - api-sqs-es-sync
       - api-sqs-gen-test
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-shield
+      - api-sqs-main
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
       - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: api
@@ -737,6 +750,33 @@ pipeline:
     when:
       environment: prod-api
       branch: master
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-prod-api-canary:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    deployment:
+      - api-canary-web
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment:
+        - prod-api
+        - prod-api-canary
+      branch: [master, canary]
       event:
         exclude: [push]
         include: [deployment]
@@ -813,6 +853,7 @@ pipeline:
       - api-sqs-batch
       - api-sqs-emails
       - api-sqs-gen-live
+      - api-sqs-shield
       - api-sqs-main
       - api-sqs-subscription-charge
       - api-sqs-webhooks-failure
