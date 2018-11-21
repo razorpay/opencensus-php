@@ -59,7 +59,6 @@ trait RequestHandlerTrait
             Fields::IP_ADDRESS        => $this->input['paymentAnalytics']['ip'],
             Fields::HTTP_ACCEPT       => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         ];
-        sd($extraParameters);
 
         $requestArray = array_merge($requestArray, $extraParameters);
 

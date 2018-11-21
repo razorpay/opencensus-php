@@ -63,6 +63,8 @@ class Gateway extends Base\Gateway
         {
             $response = $this->initiate2();
 
+            $this->handleFailure($response, 'initiate');
+
             $content = $this->getGatewayPaymentAttributes($response);
 
             $this->createGatewayPaymentEntity($content);
@@ -265,7 +267,7 @@ class Gateway extends Base\Gateway
      */
     protected function handleFailure($response, $action)
     {
-        if ($response[Fields::STATUS] === Constants::STATUS_FAILURE)
+        if ($response[Fields::STATUS] !== Constants::STATUS_SUCCESS)
         {
             $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
