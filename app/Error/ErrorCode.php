@@ -1017,6 +1017,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                                   = 'BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                         = 'GATEWAY_CHARGEBACK_REFUND_FAILURE';
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
+    const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                        = 'GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED';
 
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                        = 'BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG';
