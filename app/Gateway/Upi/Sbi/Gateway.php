@@ -40,6 +40,7 @@ class Gateway extends Base\Gateway
         Base\Entity::GATEWAY_MERCHANT_ID       => Base\Entity::GATEWAY_MERCHANT_ID,
         Base\Entity::VPA                       => Base\Entity::VPA,
         Base\Entity::ACTION                    => Base\Entity::ACTION,
+        Base\Entity::EXPIRY_TIME               => Base\Entity::EXPIRY_TIME,
 
         // Mapping response fields to entity variables
         ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
@@ -301,7 +302,7 @@ class Gateway extends Base\Gateway
                 RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
             ],
             RequestFields::AMOUNT           => $this->formatAmount($input),
-            RequestFields::EXPIRY_TIME      => Constants::EXPIRY_TIME,
+            RequestFields::EXPIRY_TIME      => (string) $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
             RequestFields::PAYER_TYPE       => [
                 RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             ],
@@ -431,6 +432,7 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
+            Base\Entity::EXPIRY_TIME         => $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
         ];
 
         return $attributes;
