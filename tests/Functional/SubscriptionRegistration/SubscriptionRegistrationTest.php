@@ -233,6 +233,29 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getAmount(), 3000);
     }
 
+    public function testPayAuthLinkAndCopyNotes()
+    {
+        $this->startTest();
+
+        $order = $this->getDbLastEntity("order");
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        unset($payment['notes']);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity("payment");
+
+        $invoice = $this->getDbLastEntity("invoice");
+
+        $this->assertEquals($payment->getNotesJson(), $invoice->getNotesJson());
+    }
+
     protected function setupPaymentRequest()
     {
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
