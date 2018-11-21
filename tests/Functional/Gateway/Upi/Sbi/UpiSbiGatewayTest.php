@@ -487,14 +487,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = $this->getS2SUpiIdMismatchContent($upiEntity);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($content)
-            {
-                $this->makeS2SCallbackAndGetContent($content);
-            });
+        $this->makeS2SCallbackAndGetContent($content);
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
