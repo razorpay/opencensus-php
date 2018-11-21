@@ -537,11 +537,15 @@ class NetbankingAxisEMandateTest extends TestCase
 
     protected function assertDebitReconEntities($entities)
     {
-        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id']);
+
+        $transaction = $payment->transaction;
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
 
         $this->assertEquals('3000', $payment['amount']);
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
 

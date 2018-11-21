@@ -1,0 +1,251 @@
+<?php
+
+namespace Rzp\Models\P2p\BankAccount;
+
+use RZP\Models\P2p\Base;
+
+class Entity extends Base\Entity
+{
+    const DEVICE_ID                = 'device_id';
+    const HANDLE                   = 'handle';
+    const GATEWAY_DATA             = 'gateway_data';
+    const BANK                     = 'bank';
+    const IFSC                     = 'ifsc';
+    const ACCOUNT_NUMBER           = 'account_number';
+    const MASKED_ACCOUNT_NUMBER    = 'masked_account_number';
+    const BENEFICIARY_NAME         = 'beneficiary_name';
+    const CREDS                    = 'creds';
+
+    /************** Entity Properties ************/
+
+    protected $entity             = 'p2p_bank_account';
+    protected static $sign        = 'bank_account';
+    protected $generateIdOnCreate = false;
+    protected static $generators  = [];
+
+    protected $dates = [
+        Entity::REFRESHED_AT,
+        Entity::DELETED_AT,
+        Entity::CREATED_AT,
+        Entity::UPDATED_AT,
+    ];
+
+    protected $fillable = [
+        Entity::DEVICE_ID,
+        Entity::HANDLE,
+        Entity::GATEWAY_DATA,
+        Entity::BANK,
+        Entity::IFSC,
+        Entity::ACCOUNT_NUMBER,
+        Entity::MASKED_ACCOUNT_NUMBER,
+        Entity::BENEFICIARY_NAME,
+        Entity::CREDS,
+    ];
+
+    protected $visible = [
+        Entity::ID,
+        Entity::DEVICE_ID,
+        Entity::HANDLE,
+        Entity::GATEWAY_DATA,
+        Entity::BANK,
+        Entity::IFSC,
+        Entity::ACCOUNT_NUMBER,
+        Entity::MASKED_ACCOUNT_NUMBER,
+        Entity::BENEFICIARY_NAME,
+        Entity::CREDS,
+        Entity::REFRESHED_AT,
+        Entity::CREATED_AT,
+    ];
+
+    protected $public = [
+        Entity::ID,
+        Entity::DEVICE_ID,
+        Entity::HANDLE,
+        Entity::GATEWAY_DATA,
+        Entity::BANK,
+        Entity::IFSC,
+        Entity::ACCOUNT_NUMBER,
+        Entity::MASKED_ACCOUNT_NUMBER,
+        Entity::BENEFICIARY_NAME,
+        Entity::CREDS,
+        Entity::REFRESHED_AT,
+        Entity::CREATED_AT,
+    ];
+
+    protected $defaults = [
+        Entity::DEVICE_ID                => null,
+        Entity::HANDLE                   => null,
+        Entity::GATEWAY_DATA             => null,
+        Entity::BANK                     => null,
+        Entity::IFSC                     => null,
+        Entity::ACCOUNT_NUMBER           => null,
+        Entity::MASKED_ACCOUNT_NUMBER    => null,
+        Entity::BENEFICIARY_NAME         => null,
+        Entity::CREDS                    => null,
+    ];
+
+    protected $casts = [
+        Entity::ID                       => 'string',
+        Entity::DEVICE_ID                => 'string',
+        Entity::HANDLE                   => 'string',
+        Entity::GATEWAY_DATA             => 'array',
+        Entity::BANK                     => 'string',
+        Entity::IFSC                     => 'string',
+        Entity::ACCOUNT_NUMBER           => 'string',
+        Entity::MASKED_ACCOUNT_NUMBER    => 'string',
+        Entity::BENEFICIARY_NAME         => 'string',
+        Entity::CREDS                    => 'array',
+        Entity::REFRESHED_AT             => 'int',
+        Entity::DELETED_AT               => 'int',
+        Entity::CREATED_AT               => 'int',
+        Entity::UPDATED_AT               => 'int',
+    ];
+
+    /***************** SETTERS *****************/
+
+    /**
+     * @return $this
+     */
+    public function setDeviceId(string $deviceId)
+    {
+        return $this->setAttribute(self::DEVICE_ID, $deviceId);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setHandle(string $handle)
+    {
+        return $this->setAttribute(self::HANDLE, $handle);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setGatewayData(array $gatewayData)
+    {
+        return $this->setAttribute(self::GATEWAY_DATA, $gatewayData);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setBank(string $bank)
+    {
+        return $this->setAttribute(self::BANK, $bank);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setIfsc(string $ifsc)
+    {
+        return $this->setAttribute(self::IFSC, $ifsc);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setAccountNumber(string $accountNumber)
+    {
+        return $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setMaskedAccountNumber(string $maskedAccountNumber)
+    {
+        return $this->setAttribute(self::MASKED_ACCOUNT_NUMBER, $maskedAccountNumber);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setBeneficiaryName(string $beneficiaryName)
+    {
+        return $this->setAttribute(self::BENEFICIARY_NAME, $beneficiaryName);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setCreds(array $creds)
+    {
+        return $this->setAttribute(self::CREDS, $creds);
+    }
+
+    /***************** GETTERS *****************/
+
+    /**
+     * @return string self::DEVICE_ID
+     */
+    public function getDeviceId()
+    {
+        return $this->getAttribute(self::DEVICE_ID);
+    }
+
+    /**
+     * @return string self::HANDLE
+     */
+    public function getHandle()
+    {
+        return $this->getAttribute(self::HANDLE);
+    }
+
+    /**
+     * @return array self::GATEWAY_DATA
+     */
+    public function getGatewayData()
+    {
+        return $this->getAttribute(self::GATEWAY_DATA);
+    }
+
+    /**
+     * @return string self::BANK
+     */
+    public function getBank()
+    {
+        return $this->getAttribute(self::BANK);
+    }
+
+    /**
+     * @return string self::IFSC
+     */
+    public function getIfsc()
+    {
+        return $this->getAttribute(self::IFSC);
+    }
+
+    /**
+     * @return string self::ACCOUNT_NUMBER
+     */
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    /**
+     * @return string self::MASKED_ACCOUNT_NUMBER
+     */
+    public function getMaskedAccountNumber()
+    {
+        return $this->getAttribute(self::MASKED_ACCOUNT_NUMBER);
+    }
+
+    /**
+     * @return string self::BENEFICIARY_NAME
+     */
+    public function getBeneficiaryName()
+    {
+        return $this->getAttribute(self::BENEFICIARY_NAME);
+    }
+
+    /**
+     * @return array self::CREDS
+     */
+    public function getCreds()
+    {
+        return $this->getAttribute(self::CREDS);
+    }
+}

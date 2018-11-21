@@ -189,6 +189,18 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
 
+    // P2P Service Entities
+    const P2P_DEVICE             = 'p2p_device';
+    const P2P_DEVICE_TOKEN       = 'p2p_device_token';
+    const P2P_REGISTER_TOKEN     = 'p2p_register_token';
+    const P2P_BANK               = 'p2p_bank';
+    const P2P_BANK_ACCOUNT       = 'p2p_bank_account';
+    const P2P_VPA                = 'p2p_vpa';
+    const P2P_HANDLE             = 'p2p_handle';
+    const P2P_BENEFICIARY        = 'p2p_beneficiary';
+    const P2P_TRANSACTION        = 'p2p_transaction';
+    const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
+
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
