@@ -4409,3 +4409,6 @@ ALTER TABLE balance
     ADD COLUMN name VARCHAR(255) DEFAULT NULL AFTER currency,
     ADD INDEX `balance_merchant_id_index` (`merchant_id`),
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE blade
+    ADD COLUMN url VARCHAR(3000) DEFAULT NULL AFTER received;
