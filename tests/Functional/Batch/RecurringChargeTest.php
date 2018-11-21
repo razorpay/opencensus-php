@@ -187,7 +187,6 @@ class RecurringChargeTest extends TestCase
                 'notes[notes_3]'                           => null,
                 'notes[notes_4]'                           => null,
                 'notes[notes_5]'                           => null,
-
             ],
             [
                 Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
@@ -201,7 +200,6 @@ class RecurringChargeTest extends TestCase
                 'notes[notes_3]'                           =>  true,
                 'notes[notes_4]'                           =>  '',
                 'notes[notes_5]'                           =>  null
-
             ],
         ];
     }
