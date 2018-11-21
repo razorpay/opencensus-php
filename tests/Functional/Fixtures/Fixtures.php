@@ -89,6 +89,8 @@ class Fixtures
         $this->user->setUp();
 
         $this->entities = $entities;
+
+        $this->seedP2pFixture();
     }
 
     public function generateUniqueId()
@@ -256,5 +258,14 @@ class Fixtures
         {
             $id = substr($id, $ix + 1);
         }
+    }
+
+    /**
+     * Currently, we are using database seed to set P2P Fixture,
+     * Later if required we can spit the data between seeder and fixture.
+     */
+    protected function seedP2pFixture()
+    {
+        \Artisan::call('db:seed', ['--class' => 'P2pSeeder']);
     }
 }
