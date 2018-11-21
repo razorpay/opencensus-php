@@ -49,7 +49,7 @@ class ErrorCodes
     const EC_120 = '120';
     const EC_399 = '399';
 
-    protected $descriptionMappings = [
+    protected static $descriptionMappings = [
         // Check BIN error codes
         self::EC_01   => 'Missing Parameter',
         self::EC_02   => 'Invalid Command',
@@ -141,5 +141,10 @@ class ErrorCodes
     public static function getErrorCodeMapped($errorCode)
     {
         return self::$errorCodeMappings[$errorCode] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+
+    public static function getErrorDescription($errorCode)
+    {
+        return self::$descriptionMappings[$errorCode] ?? '';
     }
 }

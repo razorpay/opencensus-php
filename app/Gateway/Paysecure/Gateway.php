@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Paysecure;
 
+use View;
+
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
@@ -76,7 +79,22 @@ class Gateway extends Base\Gateway
             $response = $this->initiate();
 
             $this->handleFailure($response, 'initiate');
-            // $this->createGatewayPaymentEntity();
+
+            //todo: Create gateway payment
+             $this->createGatewayPaymentEntity($response);
+
+            $request = [
+                'method'       => 'direct',
+                'callback_url' => $input['callbackUrl'],
+            ];
+
+            $this->traceGatewayPaymentRequest($request, $input);
+
+            $request['content'] = View::make('gateway.paysecurePinpadForm')
+                                      ->with('data', $this->getPinpadData($response))
+                                      ->render();
+
+            return $request;
         }
     }
 
@@ -97,8 +115,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
-                $input['gateway'][Fields::ERROR_CODE],
-                $input['gateway'][Fields::ERROR_MESSAGE],
+                $input['gateway'][Fields::ACCU_RESPONSE_CODE],
+                ErrorCodes::getErrorDescription($input['gateway'][Fields::ACCU_RESPONSE_CODE]),
                 $traceData
             );
         }
@@ -203,6 +221,34 @@ class Gateway extends Base\Gateway
         ];
 
         return $redirectArray;
+    }
+
+    protected function getPinpadData($response)
+    {
+        $cardNumber = $this->input['card']['number'];
+
+        $length = strlen($cardNumber);
+
+        $lastFourDigits = substr($cardNumber, ($length - 4), $length);
+
+        return [
+            'merchantJsScript' => $this->getJsFile(),
+            'guid'             => $response[ Fields::GUID ],
+            'modulus'          => $response[ Fields::MODULUS ],
+            'exponent'         => $response[ Fields::EXPONENT ],
+            'lastFourDigits'   => $lastFourDigits,
+            'callbackUrl'      => $this->input['callbackUrl'],
+        ];
+    }
+
+    protected function getJsFile()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return 'https://cert.mwsrec.npci.org.in/MWS/Scripts/MerchantScript_v1.0.js';
+        }
+
+        return 'https://mwsrec.npci.org.in/MWS/Scripts/MerchantScript_v1.0.js';
     }
     // ------------ Auth request helpers end -----------------
 
