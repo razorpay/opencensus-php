@@ -251,7 +251,6 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
-                    ->where($terminalEmi, '=', false)
                     ->with($relations)
                     ->select($paymentData)
                     ->get();

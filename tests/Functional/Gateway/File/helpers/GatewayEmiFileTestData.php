@@ -240,7 +240,7 @@ return [
             'content' => [
                 'type'    => 'emi',
                 'targets' => ['sbi'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'begin'   => Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',

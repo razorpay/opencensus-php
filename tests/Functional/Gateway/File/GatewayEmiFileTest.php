@@ -262,7 +262,7 @@ class GatewayEmiFileTest extends TestCase
             [
                 'iin'           => '556763',
                 'category'      => 'STANDARD',
-                'network'       => 'Visa',
+                'network'       => 'MasterCard',
                 'type'          => 'credit',
                 'country'       => 'IN',
                 'issuer_name'   => 'STATE BANK OF INDI',
