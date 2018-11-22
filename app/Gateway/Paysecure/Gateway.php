@@ -140,7 +140,7 @@ class Gateway extends Base\Gateway
         {
             $traceData = [
                 'gateway'    => $this->gateway,
-                'response'   => $input['gateway'],
+                'response'   => $response,
                 'payment_id' => $input['payment']['id'],
             ];
 
@@ -149,8 +149,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
-                $input['gateway'][Fields::ERROR_CODE],
-                $input['gateway'][Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_CODE],
+                $response[Fields::ERROR_MESSAGE],
                 $traceData
             );
         }
