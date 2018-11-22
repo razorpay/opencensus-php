@@ -143,6 +143,52 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
+    public function testTransactionAfterRefundUsingTransactionV2Feature()
+    {
+        $this->fixtures->merchant->addFeatures('transaction_v2');
+
+        return $this->testTransactionAfterRefund();
+    }
+
+    public function testAuthOnlyTransactionAfterRefund()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        // This time we do not capture the payment and refund it
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterRefundingAuthOnlyPayment'];
+        $testData['entity_id'] = $refund['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        // Now running the transaction V2 Flow for same
+        $this->fixtures->merchant->addFeatures('transaction_v2');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        // This time we do not capture the payment and refund it
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterRefundingAuthOnlyPaymentUsingTransactionV2'];
+        $testData['entity_id'] = $refund['id'];
+
+        // Balance is set to Merchant Balance and
+        // Debit Amount is set to zero for this scenario.
+        // Note: Merchant is not charged any fees in this scenario.
+        $this->assertArraySelectiveEquals($testData, $txn);
+    }
+
     public function testCreateDisputeWithDeduct()
     {
         $payment = $this->fixtures->create('payment:captured');
