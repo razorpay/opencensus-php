@@ -126,7 +126,6 @@ export default class PaymentPagesV2Entity extends React.Component {
                 <Link
                   class="btn Button Button--primary--invert btn-sm"
                   to={`/paymentpages/${paymentPageEntity.id}/edit`}
-                  target="_blank"
                 >
                   Edit
                 </Link>

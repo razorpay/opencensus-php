@@ -17,6 +17,8 @@ import { fetchPaymentPage, updateData } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
+import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+
 const ERROR = {
   SCRIPT: 1,
   INVALID_ENTITY: 2,
@@ -140,6 +142,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!this.props.id) {
       this.changeFETheme('light');
     }
+
+    window.addEventListener('beforeunload', this.reloadAlert);
+  }
+
+  componentWillUnmount() {
+    document.title = 'Razorpay Dashboard'; // Revert title of dashboard
+    document.removeEventListener('beforeunload', this.reloadAlert);
+  }
+
+  reloadAlert(e) {
+    (e || window.event).returnValue = null;
+    return null;
   }
 
   handleClose = () => {
@@ -288,7 +302,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // Remove Email and Phone in all cases before sending to API.
     const udf_schema = [...FORM_SCHEMA];
 
-    // TODO: Add validate method FORM_SCHEMA before sending. Write test case also around this method.
+    const isValidSchema = validateUISchema(udf_schema);
+
+    if (!isValidSchema) {
+      throw 'UI Schema is not valid';
+      return;
+    }
+
     const reqPayload = {
       amount: amount || null,
       title,
@@ -301,7 +321,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         theme: settings.theme,
         allow_multiple_units: settings.allow_multiple_units ? '1' : '0',
         allow_social_share: settings.allow_social_share ? '1' : '0',
-        udf_schema: JSON.stringify(udf_schema.splice(2)), // Remove Email and Phone in all cases before sending to API.
+        udf_schema: JSON.stringify(udf_schema.splice(2)),
       },
     };
     // console.log('REQ PAYLOAD...', reqPayload);

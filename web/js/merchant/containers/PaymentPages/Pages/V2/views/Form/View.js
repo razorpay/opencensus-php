@@ -3,7 +3,7 @@ import Button from 'component/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { FIELD_TYPES } from './Fields/helpers';
+import { FIELD_TYPES, constructFieldSchema } from './Fields/helpers';
 
 import {
   updateData,
@@ -51,21 +51,21 @@ export default class View extends React.PureComponent {
 
   onGenericCreatorSubmit = formData => {
     // console.log('FORM DATA.....', formData);
+    const fieldSchema = constructFieldSchema(formData);
+    // console.log('FIELD SCHEMA...', fieldSchema);
+    if (
+      !fieldSchema ||
+      (fieldSchema.enum && (!formData.enum || !formData.enum.length))
+    ) {
+      throw 'Invalid field data';
+    }
 
-    const { title, field_type, required, description } = formData;
+    if (fieldSchema.enum) {
+      fieldSchema.enum = formData.enum.concat();
+    }
 
     this.props.updateInSchema({
-      field: {
-        name: title
-          .trim()
-          .toLowerCase()
-          .split(' ')
-          .join('_'),
-        title,
-        required,
-        description,
-        ...FIELD_TYPES[field_type].schema,
-      },
+      field: fieldSchema,
       index: this.state.activeSchemaIndex,
     });
 
