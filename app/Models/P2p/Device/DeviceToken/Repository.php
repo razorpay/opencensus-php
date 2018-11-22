@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Device\DeviceToken;
+namespace RZP\Models\P2p\Device\DeviceToken;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;

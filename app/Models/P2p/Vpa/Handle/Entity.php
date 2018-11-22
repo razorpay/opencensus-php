@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Vpa\Handle;
+namespace RZP\Models\P2p\Vpa\Handle;
 
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;

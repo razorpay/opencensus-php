@@ -160,7 +160,7 @@ class Authenticate
         }
         else if (in_array($route, P2pRoute::$device, true) === true)
         {
-            $ret = $this->ba->deviceAuth();
+            $ret = $this->ba->p2pDeviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {

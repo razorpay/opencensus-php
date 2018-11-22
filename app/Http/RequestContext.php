@@ -369,6 +369,10 @@ final class RequestContext
         {
             $this->auth = Type::DEVICE_AUTH;
         }
+        else if ($this->setAdditionalVarsForP2pDeviceAuth() == true)
+        {
+            $this->auth = Type::DEVICE_AUTH;
+        }
         else
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -496,9 +500,19 @@ final class RequestContext
 
     protected function setAdditionalVarsForDeviceAuth()
     {
-        if (in_array($this->route, P2pRoute::$device, true) === true)
+        if (in_array($this->route, Route::$device, true) === true)
         {
             $this->keyId = $this->keyWithoutPrefix;
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function setAdditionalVarsForP2pDeviceAuth()
+    {
+        if (in_array($this->route, P2pRoute::$device, true) === true)
+        {
             return true;
         }
 

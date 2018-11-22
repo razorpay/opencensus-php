@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Device;
+namespace RZP\Models\P2p\Device;
 
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;

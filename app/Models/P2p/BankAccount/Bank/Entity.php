@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\BankAccount\Bank;
+namespace RZP\Models\P2p\BankAccount\Bank;
 
 use RZP\Models\P2p\Base;
 

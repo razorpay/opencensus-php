@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Vpa;
+namespace RZP\Models\P2p\Vpa;
 
 use RZP\Models\P2p\Base;
 

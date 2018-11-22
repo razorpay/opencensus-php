@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Transaction\UpiTransaction;
+namespace RZP\Models\P2p\Transaction\UpiTransaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
