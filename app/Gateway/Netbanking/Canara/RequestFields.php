@@ -21,5 +21,4 @@ class RequestFields
 
     const VER_DATE                      = 'fldDatTimeTxn';       // verify start date
     const PUR_DATE                      = 'fldOrgDatTimeTxn';    // date of original payment entity
-
 }

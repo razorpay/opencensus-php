@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Canara;
 
 class Url
 {
-
     const LIVE_DOMAIN   = '';
     const TEST_DOMAIN   = 'https://testepay.canarabank.in';
 

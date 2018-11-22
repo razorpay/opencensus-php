@@ -27,5 +27,4 @@ class ResponseFields
     const RETURN_CODE                   = 'ReturnCode';
     const VERIFY_STATUS                 = 'VerifyStatus';
     const STATUS                        = 'Status';
-
 }
