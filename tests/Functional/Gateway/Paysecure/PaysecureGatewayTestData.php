@@ -9,60 +9,60 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        ],
-    ],
-    'testInititiate2Failure' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        ],
-    ],
-    'testInititiateFailure' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        ],
-    ],
-    'testCallbackFailure' => [
-        'response' => [
-            'content' => [
-                'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
+        ],
+    ],
+    'testInititiate2Failure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+    'testInititiateFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+    'testCallbackFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         ],
     ],
     'testAuthorizeFailure' => [
@@ -70,14 +70,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_DECLINED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         ],
     ],
     'testSoapFault' => [
