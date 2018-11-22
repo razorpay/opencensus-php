@@ -45,11 +45,12 @@ class Core extends Base\Core
         {
             $virtualAccount = $this->mutex->acquireAndRelease(
                 self::VA_BANK_ACCOUNT_GENERATION,
-                function() use ($input, $merchant, $customer, $order)
+                function() use ($input, $merchant, $customer, $order, $balance)
                 {
                     $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-                    return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                    return $this->buildVirtualAccountAndReceivers(
+                        $virtualAccount, $input, $customer, $order, $balance);
                 },
                 // The entire VA creation process inside this lock actually takes
                 // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
@@ -89,6 +90,28 @@ class Core extends Base\Core
         }
 
         return $virtualAccount;
+    }
+
+    /**
+     * Creates a virtual account with bank account type receiver on business
+     * banking type balance of given merchant.
+     * @param  Merchant $merchant
+     * @return Entity
+     */
+    public function createForBankingBalance(Merchant $merchant): Entity
+    {
+        $merchant->getValidator()->validateBusinessBankingActivated();
+
+        $input = [
+            'receivers' => [
+                'types' => [
+                    'bank_account'
+                ],
+            ],
+            // 'description' => '',
+        ];
+
+        return $this->create($input, $merchant, null, null, $merchant->bankingBalance());
     }
 
     protected function buildVirtualAccountAndReceivers(
