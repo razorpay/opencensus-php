@@ -18,6 +18,10 @@ use RZP\Tests\P2p\Service\Base\Traits;
  * @property Models\Merchant\Entity $merchant
  * @property Models\Customer\Entity $customer
  * @property P2p\Device\Entity $device
+<<<<<<< HEAD
+=======
+ * @property P2p\Vpa\Handle\Entity $handle
+>>>>>>> p2po_device_implementation
  * @property P2p\BankAccount\Entity $bank_account
  * @property P2p\Vpa\Entity $vpa
  *
@@ -62,6 +66,10 @@ class DeviceSet
                 $this->device = $this->getDbDeviceById($this->set['device']);
                 break;
 
+            case 'handle':
+                $this->handle = $this->getDbHandleById($this->set['handle']);
+                break;
+
             case 'bank_account':
                 $this->bank_account = $this->getDbBankAccountById($this->set['bank_account']);
                 break;
@@ -91,6 +99,10 @@ class DeviceSet
 
             case 'device':
                 $this->device = $value;
+                break;
+
+            case 'handle':
+                $this->handle = $value;
                 break;
 
             case 'bank_account':

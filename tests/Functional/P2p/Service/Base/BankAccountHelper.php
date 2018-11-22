@@ -8,11 +8,11 @@ class BankAccountHelper extends P2pHelper
     {
         $this->validationJsonSchemaPath = 'bank_account/bank/fetch_all';
 
-        $this->isCustomerInContext = false;
+        $this->setCustomerInContext(false);
 
         $request = $this->request('banks');
 
-        $this->isCustomerInContext = true;
+        $this->resetContexts();
 
         return $this->get($request);
     }

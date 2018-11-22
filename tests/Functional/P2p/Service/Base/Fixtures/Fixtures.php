@@ -16,6 +16,7 @@ use RZP\Tests\P2p\Service\Base\Constants;
  * @property Models\Merchant\Entity $merchant
  * @property Models\Customer\Entity $customer
  * @property P2p\Device\Entity $device
+ * @property P2p\Vpa\Handle\Entity $handle
  * @property P2p\BankAccount\Entity $bank_account
  * @property P2p\Vpa\Entity $vpa
  */
@@ -51,6 +52,7 @@ class Fixtures extends Constants
             'merchant'      => self::TEST_MERCHANT,
             'customer'      => self::RZP_LOCAL_CUSTOMER_1,
             'device'        => self::CUSTOMER_1_DEVICE_1,
+            'handle'        => self::RAZOR_SHARP,
             'bank_account'  => self::CUSTOMER_1_BANK_ACCOUNT_1,
             'vpa'           => self::CUSTOMER_1_VPA_1,
         ],
@@ -58,6 +60,7 @@ class Fixtures extends Constants
             'merchant'      => self::TEST_MERCHANT,
             'customer'      => self::RZP_LOCAL_CUSTOMER_2,
             'device'        => self::CUSTOMER_2_DEVICE_1,
+            'handle'        => self::RAZOR_SHARP,
             'bank_account'  => self::CUSTOMER_2_BANK_ACCOUNT_1,
             'vpa'           => self::CUSTOMER_2_VPA_1,
         ],

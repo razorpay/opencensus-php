@@ -12,9 +12,9 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
-    public function create(array $input): array
+    public function add(array $input): array
     {
-        $response = $this->processor->create($input);
+        $response = $this->processor->add($input);
 
         return $response;
     }

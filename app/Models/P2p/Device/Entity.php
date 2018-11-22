@@ -3,6 +3,8 @@
 namespace Rzp\Models\P2p\Device;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
 
 class Entity extends Base\Entity
 {
@@ -309,5 +311,17 @@ class Entity extends Base\Entity
     public function getAuthToken()
     {
         return $this->getAttribute(self::AUTH_TOKEN);
+    }
+
+    /***************** RELATIONS *****************/
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
     }
 }
