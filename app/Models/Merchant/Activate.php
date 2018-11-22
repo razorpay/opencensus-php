@@ -307,13 +307,7 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $plan = $this->repo->merchant->getPricingPlanOrFailPublic($merchant);
-
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
-
-        $plan = $plan->toArrayPublic();
-
-        $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
 
@@ -329,7 +323,6 @@ class Activate extends Base\Core
                     'custom_code'   => $org->getCustomCode(),
                 ],
             ],
-            'rules'    => $this->formatPricingRules($rules),
         ];
 
         $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
