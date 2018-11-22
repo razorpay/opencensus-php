@@ -389,13 +389,13 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Root and handle from numeric shared terminal will be used.
-        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
+        $this->assertRegexp('/11122200[0-9]{8}$/', $vba['account_number']);
 
         $this->createVirtualAccount([], false);
 
         $vba = $this->getLastEntity('bank_account', true);
         // Root and handle from alpha numeric shared terminal will be used.
-        $this->assertStringStartsWith("RZRPAY", $vba['account_number']);
+        $this->assertStringStartsWith('RZRPAY', $vba['account_number']);
 
         $terminalAttributes = [
             'gateway'               => Gateway::BT_DASHBOARD,
@@ -413,13 +413,13 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Terminal is associated so root from there and given descriptor will be used.
-        $this->assertEquals("ROHITKESHWANI123", $vba['account_number']);
+        $this->assertEquals('ROHITKESHWANI123', $vba['account_number']);
 
         $this->createVirtualAccount([], true);
 
         $vba = $this->getLastEntity('bank_account', true);
         // Alpha Numeric terminal is associated, but numeric accounts can still be created using shared terminal
-        $this->assertRegexp("/11122200[0-9]{8}$/", $vba['account_number']);
+        $this->assertRegexp('/11122200[0-9]{8}$/', $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
@@ -448,7 +448,7 @@ class VirtualAccountTest extends TestCase
         $response = $this->createVirtualAccountOldFormat();
 
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith("22233301", $vba['account_number']);
+        $this->assertStringStartsWith('22233301', $vba['account_number']);
 
         // Note: Custom descriptor is not supported anymore in old format and only Numeric bank accounts can be created.
     }
@@ -465,7 +465,7 @@ class VirtualAccountTest extends TestCase
 
         // Sending descriptor throws error, can only be used with direct terminal.
         $this->runRequestResponseFlow($data['descriptorWithNumeric'], function() {
-            $this->createVirtualAccount([], true, "12345678");
+            $this->createVirtualAccount([], true, '12345678');
         });
     }
 
@@ -556,6 +556,23 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testFetchVirtualAccountsByReceiverType()
+    {
+        $this->createVirtualAccount([], true, null, false);
+        $this->createVirtualAccount([], true, null, false);
+        $this->createVirtualAccount([], true, null, true);
+
+        $response = $this->fetchVirtualAccountsForDashboard([
+            'receiver_type' => 'bank_account'
+        ]);
+        $this->assertEquals(2, $response['count']);
+
+        $response = $this->fetchVirtualAccountsForDashboard([
+            'receiver_type' => 'qr_code'
+        ]);
+        $this->assertEquals(1, $response['count']);
     }
 
     public function testEditVirtualAccount()
@@ -958,7 +975,7 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount([], true, null, true);
 
-        $qrCodeId = substr($virtualAccount['receivers'][1]['id'], 3);
+        $qrCodeId = substr($virtualAccount['receivers'][0]['id'], 3);
 
         $mockServer = $this->app['gateway']->server('hitachi');
 
@@ -1097,7 +1114,7 @@ class VirtualAccountTest extends TestCase
 
             $tlvLength = (int) substr($qrString, $index, 2);
 
-            $index +=2;
+            $index += 2;
 
             $tlvArray[$tlvTag] = substr($qrString, $index, $tlvLength);
 
