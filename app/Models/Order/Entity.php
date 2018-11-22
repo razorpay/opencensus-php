@@ -5,12 +5,13 @@ namespace RZP\Models\Order;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
-use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
- * @property Offer\Entity $offer
+ * @property Offer\Entity    $offer
+ * @property Merchant\Entity $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -46,6 +47,12 @@ class Entity extends Base\PublicEntity
     const STATUS            = 'status';
     const NOTES             = 'notes';
 
+    /**
+     * Can be set along with partial_payment true.
+     * If set, defines the minimum amount that can be made for the first payment
+     * on the order.
+     */
+    const FIRST_PAYMENT_MIN_AMOUNT = 'first_payment_min_amount';
     /**
      * Receipt provided by merchant against the order. Ideally should be
      * unique from the merchant side.
@@ -107,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::FORCE_OFFER,
         self::PARTIAL_PAYMENT,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::PAYER_NAME,
     ];
 
@@ -149,21 +157,23 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::DISCOUNT        => 'bool',
-        self::PARTIAL_PAYMENT => 'bool',
-        self::AMOUNT          => 'int',
-        self::AMOUNT_PAID     => 'int',
-        self::AMOUNT_DUE      => 'int',
-        self::PAYMENT_CAPTURE => 'bool',
-        self::AUTHORIZED      => 'bool',
-        self::ATTEMPTS        => 'int',
-        self::FORCE_OFFER     => 'bool',
+        self::DISCOUNT                 => 'bool',
+        self::PARTIAL_PAYMENT          => 'bool',
+        self::AMOUNT                   => 'int',
+        self::AMOUNT_PAID              => 'int',
+        self::AMOUNT_DUE               => 'int',
+        self::FIRST_PAYMENT_MIN_AMOUNT => 'int',
+        self::PAYMENT_CAPTURE          => 'bool',
+        self::AUTHORIZED               => 'bool',
+        self::ATTEMPTS                 => 'int',
+        self::FORCE_OFFER              => 'bool',
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $appends = [
@@ -333,6 +343,11 @@ class Entity extends Base\PublicEntity
     public function getAmountDue()
     {
         return $this->getAttribute(self::AMOUNT_DUE);
+    }
+
+    public function getFirstPaymentMinAmount()
+    {
+        return $this->getAttribute(self::FIRST_PAYMENT_MIN_AMOUNT);
     }
 
     public function getPaymentCapture()

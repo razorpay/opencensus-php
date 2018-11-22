@@ -131,6 +131,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function getFormattedDataForCheckout(
         Entity $order,
@@ -147,10 +148,11 @@ class Core extends Base\Core
         }
 
         $data = [
-            Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
-            Entity::AMOUNT          => $order->getAmount(),
-            Entity::AMOUNT_PAID     => $order->getAmountPaid(),
-            Entity::AMOUNT_DUE      => $order->getAmountDue(),
+            Entity::PARTIAL_PAYMENT          => $order->isPartialPaymentAllowed(),
+            Entity::AMOUNT                   => $order->getAmount(),
+            Entity::AMOUNT_PAID              => $order->getAmountPaid(),
+            Entity::AMOUNT_DUE               => $order->getAmountDue(),
+            Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
         ];
 
         if ($merchant->isTPVRequired() === true)
