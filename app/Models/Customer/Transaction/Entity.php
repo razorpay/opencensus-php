@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const DEBIT             = 'debit';
     const BALANCE           = 'balance';
     const DESCRIPTION       = 'description';
+    const RECONCILED_AT     = 'reconciled_at';
 
     // Public
     const SOURCE            = 'source';
@@ -128,6 +129,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getReconciledAt()
+    {
+        return $this->getAttribute(self::RECONCILED_AT);
+    }
+
     public function setBalance($amount)
     {
         $this->setAttribute(self::BALANCE, $amount);
@@ -162,6 +168,12 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ENTITY_ID, $id);
     }
+
+    public function setReconciledAt($timestamp)
+    {
+        $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
 
     public function setPublicSourceAttribute(array & $attributes)
     {
