@@ -78,6 +78,7 @@ class ApiServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->registerTraceProcessors();
+        $this->registerGatewayProcessors();
 
         $this->app->singleton('mailgun', function($app)
         {
@@ -240,6 +241,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerDatabaseConnection();
 
         $this->registerMyOperator();
+
+        $this->registerKubernetesClient();
     }
 
     /**
@@ -537,6 +540,13 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app['trace']->pushProcessor($apiProcessor);
     }
 
+    protected function registerGatewayProcessors()
+    {
+        $apiProcessor = new RZP\Trace\GatewayTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor, 'gateway');
+    }
+
     protected function registerPincodeSearch()
     {
         $this->app->singleton('pincodesearch', function($app)
@@ -593,6 +603,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
 
             return new $impl($this->app->trace, $config);
+        });
+    }
+
+    protected function registerKubernetesClient()
+    {
+        $this->app->singleton('k8s_client', function($app)
+        {
+            return new KubernetesClient($app);
         });
     }
 }

@@ -64,7 +64,7 @@ class Reconciliate extends Base\Reconciliate
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
     }
 
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) !== false)
         {

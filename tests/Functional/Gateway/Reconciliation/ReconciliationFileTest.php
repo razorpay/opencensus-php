@@ -633,6 +633,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
+        $this->gateway = 'cybersource';
+
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('cybersource');
 
@@ -1595,6 +1597,8 @@ class ReconciliationFileTest extends TestCase
         $facade['Reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
         $facade['Rental agreement number'] = $gatewayPayment['vpc_ShopTransactionNo'];
+
+        $facade['Merchant Account Number'] = 'razorpay amex';
 
         return $facade;
     }

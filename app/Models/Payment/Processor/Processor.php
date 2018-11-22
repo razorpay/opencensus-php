@@ -33,6 +33,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 
 class Processor
@@ -1692,6 +1693,12 @@ class Processor
         $invoice->getValidator()->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
+
+        if ($invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
+        {
+
+            $payment->setNotes($invoice->getNotes()->toArray());
+        }
     }
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)

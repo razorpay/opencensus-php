@@ -63,18 +63,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[ReconciliationFields::TXN_EXECUTED_DATE] ?? null;
     }
 
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        return true;
-    }
-
-    protected function getInputForForceAuthorize($row)
-    {
-        return [
-            'gateway_payment_id' => $row[ReconciliationFields::BANK_TXN_ID],
-        ];
-    }
-
     protected function getReconPaymentStatus(array $row)
     {
         return (strtolower($row[ReconciliationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;

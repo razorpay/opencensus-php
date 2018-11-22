@@ -66,7 +66,7 @@ class Validator extends Base\Validator
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
         Entity::NAME                    => 'filled|string|max:255',
-        Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
@@ -445,6 +445,15 @@ class Validator extends Base\Validator
         array $params,
         ME $merchant)
     {
+        // Skip the pre validation for payment links to reduce the execution time
+        // to support large files
+        // TODO:
+        // move this to async
+        if (count($entries) > Constants::ROW_LEVEL_VALIDATION_THRESHOLD)
+        {
+            return;
+        }
+
         // Associative array with index as input file's row index and values
         // as the error message.
 

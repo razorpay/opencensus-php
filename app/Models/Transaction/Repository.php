@@ -61,94 +61,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * We DO NOT want to eager load any relationship for any of the entities
-     * because every transaction will store a separate copy for each of its
-     * relation. So 2 transactions of the same merchant will have a copy each
-     * of merchant, bank_account, and balance – effectively 2 * 3 storage.
-     * Now, compare it against the case where we keep only 1 copy of each of
-     * these relations – in a case where lacs of transactions of a merchant
-     * are going to be settled. The difference is memory used will be huge.
-     * Hence instead will query it separately.
-     *
-     * @param $timestamp
-     * @param string $channel
-     * @param array $inMerchantIds
-     * @param array $notInMerchantIds
-     * @return mixed
-     */
-    public function fetchUnsettledTransactions(
-        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [])
-    {
-        $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-
-        $transactionMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
-        $transactionId = $this->dbColumn(Entity::ID);
-
-        $transactionChannel = $this->dbColumn(Entity::CHANNEL);
-
-        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
-        $transactionType        = $this->dbColumn(Entity::TYPE);
-        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
-        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
-        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
-        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
-        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
-        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
-        $transactionTax         = $this->dbColumn(Entity::TAX);
-        $transactionFee         = $this->dbColumn(Entity::FEE);
-        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
-        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
-        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
-
-        $txnFetchStartTime = microtime(true);
-
-        $query = $this->newQuery()
-                      ->select(
-                          $transactionId,
-                          $transactionMerchantId,
-                          $transactionBalance,
-                          $transactionType,
-                          $transactionSourceId,
-                          $transactionSettledAt,
-                          $transactionSettled,
-                          $transactionAmount,
-                          $transactionCredit,
-                          $transactionDebit,
-                          $transactionTax,
-                          $transactionFee,
-                          $transactionFeeCredits,
-                          $transactionCreditsType,
-                          $transactionCreatedAt,
-                          $transactionChannel
-                      )
-                      ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                      ->where(Entity::SETTLED_AT, '<', $timestamp)
-                      ->where(Entity::ON_HOLD, 0)
-                      ->where(Entity::SETTLED, 0)
-                      ->where($transactionChannel, $channel)
-                      ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                      ->where(Merchant\Entity::HOLD_FUNDS, 0);
-
-        if (empty($inMerchantIds) === false)
-        {
-            $query = $query->whereIn($merchantId, $inMerchantIds);
-        }
-
-        if (empty($notInMerchantIds) === false)
-        {
-            $query = $query->whereNotIn($merchantId, $notInMerchantIds);
-        }
-
-        $results = $query->get();
-
-        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
-
-        return $results;
-    }
-
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
     {
         $query = $this->newQuery()
@@ -1178,11 +1090,143 @@ class Repository extends Base\Repository
               ->where($refundStatus, '=', Refund\Status::PROCESSED);
     }
 
+    /**
+     * We DO NOT want to eager load any relationship for any of the entities
+     * because every transaction will store a separate copy for each of its
+     * relation. So 2 transactions of the same merchant will have a copy each
+     * of merchant, bank_account, and balance – effectively 2 * 3 storage.
+     * Now, compare it against the case where we keep only 1 copy of each of
+     * these relations – in a case where lacs of transactions of a merchant
+     * are going to be settled. The difference is memory used will be huge.
+     * Hence instead will query it separately.
+     *
+     * @param $timestamp
+     * @param string $channel
+     * @param array $inMerchantIds
+     * @param array $notInMerchantIds
+     * @return mixed
+     */
+    public function fetchTransactionsForSettlement(
+        int $timestamp,
+        string $channel,
+        array $inMerchantIds = [],
+        array $notInMerchantIds = [])
+    {
+        // SELECT `transactions`.`id`,
+        // `transactions`.`merchant_id`,
+        // `transactions`.`balance`,
+        // `transactions`.`type`,
+        // `transactions`.`entity_id`,
+        // `transactions`.`settled_at`,
+        // `transactions`.`settled`,
+        // `transactions`.`amount`,
+        // `transactions`.`credit`,
+        // `transactions`.`debit`,
+        // `transactions`.`tax`,
+        // `transactions`.`fee`,
+        // `transactions`.`fee_credits`,
+        // `transactions`.`credit_type`,
+        // `transactions`.`created_at`,
+        // `transactions`.`channel`
+        // FROM transactions
+        // INNER JOIN
+        //     (SELECT `id`
+        //      FROM merchants
+        //      WHERE hold_funds = 0
+        //          AND merchants.activated_at IS NOT NULL
+        //          AND merchants.id NOT IN ('8ytYezIThlseJd',
+        //                                   '7BfRNg10LH7N6T')
+        //     ) AS settle_merchants ON settle_merchants.id = transactions.merchant_id
+        // WHERE settled_at < now()
+        //     AND on_hold = 0
+        //     AND settled = 0
+        //     AND transactions.channel = 'axis'
+        //     AND type != 'settlement'
+
+
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionId          = $this->dbColumn(Entity::ID);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
+        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
+        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
+        $transactionTax         = $this->dbColumn(Entity::TAX);
+        $transactionFee         = $this->dbColumn(Entity::FEE);
+        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
+        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
+        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+
+        $merchantId     = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $colHoldFunds   = $this->repo->merchant->dbColumn(Merchant\Entity::HOLD_FUNDS);
+        $colActivatedAt = $this->repo->merchant->dbColumn(Merchant\Entity::ACTIVATED_AT);
+
+        $txnFetchStartTime = microtime(true);
+
+        $activatedMerchants = $this->repo->merchant
+                                   ->newQuery()
+                                   ->select($merchantId)
+                                   ->where($colHoldFunds, 0)
+                                   ->whereNotNull($colActivatedAt);
+
+        if (empty($inMerchantIds) === false)
+        {
+            $activatedMerchants->whereIn(Merchant\Entity::ID, $inMerchantIds);
+        }
+
+        if (empty($notInMerchantIds) === false)
+        {
+            $activatedMerchants->whereNotIn(Merchant\Entity::ID, $notInMerchantIds);
+        }
+
+        $query = $this->newQuery()
+                      ->select(
+                          $transactionId,
+                          $transactionMerchantId,
+                          $transactionBalance,
+                          $transactionType,
+                          $transactionSourceId,
+                          $transactionSettledAt,
+                          $transactionSettled,
+                          $transactionAmount,
+                          $transactionCredit,
+                          $transactionDebit,
+                          $transactionTax,
+                          $transactionFee,
+                          $transactionFeeCredits,
+                          $transactionCreditsType,
+                          $transactionCreatedAt,
+                          $transactionChannel
+                      )->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
+                                 {
+                                     $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
+                                 })
+                      ->mergeBindings($activatedMerchants->getQuery())
+                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
+                      ->where($transactionChannel, $channel)
+                      ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
+    }
+
     public function fetchTransactionCountForSettlementId(string $setlId): int
     {
         return $this->newQuery()
-                      ->select(Entity::ID)
-                      ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
-                      ->count();
+                    ->select(Entity::ID)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
+                    ->count();
     }
 }

@@ -6,19 +6,11 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Status;
 use RZP\Reconciliator\NetbankingEquitas\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    protected $netbankingRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     public function getPaymentId(array $row)
     {
         return $row[Constants::GATEWAY_REFERENCE_NUMBER] ?? null;
@@ -27,6 +19,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getReferenceNumber($row)
     {
         return $row[Constants::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        $status = $row[Constants::STATUS];
+
+        if ($status === Constants::PAYMENT_STATUS_SUCCESS)
+        {
+            return Status::AUTHORIZED;
+        }
+        else
+        {
+            return Status::FAILED;
+        }
     }
 
     public function getGatewayPaymentDate($row)
@@ -64,18 +70,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return [
             Base\Reconciliate::ACCOUNT_NUMBER => $row[Constants::ACCOUNT_NUMBER]
-        ];
-    }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
-    }
-
-    protected function getInputForForceAuthorize($row)
-    {
-        return [
-            'gateway_payment_id' => $row[Constants::BANK_REFERENCE_NUMBER],
         ];
     }
 

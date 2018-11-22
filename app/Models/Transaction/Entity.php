@@ -52,9 +52,9 @@ class Entity extends Base\PublicEntity
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
+    const RECONCILED_TYPE     = 'reconciled_type';
 
     // dummy columns usable later
-    const REFERENCE1          = 'reference1';
     const REFERENCE2          = 'reference2';
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
@@ -89,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::RECONCILED_AT,
+        self::RECONCILED_TYPE,
         self::CHANNEL,
         self::FEE_MODEL,
         self::FEE_BEARER,
@@ -141,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_AT            => null,
         self::SETTLEMENT_ID         => null,
         self::RECONCILED_AT         => null,
+        self::RECONCILED_TYPE       => null,
         self::ON_HOLD               => 0,
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
@@ -295,6 +297,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECONCILED_AT);
     }
 
+    public function getReconciledType()
+    {
+        return $this->getAttribute(self::RECONCILED_TYPE);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     //
@@ -423,6 +430,13 @@ class Entity extends Base\PublicEntity
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setReconciledType(string $reconciledType)
+    {
+        ReconciledType::validateReconciledType($reconciledType);
+
+        $this->setAttribute(self::RECONCILED_TYPE, $reconciledType);
     }
 
     public function setGatewaySettledAt($timestamp)

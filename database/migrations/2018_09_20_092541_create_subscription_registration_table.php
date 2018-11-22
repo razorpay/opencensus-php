@@ -27,6 +27,9 @@ class CreateSubscriptionRegistrationTable extends Migration
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Entity::METHOD, 255)
                   ->nullable();
 
@@ -51,6 +54,8 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->integer(Entity::EXPIRE_AT)
                   ->nullable();
 
+            $table->text(Entity::NOTES);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
@@ -65,6 +70,8 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->index(Entity::DELETED_AT);
 
             $table->index(Entity::EXPIRE_AT);
+
+            $table->index(Entity::TOKEN_ID);
         });
     }
 

@@ -7,6 +7,7 @@ use Config;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -121,7 +122,7 @@ class Core extends Base\Core
     {
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
-        if (($defaultEmi === true) &&
+        if (($defaultEmi === true) and
             ($plan->hasMethod(Payment\Method::EMI) === false))
         {
             $emiPricing = $this->repo->pricing->getPricingPlanById(Fee::DEFAULT_EMI_PLAN_ID);
@@ -241,6 +242,12 @@ class Core extends Base\Core
         }
 
         $authTypes = Payment\AuthType::getAuthTypeForMethod(Payment\Method::EMANDATE);
+
+        // this is temporary (read as hack), just to disable aadhaar auth type.
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true)
+        {
+            $authTypes = [Payment\AuthType::NETBANKING];
+        }
 
         foreach ($authTypes as $authType)
         {

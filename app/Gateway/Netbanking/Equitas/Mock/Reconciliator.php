@@ -79,7 +79,7 @@ class Reconciliator extends Base\RefundFile
 
             $col = [
                 Constants::GATEWAY_REFERENCE_NUMBER     => $row['gateway']['payment_id'],
-                Constants::BANK_REFERENCE_NUMBER        => $row['gateway']['bank_payment_id'],
+                Constants::BANK_REFERENCE_NUMBER        => $row['gateway']['bank_payment_id'] ?: '99999',
                 Constants::AMOUNT                       => $this->getFormattedAmount($row['payment']['amount']),
                 Constants::STATUS                       => Constants::PAYMENT_STATUS_SUCCESS,
                 Constants::DATE_OF_TRANSACTION          => $date,
