@@ -6,7 +6,9 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 
 class Repository extends Base\Repository
 {
@@ -49,5 +51,25 @@ class Repository extends Base\Repository
                               {
                                   return (int) ($p->getNotes()[Entity::UNITS] ?? 1);
                               });
+    }
+
+    /**
+     * Finds payment link entity by public id constrained to not being marked
+     * inactive with reason deactivated(manually).
+     *
+     * @param  string $id
+     * @return Entity
+     */
+    public function findActiveByPublicId(string $id): Entity
+    {
+        $entity = $this->findByPublicId($id);
+
+        // No direct query with filter because index is as (status, status_reason).
+        if ($entity->isDeactivated() === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return $entity;
     }
 }

@@ -180,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::TIMES_PAYABLE,
         self::TIMES_PAID,
         self::STATUS,
+        self::STATUS_REASON,
         self::SHORT_URL,
         self::RECEIPT,
         self::TITLE,

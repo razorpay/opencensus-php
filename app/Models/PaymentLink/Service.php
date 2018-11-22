@@ -89,7 +89,7 @@ class Service extends Base\Service
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL);
 
         /** @var Entity $paymentLink */
-        $paymentLink = $this->repo->payment_link->findByPublicId($id);
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 
