@@ -39,6 +39,7 @@ class Repository extends Base\Repository
                         Entity::NAME . " LIKE 'Basic%' OR " .
                         Entity::NAME . " LIKE '%PM' OR " .
                         Entity::NAME . " LIKE '%AM'")
+                    ->orderBy(Entity::NAME)
                     ->get();
     }
 
