@@ -245,6 +245,42 @@ class PaysecureGatewayTest extends TestCase
         $this->assertSuccess($authResponse, 'iframe');
     }
 
+    public function testSoapFault()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'checkbin2')
+                {
+                    throw new \SoapFault('Server', 'connection timed out');
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEmpty($gatewayPayment);
+    }
+
     protected function assertSuccess($authResponse, $flow)
     {
         $payment = $this->getDbLastEntityToArray('payment');
