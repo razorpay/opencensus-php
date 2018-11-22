@@ -59,19 +59,27 @@ export class GenericCreator extends React.PureComponent {
     isFieldEnum: !!this.props.field.enum,
   };
 
-  defaultFieldIndex = this.props.field.title
-    ? mapFieldToIndex(this.props.field)
-    : '';
+  defaultEnumVal = (() => {
+    if (this.props.field.title) {
+      let indexTree = mapFieldToIndex(this.props.field);
+
+      indexTree = [Number(indexTree[0]) + 1].concat(indexTree.splice(1));
+
+      return indexTree.join(' ');
+    } else {
+      return '';
+    }
+  })();
 
   typeOptions = [{ label: '--Select--', value: '' }].concat(
     FIELD_TYPES.map((FIELD_OPTION, idx) => {
       return {
-        value: idx,
+        value: String(idx + 1), // +1 is to adjust --select--
         options: !FIELD_OPTION.options
           ? undefined
-          : FIELD_OPTION.options.map((SUB_OPTION, jnx) => {
+          : FIELD_OPTION.options.map((SUB_OPTION, jdx) => {
               return {
-                value: jnx,
+                value: Number(idx + 1) + ' ' + jdx, // Space separate tree.
                 label: SUB_OPTION.label,
                 icon: SUB_OPTION.icon,
               };
@@ -111,12 +119,18 @@ export class GenericCreator extends React.PureComponent {
     this.setState({ disableSubmit });
   };
 
-  onSelection = val => {
-    let indices = val.index.split('');
-    indices = Number(indices[0]) - 1 + indices.splice(1).join(''); // Because 0th is --Select--
+  onSelection = field => {
+    let indexString = field.option.value;
+    let selectedFieldSchema;
 
-    const selectedFieldSchema = getFieldFromIndices(indices);
-    const isNewFieldEnum = selectedFieldSchema.hasOwnProperty('enum');
+    if (indexString) {
+      let indexTree = indexString.split(' ');
+      indexTree = [Number(indexTree[0]) - 1].concat(indexTree.splice(1));
+      selectedFieldSchema = getFieldFromIndices(indexTree);
+    }
+
+    const isNewFieldEnum =
+      selectedFieldSchema && selectedFieldSchema.hasOwnProperty('enum');
     if (this.state.isFieldEnum !== isNewFieldEnum) {
       this.setState({ enum: [] });
     }
@@ -125,9 +139,11 @@ export class GenericCreator extends React.PureComponent {
   };
 
   onSubmit = formData => {
-    let indices = formData.field_type.split('');
-    indices = Number(indices[0]) - 1 + indices.splice(1).join(''); // Because 0th is --Select--
-    formData.field_type = indices;
+    let fieldType = formData.field_type.split(' ');
+
+    fieldType = [Number(fieldType[0]) - 1].concat(fieldType.splice(1));
+    formData.field_type = fieldType;
+
     formData.enum =
       this.state.enum && this.state.enum.length ? this.state.enum : undefined;
 
@@ -199,7 +215,7 @@ export class GenericCreator extends React.PureComponent {
             name="field_type"
             label="What type of field is this?"
             placeholder="Select Type"
-            defaultValue={this.defaultFieldIndex}
+            defaultValue={this.defaultEnumVal}
             options={this.typeOptions}
             onChange={this.onSelection}
             customOptionComponent={CustomTypeOption}

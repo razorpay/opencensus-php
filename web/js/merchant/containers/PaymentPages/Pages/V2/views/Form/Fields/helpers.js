@@ -33,11 +33,11 @@ export function flattenFIELD_TYPES() {
     if (FIELD.options) {
       for (let j = 0; j < FIELD.options.length; j++) {
         const SUB_FIELD = FIELD.options[j];
-        SUB_FIELD.index = String(i) + 1 + String(j); // "01" will become "11" because first option is '--Select--'
+        SUB_FIELD.level = [i, j];
         flatten.push(SUB_FIELD);
       }
     } else {
-      FIELD.index = String(i);
+      FIELD.level = [i];
       flatten.push(FIELD);
     }
   }
@@ -85,7 +85,7 @@ export function mapFieldToIndex(field) {
       }
     }
 
-    selectedIndexInOptions = fieldTypes.index;
+    selectedIndexInOptions = fieldTypes[i].level;
     break;
   }
 
@@ -96,9 +96,9 @@ export function mapFieldToIndex(field) {
   return selectedIndexInOptions;
 }
 
-export function getFieldFromIndices(indicesString) {
+// TODO: Convert indicesString to array
+export function getFieldFromIndices(indicesTree) {
   let FIELD;
-  const indicesTree = String(indicesString).split('');
 
   if (indicesTree.length === 1) {
     FIELD = FIELD_TYPES[indicesTree[0]];
@@ -114,13 +114,14 @@ export function getFieldFromIndices(indicesString) {
 }
 
 export function constructFieldSchema(fieldData) {
+  // field_type is array of indices
   const { title, required, description, field_type } = fieldData;
 
-  if (isNaN(field_type) || field_type < 0) {
+  if (!field_type instanceof Array) {
     return false;
   }
 
-  const SCHEMA = getFieldFromIndices(String(field_type));
+  const SCHEMA = getFieldFromIndices(field_type);
 
   if (!title || !SCHEMA) {
     return false;
