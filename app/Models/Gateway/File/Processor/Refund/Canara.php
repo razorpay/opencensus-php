@@ -29,7 +29,6 @@ class Canara extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_CANARA;
     const GATEWAY_CODE           = IFSC::CNRB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
-    const BANK_CODE              = 'CNRB';
     const HEADERS                = RefundFileFields::COLUMN_HEADERS;
 
     //protected $config;
