@@ -163,6 +163,10 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $callbackUrlValidationRules = [
+        'callback_url' => 'sometimes|url',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -466,7 +470,7 @@ class Validator extends Base\Validator
             if ($amount > 10000000)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Amount for UPI payment cannot be greater than 100000000');
+                    'Amount for UPI payment cannot be greater than ₹100000.00');
             }
 
             if ((isset($input['_']['flow']) === true) and

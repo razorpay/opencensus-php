@@ -82,6 +82,74 @@ class UpiAxisGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIAXISTpvl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
+    }
+
+    public function testFailedTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = '111';
+        }, $this->gateway);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+    }
+
     public function testVerifyPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);

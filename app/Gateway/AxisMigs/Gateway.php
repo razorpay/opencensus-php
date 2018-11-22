@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
 use RZP\Gateway\AxisMigs;
@@ -149,6 +150,23 @@ class Gateway extends Base\Gateway
             'refund' => $input['refund']]);
 
         $this->checkTransactionResponse($content, $input);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+        ];
+    }
+
+    protected function getGatewayData(array $refundFields)
+    {
+        return [
+            Entity::VPC_ACQ_RESPONSE_CODE   => $refundFields[Entity::VPC_ACQ_RESPONSE_CODE] ?? null,
+            Entity::VPC_BATCH_NO            => $refundFields[Entity::VPC_BATCH_NO] ?? null,
+            Entity::VPC_MESSAGE             => $refundFields[Entity::VPC_MESSAGE] ?? null,
+            Entity::VPC_SHOP_TRANSACTION_NO => $refundFields[Entity::VPC_SHOP_TRANSACTION_NO] ?? null,
+            Entity::VPC_TRANSACTION_NO      => $refundFields[Entity::VPC_TRANSACTION_NO] ?? null,
+            Entity::VPC_TXN_RESPONSE_CODE   => $refundFields[Entity::VPC_TXN_RESPONSE_CODE] ?? null,
+        ];
     }
 
     public function verifyInternalRefund(array $input)
@@ -327,6 +345,11 @@ class Gateway extends Base\Gateway
             'refund' => $input['refund']]);
 
         $this->checkTransactionResponse($content, $input);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+        ];
     }
 
     public function forceAuthorizeFailed($input)
@@ -388,18 +411,23 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         // Adding a check for 8th May 2017 as track id was
@@ -408,7 +436,7 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 'Unable to verify migs refund',
-                null,
+                ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
                 [
                     'payment_id'    => $input['refund']['payment_id'],
                     'refund_id'     => $input['refund']['id'],
@@ -427,30 +455,47 @@ class Gateway extends Base\Gateway
         {
             if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->getTimestamp())
             {
-                return false;
+                return $scroogeResponse->setSuccess(false)
+                                       ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                       ->setGatewayResponse($content)
+                                       ->setGatewayKeys($this->getGatewayData($content))
+                                       ->toArray();
             }
 
-            throw new Exception\RuntimeException(
-                'Cannot verify old MiGS refunds');
+            throw new Exception\LogicException(
+                'Cannot verify old MiGS refunds',
+                ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                ]
+            );
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and
             (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->setGatewayResponse($content)
+                                   ->setGatewayKeys($this->getGatewayData($content))
+                                   ->toArray();
         }
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
         {
             throw new Exception\LogicException(
-                'Shouldn\'t reach here',
-                null,
+                'Shouldn\'t reach here - FoundMultipleDRs',
+                ErrorCode::GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND,
                 [
                     'payment_id' => $input['refund']['payment_id'],
                     'refund_id'  => $input['refund']['id'],
                 ]);
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->setGatewayResponse($content)
+                               ->setGatewayKeys($this->getGatewayData($content))
+                               ->toArray();
     }
 
     protected function captureAuthorizedPayment(array $input)
@@ -1185,14 +1230,22 @@ class Gateway extends Base\Gateway
             {
                 return;
             }
-
-            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
+            // The following checks are being made -
+            // to avoid the case where an array is returned because $code should be a string
+            // there are multiple levels of mapping - so if one of the index is missing in the message -
+            // the $code and $msg will be an array instead of a string
+            $code = (is_string($code) === true) ? $code : ErrorCode::BAD_REQUEST_REFUND_FAILED;
+            $msg = (is_string($msg) === true) ? $msg : ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
         }
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
             $code,
             $txnResponseCode,
-            $msg);
+            $msg,
+            [
+                Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+            ]);
     }
 }

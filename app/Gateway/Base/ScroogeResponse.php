@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Base;
+namespace RZP\Gateway\Base;
 
 use RZP\Models\Payment\Gateway;
 
@@ -76,7 +76,7 @@ class ScroogeResponse
      * @param string $gatewayResponse
      * @return ScroogeResponse
      */
-    public function setGatewayResponse(array $gatewayResponse): self
+    public function setGatewayResponse($gatewayResponse): self
     {
         $this->gatewayResponse = json_encode($gatewayResponse);
 

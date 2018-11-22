@@ -179,6 +179,13 @@ class RedisDualWrite
         $this->set($key, $data, 'ex', $ttl, 'nx');
     }
 
+    public function ttl($key)
+    {
+        $redis = Redis::Connection();
+
+        return $redis->ttl($key);
+    }
+
     protected function appendPrefix($key)
     {
         return self::PREFIX . $key;

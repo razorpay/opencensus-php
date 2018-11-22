@@ -120,8 +120,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'      => '1X4hRFHFx4UiXt',
-                'balance' => 0
+                'id'            => '1X4hRFHFx4UiXt',
+                'merchant_id'   => '1X4hRFHFx4UiXt',
+                'currency'      => 'INR',
+                'balance'       => 0,
             ]
         ]
     ],

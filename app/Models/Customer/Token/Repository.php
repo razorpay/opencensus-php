@@ -137,7 +137,7 @@ class Repository extends Base\Repository
                                     $query->where(Token\Entity::RECURRING, '=', "0")
                                           ->whereIn(
                                               Token\Entity::RECURRING_STATUS,
-                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED]);
+                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED]);
                                 });
                       })
                       ->with('customer');

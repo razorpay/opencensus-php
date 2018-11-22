@@ -118,7 +118,7 @@ class UpiSbiGatewayReconTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "application/octet-stream";
+        $mimeType = 'application/octet-stream';
 
         $uploadedFile = new UploadedFile(
             $file,
@@ -163,7 +163,8 @@ class UpiSbiGatewayReconTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals([Constants::SUCCESS => true], $response);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
 
         return $paymentId;
     }

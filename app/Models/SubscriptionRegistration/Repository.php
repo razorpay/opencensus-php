@@ -12,4 +12,14 @@ class Repository extends Base\Repository
     {
         return $this->repo->token->fetchRecurringTokensByMerchant($input, $merchant->getId());
     }
+
+    public function findByTokenIdAndMerchant(string $tokenId, string $merchantId)
+    {
+        $subscriptionRegistration = $this->newQuery()
+                                         ->merchantId($merchantId)
+                                         ->where(Entity::TOKEN_ID, '=', $tokenId)
+                                         ->first();
+
+        return $subscriptionRegistration;
+    }
 }

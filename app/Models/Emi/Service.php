@@ -34,7 +34,7 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions($offers = null)
+    public function getEmiOptions($offers = null, $order = null)
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
@@ -53,17 +53,30 @@ class Service extends Base\Service
 
             if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
-                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
+                $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
-                $plans[$issuer][] = [
-                    'duration'   => $duration,
-                    'interest'   => 0,
-                    'subvention' => Subvention::MERCHANT,
-                    'min_amount' => $minAmount,
-                    'offer_id'   => $emiOfferPlans[$plan->getId()],
-                ];
+                if ($order->getAmount() >= $minEmiAmount)
+                {
+                    $plans[$issuer][] = [
+                        'duration'   => $duration,
+                        'interest'   => 0,
+                        'subvention' => Subvention::MERCHANT,
+                        'min_amount' => $minEmiAmount,
+                        'offer_id'   => $emiOfferPlans[$plan->getId()],
+                    ];
+                }
+                else
+                {
+                    $plans[$issuer][] = [
+                        'duration'   => $duration,
+                        'interest'   => $plan->getRate() / 100,
+                        'subvention' => Subvention::CUSTOMER,
+                        'min_amount' => $minAmount,
+                    ];
+                }
             }
-            else
+            // If offer is forced, there's no need to show the other EMI plans
+            else if ($this->shouldShowNotOfferEmiOption($offers, $order, $plan) === true)
             {
                 $plans[$issuer][] = [
                     'duration'   => $duration,
@@ -75,6 +88,33 @@ class Service extends Base\Service
         }
 
         return $plans;
+    }
+
+    protected function shouldShowNotOfferEmiOption($offers, $order, $plan): bool
+    {
+        // If there's no order involved, there's no reason to do any filtering
+        if ($order === null)
+        {
+            return true;
+        }
+
+        // Whether regular EMI options are to be shown
+        // now depends on whether the order is forced-EMI
+        if (($offers->count() === 1) and
+            ($order->isOfferForced() === true))
+        {
+            $offer = $offers->first();
+
+            if ($this->checkIfPlanMatchesOffer($plan, $offer) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // For not forced offers, again there's no need to filter anything
+        return true;
     }
 
     public function fetch($id)
@@ -164,17 +204,15 @@ class Service extends Base\Service
                 return;
             }
 
-            $bank = $offer->getIssuer();
-
-            $network = $offer->getPaymentNetwork();
-
-            $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
+            if (($offer->isActive() === false) or
+                ($offer->isPeriodActive() === false))
+            {
+                return;
+            }
 
             foreach($emiPlans as $emiPlan)
             {
-                if (($emiPlan->getBank() === $bank) and
-                    ($emiPlan->getNetwork() === $network) and
-                    (in_array($emiPlan->getDuration(), $durations, true) === true))
+                if ($this->checkIfPlanMatchesOffer($emiPlan, $offer) === true)
                 {
                     $emiOfferPlans = [$emiPlan->getId() => $offer->getPublicId()] + $emiOfferPlans;
                 }
@@ -182,6 +220,34 @@ class Service extends Base\Service
         });
 
         return $emiOfferPlans;
+    }
+
+    protected function checkIfPlanMatchesOffer($emiPlan, $offer)
+    {
+        $bank = $offer->getIssuer();
+
+        if (($bank !== null) and
+            ($emiPlan->getBank() !== $bank))
+        {
+            return false;
+        }
+
+        $network = $offer->getPaymentNetwork();
+
+        if (($network !== null) and
+            ($emiPlan->getNetwork() !== $network))
+        {
+            return false;
+        }
+
+        $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
+
+        if (in_array($emiPlan->getDuration(), $durations, true) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email = null)
