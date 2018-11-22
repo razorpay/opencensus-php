@@ -212,16 +212,14 @@ return array(
             ]
         ],
 
-
         'redis_labs' => [
-            'host'               => env('REDIS_LABS_HOST'),
-            'port'               => env('REDIS_LABS_PORT'),
-            'timeout'            => 30,
-            'options'            => [
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 30,
+            'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ],
+            ]
         ],
-
     ],
 
     /*

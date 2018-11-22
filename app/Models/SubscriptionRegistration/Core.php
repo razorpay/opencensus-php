@@ -63,6 +63,11 @@ class Core extends Base\Core
     {
         $subrInput = array_pull($input, Constants\Entity::SUBSCRIPTION_REGISTRATION);
 
+        if (isset($input[Entity::NOTES]) === true)
+        {
+            $subrInput[Entity::NOTES] =  $input[Entity::NOTES];
+        }
+
         $bankInput = [];
 
         $bankName = null;
