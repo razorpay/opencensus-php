@@ -7,8 +7,8 @@ use RZP\Error\ErrorCode;
 class ErrorCodes
 {
     // Check BIN responses
-    const EC_01 = '01';
-    const EC_02 = '02';
+    const EC_01  = '01';
+    const EC_02  = '02';
     const EC_400 = '400';
     const EC_401 = '401';
     const EC_402 = '402';
@@ -28,23 +28,23 @@ class ErrorCodes
     const ACCU999 = 'ACCU999';
 
     // Authorize responses
-    const EC_13 = '13';
-    const EC_41 = '41';
-    const EC_42 = '42';
-    const EC_43 = '43';
-    const EC_51 = '51';
-    const EC_54 = '54';
-    const EC_55 = '55';
-    const EC_57 = '57';
-    const EC_58 = '58';
-    const EC_59 = '59';
-    const EC_60 = '60';
-    const EC_61 = '61';
-    const EC_62 = '62';
-    const EC_65 = '65';
-    const EC_91 = '91';
-    const EC_92 = '92';
-    const EC_96 = '96';
+    const EC_13  = '13';
+    const EC_41  = '41';
+    const EC_42  = '42';
+    const EC_43  = '43';
+    const EC_51  = '51';
+    const EC_54  = '54';
+    const EC_55  = '55';
+    const EC_57  = '57';
+    const EC_58  = '58';
+    const EC_59  = '59';
+    const EC_60  = '60';
+    const EC_61  = '61';
+    const EC_62  = '62';
+    const EC_65  = '65';
+    const EC_91  = '91';
+    const EC_92  = '92';
+    const EC_96  = '96';
     const EC_110 = '110';
     const EC_120 = '120';
     const EC_399 = '399';
@@ -101,41 +101,41 @@ class ErrorCodes
         self::EC_400  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::EC_401  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::EC_402  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_406  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_407  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_406  => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
         self::EC_408  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_410  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_412  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_410  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
+        self::EC_412  => ErrorCode::BAD_REQUEST_CARD_ISSUER_AUTHENTICATION_ERROR,
 
         // Callback error code mappings
-        self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ACCU400 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ACCU600 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::ACCU800 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
+        self::ACCU400 => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
+        self::ACCU600 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::ACCU700 => ErrorCode::BAD_REQUEST_CARD_ISSUER_AUTHENTICATION_ERROR,
+        self::ACCU800 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::ACCU999 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         // Authorize error code mappings
-        self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_41   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_43   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_51   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_54   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_55   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_57   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_58   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_59   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_60   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_61   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_65   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_91   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_92   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_96   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_110  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_120  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::EC_399  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
+        self::EC_41   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_43   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_51   => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        self::EC_54   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
+        self::EC_55   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
+        self::EC_57   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_58   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_59   => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+        self::EC_60   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_61   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_65   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_91   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_92   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_96   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_110  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
+        self::EC_120  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
+        self::EC_399  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
     ];
 
     public static function getErrorCodeMapped($errorCode)
