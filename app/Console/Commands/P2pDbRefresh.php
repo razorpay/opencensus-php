@@ -47,10 +47,7 @@ class P2pDbRefresh extends RzpDbRefresh
             $this->call('migrate',
                 ['--database' => $database, '--path' => 'database/migrations/p2p']);
 
-            if ($this->needsSeeding())
-            {
-                $this->call('db:seed', ['--database' => $database, '--class' => 'P2pSeeder']);
-            }
+            $this->call('db:seed', ['--database' => $database, '--class' => 'P2pSeeder']);
         }
     }
 }

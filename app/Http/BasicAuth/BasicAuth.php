@@ -920,9 +920,9 @@ class BasicAuth
      */
     protected function verifyDeviceToken()
     {
-        $keyEntity = $this->key;
+        $merchant = $this->authCreds->getMerchant();
 
-        $deviceToken = $this->getSecret();
+        $deviceToken = $this->authCreds->getSecret();
 
         if ($deviceToken === '')
         {
@@ -932,12 +932,12 @@ class BasicAuth
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
-        $device = $this->repo->device->findByAuthToken($deviceToken);
+        $device = $this->repo->p2p_device->findByAuthToken($deviceToken);
 
         $this->device = $device;
 
         if (($device === null) or
-            ($keyEntity->merchant->getId() !== $device->merchant->getId()))
+            ($merchant->getId() !== $device->merchant->getId()))
         {
             $this->trace->info(TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
 
