@@ -48,8 +48,11 @@ class CreateOrders extends Migration
 
             $table->char(Order::CURRENCY, Payment::CURRENCY_LENGTH);
 
-            $table->integer(Order::ATTEMPTS)
-                  ->default(0);
+            $table->char(Order::CURRENCY, Payment::CURRENCY_LENGTH);
+
+            $table->bigInteger(Order::FIRST_PAYMENT_MIN_AMOUNT)
+                   ->unsigned()
+                   ->default(0);
 
             $table->string(Order::STATUS, 10);
 

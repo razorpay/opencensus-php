@@ -4594,3 +4594,6 @@ VALUES
     ("Bbg7eYLkxM7sLP", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 0, 100000, 0, 500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
     ("Bbg7f0FaUJQOvj", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 100000, 2500000, 0, 900, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
     ("Bbg7fgaDwax03u", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 2500000, 4294967295, 0, 1500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL);
+
+ALTER TABLE orders
+    ADD COLUMN first_payment_min_amount BIGINT NULL DEFAULT 0 AFTER currency;
