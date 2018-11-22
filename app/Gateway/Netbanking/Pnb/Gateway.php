@@ -326,7 +326,6 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($response): array
     {
-        sd($response->body);
         $responseArray = $this->jsonToArray($response->body);
 
         $data = json_decode($responseArray['data'], true);
