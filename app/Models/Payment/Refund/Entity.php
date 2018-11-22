@@ -61,6 +61,9 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const SETTLED_BY             = 'settled_by';
 
+    // indicates refund is processed via scrooge service or not.
+    const IS_SCROOGE             = 'is_scrooge';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -708,5 +711,25 @@ class Entity extends Base\PublicEntity
         {
             app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
         }
+    }
+
+    /**
+     * Overriding this function to add is_scrooge attribute for admin array.
+     * is_scrooge will be true for the refunds which are of scrooge gateways.
+     *
+     * @return array
+     */
+    public function toArrayAdmin()
+    {
+        $array = parent::toArrayAdmin();
+
+        $gateway = $array[self::GATEWAY];
+
+        $array[self::IS_SCROOGE] = Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp(
+            $gateway,
+            $array[self::CREATED_AT]
+        );
+
+        return $array;
     }
 }
