@@ -633,6 +633,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
+        $this->gateway = 'cybersource';
+
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('cybersource');
 

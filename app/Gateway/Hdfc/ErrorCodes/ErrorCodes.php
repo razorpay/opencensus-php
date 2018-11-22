@@ -782,6 +782,7 @@ class ErrorCodes extends Cards\ErrorCodes
         'I' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Maximum credit amount set for per card for rolling 24 hrs has been crossed
         'J' => ErrorCode::BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED, //Maximum transaction set for per card for rolling 24 hrs has been crossed
         'K' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT, //Amount Less than Minimum Amount configured
+        'P' => ErrorCode::GATEWAY_ERROR_SQL_ERROR, //received this in mail: "Due to some DB issue received below response"
         'X' => ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN, //BIN is added as negative BIN in PG
         'Y' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED, //Card is present in negative card list and will be decline in future also unless it is not removed manually.
         'Z' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED, //Card is present in decline card database, will be declined for short time
@@ -795,5 +796,12 @@ class ErrorCodes extends Cards\ErrorCodes
         }
 
         return self::$invalidResultErrorCode;
+    }
+
+    public static function shouldRetryRefund($authRespCode)
+    {
+        $retryAuthRespCodes = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'P'];
+
+        return (in_array($authRespCode, $retryAuthRespCodes, true) === true);
     }
 }

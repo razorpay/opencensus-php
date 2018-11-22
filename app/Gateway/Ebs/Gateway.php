@@ -63,6 +63,8 @@ class Gateway extends Base\Gateway
             ($this->checkForSharedTerminal($input['terminal']) === true))
         {
             $request = $this->makeRequestAndGetBankUrl($request, $input);
+
+            $this->updateUrlInCacheAndPushMetric($input, $request['url']);
         }
 
         return $request;

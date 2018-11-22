@@ -34,8 +34,8 @@ class Fields
     const W_COLLECT_TXN_ID             = 'wCollectTxnId';
     const TXN_TIME                     = 'txnTime';
     const TXN_AMOUNT                   = 'txnAmount';
-    const DEBIT_ACCOUNT_NUM            = 'debitAccountNum';
-    const DEBIT_IFSC_CODE              = 'debitIfscCode';
+    const ACCOUNT_NUM                  = 'accountNo';
+    const IFSC_CODE                    = 'Ifsc';
     const TOKEN                        = 'Token';
 
     const CHECK_STATUS_MERCH_ID        = 'merchid';

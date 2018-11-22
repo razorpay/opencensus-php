@@ -247,7 +247,11 @@ class Reconciliation extends Base
 
         $keyColumnNames = $this->gatewayReconciliator->getKeyColumnNames($inputFileDetails);
 
-        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow, $keyColumnNames);
+        $excelArray = $this->converter->convertExcelToArray($inputFileDetails,
+                                                            $sheetNames,
+                                                            $startRow,
+                                                            $keyColumnNames,
+                                                            $this->batch->getGateway());
 
         $sheetCount = count(array_keys($excelArray));
 

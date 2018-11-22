@@ -11,10 +11,12 @@ use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
 class SubscriptionRegistrationTest extends TestCase
 {
     use PaymentTrait;
+    use InvoiceTestTrait;
     use DbEntityFetchTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
@@ -39,7 +41,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $subr = $this->getDbLastEntity('subscription_registration');
 
-        $this->assertEquals($subr['method'], "card");
+        $this->assertEquals($subr['method'], 'card');
 
         $order = $this->getDbLastEntity('order');
 
@@ -52,11 +54,11 @@ class SubscriptionRegistrationTest extends TestCase
 
         $subr = $this->getDbLastEntity('subscription_registration');
 
-        $this->assertEquals($subr['method'], "emandate");
+        $this->assertEquals($subr['method'], 'emandate');
 
         $order = $this->getDbLastEntity('order');
 
-        $this->assertEquals($order['method'], "emandate");
+        $this->assertEquals($order['method'], 'emandate');
     }
 
     public function testCreateAuthLinkWithBankAccount()
@@ -69,13 +71,13 @@ class SubscriptionRegistrationTest extends TestCase
 
         $subr = $this->getDbLastEntity('subscription_registration');
 
-        $this->assertEquals($order['bank'], "HDFC");
+        $this->assertEquals($order['bank'], 'HDFC');
 
-        $this->assertEquals($order['method'], "emandate");
+        $this->assertEquals($order['method'], 'emandate');
 
-        $this->assertEquals($bankAccount['ifsc_code'], "HDFC0001233");
+        $this->assertEquals($bankAccount['ifsc_code'], 'HDFC0001233');
 
-        $this->assertEquals($subr['method'], "emandate");
+        $this->assertEquals($subr['method'], 'emandate');
     }
 
     public function testCreateAuthLinkWithIncompleteBankData()
@@ -89,7 +91,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
 
-        $order = $this->fixtures->create("order");
+        $order = $this->fixtures->create('order');
 
         $invoiceAtrributes = [
             'entity_id'   => $subr->getId(),
@@ -97,18 +99,18 @@ class SubscriptionRegistrationTest extends TestCase
             'order_id'    => $order->getId()
         ];
 
-        $invoice = $this->fixtures->create("invoice", $invoiceAtrributes);
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
 
         $response = $this->startTest();
 
         $this->assertArrayHasKey(E::SUBSCRIPTION_REGISTRATION, $response);
 
-        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION]['method'], "emandate");
+        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION]['method'], 'emandate');
     }
 
     public function testFetchAuthLinksWithMandateAndBankAttributes()
     {
-        $bank = $this->fixtures->create("bank_account");
+        $bank = $this->fixtures->create('bank_account');
 
         $subrAttributes = [
             'method'      => 'emandate',
@@ -120,7 +122,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $orderAtributes = ['bank' => 'HDFC'];
 
-        $order = $this->fixtures->create("order", $orderAtributes);
+        $order = $this->fixtures->create('order', $orderAtributes);
 
         $invoiceAtrributes = [
             'entity_id'   => $subr->getId(),
@@ -128,7 +130,7 @@ class SubscriptionRegistrationTest extends TestCase
             'order_id'    => $order->getId()
         ];
 
-        $invoice = $this->fixtures->create("invoice", $invoiceAtrributes);
+        $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
 
         $response = $this->startTest();
 
@@ -136,11 +138,11 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->assertArrayHasKey(E::BANK_ACCOUNT, $response[E::SUBSCRIPTION_REGISTRATION]);
 
-        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION]['method'], "emandate");
+        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION]['method'], 'emandate');
 
-        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION][E::BANK_ACCOUNT]['bank_name'], "HDFC");
+        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION][E::BANK_ACCOUNT]['bank_name'], 'HDFC');
 
-        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION][E::BANK_ACCOUNT]['ifsc'], "RZPB0000000");
+        $this->assertEquals($response[E::SUBSCRIPTION_REGISTRATION][E::BANK_ACCOUNT]['ifsc'], 'RZPB0000000');
     }
 
     public function testCreateAuthLinkWithCardAndZeroAmount()
@@ -166,14 +168,14 @@ class SubscriptionRegistrationTest extends TestCase
 
     public function testDeleteTokenByMerchant()
     {
-        $this->fixtures->create('token',["id" => '10000000000000']);
+        $this->fixtures->create('token',['id' => '10000000000000']);
 
         $this->startTest();
     }
 
     public function testFetchDeletedTokenByMerchant()
     {
-        $this->fixtures->create('token',["id" => '10000000000000' ,'deleted_at' => '1000000000']);
+        $this->fixtures->create('token',['id' => '10000000000000' ,'deleted_at' => '1000000000']);
 
         $this->startTest();
 
@@ -187,7 +189,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $token = $this->getDbLastEntity("token");
+        $token = $this->getDbLastEntity('token');
 
         $chargeContent = ['amount' => 2000, 'receipt' => '1234', 'description' => 'abc'];
 
@@ -199,7 +201,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $payment = $this->getDbLastEntity("payment");
+        $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
 
@@ -214,7 +216,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $token = $this->getDbLastEntity("token");
+        $token = $this->getDbLastEntity('token');
 
         $chargeContent = ['amount' => 3000, 'receipt' => '1234', 'description' => 'abc'];
 
@@ -226,11 +228,83 @@ class SubscriptionRegistrationTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $payment = $this->getDbLastEntity("payment");
+        $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
 
         $this->assertEquals($payment->getAmount(), 3000);
+    }
+
+    public function testPayAuthLinkAndCopyNotes()
+    {
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        unset($payment['notes']);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity("payment");
+
+        $invoice = $this->getDbLastEntity("invoice");
+
+        $this->assertEquals($payment->getNotesJson(), $invoice->getNotesJson());
+    }
+
+    public function testPayAuthLink()
+    {
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $payment = $this->setupPaymentRequest();
+
+        unset($payment['notes']);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+
+        $token = $this->getDbLastEntity('token');
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals($subr->token->getPublicId(), $token->getPublicId());
+
+        $this->assertEquals($invoice->getNotesJson(), $subr->getNotesJson());
+    }
+
+    public function testFetchSingleToken()
+    {
+       $this->testPayAuthLink();
+
+        $this->ba->proxyAuth();
+
+        $token = $this->getDbLastEntity('token');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId(),
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('subscription_registration', $content);
+
+        $this->assertEquals($content['subscription_registration']['notes'], $invoice->getNotes()->toArray());
     }
 
     protected function setupPaymentRequest()
@@ -245,7 +319,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $order = $this->fixtures->create('order', ['amount' => $payment['amount']]);
 
-        $paymentRequest['order_id'] = $order->getPublicId();
+        $payment['order_id'] = $order->getPublicId();
 
         return $payment;
     }

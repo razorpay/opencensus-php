@@ -98,6 +98,8 @@ class BeamJob extends Job
                     'mail_info'     => $this->mailInfo
                 ]);
 
+            $this->notify();
+
             $this->delete();
         }
     }
