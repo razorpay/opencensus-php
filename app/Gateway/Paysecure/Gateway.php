@@ -128,7 +128,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         // Guid would be sent back only for the redirect flow and not for the iframe flow
-        if (isset($input['gateway'][Fields::ACCU_GUID]))
+        if (isset($input['gateway'][Fields::ACCU_GUID]) === true)
         {
             // Validates the request by checking hash
             $this->validateRequestId($gatewayPayment);

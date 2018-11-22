@@ -13,7 +13,7 @@ class Gateway extends Paysecure\Gateway
     {
         $request = $this->authorizeMock($input);
 
-        if ($request['method'] = 'direct')
+        if ($request['method'] === 'direct')
         {
             // For Iframe flow, we use post redirect instead of passing a view
             // thereby, treating it just like redirect flow for mocks
