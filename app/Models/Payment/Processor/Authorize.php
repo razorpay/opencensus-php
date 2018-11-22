@@ -377,7 +377,7 @@ trait Authorize
         ];
 
         // This is a hack to return direct method for IVR payments
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
 
