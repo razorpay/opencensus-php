@@ -136,7 +136,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACTION, $action);
     }
 
-    public function setAcsUrl($url)
+    public function setAcsUrl(string $url)
     {
         $this->setAttribute(self::ACS_URL, $url);
     }
