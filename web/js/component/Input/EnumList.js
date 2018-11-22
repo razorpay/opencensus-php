@@ -1,5 +1,6 @@
 import Button from 'component/Button';
 import { classList } from 'common/util';
+import debounce from 'rzp/utils/debounce';
 
 export default class EnumAdder extends React.PureComponent {
   state = {
@@ -7,9 +8,13 @@ export default class EnumAdder extends React.PureComponent {
   };
 
   addNewOption = e => {
-    const lastFocused = this.state.lastFocusedIndex;
+    const { lastFocusedIndex: lastFocused, options } = this.state;
 
-    const newOptions = this.state.options.concat();
+    if (!options[lastFocused]) {
+      return;
+    }
+
+    const newOptions = options.concat();
     newOptions.splice(lastFocused + 1, 0, '');
     this.setState({ options: newOptions, lastFocusedIndex: lastFocused + 1 });
   };
@@ -90,18 +95,18 @@ class EnumOption extends React.PureComponent {
     }
   }
 
+  updateOption = debounce(::this.props.updateOption, 50);
+
   handleChange = e => {
-    this.setState({ value: e.target.value, isChanged: true });
+    this.setState({ value: e.target.value });
+
+    setTimeout(() => {
+      this.updateOption(this.props.index, this.state.value);
+    });
   };
 
   render() {
-    const {
-      index,
-      addNewOption,
-      removeOption,
-      updateOption,
-      newOptionIndex,
-    } = this.props;
+    const { index, addNewOption, removeOption, newOptionIndex } = this.props;
 
     return (
       <div
@@ -125,15 +130,7 @@ class EnumOption extends React.PureComponent {
             this.props.updateLastFocused(this.props.index);
           }}
           onMouseEnter={this.focus}
-          onBlur={e => {
-            this.blur();
-            if (this.state.isChanged) {
-              updateOption(index, this.state.value);
-              this.setState({
-                isChanged: false,
-              });
-            }
-          }}
+          onBlur={this.blur}
           onMouseLeave={this.blur}
           autoFocus={newOptionIndex === index}
         />
