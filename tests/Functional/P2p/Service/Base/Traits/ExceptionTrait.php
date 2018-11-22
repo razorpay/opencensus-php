@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\Base;
+namespace RZP\Tests\P2p\Service\Base\Traits;
 
 use RZP\Exception;
 

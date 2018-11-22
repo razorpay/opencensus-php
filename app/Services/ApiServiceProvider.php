@@ -78,6 +78,7 @@ class ApiServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->registerTraceProcessors();
+        $this->registerGatewayProcessors();
 
         $this->app->singleton('mailgun', function($app)
         {
@@ -537,6 +538,13 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerGatewayProcessors()
+    {
+        $apiProcessor = new RZP\Trace\GatewayTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor, 'gateway');
     }
 
     protected function registerPincodeSearch()

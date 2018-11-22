@@ -754,7 +754,7 @@ class SettlementTest extends TestCase
         {
             $merchantId = $merchant->getId();
 
-            $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+            $balance = $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId]);
 
             $this->fixtures->create('terminal', ['merchant_id' => $merchantId]);
 
