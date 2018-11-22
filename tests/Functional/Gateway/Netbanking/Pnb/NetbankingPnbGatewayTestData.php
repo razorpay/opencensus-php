@@ -35,7 +35,7 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S',
+        'status'          => '0',
     ],
 
     'testAuthorizeFailed' => [
@@ -113,19 +113,19 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S'
+        'status'          => '0'
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
         'received'        => false,
         'bank'            => 'PUNB_R',
-        'status'          => 'F'
+        'status'          => '1000'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S'
+        'status'          => '0'
     ],
 
     'testRefundFailed' => [
