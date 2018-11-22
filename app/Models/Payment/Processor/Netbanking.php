@@ -342,6 +342,11 @@ class Netbanking
                 IFSC::CORP,
             ]
         ],
+        Gateway::NETBANKING_CANARA => [
+            'retail' => [
+                IFSC::CNRB,
+            ]
+        ],
         Gateway::NETBANKING_EQUITAS => [
             'retail' => [
                 IFSC::ESFB

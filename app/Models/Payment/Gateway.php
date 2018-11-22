@@ -557,6 +557,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_CANARA,
         ],
 
         //
