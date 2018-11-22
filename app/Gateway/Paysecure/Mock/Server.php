@@ -12,19 +12,6 @@ class Server extends Base\Mock\Server
 
     const TRAN_ID = '100000000000000000000000025236';
 
-    protected function runCommandRequest($command, $contentArray)
-    {
-        switch ($command)
-        {
-            case Paysecure\Constants::COMMAND_CHECKBIN2:
-                return $this->getCheckBin2Response($contentArray);
-            case Paysecure\Constants::COMMAND_INITIATE_2:
-                return $this->getInitiate2Response($contentArray);
-            case Paysecure\Constants::COMMAND_AUTHORIZE:
-                return $this->getAuthorizeResponse($contentArray);
-        }
-    }
-
     protected function getCheckbin2Response($data)
     {
         // todo: Use constants here
