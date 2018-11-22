@@ -2,16 +2,19 @@
 
 namespace RZP\Tests\Functional\Customer;
 
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 use Mockery;
 
 class CustomerTest extends TestCase
 {
+    use AttemptTrait;
     use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
+    use AttemptReconcileTrait;
 
     public function setUp()
     {
@@ -454,6 +457,21 @@ class CustomerTest extends TestCase
 
         $this->assertEquals($merchantFeeDebitTransaction->getAmount(), 600);
         $this->assertEquals($merchantFeeDebitTransaction->getBalance(), 400);
+
+        // Recon
+        $result = $this->initiateTransfer(Channel::YESBANK, 'refund');
+
+        $this->assertEquals(1, $result['yesbank']['success']);
+
+        $result = $this->reconcileEntitiesForChannel('yesbank');
+
+        $this->assertEquals(1, $result['total_count']);
+        $this->assertEquals('yesbank', $result['channel']);
+
+        $customerTransaction->reload();
+
+        // After recon we update the reconiledat value.
+        $this->assertNotNull($customerTransaction->getReconciledAt());
     }
 
     protected function mockRaven()

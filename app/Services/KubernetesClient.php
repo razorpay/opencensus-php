@@ -19,6 +19,7 @@ class KubernetesClient
     protected $imagePath;
     protected $namespace;
     protected $iamRole;
+    protected $nodeSelector;
     protected $mock;
     protected $gitCommitHash;
     protected $appMode;
@@ -46,6 +47,7 @@ class KubernetesClient
         $this->imagePath        = $this->config['image_path'];
         $this->namespace        = $this->config['namespace'];
         $this->iamRole          = $this->config['iam_role'];
+        $this->nodeSelector     = $this->config['node_selector'];
         $this->mock             = $this->config['mock'];
         $this->gitCommitHash    = $this->config['git_commit_hash'];
         $this->appMode          = $this->config['app_mode'];
@@ -227,7 +229,7 @@ class KubernetesClient
                         'restartPolicy' => 'Never',
                         'dnsPolicy' => 'Default',
                         'nodeSelector' => [
-                            'node-role.kubernetes.io/worker-generic' => ''
+                            $this->nodeSelector => ''
                         ],
                         'imagePullSecrets' => [
                             [

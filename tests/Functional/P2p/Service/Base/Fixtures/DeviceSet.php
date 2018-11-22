@@ -2,11 +2,10 @@
 
 namespace RZP\Tests\P2p\Service\Base\Fixtures;
 
-use Hulk\Constants\DbConnection;
-use Hulk\Models;
-use Hulk\Constants\Entity;
-use Hulk\Exception\RuntimeException;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models;
+use RZP\Models\P2p;
+use RZP\Constants\Entity;
+use RZP\Tests\P2p\Service\Base\Traits;
 
 /**
  * Device set stores a map of entity and it's id
@@ -18,16 +17,17 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
  *
  * @property Models\Merchant\Entity $merchant
  * @property Models\Customer\Entity $customer
- * @property Models\Device\Entity $device
- * @property Models\BankAccount\Entity $bank_account
- * @property Models\Vpa\Entity $vpa
+ * @property P2p\Device\Entity $device
+ * @property P2p\BankAccount\Entity $bank_account
+ * @property P2p\Vpa\Entity $vpa
  *
  * Class DeviceSet
  * @package Tests\Concerns
  */
 class DeviceSet
 {
-    use DbEntityFetchTrait;
+    use Traits\ExceptionTrait;
+    use Traits\DbEntityFetchTrait;
 
     /**
      * The set is a map of entity and id which we use to resolve.
@@ -51,27 +51,27 @@ class DeviceSet
         switch ($property)
         {
             case 'merchant':
-                $this->merchant = $this->getDbEntityById(Entity::MERCHANT, $this->set['merchant']);
+                $this->merchant = $this->getDbMerchantById($this->set['merchant']);
                 break;
 
             case 'customer':
-                $this->customer = $this->getDbEntityById(Entity::CUSTOMER, $this->set['customer']);
+                $this->customer = $this->getDbCustomerById($this->set['customer']);
                 break;
 
             case 'device':
-                $this->device = $this->getDbEntityById(Entity::DEVICE, $this->set['device']);
+                $this->device = $this->getDbDeviceById($this->set['device']);
                 break;
 
             case 'bank_account':
-                $this->bank_account = $this->getDbEntityById(Entity::BANK_ACCOUNT, $this->set['bank_account']);
+                $this->bank_account = $this->getDbBankAccountById($this->set['bank_account']);
                 break;
 
             case 'vpa':
-                $this->vpa = $this->getDbEntityById(Entity::VPA, $this->set['vpa']);
+                $this->vpa = $this->getDbVpaById($this->set['vpa']);
                 break;
 
             default:
-                throw new RuntimeException("Invalid property for device set, $property");
+                $this->throwTestingException('Invalid property for device set', [$property]);
         }
 
         return $this->$property;
@@ -102,7 +102,7 @@ class DeviceSet
                 break;
 
             default:
-                throw new RuntimeException("Invalid property for device set, $property");
+                $this->throwTestingException('Invalid property for device set', [$property]);
         }
     }
 }

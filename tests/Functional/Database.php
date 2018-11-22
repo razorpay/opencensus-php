@@ -144,6 +144,10 @@ class Database
 
         // Run Auth DB migrations from the oauth package
         \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
+
+        // Run P2P DB migrations from the P2p Service
+        Artisan::call('migrate', ['--database' => 'live', '--path' => 'database/migrations/p2p']);
+        Artisan::call('migrate', ['--database' => 'test', '--path' => 'database/migrations/p2p']);
     }
 
     protected function createDatabases()
@@ -241,7 +245,8 @@ class Database
         }
         else if ($driver === 'sqlite')
         {
-            $results = $this->db->select("SELECT GROUP_CONCAT(name, ';') as query FROM sqlite_master WHERE type='table';");
+            $results = $this->db->select(
+                "SELECT GROUP_CONCAT(name, ';') as query FROM sqlite_master WHERE type='table';");
         }
 
         $query = $results[0]->query;

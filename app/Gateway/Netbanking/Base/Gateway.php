@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;

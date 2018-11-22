@@ -377,7 +377,7 @@ trait Authorize
         ];
 
         // This is a hack to return direct method for IVR payments
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
 
@@ -3109,6 +3109,8 @@ trait Authorize
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
+        $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
     }
 
@@ -3189,6 +3191,32 @@ trait Authorize
         {
             (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
         }
+    }
+
+    protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() === null)
+        {
+            return;
+        }
+
+        if ($invoice->isTypeOfSubscriptionRegistration() == false)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $subscriptionRegistration->token()->associate($payment->getGlobalOrLocalTokenEntity());
+
+        $this->repo->saveOrFail($subscriptionRegistration);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

@@ -3,11 +3,12 @@
 namespace RZP\Tests\P2p\Service\Base;
 
 use JsonSchema;
+use RZP\Tests\P2p\Service\Base\Traits;
 use Illuminate\Foundation\Testing\TestResponse;
 
 class P2pHelper
 {
-    use ExceptionTrait;
+    use Traits\ExceptionTrait;
     /**
      * @var $fixtures Fixtures\Fixtures
      */

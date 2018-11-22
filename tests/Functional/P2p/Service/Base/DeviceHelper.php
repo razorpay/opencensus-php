@@ -16,7 +16,7 @@ class DeviceHelper extends P2pHelper
 
         $default = [
             'handle'        => 'razorsharp',
-            'identifier'    => Constants::RZP_LOCAL_CUSTOMER,
+            'identifier'    => Constants::RZP_LOCAL_CUSTOMER_1,
             'device'        => [
                 'ip'               => '179.0.0.1',
                 'os'               => 'android',

@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
@@ -131,7 +131,11 @@ class Base extends BaseProcessor
 
         $processor = $processor->setPayment($payment);
 
-        return $processor->processAuth($payment);
+        $data = $processor->processAuth($payment);
+
+        $this->reconcileEntity($payment);
+
+        return $data;
     }
 
     protected function processFailedPayment(Payment\Entity $payment, array $content)

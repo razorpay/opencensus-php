@@ -1,30 +1,24 @@
 {
     "definitions": {},
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "http://example.com/root.json",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/bank_account/bank/entity.json",
     "type": "object",
-    "required": [
-        "ifsc",
-        "name",
-        "upi_iin",
-        "upi_format",
-        "refreshed_at",
-        "spoc"
-    ],
+    "required": [],
     "properties": {
         "ifsc": {
             "$id": "#/properties/ifsc",
             "type": "string",
-            "pattern": "^[\\w]{13}$"
+            "maxLength": 11
         },
         "name": {
             "$id": "#/properties/name",
-            "type": "string"
+            "type": "string",
+            "maxLength": 100
         },
         "upi_iin": {
             "$id": "#/properties/upi_iin",
-            "type": "string",
-            "pattern": "^[\\d]{6}$"
+            "type": ["string", "null"],
+            "maxLength": 6
         },
         "upi_format": {
             "$id": "#/properties/upi_format",
@@ -33,18 +27,28 @@
                 "FORMAT1",
                 "FORMAT2",
                 "FORMAT3"
-            ]
+            ],
+            "maxLength": 50
+        },
+        "active": {
+            "$id": "#/properties/active",
+            "type": "boolean"
+        },
+        "spoc": {
+            "$id": "#/properties/spoc",
+            "type": "object"
         },
         "refreshed_at": {
             "$id": "#/properties/refreshed_at",
             "type": "integer"
         },
-        "spoc": {
-            "$id": "#/properties/spoc",
-            "type": [
-                "string",
-                "null"
-            ]
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer"
+        },
+        "updated_at": {
+            "$id": "#/properties/updated_at",
+            "type": "integer"
         }
     },
     "actions" : [
