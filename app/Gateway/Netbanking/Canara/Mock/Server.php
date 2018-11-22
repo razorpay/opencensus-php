@@ -102,8 +102,10 @@ class Server extends Base\Mock\Server
             ResponseFields::PUR_DATE                          => $input[RequestFields::PUR_DATE],
             ResponseFields::VER_BANK_REFERENCE_NUMBER         => $this->bank_ref_no,
             ResponseFields::VER_AMOUNT                        => $input[RequestFields::AMOUNT],              // have to verify
-            ResponseFields::RETURN_CODE                       => Constants::SUCCESS,
-            ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
+            ResponseFields::STATUS                            => [
+                                                                   ResponseFields::VERIFY_STATUS => Constants::SUCCESS_VERIFY_STATUS,
+                                                                   ResponseFields::RETURN_CODE => Constants::SUCCESS,
+                                                                 ]
          ];
 
         $this->content($data, Base\Action::VERIFY);
@@ -117,8 +119,19 @@ class Server extends Base\Mock\Server
 
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
 
+        $status = $data[ResponseFields::STATUS];
+
+        unset($data[ResponseFields::STATUS]);
+
         foreach ($data as $key => $value) {
             $xml->addChild($key,$data[$key]);
+        }
+
+        $statusTag = $xml->addChild(ResponseFields::STATUS);
+
+        foreach ($status as $key => $value)
+        {
+            $statusTag->addChild($key, $value);
         }
 
         $response = $xml->asXML();
