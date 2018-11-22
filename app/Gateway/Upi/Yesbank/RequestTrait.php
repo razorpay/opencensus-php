@@ -10,12 +10,7 @@ trait RequestTrait
 {
     protected function sendGatewayRequest($request)
     {
-        $username = $this->getGatewayUsername();
-        $password = $this->getGatewayPassword();
-
         $request['options'] = $this->getRequestOptions();
-
-        $request['options']['auth'] = [$username, $password];
 
         $request['headers'] = [
             'X-IBM-Client-Id'       => $this->getClientId(),
