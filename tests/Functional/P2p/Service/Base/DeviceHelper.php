@@ -8,28 +8,27 @@ class DeviceHelper extends P2pHelper
     {
         $this->validationJsonSchemaPath = 'device/start_verification';
 
-        $this->isCustomerInContext = false;
+        // This API work on public auth
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
 
         $request = $this->request('customers/verification/start');
 
-        $this->isCustomerInContext = true;
+        $this->resetContexts();
 
         $default = [
-            'handle'        => 'razorsharp',
-            'identifier'    => Constants::RZP_LOCAL_CUSTOMER_1,
-            'device'        => [
-                'ip'               => '179.0.0.1',
-                'os'               => 'android',
-                'os_version'       => '5.0.1',
-                'sim_id'           => '683729232343',
-                'uuid'             => '5637293534543',
-                'type'             => 'mobile',
-                'geo_code'         => '12.971599,77.594566',
-                'app_name'         => 'com.razorpay',
-                'cl'               => [
-                    'capability'       => '52000002000100040006',
-                    'challenge'        => 'AUnhIkGYnGBK=='
-                ]
+            'customer_id'      => $this->fixtures->customer->getPublicId(),
+            'ip'               => '179.0.0.1',
+            'os'               => 'android',
+            'os_version'       => '5.0.1',
+            'simid'           => '683729232343',
+            'uuid'             => '5637293534543',
+            'type'             => 'mobile',
+            'geocode'         => '12.971599,77.594566',
+            'app_name'         => 'com.razorpay',
+            'cl'               => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
             ]
         ];
 
@@ -42,11 +41,13 @@ class DeviceHelper extends P2pHelper
     {
         $this->validationJsonSchemaPath = 'device/verification_status';
 
-        $this->isCustomerInContext = false;
+        // This API work on public auth
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
 
         $request = $this->request('customers/verification/%s', [$token]);
 
-        $this->isCustomerInContext = true;
+        $this->resetContexts();
 
         return $this->get($request);
     }

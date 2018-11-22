@@ -39,7 +39,7 @@
         }
     },
     "actions" : [
-        "create",
+        "add",
         "validate",
         "fetchAll"
     ]

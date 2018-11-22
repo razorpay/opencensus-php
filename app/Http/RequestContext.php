@@ -369,9 +369,9 @@ final class RequestContext
         {
             $this->auth = Type::DEVICE_AUTH;
         }
-        else if ($this->setAdditionalVarsForP2pAuth() == true)
+        else if ($this->setAdditionalVarsForP2pDeviceAuth() == true)
         {
-            $this->auth = Type::PRIVATE_AUTH;
+            $this->auth = Type::DEVICE_AUTH;
         }
         else
         {
@@ -414,10 +414,11 @@ final class RequestContext
     protected function setAdditionalVarsForPublicAuth()
     {
         $isPublicRoute         = in_array($this->route, Route::$public, true);
+        $isP2pPublicRoute      = in_array($this->route, P2pRoute::$public, true);
         $isPublicCallbackRoute = in_array($this->route, Route::$publicCallback, true);
 
         // Route belongs neither to public or public callback group
-        if (($isPublicRoute === false) and ($isPublicCallbackRoute === false))
+        if (($isPublicRoute === false) and ($isP2pPublicRoute === false) and ($isPublicCallbackRoute === false))
         {
             return false;
         }
@@ -508,9 +509,9 @@ final class RequestContext
         return false;
     }
 
-    protected function setAdditionalVarsForP2pAuth()
+    protected function setAdditionalVarsForP2pDeviceAuth()
     {
-        if (in_array($this->route, P2pRoute::$p2p, true) === true)
+        if (in_array($this->route, P2pRoute::$device, true) === true)
         {
             return true;
         }

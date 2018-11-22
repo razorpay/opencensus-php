@@ -74,6 +74,12 @@ trait DbEntityFetchTrait
 
     /*************************************** VPA ***************************************/
 
+    public function getDbHandleById(string $id): P2p\Vpa\Handle\Entity
+    {
+        return $this->getEntityObjectForMode(Entity::P2P_HANDLE, $this->dbEntityFetchMode)
+                    ->findOrFailPublic($id);
+    }
+
     public function getDbLastVpa(): P2p\Vpa\Entity
     {
         return $this->getDbLastEntity(Entity::P2P_VPA, $this->dbEntityFetchMode);

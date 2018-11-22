@@ -9,10 +9,10 @@ class Processor extends Base\Processor
 {
     public function startVerification(array $input): array
     {
-        $this->initialize(Action::START_VERIFICATION, $input);
+        $this->initialize(Action::START_VERIFICATION, $input, true);
 
         return [
-            'handle'            => $input['handle'],
+            'handle'            => $this->context()->handleId(),
             'token'             => str_random(10),
             'action'            => 'verify',
             'method'            => 'sms',

@@ -9,7 +9,7 @@ class Action extends Base\Action
 {
     const FETCH_HANDLES        = 'fetchHandles';
 
-    const CREATE               = 'create';
+    const ADD                  = 'add';
 
     const FETCH_ALL            = 'fetchAll';
 

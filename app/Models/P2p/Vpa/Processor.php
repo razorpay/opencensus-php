@@ -14,9 +14,9 @@ class Processor extends Base\Processor
         return [];
     }
 
-    public function create(array $input): array
+    public function add(array $input): array
     {
-        $this->initialize(Action::CREATE, $input);
+        $this->initialize(Action::ADD, $input);
 
         return [
             'id'              => 'vpa_AagzIzN8Hgp3wU',
