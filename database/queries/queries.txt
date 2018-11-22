@@ -4409,3 +4409,9 @@ ALTER TABLE balance
     ADD COLUMN name VARCHAR(255) DEFAULT NULL AFTER currency,
     ADD INDEX `balance_merchant_id_index` (`merchant_id`),
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE subscription_registrations
+    ADD COLUMN notes TEXT AFTER expire_at,
+    ADD COLUMN token_id CHAR(14) AFTER customer_id,
+    ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
+
