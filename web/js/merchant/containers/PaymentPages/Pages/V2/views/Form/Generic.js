@@ -177,6 +177,10 @@ export class GenericCreator extends React.PureComponent {
                 return;
               }
 
+              if (!isNaN(val)) {
+                return 'Label must have atleast 1 character';
+              }
+
               const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);
 
               if (
