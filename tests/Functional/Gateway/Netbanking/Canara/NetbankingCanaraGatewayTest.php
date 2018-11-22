@@ -150,8 +150,8 @@ class NetbankingCanaraGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content[Canara\ResponseFields::RETURN_CODE]   = Canara\Constants::SAMPLE_FAILURE_CODE;
-                $content[Canara\ResponseFields::VERIFY_STATUS] = Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS;
+                $content[Canara\ResponseFields::STATUS][Canara\ResponseFields::RETURN_CODE]   = Canara\Constants::SAMPLE_FAILURE_CODE;
+                $content[Canara\ResponseFields::STATUS][Canara\ResponseFields::VERIFY_STATUS] = Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS;
             }
         });
     }
