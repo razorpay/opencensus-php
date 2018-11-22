@@ -659,7 +659,7 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Balance\Entity', self::ID, 'id');
+            'RZP\Models\Merchant\Balance\Entity', self::MERCHANT_ID, 'id');
     }
 
     public function bankAccount()

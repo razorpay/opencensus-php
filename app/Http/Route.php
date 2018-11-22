@@ -922,6 +922,8 @@ final class Route
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
 
+        'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
+
         // subscription registration
         'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
         'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],

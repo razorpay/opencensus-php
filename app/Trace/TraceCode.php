@@ -406,6 +406,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_RECON_ROW                      = 'EMANDATE_DEBIT_RECON_ROW';
     const EMANDATE_DEBIT_RESPONSE                       = 'EMANDATE_DEBIT_RESPONSE';
     const EMANDATE_FUNCTION_NOT_IMPLEMENTED             = 'EMANDATE_FUNCTION_NOT_IMPLEMENTED';
+    const EMANDATE_RECON_ROW_FAILED                     = 'EMANDATE_RECON_ROW_FAILED';
 
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
@@ -1074,6 +1075,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR       = 'GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR';
     const GATEWAY_DOWNTIME_STATUSCAKE_CREATE            = 'GATEWAY_DOWNTIME_STATUSCAKE_CREATE';
     const GATEWAY_DOWNTIME_STATUSCAKE_EDIT              = 'GATEWAY_DOWNTIME_STATUSCAKE_EDIT';
+    const NETBANKING_URL_CACHE_MISS                     = 'NETBANKING_URL_CACHE_MISS';
+    const STATUSCAKE_RETURNED_FAILURE                   = 'STATUSCAKE_RETURNED_FAILURE';
+    const STATUSCAKE_CONNECTION_FAILED                  = 'STATUSCAKE_CONNECTION_FAILED';
+    const STATUSCAKE_CRON_FAILED                        = 'STATUSCAKE_CRON_FAILED';
 
 // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST                = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
@@ -1526,6 +1531,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
 
         self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
+
+        self::EMANDATE_RECON_ROW_FAILED                 => 'E-mandate reconciliation failed for a row'
     ];
 
     /**

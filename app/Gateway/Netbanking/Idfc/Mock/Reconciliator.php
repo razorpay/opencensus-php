@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Reconciliator\NetbankingIdfc\Headers;
+use RZP\Reconciliator\NetbankingIdfc\Constants;
 
 class Reconciliator extends Base\RefundFile
 {
@@ -65,34 +65,21 @@ class Reconciliator extends Base\RefundFile
 
     public function getReconciliationData($input)
     {
-        $data[] = Headers::COLUMN_HEADERS;
+        $data[] = Constants::COLUMN_HEADERS;
 
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment'][Payment\Entity::CREATED_AT],
                 Timezone::IST)
-                ->format('Y-m-d H:i:s');
+                ->format('d-M-Y H:i:s');
 
             $data[] = [
-                Headers::TXN_INITIATE_DATE_TIME   => $date,
-                Headers::RIB_TXN_ID               => $row['gateway']['bank_payment_id'],
-                Headers::MERCHANT_ID              => '10000000000000',
-                Headers::MERCHANT_NAME            => 'RZP',
-                Headers::CUST_ACC_NO              => '1234567890',
-                Headers::ECOMM_ACC_NO             => '0987654321',
-                Headers::TXN_AMT                  => $this->getFormattedAmount($row['payment']['amount']),
-                Headers::SERVICE_CHARGE           => '0.0',
-                Headers::SERVICE_TAX              => '0.0',
-                Headers::COMMISSION               => '0.0',
-                Headers::PAYMENT_TYPE             => 'E-commerce',
-                Headers::TXN_COMPLETION_DATE_TIME => $date,
-                Headers::RIB_TXN_STATUS           => 'Main Fund Transfer Successiated',
-                Headers::BANK_REFERENCE_NUMBER    => mt_rand(11111, 99999),
-                Headers::AGGREGATOR_REF_NO        => $row['payment']['id'],
-                Headers::PAYMENT_STATUS           => 'SUCCESS',
-                Headers::ERROR_CODE               => '',
-                Headers::ERROR_MSG                => '',
+                Constants::RZP_PAYMENT_ID         => $row['payment']['id'],
+                Constants::BANK_REFERENCE_NO      => $row['gateway']['bank_payment_id'] ?? '99999',
+                Constants::TRANSACTION_AMOUNT     => $this->getFormattedAmount($row['payment']['amount']),
+                Constants::STATUS                 => 'SUCCESS',
+                Constants::TRANSACTION_DATE       => $date
             ];
         }
 

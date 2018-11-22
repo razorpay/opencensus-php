@@ -593,12 +593,14 @@ class Reporting implements ExternalService
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
         $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
         $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
+        $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
             $hasMarketplaceTag,
             $hasMarketplaceOrOpenwalletTag,
-            $hasChargeAtWillTag)
+            $hasChargeAtWillTag,
+            $hasSubscriptionsTag)
         {
             switch ($value['type'])
             {
@@ -617,6 +619,9 @@ class Reporting implements ExternalService
                 // Show token report to folks with charge_at_will feature only
                 case Table::TOKEN:
                     return $hasChargeAtWillTag;
+
+                case Table::SUBSCRIPTION:
+                    return $hasSubscriptionsTag;
 
                 default:
                     return true;

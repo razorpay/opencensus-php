@@ -1,0 +1,88 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "cl"
+    ],
+    "properties": {
+        "cl": {
+            "type": "object",
+            "required": [
+                "registration_format",
+                "mobileNumber",
+                "appId",
+                "deviceId",
+                "note",
+                "txnId",
+                "CredAllowed"
+            ],
+            "properties": {
+                "registration_format": {
+                    "type": "string",
+                    "enum": [
+                        "FORMAT1",
+                        "FORMAT2",
+                        "FORMAT3"
+                    ],
+                    "default": null,
+                    "pattern": "^(.*)$"
+                },
+                "mobileNumber": {
+                    "type": "string",
+                    "pattern": "^\\+91(\\d*){10}$"
+                },
+                "appId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "deviceId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "note": {
+                    "type": "string",
+                    "enum": [
+                        "Set UPI Pin"
+                    ],
+                    "pattern": "^(.*)$"
+                },
+                "txnId": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "CredAllowed": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "subtype",
+                            "dLength",
+                            "dFormat"
+                        ],
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "subtype": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            },
+                            "dLength": {
+                                "type": "integer"
+                            },
+                            "dFormat": {
+                                "type": "string",
+                                "pattern": "^(.*)$"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
