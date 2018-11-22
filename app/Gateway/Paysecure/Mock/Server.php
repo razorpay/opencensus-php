@@ -118,14 +118,14 @@ class Server extends Base\Mock\Server
                 Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
             ];
 
+            $this->content($content, 'auth_response');
+
             $dataToHash = [
                 self::TRAN_ID,
                 $input[Paysecure\Fields::ACCU_GUID],
                 $input[Paysecure\Fields::SESSION],
                 $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
             ];
-
-            $this->content($dataToHash, 'auth_response');
 
             $hash = $this->generateHashOfData($dataToHash);
 

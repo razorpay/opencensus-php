@@ -65,7 +65,7 @@ class ErrorCodes
         // Callback error codes
         self::ACCU200 => 'User pressed cancel button',
         self::ACCU400 => 'User was inactive',
-        self::ACCU600 => 'Invalida data posted to Paysecure',
+        self::ACCU600 => 'Invalid data posted to Paysecure',
         self::ACCU700 => 'Card issuer error',
         self::ACCU800 => 'General error',
         self::ACCU999 => 'Modal popup was opened successfully',
