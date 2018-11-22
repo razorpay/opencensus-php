@@ -85,7 +85,7 @@
     },
     "actions": [
         "fetchHandles",
-        "create",
+        "add",
         "fetchAll",
         "fetch",
         "assignBankAccount",

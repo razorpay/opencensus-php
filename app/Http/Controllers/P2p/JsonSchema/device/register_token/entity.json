@@ -45,7 +45,7 @@
         }
     },
     "actions" : [
-        "create",
+        "add",
         "verify"
     ]
 }

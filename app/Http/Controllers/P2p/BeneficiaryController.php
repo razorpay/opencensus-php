@@ -13,7 +13,7 @@ class BeneficiaryController extends Controller
     {
         $input = $this->request()->all();
 
-        $response = $this->service->create($input);
+        $response = $this->service->add($input);
 
         return $this->response($response);
     }
