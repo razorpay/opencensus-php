@@ -71,6 +71,7 @@ const textarea = {
 
 const dropdown = {
   label: 'Dropdown',
+  icon: 'arrow-down i-fix-arrow-down',
   schema: {
     type: 'string',
     enum: [],

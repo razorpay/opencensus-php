@@ -1,4 +1,6 @@
 import { Label, Error, inputClass } from './index';
+import { classList } from 'common/util';
+import { findDOMNode } from 'react-dom';
 
 /*
 * Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
@@ -21,7 +23,24 @@ function setNativeValue(element, value) {
   }
 }
 
-export default class extends React.Component {
+/*
+ * Returns object or value inside that object at a given level
+ * */
+export function getValueOfKeyAtLevel(key, optionObj, indicesString) {
+  return (function getVal(optionObj, indices) {
+    if (indices.length === 0) {
+      return key ? optionObj[key] : optionObj;
+    }
+
+    // For last index, options shouldn't exist
+    return getVal(
+      optionObj[indices[0]].options || optionObj[indices[0]],
+      indices.splice(1)
+    );
+  })(optionObj, indicesString.split(''));
+}
+
+export default class PowerDropdown extends React.Component {
   className = 'Input--PowerDropdown';
 
   constructor(props) {
@@ -45,7 +64,7 @@ export default class extends React.Component {
 
     this.state = {
       mature: this.props.mature,
-      selectedOptionIndex: defaultIndex > 0 ? defaultIndex : 0,
+      selectedOptionIndexTree: String(defaultIndex) || '0',
     };
   }
 
@@ -62,22 +81,25 @@ export default class extends React.Component {
     const { options, onChange } = this.props;
 
     if (dataSet && dataSet.optionIndex !== void 0) {
-      const selectedOptionIndex =
-        dataSet.optionIndex < options.length ? dataSet.optionIndex : 0; // Safe check
+      const selectedOptionIndexTree = dataSet.optionIndex;
 
-      const selectedValue =
-        typeof options[0] === 'object'
-          ? options[selectedOptionIndex].value
-          : options[selectedOptionIndex];
+      const indexTree = String(selectedOptionIndexTree).split('');
 
-      this.setState({ selectedOptionIndex: selectedOptionIndex });
+      // Assuming all options are of same type, so checking 0th index
+      const selectedValue = getValueOfKeyAtLevel(
+        undefined,
+        this.props.options,
+        selectedOptionIndexTree
+      );
+
+      this.setState({ selectedOptionIndexTree });
 
       const mainFormElement = document.getElementsByName(this.props.name)[0];
-      setNativeValue(mainFormElement, selectedValue);
+      setNativeValue(mainFormElement, selectedOptionIndexTree);
       mainFormElement.dispatchEvent(new Event('change', { bubbles: true }));
 
       onChange &&
-        onChange({ index: selectedOptionIndex, value: selectedValue });
+        onChange({ index: selectedOptionIndexTree, value: selectedValue });
 
       this.toggleExpansion();
     }
@@ -99,12 +121,14 @@ export default class extends React.Component {
       customSelectedOptionComponent: SelectedComponent,
     } = this.props;
 
-    const { selectedOptionIndex, isDropdownExpanded } = this.state;
+    const { selectedOptionIndexTree, isDropdownExpanded } = this.state;
 
-    const selectedOptionLabel =
-      typeof options[0] === 'object'
-        ? options[selectedOptionIndex].label
-        : options[selectedOptionIndex];
+    // Assuming all options are of same type, so checking just 0th index
+    const selectedOptionLabel = getValueOfKeyAtLevel(
+      typeof options[0] === 'object' ? 'label' : undefined,
+      options,
+      selectedOptionIndexTree
+    );
 
     return (
       <div class={inputClass(this)}>
@@ -132,7 +156,13 @@ export default class extends React.Component {
               />
               {SelectedComponent && (
                 <div class="Input-el Input-el--customSelection">
-                  <SelectedComponent option={options[selectedOptionIndex]} />
+                  <SelectedComponent
+                    option={getValueOfKeyAtLevel(
+                      undefined,
+                      options,
+                      selectedOptionIndexTree
+                    )}
+                  />
                 </div>
               )}
             </div>
@@ -140,9 +170,11 @@ export default class extends React.Component {
             {isDropdownExpanded && (
               <DropDownList
                 options={this.props.options}
+                selectedOptionIndexTree={selectedOptionIndexTree}
                 onSelection={this.onSelection}
                 OptionComponent={OptionComponent}
                 toggleExpansion={this.toggleExpansion}
+                level={0}
               />
             )}
           </div>
@@ -171,7 +203,7 @@ class DropDownList extends React.PureComponent {
   }
 
   handleDocumentClick(e) {
-    if (this.dropdownlist.contains(e.target)) {
+    if (findDOMNode(this.dropdownlist).contains(e.target)) {
       e.stopPropagation();
       return;
     }
@@ -183,7 +215,14 @@ class DropDownList extends React.PureComponent {
   handleDocumentClick = ::this.handleDocumentClick;
 
   render() {
-    const { options, onSelection, OptionComponent } = this.props;
+    const {
+      options,
+      onSelection,
+      toggleExpansion,
+      OptionComponent,
+      selectedOptionIndexTree,
+      level,
+    } = this.props;
 
     return (
       <div
@@ -202,17 +241,40 @@ class DropDownList extends React.PureComponent {
             displayLabel = o;
           }
 
+          const hasSubOptions = !!o.options;
+
           return (
             <div
-              class="Input-list-item"
+              class={classList(
+                'Input-list-item',
+                selectedOptionIndexTree[level] == i && 'selected'
+              )}
               key={i}
-              onClick={onSelection}
-              data-option-index={i}
+              onClick={hasSubOptions ? this.ignoreClick : onSelection}
+              data-option-index={level == 0 ? i : level + '' + i}
             >
               {OptionComponent ? (
-                <OptionComponent key={i} option={o} />
+                <React.Fragment key={i}>
+                  <OptionComponent option={o} />
+                  {!!o.options && <i class="i i-chevron-right" />}
+                </React.Fragment>
               ) : (
-                <React.Fragment key={i}>{displayLabel}</React.Fragment>
+                <React.Fragment key={i}>
+                  <span class="display-label">{displayLabel}</span>
+                  {hasSubOptions && <i class="i i-chevron-right" />}
+                </React.Fragment>
+              )}
+              {hasSubOptions && (
+                <DropDownList
+                  options={o.options}
+                  selectedOptionIndexTree={selectedOptionIndexTree
+                    .split('')
+                    .splice(1)}
+                  onSelection={onSelection}
+                  OptionComponent={OptionComponent}
+                  toggleExpansion={toggleExpansion}
+                  level={Number(level) + 1}
+                />
               )}
             </div>
           );

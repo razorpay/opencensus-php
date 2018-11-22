@@ -9,9 +9,10 @@ import fUnits from './field-units';
 *
 * */
 
-export const TYPES_not_now = [
+export const FIELD_TYPES = [
   {
     label: 'Text',
+    icon: 'sort i-fix-sort',
     options: [
       fUnits.str,
       fUnits.number,
@@ -24,26 +25,40 @@ export const TYPES_not_now = [
   fUnits.dropdown,
 ];
 
-export const FIELD_TYPES = [
-  fUnits.str,
-  fUnits.number,
-  fUnits.email,
-  fUnits.phone,
-  fUnits.url,
-  fUnits.textarea,
-];
+export function flattenFIELD_TYPES() {
+  const flatten = [];
 
-// TODO: Check with Pronav/Amit regarding what if keys are added/deleted in future. In this case, score based matching could be better.
+  for (let i = 0; i < FIELD_TYPES.length; i++) {
+    const FIELD = FIELD_TYPES[i];
+    if (FIELD.options) {
+      for (let j = 0; j < FIELD.options.length; j++) {
+        const SUB_FIELD = FIELD.options[j];
+        SUB_FIELD.index = String(i) + 1 + String(j); // "01" will become "11" because first option is '--Select--'
+        flatten.push(SUB_FIELD);
+      }
+    } else {
+      FIELD.index = String(i);
+      flatten.push(FIELD);
+    }
+  }
+
+  return flatten;
+}
+
+// TODO: To add support to return indicies tree
+// Note: If schema for a given field is changed, then this fn. will break.
 export function mapFieldToIndex(field) {
   let selectedIndexInOptions = null;
 
   // Removing the fixed schema fields
   const { title, name, required, description, ...schemaFields } = field;
 
-  for (let i = 0; i < FIELD_TYPES.length; i++) {
-    const FIELD_TYPES_keys = Object.keys(FIELD_TYPES[i].schema);
-    const FIELD_TYPES_opts_keys = FIELD_TYPES[i].schema.options
-      ? Object.keys(FIELD_TYPES[i].schema.options)
+  const fieldTypes = flattenFIELD_TYPES();
+
+  for (let i = 0; i < fieldTypes.length; i++) {
+    const FIELD_TYPES_keys = Object.keys(fieldTypes[i].schema);
+    const FIELD_TYPES_opts_keys = fieldTypes[i].schema.options
+      ? Object.keys(fieldTypes[i].schema.options)
       : {};
 
     const field_keys = Object.keys(schemaFields);
@@ -70,7 +85,7 @@ export function mapFieldToIndex(field) {
       }
     }
 
-    selectedIndexInOptions = i;
+    selectedIndexInOptions = fieldTypes.index;
     break;
   }
 
@@ -81,10 +96,33 @@ export function mapFieldToIndex(field) {
   return selectedIndexInOptions;
 }
 
+export function getFieldFromIndices(indicesString) {
+  let FIELD;
+  const indicesTree = String(indicesString).split('');
+
+  if (indicesTree.length === 1) {
+    FIELD = FIELD_TYPES[indicesTree[0]];
+  } else {
+    const sub_options = FIELD_TYPES[indicesTree[0]].options;
+    if (!sub_options) {
+      return false;
+    }
+    FIELD = sub_options[indicesTree[1]];
+  }
+
+  return FIELD && FIELD.schema;
+}
+
 export function constructFieldSchema(fieldData) {
   const { title, required, description, field_type } = fieldData;
 
-  if (!title || !FIELD_TYPES[field_type]) {
+  if (isNaN(field_type) || field_type < 0) {
+    return false;
+  }
+
+  const SCHEMA = getFieldFromIndices(String(field_type));
+
+  if (!title || !SCHEMA) {
     return false;
   }
 
@@ -97,7 +135,7 @@ export function constructFieldSchema(fieldData) {
     title,
     required: typeof required !== 'undefined' ? required : undefined,
     description: typeof description !== 'undefined' ? description : undefined,
-    ...FIELD_TYPES[field_type].schema,
+    ...SCHEMA,
   };
 }
 
