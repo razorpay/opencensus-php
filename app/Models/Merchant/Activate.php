@@ -299,9 +299,6 @@ class Activate extends Base\Core
     }
 
     /**
-     * Email pricing details related changes can be found in commit 5398ebd363eab1a01941b6866958683ff8ed08eb
-     * removing pricing details because of https://razorpay.slack.com/archives/C15277TQB/p1542868385258700
-     *
      * Sends activation email to the merchant, cc's notifications
      * Includes pricing details in the email (properly formatted)
      *
