@@ -208,6 +208,7 @@ class Validator extends Base\Validator
      */
     protected function validateOrderAmount(int $paymentAmount)
     {
+        /** @var Entity $order */
         $order = $this->entity;
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
@@ -229,8 +230,32 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if (($partialPaymentAllowed === true) and
-            ($paymentAmount > $orderAmountDue) and
+        if ($partialPaymentAllowed === true)
+        {
+            $this->validatePartialPaymentOrderAmount($paymentAmount);
+        }
+
+    }
+
+    protected function validatePartialPaymentOrderAmount(int $paymentAmount)
+    {
+        /** @var Entity $order */
+        $order = $this->entity;
+
+        $orderAmountDue  = $order->getAmountDue();
+        $orderAmountPaid = $order->getAmountPaid();
+
+        $orderFirstPaymentMinAmount = $order->getFirstPaymentMinAmount();
+
+        if (($orderAmountPaid === 0) and
+            ($paymentAmount < $orderFirstPaymentMinAmount))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
+                Entity::AMOUNT);
+        }
+
+        if (($paymentAmount > $orderAmountDue) and
             ($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
         {
             throw new Exception\BadRequestException(
