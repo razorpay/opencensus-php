@@ -41,6 +41,7 @@ const gatewayMapping = {
   netbanking_kotak: 'Netbanking KOTAK',
   netbanking_axis: 'Netbanking AXIS',
   netbanking_airtel: 'Netbanking AIRTEL',
+  netbanking_equitas: 'Netbanking Equitas',
   netbanking_icici: 'Netbanking ICICI',
   netbanking_federal: 'Netbanking Federal',
   netbanking_indusind: 'Netbanking Indusind',
