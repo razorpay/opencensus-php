@@ -1180,15 +1180,16 @@ class Terminal extends Base
     public function createSharedNetbankingCanaraTerminal(array $attributes = [])
     {
         $attributes = [
-            'merchant_id'               => '10000000000000',
+            'id'                        => Shared::NETBANKING_CANARA_TERMINAL,
             'card'                      => 0,
             'netbanking'                => 1,
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_canara',
             'gateway_merchant_id'       => 'abcd',
             'gateway_secure_secret'     => 'secure_secret'
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingCorporationTerminal(array $attributes = [])
