@@ -8,6 +8,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -54,6 +55,8 @@ class Entity extends Base\PublicEntity
 
     // Used for creating shared virtual account
     const SHARED_ID            = 'ShrdVirtualAcc';
+
+    const BALANCE_ID           = 'balance_id';
 
     protected $fillable = [
         self::NAME,
@@ -138,6 +141,11 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
+    }
+
+    public function balance()
+    {
+        return $this->belongsTo(Balance\Entity::class);
     }
 
     // ----------------------- Modifiers ---------------------------------------

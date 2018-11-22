@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\VirtualAccount\Entity as VirtualAccount;
-use RZP\Models\VirtualAccount\Status;
 use RZP\Constants\Table;
+use RZP\Models\VirtualAccount\Status;
+use RZP\Models\VirtualAccount\Entity as VirtualAccount;
 
 class CreateVirtualAccountsTable extends Migration
 {
@@ -73,6 +73,10 @@ class CreateVirtualAccountsTable extends Migration
 
             $table->string(VirtualAccount::MERCHANT_ID, VirtualAccount::ID_LENGTH);
 
+            // Todo: Remove null-able after code deploy and backfilling
+            $table->string(VirtualAccount::BALANCE_ID, VirtualAccount::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(VirtualAccount::CREATED_AT);
             $table->integer(VirtualAccount::UPDATED_AT);
 
@@ -104,6 +108,7 @@ class CreateVirtualAccountsTable extends Migration
             $table->index(VirtualAccount::DELETED_AT);
             $table->index([VirtualAccount::ENTITY_ID, VirtualAccount::ENTITY_TYPE]);
             $table->index([VirtualAccount::MERCHANT_ID, VirtualAccount::CREATED_AT]);
+            $table->unique(VirtualAccount::BALANCE_ID);
         });
     }
 

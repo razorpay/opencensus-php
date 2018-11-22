@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Balance;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -29,7 +30,8 @@ class Core extends Base\Core
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
-        Order $order = null): Entity
+        Order $order = null,
+        Balance\Entity $balance = null): Entity
     {
         //
         // VA creation is a bit broken at the moment. Creation requires multiple entities (VA+receivers)
@@ -93,15 +95,20 @@ class Core extends Base\Core
         Entity $virtualAccount,
         array $input,
         Customer\Entity $customer = null,
-        Order $order = null): Entity
+        Order $order = null,
+        Balance\Entity $balance = null): Entity
     {
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
+        $virtualAccount = $this->repo->transaction(function() use (
+            $virtualAccount, $input, $customer, $order, $balance)
         {
             $virtualAccount->build($input);
 
             $virtualAccount->customer()->associate($customer);
 
             $virtualAccount->entity()->associate($order);
+
+            $balance = $balance ?: $virtualAccount->merchant->balance;
+            $virtualAccount->balance()->associate($balance);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 

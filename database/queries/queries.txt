@@ -4448,3 +4448,7 @@ UPDATE migrations
 
 ALTER TABLE beneficiaries
 	RENAME TO contacts;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN balance_id VARCHAR(14) DEFAULT NULL,
+    ADD UNIQUE INDEX virtual_accounts_balance_id_unique (balance_id);
