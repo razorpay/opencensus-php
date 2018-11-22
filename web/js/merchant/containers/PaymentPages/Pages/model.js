@@ -31,6 +31,9 @@ export function createPaymentPage(data) {
     url: 'payment_links',
     method: 'post',
     data: reqPayload,
+    headers: {
+      'content-Type': 'application/json',
+    },
   });
 }
 

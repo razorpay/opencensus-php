@@ -17,6 +17,9 @@ const number = {
   schema: {
     type: 'number',
     pattern: 'number',
+    options: {
+      keydown_restrictive: true,
+    },
   },
 };
 
@@ -26,9 +29,6 @@ const email = {
   schema: {
     type: 'string',
     pattern: 'email',
-    options: {
-      keydown_restrictive: false,
-    },
   },
 };
 
@@ -40,10 +40,11 @@ const phone = {
     pattern: 'phone',
     minLength: '8',
     options: {
-      keydown_restrictive: false,
+      /*
       icon: {
-        before: 'i-phone',
+        before: 'i-phone', // TODO: Supporting it?
       },
+*/
     },
   },
 };
@@ -54,9 +55,6 @@ const url = {
   schema: {
     type: 'string',
     pattern: 'url',
-    options: {
-      keydown_restrictive: false,
-    },
   },
 };
 
@@ -73,11 +71,12 @@ const textarea = {
 
 const dropdown = {
   label: 'Dropdown',
+  icon: 'arrow-down i-fix-arrow-down',
   schema: {
     type: 'string',
     enum: [],
     options: {
-      cmp: 'select', // Default field for type:enum is Select
+      cmp: 'select', // Default field for having key:enum is Select
       enum_labels: [],
     },
   },

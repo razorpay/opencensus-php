@@ -232,12 +232,14 @@ export class AmountCreator extends React.PureComponent {
           />
         </div>
         <footer>
-          <button type="button" class="btn-link" onClick={onClose}>
-            Cancel
-          </button>
-          <Button.Primary type="submit" disabled={disableSubmit}>
-            Add
-          </Button.Primary>
+          <div class="group-right">
+            <button type="button" class="btn-link" onClick={onClose}>
+              Cancel
+            </button>
+            <Button.Primary type="submit" disabled={disableSubmit}>
+              Add
+            </Button.Primary>
+          </div>
         </footer>
       </Form>
     );

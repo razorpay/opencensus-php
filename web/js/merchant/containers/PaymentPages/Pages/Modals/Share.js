@@ -30,6 +30,7 @@ export default ({
   title,
   description,
   AddonAction,
+  closeModal,
   ...props
 }) => {
   function onSubmit(formData) {
@@ -266,6 +267,7 @@ export default ({
                 class="Button Button--primary"
                 to="/paymentpages"
                 style={{ marginTop: 20, width: '100%', textAlign: 'center' }}
+                onClick={closeModal}
               >
                 Back to Dashboard
               </Link>
