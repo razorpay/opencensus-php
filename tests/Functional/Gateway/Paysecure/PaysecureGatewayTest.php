@@ -32,34 +32,7 @@ class PaysecureGatewayTest extends TestCase
     {
         $authResponse = $this->doAuthPayment($this->payment);
 
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertArraySelectiveEquals(
-            [
-                'id'      => substr($authResponse['razorpay_payment_id'], 4),
-                'status'  => 'authorized',
-                'amount'  => 50000,
-                'method'  => 'card',
-                'gateway' => $this->gateway
-            ],
-            $payment
-        );
-
-        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
-
-        $this->assertArraySelectiveEquals(
-            [
-                'payment_id'             => $payment['id'],
-                'received'               => true,
-                'status'                 => 'success',
-                'gateway_transaction_id' => '100000000000000000000000025236',
-                'error_code'             => '00',
-                'error_message'          => '',
-                'flow'                   => 'redirect',
-                'apprcode'               => '183217',
-            ],
-            $gatewayPayment
-        );
+        $this->assertSuccess($authResponse, 'redirect');
     }
 
     /**
@@ -148,6 +121,10 @@ class PaysecureGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function (&$content, $action = null)
             {
+                if ($action === 'checkbin2')
+                {
+                    $content['implements_redirect'] = 'FALSE';
+                }
                 if ($action === 'initiate')
                 {
                     $content['status']                = 'failure';
@@ -183,8 +160,51 @@ class PaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaPinPad()
     {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'checkbin2')
+                {
+                    $content['implements_redirect'] = 'FALSE';
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
-        sd($authResponse);
+
+        $this->assertSuccess($authResponse, 'iframe');
+    }
+
+    protected function assertSuccess($authResponse, $flow)
+    {
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'id'      => substr($authResponse['razorpay_payment_id'], 4),
+                'status'  => 'authorized',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->gateway
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id'             => $payment['id'],
+                'received'               => true,
+                'status'                 => 'success',
+                'gateway_transaction_id' => '100000000000000000000000025236',
+                'error_code'             => '00',
+                'error_message'          => '',
+                'flow'                   => $flow,
+                'apprcode'               => '183217',
+            ],
+            $gatewayPayment
+        );
     }
 
     protected function getDefaultPaymentArray()

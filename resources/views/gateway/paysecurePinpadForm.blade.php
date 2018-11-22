@@ -8,25 +8,30 @@
 <script language="javascript" src="{{$data['merchantJsScript']}}" type="text/javascript">
 </script>
 <script language="javascript" type="text/javascript"> //reads the response back from PaySecure
-    function accu_FunctionResponse(strResponse){
-        // alert("this is the response that was received " + strResponse);
-        if (strResponse != 'ACCU999' && strResponse != "")
-        {
+    function accu_FunctionResponse(strResponse) {
+        // We receive only the response code in this case, which gets forwarded to the callback URL in the input
+        // If the response code is ACCU999, it simply means that the PINPad lock was opened by the user, hence we
+        // can ignore that trigger.
+        if (strResponse != 'ACCU999' && strResponse != "") {
             location.href = "{{$data['callbackUrl']}}" + "?AccuResponseCode=" + strResponse;
         }
     }
-    //Actual code has been given in the below table for Accu_FunctionResponse
-    //checks browser compatibility Acculynk.browserCheck();
-    //preps the PIN Pad for opening
+    // Checks browser
+    Acculynk.browserCheck();
+
+    // Create the PINPad form passing the data from input
     Acculynk.createForm("{{$data['guid']}}", "{{$data['lastFourDigits']}}", "{{$data['modulus']}}", "{{$data['exponent']}}");
-    //these argument values needs to be replaced with actual g,c,m,e
-    //opens the authentication and PIN Pad for consumer
+
+    // Opens the PIN Pad
     Acculynk.PINPadLoad();
-    //closes the PIN Pad
+
+    // Closes the PIN Pad
     Acculynk._modalHide();
 </script>
 <body>
 @include('partials.loader')
+
+{{--These are being used by the library--}}
 <center>
     <div id="accu_screen" style="display: none;"></div>
     <div id="accu_keypad" style="display: none;"></div>

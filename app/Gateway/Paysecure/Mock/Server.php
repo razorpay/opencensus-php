@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::ERROR_CODE            => '0',
             Paysecure\Fields::ERROR_MESSAGE         => '',
             Paysecure\Fields::QUALIFIED_INTERNETPIN => 'TRUE',
-            Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'FALSE',
+            Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'TRUE',
         ];
 
         $this->content($response, 'checkbin2');
@@ -74,7 +74,7 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::EXPONENT      => '010001',
         ];
 
-        $this->content($response, 'initiate2');
+        $this->content($response, 'initiate');
 
         return $response;
     }
@@ -109,25 +109,40 @@ class Server extends Base\Mock\Server
 
     protected function getAuthResponse($input)
     {
-        $content = [
-            Paysecure\Fields::ACCU_GUID          => $input[Paysecure\Fields::ACCU_GUID],
-            Paysecure\Fields::SESSION            => $input[Paysecure\Fields::SESSION],
-            Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
-        ];
+        // If redirect flow
+        if (isset($input[Paysecure\Fields::ACCU_GUID]) === true)
+        {
+            $content = [
+                Paysecure\Fields::ACCU_GUID          => $input[Paysecure\Fields::ACCU_GUID],
+                Paysecure\Fields::SESSION            => $input[Paysecure\Fields::SESSION],
+                Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            ];
 
-        $dataToHash = [
-            self::TRAN_ID,
-            $input[Paysecure\Fields::ACCU_GUID],
-            $input[Paysecure\Fields::SESSION],
-            $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
-        ];
+            $dataToHash = [
+                self::TRAN_ID,
+                $input[Paysecure\Fields::ACCU_GUID],
+                $input[Paysecure\Fields::SESSION],
+                $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
+            ];
 
-        $hash = $this->generateHashOfData($dataToHash);
+            $this->content($dataToHash, 'auth_response');
 
-        $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+            $hash = $this->generateHashOfData($dataToHash);
+
+            $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+        }
+        // For Iframe flow
+        else
+        {
+            $content = [
+                Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            ];
+
+            $this->content($content, 'auth_response');
+        }
 
         return [
-            'url'     => $input[ Paysecure\Fields::ACCU_RETURN_URL ],
+            'url'     => $input[Paysecure\Fields::ACCU_RETURN_URL],
             'method'  => 'post',
             'content' => $content,
         ];

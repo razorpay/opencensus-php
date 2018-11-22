@@ -23,6 +23,7 @@ class Gateway extends Base\Gateway
         Fields::ERROR_MESSAGE => Entity::ERROR_MESSAGE,
         Fields::STATUS        => Entity::STATUS,
         Fields::APPRCODE      => Entity::APPRCODE,
+        Fields::TRAN_ID       => Entity::GATEWAY_TRANSACTION_ID,
     ];
 
     public function __construct()
@@ -62,6 +63,7 @@ class Gateway extends Base\Gateway
 
         $this->handleFailure($checkBin2Response, 'checkbin2');
 
+        // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
             $response = $this->initiate2();
@@ -74,18 +76,19 @@ class Gateway extends Base\Gateway
 
             return $this->getRedirectRequest($response);
         }
+        // Iframe flow
         else
         {
             $response = $this->initiate();
 
             $this->handleFailure($response, 'initiate');
 
-            //todo: Create gateway payment
-             $this->createGatewayPaymentEntity($response);
+            $attributes = $this->getMappedAttributes($response);
+
+            $this->createGatewayPaymentEntity($attributes, 'iframe');
 
             $request = [
-                'method'       => 'direct',
-                'callback_url' => $input['callbackUrl'],
+                'method' => 'direct',
             ];
 
             $this->traceGatewayPaymentRequest($request, $input);
@@ -124,8 +127,12 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        // Validates the request by checking hashe
-        $this->validateRequestId($gatewayPayment);
+        // Guid would be sent back only for the redirect flow and not for the iframe flow
+        if (isset($input['gateway'][Fields::ACCU_GUID]))
+        {
+            // Validates the request by checking hash
+            $this->validateRequestId($gatewayPayment);
+        }
 
         $response = $this->authorizeTransaction($gatewayPayment);
 
@@ -285,11 +292,13 @@ class Gateway extends Base\Gateway
         return $soapClient;
     }
 
-    protected function createGatewayPaymentEntity(array $content)
+    protected function createGatewayPaymentEntity(array $content, $flow = 'redirect')
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $gatewayPayment->fill($content);
+
+        $gatewayPayment->setFlow($flow);
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
