@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\P2p\Upi\Sharp;
+namespace RZP\Gateway\P2p\Upi;
 
 use RZP\Gateway\P2p\Base;
 

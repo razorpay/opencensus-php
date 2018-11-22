@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Traits;
 
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa\Handle;
 
 trait HasHandle
@@ -16,8 +17,8 @@ trait HasHandle
         return $this->belongsTo(Handle\Entity::class, 'handle', 'handle');
     }
 
-    public function scopeHandle(BuilderEx $ex, Handle\Entity $handle)
+    public function scopeHandle(BuilderEx $query, Handle\Entity $handle)
     {
-        $ex->where(self::HANDLE, $handle->getHandle());
+        $query->where(self::HANDLE, $handle->getHandle());
     }
 }

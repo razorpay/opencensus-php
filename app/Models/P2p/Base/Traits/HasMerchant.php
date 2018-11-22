@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Traits;
 
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
 trait HasMerchant
@@ -16,8 +17,8 @@ trait HasMerchant
         $this->setMerchantId($merchant->getId());
     }
 
-    public function scopeMerchant(BuilderEx $ex, Merchant\Entity $merchant)
+    public function scopeMerchant(BuilderEx $query, Merchant\Entity $merchant)
     {
-        $ex->where(self::MERCHANT_ID, $merchant->getId());
+        $query->where(self::MERCHANT_ID, $merchant->getId());
     }
 }

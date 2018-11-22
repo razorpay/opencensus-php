@@ -12,9 +12,9 @@ trait HasDevice
         self::$doesEntityHasDevice = true;
     }
 
-    public function scopeDevice(BuilderEx $ex, Device\Entity $device)
+    public function scopeDevice(BuilderEx $query, Device\Entity $device)
     {
-        $ex->where(self::DEVICE_ID, $device->getId());
+        $query->where(self::DEVICE_ID, $device->getId());
     }
 
     public function setDeviceId(string $id)

@@ -204,7 +204,6 @@ class Entity
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
 
-
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
@@ -407,7 +406,7 @@ class Entity
         self::P2P_BENEFICIARY       => \RZP\Models\P2p\Beneficiary::class,
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
 
-        self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi\Sharp::class,
+        self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
     ];
 
     protected static $repository = [
