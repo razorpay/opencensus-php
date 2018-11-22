@@ -14,6 +14,8 @@ class Processor
 {
     use ApplicationTrait;
 
+    protected $entity = null;
+
     public function __construct()
     {
         $this->bootApplicationTrait();
@@ -24,6 +26,8 @@ class Processor
         $this->initializeApplicationTrait($action, $input);
 
         $this->validator = $this->getNewValidator();
+
+        $this->core = $this->getNewCore();
 
         if ($validate === true)
         {
@@ -36,5 +40,32 @@ class Processor
         $className = str_replace('\Processor', '\Validator', static::class);
 
         return new $className;
+    }
+
+    protected function getNewCore()
+    {
+        $className = str_replace('\Processor', '\Core', static::class);
+
+        return new $className;
+    }
+
+    protected function callGateway($data)
+    {
+        $gateway     = $this->getGateway();
+        $action      = $this->getGatewayAction();
+        $gatewayData = $data;
+        $mode        = $this->mode();
+
+        $response = $this->app['gateway']->call($gateway, $action, $gatewayData, $mode);
+    }
+
+    protected function getGateway()
+    {
+        return $this->context()->getHandle()->getAcquirer();
+    }
+
+    protected function getGatewayAction()
+    {
+        return $this->entity . '::' . $this->action;
     }
 }

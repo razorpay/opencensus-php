@@ -25,7 +25,8 @@ class CreateP2pRegisterTokenTable extends Migration
 
             $table->string(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH);
+            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::HANDLE, 50);
 

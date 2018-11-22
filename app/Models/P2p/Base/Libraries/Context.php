@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Libraries;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use RZP\Models\P2p\Vpa\Handle;
 use RZP\Exception\LogicException;
 use Illuminate\Foundation\Application;
+use RZP\Exception\BadRequestException;
 
 class Context
 {
@@ -165,6 +167,10 @@ class Context
         $this->options = $options;
     }
 
+    /**
+     * @return string
+     * @throws BadRequestException
+     */
     public function getContextType()
     {
         // If handle is empty, we can have some internal task run like cron
@@ -185,7 +191,40 @@ class Context
             return self::MERCHANT;
         }
 
-        throw new LogicException('Could not resolve context type');
+        $this->throwContextException('Could not resolve context type');
+    }
+
+    /**
+     * Check if context is Application
+     *
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function isContextApplication(): bool
+    {
+        return ($this->getContextType(true) === self::APPLICATION);
+    }
+
+    /**
+     * Check if context is Merchant
+     *
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function isContextMerchant(): bool
+    {
+        return ($this->getContextType(true) === self::MERCHANT);
+    }
+
+    /**
+     * Check if context is Device
+     *
+     * @return bool
+     * @throws BadRequestException
+     */
+    public function isContextDevice(): bool
+    {
+        return ($this->getContextType(true) === self::DEVICE);
     }
 
     /**
@@ -196,5 +235,14 @@ class Context
     public function handleId(): string
     {
         return $this->handle->getHandle();
+    }
+
+    /**
+     * @param $message
+     * @throws BadRequestException
+     */
+    public function throwContextException($message)
+    {
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED, $message);
     }
 }
