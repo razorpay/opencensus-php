@@ -238,8 +238,18 @@ class GatewayEmiFileTest extends TestCase
         Queue::fake();
 
         $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
-        $this->fixtures->create('terminal:shared_hitachi_emi_terminal');
-        $this->fixtures->create('terminal:shared_blade_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'emi',
+            'merchant_id'   => '10000000000000',
+            'gateway'       => 'hitachi',
+            'issuer'        => 'SBIN',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'min_amount'    => 0,
+            'load'          => 100
+        ]);
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
             'merchant_id' => '10000000000000',

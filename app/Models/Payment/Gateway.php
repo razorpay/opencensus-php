@@ -1182,12 +1182,12 @@ class Gateway
         IFSC::SCBL,
         IFSC::ICIC,
         IFSC::YESB,
+        IFSC::SBIN,
     ];
 
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
         IFSC::HSBC => Gateway::FIRST_DATA,
-        IFSC::SBIN => Gateway::HITACHI,
     ];
 
     /**
