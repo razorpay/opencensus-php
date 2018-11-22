@@ -21,6 +21,7 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
     <EditLayer
       class={classList(
         'Field Field--disabled',
+        field.hasOwnProperty('enum') && 'Field--select',
         field.required && 'Field--required',
         !onEditField && 'disable-hover'
       )}
