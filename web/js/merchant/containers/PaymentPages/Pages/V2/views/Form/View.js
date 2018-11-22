@@ -52,9 +52,16 @@ export default class View extends React.PureComponent {
   onGenericCreatorSubmit = formData => {
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
-    console.log('FIELD SCHEMA...', fieldSchema);
-    if (!fieldSchema) {
+    // console.log('FIELD SCHEMA...', fieldSchema);
+    if (
+      !fieldSchema ||
+      (fieldSchema.enum && (!formData.enum || !formData.enum.length))
+    ) {
       throw 'Invalid field data';
+    }
+
+    if (fieldSchema.enum) {
+      fieldSchema.enum = formData.enum.concat();
     }
 
     this.props.updateInSchema({

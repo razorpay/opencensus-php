@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 import {
   FIELD_CONST,
   FIELD_TYPES,
+  flattenFIELD_TYPES,
   constructFieldSchema,
   validateUISchema,
   _areKeysSupported,
@@ -106,7 +107,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base keys
 
 describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fields in constructed schema', function() {
   const validFieldSchemas = [
-    constructFieldSchema({ title: 'Test title', field_type: 0 }),
+    constructFieldSchema({ title: 'Test title', field_type: '01' }),
     constructFieldSchema({
       title: 'Test title',
       field_type: 1,
@@ -114,8 +115,20 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fiel
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: 2,
+      field_type: '02',
       required: false,
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '03',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '04',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '05',
     }),
   ];
 
@@ -131,6 +144,17 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fiel
 
   const invalidFieldSchemas = [
     constructFieldSchema({ title: 'Test title' }), // Missing field_type
+    constructFieldSchema({ title: 'Test title', field_type: '0' }), // This will fail because 0th options has multiple options, so 0 is invalid field_type
+    constructFieldSchema({ title: 'Test title', field_type: '2' }), // '2' doesn't exist in FIELD_TYPES
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '06', // Doens't exist
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '16', // Doens't exist
+      description: 'Test description',
+    }),
     constructFieldSchema({
       // Invalid field_type
       title: 'Test title',
@@ -196,7 +220,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported type in sch
 
 describe('containers/PaymentPages/V2/../Fields/helpers Fn: Safe Pattern in schema', function() {
   it.each(
-    FIELD_TYPES,
+    flattenFIELD_TYPES(),
     'all fields units selectable by user must have safe patterns.',
     function(field, next) {
       const schema = field.schema;
@@ -253,19 +277,20 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Safe Pattern in schem
 // -------------------------
 
 describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported cmp in option keys', function() {
-  it.each(FIELD_TYPES, 'all field units must have supported cmp.', function(
-    field,
-    next
-  ) {
-    if (!field.options || typeof field.options.cmp === 'undefined') {
-      next(); // Skip the field unit where cmp is not defined
+  it.each(
+    flattenFIELD_TYPES(),
+    'all field units must have supported cmp.',
+    function(field, next) {
+      if (!field.options || typeof field.options.cmp === 'undefined') {
+        next(); // Skip the field unit where cmp is not defined
+      }
+
+      const result = _isSupportedComponent(field.options.cmp);
+      expect(result).to.eql(true);
+
+      next();
     }
-
-    const result = _isSupportedComponent(field.options.cmp);
-    expect(result).to.eql(true);
-
-    next();
-  });
+  );
 
   const invalidCmpSet = [
     'string random',
@@ -292,7 +317,10 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported cmp in opti
 
 describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported keys in Schema', function() {
   // All user selectable fields units must have valid supported keys
-  it.each(FIELD_TYPES, 'all keys are supported.', function(field, next) {
+  it.each(flattenFIELD_TYPES(), 'all keys are supported.', function(
+    field,
+    next
+  ) {
     const keysMap = Object.keys(field.schema);
 
     const result = _areKeysSupported(keysMap);
@@ -302,7 +330,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Supported keys in Sch
   });
 
   // All user selectable fields units must have valid supported keys in options
-  it.each(FIELD_TYPES, 'all options keys are supported.', function(
+  it.each(flattenFIELD_TYPES(), 'all options keys are supported.', function(
     field,
     next
   ) {
@@ -367,7 +395,9 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of Schema', 
   const validSchemas = [[]]; // Empty schema is also supported
 
   // Superset of schema
-  for (let i = 0; i < FIELD_TYPES.length; i++) {
+  const fieldsTypes = flattenFIELD_TYPES();
+
+  for (let i = 0; i < fieldsTypes.length; i++) {
     const rand = Math.floor(Math.random() * 2); // 0 or 1
 
     const fieldSchema = {
@@ -375,7 +405,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of Schema', 
       title: 'Test title',
       required: rand ? true : false,
       description: rand ? 'Test description' : undefined,
-      ...FIELD_TYPES[i].schema,
+      ...fieldsTypes[i].schema,
     };
 
     validSchemas.push(fieldSchema);

@@ -55,6 +55,7 @@ export class GenericCreator extends React.PureComponent {
     hasStock: false,
     disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
+    isFieldEnum: !!this.props.field.enum,
   };
 
   defaultFieldIndex = this.props.field.title
@@ -101,7 +102,7 @@ export class GenericCreator extends React.PureComponent {
 
     if (
       this.state.isFieldEnum &&
-      (!this.state.options || !this.state.options.length)
+      (!this.state.enum || !this.state.enum.length)
     ) {
       disableSubmit = true;
     }
@@ -116,28 +117,26 @@ export class GenericCreator extends React.PureComponent {
     const selectedFieldSchema = getFieldFromIndices(indices);
     const isNewFieldEnum = selectedFieldSchema.hasOwnProperty('enum');
     if (this.state.isFieldEnum !== isNewFieldEnum) {
-      this.setState({ options: [] });
+      this.setState({ enum: [] });
     }
 
     this.setState({ isFieldEnum: isNewFieldEnum });
   };
 
   onSubmit = formData => {
-    let indices = formData.field_type.index.split('');
+    let indices = formData.field_type.split('');
     indices = Number(indices[0]) - 1 + indices.splice(1).join(''); // Because 0th is --Select--
     formData.field_type = indices;
-    formData.options =
-      this.state.options && this.state.options.length
-        ? this.state.options
-        : undefined;
+    formData.enum =
+      this.state.enum && this.state.enum.length ? this.state.enum : undefined;
 
     this.props.onSubmit(formData);
   };
 
-  onChangeEnumList = (options = []) => {
-    let trimmedOptions = options.concat();
+  onChangeEnumList = (enumList = []) => {
+    let trimmedEnums = enumList.concat();
 
-    trimmedOptions = trimmedOptions.reduce((r, o) => {
+    trimmedEnums = trimmedEnums.reduce((r, o) => {
       if (o) {
         r.push(o);
       }
@@ -145,7 +144,7 @@ export class GenericCreator extends React.PureComponent {
       return r;
     }, []);
 
-    this.setState({ options: trimmedOptions });
+    this.setState({ enum: trimmedEnums });
 
     setTimeout(this.toggleSubmit);
   };
@@ -205,6 +204,9 @@ export class GenericCreator extends React.PureComponent {
             <Input.EnumList
               class="dropdown-options"
               onChange={this.onChangeEnumList}
+              defaultValue={
+                field.enum || ['']
+              } /* TODO: Init enum list for edit exising entries */
             />
           )}
         </div>
@@ -244,7 +246,7 @@ export class GenericCreator extends React.PureComponent {
             <button class="btn-link" type="button" onClick={onClose}>
               Cancel
             </button>
-            <Button.Primary type="button" disabled={disableSubmit}>
+            <Button.Primary type="submit" disabled={disableSubmit}>
               Add
             </Button.Primary>
           </div>
