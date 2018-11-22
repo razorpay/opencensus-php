@@ -392,6 +392,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-comment" />
           </div>
         </ShowWhen>
+        <ShowWhen>
+          <Link to={`/merchants/${merchantId}/report_config`}>
+            Self Serve Report configs
+          </Link>
+        </ShowWhen>
         <ShowWhen permission="view_merchant_report">
           <div onClick={isDetailsLoading ? null : actions.GenerateReports}>
             Download Reports
