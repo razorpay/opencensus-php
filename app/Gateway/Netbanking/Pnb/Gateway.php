@@ -57,6 +57,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
 
+        //$content = $input['gateway']; // UAT does noe seem to encrypt
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -190,7 +192,7 @@ class Gateway extends Base\Gateway
     {
         $hash_data = parent::getStringToHash($input, $glue);
 
-        return $this->getSalt() . $hash_data;
+        return $this->getSalt() . '|' . $hash_data;
     }
 
     protected function getHashOfString($str): string
@@ -308,7 +310,7 @@ class Gateway extends Base\Gateway
             ResponseFields::RESPONSE_CODE   => $gateway->getStatus() ?? '',
         ];
 
-        if ($input['payment']['bank'] === Netbanking::BARB_R)
+        if ($input['payment']['bank'] === Netbanking::PUNB_R)
         {
             $content[RequestFields::BANK_CODE] = Constants::BANK_CODE_RETAIL;
         }
@@ -324,6 +326,7 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse($response): array
     {
+        sd($response->body);
         $responseArray = $this->jsonToArray($response->body);
 
         $data = json_decode($responseArray['data'], true);
