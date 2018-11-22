@@ -1,5 +1,6 @@
 import { Label, Error, inputClass } from './index';
 import { classList } from 'common/util';
+import { findDOMNode } from 'react-dom';
 
 /*
 * Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
@@ -202,7 +203,7 @@ class DropDownList extends React.PureComponent {
   }
 
   handleDocumentClick(e) {
-    if (this.dropdownlist.contains(e.target)) {
+    if (findDOMNode(this.dropdownlist).contains(e.target)) {
       e.stopPropagation();
       return;
     }
@@ -249,7 +250,7 @@ class DropDownList extends React.PureComponent {
                 selectedOptionIndexTree[level] == i && 'selected'
               )}
               key={i}
-              onClick={hasSubOptions ? undefined : onSelection}
+              onClick={hasSubOptions ? this.ignoreClick : onSelection}
               data-option-index={level == 0 ? i : level + '' + i}
             >
               {OptionComponent ? (

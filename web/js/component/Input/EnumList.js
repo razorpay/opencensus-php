@@ -2,7 +2,7 @@ import Button from 'component/Button';
 import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
 
-export default class EnumAdder extends React.PureComponent {
+export default class EnumList extends React.PureComponent {
   state = {
     options: this.props.defaultValue || [''],
   };
@@ -25,10 +25,16 @@ export default class EnumAdder extends React.PureComponent {
     this.setState({ options: newOptions });
   };
 
+  updateEnumList = this.props.onChange && debounce(::this.props.onChange, 100);
+
   updateOption = (i, val) => {
     const newOptions = this.state.options.concat();
     newOptions[i] = val;
     this.setState({ options: newOptions });
+
+    setTimeout(() => {
+      this.updateEnumList && this.updateEnumList(this.state.options);
+    });
   };
 
   updateLastFocused = i => {
@@ -98,6 +104,9 @@ class EnumOption extends React.PureComponent {
   updateOption = debounce(::this.props.updateOption, 50);
 
   handleChange = e => {
+    e.stopPropagation();
+    e.preventDefault();
+
     this.setState({ value: e.target.value });
 
     setTimeout(() => {
@@ -121,8 +130,10 @@ class EnumOption extends React.PureComponent {
           value={this.state.value}
           onChange={this.handleChange}
           onKeyPress={e => {
+            // Hit enter
             if (e.which == 13) {
               addNewOption(e);
+              e.preventDefault();
             }
           }}
           onFocus={e => {

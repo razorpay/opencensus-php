@@ -88,19 +88,25 @@ export class GenericCreator extends React.PureComponent {
       this.setState({ hasDescription: target.checked });
     }
 
-    setTimeout(() => {
-      const form = document.getElementsByName('form_creator_generic')[0];
-      const title = document.getElementsByName('title')[0].value;
-      const fieldType = document.getElementsByName('field_type')[0].value;
+    setTimeout(this.toggleSubmit);
+  };
 
-      if (this.state.isFieldEnum && this.state.options) {
-        //TODO: If options are empty and dropdown is selected, then disable button
-      }
+  toggleSubmit = () => {
+    const form = document.getElementsByName('form_creator_generic')[0];
+    const title = document.getElementsByName('title')[0].value;
+    const fieldType = document.getElementsByName('field_type')[0].value;
 
-      const disableSubmit =
-        form.querySelectorAll('.is-invalid').length || !title || !fieldType;
-      this.setState({ disableSubmit });
-    });
+    let disableSubmit =
+      form.querySelectorAll('.is-invalid').length || !title || !fieldType;
+
+    if (
+      this.state.isFieldEnum &&
+      (!this.state.options || !this.state.options.length)
+    ) {
+      disableSubmit = true;
+    }
+
+    this.setState({ disableSubmit });
   };
 
   onSelection = val => {
@@ -108,15 +114,40 @@ export class GenericCreator extends React.PureComponent {
     indices = Number(indices[0]) - 1 + indices.splice(1).join(''); // Because 0th is --Select--
 
     const selectedFieldSchema = getFieldFromIndices(indices);
-    this.setState({ isFieldEnum: selectedFieldSchema.hasOwnProperty('enum') });
+    const isNewFieldEnum = selectedFieldSchema.hasOwnProperty('enum');
+    if (this.state.isFieldEnum !== isNewFieldEnum) {
+      this.setState({ options: [] });
+    }
+
+    this.setState({ isFieldEnum: isNewFieldEnum });
   };
 
   onSubmit = formData => {
     let indices = formData.field_type.index.split('');
     indices = Number(indices[0]) - 1 + indices.splice(1).join(''); // Because 0th is --Select--
     formData.field_type = indices;
+    formData.options =
+      this.state.options && this.state.options.length
+        ? this.state.options
+        : undefined;
 
     this.props.onSubmit(formData);
+  };
+
+  onChangeEnumList = (options = []) => {
+    let trimmedOptions = options.concat();
+
+    trimmedOptions = trimmedOptions.reduce((r, o) => {
+      if (o) {
+        r.push(o);
+      }
+
+      return r;
+    }, []);
+
+    this.setState({ options: trimmedOptions });
+
+    setTimeout(this.toggleSubmit);
   };
 
   render() {
@@ -171,7 +202,10 @@ export class GenericCreator extends React.PureComponent {
             customSelectedOptionComponent={CustomTypeOption}
           />
           {this.state.isFieldEnum && (
-            <Input.EnumList class="dropdown-options" />
+            <Input.EnumList
+              class="dropdown-options"
+              onChange={this.onChangeEnumList}
+            />
           )}
         </div>
         <div class="section section-2">
@@ -210,7 +244,7 @@ export class GenericCreator extends React.PureComponent {
             <button class="btn-link" type="button" onClick={onClose}>
               Cancel
             </button>
-            <Button.Primary type="submit" disabled={disableSubmit}>
+            <Button.Primary type="button" disabled={disableSubmit}>
               Add
             </Button.Primary>
           </div>
