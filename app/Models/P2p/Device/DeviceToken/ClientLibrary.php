@@ -2,7 +2,9 @@
 
 namespace RZP\Models\P2p\Device\DeviceToken;
 
-class ClientLibrary
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
+
+class ClientLibrary extends ArrayBag
 {
     const CL                = 'cl';
     const CAPABILITY        = 'capability';

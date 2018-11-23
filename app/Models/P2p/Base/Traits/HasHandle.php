@@ -12,13 +12,18 @@ trait HasHandle
         return true;
     }
 
-    public function handleRelation()
+    public function associateHandle(Handle\Entity $handle)
     {
-        return $this->belongsTo(Handle\Entity::class, 'handle', 'handle');
+        return $this->handleRelation()->associate($handle);
     }
 
     public function scopeHandle(BuilderEx $query, Handle\Entity $handle)
     {
-        $query->where(self::HANDLE, $handle->getHandle());
+        return $query->where(self::HANDLE, $handle->getHandle());
+    }
+
+    public function handleRelation()
+    {
+        return $this->belongsTo(Handle\Entity::class, self::HANDLE, self::HANDLE);
     }
 }

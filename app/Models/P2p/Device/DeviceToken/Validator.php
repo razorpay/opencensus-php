@@ -18,10 +18,32 @@ class Validator extends Base\Validator
             Entity::HANDLE           => 'string',
             Entity::GATEWAY_DATA     => 'array',
             Entity::STATUS           => 'string',
-            Entity::CL_CAPABILITY    => 'string',
-            Entity::CL_TOKEN         => 'string',
-            Entity::CL_PAYLOAD       => 'string',
+            Entity::CL               => 'array',
         ];
+
+        return $rules;
+    }
+
+    public function makeClRules()
+    {
+        $rules = $this->makeRules([]);
+
+        $rules->arrayRules(ClientLibrary::CL, [
+            ClientLibrary::CAPABILITY   => 'required|string',
+            ClientLibrary::CHALLENGE    => 'required|string',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeClSuccessRules()
+    {
+        $rules = $this->makeRules([]);
+
+        $rules->arrayRules(ClientLibrary::CL, [
+            ClientLibrary::TOKEN        => 'required|string',
+            ClientLibrary::PAYLOAD      => 'required|string',
+        ]);
 
         return $rules;
     }
@@ -29,14 +51,10 @@ class Validator extends Base\Validator
     public function makeCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::DEVICE_ID        => 'sometimes',
-            Entity::HANDLE           => 'sometimes',
             Entity::GATEWAY_DATA     => 'sometimes',
-            Entity::STATUS           => 'sometimes',
-            Entity::CL_CAPABILITY    => 'sometimes',
-            Entity::CL_TOKEN         => 'sometimes',
-            Entity::CL_PAYLOAD       => 'sometimes',
         ]);
+
+        $rules->merge($this->makeClRules()->toArray());
 
         return $rules;
     }

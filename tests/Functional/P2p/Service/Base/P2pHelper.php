@@ -320,7 +320,7 @@ class P2pHelper
             $prefix .= 'customer/';
         }
 
-        return $prefix . $uri;
+        return $prefix . sprintf($uri, ...$parameters);
     }
 
     protected function makeServer()

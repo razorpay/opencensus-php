@@ -12,14 +12,18 @@ trait HasDevice
         return true;
     }
 
+    public function associateDevice(Device\Entity $device)
+    {
+        return $this->device()->associate($device);
+    }
+
     public function scopeDevice(BuilderEx $query, Device\Entity $device)
     {
-        $query->where(self::DEVICE_ID, $device->getId());
+        return $query->where(self::DEVICE_ID, $device->getId());
     }
 
-    public function setDeviceId(string $id)
+    public function device()
     {
-        $this->setAttribute(self::DEVICE_ID, $id);
+        return $this->belongsTo(Device\Entity::class);
     }
-
 }
