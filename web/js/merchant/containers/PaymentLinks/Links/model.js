@@ -23,6 +23,10 @@ export function createPaymentLink(payload) {
     reqPayload.description = reqPayload.description.trim();
   }
 
+  if (!reqPayload.min_amount) {
+    delete reqPayload.min_amount;
+  }
+
   /* Customer details */
   const customer = {};
   if (reqPayload.contact) {

@@ -55,6 +55,10 @@ function defaultFieldProps(f) {
     f.onChange = self.onChangeNotes;
   }
 
+  if (f.name === 'min_amount') {
+    f.validator = f.validator.bind(self);
+  }
+
   if (f._name === 'expire_by_date') {
     f.onChange = self.onDateChange.bind(self);
   }

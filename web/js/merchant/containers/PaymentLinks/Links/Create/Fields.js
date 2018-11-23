@@ -1,6 +1,29 @@
 import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
+const CustomInput = props => {
+  return (
+    <div class="Input--custom">
+      <div class="Input-label">
+        Minimum Payable Amount (Optional)
+        <small className="help-content">
+          <i class="i i-info-outline" />
+          <Popover align="top">
+            <PopoverBody>
+              <div>
+                You can set a minimum payable amount for the first transaction
+                to be paid by your customer
+              </div>
+            </PopoverBody>
+          </Popover>
+        </small>
+      </div>
+      <Input {...props} />
+    </div>
+  );
+};
 
 /* Form fields of Payment Links */
 export default [
@@ -42,6 +65,34 @@ export default [
       ),
       _cmp: Input.Check,
       _autoRenderImpure: true,
+    },
+    {
+      name: 'min_amount',
+      addonBefore: '₹',
+      placeholder: '0.00',
+      size: 'half_big',
+      _cmp: CustomInput,
+      validator: function(val) {
+        if (!val) {
+          return;
+        }
+
+        if (!isAmount(val)) {
+          const decimal = val && val.split('.');
+
+          if (decimal.length == 2 && decimal[1].length > 2) {
+            return 'Enter upto 2 decimals';
+          } else {
+            return 'Invalid Amount';
+          }
+        }
+
+        const filledAmount = this.state.dirty.amount;
+        if (Number(val) > filledAmount) {
+          return 'Minimum Payable amount cannot exceed Amount';
+        }
+      },
+      _when: form => form.state.dirty.partial_payment == '1',
     },
   ],
   {
