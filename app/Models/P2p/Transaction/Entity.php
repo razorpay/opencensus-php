@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Transaction;
+namespace RZP\Models\P2p\Transaction;
 
 use RZP\Models\P2p\Base;
 

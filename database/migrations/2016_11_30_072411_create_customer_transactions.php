@@ -4,10 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 
-use RZP\Models\Customer\Transaction\Entity;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Customer\Transaction\Entity;
 
 class CreateCustomerTransactions extends Migration
 {
@@ -52,6 +52,9 @@ class CreateCustomerTransactions extends Migration
                   ->nullable();
 
             $table->string(Entity::DESCRIPTION, 255)
+                  ->nullable();
+
+            $table->integer(Entity::RECONCILED_AT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

@@ -991,17 +991,6 @@ trait PaymentTrait
     {
         $this->ba->adminAuth();
 
-        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
-
-        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
-
-        $admin = $this->ba->getAdmin();
-
-        // Linking merchant with admin because admins can access only linked merchants.
-        $admin->merchants()->attach($merchant);
-
-        $this->ba->addAccountAuth($merchant->getId());
-
         $request = array(
             'method'  => 'POST',
             'url'     => '/payments/'.$id.'/authorize_refund',

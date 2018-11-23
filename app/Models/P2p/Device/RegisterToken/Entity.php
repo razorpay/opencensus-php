@@ -1,11 +1,15 @@
 <?php
 
-namespace Rzp\Models\P2p\Device\RegisterToken;
+namespace RZP\Models\P2p\Device\RegisterToken;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Traits;
 
 class Entity extends Base\Entity
 {
+    use Traits\HasMerchant;
+    use Traits\HasHandle;
+
     const TOKEN        = 'token';
     const MERCHANT_ID  = 'merchant_id';
     const DEVICE_ID    = 'device_id';
@@ -15,10 +19,14 @@ class Entity extends Base\Entity
 
     /************** Entity Properties ************/
 
+    public $incrementing          = true;
     protected $entity             = 'p2p_register_token';
-    protected static $sign        = 'register_token';
+    protected $primaryKey         = 'token';
     protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+
+    protected static $generators  = [
+        self::TOKEN,
+    ];
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -26,11 +34,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::TOKEN,
-        Entity::MERCHANT_ID,
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
-        Entity::STATUS,
         Entity::DEVICE_DATA,
     ];
 
@@ -55,12 +58,8 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::TOKEN        => null,
-        Entity::MERCHANT_ID  => null,
-        Entity::DEVICE_ID    => null,
-        Entity::HANDLE       => null,
-        Entity::STATUS       => null,
-        Entity::DEVICE_DATA  => null,
+        Entity::STATUS       => 'pending',
+        Entity::DEVICE_DATA  => [],
     ];
 
     protected $casts = [
@@ -73,6 +72,13 @@ class Entity extends Base\Entity
         Entity::CREATED_AT   => 'int',
         Entity::UPDATED_AT   => 'int',
     ];
+
+    /***************** GENERATORS **************/
+
+    protected function generateToken()
+    {
+        $this->setToken(gen_uuid());
+    }
 
     /***************** SETTERS *****************/
 

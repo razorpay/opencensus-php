@@ -1,6 +1,6 @@
 <?php
 
-namespace Rzp\Models\P2p\Beneficiary;
+namespace RZP\Models\P2p\Beneficiary;
 
 use RZP\Models\P2p\Base;
 

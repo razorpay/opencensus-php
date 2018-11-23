@@ -201,6 +201,9 @@ class Entity
     const P2P_TRANSACTION        = 'p2p_transaction';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
 
+    // P2P Gateways
+    const P2P_UPI_SHARP          = 'p2p_upi_sharp';
+
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
@@ -392,6 +395,18 @@ class Entity
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
+
+        self::P2P_DEVICE            => \RZP\Models\P2p\Device::class,
+        self::P2P_DEVICE_TOKEN      => \RZP\Models\P2p\Device\DeviceToken::class,
+        self::P2P_REGISTER_TOKEN    => \RZP\Models\P2p\Device\RegisterToken::class,
+        self::P2P_BANK              => \RZP\Models\P2p\BankAccount\Bank::class,
+        self::P2P_BANK_ACCOUNT      => \RZP\Models\P2p\BankAccount::class,
+        self::P2P_VPA               => \RZP\Models\P2p\Vpa::class,
+        self::P2P_HANDLE            => \RZP\Models\P2p\Vpa\Handle::class,
+        self::P2P_BENEFICIARY       => \RZP\Models\P2p\Beneficiary::class,
+        self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
+
+        self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
     ];
 
     protected static $repository = [

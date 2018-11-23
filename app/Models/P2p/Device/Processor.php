@@ -7,12 +7,20 @@ use RZP\Models\P2p\Base;
 
 class Processor extends Base\Processor
 {
+    protected $entity = 'p2p_device';
+
     public function startVerification(array $input): array
     {
-        $this->initialize(Action::START_VERIFICATION, $input);
+        $this->initialize(Action::START_VERIFICATION, $input, true);
+
+        $registerToken = (new RegisterToken\Core)->createWithDeviceData($this->input->toArray());
+
+        $data = $this->makeArr()->put('register_token', $registerToken);
+
+        $response = $this->callGateway($data);
 
         return [
-            'handle'            => $input['handle'],
+            'handle'            => $this->context()->handleId(),
             'token'             => str_random(10),
             'action'            => 'verify',
             'method'            => 'sms',
