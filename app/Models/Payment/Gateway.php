@@ -1341,9 +1341,11 @@ class Gateway
      * @param int $timestamp
      * @return bool
      */
-    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway, int $timestamp): bool
+    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway = null, int $timestamp = null): bool
     {
         return (
+            ($gateway !== null) and
+            ($timestamp !== null) and
             isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
             $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
         );
