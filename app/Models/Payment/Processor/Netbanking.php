@@ -329,6 +329,11 @@ class Netbanking
                 IFSC::IDFB
             ]
         ],
+        Gateway::NETBANKING_VIJAYA => [
+            'retail' => [
+                IFSC::VIJB
+            ]
+        ],
         Gateway::NETBANKING_HDFC => [
             'retail' => [
                 IFSC::HDFC
