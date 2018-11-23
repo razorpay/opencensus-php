@@ -37,13 +37,15 @@ export default class RefundsList extends Component {
           <header>
             Refund Details
             {/* <AsyncButton class="btn">Process</AsyncButton> */}
-            <Link
-              to={`/scrooge/refunds${location.search}`}
-              class="link"
-              style={{ float: 'right', fontSize: 14, marginTop: 10 }}
-            >
-              Return to Refunds List
-            </Link>
+            {location.search && (
+              <Link
+                to={`/scrooge/refunds${location.search}`}
+                class="link"
+                style={{ float: 'right', fontSize: 14, marginTop: 10 }}
+              >
+                Return to Refunds List
+              </Link>
+            )}
           </header>
           <Duplex
             pending={this.state.loading}

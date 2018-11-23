@@ -29,14 +29,12 @@ import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 )
 export default class BatchDetailsContainer extends Component {
   handleDownload = id => {
-    let windowRef = window.open('', '_blank');
     this.props
       .batchDownload(id)
       .then(response => {
-        windowRef.location.href = response.data.url;
+        window.location = response.data.url;
       })
       .catch(({ errors }) => {
-        windowRef.close();
         this.props.showNotification({
           type: 'error',
           message: errors,

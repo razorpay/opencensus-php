@@ -192,7 +192,7 @@ export default class User {
   }
 
   get isChargeAtWillEnabled() {
-    return this.findTag('Hosted_emandate');
+    return this.findTag('Charge_at_will');
   }
 
   get isAgentRole() {

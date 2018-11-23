@@ -67,4 +67,4 @@ const fields = [
   ['Refund Created At', item => formatDate(item.created_at)],
 ];
 
-const showRefund = item => `/scrooge/refund/${item.id}${location.search}`;
+const showRefund = item => `/scrooge/refund/${item.id}`;
