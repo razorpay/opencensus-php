@@ -765,10 +765,15 @@ final class Route
         'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
         // Scrooge Routes
+        // Using `refunds` & moving to `POST` instead of `PUT` because of multiple conflicts in httprouter in Scrooge
+        // Github issue: https://github.com/gin-gonic/gin/issues/388
+        // 1. `refund/bulk-status-update` will conflict with `refund/:id/:action`
+        // 2. `POST` because the above URLs are identified as identical and one url can have only one PUT API, but can have multiple POST APIs
+        'scrooge_refunds_update_multiple'          => ['post',      'scrooge/refunds/bulk-status-update',            'ScroogeController@bulkStatusUpdate'                                ],
         'scrooge_reports_get_multiple'             => ['post',      'scrooge/reports',                               'ScroogeController@listReports'                                     ],
-        'scrooge_refunds_update_multiple'          => ['put',       'scrooge/refunds/bulk-status-update',            'ScroogeController@bulkUpdate'                                     ],
         'scrooge_refunds_get_multiple'             => ['post',      'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',       'scrooge/refunds/{id}',                          'ScroogeController@get'                                             ],
+        'scrooge_refunds_update'                   => ['post',      'scrooge/refunds/{id}/status-update',            'ScroogeController@statusUpdate'                                    ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -917,6 +922,8 @@ final class Route
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
 
+        'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
+
         // subscription registration
         'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
         'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],
@@ -925,6 +932,8 @@ final class Route
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
+
+        'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
     ];
 
     public static $public = [
@@ -1158,6 +1167,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'admin_lead_verify',
         'admin_authentication',
         'admin_forgot_password',
         'admin_lock_old_accounts',
@@ -1444,6 +1454,7 @@ final class Route
         'subscription_registration_fetch_token',
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
+        'merchant_submit_support_call_request',
     ];
 
     // These will run on internal auth with the assurance
@@ -1566,7 +1577,6 @@ final class Route
         'iin_add',
         'emi_plan_add',
         'dummy_critical_error',
-        'admin_lead_verify',
         'merchant_tag_add',
         'merchant_tag_delete',
         'merchant_update_key_access',
@@ -1745,6 +1755,7 @@ final class Route
         'scrooge_refunds_update_multiple',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_get',
+        'scrooge_refunds_update',
 
         // Reporting
         'reporting_log_create_admin',
@@ -2033,6 +2044,7 @@ final class Route
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
         'scrooge_refunds_get'                      => '*',
+        'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'schedule_fetch'                           => '*',
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
@@ -2223,12 +2235,12 @@ final class Route
             'user_change_password',
             'user_fetch',
             'invitation_action',
-            'merchant_admin_lead_put',
             'invitation_fetch_by_token',
             'user_resend_verification',
             'user_reset_password_token',
             // Called during signup flow
             'admin_authentication',
+            'admin_lead_verify',
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',
@@ -2532,6 +2544,13 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
+        'subscription_test_charge',
+    ];
+
+    // These routes are redirected after a feature check
+    // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
+    const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
+        'subscription_test_charge',
     ];
 
     /**
@@ -2864,6 +2883,13 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::S2S_PAYMENT_ROUTES, true) === true);
+    }
+
+    public function isSubscriptionFeatureProxyRoute(): bool
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        return (in_array($currentRoute, self::SUBSCRIPTION_FEATURE_PROXY_ROUTES, true) === true);
     }
 
     public function isSubscriptionProxyRoute(): bool

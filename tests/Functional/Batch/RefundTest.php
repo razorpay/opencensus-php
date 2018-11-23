@@ -172,6 +172,13 @@ class RefundTest extends TestCase
         Mail::assertSent(BatchRefundFileMail::class);
     }
 
+    public function testProcessRefundFileUsingTransactionV2Feature()
+    {
+        $this->fixtures->merchant->addFeatures('transaction_v2');
+
+        $this->testProcessRefundFile();
+    }
+
     public function testProcessRefundFileWithInvalidFile()
     {
         $this->markTestSkipped();

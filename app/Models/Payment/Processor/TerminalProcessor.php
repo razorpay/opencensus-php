@@ -75,7 +75,7 @@ class TerminalProcessor extends Base\Core
             return $this->isTerminalValid($terminal, $accountNumber);
         });
 
-        if ($log ===  true)
+        if ($log === true)
         {
             $this->trace->info(
                 TraceCode::TERMINALS_FILTERED,
@@ -100,7 +100,7 @@ class TerminalProcessor extends Base\Core
             return true;
         });
 
-        if ($log ===  true)
+        if ($log === true)
         {
             $this->trace->info(
                 TraceCode::TERMINALS_FILTERED,

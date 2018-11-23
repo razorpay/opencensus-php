@@ -283,14 +283,18 @@ class Gateway extends Base\Gateway
 
         $mcc = $this->input['terminal']['category'];
 
+        $bankCode = $this->getTerminalAccessCode($input);
+
+        $serviceProviderName = $input['merchant']->getFilteredDba() ?: $this->getGatewayMerchantId2();
+
         $content = [
             RequestFields::REFERENCE_ID               => $input['payment']['id'],
-            RequestFields::MANDATE_REQUEST_ID         => $input['token']['id'],
+            RequestFields::MANDATE_REQUEST_ID         => $input['payment']['id'],
             RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
             RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
             RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
             RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
-            RequestFields::INSTRUCTED_AGENT_ID_CODE   => substr($destinationBankIfsc,0, 4),
+            RequestFields::INSTRUCTED_AGENT_ID_CODE   => substr($destinationBankIfsc, 0, 4),
             RequestFields::OCCURANCE_SEQUENCE_TYPE    => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
             RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
             RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
@@ -299,6 +303,10 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
             RequestFields::ESIGN_TYPE                 => Constants::ESIGN_TYPE_OTP,
+            RequestFields::INSTRUCTING_AGENT_NAME     => 'RBL Bank',
+            RequestFields::INSTRUCTING_AGENT_ID       => $bankCode,
+            RequestFields::CREDITOR_NAME              => substr($serviceProviderName, 0, 40),
+            RequestFields::CREDITOR_ACCOUNT_ID        => $this->getGatewayMerchantId(),
             RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
 
@@ -350,6 +358,36 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['live_api_key'];
+    }
+
+    protected function getGatewayMerchantId2()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->getLiveMerchantId2();
+        }
+
+        return $this->getTestMerchantId2();
+    }
+
+    protected function getTerminalAccessCode(array $input)
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $input['terminal']['gateway_access_code'];
+        }
+
+        return $this->getTestAccessCode();
+    }
+
+    protected function getGatewayMerchantId()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->getLiveMerchantId();
+        }
+
+        return $this->getTestMerchantId();
     }
 
     protected function getApplicationId(): string

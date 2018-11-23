@@ -1273,7 +1273,7 @@ return [
         ]
     ],
 
-    'testAddBankAccountWithInvalidIFSC' => [
+    'testAddBankAccountWithInvalidIfsc' => [
         'request' => [
             'content' => [
                 'ifsc_code'             => 'IIC0001206',
@@ -2305,7 +2305,7 @@ return [
         ],
     ],
 
-    'testGetNetbankingDowntimeInfoWithIssuerNA' => [
+    'testGetNetbankingDowntimeInfoWithIssuerNa' => [
         'request' => [
             'url' => '/methods/downtime',
             'method' => 'get',
@@ -3480,6 +3480,106 @@ return [
                 'failed_count' => 1,
                 'failed_ids'   => ['1000000000000x']
             ],
+        ],
+    ],
+
+    'testFetchingLinkedAcountsForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['linkdaccount01']
+            ]
+        ]
+    ],
+
+    'testSubmitSupportCallRequest' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'       => 'success',
+                'code'         => '200',
+                'message'      => 'Call queued successfully',
+                'reference_id' => '1000000000000000',
+            ],
+        ],
+    ],
+
+    'testPartnerAcountsForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['submerchant001']
+            ],
+        ],
+    ],
+
+    'testReferredAccountForMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/parentaccount1/associated_accounts',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'associated_accounts'  => ['refaccount0001']
+            ],
+        ],
+    ],
+
+    'testSubmitSupportCallRequestWithInvalidContact' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9989988998899',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid contact number - 9989988998899',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSubmitSupportCallRequestOnNonWorkingHours' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

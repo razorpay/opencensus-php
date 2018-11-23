@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Admin;
 
+use App;
+use Cache;
+
 class ConfigKey
 {
     const TERMINAL_SELECTION_LOG_VERBOSE        = 'terminal_selection_log_verbose';
@@ -15,6 +18,7 @@ class ConfigKey
     const NPCI_UPI_DEMO                         = 'npci_upi_demo';
     const BLOCK_SMART_COLLECT                   = 'block_smart_collect';
     const BLOCK_YESBANK                         = 'block_yesbank';
+    const BLOCK_AADHAAR_REG                     = 'block_aadhaar_reg';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -27,6 +31,7 @@ class ConfigKey
         self::NPCI_UPI_DEMO,
         self::BLOCK_SMART_COLLECT,
         self::BLOCK_YESBANK,
+        self::BLOCK_AADHAAR_REG,
     ];
 
     public static function isSensitive(string $key)
@@ -37,5 +42,23 @@ class ConfigKey
         }
 
         return true;
+    }
+
+    public static function get($key, $default = null)
+    {
+        $app = App::getFacadeRoot();
+
+        $data = $default;
+
+        try
+        {
+            $data = Cache::get($key);
+        }
+        catch (\Throwable $ex)
+        {
+            $app['trace']->traceException($ex);
+        }
+
+        return $data;
     }
 }

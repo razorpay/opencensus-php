@@ -41,8 +41,8 @@ class MerchantFluid extends Base
 
         $this->setMerchant($merchant);
 
-        $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
-        $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
+        $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0', 'merchant_id' => $this->getId()]);
+        $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0', 'merchant_id' => $this->getId()]);
 
         $this->fixtures->setDefaultConn();
 
@@ -51,8 +51,8 @@ class MerchantFluid extends Base
 
     public function addBalance()
     {
-        $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
-        $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0']);
+        $this->fixtures->on('test')->create('balance', ['id' => $this->getId(), 'balance' => '0', 'merchant_id' => $this->getId()]);
+        $this->fixtures->on('live')->create('balance', ['id' => $this->getId(), 'balance' => '0', 'merchant_id' => $this->getId()]);
 
         $this->fixtures->setDefaultConn();
 

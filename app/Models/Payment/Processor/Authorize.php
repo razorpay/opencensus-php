@@ -16,6 +16,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -340,8 +341,8 @@ trait Authorize
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
-        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
-            ($gatewayInput["skip_gateway_call"] === true))
+        if ((isset($gatewayInput['skip_gateway_call']) === true) and
+            ($gatewayInput['skip_gateway_call'] === true))
         {
             return $this->processCreated($payment);
         }
@@ -376,7 +377,7 @@ trait Authorize
         ];
 
         // This is a hack to return direct method for IVR payments
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
 
@@ -1210,11 +1211,24 @@ trait Authorize
             );
         }
 
-        if ($payment->getAuthType() === null)
+        $authType = $payment->getAuthType();
+
+        if ($authType === null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The auth_type field is required when method is ' . Method::EMANDATE
             );
+        }
+
+        if ((in_array($authType, [Payment\AuthType::AADHAAR, Payment\AuthType::AADHAAR_FP], true) === true) and
+            ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected auth_type is invalid',
+                Payment\Entity::AUTH_TYPE,
+                [
+                    Payment\Entity::AUTH_TYPE => $authType,
+                ]);
         }
 
         $bank = $payment->getBank();
@@ -1223,7 +1237,7 @@ trait Authorize
 
         if (in_array(
                 $bank,
-                Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                Payment\Gateway::getAvailableEmandateBanksForAuthType($authType),
                 true) === false)
         {
             throw new Exception\BadRequestException(
@@ -1346,7 +1360,6 @@ trait Authorize
             switch ($method)
             {
                 case Payment\Method::EMANDATE:
-                {
                     //
                     // Todo: During NPCI eMandate integration, we need to have one more condition
                     // here to check if the auth method is aadhaar.
@@ -1390,11 +1403,11 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-                }
+
+                    break;
 
                 case Payment\Method::CARD:
                 case Payment\Method::EMI:
-                {
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
@@ -1410,7 +1423,8 @@ trait Authorize
                             $gatewayInput['authenticate']['gateway'] = $authGateway;
                         }
                     }
-                }
+
+                    break;
             }
         }
     }
@@ -2027,10 +2041,13 @@ trait Authorize
             if (($token !== null) and
                 ($token->isLocal() === true) and
                 ($token->isRecurring() === true) and
-                ($this->app['basicauth']->isPrivateAuth() === true) and
                 (isset($input['token']) === true))
             {
-                $type = Payment\RecurringType::AUTO;
+                if (($this->app['basicauth']->isPrivateAuth() === true) or
+                    ($this->app->runningInQueue() === true))
+                {
+                    $type = Payment\RecurringType::AUTO;
+                }
             }
         }
 
@@ -2090,7 +2107,7 @@ trait Authorize
             ($this->ba->isProxyAuth() === true) and
             (isset($input[Payment\Entity::TOKEN]) === true))
         {
-            $gatewayInput['test_success'] = $input['test_success'];
+            $gatewayInput['test_success'] = boolval($input['test_success']);
         }
     }
 
@@ -3092,6 +3109,8 @@ trait Authorize
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
+        $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
     }
 
@@ -3172,6 +3191,32 @@ trait Authorize
         {
             (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
         }
+    }
+
+    protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() === null)
+        {
+            return;
+        }
+
+        if ($invoice->isTypeOfSubscriptionRegistration() == false)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $subscriptionRegistration->token()->associate($payment->getGlobalOrLocalTokenEntity());
+
+        $this->repo->saveOrFail($subscriptionRegistration);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

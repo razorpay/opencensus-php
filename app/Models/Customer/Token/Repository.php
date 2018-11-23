@@ -137,7 +137,7 @@ class Repository extends Base\Repository
                                     $query->where(Token\Entity::RECURRING, '=', "0")
                                           ->whereIn(
                                               Token\Entity::RECURRING_STATUS,
-                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED]);
+                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED]);
                                 });
                       })
                       ->with('customer');
@@ -192,6 +192,59 @@ class Repository extends Base\Repository
             ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
             ->where($tokenRecurringColumn, '!=', 1)
             ->with(['customer', 'merchant'])
+            ->get();
+    }
+
+    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    {
+        $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
+        $selectCols = $this->dbColumn('*');
+
+        $payments = Payment\Entity::query()
+            ->select($this->repo->payment->dbColumn('*'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to]);
+
+        return $this->newQuery()
+            ->select($selectCols,
+                    'payments.id as payment_id',
+                    'payments.amount as payment_amount',
+                    'payments.created_at as payment_created_at',
+                    'payments.email as payment_email')
+            ->joinSub(
+                $payments,
+                $paymentTableName,
+                function ($join) use($paymentTokenIdColumn, $tokenIdColumn)
+                {
+                    $join->on($tokenIdColumn, '=', $paymentTokenIdColumn);
+                }
+            )
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->with(['merchant', 'terminal'])
             ->get();
     }
 }

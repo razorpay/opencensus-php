@@ -308,6 +308,29 @@ class ActivationTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostInstantActivationFetaureCheck()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->fixtures->edit('merchant', '1cXSLlUU8V9sXl', ['pricing_plan_id' => '1In3Yh5Mluj605', 'international' => 0]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
+    }
+
     protected function changeActivationStatus(& $requestContent, & $responseContent, $newStatus)
     {
         $requestContent['activation_status'] = $newStatus;

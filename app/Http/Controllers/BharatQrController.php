@@ -36,6 +36,12 @@ class BharatQrController extends Controller
 
                 break;
 
+            case 'hitachi' :
+                $input['content'] = Request::all();
+                $input['raw']     = Request::getContent();
+
+                break;
+
             default:
                 $input = Request::all();
         }

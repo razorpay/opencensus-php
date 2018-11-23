@@ -211,6 +211,10 @@ class Validator extends Base\Validator
         Constants::SKIP                  => 'integer',
     ];
 
+    protected static $submitSupportCallRequestRules = [
+        'contact' => 'required|contact_syntax',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
@@ -984,6 +988,15 @@ class Validator extends Base\Validator
         if ($bankAccount === null)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+        }
+    }
+
+    public function validateNowIsWorkingHour()
+    {
+        if (is_rzp_business_hour() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
     }
 }
