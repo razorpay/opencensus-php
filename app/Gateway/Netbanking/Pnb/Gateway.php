@@ -65,7 +65,6 @@ class Gateway extends Base\Gateway
                 'gateway'          => $this->gateway,
                 'gateway_response' => $input[Payment\Entity::GATEWAY],
                 'payment_id'       => $input['payment'][Payment\Entity::ID],
-                'content'          => $content,
             ]
         );
 
