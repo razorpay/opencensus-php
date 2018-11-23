@@ -126,7 +126,7 @@ export class GenericCreator extends React.PureComponent {
     if (indexString) {
       let indexTree = indexString.split(' ');
       indexTree = [Number(indexTree[0]) - 1].concat(indexTree.splice(1));
-      selectedFieldSchema = getFieldFromIndices(indexTree);
+      selectedFieldSchema = getFieldFromIndices(indexTree.join(' '));
     }
 
     const isNewFieldEnum =
@@ -142,7 +142,7 @@ export class GenericCreator extends React.PureComponent {
     let fieldType = formData.field_type.split(' ');
 
     fieldType = [Number(fieldType[0]) - 1].concat(fieldType.splice(1));
-    formData.field_type = fieldType;
+    formData.field_type = fieldType.join(' ');
 
     formData.enum =
       this.state.enum && this.state.enum.length ? this.state.enum : undefined;

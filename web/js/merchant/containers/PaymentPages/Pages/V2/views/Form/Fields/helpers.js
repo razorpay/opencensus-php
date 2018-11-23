@@ -96,32 +96,38 @@ export function mapFieldToIndex(field) {
   return selectedIndexInOptions;
 }
 
-// TODO: Convert indicesString to array
-export function getFieldFromIndices(indicesTree) {
+export function getFieldFromIndices(indicesString) {
   let FIELD;
 
-  if (indicesTree.length === 1) {
-    FIELD = FIELD_TYPES[indicesTree[0]];
+  if (indicesString === null || indicesString === undefined) {
+    return false;
+  }
+
+  indicesString = indicesString.split(' ');
+
+  if (indicesString.length === 1) {
+    FIELD = FIELD_TYPES[indicesString[0]];
   } else {
-    const sub_options = FIELD_TYPES[indicesTree[0]].options;
+    FIELD = FIELD_TYPES[indicesString[0]];
+    const sub_options = FIELD && FIELD.options;
+
     if (!sub_options) {
       return false;
     }
-    FIELD = sub_options[indicesTree[1]];
+    FIELD = sub_options[indicesString[1]];
   }
 
   return FIELD && FIELD.schema;
 }
 
 export function constructFieldSchema(fieldData) {
-  // field_type is array of indices
   const { title, required, description, field_type } = fieldData;
 
-  if (!field_type instanceof Array) {
+  if (field_type === null || field_type === undefined) {
     return false;
   }
 
-  const SCHEMA = getFieldFromIndices(field_type);
+  const SCHEMA = getFieldFromIndices(String(field_type));
 
   if (!title || !SCHEMA) {
     return false;
