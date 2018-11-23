@@ -18,7 +18,7 @@ class Validator extends Base\Validator
             Entity::DEVICE_ID    => 'string',
             Entity::HANDLE       => 'string',
             Entity::STATUS       => 'string',
-            Entity::DEVICE_DATA  => 'array',
+            Entity::DEVICE_DATA  => 'array|custom',
         ];
 
         return $rules;
@@ -27,11 +27,6 @@ class Validator extends Base\Validator
     protected function getCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::TOKEN        => 'sometimes',
-            Entity::MERCHANT_ID  => 'sometimes',
-            Entity::DEVICE_ID    => 'sometimes',
-            Entity::HANDLE       => 'sometimes',
-            Entity::STATUS       => 'sometimes',
             Entity::DEVICE_DATA  => 'sometimes',
         ]);
 
@@ -50,5 +45,10 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([]);
 
         return $rules;
+    }
+
+    protected function validateDeviceData()
+    {
+        // TODO:: implement device
     }
 }
