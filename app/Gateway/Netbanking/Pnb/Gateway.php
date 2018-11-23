@@ -143,7 +143,7 @@ class Gateway extends Base\Gateway
 
         $encrypted = base64_encode(openssl_encrypt(
                                                    $jsonString,
-                                           "AES-256-ECB",
+                                           'AES-256-ECB',
                                                    $secret,
                                            OPENSSL_RAW_DATA
                                                    )
@@ -177,6 +177,14 @@ class Gateway extends Base\Gateway
         $content = $this->getRequestContentData($input);
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'gateway'        => $this->gateway,
+                'payment_id'     => $input['payment']['id'],
+                'decrypted_data' => $content,
+            ]);
 
         $contentAsJsonString = json_encode($content);
 
@@ -221,7 +229,7 @@ class Gateway extends Base\Gateway
             RequestFields::ZIP_CODE       => Constants::ZIP_CODE,
         ];
 
-        if ($input['payment']['bank'] === Netbanking::BARB_R)
+        if ($input['payment']['bank'] === Netbanking::PUNB_R)
         {
             $data[RequestFields::BANK_CODE] = Constants::BANK_CODE_RETAIL;
         }
