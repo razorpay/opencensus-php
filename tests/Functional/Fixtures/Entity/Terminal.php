@@ -1925,6 +1925,16 @@ class Terminal extends Base
         return $this->createSharedUpiHulkIntentTerminal(array_merge($attributes, $override));
     }
 
+    public function createSharedUpiAxisIntentTpvTerminal(array $override = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiAxisIntentTerminal(array_merge($attributes, $override));
+    }
+
     public function createSharedAepsIciciTerminal(array $attributes)
     {
         $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
@@ -1990,6 +2000,20 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiAxisIntentTerminal(array $override)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_AXIS_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ],
+            'vpa'                       => 'test@vpa'
+        ];
+
+        return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)

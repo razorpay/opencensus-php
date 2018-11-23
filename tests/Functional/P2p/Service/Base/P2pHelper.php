@@ -22,25 +22,81 @@ class P2pHelper
     protected $expectFailureInResponse = false;
 
     /**
-     * For all APIs which start with customer id
-     * Only Customer APIs do not have customer context
-     * @var bool
+     * Initiating auth with public auth for TestMerchant
+     * @var array
      */
-    protected $isCustomerInContext = true;
+    protected $serverHeaders = [
+        'PHP_AUTH_USER' => 'rzp_test_TheTestAuthKey',
+        'PHP_AUTH_PW'   => ''
+    ];
 
     /**
+     * For all API routes which starts with customer, its set true
+     * @var bool
+     */
+    protected $isCustomerInContext;
+
+    /**
+     * For all API routes which runs on device auth, its set true
+     * @var bool
+     */
+    protected $isDeviceInContext;
+
+    /**
+     * Set fixtures,
+     * Initiate Auth for Device 1
+     * Resets response callbacks
+     *
      * P2pHelper constructor.
      */
     public function __construct(Fixtures\Fixtures $fixtures)
     {
         $this->fixtures = $fixtures;
 
+        $this->resetContexts();
+
         $this->resetResponseCallbacks([[$this, 'defaultResponseCallback']]);
+    }
+
+    /**
+     * Enable or disable Customer Context
+     *
+     * @param bool $context
+     * @return P2pHelper
+     */
+    public function setCustomerInContext(bool $context): self
+    {
+        $this->isCustomerInContext = $context;
+
+        return $this;
+    }
+
+    /**
+     * Enable or disable Device Context
+     *
+     * @param bool $context
+     * @return P2pHelper
+     */
+    public function setDeviceInContext(bool $context): self
+    {
+        $this->isDeviceInContext = $context;
+
+        return $this;
+    }
+
+    /**
+     * Reset contexts to their initial value
+     */
+    public function resetContexts()
+    {
+        $this->setCustomerInContext(true);
+        $this->setDeviceInContext(true);
     }
 
     /**
      * Enable or disable schema validation
      *
+     * @param bool $enabled
      * @return P2pHelper
      */
     public function withSchemaValidated(bool $enabled = true): self
@@ -56,7 +112,7 @@ class P2pHelper
      * @param bool $failure
      * @return P2pHelper
      */
-    public function expectFailureInResponse(bool $failure = true): self
+    public function expectFailureInResponse(bool $failure = true)
     {
         $this->expectFailureInResponse = $failure;
 
@@ -123,10 +179,7 @@ class P2pHelper
     {
         $request = new P2pRequest($this->makeUri($uri, $parameter));
 
-        $request->server([
-            'PHP_AUTH_USER' => 'rzp_test_TheTestAuthKey',
-            'PHP_AUTH_PW'   => 'TheKeySecretForTests',
-        ]);
+        $request->server($this->makeServer());
 
         return $request;
     }
@@ -265,9 +318,22 @@ class P2pHelper
         if ($this->isCustomerInContext === true)
         {
             $prefix .= 'customer/';
-
         }
 
         return $prefix . $uri;
+    }
+
+    protected function makeServer()
+    {
+        $servers = $this->serverHeaders;
+
+        if ($this->isDeviceInContext === true)
+        {
+            $servers['PHP_AUTH_PW'] = $this->fixtures->device->getAuthToken();
+        }
+
+        $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getHandle();
+
+        return $servers;
     }
 }

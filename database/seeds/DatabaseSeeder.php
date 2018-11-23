@@ -229,6 +229,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::NODAL_ACCOUNT,
+                    'merchant_id'   => Account::NODAL_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -263,6 +264,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::ATOM_ACCOUNT,
+                    'merchant_id'   => Account::ATOM_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -298,6 +300,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::API_FEE_ACCOUNT,
+                    'merchant_id'   => Account::API_FEE_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -373,6 +376,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::TEST_ACCOUNT,
+                    'merchant_id'   => Account::TEST_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'balance'       => 100000,
@@ -412,6 +416,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::SHARED_ACCOUNT,
+                    'merchant_id'   => Account::SHARED_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
@@ -448,6 +453,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            => Account::DEMO_ACCOUNT,
+                    'merchant_id'   => Account::DEMO_ACCOUNT,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )

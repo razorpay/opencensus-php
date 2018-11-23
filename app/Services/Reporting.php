@@ -101,15 +101,18 @@ class Reporting implements ExternalService
 
         // Report type header coming from client
         $reportType = Request::header(self::REPORT_TYPE_HEADER);
+        $consumer = Request::header(self::CONSUMER_HEADER);
 
         if (empty($merchantId) === false)
         {
+            // This is to be used for merchant reports only
+
             if ($merchantId === Account::SHARED_ACCOUNT)
             {
                 // If SHARED_ACCOUNT, use headers sent
                 // Useful for creating schedules for non-merchants
-                $headers[self::REPORT_TYPE_HEADER] = Request::header(self::REPORT_TYPE_HEADER, self::MERCHANT);
-                $headers[self::CONSUMER_HEADER] = Request::header(self::CONSUMER_HEADER, Account::SHARED_ACCOUNT);
+                $headers[self::REPORT_TYPE_HEADER] = $reportType ?: self::MERCHANT;
+                $headers[self::CONSUMER_HEADER] = $consumer ?: Account::SHARED_ACCOUNT;
             }
             else
             {
@@ -123,9 +126,20 @@ class Reporting implements ExternalService
             {
                 $headers[self::LINKED_ACCOUNT_HEADER] = $linkedAccountParentId;
             }
+
+            // Add admin token if available
+            if (empty($adminToken) === false)
+            {
+                $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
+            }
         }
-        else if (empty($reportType) === false)
+        else if (empty($adminToken) === false)
         {
+            // This is to be used for non merchant reports only
+
+            // Entity view in dashboard
+            $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
+
             // For non-merchant reports X_REPORT_TYPE should not be MERCHANT
             // otherwise admins/banks will be able to download merchant reports.
             // Admin auth will be used here
@@ -134,14 +148,12 @@ class Reporting implements ExternalService
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
             }
 
-            // Will get validated in Reporting service
-            $headers[self::REPORT_TYPE_HEADER] = $reportType;
-            $headers[self::CONSUMER_HEADER] = Request::header(self::CONSUMER_HEADER, null);
-        }
-        else if (empty($adminToken) === false)
-        {
-            // Entity view in dashboard
-            $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
+            if ((empty($reportType) === false) and
+                (empty($consumer) === false))
+            {
+                $headers[self::REPORT_TYPE_HEADER] = $reportType;
+                $headers[self::CONSUMER_HEADER] = $consumer;
+            }
         }
 
         $this->headers = $headers;

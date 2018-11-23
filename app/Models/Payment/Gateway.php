@@ -95,6 +95,8 @@ class Gateway
     const BT_KOTAK           = 'bt_kotak';
     const BT_DASHBOARD       = 'bt_dashboard';
 
+    const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
+
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
@@ -457,11 +459,21 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
-        Payment\Gateway::SHARP,
-        Payment\Gateway::AXIS_MIGS,
-        Payment\Gateway::FIRST_DATA,
-        Payment\Gateway::CYBERSOURCE,
-        Payment\Gateway::UPI_MINDGATE
+        Payment\Gateway::SHARP => [
+            self::GO_LIVE_TIMESTAMP => 1535712088
+        ],
+        Payment\Gateway::AXIS_MIGS      => [
+            self::GO_LIVE_TIMESTAMP => 1542272247
+        ],
+        Payment\Gateway::FIRST_DATA     => [
+            self::GO_LIVE_TIMESTAMP => 1537966190
+        ],
+        Payment\Gateway::CYBERSOURCE => [
+            self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_MINDGATE   => [
+            self::GO_LIVE_TIMESTAMP => 1540826221
+        ]
     ];
 
     /**
@@ -1229,6 +1241,7 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_AXIS,
     ];
 
     public static $upiValidateVpaTerminals = [
@@ -1292,6 +1305,11 @@ class Gateway
         return in_array($gateway, self::$upiIntentGateways, true);
     }
 
+    public static function getScroogeGateways(): array
+    {
+        return array_keys(self::$scroogeGateways);
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1316,7 +1334,23 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        return (in_array($gateway, self::$scroogeGateways, true) === true);
+        return (in_array($gateway, self::getScroogeGateways(), true) === true);
+    }
+
+
+    /**
+     * This function checks if the gateway was live at a particular timestamp
+     *
+     * @param string $gateway
+     * @param int $timestamp
+     * @return bool
+     */
+    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway, int $timestamp): bool
+    {
+        return (
+            isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
+            $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
+        );
     }
 
     /**
