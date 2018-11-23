@@ -44,7 +44,7 @@ class SoapWrapper
            <SOAP-ENV:Fault>
            <faultcode>SOAP-ENV:Client</faultcode>
            <faultstring xml:lang=\"en\">ProcessingException</faultstring>
-            <detail><ipgapi:IPGApiOrderResponse 
+            <detail><ipgapi:IPGApiOrderResponse
             xmlns:ipgapi=\"http://ipg-online.com/ipgapi/schemas/ipgapi\"
             xmlns:a1=\"http://ipg-online.com/ipgapi/schemas/a1\"
             xmlns:v1=\"http://ipg-online.com/ipgapi/schemas/v1\">

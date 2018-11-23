@@ -158,4 +158,3 @@ class Type
         return $hex;
     }
 }
-

@@ -117,4 +117,36 @@ return [
             'internal_error_code'   => ErrorCode::SERVER_ERROR_ASSERTION_ERROR
         ]
     ],
+
+    'testValidateVpaSuccess' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'success@sbi',
+                'success'   => true,
+            ],
+        ]
+    ],
+
+    'testValidateVpaFailure' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'failedvalidate@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'failedvalidate@sbi',
+                'success'   => false,
+            ],
+        ]
+    ],
 ];

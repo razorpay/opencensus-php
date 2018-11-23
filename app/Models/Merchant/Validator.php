@@ -187,8 +187,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $featureValidators = [
-        'visible_features',
-        'uneditable_features',
+        'visible_and_editable_features',
+        'mode_for_product_features',
     ];
 
     protected static $editEmailValidators = [
@@ -233,7 +233,7 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateUneditableFeatures(array $input)
+    public function validateModeForProductFeatures(array $input)
     {
         $requestedFeatures = array_keys($input['features']);
 
@@ -600,7 +600,14 @@ class Validator extends Base\Validator
         $this->validateInstantActivationMandatoryAttributes();
     }
 
-    public function validateVisibleFeatures(array $input)
+    /**
+     * Ensures that the merchant feature requested is a visible feature and an editable feature.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateVisibleAndEditableFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 

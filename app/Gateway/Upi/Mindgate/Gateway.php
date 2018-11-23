@@ -87,8 +87,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $this->validateVpa($input['payment']);
-
         parent::action($input, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
@@ -913,6 +911,7 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
             return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
                                    ->toArray();
         }
 

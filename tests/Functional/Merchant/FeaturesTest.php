@@ -27,6 +27,7 @@ class FeaturesTest extends TestCase
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
+    const LIVE_AUTH_KEY          = 'rzp_live_TheLiveAuthKey';
 
     public function setUp()
     {
@@ -650,6 +651,18 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Asserts that a product feature cannot be added in the live mode by a merchant using a private auth
+     */
+    public function testAddProductFeatureToAccountInLive()
+    {
+        $this->ba->privateAuth(self::LIVE_AUTH_KEY);
+
+        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testUpdateOnboardingResponses()
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -1123,7 +1136,7 @@ class FeaturesTest extends TestCase
     {
         if ($addToMode === Mode::LIVE)
         {
-            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+            $this->ba->privateAuth(self::LIVE_AUTH_KEY);
         }
         else
         {
@@ -1263,7 +1276,7 @@ class FeaturesTest extends TestCase
 
         if ($mode === Mode::LIVE)
         {
-            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+            $this->ba->privateAuth(self::LIVE_AUTH_KEY);
         }
         else
         {

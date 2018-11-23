@@ -43,4 +43,3 @@ class CardType
         return self::$cardType[$acquirer];
     }
 }
-

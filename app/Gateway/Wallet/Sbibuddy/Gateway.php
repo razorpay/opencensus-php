@@ -194,7 +194,7 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $input, array $response)
     {
         $this->isStatusCodeMissing($response);
-        
+
         $content = [
             Entity::RECEIVED                        => true,
             ResponseFields::ORDER_ID                => $response[ResponseFields::ORDER_ID],
@@ -507,7 +507,7 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::ERROR_DESCRIPTION] ?? null
         );
     }
-    
+
     // Checks if status code is not present in response
     protected function isStatusCodeMissing(array $response)
     {

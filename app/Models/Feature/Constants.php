@@ -310,6 +310,8 @@ class Constants
     /**
      * Features that merchants can enable/disable
      * Must be defined in the visibleFeaturesMap
+     * The features defined here which are a part of the PRODUCT_FEATURES array,
+     * will not be editable by the merchant in the live mode.
      *
      * @var array
      */

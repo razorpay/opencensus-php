@@ -59,6 +59,8 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
     const MRN                       = 'mrn';
 
+    const CUSTOMER                  = 'customer';
+
     //
     // These values goes in the account_type field
     //
@@ -163,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::MRN,
         self::USED_AT,
         self::CREATED_AT,
+        self::CUSTOMER,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
