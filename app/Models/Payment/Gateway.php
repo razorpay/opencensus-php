@@ -1237,6 +1237,7 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_AXIS,
     ];
 
     public static $upiValidateVpaTerminals = [
