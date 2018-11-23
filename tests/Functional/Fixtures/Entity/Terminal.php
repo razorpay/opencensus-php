@@ -69,6 +69,7 @@ class Terminal extends Base
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingIdfcTerminal();
+        $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
