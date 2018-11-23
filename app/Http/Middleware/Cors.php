@@ -6,6 +6,10 @@ use Closure;
 
 class Cors
 {
+    protected $authRoutes = [
+        '/session',
+    ];
+
     /**
      * Handle an incoming request.
      *
@@ -15,33 +19,59 @@ class Cors
      */
     public function handle($request, Closure $next)
     {
-        $headers = [
-            'Access-Control-Allow-Origin'       => config('oauth.auth_service_url'),
-            'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS',
-            'Access-Control-Allow-Credentials'  => 'true',
-            'Access-Control-Allow-Headers'      => 'X-Requested-With'
+        $originDomain = \Request::server('HTTP_ORIGIN');
+
+        $originHost = parse_url($originDomain, PHP_URL_HOST);
+
+        $crossOriginDomains = [
+            'auth'    => parse_url(config('oauth.auth_service_url'), PHP_URL_HOST),
+            'banking' => parse_url(config('app.banking_service_url'), PHP_URL_HOST),
         ];
 
-        //
-        // For an OPTIONS pre-flight request, simply return a 200
-        // with the above headers
-        //
-        if ($request->getMethod() === 'OPTIONS')
+        $crossOriginPolicy = false;
+
+        if ($originHost === $crossOriginDomains['banking'])
         {
-            return \Response::json([], 200, $headers);
+            $crossOriginPolicy = true;
+        }
+        elseif (($originHost === $crossOriginDomains['auth']) and
+                (in_array($request->getRequestUri(), $this->authRoutes) === true))
+        {
+            $crossOriginPolicy = true;
         }
 
-        $response = $next($request);
-
-        //
-        // For GET/POST requests, add CORS headers before sending
-        // the response
-        //
-        foreach ($headers as $key => $header)
+        if ($crossOriginPolicy)
         {
-            $response->header($key, $header);
+            $headers = [
+                'Access-Control-Allow-Origin'       => $originDomain,
+                'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',
+                'Access-Control-Allow-Credentials'  => 'true',
+                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-XSRF-TOKEN'
+            ];
+
+            //
+            // For an OPTIONS pre-flight request, simply return a 200
+            // with the above headers
+            //
+            if ($request->getMethod() === 'OPTIONS')
+            {
+                return \Response::json([], 200, $headers);
+            }
+
+            $response = $next($request);
+
+            //
+            // For GET/POST requests, add CORS headers before sending
+            // the response
+            //
+            foreach ($headers as $key => $header)
+            {
+                $response->header($key, $header);
+            }
+
+            return $response;
         }
 
-        return $response;
+        return $next($request);
     }
 }

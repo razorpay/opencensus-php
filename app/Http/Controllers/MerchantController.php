@@ -11,7 +11,6 @@ use App\Merchant;
 use App\Http\AppResponse;
 use App\Mailers\MiscMailer;
 use App\Admin\ApiRequestAny;
-use App\Mailers\ContactFormMailer;
 
 class MerchantController extends Controller
 {
@@ -99,39 +98,6 @@ class MerchantController extends Controller
         list($error, $data) = (new Merchant\Service)->saveActivationFilesData($input);
 
         return AppResponse::jsonResponse($error);
-    }
-
-    public function optionsContact()
-    {
-        $response = AppResponse::jsonResponse([]);
-
-        $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
-
-        return $response;
-    }
-
-    public function postContact()
-    {
-        $input = Input::all();
-
-        // @todo: Shift this validation away from here
-        if ((isset($input['email']) === false) or
-            (isset($input['name']) === false) or
-            (filter_var($input['email'], FILTER_VALIDATE_EMAIL) === false) or
-            (is_string($input['name']) === false))
-        {
-            $error[] = 'Please specify both name and email and in correct format';
-
-            return AppResponse::jsonResponse($error);
-        }
-
-        (new ContactFormMailer)->with($input)->contact()->queue()->deliver();
-
-        $response = AppResponse::jsonResponse([]);
-
-        $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
-
-        return $response;
     }
 
     public function getInvoices($mode)

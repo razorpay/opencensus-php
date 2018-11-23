@@ -30,6 +30,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\SessionInActivity::class,
             \App\Http\Middleware\SetApiHeaders::class,
+            \App\Http\Middleware\Cors::class,
         ]
     ];
 
@@ -39,7 +40,6 @@ class Kernel extends HttpKernel {
      * @var array
      */
     protected $routeMiddleware = [
-        'cors'          => 'App\Http\Middleware\Cors',
         'auth'          => 'App\Http\Middleware\Authenticate',
         'auth.basic'    => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
         'auth.internal' => 'App\Http\Middleware\InternalAuth',

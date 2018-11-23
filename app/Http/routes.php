@@ -16,16 +16,18 @@ Route::get('/status', 'AdminController@getStatus');
 // Please take care to not return any sensitive information
 // here
 Route::group(['middleware' => ['web']], function () {
+
+    // adding options route to the routing layer. could have been at server level but because of some logic we are
+    // keeping it in app layer.
+    Route::options('/{path?}', 'GenericController@handleAny')
+        ->where(['path' => '.*']);
+
     Route::get('/', 'UserController@getIndex')->name('dashboard');
 
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
-
-    // This is for enabling CORS support on contact form submissions
-    Route::options('/contact', 'MerchantController@optionsContact');
-    Route::post('/contact', 'MerchantController@postContact');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
@@ -38,8 +40,7 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-        // Adding the following here since auth:user middleware should be after cors
-        Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
+
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
     });
 
