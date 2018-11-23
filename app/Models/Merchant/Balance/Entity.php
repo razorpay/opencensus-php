@@ -107,6 +107,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function isTypeBanking(): bool
+    {
+        return $this->getType() === Type::BANKING;
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

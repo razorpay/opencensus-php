@@ -756,13 +756,18 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $input = $payment->getMetadata();
+        $metadata = $payment->getMetadata();
 
-        if ($input[Generator::NUMERIC] === true)
-        {
-            return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
-        }
+        $numericRequired = $metadata[Generator::NUMERIC];
+        $bankingRequired = $metadata[Generator::BANKING];
 
-        return $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT);
+        return (
+                ($numericRequired and $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT)) or
+                (($numericRequired === false) and $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT))
+               ) and
+               (
+                ($bankingRequired and $terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING)) or
+                ($bankingRequired === false)
+               );
     }
 }

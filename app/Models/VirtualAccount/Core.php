@@ -108,6 +108,7 @@ class Core extends Base\Core
                     'bank_account'
                 ],
             ],
+            // Todo: What description to use? It is null-able.
             // 'description' => '',
         ];
 
