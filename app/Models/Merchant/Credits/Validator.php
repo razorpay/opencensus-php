@@ -99,7 +99,7 @@ class Validator extends Base\Validator
 
     protected function getMerchantCredits(Credits\Entity $creditsLog)
     {
-        $balance = $creditsLog->merchant->balance;
+        $balance = $creditsLog->merchant->primaryBalance();
         $type = $creditsLog->getType();
 
         switch ($type)

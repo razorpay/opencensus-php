@@ -443,7 +443,7 @@ trait SettlementTrait
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
-        $balance = $merchant->balance->getBalance();
+        $balance = $merchant->primaryBalance()->getBalance();
 
         if (($setlAmount < 100) or ($setlAmount > $balance))
         {

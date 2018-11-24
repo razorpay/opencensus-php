@@ -16,6 +16,7 @@ use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
@@ -24,6 +25,7 @@ use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -656,10 +658,46 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function balances()
+    {
+        return $this->hasMany(Balance\Entity::class);
+    }
+
+    /**
+     * @deprecated
+     * Important: This method won't work correctly for merchant having multiple
+     * balances. But keeping this method here until no following traces as most
+     * merchants are pg type only still.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne|null
+     */
     public function balance()
     {
-        return $this->hasOne(
-            'RZP\Models\Merchant\Balance\Entity', self::MERCHANT_ID, 'id');
+        app('trace')->error(TraceCode::MERCHANT_DEPR_BALANCE_REFERRRED);
+
+        return $this->hasOne(Balance\Entity::class);
+    }
+
+    /**
+     * @return Balance\Entity|null
+     */
+    public function primaryBalance()
+    {
+        return $this->balances()
+                    ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
+                    ->first();
+    }
+
+     /**
+     * @return Balance\Entity|null
+     */
+    public function bankingBalance()
+    {
+        return $this->balances()
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
+                    ->first();
     }
 
     public function bankAccount()
