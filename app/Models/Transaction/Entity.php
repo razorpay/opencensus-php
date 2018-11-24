@@ -528,6 +528,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function setDebit($amount)
     {
         assert ($amount >= 0);

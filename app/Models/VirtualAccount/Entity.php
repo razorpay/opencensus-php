@@ -275,12 +275,23 @@ class Entity extends Base\PublicEntity
      * Post-processing, VA amount fields are to be updated.
      * Status change is done inside incrementAmountPaid.
      *
-     * @param Entity $bankTransfer
+     * @param BankTransfer\Entity $bankTransfer
      */
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
     {
         $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
 
+        $this->incrementAmountPaid($paidAmount);
+        $this->incrementAmountReceived($paidAmount);
+    }
+
+    /**
+     * Updates aggregate stats and status changes of virtual account wrt new bank transfer done.
+     * @param  BankTransfer\Entity $bankTransfer
+     */
+    public function updateWithBankTransferOfBanking(BankTransfer\Entity $bankTransfer)
+    {
+        $paidAmount = $bankTransfer->getAmount();
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);
     }
