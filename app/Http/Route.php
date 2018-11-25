@@ -936,6 +936,14 @@ final class Route
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
+
+        // Payee Routes
+        'payee_get'                                => ['get',      'payees/{id}',                                    'PayeeController@get'                                                ],
+        'payee_list'                               => ['get',      'payees',                                         'PayeeController@list'                                               ],
+        'payee_create'                             => ['post',     'payees',                                         'PayeeController@create'                                             ],
+        'payee_update'                             => ['patch',    'payees/{id}',                                    'PayeeController@update'                                             ],
+        'payee_delete'                             => ['delete',   'payees/{id}',                                    'PayeeController@delete'                                             ],
+
     ];
 
     public static $public = [
@@ -1163,6 +1171,11 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'payee_get',
+        'payee_list',
+        'payee_create',
+        'payee_update',
+        'payee_delete',
     ];
 
     // Only routes defined in internalApps go here
@@ -1446,6 +1459,10 @@ final class Route
         'merchant_methods_edit',
         'merchant_fetch_methods',
         'on_demand_settlement',
+
+        // Only to be used via Subscriptions Service
+        'payment_create_subscriptions',
+
         'merchant_instant_activation_post',
         'subscription_registration_list_tokens',
         'subscription_registration_list_links',
@@ -1455,8 +1472,6 @@ final class Route
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
         'merchant_submit_support_call_request',
-        // Only to be used via Subscriptions Service
-        'payment_create_subscriptions',
         'token_fetch_card',
     ];
 

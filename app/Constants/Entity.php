@@ -30,6 +30,7 @@ class Entity
     const ADDON                     = 'addon';
     const BATCH                     = 'batch';
     const OFFER                     = 'offer';
+    const PAYEE                     = 'payee';
     const ORDER                     = 'order';
     const TOKEN                     = 'token';
     const GEO_IP                    = 'geo_ip';

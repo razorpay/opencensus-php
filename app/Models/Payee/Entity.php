@@ -25,20 +25,23 @@ class Entity extends Base\PublicEntity
     const NOTES   = 'notes';
     const ACTIVE  = 'active';
 
+    protected $generateIdOnCreate = true;
+
     protected $fillable = [
         self::NAME,
         self::CONTACT,
         self::EMAIL,
+        self::ACTIVE,
         self::NOTES,
     ];
 
-    protected $generateIdOnCreate = true;
-
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::CONTACT,
         self::EMAIL,
+        self::ACTIVE,
         self::NOTES,
         self::CREATED_AT,
     ];
@@ -55,10 +58,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
-        //
-    ];
-
-    protected $publicSetters = [
         //
     ];
 
@@ -111,7 +110,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        $this->belongsTo(Merchant\Entity::class);
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     // ------------ End Relations ------------

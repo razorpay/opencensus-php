@@ -41,13 +41,21 @@ class CreatePayees extends Migration
                   ->default(1);
 
             $table->integer(Payee::CREATED_AT);
+
             $table->integer(Payee::UPDATED_AT);
+
             $table->integer(Payee::DELETED_AT)
                   ->nullable();
 
             $table->index(Payee::EMAIL);
+
             $table->index([Payee::CONTACT, Payee::EMAIL, Payee::MERCHANT_ID]);
+
             $table->index([Payee::CONTACT, Payee::MERCHANT_ID]);
+
+            $table->index([Payee::MERCHANT_ID, Payee::CREATED_AT]);
+
+            $table->index(Payee::DELETED_AT);
 
             $table->foreign(Payee::MERCHANT_ID)
                   ->references(Merchant::ID)

@@ -1138,7 +1138,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_REJECT                             = 'INVITATION_REJECT';
     const INVITATION_EMAIL                              = 'INVITATION_EMAIL';
 
-// Trace codes for gateway load rules
+    // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
     const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
@@ -1179,6 +1179,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_TO_POSTPAID_INPUT                = 'TRANSACTIONS_TO_POSTPAID_INPUT';
     const TRANSACTIONS_TO_POSTPAID_FAILED               = 'TRANSACTIONS_TO_POSTPAID_FAILED';
     const TRANSACTIONS_TO_POSTPAID_RESPONSE             = 'TRANSACTIONS_TO_POSTPAID_RESPONSE';
+
+    // Trace codes for Payee and Payee account CRUD
+    const PAYEE_CREATE_REQUEST                          = 'PAYEE_CREATE_REQUEST';
+    const PAYEE_UPDATE_REQUEST                          = 'PAYEE_UPDATE_REQUEST';
+    const PAYEE_DELETE_REQUEST                          = 'PAYEE_DELETE_REQUEST';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
