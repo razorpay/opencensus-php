@@ -25,6 +25,7 @@ use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Subscription\Entity $subscription
+ * @property Order\Entity        order
  */
 class Entity extends Base\PublicEntity
 {
@@ -97,6 +98,8 @@ class Entity extends Base\PublicEntity
     const TAX_AMOUNT               = 'tax_amount';
     const TAXABLE_AMOUNT           = 'taxable_amount';
     const AMOUNT                   = 'amount';
+
+    const FIRST_PAYMENT_MIN_AMOUNT = 'first_payment_min_amount';
 
     /**
      * Following two attributes are looked up from corresponding
@@ -345,6 +348,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::BILLING_START,
         self::BILLING_END,
         self::GROSS_AMOUNT,
@@ -432,6 +436,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::COMMENT,
@@ -450,6 +455,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::INVOICE_NUMBER,
         self::TAXABLE_AMOUNT,
     ];
@@ -466,23 +472,25 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::VIEW_LESS             => 'bool',
-        self::PARTIAL_PAYMENT       => 'bool',
-        self::GROSS_AMOUNT          => 'int',
-        self::TAX_AMOUNT            => 'int',
-        self::TAXABLE_AMOUNT        => 'int',
-        self::AMOUNT                => 'int',
-        self::AMOUNT_PAID           => 'int',
-        self::AMOUNT_DUE            => 'int',
-        self::BILLING_START         => 'int',
-        self::BILLING_END           => 'int',
-        self::GROUP_TAXES_DISCOUNTS => 'bool',
+        self::VIEW_LESS                => 'bool',
+        self::PARTIAL_PAYMENT          => 'bool',
+        self::GROSS_AMOUNT             => 'int',
+        self::TAX_AMOUNT               => 'int',
+        self::TAXABLE_AMOUNT           => 'int',
+        self::AMOUNT                   => 'int',
+        self::AMOUNT_PAID              => 'int',
+        self::AMOUNT_DUE               => 'int',
+        self::FIRST_PAYMENT_MIN_AMOUNT => 'int',
+        self::BILLING_START            => 'int',
+        self::BILLING_END              => 'int',
+        self::GROUP_TAXES_DISCOUNTS    => 'bool',
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     /**
@@ -653,6 +661,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFirstPaymentMinAmount()
+    {
+        return $this->getAttribute(self::FIRST_PAYMENT_MIN_AMOUNT);
     }
 
     public function getUserId()
@@ -1226,6 +1239,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->order->getAmountDue();
+    }
+
+    public function getFirstPaymentMinAmountAttribute()
+    {
+        if ($this->getOrderId() === null)
+        {
+            return null;
+        }
+
+        return $this->order->getFirstPaymentMinAmount();
     }
 
     public function getInvoiceNumberAttribute()

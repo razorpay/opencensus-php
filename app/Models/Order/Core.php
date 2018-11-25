@@ -22,12 +22,8 @@ class Core extends Base\Core
      *
      *
      * @return Entity
-     * @throws Exception\BadRequestValidationFailureException
      */
-    public function create(
-        array $input,
-        Merchant\Entity $merchant,
-        bool $partialPayment = false)
+    public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
     {
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,

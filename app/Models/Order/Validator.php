@@ -13,8 +13,9 @@ use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::AMOUNT          => 'required|integer|min:0',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|integer|min:0',
         Entity::CURRENCY        => 'required|string|size:3',
         Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
@@ -31,7 +32,7 @@ class Validator extends Base\Validator
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
-    );
+    ];
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
