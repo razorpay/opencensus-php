@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Payee;
 
-use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
@@ -14,31 +16,42 @@ use RZP\Models\Base\Traits\NotesTrait;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+    use SoftDeletes;
+
+    // Attributes
+    const NAME    = 'name';
+    const CONTACT = 'contact';
+    const EMAIL   = 'email';
+    const NOTES   = 'notes';
+    const ACTIVE  = 'active';
 
     protected $fillable = [
-        //
+        self::NAME,
+        self::CONTACT,
+        self::EMAIL,
+        self::NOTES,
     ];
 
     protected $generateIdOnCreate = true;
 
-    protected $defaults = [
-        //
+    protected $public = [
+        self::ID,
+        self::NAME,
+        self::CONTACT,
+        self::EMAIL,
+        self::NOTES,
+        self::CREATED_AT,
     ];
 
-    protected $public = [
-        //
+    protected $defaults = [
+        self::CONTACT => null,
+        self::EMAIL   => null,
+        self::NOTES   => [],
+        self::ACTIVE  => true,
     ];
 
     protected $casts = [
-       //
-    ];
-
-    protected $amounts = [
-       //
-    ];
-
-    protected $appends = [
-        //
+        self::ACTIVE => 'bool',
     ];
 
     protected static $generators = [
@@ -50,7 +63,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [
-        //
+        self::CREATED_AT,
     ];
 
     protected static $sign = 'payee';
@@ -59,30 +72,55 @@ class Entity extends Base\PublicEntity
 
     // --------------- Getters ---------------
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getContact()
+    {
+        return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getActive()
+    {
+        return $this->getAttribute(self::ACTIVE);
+    }
 
     // ------------- End Getters -------------
 
-
     // --------------- Setters ---------------
-
 
     // ------------- End Setters -------------
 
+    // --------------- Helpers ---------------
+
+    public function isActive(): bool
+    {
+        return ($this->getActive() === true);
+    }
+
+    // ------------- End Helpers -------------
 
     // -------------- Relations --------------
 
+    public function merchant()
+    {
+        $this->belongsTo(Merchant\Entity::class);
+    }
 
     // ------------ End Relations ------------
 
-
     // -------------- Mutators ---------------
-
 
     // ------------ End Mutators -------------
 
-
     // -------------- Accessors --------------
-
 
     // ------------ End Accessors ------------
 }
