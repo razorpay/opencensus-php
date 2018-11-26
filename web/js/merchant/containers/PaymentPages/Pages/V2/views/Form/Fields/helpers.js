@@ -133,13 +133,15 @@ export function constructFieldSchema(fieldData) {
     return false;
   }
 
+  const prettyTitle = title.trim().replace('  ', ' ');
+
   return {
-    name: title
+    name: prettyTitle
       .trim()
       .toLowerCase()
       .split(' ')
       .join('_'),
-    title,
+    title: prettyTitle,
     required: typeof required !== 'undefined' ? required : undefined,
     description: typeof description !== 'undefined' ? description : undefined,
     ...SCHEMA,

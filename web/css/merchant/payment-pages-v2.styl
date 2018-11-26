@@ -3,6 +3,15 @@
   text-align: center
   z-index: 999999 // Has to be highest
 
+  .back-btn
+    position: absolute
+    left: 20px
+    top: 16px
+    color: #fff
+
+    &:hover
+      opacity: 0.84
+
   .Modal-container
     top: 40%
 
@@ -239,13 +248,13 @@
         font-size: 24px
 
     textarea.Input-el
-      min-height: 30px
-      height: 30px
+      min-height: 32px
+      height: 32px
       max-height: 230px // Supports 720 char on desktop
       line-height: 22px
 
-      &[name="description"]
-        min-height: 70px
+    .Input-highlight textarea.Input-el[name="description"]
+      min-height: 70px
 
     .Input
       margin: -4px -6px
@@ -322,16 +331,16 @@
 
     .i
       position absolute
-      top: 13px
+      top: 15px
       right: 4px
-      font-size: 20px
+      font-size: 18px
       padding: 2px 8px
       cursor: pointer
       visibility: hidden
       color: #bfbfbf
 
       &:hover
-        color: $textDangerColor
+        color: #7b8199
 
     &:not(.disable-hover):hover
       background-color: #fff

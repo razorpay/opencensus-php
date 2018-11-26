@@ -28,11 +28,7 @@ import { trackDetailViewEdits, trackShareActions } from '../ga';
 
 import EditStocks from '../Edit/EditStocks';
 
-import {
-  EditExpiry,
-  EditNotes,
-  EditReceipt,
-} from '../../../PaymentLinks/Edit/index';
+import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
 import ShareView from '../Modals/Share';
 
 import Button from 'component/Button';
@@ -175,19 +171,21 @@ export default class PaymentPagesV2Entity extends React.Component {
                       : '--'
                   }
                 />
-                <EntityDetailRow
-                  label="Available Stock"
-                  value={() => (
-                    <EditStocks
-                      value={paymentPageEntity.times_payable}
-                      timesPaid={paymentPageEntity.times_paid}
-                      editFn={editPaymentPage}
-                      entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
+                {paymentPageEntity.amount && (
+                  <EntityDetailRow
+                    label="Available Stock"
+                    value={() => (
+                      <EditStocks
+                        value={paymentPageEntity.times_payable}
+                        timesPaid={paymentPageEntity.times_paid}
+                        editFn={editPaymentPage}
+                        entityId={paymentPageEntity.id}
+                        trackerFn={trackDetailViewEdits}
+                        isRoleAllowedEdit={isRoleAllowedEdit}
+                      />
+                    )}
+                  />
+                )}
 
                 <EntityDetailRow
                   label="Page URL"
@@ -251,19 +249,6 @@ export default class PaymentPagesV2Entity extends React.Component {
                       value={paymentPageEntity.expire_by}
                       editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <EntityDetailRow
-                  label="Receipt No."
-                  value={() => (
-                    <EditReceipt
-                      value={paymentPageEntity.receipt}
-                      entityId={paymentPageEntity.id}
-                      editFn={editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}

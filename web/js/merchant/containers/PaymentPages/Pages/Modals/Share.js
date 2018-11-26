@@ -23,6 +23,7 @@ if (isMobileAndTablet()) {
 export default ({
   isNew,
   isPaymentPagesV2,
+  isEditExistingId,
   handleClose,
   handleAction,
   showNotification,
@@ -152,7 +153,9 @@ export default ({
                 }}
               />
               {isPaymentPagesV2
-                ? 'Page created successfully'
+                ? isEditExistingId
+                  ? 'Page updated successfully'
+                  : 'Page created successfully'
                 : 'Link created successfully'}
             </span>
           ) : (

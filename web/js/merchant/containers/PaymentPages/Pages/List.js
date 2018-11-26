@@ -143,14 +143,16 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
 
-            <div class="form-group list-filter-item">
-              <label>Receipt No.</label>
-              <Field
-                name="receipt"
-                component="input"
-                class="form-control input-sm"
-              />
-            </div>
+            {!user.isPaymentPagesV2 && (
+              <div class="form-group list-filter-item">
+                <label>Receipt No.</label>
+                <Field
+                  name="receipt"
+                  component="input"
+                  class="form-control input-sm"
+                />
+              </div>
+            )}
 
             <div class="form-group list-filter-item">
               <label>Status</label>

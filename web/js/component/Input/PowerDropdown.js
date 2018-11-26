@@ -32,8 +32,8 @@ export function getValueOfKeyAtLevel(key, optionObj, stringTree) {
   }
 
   return (function getVal(optionObj, indices) {
-    if (indices.length === 0) {
-      return key ? optionObj[key] : optionObj;
+    if (indices.length === 1) {
+      return key ? optionObj[indices[0]][key] : optionObj[indices[0]];
     }
 
     // For last index, options shouldn't exist
@@ -159,7 +159,12 @@ export default class PowerDropdown extends React.Component {
     );
 
     return (
-      <div class={inputClass(this)}>
+      <div
+        class={inputClass(this)}
+        ref={el => {
+          this.powerDropdown = el;
+        }}
+      >
         {/* Contains actual value of dropdown. Automatically considered in Form using via serializer */}
         <input
           name={name}
@@ -209,6 +214,7 @@ export default class PowerDropdown extends React.Component {
                 OptionComponent={OptionComponent}
                 toggleExpansion={this.toggleExpansion}
                 level={0}
+                parentRef={this.powerDropdown}
               />
             )}
           </div>
@@ -236,14 +242,17 @@ class DropDownList extends React.PureComponent {
     }
   }
 
-  handleDocumentClick(e) {
-    if (findDOMNode(this.dropdownlist).contains(e.target)) {
+  handleDocumentClick = e => {
+    if (
+      !this.props.parentRef ||
+      findDOMNode(this.props.parentRef).contains(e.target)
+    ) {
       e.stopPropagation();
       return;
     }
 
     this.props.toggleExpansion();
-  }
+  };
 
   handleEscapePress = ::this.handleEscapePress;
   handleDocumentClick = ::this.handleDocumentClick;
@@ -269,12 +278,7 @@ class DropDownList extends React.PureComponent {
         : options[0].value;
     }
     return (
-      <div
-        class="Input-list"
-        ref={dropdownlist => {
-          this.dropdownlist = dropdownlist;
-        }}
-      >
+      <div class="Input-list">
         {options.map((o, i) => {
           const displayLabel = typeof o === 'object' ? o.label : o;
           const hasSubOptions = !!o.options;
@@ -286,7 +290,7 @@ class DropDownList extends React.PureComponent {
                 valueAtSelectedIndex === o.value && 'selected'
               )}
               key={i}
-              onClick={hasSubOptions ? this.ignoreClick : onSelection}
+              onClick={hasSubOptions ? undefined : onSelection}
               data-option-index={level == 0 ? i : level + ' ' + i}
             >
               {OptionComponent ? (

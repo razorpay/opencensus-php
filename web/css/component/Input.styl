@@ -141,8 +141,8 @@
   .Input-list-item
     position: relative
     width: 100%
-    line-height: 32px
-    padding: 0 12px
+    line-height: 24px
+    padding: 6px 12px
     font-size: 14px
     cursor: pointer
 
@@ -151,7 +151,7 @@
       border-bottom-right-radius: 2px
 
     .display-label
-      width: 85%
+      width: 82%
       display: inline-block
       pointer-events: none
       user-select: none
@@ -178,10 +178,10 @@
 
   i
     display: inline-block
-    vertical-align: top
+    vertical-align: middle
     font-size: 16px
     margin-right: 8px
-    margin-top: 11px
+    line-height: inherit
     pointer-events: none
 
   .i-chevron-right
@@ -560,6 +560,10 @@ textarea.Input-el
       line-height: 20px
       text-align: center
       cursor: pointer
+      color: #bfbfbf
+
+      &:hover
+        color: #7b8199
 
 /* Calendar picker styles */
 .Input--Calendar-content

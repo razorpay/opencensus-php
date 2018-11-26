@@ -25,6 +25,22 @@ export default class extends React.Component {
     );
   }
 
+  onBlur = e => {
+    const hasError = !!document.querySelectorAll('#title .is-invalid').length;
+    let value = e.target.value;
+
+    if (hasError) {
+      value = '';
+    }
+
+    this.props.updateData({
+      target: {
+        name: 'title',
+        value,
+      },
+    });
+  };
+
   render() {
     const ele = document.body.querySelector('#title textarea[name="title"]');
     const hasVal = ele ? ele.value : this.props.title;
@@ -41,9 +57,13 @@ export default class extends React.Component {
           info="This is the heading of your page. Help your customers recognise the page with this"
           defaultValue={this.props.title}
           onInput={this.handleOnInput}
-          onBlur={this.props.updateData}
-          maxLength="40"
+          onBlur={this.onBlur}
           required
+          validator={val => {
+            if (val && val.length > 40) {
+              return 'Title cannot be more than 40 characters';
+            }
+          }}
           onKeyPress={e => {
             if (e.which === 13) {
               e.preventDefault();

@@ -207,10 +207,9 @@ export class AmountCreator extends React.PureComponent {
             checked={Boolean(hasStock)}
             fieldLabel={() => (
               <span>
-                This item has limited stock{' '}
+                {hasStock ? 'This item has' : 'This item has limited quantity'}{' '}
                 {!!hasStock && (
                   <React.Fragment>
-                    of{' '}
                     <Input
                       name="stock"
                       defaultValue={this.state.stock}

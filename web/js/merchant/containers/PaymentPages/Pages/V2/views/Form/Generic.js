@@ -57,6 +57,9 @@ export class GenericCreator extends React.PureComponent {
     disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
     isFieldEnum: !!this.props.field.enum,
+    enum: this.props.field.hasOwnProperty('enum')
+      ? this.props.field.enum
+      : undefined,
   };
 
   defaultEnumVal = (() => {
@@ -107,7 +110,7 @@ export class GenericCreator extends React.PureComponent {
     const fieldType = document.getElementsByName('field_type')[0].value;
 
     let disableSubmit =
-      form.querySelectorAll('.is-invalid').length || !title || !fieldType;
+      !!form.querySelectorAll('.is-invalid').length || !title || !fieldType;
 
     if (
       this.state.isFieldEnum &&
@@ -188,14 +191,14 @@ export class GenericCreator extends React.PureComponent {
             name="title"
             defaultValue={field.title}
             placeholder="Enter field title"
-            pattern="^[0-9a-zA-Z]+(?: [0-9a-zA-Z]+)*$"
+            pattern="^[0-9a-zA-Z ]+"
             validator={function(val) {
               if (!val) {
-                return;
+                return 'Field title is required';
               }
 
               if (!isNaN(val)) {
-                return 'Label must have atleast 1 character';
+                return 'Field title must have atleast 1 character';
               }
 
               const sameTitleFieldIndex = allFieldsLabelList.indexOf(val);
@@ -204,7 +207,7 @@ export class GenericCreator extends React.PureComponent {
                 sameTitleFieldIndex > -1 &&
                 sameTitleFieldIndex !== selfIndex
               ) {
-                return 'Label cannot be same as other field';
+                return 'Field title cannot be same as other field';
               }
             }}
             autoFocus
@@ -252,20 +255,25 @@ export class GenericCreator extends React.PureComponent {
               name="description"
               class="Input--description"
               defaultValue={field.description}
+              validator={val => {
+                if (val && val.length > 128) {
+                  return 'Field description cannot be more than 128 characters';
+                }
+              }}
             />
           )}
         </div>
         <footer>
           {!!selfIndex && (
             <Button.Transparent
-              class="Button--danger"
+              class="Button--muted"
               type="button"
               onClick={e => {
                 onFieldDelete(selfIndex);
                 e.stopPropagation();
               }}
             >
-              Delete
+              Delete Field
             </Button.Transparent>
           )}
           <div class="group-right">

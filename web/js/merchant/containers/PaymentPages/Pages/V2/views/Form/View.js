@@ -33,6 +33,12 @@ const CreatorType = {
 export default class View extends React.PureComponent {
   state = { activeCreatorType: null };
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.payment_page_id !== nextProps.payment_page_id) {
+      this.onCreatorClose();
+    }
+  }
+
   openCreator = (e, activeCreatorType, activeSchemaIndex) => {
     const parent = document.getElementById('form-section');
     const width = parent.clientWidth + 44 * 2;
