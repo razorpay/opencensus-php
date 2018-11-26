@@ -1,6 +1,20 @@
 'use strict';
 //Signin Controller
 app
+  .factory('authCallbacks', [
+    function() {
+      var signinCallback = null;
+
+      return {
+        getSigninCallback: function() {
+          return signinCallback;
+        },
+        setSigninCallback: function(cb) {
+          return typeof cb === 'function' && (signinCallback = cb);
+        },
+      };
+    },
+  ])
   .controller('AuthCtrl', [
     '$scope',
     '$timeout',
@@ -16,6 +30,7 @@ app
     '$localStorage',
     'utils',
     'isBB',
+    'authCallbacks',
     function(
       $scope,
       $timeout,
@@ -30,7 +45,8 @@ app
       $window,
       $localStorage,
       utils,
-      isBB
+      isBB,
+      authCallbacks
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -282,7 +298,13 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard();
+                var signinSuccessCb = authCallbacks.getSigninCallback();
+
+                if (signinSuccessCb) {
+                  signinSuccessCb(data.user);
+                } else {
+                  $scope.goToDashboard();
+                }
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -814,7 +836,14 @@ app
                     return false;
                   }
                 }
-                $scope.goToDashboard();
+
+                var signinSuccessCb = authCallbacks.getSigninCallback();
+
+                if (signinSuccessCb) {
+                  signinSuccessCb(userDetails);
+                } else {
+                  $scope.goToDashboard();
+                }
               } else {
                 $scope.isLoggedIn = true;
                 hideSpinner();
@@ -1003,8 +1032,13 @@ app
           messageTypes = {
             signup: 'signup',
             signin: 'signin',
+            signinSuccess: 'signinSuccess',
           },
-          supportedMessages = [messageTypes.signup, messageTypes.signin];
+          supportedMessages = [
+            messageTypes.signup,
+            messageTypes.signin,
+            messageTypes.signinSuccess,
+          ];
 
         parentWindow.postMessage(
           {
@@ -1025,6 +1059,19 @@ app
 
             case messageTypes.signin:
               return $scope.goToSigninLayout();
+
+            case messageTypes.signinSuccess:
+              authCallbacks.setSigninCallback(function(userData) {
+                window.parent.postMessage(
+                  {
+                    type: messageTypes.signinSuccess,
+                    __cbId: message.data.__id,
+                    data: { user: userData },
+                  },
+                  'http://' + window.parent.location.hostname
+                );
+              });
+              return;
           }
         });
       }
