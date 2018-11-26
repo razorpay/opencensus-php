@@ -7,7 +7,7 @@ class ResponseFields
     const API_KEY        = 'api_key';
     const ENCRYPTED_DATA = 'encrypted_data';
 
-    //fields after decrypting
+    // Fields after decrypting
     const PAYMENT_ID      = 'order_id';
     const RESPONSE_CODE   = 'response_code';
     const BANK_PAYMENT_ID = 'transaction_id';
@@ -17,6 +17,10 @@ class ResponseFields
     const AMOUNT          = 'amount';
     const CHECKSUM        = 'hash';
 
-    //verify
+    // Verify
     const BANK_CODE = 'bank_code';
+
+    // Refund
+    const REFUND_REFERENCE_NO = 'refund_reference_no';
+    const ERROR_MESSAGE       = 'message';
 }
