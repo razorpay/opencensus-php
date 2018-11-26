@@ -11,4 +11,5 @@ class Url
 
     const AUTHORIZE   = '/v2/paymentseamlessrequest';
     const VERIFY      = '/v2/paymentstatus';
+    const REFUND      = '/v2/refundrequest';
 }
