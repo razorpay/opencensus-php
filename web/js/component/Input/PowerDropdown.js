@@ -55,12 +55,49 @@ export default class PowerDropdown extends React.Component {
         : '',
   };
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps !== this.props) {
+      this.el && this.valid();
+    }
+  }
+
+  valid() {
+    let { required, validator, requiredError, patternError } = this.props;
+
+    let el = this.el;
+    let value = el.value;
+    let validity = el.validity;
+    let error = '';
+
+    if (validity.valueMissing) {
+      error = requiredError || this.requiredError;
+    } else if (validity.patternMismatch) {
+      error = patternError || this.patternError;
+    } else if (validator) {
+      error = validator(value) || '';
+      el.setCustomValidity(error);
+    }
+
+    this.setState({ error });
+  }
+
+  setRef = el => {
+    this.el = el;
+    if (el) {
+      this.valid();
+    }
+  };
+
   focus = e => {
     this.setState({ focus: true });
   };
 
   blur = e => {
     this.setState({ focus: false });
+
+    if (this.state.touched) {
+      this.setState({ mature: true });
+    }
   };
 
   onSelection = e => {
@@ -84,10 +121,15 @@ export default class PowerDropdown extends React.Component {
       setNativeValue(mainFormElement, selectedOption.value);
       mainFormElement.dispatchEvent(new Event('change', { bubbles: true }));
 
+      this.valid();
+
       onChange &&
         onChange({ index: selectedOptionIndexTree, option: selectedOption });
 
       this.toggleExpansion();
+      if (!this.state.mature || !this.state.touched) {
+        this.setState({ touched: true });
+      }
     }
 
     e.stopPropagation();
@@ -119,7 +161,12 @@ export default class PowerDropdown extends React.Component {
     return (
       <div class={inputClass(this)}>
         {/* Contains actual value of dropdown. Automatically considered in Form using via serializer */}
-        <input name={name} defaultValue={defaultValue} hidden />
+        <input
+          name={name}
+          defaultValue={defaultValue}
+          hidden
+          ref={this.setRef}
+        />
         <Label text={label} />
         <div class="Input-content">
           <div class="Input-elWrapper Select-elWrapper">
@@ -152,6 +199,7 @@ export default class PowerDropdown extends React.Component {
                 </div>
               )}
             </div>
+            <Error text={this.state.error || this.props.propagatedError} />
 
             {isDropdownExpanded && (
               <DropDownList

@@ -194,6 +194,7 @@
           background: transparent
           resize: none
           border: 1px solid transparent
+          color: #212121
 
         .Input-highlight .Input-el
           &[name="title"], &[name="description"]
@@ -217,6 +218,9 @@
         font-size: 14px
 
     .title--big
+      .Input
+        margin-bottom: -16px
+
       .Input-el
         min-height: 42px
         font-size: 24px
@@ -494,11 +498,12 @@
 
 /* Style for extendable-on-keypress text area */
 .fake-textarea
+  width: 100%
+  height: 0
   overflow: hidden
   word-wrap: break-word
-  white-space: pre-wrap
-  height: 0
-  margin: 0 16px 0 -6px // Has no vertical footprint. 16px to act as look-ahead while typing -6 is same as .Input
+  white-space: normal
+  margin: 0 16px 0 -5px // Has no vertical footprint. 16px to act as look-ahead while typing -6 is same as .Input
   padding: 0 5px
-  line-height: 20px
+  line-height: 22px
   font-size: 14px

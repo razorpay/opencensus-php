@@ -220,6 +220,11 @@ export class GenericCreator extends React.PureComponent {
             onChange={this.onSelection}
             customOptionComponent={CustomTypeOption}
             customSelectedOptionComponent={CustomTypeOption}
+            validator={val => {
+              if (!val) {
+                return 'Please select a field type';
+              }
+            }}
           />
           {this.state.isFieldEnum && (
             <Input.EnumList
