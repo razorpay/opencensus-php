@@ -20,6 +20,7 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
 import ReportLoader from 'merchant_common/components/Reports/ReportLoader';
 import { EmailReport } from 'merchant/containers/Reports';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -75,6 +76,7 @@ export default function Reports(store, opts) {
         type: selector(state, 'type'),
         date: selector(state, 'date'),
         invoiceDate: selector(state, 'invoiceDate'),
+        reportType: selector(state, 'reportType'),
         config: state.config,
       };
     },
@@ -97,6 +99,7 @@ export default function Reports(store, opts) {
       invoiceDate: moment()
         .subtract(1, 'months')
         .startOf('month'),
+      reportType: 'csv', //default value
     },
   })
   class ReportsContainer extends Component {
@@ -303,7 +306,7 @@ export default function Reports(store, opts) {
     generateReport() {
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
-        { date, type, invoiceDate } = this.props,
+        { date, type, invoiceDate, reportType } = this.props,
         day = date.date(),
         month = date.month() + 1, // Jan is 0 in moment library
         year = date.year(),
@@ -365,6 +368,13 @@ export default function Reports(store, opts) {
               generated_by: selectedAccountId,
               start_time: startTime,
               end_time: endTime,
+
+              // report file type option has to override default configs
+              template_overrides: {
+                file_meta: {
+                  extension: reportType,
+                },
+              },
             };
 
           this.props.showNotification(downloadStartedMessage);
@@ -711,6 +721,27 @@ export default function Reports(store, opts) {
                     </div>
                   )}
               </div>
+
+              {/* File type for Reports */}
+              {selectedConfig.type !== 'custom' && (
+                <div class="form-element">
+                  <div class="title">SELECT FORMAT</div>
+                  <div class="file-format-select">
+                    <Field
+                      component={RadioButton}
+                      name="reportType"
+                      htmlValue="csv"
+                      label={() => <span>CSV</span>}
+                    />
+                    <Field
+                      component={RadioButton}
+                      name="reportType"
+                      htmlValue="xlsx"
+                      label={() => <span>Excel (xlsx)</span>}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div class="form-element">
                 <button class="btn btn-primary" onClick={this.generateReport}>
