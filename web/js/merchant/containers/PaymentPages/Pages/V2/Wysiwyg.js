@@ -142,18 +142,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!this.props.id) {
       this.changeFETheme('light');
     }
-
-    window.addEventListener('beforeunload', this.reloadAlert);
   }
 
   componentWillUnmount() {
     document.title = 'Razorpay Dashboard'; // Revert title of dashboard
-    document.removeEventListener('beforeunload', this.reloadAlert);
-  }
-
-  reloadAlert(e) {
-    (e || window.event).returnValue = null;
-    return null;
   }
 
   handleClose = () => {

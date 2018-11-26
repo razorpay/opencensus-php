@@ -103,11 +103,6 @@ export const FormFooter = ({ amountToPay }) => (
       alt="pay-methods"
       src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
     />
-    <div class="btn" type="submit" disabled>
-      <div>
-        <span>Pay ₹{getFormattedAmount(Number(amountToPay || 0) * 100)}</span>
-      </div>
-    </div>
   </div>
 );
 
