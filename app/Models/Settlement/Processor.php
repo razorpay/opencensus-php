@@ -30,7 +30,9 @@ class Processor extends Base\Core
      */
     protected $merchants = null;
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s_%s';
+
+    const MUTEX_DAILY_RESOURCE  = 'SETTLEMENT_DAILY_PROCESSING_%s';
 
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
@@ -55,7 +57,7 @@ class Processor extends Base\Core
     {
         $this->increaseAllowedSystemLimits();
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+        $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
@@ -110,7 +112,7 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
-            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
