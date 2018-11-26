@@ -96,10 +96,10 @@ class EmandateSorter extends Terminal\Sorter
     protected function getDefaultOrdering($gateways)
     {
         return [
-            $gateways['direct_gateway'],
-            $gateways['direct_npci'],
-            $gateways['shared_npci'],
-            $gateways['shared_gateway']
+            $gateways['direct_gateway'] ?? '',
+            $gateways['direct_npci'] ?? '',
+            $gateways['shared_npci'] ?? '',
+            $gateways['shared_gateway' ?? '']
         ];
     }
 
