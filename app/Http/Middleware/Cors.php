@@ -7,7 +7,7 @@ use Closure;
 class Cors
 {
     protected $authRoutes = [
-        '/session',
+        '/user/session',
     ];
 
     /**
@@ -30,6 +30,7 @@ class Cors
 
         $crossOriginPolicy = false;
 
+        sd($request->getRequestUri());
         if (($originHost === $crossOriginDomains['banking']) or
             (($originHost === $crossOriginDomains['auth']) and
                 (in_array($request->getRequestUri(), $this->authRoutes, true) === true)))
