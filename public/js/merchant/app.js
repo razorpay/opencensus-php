@@ -163,4 +163,30 @@ var app = angular
       $idleProvider.warningDuration(15);
       $keepaliveProvider.interval(60);
     },
+  ])
+  .constant('appDomainMap', function() {
+    return {
+      'banking.razorpay.in': 'businessbanking',
+      'dashboard.razorpay.in': 'paymentgateway',
+    };
+  })
+  .constant('appname', [
+    'appDomainMap',
+    function(appDomainMap) {
+      try {
+        return (
+          window.parent !== window &&
+          appDomainMap[window.parent.location.hostname]
+        );
+      } catch (e) {
+        return;
+      }
+    },
+  ])
+  .constant('isBB', [
+    'appname',
+    function(appname) {
+      // TODO: make it a service
+      return appname === 'businessbanking';
+    },
   ]);

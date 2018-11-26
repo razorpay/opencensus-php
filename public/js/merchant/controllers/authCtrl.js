@@ -15,6 +15,7 @@ app
     '$window',
     '$localStorage',
     'utils',
+    'isBB',
     function(
       $scope,
       $timeout,
@@ -28,7 +29,8 @@ app
       transformRequestAsFormPost,
       $window,
       $localStorage,
-      utils
+      utils,
+      isBB
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -995,6 +997,37 @@ app
             toStepName
           );
       };
+
+      if (isBB) {
+        var parentWindow = window.parent,
+          messageTypes = {
+            signup: 'signup',
+            signin: 'signin',
+          },
+          supportedMessages = [messageTypes.signup, messageTypes.signin];
+
+        parentWindow.postMessage(
+          {
+            type: 'auth.ready',
+            events: supportedMessages,
+          },
+          'http://' + window.parent.location.hostname
+        );
+
+        window.addEventListener('message', function(message) {
+          if (!~supportedMessages.indexOf(message.data.type)) {
+            return;
+          }
+
+          switch (message.data.type) {
+            case messageTypes.signup:
+              return $scope.goToSignupLayout();
+
+            case messageTypes.signin:
+              return $scope.goToSigninLayout();
+          }
+        });
+      }
     },
   ])
   .directive('overrideTab', [

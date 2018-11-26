@@ -4,6 +4,20 @@
 
 @else
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
+<script>
+    // TODO: need to change the condition
+    document.domain = "razorpay.in";
+
+    if (
+      window.parent !== window &&
+      window.parent.location.hostname === "banking.razorpay.in"
+    ) {
+
+      document.write(
+        "<link rel='stylesheet' href='{{$cdnDashboardUrl}}/css/generated/singup_businessbanking.css' type='text/css'/>"
+      );
+    }
+  </script>
 @endif
 
 @include('partials/common')
