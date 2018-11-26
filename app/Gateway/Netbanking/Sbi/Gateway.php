@@ -461,7 +461,7 @@ class Gateway extends Base\Gateway
 
         $requestWithoutChecksum = implode('|', $request);
 
-        $checksum = md5($requestWithoutChecksum);
+        $checksum = hash('sha256', $requestWithoutChecksum);
 
         return $requestWithoutChecksum . '|' . RequestFields::CHECKSUM . '=' . $checksum;
     }
