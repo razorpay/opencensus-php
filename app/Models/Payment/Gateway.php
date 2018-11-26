@@ -1018,9 +1018,10 @@ class Gateway
             Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
             Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
             Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-            //TODO this list is not accurate keeping hdfc for test cases
+            //TODO this list is not accurate keeping hdfc, icici for test cases
             Gateway::ENACH_RBL          => [
-                IFSC::HDFC
+                IFSC::HDFC,
+                IFSC::ICIC,
             ]
         ],
         AuthType::AADHAAR => [
