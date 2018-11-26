@@ -30,7 +30,6 @@ class Cors
 
         $crossOriginPolicy = false;
 
-        sd($request->getRequestUri());
         if (($originHost === $crossOriginDomains['banking']) or
             (($originHost === $crossOriginDomains['auth']) and
                 (in_array($request->getRequestUri(), $this->authRoutes, true) === true)))
@@ -39,7 +38,7 @@ class Cors
             $crossOriginPolicy = true;
         }
 
-        if ($crossOriginPolicy)
+        if ($crossOriginPolicy === true)
         {
             $headers = [
                 'Access-Control-Allow-Origin'       => $originDomain,
@@ -63,10 +62,7 @@ class Cors
             // For GET/POST requests, add CORS headers before sending
             // the response
             //
-            foreach ($headers as $key => $header)
-            {
-                $response->header($key, $header);
-            }
+            $response->withHeaders($headers);
 
             return $response;
         }
