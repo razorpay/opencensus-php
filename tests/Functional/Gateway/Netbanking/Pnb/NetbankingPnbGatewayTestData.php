@@ -128,7 +128,7 @@ return [
         'status'          => '0'
     ],
 
-    'testRefundFailed' => [
+    'testRefundAmountGreaterThanPaymentAmount' => [
         'response'  => [
             'content'     => [
                 'error' => [

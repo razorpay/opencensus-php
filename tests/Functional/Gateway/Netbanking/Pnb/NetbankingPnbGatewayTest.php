@@ -133,11 +133,15 @@ class NetbankingPnbGatewayTest extends TestCase
         });
     }
 
-    /*public function testRefund()
+    public function testRefund()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['status'], 'processed');
 
         $this->assertEquals($refund['amount'], 50000);
     }
@@ -146,16 +150,36 @@ class NetbankingPnbGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $refund = $this->refundPayment($payment['id'], 10000);
-
-        $this->assertEquals($refund['amount'], 10000);
+        $this->refundPayment($payment['id'], 10000);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['amount_refunded'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['amount'], 10000);
+
+        $this->assertEquals($refund['status'], 'processed');
     }
 
     public function testRefundFailed()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockFailedRefundResponse();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['status'], 'failed');
+
+        $this->assertEquals($refund['internal_error_code'], 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED');
+    }
+
+
+    public function testRefundAmountGreaterThanPaymentAmount()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -168,6 +192,7 @@ class NetbankingPnbGatewayTest extends TestCase
                 $refund = $this->refundPayment($payment['id'], 100000);
             });
     }
+    /*
 
     public function testPnbDailyFileGeneration()
     {
@@ -215,6 +240,25 @@ class NetbankingPnbGatewayTest extends TestCase
             if ($action === 'authorize')
             {
                 $content['response_code'] = '1000';
+            }
+        });
+    }
+
+    protected function mockFailedRefundResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                unset($content['data']);
+                unset($content['hash']);
+
+                $error = [
+                    'code'    => '1024',
+                    'message' => 'Invalid Parameters'
+                ];
+
+                $content['error'] = json_encode($error);
             }
         });
     }
