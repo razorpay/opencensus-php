@@ -16,4 +16,6 @@ class Constants
     const INDIAN_RUPEE        = 'INR';
     const BANK_CODE_RETAIL    = 'PNBN';
     const BANK_CODE_CORPORATE = 'PNBM';
+
+    const REFUND_DESCRIPTION  = 'Refund initiated by customer';
 }
