@@ -12,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant as MerchantModel;
 
@@ -108,6 +109,8 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
+        $useQueue = $this->shouldUseQueue($input);
+
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         if ($shouldProcess === true)
@@ -116,9 +119,9 @@ class Processor extends Base\Core
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
-                function () use ($channel)
+                function () use ($channel, $useQueue)
                 {
-                    return $this->processSettlements($channel);
+                    return $this->processSettlements($channel, $useQueue);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -127,7 +130,7 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function processSettlements($channel)
+    protected function processSettlements($channel, $useQueue)
     {
         $response = [];
 
@@ -141,10 +144,17 @@ class Processor extends Base\Core
             {
                 $this->traceSetlInitiating($channel);
 
-                $setlResponse = $this->createSettlements($channel);
+                $setlResponse = $this->createSettlements($channel, $useQueue);
 
-                $response[$channel]['count']    += $setlResponse['settlement_count'];
-                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+                if ($useQueue === true)
+                {
+                    $response = $setlResponse;
+                }
+                else
+                {
+                    $response[$channel]['count']    += $setlResponse['settlement_count'];
+                    $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+                }
             }
 
             $this->trace->info(
@@ -329,7 +339,7 @@ class Processor extends Base\Core
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
-        $txns = $this->repo->transaction->fetchTransactionsForSettlement(
+        $txns = $this->repo->transaction->fetchUnsettledTransactions(
                     $settledAtCutOff, $channel, $inMids, $notInMids);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
@@ -483,9 +493,20 @@ class Processor extends Base\Core
         return $mids;
     }
 
-    protected function createSettlements($channel): array
+    protected function createSettlements($channel, $useQueue): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
+
+        if ($useQueue === true)
+        {
+            $activatedMerchants = $this->repo
+                                       ->merchant
+                                       ->fetchMerchantsForSettlement([], $skipMids);
+
+            $activatedMerchants = $activatedMerchants->get()->getIds();
+
+            return $this->pushMerchantsToSettlementQueue($activatedMerchants, $channel);
+        }
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
 
@@ -589,11 +610,82 @@ class Processor extends Base\Core
      */
     protected function isTestMode(): bool
     {
-        if (in_array($this->env, ['testing', 'perf', 'func'], true) === true)
+        if (in_array($this->env, ['testing', 'perf', 'func', 'dev'], true) === true)
         {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @param array $merchants
+     * @param string $channel
+     * @return array
+     */
+    protected function pushMerchantsToSettlementQueue(array $merchants, string $channel): array
+    {
+        $totalCount[$channel]['merchant_count']    = 0;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
+            [
+                'channel' => $channel
+            ]);
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                SettlementJob::dispatch($this->mode, $channel, $merchantId);
+
+                $this->trace->info(TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT_TO_QUEUE, ['channel' => $channel, 'merchant_id' => $merchantId]);
+
+                $totalCount[$channel]['merchant_count'] += 1;
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::UNSETTLED_MERCHANT_DISPATCH_FAILED,
+                    [
+                        'channel'     => $channel,
+                        'merchant_id' => $merchantId
+                    ]
+                );
+            }
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE, $totalCount);
+
+        return $totalCount;
+    }
+
+    public function fetchAndProcessTransactionsForSettlement(string $channel, string $merchantId)
+    {
+        $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txns = $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
+
+        $this->merchants = $this->repo
+                                ->merchant
+                                ->findManyWithRelations(
+                                    [$merchantId],
+                                    ['balance', 'bankAccount'],
+                                    [
+                                        MerchantModel\Entity::ID,
+                                        MerchantModel\Entity::PARENT_ID
+                                    ])
+                                ->keyBy(MerchantModel\Entity::ID);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        return $this->createSettlementEntities($groupedTxns, $channel);
+    }
+
+    protected function shouldUseQueue(array $input)
+    {
+        return (bool)isset($input['use_queue']) ?? false;
     }
 }
