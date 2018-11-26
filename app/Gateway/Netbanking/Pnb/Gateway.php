@@ -94,6 +94,21 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $content = $this->getRefundRequestData($input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->processRefundResponse($response, $input);
+    }
+
     public function sendPaymentVerifyRequest(Verify $verify)
     {
         $content = $this->getVerifyRequestData($verify);
@@ -253,7 +268,7 @@ class Gateway extends Base\Gateway
 
         $this->checkDecryptionFailure($decryptedString, $encryptedString);
 
-        return json_decode($decryptedString, true);
+        return $this->jsonToArray($decryptedString);
     }
 
     protected function checkDecryptionFailure(
@@ -326,16 +341,76 @@ class Gateway extends Base\Gateway
             $content[RequestFields::BANK_CODE] = Constants::BANK_CODE_CORPORATE;
         }
 
-        $content[RequestFields::CHECKSUM]   = $this->getHashOfArray($content);
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
         return $content;
+    }
+
+    protected function getRefundRequestData($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $data = [
+            RequestFields::API_KEY         => $this->getMerchantId(),
+            RequestFields::BANK_PAYMENT_ID => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::AMOUNT          => $this->formatAmount($input['refund']['amount']),
+            RequestFields::DESCRIPTION     => Constants::REFUND_DESCRIPTION,
+        ];
+
+        $data[RequestFields::CHECKSUM] = $this->getHashOfArray($data);
+
+        return $data;
+    }
+
+    protected function processRefundResponse($response, $input)
+    {
+        $body = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            ['response' => $body]);
+
+        if (isset($body['error']) === true)
+        {
+            $responseArray = $this->jsonToArray($body['error']);
+        }
+        else
+        {
+            $responseArray = $this->jsonToArray($body['data']);
+        }
+
+        $attributes = $this->getRefundAttributes($input);
+
+        if (isset($body['error']) === true)
+        {
+            $attributes[Base\Entity::ERROR_MESSAGE] = $responseArray[ResponseFields::ERROR_MESSAGE];
+        }
+        else
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $responseArray[ResponseFields::REFUND_REFERENCE_NO];
+        }
+
+        $this->createGatewayPaymentEntity($attributes);
+
+        $this->checkRefundStatus($body);
+    }
+
+    protected function getRefundAttributes($input)
+    {
+        $attributes = [
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::AMOUNT          => $input['refund']['amount'] / 100,
+            Base\Entity::REFUND_ID       => $input['refund']['id'],
+        ];
+
+        return $attributes;
     }
 
     protected function parseVerifyResponse($response): array
     {
         $responseArray = $this->jsonToArray($response->body);
 
-        $data = json_decode($responseArray['data'], true);
+        $data = $this->jsonToArray($responseArray['data']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -365,6 +440,14 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
+    }
+
+    protected function checkRefundStatus($responseArray)
+    {
+        if (isset($responseArray['error']) === true)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
+        }
     }
 
     protected function checkGatewaySuccess(Verify $verify)
