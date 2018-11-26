@@ -668,7 +668,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '88' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'PTLF Error',
         '89' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Invalid Route Service',
         '91' => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
-        '94' => ErrorCode::BAD_REQUEST_GENERIC_TRANSACTION_ERROR, //Duplicate Transaction
+        '94' => ErrorCode::GATEWAY_ERROR_DUPLICATE_TRANSACTION, //Duplicate Transaction
 
         'N0' => ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED, //Unable to Authorise
         'N1' => ErrorCode::GATEWAY_ERROR_INVALID_PAN_LENGTH, //'Invalid pan lengtfh',
@@ -774,14 +774,15 @@ class ErrorCodes extends Cards\ErrorCodes
         '32' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Partial Reversal'
 
         // Denied by risk
-        'D' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Total Amount limit set for the terminal for transactions has been crossed
-        'E' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED, //Total transaction limit set for the terminal has been crossed
-        'F' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum debit amount limit set for the terminal for a day has been crossed
-        'G' => ErrorCode::BAD_REQUEST_GATEWAY_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum credit amount limit set for the terminal for a day has been crossed
+        'D' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Total Amount limit set for the terminal for transactions has been crossed
+        'E' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_TRANSACTION_LIMIT_REACHED, //Total transaction limit set for the terminal has been crossed
+        'F' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum debit amount limit set for the terminal for a day has been crossed
+        'G' => ErrorCode::GATEWAY_ERROR_TERMINAL_MAX_AMOUNT_LIMIT_REACHED, //Maximum credit amount limit set for the terminal for a day has been crossed
         'H' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Maximum debit amount set for per card for rolling 24 hrs has been crossed
         'I' => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED, //Maximum credit amount set for per card for rolling 24 hrs has been crossed
         'J' => ErrorCode::BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED, //Maximum transaction set for per card for rolling 24 hrs has been crossed
         'K' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT, //Amount Less than Minimum Amount configured
+        'P' => ErrorCode::GATEWAY_ERROR_SQL_ERROR, //received this in mail: "Due to some DB issue received below response"
         'X' => ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN, //BIN is added as negative BIN in PG
         'Y' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED, //Card is present in negative card list and will be decline in future also unless it is not removed manually.
         'Z' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED, //Card is present in decline card database, will be declined for short time
@@ -795,5 +796,12 @@ class ErrorCodes extends Cards\ErrorCodes
         }
 
         return self::$invalidResultErrorCode;
+    }
+
+    public static function shouldRetryRefund($authRespCode)
+    {
+        $retryAuthRespCodes = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'P'];
+
+        return (in_array($authRespCode, $retryAuthRespCodes, true) === true);
     }
 }

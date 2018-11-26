@@ -846,6 +846,36 @@ class BasicAuth
         return $response;
     }
 
+    public function p2pDeviceAuth()
+    {
+        $this->setType(Type::DEVICE_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
+
+        if ($response !== true)
+        {
+            return $response;
+        }
+
+        $this->authCreds->fetchAndSetMerchantAndCheckLive();
+
+        $response = $this->verifyP2pDeviceToken();
+
+        if ($response === true)
+        {
+            return;
+        }
+
+        return $response;
+    }
+
     /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
@@ -938,6 +968,38 @@ class BasicAuth
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
+
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+        }
+    }
+
+    /**
+     * Here we very the device auth for P2p
+     *
+     * @return boolean/Response
+     */
+    protected function verifyP2pDeviceToken()
+    {
+        $merchant = $this->authCreds->getMerchant();
+
+        $deviceToken = $this->authCreds->getSecret();
+
+        if ($deviceToken === '')
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, [self::KEY_ID => $this->getKey()]);
+
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+        }
+
+        $device = $this->repo->p2p_device->findByAuthToken($deviceToken);
+
+        $this->device = $device;
+
+        if (($device === null) or
+            ($merchant->getId() !== $device->merchant->getId()))
         {
             $this->trace->info(TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
 

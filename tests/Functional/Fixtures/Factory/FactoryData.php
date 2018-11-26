@@ -32,6 +32,7 @@ final class FactoryData
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
+            'activated_at'             => time(),
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [

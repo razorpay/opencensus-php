@@ -864,6 +864,8 @@ trait PaymentTrait
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
         $input['attempts'] = $refund['attempts'] ?? 0;
+        $input['amount'] = $refund['amount'] ?? $input['amount'];
+        $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
 
         $this->ba->scroogeAuth();
 
@@ -988,17 +990,6 @@ trait PaymentTrait
     protected function refundAuthorizedPayment($id, array $input = [])
     {
         $this->ba->adminAuth();
-
-        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
-
-        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
-
-        $admin = $this->ba->getAdmin();
-
-        // Linking merchant with admin because admins can access only linked merchants.
-        $admin->merchants()->attach($merchant);
-
-        $this->ba->addAccountAuth($merchant->getId());
 
         $request = array(
             'method'  => 'POST',
