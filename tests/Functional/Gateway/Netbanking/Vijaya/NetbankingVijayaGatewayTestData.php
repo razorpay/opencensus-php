@@ -35,6 +35,6 @@ return [
         'bank_payment_id' => '12345678',
         'received'        => true,
         'bank'            => 'VIJB',
-        'status'          => 'Y',
+        'status'          => 'S',
     ],
 ];
