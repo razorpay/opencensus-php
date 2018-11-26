@@ -1816,6 +1816,12 @@ class Entity extends Base\PublicEntity
     // delete this after 31st
     protected function setDiwaliPromotionalFeatureIfApplicable()
     {
+        // Linked accounts don't have Diwali
+        if ($this->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or
