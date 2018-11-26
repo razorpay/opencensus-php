@@ -14,6 +14,8 @@ class Server extends Base\Mock\Server
 {
     const MOCK_TRANSACTION_ID = '99999999';
 
+    const MOCK_REFUND_ID = '11111111';
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -25,6 +27,8 @@ class Server extends Base\Mock\Server
         $decryptedData = $this->getDecryptedData($decryptedString);
 
         $this->validateActionInput($decryptedData);
+
+        //TODO verify hash
 
         $callbackDataArray = $this->getCallbackResponseData($decryptedData);
 
@@ -48,11 +52,26 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
+        //TODO verify hash
+
         $data = $this->getVerifyResponseData($input);
 
-        $this->content($callbackDataArray, 'verify');
-
         return $this->makeResponse($data);
+    }
+
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $this->validateActionInput($input);
+
+        //TODO verify hash
+
+        $response = $this->getRefundResponseData($input);
+
+        $this->content($response, 'refund');
+
+        return $this->makeResponse($response);
     }
 
     protected function getVerifyResponseData(array $input)
@@ -61,13 +80,30 @@ class Server extends Base\Mock\Server
 
         $data = [
             ResponseFields::BANK_PAYMENT_ID => self::MOCK_TRANSACTION_ID,
-            ResponseFields::PAYMENT_ID => $input[ResponseFields::PAYMENT_ID],
-            ResponseFields::AMOUNT      => $this->formatAmount($payment->getAmount()),
-            ResponseFields::BANK_CODE   => $input[RequestFields::BANK_CODE],
-            ResponseFields::RESPONSE_CODE => '0',
+            ResponseFields::PAYMENT_ID      => $input[ResponseFields::PAYMENT_ID],
+            ResponseFields::AMOUNT          => $this->formatAmount($payment->getAmount()),
+            ResponseFields::BANK_CODE       => $input[RequestFields::BANK_CODE],
+            ResponseFields::RESPONSE_CODE   => '0',
         ];
 
         $this->content($data, 'verify');
+
+        return [
+            'data'                   => json_encode($data),
+            ResponseFields::CHECKSUM => $this->generateHash($data)
+        ];
+    }
+
+    protected function getRefundResponseData($request)
+    {
+        $data = [
+            ResponseFields::REFUND_ID           => '123',
+            ResponseFields::BANK_PAYMENT_ID     => $request[RequestFields::BANK_PAYMENT_ID],
+            //TODO need clarity on below two fields
+            ResponseFields::MERCHANT_ORDER_ID   => '',
+            ResponseFields::MERCHANT_REFUND_ID  => '',
+            ResponseFields::REFUND_REFERENCE_NO => self::MOCK_REFUND_ID,
+        ];
 
         return [
             'data'                   => json_encode($data),
@@ -99,7 +135,7 @@ class Server extends Base\Mock\Server
 
         return base64_encode(openssl_encrypt(
                                               $encryptedString,
-                                      "AES-256-ECB",
+                                      'AES-256-ECB',
                                               $encryption_key,
                                       OPENSSL_RAW_DATA
             )
