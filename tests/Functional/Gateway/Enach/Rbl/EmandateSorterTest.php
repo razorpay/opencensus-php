@@ -18,8 +18,6 @@ class EmandateSorterTest extends TestCase
 
         parent::setUp();
 
-        //$this->sharedTerminal =
-
         $this->fixtures->create(Entity::CUSTOMER);
 
         $this->fixtures->merchant->enableEmandate();
