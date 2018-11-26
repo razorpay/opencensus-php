@@ -245,6 +245,10 @@ export default class User {
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
+
+  get isDiwaliPromoEnabled() {
+    return this.findTag('diwali_promotional_plan');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
