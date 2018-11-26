@@ -26,8 +26,17 @@ export default class extends React.PureComponent {
       '#description .fake-textarea'
     );
 
+    let newLineChars = 0;
+    for (let i = 0; i < content.length; i++) {
+      if (content[i] === '\n') {
+        newLineChars++;
+      }
+    }
+
+    let fakeLinesHeight = newLineChars * 22; // 22 is line-height
+
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 22 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + fakeLinesHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
     target.style.height = this.elHeight;
   }
 

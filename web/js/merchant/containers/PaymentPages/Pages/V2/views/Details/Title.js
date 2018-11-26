@@ -44,6 +44,12 @@ export default class extends React.Component {
           onBlur={this.props.updateData}
           maxLength="40"
           required
+          onKeyPress={e => {
+            if (e.which === 13) {
+              e.preventDefault();
+              return;
+            }
+          }}
         />
         <div class="title-underline" />
       </div>

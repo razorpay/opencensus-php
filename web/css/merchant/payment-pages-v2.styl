@@ -170,6 +170,8 @@
 
   // Wysiwyg elements
   #details-section
+    width: 100%
+
     #description-details
       white-space: inherit
 
@@ -503,7 +505,8 @@
   overflow: hidden
   word-wrap: break-word
   white-space: normal
-  margin: 0 16px 0 -5px // Has no vertical footprint. 16px to act as look-ahead while typing -6 is same as .Input
-  padding: 0 5px
+  margin: 0 -6px; // Has no vertical footprint. -6 adjusts the width same as textarea.
+  left: 6px;
+  padding: 0 4px 0 0 // 4px acts as lookahead to create new line
   line-height: 22px
   font-size: 14px
