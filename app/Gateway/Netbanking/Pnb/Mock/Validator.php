@@ -41,4 +41,12 @@ class Validator extends Base\Validator
         RequestFields::BANK_PAYMENT_ID => 'sometimes|string',
         RequestFields::RESPONSE_CODE   => 'sometimes|numeric'
     ];
+
+    protected static $refundRules = [
+        RequestFields::API_KEY         => 'required|string',
+        RequestFields::BANK_PAYMENT_ID => 'sometimes|string',
+        RequestFields::AMOUNT          => 'required|numeric',
+        RequestFields::DESCRIPTION     => 'required|string',
+        RequestFields::CHECKSUM        => 'required|string',
+    ];
 }
