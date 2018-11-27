@@ -109,6 +109,7 @@ class RouteServiceProvider extends ServiceProvider
             'middleware'    => [
                 'throttle',
                 'auth',
+                'p2p',
             ],
         ];
 
@@ -144,7 +145,8 @@ class RouteServiceProvider extends ServiceProvider
         $router->group(
             [],
             function($router) {
-                $this->p2pRoute->addRouteGroups(['p2p']);
+                $this->p2pRoute->addRouteGroups(['public',
+                                                 'device']);
             }
         );
     }

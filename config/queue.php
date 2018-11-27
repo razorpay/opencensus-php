@@ -181,6 +181,10 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
+    'settlement_transactions' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

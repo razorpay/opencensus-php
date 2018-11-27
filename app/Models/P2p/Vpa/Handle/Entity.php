@@ -1,8 +1,9 @@
 <?php
 
-namespace Rzp\Models\P2p\Vpa\Handle;
+namespace RZP\Models\P2p\Vpa\Handle;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\Merchant;
 
 class Entity extends Base\Entity
 {
@@ -13,8 +14,9 @@ class Entity extends Base\Entity
 
     /************** Entity Properties ************/
 
+    public $incrementing          = true;
     protected $entity             = 'p2p_handle';
-    protected static $sign        = 'handle';
+    protected $primaryKey         = 'handle';
     protected $generateIdOnCreate = false;
     protected static $generators  = [];
 
@@ -128,5 +130,10 @@ class Entity extends Base\Entity
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function isAllowedToMerchant(string $merchantId): bool
+    {
+        return in_array($this->getMerchantId(), [$merchantId, Merchant\Account::SHARED_ACCOUNT], true);
     }
 }

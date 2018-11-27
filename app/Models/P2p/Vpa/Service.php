@@ -19,9 +19,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function create(array $input): array
+    public function add(array $input): array
     {
-        $response = $this->processor->create($input);
+        $response = $this->processor->add($input);
 
         return $response;
     }

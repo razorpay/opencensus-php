@@ -13,19 +13,19 @@ $customer_details               = $invoice_data['customer_details'];
 <!doctype html>
 <html>
 <head>
-    <title>{{$invoice_data['merchant_label']}} - Payment Link</title>
+    <title>{{{ $invoice_data['merchant_label'] }}} - Payment Link</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{$invoice_data['merchant_label']}} for {{$invoice_data['description']}}">
+    <meta name="description" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
     @include('invoice.robot')
 
     @if (isset($invoice_data))
-        <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{$invoice_data['merchant_label']}} for {{$invoice_data['description']}}">
+        <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
         <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
-        <meta property="og:description" content="Click on this link to pay to {{$invoice_data['merchant_label']}}">
+        <meta property="og:description" content="Click on this link to pay to {{{ $invoice_data['merchant_label'] }}}">
     @endif
 
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
@@ -254,7 +254,7 @@ $customer_details               = $invoice_data['customer_details'];
                         @endif
                         <div class="inv-details">
                             <div class="inv-for">
-                                Payment Request from {{$invoice_data['merchant_label']}}
+                                Payment Request from {{{ $invoice_data['merchant_label'] }}}
                             </div>
                             <div id="inv-details-main">
                                 <div class="info" style="margin-top: 28px;">
@@ -266,7 +266,7 @@ $customer_details               = $invoice_data['customer_details'];
                                     <div class="info">
                                         RECEIPT NO.
                                         <div class="val">
-                                            {{$invoice_data['receipt']}}
+                                            {{{ $invoice_data['receipt'] }}}
                                         </div>
                                     </div>
                                 @endif
@@ -344,7 +344,7 @@ $customer_details               = $invoice_data['customer_details'];
                             <div id="header-details">
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
-                                        <div id="merchant-name">{{$invoice_data['merchant_label']}}</div>
+                                        <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
                                         <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
                                     </div>
                                 @endif
@@ -360,14 +360,14 @@ $customer_details               = $invoice_data['customer_details'];
                             <div id="cancelled-invoice">
                                 <div class="title" style='color:#f54443; font-size: 18px;'>Payment Link Cancelled</div>
                                 <div class="desc">
-                                    Oops! This payment link was cancelled. Please contact {{$invoice_data['merchant_label']}} support in case you have any queries.
+                                    Oops! This payment link was cancelled. Please contact {{{ $invoice_data['merchant_label'] }}} support in case you have any queries.
                                 </div>
                             </div>
                         @elseif($invoice_status === 'expired')
                             <div id="cancelled-invoice">
                                 <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                                 <div class="desc">
-                                    Oops! This payment link expired on {{epoch_format($invoice_expire_by)}}. Please contact {{$invoice_data['merchant_label']}} support in case you have any queries.
+                                    Oops! This payment link expired on {{epoch_format($invoice_expire_by)}}. Please contact {{{ $invoice_data['merchant_label'] }}} support in case you have any queries.
                                 </div>
                             </div>
                         @endif
@@ -401,7 +401,7 @@ $customer_details               = $invoice_data['customer_details'];
                 <div id="header-details">
                     @if (isset($data['merchant']))
                         <div id="merchant">
-                            <div id="merchant-name">{{$invoice_data['merchant_label']}}</div>
+                            <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
                             <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
                         </div>
                     @endif
@@ -424,7 +424,7 @@ $customer_details               = $invoice_data['customer_details'];
                             <div class="info">
                                 RECEIPT NO.
                                 <div class="val">
-                                    {{$invoice_data['receipt']}}
+                                    {{{ $invoice_data['receipt'] }}}
                                 </div>
                             </div>
                         @endif
@@ -463,10 +463,10 @@ $customer_details               = $invoice_data['customer_details'];
                             <div class="info">
                                 ISSUED TO
                                 @if($customer_details['customer_name'])
-                                    <div class="val">{{$customer_details['customer_name']}}</div>
+                                    <div class="val">{{{ $customer_details['customer_name'] }}}</div>
                                 @endif
                                 @if($customer_details['customer_email'])
-                                    <div class="val">{{$customer_details['customer_email']}}</div>
+                                    <div class="val">{{{ $customer_details['customer_email'] }}}</div>
                                 @endif
                             </div>
                         @endif
@@ -499,7 +499,7 @@ $customer_details               = $invoice_data['customer_details'];
                     <div id="cancelled-invoice">
                         <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
                         <div class="desc">
-                            Oops! This payment link was cancelled. Please contact {{$invoice_data['merchant_label']}} support in case you have any queries.
+                            Oops! This payment link was cancelled. Please contact {{{ $invoice_data['merchant_label'] }}} support in case you have any queries.
                         </div>
                     </div>
                 @elseif($invoice_status === 'expired')

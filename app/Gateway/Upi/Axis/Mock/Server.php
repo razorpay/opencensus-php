@@ -13,6 +13,8 @@ use RZP\Gateway\Upi\Axis\Action;
 
 class Server extends Base\Mock\Server
 {
+    const DEFAULT_VPA = 'default@axis';
+
     const REQUEST_FIELD_COUNT = [
         Action::COLLECT      => 17,
         Action::VERIFY       => 4,
@@ -30,17 +32,27 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $arr =  explode('/', parse_url($this->mockRequest['url'])['query']);
-        $token = $arr[count($arr) - 1];
-
-        $content = [
-            Fields::CODE    => '00',
-            Fields::RESULT  => 'Accepted Collect Request',
-            Fields::DATA    => [
-                Fields::MERCHANT_TRANSACTION_ID => 'PAYMENT_ID',
-                Fields::W_COLLECT_TXN_ID        => str_random(10),
-            ]
-        ];
+        if ((is_string($input) === true) and (str_contains($input, 'creditVpa') === true))
+        {
+            // to check whether this was an intent request
+            $content = [
+              Fields::CODE          => '000',
+              Fields::RESULT        => 'SUCCESS',
+              Fields::CREDIT_VPA    => 'merchant@axis',
+              Fields::DATA          => 'rzp_payment_id',
+            ];
+        }
+        else
+        {
+            $content = [
+                Fields::CODE    => '00',
+                Fields::RESULT  => 'Accepted Collect Request',
+                Fields::DATA    => [
+                    Fields::MERCHANT_TRANSACTION_ID => 'PAYMENT_ID',
+                    Fields::W_COLLECT_TXN_ID        => str_random(10),
+                ]
+            ];
+        }
 
         $this->content($content, $this->action);
 
@@ -89,11 +101,11 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getAsyncCallbackContent(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment, string $status = '00')
     {
         $this->action = Action::CALLBACK;
 
-        $content = $this->callbackResponseContent($upiEntity, $payment);
+        $content = $this->callbackResponseContent($upiEntity, $payment, $status);
 
         $this->content($content,'callback');
 
@@ -102,21 +114,23 @@ class Server extends Base\Mock\Server
         return ['data' => $content];
     }
 
-    protected function callbackResponseContent(array $upiEntity, array $payment)
+    protected function callbackResponseContent(array $upiEntity, array $payment, string $status)
     {
          $data = [
-            Fields::CUSTOMER_VPA                => $upiEntity['vpa'],
+            Fields::CUSTOMER_VPA                => $upiEntity['vpa'] ?? self::DEFAULT_VPA,
             Fields::MERCH_ID                    => 'RAZAORPAY',
             Fields::MERCH_CHAN_ID               => 'RAZAORPAYAPP',
             Fields::MERCHANT_TRANSACTION_ID     => $payment['id'],
             Fields::TRANSACTION_TIMESTAMP       => date('j-F-Y'),
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
             Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
-            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_CODE       => $status,
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Success',
             Fields::RRN                         => '714513318376',
             Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
         ];
+
+        $this->content($data,'callback');
 
         $json = json_encode($data);
 

@@ -200,9 +200,12 @@ final class P2pRoute
             ],
     ];
 
-    public static $p2p = [
+    public static $public = [
         Requests::P2P_CUSTOMER_START_VERIFICATION,
         Requests::P2P_CUSTOMER_VERIFICATION_STATUS,
+    ];
+
+    public static $device = [
         Requests::P2P_CUSTOMER_REFRESH_TOKEN,
         Requests::P2P_CUSTOMER_DEREGISTER,
 

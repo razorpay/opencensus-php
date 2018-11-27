@@ -7,9 +7,9 @@ use RZP\Models\P2p\Base;
 
 class Processor extends Base\Processor
 {
-    public function create(array $input): array
+    public function add(array $input): array
     {
-        $this->initialize(Action::CREATE, $input);
+        $this->initialize(Action::ADD, $input);
 
         return [
             'id'               => 'vpa_8zIfY8quFElCbH',

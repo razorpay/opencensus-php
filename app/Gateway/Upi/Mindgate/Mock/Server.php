@@ -201,6 +201,11 @@ class Server extends Base\Mock\Server
                 $status = Status::FAILED;
                 $respCode = 'ZA';
                 break;
+
+            case 'unknownrespcode@hdfcbank':
+                $status = Status::FAILED;
+                $respCode = 'XXX';
+                break;
         }
 
         return [
