@@ -41,7 +41,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
 
-        Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
+        Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
