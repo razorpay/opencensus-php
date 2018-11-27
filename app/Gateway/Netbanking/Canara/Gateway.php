@@ -121,8 +121,6 @@ class Gateway extends Base\Gateway
             RequestFields::DATE                          => $date,
         ];
 
-        $this->addExtraRefFields($data);
-
         return $data;
     }
 
@@ -153,26 +151,6 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
-    }
-
-    protected function addExtraRefFields(& $content)
-    {
-        $additionalFields = [
-            'fldRef1',
-            'fldRef2',
-            'fldRef3',
-            'fldRef4',
-            'fldRef5',
-            'fldRef6',
-            'fldRef7',
-            'fldRef8',
-            'fldRef9'
-        ];
-
-        foreach ($additionalFields as $field)
-        {
-            $content[$field] = '';
-        }
     }
 
     protected function getStringToHash($content, $glue = '')
