@@ -43,15 +43,6 @@ class Corporation extends Base
             $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'], 'Asia/Kolkata')
                                   ->format('dmY');
 
-            if (empty($row['refund']['notes']) === false)
-            {
-                $refundReason = $row['refund']['notes'];
-            }
-            else
-            {
-                $refundReason = 'Refund initiated by Customer';
-            }
-
             $formattedData[] = [
                 $this->mid,
                 $paymentDate,
@@ -61,7 +52,7 @@ class Corporation extends Base
                 $row['merchant']['billing_label'],
                 number_format($row['refund']['amount'] / 100, 2, '.', ''),
                 $refundDate,
-                $refundReason
+                'Refund initiated by Customer'
             ];
 
             ++$count;
