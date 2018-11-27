@@ -1028,7 +1028,6 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
-        Gateway::NETBANKING_SBI,
     ];
 
     /**

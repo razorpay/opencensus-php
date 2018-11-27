@@ -7,5 +7,4 @@ class Status
     const SUCCESS = 'Success';
 
     const FAILURE = 'Failure';
-
 }

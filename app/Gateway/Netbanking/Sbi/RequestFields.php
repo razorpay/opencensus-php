@@ -22,8 +22,6 @@ class RequestFields
 
     const MERCHANT_CODE = 'merchant_code'; // gateway merchant id
 
-
     // Verify request fields
     const BANK_REF_NO = 'bank_ref_no';
-
 }

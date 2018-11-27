@@ -16,6 +16,8 @@ class ResponseFields
 
     const PAYMENT_ID    = 'payment_id';
 
+    const CHECKSUM      = 'checkSum';
+
     // encrypted data field
     const ENCDATA       = 'encdata';
 }

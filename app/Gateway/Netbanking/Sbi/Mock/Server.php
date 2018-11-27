@@ -88,14 +88,7 @@ class Server extends Base\Mock\Server
 
     protected function getFormattedResponse(array $requestArray)
     {
-        $request = [];
-
-        foreach ($requestArray as $key => $value)
-        {
-            $request[] = $key . '=' . $value;
-        }
-
-        $requestWithoutChecksum = implode('|', $request);
+        $requestWithoutChecksum = urldecode(http_build_query($requestArray, '', '|'));
 
         $checksum = md5($requestWithoutChecksum);
 
@@ -109,22 +102,9 @@ class Server extends Base\Mock\Server
     {
         $decryptedString = $this->decrypt($input['encdata']);
 
-        $responseStringArray = explode('|', $decryptedString);
-
-        return $this->getResponseArray($responseStringArray);
-    }
-
-    private function getResponseArray($stringArray)
-    {
         $response = [];
 
-        foreach ($stringArray as $line)
-        {
-            $key = explode('=', $line)[0];
-            $value = explode('=', $line)[1];
-
-            $response[$key] = $value;
-        }
+        parse_str(strtr($decryptedString, '|', '&'), $response);
 
         return $response;
     }
@@ -149,7 +129,7 @@ class Server extends Base\Mock\Server
         {
             $this->aesCrypto = new AESCrypto(
                 AES::MODE_CBC,
-                hex2bin($this->getSecret()),
+                $this->getSecret(),
                 hex2bin($this->getIv()));
         }
     }
