@@ -18,6 +18,8 @@ class Service extends Base\Service
 {
     public function initiateSettlements($input, $channel = null)
     {
+        (new Validator)->validateInput('settlement_initiate', $input);
+
         $data = (new Settlement\Processor)->process($input, $channel);
 
         return $data;
