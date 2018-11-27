@@ -46,11 +46,6 @@ class CreateBladeTable extends Migration
             $table->char(Mpi::STATUS, 1)
                   ->nullable();
 
-//            Max length of URL is 2083 characters. Providing some buffer for URL encoding, if applicable
-            $table->string(Mpi::ACS_URL, 3000)
-                  ->nullable()
-                  ->default(null);
-
             $table->char(Mpi::XID, 40)
                   ->nullable();
 
@@ -77,6 +72,11 @@ class CreateBladeTable extends Migration
 
             $table->string(Mpi::RESPONSE_DESCRIPTION)
                   ->nullable();
+
+//            Max length of URL is 2083 characters. Providing some buffer for URL encoding, if applicable
+            $table->string(Mpi::ACS_URL, 3000)
+                  ->nullable()
+                  ->default(null);
 
             $table->integer(Mpi::RECEIVED)
                   ->default(0);
