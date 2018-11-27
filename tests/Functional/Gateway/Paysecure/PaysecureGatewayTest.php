@@ -184,7 +184,6 @@ class PaysecureGatewayTest extends TestCase
     public function testPaymentAuthViaPinPad()
     {
         $authResponse = $this->doAuthPayment($this->payment);
-        sd($authResponse);
     }
 
     protected function getDefaultPaymentArray()

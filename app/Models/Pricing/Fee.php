@@ -73,10 +73,9 @@ class Fee extends Base\Core
     public function calculateMerchantFees($entity)
     {
         $calculator = new FeeCalculator($entity);
-//        s($entity->toArray());
+
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
-//        s($entity->merchant->toArray());
-//        sd("test");
+
         // delete this after 31st december
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
