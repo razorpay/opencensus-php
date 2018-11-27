@@ -15,6 +15,7 @@ class Repository extends Base\Repository
 
     protected $adminFetchParamRules = [
         Entity::MAKER_ID            => 'sometimes|string|max:14',
+        Entity::ENTITY_ID           => 'sometimes|string|max:14',
         Entity::MAKER_TYPE          => 'sometimes|string|max:11',
         Entity::WORKFLOW_ID         => 'sometimes|string|max:14',
         Entity::ORG_ID              => 'sometimes|string|max:14',

@@ -24,6 +24,7 @@ class Base extends BaseProcessor
         Constants::KOTAK,
         Constants::RBL,
         Constants::OBC,
+        Constants::IDFC,
     ];
 
     public function fetchEntities(): PublicCollection

@@ -333,7 +333,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+        $this->checkCallbackResponseStatus($content);
 
         // Gateways must return array in callback
         return [
@@ -341,6 +341,30 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    private function checkCallbackResponseStatus($response, string $successStatus = Status::SUCCESS)
+    {
+        if ($response[ResponseFields::STATUS] !== $successStatus)
+        {
+            if (empty($response[ResponseFields::RESPCODE]) === false)
+            {
+                $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE], Action::CALLBACK);
+
+                $errorMessage =  UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]);
+            }
+            else
+            {
+                $errorCode = ResponseCodeMap::getApiErrorCode($response[ResponseFields::STATUS]);
+
+                $errorMessage = ResponseCode::getResponseMessage($response[ResponseFields::STATUS]);
+            }
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[ResponseFields::STATUS],
+                $errorMessage);
+        }
     }
 
     protected function parseBankAccountDetails($bankReference)
