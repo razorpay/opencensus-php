@@ -1,10 +1,8 @@
 import { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { ModalContent } from 'component/Modal';
-import { adminFetch } from 'common/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 
-import TabsContainer from 'ui/Tabs';
 import EntityRow from 'ui/EntityRow';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
@@ -13,7 +11,6 @@ import Model from '../../model';
 
 import ConfigDetails from './ConfigDetails';
 import DataDetails from './DataDetails';
-// import FieldDetails from './FieldDetails';
 
 @observer
 export default class CreateMerchantReportConfig extends Component {
@@ -43,32 +40,40 @@ export default class CreateMerchantReportConfig extends Component {
   }
 
   handleSubmitClick = () => {
-    const data = this.state.values;
-    const { fieldsMap, filters } = data;
-    delete data.fields_map;
-    delete data.filters;
+    const data = { ...this.state.values };
+    const template = this.configDetails.getValue();
 
-    const template = {
-      output_fields: [],
-      fields_map: {},
+    data.template = {
+      ...data.template,
+      ...template,
     };
 
-    Object.keys(fieldsMap || {}).map(field => {
-      Object.keys(fieldsMap[field]).map(column => {
-        const reportColumn = fieldsMap[field][column];
-        if (reportColumn.present) {
-          template.output_fields.push(reportColumn.outputField);
-          template.fields_map[reportColumn.outputField] = `${field}.${column}`;
-        }
+    data.emails = data.emails.split(',');
+
+    // hardcoded default values
+    data.created_by = this.props.merchantId;
+    data.scheduled = '0';
+
+    return adminPost({
+      url: `live_${this.props.merchantId}/reporting/configs`,
+      data,
+    })
+      .then(response => {
+        console.log({ response });
+      })
+      .catch(error => {
+        console.log({ error });
       });
-    });
   };
 
   handleChangeIn = ({ target }) => {
     const { name, type } = target;
     const values = { ...this.state.values };
 
-    const value = type === 'checkbox' ? target.checked : target.value;
+    let value = type === 'checkbox' ? target.checked : target.value;
+    if (name === 'template.file_meta.header') {
+      value = !!Number(value);
+    }
     dotToString(name, value, values);
 
     this.setState({ values });
@@ -91,7 +96,7 @@ export default class CreateMerchantReportConfig extends Component {
     const { details } = this.model.merchant;
 
     return (
-      <ModalContent header="Create New Report Config">
+      <>
         <div class="box">
           <div class="heading">Merchant Id: {merchantId}</div>
           {Object.keys(details).length ? (
@@ -112,19 +117,13 @@ export default class CreateMerchantReportConfig extends Component {
           <div class="heading">Create New Config Form</div>
           <Form class="full-span full-elements" onChange={this.handleChangeIn}>
             {Object.keys(details).length ? (
-              <>
-                <DataDetails
-                  partnerType={details.partner_type}
-                  configOptions={this.state.configOptions}
-                  reportEmails={details.transaction_report_email}
-                  onChange={this.handleChangeIn}
-                />
-                <ConfigDetails
-                  onReportTypeChange={this.handleReportTypeChange}
-                  {...this.state.configComponents.data}
-                  selectedFilters={this.state.values.filters}
-                />
-              </>
+              <DataDetails
+                partnerType={details.partner_type}
+                configOptions={this.state.configOptions}
+                reportEmails={details.transaction_report_email}
+                onChange={this.handleChangeIn}
+                onReportTypeChange={this.handleReportTypeChange}
+              />
             ) : (
               <div class="spinner center" />
             )}
@@ -136,8 +135,13 @@ export default class CreateMerchantReportConfig extends Component {
               onClick={this.handleSubmitClick}
             />
           </Form>
+
+          <ConfigDetails
+            {...this.state.configComponents.data}
+            ref={ref => (this.configDetails = ref)}
+          />
         </div>
-      </ModalContent>
+      </>
     );
   }
 }

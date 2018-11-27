@@ -1,4 +1,5 @@
 import Field, { SwitchField, SelectField, TextAreaField } from 'ui/Field';
+import { snakeToTitleCase } from 'common/util';
 
 export default function DataDetails(props) {
   const { partnerType, reportEmails, configOptions } = props;
@@ -41,15 +42,15 @@ export default function DataDetails(props) {
           label="Show aggregate data in report"
           enabledLabel="Yes"
           disabledLabel="No"
-          onChange={props.onChange}
         />
       )}
 
       <SelectField
-        name="formats.date"
+        name="template.formats.date"
         label="Date format in report"
         helpMsg="This will be applied across all date fields in the report"
       >
+        <option value="">Select Format...</option>
         {availableDateFormats.map(dateFormat => (
           <option value={dateFormat} key={dateFormat}>
             {dateFormat}
@@ -63,31 +64,58 @@ export default function DataDetails(props) {
         helpMsg="Write comma separated values"
         defaultValue={reportEmails.join(',')}
       />
+
+      <SelectField
+        name="type"
+        label={'Report to customized'}
+        onChange={props.onReportTypeChange}
+      >
+        <option value="">Select...</option>
+        {types.map(type => (
+          <option value={type} key={type}>
+            {snakeToTitleCase(type)}
+          </option>
+        ))}
+      </SelectField>
     </div>
   );
 }
 
 const availableDateFormats = [
-  'DDMMYY',
-  'DDMMYYYY',
-  'YYMMDD',
-  'YYYYMMDD',
-  'DD-MM-YY',
-  'DD-MM-YYYY',
-  'YY-MM-DD',
-  'YYYY-MM-DD',
-  'DD/MM/YY',
-  'DD/MM/YYYY',
-  'YY/MM/DD',
-  'YYYY/MM/DD',
-  'DD.MM.YY',
-  'DD.MM.YYYY',
-  'YY.MM.DD',
-  'YYYY.MM.DD',
-  'DD-Mon-YY',
-  'DD-Mon-YYYY',
-  'YY-Mon-DD',
-  'YYYY-Mon-DD',
+  'd/m/Y H:i:s',
+  'd-m-Y',
+  'YmdHis',
+  'd/m/Y',
+  'Y-m-d',
+  'Ymd',
+];
+
+const types = [
+  'transactions',
+  'cards',
+  'settlements',
+  'refunds',
+  'orders',
+  'disputes',
+  'customers',
+  'payments',
+  'bank_accounts',
+  'virtual_accounts',
+  'bank_transfers',
+  'transfers',
+  'invoices',
+  'reversals',
+  'merchants',
+  'tokens',
+  'hdfc',
+  'terminals',
+  'offers',
+  'upi',
+  'emi_plans',
+  'discounts',
+  'subscriptions',
+  'plans',
+  'items',
 ];
 
 function FetchingDataForField({ label }) {
