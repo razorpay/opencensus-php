@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
             RequestFields::CLIENT_ACCOUNT                => '', //keeping this blank as specified in the Doc
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
-            RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
+            RequestFields::CURRENCY                      => Constants::CURRENCY,
             RequestFields::AMOUNT                        => $amount,
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
@@ -261,7 +261,7 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
-            RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
+            RequestFields::CURRENCY                      => Constants::CURRENCY,
             RequestFields::AMOUNT                        => $this->formatAmount($paymentEntity[PaymentEntity::AMOUNT] / 100), // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity[PaymentEntity::ID],
