@@ -22,4 +22,10 @@ class Constants
 
     const VALUE_TRUE  = 'TRUE';
     const VALUE_FALSE = 'FALSE';
+
+    const TRANSACTION_STATUS_PIN_ACQUIRED   = 'AQ';
+    const TRANSACTION_STATUS_AUTHORIZED     = 'AZ';
+    const TRANSACTION_STATUS_DECLINED       = 'DC';
+    const TRANSACTION_STATUS_INITIATED      = 'I';
+    const TRANSACTION_STATUS_PRIOR_TO_EFT   = 'PE';
 }

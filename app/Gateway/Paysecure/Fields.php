@@ -79,4 +79,11 @@ class Fields
 
     // Authorize response
     const APPRCODE = 'apprcode';
+
+    // Transaction status response
+    const HISTORY       = 'history';
+    const TRANSACTION   = 'transaction';
+    const RECURRING     = 'recurring';
+    const DATETIME      = 'datetime';
+    const AMOUNT        = 'amount';
 }

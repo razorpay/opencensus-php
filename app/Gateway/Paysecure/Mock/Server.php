@@ -12,6 +12,8 @@ class Server extends Base\Mock\Server
 
     const TRAN_ID = '100000000000000000000000025236';
 
+    const APPRCODE = '183217';
+
     protected function getCheckbin2Response($data)
     {
         // todo: Use constants here
@@ -72,10 +74,34 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '00',
             Paysecure\Fields::ERROR_MESSAGE => '',
-            Paysecure\Fields::APPRCODE      => '183217',
+            Paysecure\Fields::APPRCODE      => self::APPRCODE,
         ];
 
         $this->content($response, 'authorize');
+
+        return $response;
+    }
+
+    protected function getTransactionstatusResponse($data)
+    {
+        $response = [
+            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE    => '00',
+            Paysecure\Fields::ERROR_MESSAGE => '',
+        ];
+
+        $transactionArray = [
+            Paysecure\Fields::STATUS    => Paysecure\Constants::TRANSACTION_STATUS_AUTHORIZED,
+            Paysecure\Fields::TRAN_ID   => self::TRAN_ID,
+            Paysecure\Fields::APPRCODE  => self::APPRCODE,
+            Paysecure\Fields::RECURRING => 'FALSE',
+            Paysecure\Fields::DATETIME  => '12/31/201219:09:51',
+            Paysecure\Fields::AMOUNT    => 5000,
+        ];
+
+        $response[Paysecure\Fields::HISTORY][Paysecure\Fields::TRANSACTION] = $transactionArray;
+
+        $this->content($response, 'transaction_status');
 
         return $response;
     }

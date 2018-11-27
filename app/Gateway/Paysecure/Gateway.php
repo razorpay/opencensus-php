@@ -10,6 +10,7 @@ use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
@@ -166,6 +167,15 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
     // ------------ Auth request helpers -----------------
     protected function getGatewayPaymentAttributes($response, $flow = 'redirect')
     {
@@ -278,6 +288,84 @@ class Gateway extends Base\Gateway
         $this->compareHashes($this->input['gateway'][Fields::ACCU_REQUEST_ID], $hash);
     }
     // ------------ Callback request helpers end -------------
+
+    // ------------ Verify request helpers -------------------
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $response = $this->transactionStatus($verify);
+
+        $verify->setVerifyResponseContent($response);
+
+        $this->traceGatewayPaymentResponse(
+            $response,
+            $input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+    }
+    protected function verifyPayment(Base\Verify $verify)
+    {
+        $verify->status = $this->getVerifyMatchStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify);
+    }
+    protected function getVerifyMatchStatus(Base\Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    // @codingStandardsIgnoreStart
+    protected function checkGatewaySuccess(Base\Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ((isset($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === true) and
+            ($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS] === Constants::TRANSACTION_STATUS_AUTHORIZED))
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+    // @codingStandardsIgnoreEnd
+
+    protected function saveVerifyContentIfNeeded($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $response = $verify->verifyResponseContent;
+
+        // If gateway payment does not contain apprcode and if apprcode
+        // is present in verify response, update it.
+        if ((empty($gatewayPayment[Entity::APPRCODE]) === null) and
+            (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]) === false)
+        )
+        {
+            $attributes = [
+                Entity::APPRCODE => $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]
+            ];
+
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        return $gatewayPayment;
+    }
+    // ------------ Verify request helpers end ---------------
 
     // ------------ General helpers --------------------------
 

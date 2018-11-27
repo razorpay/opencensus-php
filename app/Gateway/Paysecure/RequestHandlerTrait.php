@@ -152,7 +152,30 @@ trait RequestHandlerTrait
         return $response;
     }
     //-------------- Authorize request end -----------------------------------
+    //------------------Verify request ---------------------------------------
+    protected function transactionStatus($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $requestArray = [Fields::TRAN_ID => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID]];
+
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_TRANSACTION_STATUS;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
+    }
+    //------------------Verify request end -----------------------------------
     //---------------- Soap Request related functions ------------------------
+    /**
+     * @param $command
+     * @param $params
+     * @return array
+     * @throws Exception\GatewayTimeoutException
+     * @throws SoapFault
+     */
     protected function sendRequest($command, $params)
     {
         $requestBody    = $this->getRequestBody($params, $command);
