@@ -164,29 +164,11 @@ var app = angular
       $keepaliveProvider.interval(60);
     },
   ])
-  .constant('appDomainMap', function() {
-    return {
-      'banking.razorpay.in': 'businessbanking',
-      'dashboard.razorpay.in': 'paymentgateway',
-    };
-  })
-  .constant('appname', [
-    'appDomainMap',
-    function(appDomainMap) {
-      try {
-        return (
-          window.parent !== window &&
-          appDomainMap[window.parent.location.hostname]
-        );
-      } catch (e) {
-        return;
-      }
-    },
-  ])
-  .constant('isBB', [
-    'appname',
-    function(appname) {
-      // TODO: make it a service
+  .constant('appHost', window.RZP && window.RZP.appHost)
+  .constant('appName', window.RZP && window.RZP.appName)
+  .constant('isHostedInBB', [
+    'appName',
+    function(appName) {
       return appname === 'businessbanking';
     },
   ]);

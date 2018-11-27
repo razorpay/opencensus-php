@@ -6,16 +6,22 @@
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
 <script>
     // TODO: need to change the condition
-    document.domain = "razorpay.in";
+    document.domain = "{{ config('app.base_domain') }}";
+
+    window.RZP = window.RZP || {};
 
     if (
       window.parent !== window &&
-      window.parent.location.hostname === "banking.razorpay.in"
+      ~window.parent.location.href.indexOf("{{ config('app.banking_service_url') }}")
     ) {
 
       document.write(
         "<link rel='stylesheet' href='{{$cdnDashboardUrl}}/css/generated/singup_businessbanking.css' type='text/css'/>"
       );
+
+
+      window.RZP.appHost = "{{ config('app.banking_service_url') }}";
+      window.RZP.appName = "businessbanking";
     }
   </script>
 @endif

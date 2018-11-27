@@ -1,4 +1,82 @@
 'use strict';
+
+function replyFactory(targetHost, eventName, channel, replyId) {
+  return function reply() {
+    var data = {
+      type: (channel ? channel + '.' : '') + eventName,
+      data: Array.prototype.slice.apply(arguments),
+    };
+
+    if (replyId) {
+      data.replyId = replyId;
+    }
+
+    window.parent.postMessage(data, targetHost);
+  };
+}
+
+/* TODO: move this function to fe-utils */
+function rpcServer(targetHost, events, channel = '') {
+  var api = {},
+    handlers = {};
+
+  if (!Array.isArray(events)) {
+    return api;
+  }
+
+  events.forEach(function(event) {
+    var eventName = event,
+      hasReply = false;
+
+    if (typeof event === 'object') {
+      eventName = event.name;
+      hasReply = event.hasReply;
+    }
+
+    var eventHandlers = (handlers[eventName] = []);
+
+    api[eventName] = function(handler) {
+      eventHandlers.push(function() {
+        var args = Array.prototype.slice.apply(arguments),
+          messageId = args[args.length - 1];
+
+        args = args.slice(0, args.length - 1);
+
+        handler.apply(
+          null,
+          args.concat([
+            hasReply && replyFactory(targetHost, eventName, channel, messageId),
+          ])
+        );
+      });
+    };
+
+    if (event.callback) {
+      api[eventName](event.callback);
+      delete event.callback;
+    }
+  });
+
+  window.addEventListener('message', function(event) {
+    var eventType = ((event.data && event.data.type) || '').replace(
+      channel + '.',
+      ''
+    );
+
+    if (event.origin !== targetHost || !eventType || !handlers[eventType]) {
+      return;
+    }
+
+    handlers[eventType].forEach(function(handler) {
+      handler.apply(null, event.data.data.concat([event.data.id]));
+    });
+  });
+
+  replyFactory(targetHost, 'ready', channel)(events);
+
+  return api;
+}
+
 //Signin Controller
 app
   .factory('authCallbacks', [
@@ -29,7 +107,8 @@ app
     '$window',
     '$localStorage',
     'utils',
-    'isBB',
+    'isHostedInBB',
+    'appHost',
     'authCallbacks',
     function(
       $scope,
@@ -45,7 +124,8 @@ app
       $window,
       $localStorage,
       utils,
-      isBB,
+      isHostedInBB,
+      appHost,
       authCallbacks
     ) {
       $scope.toArray = function(obj) {
@@ -1027,53 +1107,40 @@ app
           );
       };
 
-      if (isBB) {
-        var parentWindow = window.parent,
-          messageTypes = {
-            signup: 'signup',
-            signin: 'signin',
-            signinSuccess: 'signinSuccess',
-          },
-          supportedMessages = [
-            messageTypes.signup,
-            messageTypes.signin,
-            messageTypes.signinSuccess,
-          ];
+      if (isHostedInBB) {
+        var supportedEvents = {
+          signin: 'signin',
+          signup: 'signup',
+          signinSuccess: 'signinSuccess',
+        };
 
-        parentWindow.postMessage(
-          {
-            type: 'auth.ready',
-            events: supportedMessages,
-          },
-          'http://' + window.parent.location.hostname
+        rpcServer(
+          appHost,
+          [
+            {
+              name: supportedEvents.signin,
+              callback: function() {
+                $scope.goToSigninLayout();
+              },
+            },
+            {
+              name: supportedEvents.signup,
+              callback: function() {
+                $scope.goToSignupLayout();
+              },
+            },
+            {
+              name: supportedEvents.signinSuccess,
+              hasReply: true,
+              callback: function(reply) {
+                authCallbacks.setSigninCallback(function(userData) {
+                  reply({ user: userData });
+                });
+              },
+            },
+          ],
+          'auth'
         );
-
-        window.addEventListener('message', function(message) {
-          if (!~supportedMessages.indexOf(message.data.type)) {
-            return;
-          }
-
-          switch (message.data.type) {
-            case messageTypes.signup:
-              return $scope.goToSignupLayout();
-
-            case messageTypes.signin:
-              return $scope.goToSigninLayout();
-
-            case messageTypes.signinSuccess:
-              authCallbacks.setSigninCallback(function(userData) {
-                window.parent.postMessage(
-                  {
-                    type: messageTypes.signinSuccess,
-                    __cbId: message.data.__id,
-                    data: { user: userData },
-                  },
-                  'http://' + window.parent.location.hostname
-                );
-              });
-              return;
-          }
-        });
       }
     },
   ])
