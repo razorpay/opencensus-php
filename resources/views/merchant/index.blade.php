@@ -5,7 +5,6 @@
 @else
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
 <script>
-    // TODO: need to change the condition
     document.domain = "{{ config('app.base_domain') }}";
 
     window.RZP = window.RZP || {};
