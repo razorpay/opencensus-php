@@ -186,10 +186,7 @@ export default function Reports(store, opts) {
     onConfigChange({ option }) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
-
-      if (option.type !== 'custom') {
-        this.setFileFormat(option);
-      }
+      this.setFileFormat(option);
     }
 
     onAccountChange(account) {
@@ -197,9 +194,11 @@ export default function Reports(store, opts) {
     }
 
     setFileFormat = config => {
-      let fileFormat = this.getFileFormat(config._item);
+      if (config.type !== 'custom') {
+        let fileFormat = this.getFileFormat(config._item);
 
-      this.props.change('reportType', fileFormat);
+        this.props.change('reportType', fileFormat);
+      }
     };
 
     getFileFormat = config => {
@@ -386,6 +385,7 @@ export default function Reports(store, opts) {
                 template_overrides: {
                   file_meta: {
                     extension: reportType,
+                    delimiter: ',',
                   },
                 },
               }),
