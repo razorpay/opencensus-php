@@ -2,7 +2,7 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { isInteger } from 'rzp/utils/validators';
 
-export default class EditTimesPayable extends React.Component {
+export default class EditQuantity extends React.Component {
   state = this.resetState(this.props);
 
   resetState(props) {
@@ -26,7 +26,7 @@ export default class EditTimesPayable extends React.Component {
       isEditableMode: true,
     });
 
-    this.props.trackerFn('Edit Stocks');
+    this.props.trackerFn('Edit Quantity');
   };
 
   render() {
@@ -44,7 +44,7 @@ export default class EditTimesPayable extends React.Component {
             class="Button--Link"
             style={{ marginLeft: 12 }}
           >
-            Change Stocks
+            Change Quantity
           </Button.Transparent>
         )}
       </React.Fragment>
@@ -74,7 +74,7 @@ export default class EditTimesPayable extends React.Component {
           <Input
             name="times_payable"
             class="Input Input--small"
-            placeholder="Total Stocks"
+            placeholder="Total Quantity"
             value={this.state.timesPayable}
             disabled={this.state.hasNoLimit === '1'}
             onFocus={e => {
@@ -128,7 +128,7 @@ export default class EditTimesPayable extends React.Component {
                   .then(resp => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
-                      this.props.trackerFn('Edit Stocks (Saved)');
+                      this.props.trackerFn('Edit Quantity (Saved)');
                     }
                   });
               }}

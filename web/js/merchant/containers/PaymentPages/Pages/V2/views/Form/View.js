@@ -84,11 +84,11 @@ export default class View extends React.PureComponent {
   };
 
   onAmountCreatorSubmit = formData => {
-    const { amount, stock, allow_multiple_units } = formData;
+    const { amount, quantity, allow_multiple_units } = formData;
 
     this.props.updateData({
       amount: amount || null,
-      stock: stock || null,
+      quantity: quantity || null,
       settings: {
         allow_multiple_units: !!allow_multiple_units,
       },
@@ -165,8 +165,7 @@ export default class View extends React.PureComponent {
             let infoTxt = '';
             let isDisabled;
             if (['email', 'phone'].indexOf(field.name) > -1) {
-              infoTxt =
-                'Email and Phone are fixed fields. You cannot edit them';
+              infoTxt = 'This field cannot be removed';
               isDisabled = true;
             }
 

@@ -53,7 +53,7 @@ export const GenericField = ({ field, onEditField, infoTxt }) => {
 export class GenericCreator extends React.PureComponent {
   state = {
     isDynamicAmount: false,
-    hasStock: false,
+    hasQuantity: false,
     disableSubmit: !this.props.field.title, // Any required field is valid to do init, like 'name', 'title', 'type'
     hasDescription: !!this.props.field.description,
     isFieldEnum: !!this.props.field.enum,

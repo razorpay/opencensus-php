@@ -4,18 +4,10 @@ import { connect } from 'react-redux';
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
 import { keysToSentence } from 'common/util';
 
-import {
-  fetchPaymentPageEntity,
-  fetchPaymentsListForPaymentPage,
-  editPaymentPage,
-  activatePaymentPage,
-  deactivatePaymentPage,
-  sendLink,
-} from '../model';
+import { sendLink } from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'rzp/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -26,7 +18,7 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from '../ga';
 
-import EditStocks from '../Edit/EditStocks';
+import EditQuantity from '../Edit/EditQuantity';
 
 import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
 import ShareView from '../Modals/Share';
@@ -37,7 +29,7 @@ const MAX_API_COUNT = 100;
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
-  completed: 'All the available items in the Stock are sold',
+  completed: 'All the available units are sold',
   expired: 'The link is expired',
   deactivated: 'You manually deactivated the link',
 };
@@ -76,7 +68,6 @@ export default class PaymentPagesV2Entity extends React.Component {
       component: (
         <ShareView
           handleClose={this.props.closeModal}
-          handleClick={this.sendLink}
           handleAction={sendLink.bind(null, paymentPageEntity.id)}
           showNotification={this.props.showNotification}
           url={paymentPageEntity.short_url}
@@ -173,9 +164,9 @@ export default class PaymentPagesV2Entity extends React.Component {
                 />
                 {paymentPageEntity.amount && (
                   <EntityDetailRow
-                    label="Available Stock"
+                    label="Available Quantity"
                     value={() => (
-                      <EditStocks
+                      <EditQuantity
                         value={paymentPageEntity.times_payable}
                         timesPaid={paymentPageEntity.times_paid}
                         editFn={editPaymentPage}

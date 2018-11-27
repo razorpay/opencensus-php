@@ -183,7 +183,7 @@ export default class ActivateAgainModal extends React.Component {
             {this.props.timesPayable && (
               <div class="ModalForm-field">
                 <div class="Input-label">
-                  {isPaymentPagesV2Enabled ? 'Total Stock' : 'Times Payable'}
+                  {isPaymentPagesV2Enabled ? 'Total Quantity' : 'Times Payable'}
                 </div>
 
                 <div class="InputGroup Input">

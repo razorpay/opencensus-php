@@ -49,7 +49,7 @@ export default class extends React.PureComponent {
             </Button.Transparent>
             <Popover align="right" theme="dark">
               <PopoverBody>
-                This lets your customers share this page on their social media
+                Allow your customers to share the page on social media
               </PopoverBody>
             </Popover>
           </span>

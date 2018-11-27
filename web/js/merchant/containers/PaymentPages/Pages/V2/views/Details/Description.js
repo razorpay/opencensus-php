@@ -6,7 +6,7 @@ const DESC_LIMIT = {
   MOBILE: 125,
 };
 
-const infoTxt = `Describe what the purpose of this page is and mention any additional details that might help the customer.
+const infoTxt = `Give your customers more information about this page.
 
 Note:
 All URLs will convert to links.`;

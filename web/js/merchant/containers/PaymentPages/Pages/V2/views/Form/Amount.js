@@ -114,8 +114,8 @@ export class AmountCreator extends React.PureComponent {
 
     this.state = {
       hasDynamicAmount: isAmountEntitySet ? !field.amount : false,
-      stock: isAmountEntitySet ? field.stock : '',
-      hasStock: isAmountEntitySet ? !!field.stock | 0 : false,
+      quantity: isAmountEntitySet ? field.quantity : '',
+      hasQuantity: isAmountEntitySet ? !!field.quantity | 0 : false,
       disableSubmit: !isAmountEntitySet,
       allowMultipleUnits: isAmountEntitySet
         ? field.settings.allow_multiple_units
@@ -135,7 +135,7 @@ export class AmountCreator extends React.PureComponent {
       this.setState({
         hasDynamicAmount: value == 1 ? true : false,
         allowMultipleUnits: false,
-        hasStock: 0,
+        hasQuantity: 0,
       });
 
       document.getElementsByName('amount')[0].value = '';
@@ -143,9 +143,9 @@ export class AmountCreator extends React.PureComponent {
       this.setState({
         allowMultipleUnits: target.checked,
       });
-    } else if (stateName === 'has_stock') {
+    } else if (stateName === 'has_quantity') {
       this.setState({
-        hasStock: value == 1 ? true : false,
+        hasQuantity: value == 1 ? true : false,
       });
     }
 
@@ -165,7 +165,7 @@ export class AmountCreator extends React.PureComponent {
     const {
       hasDynamicAmount,
       allowMultipleUnits,
-      hasStock,
+      hasQuantity,
       disableSubmit,
     } = this.state;
 
@@ -201,18 +201,20 @@ export class AmountCreator extends React.PureComponent {
             autoRender
           />
           <Input.Check
-            data-name="has_stock"
+            data-name="has_quantity"
             autoRender={true}
             disabled={hasDynamicAmount}
-            checked={Boolean(hasStock)}
+            checked={Boolean(hasQuantity)}
             fieldLabel={() => (
               <span>
-                {hasStock ? 'This item has' : 'This item has limited quantity'}{' '}
-                {!!hasStock && (
+                {hasQuantity
+                  ? 'This item has'
+                  : 'This item has limited quantity'}{' '}
+                {!!hasQuantity && (
                   <React.Fragment>
                     <Input
-                      name="stock"
-                      defaultValue={this.state.stock}
+                      name="quantity"
+                      defaultValue={this.state.quantity}
                       class="checkbox-Input"
                       autoFocus
                       step="1"

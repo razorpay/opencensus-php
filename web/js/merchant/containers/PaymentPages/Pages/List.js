@@ -187,7 +187,9 @@ export default class PaymentPagesContainer extends ListContainer {
                   <th>Amount</th>
                   <th>Payments Made</th>
                   <th>
-                    {user.isPaymentPagesV2Enabled ? 'Stocks' : 'Times Payable'}
+                    {user.isPaymentPagesV2Enabled
+                      ? 'Total Quantity'
+                      : 'Times Payable'}
                   </th>
                   <th>Total Sales</th>
                   <th>Page Url</th>

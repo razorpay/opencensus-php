@@ -54,12 +54,15 @@ export default class extends React.Component {
         <Input.Textarea
           name="title"
           placeholder="Enter page title here"
-          info="This is the heading of your page. Help your customers recognise the page with this"
+          info="Heading of your page"
           defaultValue={this.props.title}
           onInput={this.handleOnInput}
           onBlur={this.onBlur}
           required
           validator={val => {
+            if (!val) {
+              return 'Page title cannot be empty. ';
+            }
             if (val && val.length > 40) {
               return 'Title cannot be more than 40 characters';
             }
