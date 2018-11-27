@@ -200,7 +200,6 @@ export default function Reports(store, opts) {
       let fileFormat = this.getFileFormat(config._item);
 
       this.props.change('reportType', fileFormat);
-      console.log(1);
     };
 
     getFileFormat = config => {
