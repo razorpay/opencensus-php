@@ -5,7 +5,7 @@
 @else
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
 <script>
-    document.domain = "{{ config('app.base_domain') }}";
+    document.domain = window.location.hostname.split(".").slice(-2).join(".");
 
     window.RZP = window.RZP || {};
 
