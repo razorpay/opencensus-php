@@ -4416,3 +4416,6 @@ ALTER TABLE subscription_registrations
     ADD COLUMN notes TEXT AFTER expire_at,
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
+
+ALTER TABLE blade
+    ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
