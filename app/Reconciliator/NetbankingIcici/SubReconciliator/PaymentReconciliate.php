@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Netbanking\Icici;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -36,15 +37,37 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-//     protected function getReferenceNumber($row)
-//     {
-//         if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
-//         {
-//             return $row[self::COLUMN_BANK_PAYMENT_ID];
-//         }
-//
-//         return null;
-//     }
+    protected function getReferenceNumber($row)
+    {
+        if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
+        {
+            return $row[self::COLUMN_BANK_PAYMENT_ID];
+        }
+
+        return null;
+    }
+
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
+    {
+        $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
+
+        if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== $referenceNumber))
+        {
+            $this->trace->info(
+                TraceCode:: RECON_MISMATCH,
+                [
+                    'info_code'              => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'payment_id'             => $this->payment->getId(),
+                    'db_reference_number'    => $dbReferenceNumber,
+                    'recon_reference_number' => $referenceNumber,
+                    'gateway'                => $this->gateway
+                ]
+            );
+        }
+
+        $gatewayPayment->setBankPaymentId($referenceNumber);
+    }
 
     protected function getGatewayPayment($paymentId)
     {

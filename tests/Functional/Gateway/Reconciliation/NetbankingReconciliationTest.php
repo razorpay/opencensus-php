@@ -557,7 +557,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createPayment('netbanking_icici');
 
-        $this->createNetbanking($payment['id'], 'ICIC', 'S');
+        $this->createNetbanking($payment['id'], 'ICIC', 'Y');
 
         $fileContents = $this->generateFile('icici', []);
 
