@@ -15,6 +15,7 @@ export ConfirmUser from './ConfirmUser';
 export AuthorizeFailedPayment from './AuthorizeFailedPayment';
 export RetryFailedSettlements from './RetryFailedSettlements';
 export VerifyPayment from './VerifyPayment';
+export VerifyRefund from './VerifyRefund';
 export BulkVerifyPayments from './BulkVerifyPayments';
 
 export TriggerDummyError from './TriggerDummyError';

@@ -13,7 +13,7 @@ import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
-import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import FTXPassAnnouncement from 'merchant/components/Announcements/ftx';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
@@ -87,10 +87,7 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
-        <EarlySettlementAnnouncement
-          from="Home-Mobile"
-          marginBottom={!showOnboardingBanner}
-        />
+        {user.showFTXPassAnnouncement && <FTXPassAnnouncement />}
 
         <div
           ref={node => onExtraContentMount(node)}
