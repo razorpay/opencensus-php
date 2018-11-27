@@ -91,7 +91,7 @@ class RecurringChargeTest extends TestCase
         $merchant = $this->getDbEntityById('merchant','10000000000000');
 
         Settings\Accessor::for($merchant, Settings\Module::BATCH)
-                         ->upsert('recurring_charge_batch_amount_as_rupee',"1")->save();
+                         ->upsert('recurring_charge', ['amount_as_rupee' => '1'])->save();
 
         $entries = $this->getBatchFileEntriesWithRupee();
 
