@@ -132,7 +132,7 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($content);
 
-        $content = urldecode(http_build_query($content));;
+        $content = urldecode(http_build_query($content));
 
         $queryString = $content . '&checksum=' . $checksum;
 
