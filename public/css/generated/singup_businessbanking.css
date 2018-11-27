@@ -9,7 +9,25 @@
 
   margin: 0;
 }
+
+.auth-container .auth-inner .auth-body .auth-main-container {
+
+  box-shadow: none;
+  border: none;
+}
+
 #auth-container {
 
   min-height: auto;
+  background: #fff;
+}
+
+div.phpdebugbar {
+
+  display: none;
+}
+
+.app:before {
+
+  background: white;
 }
