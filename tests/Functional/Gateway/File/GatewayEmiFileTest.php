@@ -242,13 +242,14 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('gateway_rule', [
             'method'        => 'emi',
-            'merchant_id'   => '10000000000000',
+            'merchant_id'   => '100000Razorpay',
             'gateway'       => 'hitachi',
             'issuer'        => 'SBIN',
-            'type'             => 'filter',
-            'filter_type'      => 'select',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
             'min_amount'    => 0,
-            'load'          => 100
+            'load'          => 100,
+            'group'         => 'sbi_emi_filter',
         ]);
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
@@ -293,12 +294,6 @@ class GatewayEmiFileTest extends TestCase
             'enabled'   => 1,
         ]);
 
-        // creating a random terminal on same merchant to validate
-        // that correct `sbi_emi` terminal is used to get MID
-        $this->fixtures->create('terminal', [
-            'merchant_id'           => '10000000000000',
-        ]);
-
         $this->ba->publicAuth();
 
         $this->makeEmiPaymentOnCard('5567630000002004', 9);
@@ -307,7 +302,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertEquals('hitachi', $payment['gateway']);
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+        $this->makeEmiPaymentOnCard('5567630000002004', 12);
 
         $this->ba->adminAuth();
 
