@@ -1389,6 +1389,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE = 'SUBSCRIPTION_REGISTRATION_CREATE_ORDER_FOR_CHARGE';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN            = 'SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN';
     const AUTH_LINK_BATCH_INPUT                             = 'AUTH_LINK_BATCH_INPUT';
+    const MERCHANT_BALANCE_BACKFILL_ERROR                   = 'MERCHANT_BALANCE_BACKFILL_ERROR';
+    const MERCHANT_BALANCE_BACKFILL_REQUEST                 = 'MERCHANT_BALANCE_BACKFILL_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
