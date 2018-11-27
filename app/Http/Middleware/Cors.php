@@ -32,7 +32,7 @@ class Cors
 
         if (($originHost === $crossOriginDomains['banking']) or
             (($originHost === $crossOriginDomains['auth']) and
-                (in_array($request->getRequestUri(), $this->authRoutes, true) === true)))
+                (in_array($request->getPathInfo(), $this->authRoutes, true) === true)))
         {
             // For Auth Origin we have to enable cors only for one route.
             $crossOriginPolicy = true;
