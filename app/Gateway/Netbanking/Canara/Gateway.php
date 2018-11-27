@@ -132,7 +132,7 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($content);
 
-        $content = $this->getQueryString($content);
+        $content = urldecode(http_build_query($content));;
 
         $queryString = $content . '&checksum=' . $checksum;
 
@@ -177,7 +177,7 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '')
     {
-        return $this->getQueryString($content);
+        return urldecode(http_build_query($content));
     }
 
     protected function getHashOfString($str)
@@ -197,20 +197,6 @@ class Gateway extends Base\Gateway
         $aes = new AESCrypto($this->config);
 
         return $aes->decryptString($encryptedString);
-    }
-
-    protected function getQueryString($content)
-    {
-        $queryStr = RequestFields::MODE_OF_TRANSACTION . '=' . $content[RequestFields::MODE_OF_TRANSACTION];
-
-        unset($content[RequestFields::MODE_OF_TRANSACTION]);
-
-        foreach ($content as $field => $value)
-        {
-            $queryStr = $queryStr . '&' . $field . '=' . $value;
-        }
-
-        return $queryStr;
     }
 
     // -------------------------- Callback helper methods ------------------------------
