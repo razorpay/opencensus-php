@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -14,6 +15,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
     const COLUMN_PAYMENT_DATE    = 'Date';
+    const COLUMN_PAYMENT_AMOUNT  = 'Amount';
 
     protected $netbankingRepo;
 
@@ -51,6 +53,31 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                                                                      [Icici\Confirmation::YES]);
     }
 
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
+    }
+
     protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize($payment);
@@ -79,7 +106,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function validatePaymentForForceAuthorize(Payment\Entity $payment)
     {
-        $createdTime = $payment->getCreatedAt() ;
+        $createdTime = $payment->getCreatedAt();
 
         $createdDate =  Carbon::createFromTimestamp($createdTime, Timezone::IST);
 

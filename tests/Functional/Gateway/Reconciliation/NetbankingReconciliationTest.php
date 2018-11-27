@@ -576,6 +576,33 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testIciciAmountMismatch()
+    {
+        $this->gateway = 'netbanking_icici';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'Y');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[0]['amount'] = '1.00';
+            });
+
+        $fileContents = $this->generateFile('icici', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIcici', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     public function testCorporationSuccessRecon()
     {
         $this->gateway = 'netbanking_corporation';
