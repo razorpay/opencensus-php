@@ -30,6 +30,13 @@ export const BANNER_THEMES = {
     },
     toString: () => 'success',
   },
+  purply: {
+    colors: {
+      dark: '#4f0cc4',
+      light: '#5209e7',
+    },
+    toString: () => 'purply',
+  },
 };
 
 export default class Announcement extends Component {
