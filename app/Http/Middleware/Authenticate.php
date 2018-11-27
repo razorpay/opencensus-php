@@ -114,11 +114,6 @@ class Authenticate
         {
             $ret = $this->ba->privateAuth();
         }
-        else if (in_array($route, P2pRoute::$p2p, true) === true)
-        {
-            // TODO: We will later separate out routes according to the auth
-            $ret = $this->ba->privateAuth();
-        }
         else if (in_array($route, Route::$public, true) === true)
         {
             //
@@ -135,6 +130,10 @@ class Authenticate
                 // Process via BasicAuth
                 $ret = $this->ba->publicAuth();
             }
+        }
+        else if (in_array($route, P2pRoute::$public, true) === true)
+        {
+            $ret = $this->ba->publicAuth();
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
@@ -158,6 +157,10 @@ class Authenticate
         else if (in_array($route, Route::$device, true) === true)
         {
             $ret = $this->ba->deviceAuth();
+        }
+        else if (in_array($route, P2pRoute::$device, true) === true)
+        {
+            $ret = $this->ba->p2pDeviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {

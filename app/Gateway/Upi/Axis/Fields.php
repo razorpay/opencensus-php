@@ -6,6 +6,7 @@ class Fields
 {
     const MERCH_ID                     = 'merchId';
     const MERCH_CHAN_ID                = 'merchChanId';
+    const CREDIT_VPA                   = 'creditVpa';
     const UNQ_TXN_ID                   = 'unqTxnId';
     const UNQ_CUST_ID                  = 'unqCustId';
     const AMOUNT                       = 'amount';

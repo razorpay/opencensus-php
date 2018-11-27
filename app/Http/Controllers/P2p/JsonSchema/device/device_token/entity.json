@@ -61,7 +61,7 @@
         }
     },
     "actions" : [
-        "create",
+        "add",
         "refreshClToken",
         "deregister"
     ]
