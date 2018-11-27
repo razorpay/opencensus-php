@@ -20,7 +20,6 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
 import ReportLoader from 'merchant_common/components/Reports/ReportLoader';
 import { EmailReport } from 'merchant/containers/Reports';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -99,7 +98,6 @@ export default function Reports(store, opts) {
       invoiceDate: moment()
         .subtract(1, 'months')
         .startOf('month'),
-      reportType: 'csv', //default value
     },
   })
   class ReportsContainer extends Component {
@@ -188,11 +186,26 @@ export default function Reports(store, opts) {
     onConfigChange({ option }) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
+
+      if (option.type !== 'custom') {
+        this.setFileFormat(option);
+      }
     }
 
     onAccountChange(account) {
       this.setState({ selectedAccount: account });
     }
+
+    setFileFormat = config => {
+      let fileFormat = this.getFileFormat(config._item);
+
+      this.props.change('reportType', fileFormat);
+      console.log(1);
+    };
+
+    getFileFormat = config => {
+      return ((config.template || {}).file_meta || {}).extension || 'csv';
+    };
 
     validateInvoiceMonthYear(current) {
       const isGSTDisabled = this.props.user.isGSTDisabled;
@@ -274,6 +287,7 @@ export default function Reports(store, opts) {
               accounts,
               selectedAccount: this.defaultAccount,
             });
+            this.setFileFormat(configs[0]);
           } else {
             return this.props.showNotification({
               type: 'error',
@@ -368,13 +382,14 @@ export default function Reports(store, opts) {
               generated_by: selectedAccountId,
               start_time: startTime,
               end_time: endTime,
-
               // report file type option has to override default configs
-              template_overrides: {
-                file_meta: {
-                  extension: reportType,
+              ...(reportType !== this.getFileFormat(selectedConfig._item) && {
+                template_overrides: {
+                  file_meta: {
+                    extension: reportType,
+                  },
                 },
-              },
+              }),
             };
 
           this.props.showNotification(downloadStartedMessage);
@@ -592,7 +607,7 @@ export default function Reports(store, opts) {
         currentReportList,
       } = this.state;
 
-      const { type, date, invoiceDate } = this.props;
+      const { type, date, invoiceDate, reportType } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
@@ -619,6 +634,12 @@ export default function Reports(store, opts) {
           </div>
         );
       } else {
+        let configReportType = null;
+
+        if (selectedConfig.type !== 'custom') {
+          configReportType = this.getFileFormat(selectedConfig._item);
+        }
+
         content = (
           <div className={reportWrapperClasses}>
             {/*Report Type Selection*/}
@@ -725,20 +746,26 @@ export default function Reports(store, opts) {
               {/* File type for Reports */}
               {selectedConfig.type !== 'custom' && (
                 <div class="form-element">
-                  <div class="title">SELECT FORMAT</div>
-                  <div class="file-format-select">
-                    <Field
-                      component={RadioButton}
-                      name="reportType"
-                      htmlValue="csv"
-                      label={() => <span>CSV</span>}
-                    />
-                    <Field
-                      component={RadioButton}
-                      name="reportType"
-                      htmlValue="xlsx"
-                      label={() => <span>Excel (xlsx)</span>}
-                    />
+                  <div class="title">SELECT FILE FORMAT</div>
+                  <div class="col-sm-3 col-xs-12">
+                    <div class="form-group form-control">
+                      <Field
+                        name="reportType"
+                        class="fix-select"
+                        component="select"
+                      >
+                        {/* Add option on the fly for txt, tsv or other formats */}
+                        {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
+                          0 && (
+                          <option value={configReportType}>
+                            {configReportType.toUpperCase()}
+                          </option>
+                        )}
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">Excel (xlsx)</option>
+                        <option value="xls">Old Excel (xls)</option>
+                      </Field>
+                    </div>
                   </div>
                 </div>
               )}
