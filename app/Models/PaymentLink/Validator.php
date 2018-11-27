@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'required|filled|string|max:40',
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
+        Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
@@ -53,7 +53,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'filled|string|max:40',
         Entity::DESCRIPTION     => 'sometimes|string|max:2048|nullable',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'filled|alpha_num|min:4|max:30',
+        Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
@@ -94,6 +94,25 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         Entity::SETTINGS,
     ];
+
+    /**
+     * Validates user provided slug value, allows alpha numeric, _ and - chars.
+     * @param  string $attribute
+     * @param  string $value
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSlug(string $attribute, string $value)
+    {
+        $valid = preg_match('/^[A-Za-z0-9-_]+$/', $value);
+
+        if ($valid !== 1)
+        {
+            throw new BadRequestValidationFailureException(
+                'slug must only contain alpha numeric, _ and - characters',
+                Entity::SLUG,
+                compact('value'));
+        }
+    }
 
     public function validateExpireBy(string $attribute, int $value)
     {
@@ -290,7 +309,7 @@ class Validator extends Base\Validator
         $errorMsg                = null;
         $paymentLink             = $this->entity;
         $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
-        $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
+        $paymentAmountWithoutFee = $payment->merchant->isFeeBearerCustomer() ? $paymentAmount : $payment->getAmount() - $payment->getFee();
         $paymentLinkAmount       = $paymentLink->getAmount();
         $allowMultipleUnits      = (bool) $paymentLink->getSettingsScalarElseNull(Entity::ALLOW_MULTIPLE_UNITS);
 
