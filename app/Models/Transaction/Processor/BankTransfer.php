@@ -5,8 +5,9 @@ namespace RZP\Models\Transaction\Processor;
 use RZP\Models\Settlement;
 
 /**
- * Use case: For business banking we directly create transaction against bank
- * transfer, merchant's banking balance is credited.
+ * Use case:
+ * For business banking we directly create transaction against
+ * bank transfer, and the merchant's banking balance is credited.
  * There is no other use for it right now in normal pg flow.
  */
 class BankTransfer extends Base

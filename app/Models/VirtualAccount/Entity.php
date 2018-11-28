@@ -286,12 +286,15 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Updates aggregate stats and status changes of virtual account wrt new bank transfer done.
+     * Updates aggregate stats and status changes of
+     * virtual account wrt new bank transfer done.
+     *
      * @param  BankTransfer\Entity $bankTransfer
      */
-    public function updateWithBankTransferOfBanking(BankTransfer\Entity $bankTransfer)
+    public function updateWithBankTransferForBanking(BankTransfer\Entity $bankTransfer)
     {
         $paidAmount = $bankTransfer->getAmount();
+
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);
     }

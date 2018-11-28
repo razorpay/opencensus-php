@@ -93,8 +93,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates a virtual account with bank account type receiver on business
-     * banking type balance of given merchant.
+     * Creates a virtual account with bank account type receiver
+     * on business banking type balance of given merchant.
+     *
      * @param  Merchant $merchant
      * @return Entity
      */
@@ -103,9 +104,9 @@ class Core extends Base\Core
         $merchant->getValidator()->validateBusinessBankingActivated();
 
         $input = [
-            'receivers' => [
-                'types' => [
-                    'bank_account'
+            Entityt::RECEIVERS => [
+                Entityt::TYPES => [
+                    Entityt::BANK_ACCOUNT
                 ],
             ],
             // Todo: What description to use? It is null-able.
@@ -132,6 +133,7 @@ class Core extends Base\Core
             $virtualAccount->entity()->associate($order);
 
             $balance = $balance ?: $virtualAccount->merchant->balance;
+
             $virtualAccount->balance()->associate($balance);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);

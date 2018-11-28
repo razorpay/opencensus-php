@@ -65,7 +65,17 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Processing the bank transfer for pg and banking scenario.
+     * Processing the bank transfer for both PG and Banking scenarios.
+     *
+     * Common
+     *  - Create bank transfer, associate with the merchant, and the identified VA
+     *  - Create payer bank account, associate with bank transfer
+     * PG:
+     *  - Create payment (and associated txn), associate with the bank transfer
+     *  - Update VA amount fields and status, if necessary
+     * BB:
+     *  - Create transaction, associate with bank_transfers
+     *
      * @param  Base\PublicEntity $bankTransfer
      * @return null|Base\PublicEntity
      */
@@ -77,8 +87,11 @@ class Processor extends VirtualAccount\Processor
         {
             // Bank transfer's relation association, payer bank account creation and saving.
             $bankTransfer->merchant()->associate($this->merchant);
+
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
+
             $this->createAndAssociatePayerBankAccount($bankTransfer);
+
             $this->repo->saveOrFail($bankTransfer);
 
             // For business banking scenario, process differently and return.
@@ -89,18 +102,24 @@ class Processor extends VirtualAccount\Processor
 
             // Else, normal pg flow follows.
 
-            // Prepares payment input and creates payment and it's transaction etc.
+            // Prepares payment input and creates payment and its transaction etc.
             $paymentInput = $this->getPaymentArray($bankTransfer);
-            $gatewayData[Payment\Entity::TERMINAL_ID] = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer)->getId();
+
+            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+
+            $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
             $this->createPayment($paymentInput, $gatewayData);
 
             $payment = $this->getPaymentProcessor()->getPayment();
+
             $bankTransfer->payment()->associate($payment);
+
             $this->repo->saveOrFail($bankTransfer);
 
             // Updates virtual account's stats.
             $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+
             $this->repo->saveOrFail($this->virtualAccount);
         });
 
@@ -122,7 +141,7 @@ class Processor extends VirtualAccount\Processor
         $this->trace->info(
             TraceCode::BANK_TRANSFER_CREATE_TRANSACTION,
             [
-                'bank_transfer_id' => $bankTransfer->getId(),
+                'bank_transfer_id'   => $bankTransfer->getId(),
                 'virtual_account_id' => $this->virtualAccount->getId(),
             ]);
 
@@ -130,7 +149,8 @@ class Processor extends VirtualAccount\Processor
         list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
 
         // Updates virtual account's stats.
-        $this->virtualAccount->updateWithBankTransferOfBanking($bankTransfer);
+        $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
+
         $this->repo->saveOrFail($this->virtualAccount);
 
         return $bankTransfer;

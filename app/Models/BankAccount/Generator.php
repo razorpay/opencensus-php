@@ -44,7 +44,7 @@ class Generator extends Base\Core
     protected $options = [
         self::DESCRIPTOR => null,
         self::NUMERIC    => true,
-        // Banking option requests filtering terminals to use one with corresponding type set.
+        // Banking option causes terminal selection to use one with corresponding type set.
         self::BANKING    => false,
     ];
 
@@ -70,11 +70,16 @@ class Generator extends Base\Core
         return $bankAccount;
     }
 
-    protected function updateBankAccountEntity(Entity $bankAccount, VirtualAccount\Entity $virtualAccount, Terminal\Entity $terminal): Entity
+    protected function updateBankAccountEntity(
+        Entity $bankAccount,
+        VirtualAccount\Entity $virtualAccount,
+        Terminal\Entity $terminal): Entity
     {
         $accountNumber = $this->generateBankAccountNumber($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $this->getProviderBank($terminal));
+        $providerBank = $this->getProviderBank($terminal);
+
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $providerBank);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -102,7 +107,7 @@ class Generator extends Base\Core
 
     public function generate(VirtualAccount\Entity $virtualAccount): Entity
     {
-        // Sets this option at this stage because __construct the balance relation doesn't exist
+        // Sets this option at this stage because in __construct the balance relation doesn't exist
         $this->options[self::BANKING] = $virtualAccount->balance->isTypeBanking();
 
         $bankAccount = $this->buildBankAccountEntity($virtualAccount);
