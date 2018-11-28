@@ -497,10 +497,7 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Reports currently works for type:link only.
-     *
-     * @todo: Plan and spit link, invoices.
-     *
+     * Note: Reports currently works for type:link only.
      * @var array
      */
     protected $hiddenInReport = [
@@ -519,6 +516,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $dates = [

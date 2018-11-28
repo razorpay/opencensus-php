@@ -14,24 +14,22 @@ use RZP\Models\Currency\Currency;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT                                                  => 'required|integer|min:0',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT                                => 'sometimes|integer|min:0',
-        Entity::CURRENCY                                                => 'required|string|size:3',
-        Entity::RECEIPT                                                 => 'sometimes|nullable|string|max:40',
-        Entity::PAYMENT_CAPTURE                                         => 'filled|boolean',
-        Entity::CUSTOMER_ID                                             => 'filled|public_id|size:19',
-        Entity::NOTES                                                   => 'sometimes|notes',
-        Entity::METHOD                                                  => 'sometimes|in:netbanking,emandate,upi',
-        Entity::BANK                                                    => 'filled',
-        Entity::DISCOUNT                                                => 'sometimes|boolean',
-        Entity::OFFERS                                                  => 'sometimes|array',
-        Entity::BANK_ACCOUNT                                            => 'sometimes|array',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::NAME           => 'sometimes|max:40|string',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::IFSC           => 'required_with:bank_account|alpha_num|size:11',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::ACCOUNT_NUMBER => 'required_with:bank_account|alpha_num|between:5,20',
-        Entity::OFFERS . '*'                                            => 'filled|public_id|size:20',
-        Entity::FORCE_OFFER                                             => 'filled|boolean',
-        Entity::PARTIAL_PAYMENT                                         => 'sometimes|boolean',
+        Entity::AMOUNT                   => 'required|integer|min:0',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|nullable|integer|min:100',
+        Entity::CURRENCY                 => 'required|string|size:3',
+        Entity::RECEIPT                  => 'sometimes|nullable|string|max:40',
+        Entity::PAYMENT_CAPTURE          => 'filled|boolean',
+        Entity::CUSTOMER_ID              => 'filled|public_id|size:19',
+        Entity::NOTES                    => 'sometimes|notes',
+        Entity::METHOD                   => 'sometimes|in:netbanking,emandate,upi',
+        Entity::BANK                     => 'filled',
+        Entity::ACCOUNT_NUMBER           => 'filled|string|max:50|min:5',
+        Entity::DISCOUNT                 => 'sometimes|boolean',
+        Entity::OFFERS                   => 'sometimes|array',
+        Entity::OFFERS . '*'             => 'filled|public_id|size:20',
+        Entity::FORCE_OFFER              => 'filled|boolean',
+        Entity::PARTIAL_PAYMENT          => 'sometimes|boolean',
+        Entity::PAYER_NAME               => 'sometimes|string|max:100'
     ];
 
     protected static $createValidators = [
@@ -235,7 +233,6 @@ class Validator extends Base\Validator
         {
             $this->validatePartialPaymentOrderAmount($paymentAmount);
         }
-
     }
 
     protected function validatePartialPaymentOrderAmount(int $paymentAmount)
@@ -243,20 +240,21 @@ class Validator extends Base\Validator
         /** @var Entity $order */
         $order = $this->entity;
 
-        $orderAmountDue  = $order->getAmountDue();
-        $orderAmountPaid = $order->getAmountPaid();
+        $amountDue             = $order->getAmountDue();
+        $amountPaid            = $order->getAmountPaid();
+        $isFirstPayment        = ($amountPaid === 0);
+        $firstPaymentMinAmount = $order->getFirstPaymentMinAmount();
 
-        $orderFirstPaymentMinAmount = $order->getFirstPaymentMinAmount();
-
-        if (($orderAmountPaid === 0) and
-            ($paymentAmount < $orderFirstPaymentMinAmount))
+        if (($isFirstPayment === true) and
+            ($firstPaymentMinAmount !== null) and
+            ($paymentAmount < $firstPaymentMinAmount))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
                 Entity::AMOUNT);
         }
 
-        if (($paymentAmount > $orderAmountDue) and
+        if (($paymentAmount > $amountDue) and
             ($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
         {
             throw new Exception\BadRequestException(

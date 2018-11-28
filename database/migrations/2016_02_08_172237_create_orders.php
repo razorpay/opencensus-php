@@ -50,7 +50,7 @@ class CreateOrders extends Migration
 
             $table->bigInteger(Order::FIRST_PAYMENT_MIN_AMOUNT)
                    ->unsigned()
-                   ->default(0);
+                   ->nullable();
 
             $table->integer(Order::ATTEMPTS)
                   ->default(0);
