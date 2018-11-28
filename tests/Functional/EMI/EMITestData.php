@@ -62,6 +62,25 @@ return [
         ],
     ],
 
+    'testFetchAllEmiPlansWithSbiOnPublicAuth' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/emi',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'SBIN' => [
+                    'min_amount' => 300000,
+                    'plans' => [
+                        9 => 14,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchEmiPlanUsingPlanId' => [
         'request' => [
             'content' => [

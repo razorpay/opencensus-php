@@ -19,6 +19,7 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -2600,5 +2601,32 @@ class Service extends Base\Service
             'failed' => $failed,
             'failed_ids' => $failedIds,
         ];
+    }
+
+    /**
+     * Checks if sbi emi is enabled on checkout for a merchant.
+     *
+     * Fetches the terminal for a merchant with gateway:`emi_sbi`
+     * If null is returned
+     *      There is no SBI MID stored for this merchant.
+     *      This merchant has not been onboarded yet. return false
+     *
+     * Else if there's a emi_sbi terminal which is enabled. return true.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function isSbiEmiEnabled()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $terminal = $this->repo->terminal->getByMerchantIdAndGateway($merchantId, Payment\Gateway::EMI_SBI);
+
+        if ((empty($terminal) === false) and
+            ($terminal->isEnabled() === true))
+        {
+            return true;
+        }
+        return false;
     }
 }
