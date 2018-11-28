@@ -4423,3 +4423,6 @@ ALTER TABLE subscription_registrations
 
 ALTER TABLE blade
     ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
+
+ALTER TABLE hitachi
+    ADD INDEX `hitachi_prrn_index` (pRRN);
