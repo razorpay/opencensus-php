@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
+        Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
     ];
 
     protected static $editTerminalGateways = [
@@ -130,6 +131,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $hitachiTerminalRules = [
