@@ -57,14 +57,13 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
 
-        //$content = $input['gateway']; // UAT does noe seem to encrypt
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'gateway'          => $this->gateway,
-                'gateway_response' => $input[Payment\Entity::GATEWAY],
-                'payment_id'       => $input['payment'][Payment\Entity::ID],
+                'gateway'            => $this->gateway,
+                'gateway_response'   => $input[Payment\Entity::GATEWAY],
+                'payment_id'         => $input['payment'][Payment\Entity::ID],
+                'decrypted response' => $content
             ]
         );
 
@@ -234,7 +233,7 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY       => Constants::INDIAN_RUPEE,
             RequestFields::DESCRIPTION    => Constants::RZP_NAME, //TODO find what to send here
             RequestFields::EMAIL          => Constants::RZP_EMAIL,
-            RequestFields::MODE           => strtoupper($this->mode),
+            RequestFields::MODE           => 'LIVE',
             RequestFields::NAME           => Constants::RZP_NAME,
             RequestFields::PAYMENT_ID     => $input['payment']['id'],
             RequestFields::PHONE          => Constants::RZP_PHONE,
@@ -251,6 +250,7 @@ class Gateway extends Base\Gateway
         {
             $data[RequestFields::BANK_CODE] = Constants::BANK_CODE_CORPORATE;
         }
+        $data['bank_code'] = 'PNBM';
 
         return $data;
     }
