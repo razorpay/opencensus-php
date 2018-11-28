@@ -89,7 +89,7 @@ class Server extends Base\Mock\Server
         $this->content($data, 'verify');
 
         return [
-            'data'                   => json_encode($data),
+            'data'                   => $data,
             ResponseFields::CHECKSUM => $this->generateHash($data)
         ];
     }

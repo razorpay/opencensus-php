@@ -410,20 +410,18 @@ class Gateway extends Base\Gateway
     {
         $responseArray = $this->jsonToArray($response->body);
 
-        $data = $this->jsonToArray($responseArray['data']);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'gateway'    => $this->gateway,
                 'decrypted'  => true,
-                'response'   => $data,
+                'response'   => $responseArray,
             ]
         );
 
         // TODO : Add check for checksum ?
 
-        return $data;
+        return $responseArray['data'];
     }
 
     protected function getVerifyStatus(Verify $verify) :string
