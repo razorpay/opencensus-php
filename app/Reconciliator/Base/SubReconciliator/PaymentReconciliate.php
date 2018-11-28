@@ -45,6 +45,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::UPI_ICICI,
         RequestProcessor\Base::UPI_HULK,
         RequestProcessor\Base::AIRTEL,
+        RequestProcessor\Base::AMEX,
     ];
 
     /**
@@ -494,8 +495,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ]
         );
 
+        //
+        // Checking the status of payment here, it should not be failed now.
+        // Status can be authorized or captured (in case of auto-capture enabled)
+        //
         if ((empty($response['status']) === false) and
-            ($response['status'] === Payment\Status::AUTHORIZED))
+            ($response['status'] !== Payment\Status::FAILED))
         {
             return true;
         }

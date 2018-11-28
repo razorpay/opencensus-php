@@ -43,26 +43,6 @@ class Service extends Base\Service
         return $adj->toArrayPublic();
     }
 
-    public function addFeesAdjustment($input)
-    {
-        if (isset($input[Entity::MERCHANT_ID]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException('Merchant ID not passed!');
-        }
-
-        $merchantId = $input[Entity::MERCHANT_ID];
-
-        unset($input[Entity::MERCHANT_ID]);
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        $adj = (new Adjustment\Core)->createFeesAdjustment($input, $merchant);
-
-        $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
-
-        return $adj->toArrayPublic();
-    }
-
     /**
      * Adds Multiple adjustments
      * @param array $input [list of adjustments to be added]

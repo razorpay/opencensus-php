@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE          = 'entity_type';
     const NOTES                = 'notes';
 
+    const RECEIVER_TYPE        = 'receiver_type';
     const RECEIVER_TYPES       = 'receiver_types';
     const RECEIVERS            = 'receivers';
     const TYPES                = 'types';

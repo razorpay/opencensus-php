@@ -1223,8 +1223,6 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                ],
-                'disabled' => [
                     'ANDB'   => "Andhra Bank",
                     'BKID'   => "Bank of India",
                     'MAHB'   => "Bank of Maharashtra",
@@ -1261,6 +1259,8 @@ return [
                     'UTBI'   => "United Bank of India",
                     'VIJB'   => "Vijaya Bank",
                 ],
+                'disabled' => [
+                ],
             ],
         ],
     ],
@@ -1272,8 +1272,6 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                ],
-                'disabled' => [
                     'MAHB' => "Bank of Maharashtra",
                     'CIUB' => "City Union Bank",
                     'DCBL' => "DCB Bank",
@@ -1289,6 +1287,8 @@ return [
                     'TMBL' => "Tamilnadu Mercantile Bank",
                     'YESB' => "Yes Bank",
                 ],
+                'disabled' => [
+                ],
             ],
         ],
     ],
@@ -1300,9 +1300,9 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
+                    'UTIB_C' => "Axis Bank - Corporate Banking",
                 ],
                 'disabled' => [
-                    'UTIB_C' => "Axis Bank - Corporate Banking",
                 ],
             ],
         ],
@@ -1452,9 +1452,9 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
+                    'HDFC' => "HDFC Bank",
                 ],
                 'disabled' => [
-                    'HDFC' => "HDFC Bank",
                 ],
             ],
         ],

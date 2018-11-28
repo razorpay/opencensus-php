@@ -95,6 +95,8 @@ class Gateway
     const BT_KOTAK           = 'bt_kotak';
     const BT_DASHBOARD       = 'bt_dashboard';
 
+    const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
+
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
@@ -190,8 +192,6 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
-        self::NETBANKING_EQUITAS,
-        self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
 
@@ -238,6 +238,8 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    // The 2 commented banks are mentioned at the bottom
+    // with their retail versions
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -252,6 +254,7 @@ class Gateway
         IFSC::AUCX,
         IFSC::BACB,
         IFSC::BACX,
+        // IFSC::BARB,
         IFSC::BCBM,
         IFSC::BGBX,
         IFSC::BHSX,
@@ -259,6 +262,7 @@ class Gateway
         IFSC::BKDN,
         IFSC::BKID,
         IFSC::BNPA,
+        IFSC::BORX,
         IFSC::BURX,
         IFSC::CBIN,
         IFSC::CHAS,
@@ -274,6 +278,7 @@ class Gateway
         IFSC::CSBK,
         IFSC::CSBX,
         IFSC::CURX,
+        IFSC::CZCX,
         IFSC::DBSS,
         IFSC::DCBL,
         IFSC::DCDX,
@@ -287,6 +292,7 @@ class Gateway
         IFSC::EUCX,
         IFSC::FDRL,
         IFSC::FGCB,
+        IFSC::FSCX,
         IFSC::GCBX,
         IFSC::GCUX,
         IFSC::GDCX,
@@ -302,14 +308,20 @@ class Gateway
         IFSC::IUCB,
         IFSC::JASB,
         IFSC::JHAX,
+        IFSC::JONX,
+        IFSC::JSBL,
         IFSC::JSBP,
         IFSC::JSCX,
         IFSC::JUCX,
         IFSC::KAAX,
         IFSC::KAIJ,
+        IFSC::KALX,
         IFSC::KARB,
+        IFSC::KARX,
         IFSC::KASX,
         IFSC::KBCX,
+        IFSC::KCOB,
+        IFSC::KCUB,
         IFSC::KDCX,
         IFSC::KDIX,
         IFSC::KHAX,
@@ -330,9 +342,16 @@ class Gateway
         IFSC::MERX,
         IFSC::MHSX,
         IFSC::MOGX,
+        IFSC::MPRX,
+        IFSC::MSAX,
+        IFSC::MSNU,
         IFSC::MSOX,
         IFSC::NAIX,
         IFSC::NALX,
+        // This is not in the IFSC package yet
+        // Cleanup post the 1.2.4 release
+        'NBMX',
+        IFSC::NCBX,
         IFSC::NCCX,
         IFSC::NDCX,
         IFSC::NICB,
@@ -342,6 +361,8 @@ class Gateway
         IFSC::NSGX,
         IFSC::NVSX,
         IFSC::ORBC,
+        IFSC::OSMX,
+        IFSC::PABX,
         IFSC::PALX,
         IFSC::PATX,
         IFSC::PCUX,
@@ -350,6 +371,8 @@ class Gateway
         IFSC::PMCB,
         IFSC::PRTH,
         IFSC::PSRX,
+        IFSC::PUGX,
+        // IFSC::PUNB,
         IFSC::RAMX,
         IFSC::RATN,
         IFSC::RCUX,
@@ -396,6 +419,7 @@ class Gateway
         IFSC::UBIN,
         IFSC::UCBA,
         IFSC::UCBS,
+        IFSC::UCBX,
         IFSC::UCUX,
         IFSC::UKGX,
         IFSC::UMSX,
@@ -435,8 +459,21 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
-        Payment\Gateway::SHARP,
-        Payment\Gateway::FIRST_DATA
+        Payment\Gateway::SHARP => [
+            self::GO_LIVE_TIMESTAMP => 1535712088
+        ],
+        Payment\Gateway::AXIS_MIGS      => [
+            self::GO_LIVE_TIMESTAMP => 1542272247
+        ],
+        Payment\Gateway::FIRST_DATA     => [
+            self::GO_LIVE_TIMESTAMP => 1537966190
+        ],
+        Payment\Gateway::CYBERSOURCE => [
+            self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_MINDGATE   => [
+            self::GO_LIVE_TIMESTAMP => 1540826221
+        ]
     ];
 
     /**
@@ -837,6 +874,8 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
         self::NETBANKING_ALLAHABAD,
+        self::NETBANKING_CORPORATION,
+        self::NETBANKING_IDFC,
     ];
 
     /**
@@ -1121,6 +1160,7 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1202,14 +1242,16 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_AXIS,
     ];
 
-    public static $upiValidateVpaGateways = [
+    public static $upiValidateVpaTerminals = [
         Mode::LIVE => [
-            Gateway::UPI_MINDGATE,
+            '9Q8w9weX9D1T27',
+            'AK6NMmzbL6FPe4',
         ],
         Mode::TEST => [
-            Gateway::SHARP,
+            '1000SharpTrmnl',
         ],
     ];
 
@@ -1264,6 +1306,11 @@ class Gateway
         return in_array($gateway, self::$upiIntentGateways, true);
     }
 
+    public static function getScroogeGateways(): array
+    {
+        return array_keys(self::$scroogeGateways);
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1288,7 +1335,25 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        return (in_array($gateway, self::$scroogeGateways, true) === true);
+        return (in_array($gateway, self::getScroogeGateways(), true) === true);
+    }
+
+
+    /**
+     * This function checks if the gateway was live at a particular timestamp
+     *
+     * @param string $gateway
+     * @param int $timestamp
+     * @return bool
+     */
+    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway = null, int $timestamp = null): bool
+    {
+        return (
+            ($gateway !== null) and
+            ($timestamp !== null) and
+            isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
+            $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
+        );
     }
 
     /**
@@ -1669,10 +1734,10 @@ class Gateway
         return $gateways;
     }
 
-    public static function getGatewayForValidateVpaForMode(string $mode)
+    public static function getTerminalsForValidateVpaForMode(string $mode)
     {
         // Currently we are only using MindGate for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
-        return self::$upiValidateVpaGateways[$mode][0];
+        return self::$upiValidateVpaTerminals[$mode];
     }
 }

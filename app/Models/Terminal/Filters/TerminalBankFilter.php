@@ -29,21 +29,17 @@ class TerminalBankFilter extends Terminal\Filter
             }
         }
 
-        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TERMINAL_BANKS_FILTER) === false)
+        if (($this->isLiveMode() === true) and (count($applicableTerminals) !== count($terminals)))
         {
-            if (count($applicableTerminals) !== count($terminals))
-            {
-                $terminalData = array_pluck($terminals, 'gateway', 'id');
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
-                $applicableTerminalData = array_pluck($applicableTerminals, 'gateway', 'id');
+            $applicableTerminalData = array_pluck($applicableTerminals, 'gateway', 'id');
 
-                $this->trace->critical(TraceCode::TERMINAL_BANK_FILTER_DIFF, [
-                    'expected' => $terminalData,
-                    'actual'   => $applicableTerminalData
-                ]);
-            }
-
-            return $terminals;
+            $this->trace->critical(TraceCode::TERMINAL_BANK_FILTER_DIFF, [
+                'expected' => $terminalData,
+                'actual'   => $applicableTerminalData,
+                'bank'     => $bank,
+            ]);
         }
 
         return $applicableTerminals;

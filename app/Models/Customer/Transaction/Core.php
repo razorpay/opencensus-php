@@ -6,37 +6,46 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Transfer;
 use RZP\Models\Merchant;
+use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {
     /**
      * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a openwallet payment.
+     * Called at wallet balance withdrawal.
      *
-     * @param array           $payment
+     * @param array           $input
      * @param Merchant\Entity $merchant
+     * @param string          $source
      *
      * @return Entity
      */
-    public function createForCustomerDebit(array $payment, Merchant\Entity $merchant) : Entity
+    public function createForCustomerDebit(array $input, Merchant\Entity $merchant, string $source) : Entity
     {
-        $amount = $payment['amount'];
+        $amount = $input['amount'];
 
-        $customerId = $payment['customer_id'];
+        $customerId = $input['customer_id'];
 
-        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
+        $txnType = Type::TRANSFER;
 
-        $customerTxn->setEntityType(Constants\Entity::PAYMENT);
-
-        $customerTxn->setEntityId($payment['id']);
-
-        $customerTxn->setDescription($payment['description'] ?? 'No description');
-
-        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
+        if ($source === Constants\Entity::PAYOUT)
         {
-            $balance = (new Customer\Balance\Core)->debit($customerId, $amount);
+            $txnType = Type::WITHDRAWAL;
+        }
+
+        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId, $txnType);
+
+        $customerTxn->setEntityType($source);
+
+        $customerTxn->setEntityId($input['id']);
+
+        $customerTxn->setDescription($input['description'] ?? 'No description');
+
+        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn, $source)
+        {
+            $balance = (new Customer\Balance\Core)->debit($customerId, $amount, $source);
 
             $customerTxn->setBalance($balance->getBalance());
 
@@ -130,16 +139,26 @@ class Core extends Base\Core
         return $entities;
     }
 
+    /**
+     * @param string          $type
+     * @param Merchant\Entity $merchant
+     * @param int             $amount
+     * @param string          $customerId
+     * @param string          $txnType
+     *
+     * @return Entity
+     */
     protected function createEntityForType(
         string $type,
         Merchant\Entity $merchant,
         int $amount,
-        string $customerId) : Entity
+        string $customerId,
+        string $txnType = Type::TRANSFER) : Entity
     {
         $customerTxn = new Entity;
 
         $txnData = [
-            Entity::TYPE                => Type::TRANSFER,
+            Entity::TYPE                => $txnType,
             Entity::STATUS              => 'complete', // @todo - change this to something useful
             Entity::AMOUNT              => $amount,
             Entity::CURRENCY            => 'INR',

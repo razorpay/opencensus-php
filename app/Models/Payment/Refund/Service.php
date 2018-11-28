@@ -17,6 +17,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Refund;
+use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -89,7 +90,9 @@ class Service extends Base\Service
                 unset($gateways[IFSC::ICIC]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::INDB]);
+                unset($gateways[IFSC::IDFB]);
                 unset($gateways[IFSC::UTIB]);
+                unset($gateways[IFSC::ESFB]);
                 unset($gateways[IFSC::CSBK]);
                 unset($gateways[Netbanking::BARB_R]);
                 unset($gateways[IFSC::ALLA]);
@@ -896,7 +899,14 @@ class Service extends Base\Service
             $refund->setErrorNull();
         }
 
-        $this->repo->saveOrFail($refund);
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true)
+        {
+            $this->makeScroogeMarkRefundProcessedRequest($refund, $input);
+        }
+        else
+        {
+            $this->repo->saveOrFail($refund);
+        }
 
         return [
             'status' => $refund->getStatus(),
@@ -973,9 +983,20 @@ class Service extends Base\Service
                         'status' => $refund->getStatus()
                     ]);
 
-                $refund->setStatusProcessed();
+                if (Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true)
+                {
+                    $data = [
+                        Payment\Entity::STATUS => Status::PROCESSED
+                    ];
 
-                $this->repo->saveOrFail($refund);
+                    $this->makeScroogeMarkRefundProcessedRequest($refund, $data);
+                }
+                else
+                {
+                    $refund->setStatusProcessed();
+
+                    $this->repo->saveOrFail($refund);
+                }
 
                 $allRefundsStatuses[Status::PROCESSED][] = $refundId;
             }
@@ -1000,8 +1021,49 @@ class Service extends Base\Service
         return $summary;
     }
 
+    /**
+     * @param Entity $refund
+     * @param array $input
+     */
+    protected function makeScroogeMarkRefundProcessedRequest(Entity $refund, array $input)
+    {
+        $refund->getValidator()->validateScroogeEditRefund($input);
+
+        $data = [
+            'refunds' => [
+                [
+                    'refund_id'     => $refund->getId(),
+                    'event'         => 'processed_event',
+                    'gateway_keys'  =>
+                    [
+                        Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? ''
+                    ]
+                ]
+            ],
+
+            'mode' => $this->mode,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH,
+                     $data
+        );
+
+        ScroogeRefundUpdate::dispatch($data);
+    }
+
     public function fetchRefundDetailsForCustomer(array $input)
     {
+        $traceInput = $input;
+        unset($traceInput['captcha']);
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_INITIATED,
+            [
+                'input' => $traceInput
+            ]
+        );
+
         (new Validator)->validateInput('customer_refund_details', $input);
 
         $mode = $input['mode'] ?? Mode::LIVE;
@@ -1047,10 +1109,19 @@ class Service extends Base\Service
             }
         }
 
-        return [
+        $return = [
             'refunds' => isset($refunds) ? $refunds->toArrayPublicCustomer() : [],
             'payment' => isset($payment) ? $payment->toArrayPublicCustomer() : [],
         ];
+
+        $this->trace->info(
+            TraceCode::CUSTOMER_TRACK_REFUND_STATUS_SERVED,
+            [
+                'input' => $traceInput
+            ] + $return
+        );
+
+        return $return;
     }
 
     protected function getPaymentFromReservationIdForCustomerDetails($reservationId)

@@ -53,6 +53,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
+        $this->updateUrlInCacheAndPushMetric($input, $request['url']);
+
         return $request;
     }
 
@@ -247,11 +249,11 @@ class Gateway extends Base\Gateway
             $date = $content[VerifyRequestFields::TRANSACTION_DATE];
 
             $dateTimestamp = Carbon::createFromFormat('Y-m-d', $date , Timezone::IST)->timestamp;
-            
+
             $data = [
                 Entity::DATE => $dateTimestamp,
             ];
-            
+
             $verify->payment->fill($data);
 
             $verify->payment->saveOrFail();
@@ -312,13 +314,73 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        throw new Exception\LogicException(
-            'Verify refund not implemented',
-            null,
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        $content = $this->getVerifyRefundRequestData($input, $gatewayPayment);
+
+        $request = $this->getStandardRequestArray($content, 'get','verify_refund');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
-                'gateway'   => 'atom',
-                'refund_id' => $input['refund']['id'],
+                'request'     => $request,
+                'payment_id'  => $input['payment']['id'],
+                'refund_id'   => $input['refund']['id'],
+                'gateway'     => $this->gateway,
+                'terminal_id' => $input['terminal']['id'],
             ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $crypto = $this->getResponseDecryptor();
+
+        $decryptedResponse = $crypto->decryptString($response->body);
+
+        $this->checkDecryptionFailure($decryptedResponse, $response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'response'    => $decryptedResponse,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'refund_id'   => $input['refund']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        $xmlResponse = (array) simplexml_load_string(trim($decryptedResponse));
+
+        $verifyRefundResponseArray = json_decode(json_encode($xmlResponse), true);
+
+        if ($verifyRefundResponseArray[VerifyRefundFields::ERRORCODE] === Status::VERIFY_REFUND_SUCCESS)
+        {
+            $success = true;
+
+            $received = true;
+
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->setSuccess($success);
+
+                $gatewayEntity->setReceived($received);
+
+                $gatewayEntity->setStatus(Status::SUCCESS);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $attributes = $this->getRefundAttributesFromVerify($verifyRefundResponseArray);
+
+                $this->createGatewayPaymentEntity($attributes,'refund');
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)
@@ -395,13 +457,117 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function getRefundAttributesFromVerify(array $content)
+    {
+        $attributes = [
+            Entity::ERROR_CODE            => $content[VerifyRefundFields::ERRORCODE],
+            Entity::ERROR_DESCRIPTION     => $content[VerifyRefundFields::MESSAGE],
+            Entity::GATEWAY_PAYMENT_ID    => $content[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND]
+                                                     [VerifyRefundFields::TXN_ID],
+            Entity::RECEIVED              => true,
+            Entity::SUCCESS               => true,
+            Entity::STATUS                => Status::SUCCESS,
+        ];
+
+        return $attributes;
+    }
+
+    protected function getVerifyRefundRequestData($input, $gatewayPayment)
+    {
+        $data = [
+            VerifyRefundFields::LOGIN      => $this->getMerchantId(),
+            VerifyRefundFields::ENC_DATA   => $this->getVerifyRefundEncryptData($gatewayPayment),
+            VerifyRefundFields::REFUND_ID  => $input['refund']['id']
+        ];
+
+        return $data;
+    }
+
+    protected function getVerifyRefundEncryptData($gatewayPayment)
+    {
+        $data = [
+            VerifyRefundFields::TRANSACTION_ID   => $gatewayPayment['gateway_payment_id'],
+            VerifyRefundFields::MERCHANT_ID      => $this->getMerchantId(),
+            VerifyRefundFields::PRODUCT          => $this->getAccessCode(),
+        ];
+
+        $data = $this->getStringToEncrypt($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST_CONTENT,
+            [
+                'content'   => $data,
+                'gateway'   => $this->gateway,
+            ]);
+
+        $crypto = $this->getRequestEncryptor();
+
+        $encdata = $crypto->encryptString($data);
+
+        $encdata = strtoupper($encdata);
+
+        return $encdata;
+    }
+
+    /**
+     * This is because the string for encyption is different for UAT and production environment
+     */
+    protected function getStringToEncrypt($data)
+    {
+        $separator = '&';
+
+        if ($this->getMode() === Mode::TEST)
+        {
+            $separator = '|';
+        }
+
+        $data = http_build_query($data, null, $separator);
+
+        return $data;
+    }
+
+    public function getRequestEncryptor()
+    {
+        $masterKey = $this->getRequestEncryptionKey();
+
+        $salt = $this->getMerchantId();
+
+        return new AESCrypto($masterKey, $salt);
+    }
+
+    public function getResponseDecryptor()
+    {
+        $masterKey = $this->getResponseDecryptionKey();
+
+        $salt = $this->getMerchantId();
+
+        return new AESCrypto($masterKey, $salt);
+    }
+
+    protected function checkDecryptionFailure($decryptedResponse, $encryptedString)
+    {
+        if ($decryptedResponse === false)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_VERIFY_REFUND_FAILURE,
+                [
+                    'encrypted_string' => $encryptedString,
+                    'gateway'          => $this->gateway,
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR
+            );
+        }
+    }
+
     protected function getRefundRequestContent(Entity $gatewayPayment, array $input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $gatewayPayment['date'] = $gatewayPayment['date'] ?: $input['payment']['created_at'];
-        
+
         $content = [
             RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
             RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),
@@ -521,6 +687,42 @@ class Gateway extends Base\Gateway
         return $accessCode;
     }
 
+    public function getRequestEncryptionKey()
+    {
+        if ($this->getMode() === Mode::TEST)
+        {
+            $encryptionKey = $this->config['test_request_encryption_key'];
+        }
+        else
+        {
+            $key = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET2];
+
+            $keyArray = explode('|', $key);
+
+            $encryptionKey = $keyArray[0];
+        }
+
+        return $encryptionKey;
+    }
+
+    public function getResponseDecryptionKey()
+    {
+        if ($this->getMode() === Mode::TEST)
+        {
+            $decryptionKey = $this->config['test_response_encryption_key'];
+        }
+        else
+        {
+            $key = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET2];
+
+            $keyArray = explode('|', $key);
+
+            $decryptionKey = $keyArray[1];
+        }
+
+        return $decryptionKey;
+    }
+
     protected function getAuthRequestContentArray(array $input)
     {
         $payment = $input['payment'];
@@ -583,14 +785,16 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayPaymentEntity(array $attributes)
+    protected function createGatewayPaymentEntity(array $attributes, $action = null)
     {
         $entity = $this->getNewGatewayPaymentEntity();
         $input = $this->input;
 
+        $action = $action ?: $this->action;
+
         $entity->setPaymentId($input['payment']['id']);
 
-        if ($this->action === Action::REFUND)
+        if ($action === Action::REFUND)
         {
             $entity->setRefundId($input['refund']['id']);
 
@@ -601,9 +805,9 @@ class Gateway extends Base\Gateway
             $entity->setAmount($input['payment']['amount']);
         }
 
-        $entity->setAction($this->action);
+        $entity->setAction($action);
 
-        if (($this->action === Action::AUTHORIZE) and
+        if (($action === Action::AUTHORIZE) and
             ($input['merchant']->isTPVRequired()))
         {
             $entity->setAccountNumber($input['order']['account_number']);
@@ -806,5 +1010,22 @@ class Gateway extends Base\Gateway
     protected function getPreviousDate($originalDate)
     {
         return date('Y-m-d', strtotime('-1 day',strtotime($originalDate)));
+    }
+
+    /**
+     * Overrides getRelativeUrl of base class as urls for test and live mode in verify refund are different.
+     */
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        if ($type === 'VERIFY_REFUND')
+        {
+            $mode = strtoupper($this->mode);
+
+            return constant($ns. '\Url::' . $type . '_' . $mode);
+        }
+
+        return constant($ns . '\Url::' . $type);
     }
 }

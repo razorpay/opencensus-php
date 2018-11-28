@@ -250,7 +250,15 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
-        $input['reverse'] = $data['refund']['reverse'];
+        $input['reverse'] = $data['refund']['reverse'] ?? null;
+
+        //
+        // This is required for upi mindgate refunds. Second request on gateway with same refund id fails with duplicate.
+        // Attempts will come from scrooge but still handling here to keep default value 0. Can't use API's attempts as
+        // for scrooge refunds API attempts will always be 1
+        //
+        $input['attempts'] = $input['attempts'] ?? 0;
+
         $data['refund'] = $input;
 
         $gatewayRefundResponse = $this->mutex->acquireAndRelease(
@@ -1084,7 +1092,7 @@ trait Refund
 
         $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $payment->getMerchantId());
 
-        if (($isScroogeGateway === false) and
+        if ((($isScroogeGateway === false) or ($retry === true)) and
             ($this->isFundTransferAttemptRefund($payment, $data) === true))
         {
             return $this->refundViaFundTransfer($payment, $data);

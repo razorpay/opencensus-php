@@ -224,4 +224,33 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testEditOrgWithPricingPlan()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] .= '/' . $org->getPublicId();
+
+        $testData['request']['content']['default_pricing_plan_id'] = '1hDYlICobzOCYt';
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            'The id provided does not exist');
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($org->getId());
+
+        $testData['request']['content']['default_pricing_plan_id'] = '1hDYlICxbxOCYx';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals('1hDYlICxbxOCYx', $response['default_pricing_plan_id']);
+    }
 }

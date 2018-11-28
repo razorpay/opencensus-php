@@ -639,7 +639,7 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
-    
+
     /**
      * checks that category and category2 details should be set on business subcategory change
      */
@@ -686,7 +686,7 @@ class MerchantDetailTest extends TestCase
         $this->assertSame(5399, $testMerchant->getCategory());
         $this->assertSame('others', $testMerchant->getCategory2());
     }
-    
+
     /**
      * blacklist activation flow should not be allowed to submit full activation form
      */
@@ -695,12 +695,12 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-        
+
         $this->startTest();
     }
-    
+
     /**
      * whitelist and greylist activation flow should be allowed to fill full activation form
      */
@@ -709,9 +709,9 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::WHITELIST
         ]);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-        
+
         $this->startTest();
     }
 

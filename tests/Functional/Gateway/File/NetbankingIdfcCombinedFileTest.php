@@ -35,6 +35,12 @@ class NetbankingIdfcCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
         $refund = $this->refundPayment($payment['id']);
 
         $this->ba->adminAuth();
@@ -49,15 +55,18 @@ class NetbankingIdfcCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         $files = $this->getEntities('file_store', [
-            'count' => 2
+            'count' => 3
         ], true);
 
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         $expectedFilesContent = [
             'entity' => 'collection',
-            'count' => 2,
+            'count' => 3,
             'items' => [
+                [
+                    'type' => 'idfc_netbanking_summary',
+                ],
                 [
                     'type' => 'idfc_netbanking_claims',
                 ],
@@ -93,7 +102,7 @@ class NetbankingIdfcCombinedFileTest extends TestCase
 
             $this->checkClaimsFile($mail->viewData['claimsFile']);
 
-            $this->assertCount(2, $mail->attachments);
+            $this->assertCount(3, $mail->attachments);
 
             return true;
         });

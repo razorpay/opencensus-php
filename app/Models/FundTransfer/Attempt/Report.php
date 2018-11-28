@@ -61,13 +61,17 @@ class Report extends Base\Core
 
     protected $channel = null;
 
-    protected $count = 0;
-
     protected $startTime = null;
 
     protected $endTime = null;
 
     protected $errorReporting = null;
+
+    protected $count = 0;
+
+    protected $summary = [];
+
+    protected $merchantInfo = [];
 
     public function __construct()
     {
@@ -107,18 +111,21 @@ class Report extends Base\Core
         {
             $this->channel = $channel;
 
-            $this->createReport();
+            $channelCount = $this->createReport();
 
-            $this->addCriticalErrorsToReport($channel);
+            $channelCount += $this->addCriticalErrorsToReport($channel);
+
+            $this->count += $channelCount;
+
+            if ($channelCount !== 0)
+            {
+                $this->summary[] = ['channel' => $channel, 'count' => $channelCount];
+            }
         }
 
         fclose($this->fileHandler);
 
         $this->trace->info(TraceCode::FTA_RECON_REPORT_FILE_CREATED);
-
-        return [
-            'progressCount' => $this->count
-        ];
     }
 
     protected function initiateFileHandler(string $type)
@@ -148,6 +155,8 @@ class Report extends Base\Core
 
         $offset = 0;
 
+        $recordCount =0;
+
         do {
             $records = $this->repo
                             ->fund_transfer_attempt
@@ -168,9 +177,11 @@ class Report extends Base\Core
 
             $count = count($records);
 
-            $this->count += count($filteredRecords);
+            $recordCount += count($filteredRecords);
 
         } while ($count === self::LIMIT);
+
+        return $recordCount;
     }
 
     /**
@@ -237,48 +248,65 @@ class Report extends Base\Core
 
             $recordCount += $count;
 
-            $this->count += $count;
-
         } while ($count === self::LIMIT);
 
-        $this->notify($recordCount);
+        return $recordCount;
     }
 
-    protected function notify(int $count)
+    public static function notify(Report $progressReport, Report $failureReport)
     {
-        if ($count === 0)
+        if (($progressReport->count === 0) and ($failureReport->count === 0))
         {
             return;
         }
 
+        $result          = [];
+
+        $count           = $progressReport->count + $failureReport->count;
+
+        $progressSummary = $progressReport->getSummary();
+
+        $failureSummary  = $failureReport->getSummary();
+
+        foreach ($progressSummary as $reportInfo)
+        {
+            $result['channel'][] = $reportInfo['channel'];
+
+            $result['count'][]   = $reportInfo['count'];
+        }
+
+        $result += $failureSummary;
+
         (new SlackNotification)->send(
             'fta_recon_report',
-            [
-                'channel' => $this->channel,
-                'count' => $count
-            ],
+            $result,
             null,
             $count);
     }
 
-    public static function sendEmail(array $count, array $fileInfo)
+    public static function sendEmail(Report $progressReport, Report $failureReport)
     {
+        $info = 'Settlement Potential Failures';
+
         $data = [
-            'header'  => 'Settlement Potential Failures',
-            'subject' => 'Settlement Report for ' . Carbon::today(Timezone::IST)->format('Y-m-d'),
-            'date'    => Carbon::today(Timezone::IST)->format('Y-m-d')
+            'header'  => $info,
+            'subject' => $info . Carbon::today(Timezone::IST)->format('Y-m-d'),
+            'date'    => Carbon::today(Timezone::IST)->format('Y-m-d'),
+            'summary' => [],
         ];
 
         $attachments = [];
 
-        if ($count['progressCount'] !== 0)
+        if ($progressReport->count !== 0)
         {
-            $attachments[] = $fileInfo[self::FTA_PROGRESS];
+            $attachments[] = $progressReport->getFileName();
         }
 
-        if ($count['failureCount'] !== 0)
+        if ($failureReport->count !== 0)
         {
-            $attachments[] = $fileInfo[self::FTA_FAILURES];
+            $attachments[] = $failureReport->getFileName();
+
+            $data['summary'] = $failureReport->getMerchantInfo();
         }
 
         if (empty($attachments) === true)
@@ -286,7 +314,7 @@ class Report extends Base\Core
             return false;
         }
 
-        $data['attachments'] = $attachments;
+        $data['attachments'] = array_values($attachments);
 
         $reportEmail = new ReportEmail($data);
 
@@ -339,15 +367,16 @@ class Report extends Base\Core
             'end_time'      => $this->endTime,
         ]);
 
-         $this->createFailureReport();
+         $this->count = $this->createFailureReport();
+
+        if ($this->count !== 0)
+        {
+            $this->summary['failureCount'] = $this->count;
+        }
 
         fclose($this->fileHandler);
 
         $this->trace->info(TraceCode::FTA_FAILURE_REPORT_FILE_CREATED);
-
-        return [
-            'failureCount' => $this->count
-        ];
     }
 
     protected function createFailureReport()
@@ -374,11 +403,9 @@ class Report extends Base\Core
 
             $recordCount += $count;
 
-            $this->count += $count;
-
         } while ($count === self::LIMIT);
 
-        $this->notify($recordCount);
+        return $recordCount;
     }
 
     protected function createOrUpdateFailureFile($records)
@@ -387,23 +414,40 @@ class Report extends Base\Core
         {
             $createdDate = Carbon::createFromTimestamp($record->getCreatedAt(), Timezone::IST);
 
+            $merchantName = $record->merchant->getName();
+
             $data = [
                 $record->getSourceId(),
                 $record->getSourceType(),
                 $record->merchant->getId(),
-                $record->merchant->getName(),
+                $merchantName,
                 $record->getBankStatusCode(),
                 $record->getRemarks(),
                 $record->getFailureReason(),
                 $createdDate->format('d-m-Y')
             ];
 
+            $this->merchantInfo[] = [
+                'merchant_name' => $merchantName,
+                'amount'        => $record->source->getAmount()/100
+            ];
+
             fputcsv($this->fileHandler, $data);
         }
     }
 
-    public function getFileName(string $type)
+    public function getFileName()
     {
-        return [$type => $this->fileName];
+        return $this->fileName;
+    }
+
+    public function getSummary()
+    {
+        return $this->summary;
+    }
+
+    public function getMerchantInfo()
+    {
+        return $this->merchantInfo;
     }
 }

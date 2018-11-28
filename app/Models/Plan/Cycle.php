@@ -136,7 +136,7 @@ class Cycle
 
         while ($nextRun < $end)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start);
+            $nextRun = Library::computeFutureRun($schedule, $start, $minTime = null, $ignoreBankHolidays = true);
 
             $start = $nextRun;
 
@@ -164,7 +164,7 @@ class Cycle
         //
         for ($i = 1; $i <= $totalCount - 1; $i++)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start);
+            $nextRun = Library::computeFutureRun($schedule, $start, $minTime = null, $ignoreBankHolidays = true);
 
             $start = $nextRun;
         }

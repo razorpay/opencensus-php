@@ -7,6 +7,7 @@ use Barryvdh\Debugbar;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
+use RZP\Models\P2p;
 use RZP\Http\RequestContext;
 use RZP\Trace\ApiTraceProcessor;
 
@@ -35,6 +36,8 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerRequestGetTaskIdMacro();
 
         $this->registerRequestContext();
+
+        $this->registerP2pContext();
     }
 
     public function boot()
@@ -131,5 +134,10 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerRequestContext()
     {
         $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
+    }
+
+    protected function registerP2pContext()
+    {
+        $this->app->singleton('p2p.ctx', function($app) { return new P2p\Base\Libraries\Context($app); });
     }
 }

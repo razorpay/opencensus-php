@@ -7,6 +7,8 @@ use RZP\Gateway\AxisMigs;
 
 class Entity extends AxisMigs\Entity
 {
+    const VPC_TRANSACTION_NUMBER = 'vpc_TransactionNo';
+
     protected $entity = 'amex';
 
     public function __construct(array $attributes = array())

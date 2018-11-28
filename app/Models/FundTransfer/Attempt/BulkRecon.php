@@ -76,8 +76,8 @@ class BulkRecon extends Base\Core
         $ftaIds = $this->repo
                        ->fund_transfer_attempt
                        ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to)
-                             ->pluck(FundTransferAttempt\Entity::ID)
-                             ->toArray();
+                       ->pluck(FundTransferAttempt\Entity::ID)
+                       ->toArray();
 
         $chunks = array_chunk($ftaIds, 1000);
 
@@ -278,7 +278,7 @@ class BulkRecon extends Base\Core
 
             if ($entity->getEntityName() === EntityConstants::SETTLEMENT)
             {
-                $settlementsCount += 1;
+                $settlementsCount++;
             }
         }
 

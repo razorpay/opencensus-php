@@ -4,12 +4,12 @@ namespace RZP\Reconciliator\NetbankingEquitas;
 
 class Constants
 {
-    const GATEWAY_REFERENCE_NUMBER      = 'GatewayReferenceNumber';
-    const BANK_REFERENCE_NUMBER         = 'BankTransactionReferenceNo';
-    const AMOUNT                        = 'TransactionAmount';
-    const STATUS                        = 'STATUS';
-    const DATE_OF_TRANSACTION           = 'TRANSACTIONDATE';
-    const ACCOUNT_NUMBER                = 'ACCNO';
+    const GATEWAY_REFERENCE_NUMBER      = 'gatewayreferencenumber';
+    const BANK_REFERENCE_NUMBER         = 'banktransactionreferenceno';
+    const AMOUNT                        = 'transactionamount';
+    const STATUS                        = 'status';
+    const DATE_OF_TRANSACTION           = 'transactiondate';
+    const ACCOUNT_NUMBER                = 'accno';
 
     const PAYMENT_STATUS_SUCCESS        = 'SUCCESS';
 

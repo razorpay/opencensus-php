@@ -128,6 +128,9 @@
     <!-- Tests that the ++ operators are used when possible -->
     <rule ref="Squiz.Operators.IncrementDecrementUsage"/>
 
+    <!-- Mandate single quotes wherever escaping is not required -->
+    <rule ref="Squiz.Strings.DoubleQuoteUsage.NotRequired" />
+
     <!-- Checks to ensure that the logical operators 'and'
     and 'or' are used -->
     <rule ref="Razorpay.Operators.ValidLogicalOperators"/>

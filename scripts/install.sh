@@ -53,10 +53,7 @@ if [[ ${DEPLOYMENT_GROUP_NAME} == "prod-api-dark" ]]; then
 else
   # start supervisor as root
   echo  "== Supervisor Start =="
-  sudo systemctl start supervisor
-
-  echo "== Queue Restart =="
-  cd "$API_INSTALL_DIR" && php artisan queue:restart
+  sudo systemctl restart supervisor
 fi
 
 # Clear and Re-cache Routes

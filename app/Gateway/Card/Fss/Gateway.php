@@ -243,7 +243,7 @@ class Gateway extends Base\Gateway
             Fields::EXPIRY_YEAR   => $input[E::CARD][Card\Entity::EXPIRY_YEAR],
             Fields::EXPIRY_MONTH  => $this->getFormattedExpMonth($input[E::CARD][Card\Entity::EXPIRY_MONTH]),
             Fields::TYPE          => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
-            Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
+            Fields::MEMBER        => $this->getCardHolderName($input),
             Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100,
             Fields::ACTION        => Action::getActionValue(Action::PURCHASE),
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
@@ -259,6 +259,13 @@ class Gateway extends Base\Gateway
         $this->traceGatewayData($requestContent, TraceCode::GATEWAY_PAYMENT_REQUEST);
 
         return $requestContent;
+    }
+
+    protected function getCardHolderName($input)
+    {
+        $name = $input[E::CARD][Card\Entity::NAME];
+
+        return preg_replace('/[^a-zA-Z ]/', '', $name);
     }
 
     /**
@@ -503,7 +510,7 @@ class Gateway extends Base\Gateway
                 [
                     'payment_id' => $this->input['payment']['id'],
                     'fields'     => $missingFields,
-                    'message'    => "Mandatory Fields are missing",
+                    'message'    => 'Mandatory Fields are missing',
                     'gateway'    => $this->gateway,
                 ]
             );
@@ -519,7 +526,7 @@ class Gateway extends Base\Gateway
                                                   $gatewayContent)
     {
         if ((empty($gatewayContent[$gatewayResponseField]) === false) and
-            ($gatewayContent[$gatewayResponseField] !== "null"))
+            ($gatewayContent[$gatewayResponseField] !== 'null'))
         {
             $attributes[$gatewayField] = $gatewayContent[$gatewayResponseField];
         }
@@ -606,7 +613,7 @@ class Gateway extends Base\Gateway
 
         $status = $verifyResponse[Fields::RESULT];
 
-        $verify->gatewaySuccess = ($status === Status::SUCCESS);
+        $verify->gatewaySuccess = (($status === Status::SUCCESS) or ($status === Status::CAPTURED));
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
 
@@ -792,8 +799,8 @@ class Gateway extends Base\Gateway
 
         $status = $attributes[Entity::STATUS];
 
-        if (empty($status) === false and
-            trim($status) !== Status::CAPTURED)
+        if ((empty($status) === false) and
+            (trim($status) !== Status::CAPTURED))
         {
             // Error message is sent as status.
             if ($this->isErrorMessage($status) === true)
