@@ -9,8 +9,11 @@ const CustomInput = props => {
       <div class="Input-label">
         Minimum Payable Amount (Optional)
         <small className="help-content">
-          <i class="i i-info-outline" />
-          <Popover align="top">
+          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+          <Popover
+            align="top"
+            parentQuerySelector={`.Modal-body .PaymentLinks--Create`}
+          >
             <PopoverBody>
               <div>
                 You can set a minimum payable amount for the first transaction
@@ -67,7 +70,7 @@ export default [
       _autoRenderImpure: true,
     },
     {
-      name: 'min_amount',
+      name: 'first_payment_min_amount',
       addonBefore: '₹',
       placeholder: '0.00',
       size: 'half_big',

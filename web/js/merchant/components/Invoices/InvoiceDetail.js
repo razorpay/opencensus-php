@@ -4,7 +4,6 @@ import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
 import Banner from 'rzp/ui/Banner';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
@@ -15,6 +14,7 @@ import Button, { AsyncBtn } from 'component/Button';
 
 import {
   EditExpiry,
+  EditMinimumAmount,
   EditNotes,
   EditReceipt,
 } from 'merchant/containers/PaymentLinks/Edit/index';
@@ -215,6 +215,17 @@ export default props => {
                                 {isPartialPayment ? 'Disable' : 'Enable'}
                               </AsyncBtn.Transparent>
                             )}
+                          {isPartialPayment && (
+                            <EditMinimumAmount
+                              value={invoice.first_payment_min_amount}
+                              maximum={invoice.amount}
+                              currency={invoice.currency}
+                              entityId={invoice.id}
+                              editFn={editPaymentLink}
+                              trackerFn={() => {}}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                            />
+                          )}
                         </div>
                       )}
                     />;

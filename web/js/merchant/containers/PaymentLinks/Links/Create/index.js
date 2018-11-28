@@ -55,7 +55,7 @@ function defaultFieldProps(f) {
     f.onChange = self.onChangeNotes;
   }
 
-  if (f.name === 'min_amount') {
+  if (f.name === 'first_payment_min_amount') {
     f.validator = f.validator.bind(self);
   }
 
