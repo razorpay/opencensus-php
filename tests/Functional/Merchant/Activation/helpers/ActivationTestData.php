@@ -1192,7 +1192,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testKYCVerificationForInstantlyActivatedMerchant' => [
+    'changeActivationStatus' => [
         'request' => [
             'content' => [
                 'activation_status'  => 'under_review',
@@ -1205,6 +1205,7 @@ return [
             ],
         ],
     ],
+
     'submitKyc' => [
         'request'  => [
             'content' => [
@@ -1242,5 +1243,27 @@ return [
             'class'               => BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         ],
+    ],
+
+    'testPostInstantActivationFetaureCheck' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+            ],
+        ],
+        'status_code' => 200,
     ],
 ];

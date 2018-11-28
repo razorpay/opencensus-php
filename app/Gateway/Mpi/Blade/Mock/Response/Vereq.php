@@ -69,4 +69,14 @@ class Vereq
             'protocol' => 'ThreeDSecure'
         ];
     }
+
+    public function unknownEnrolledResponse(string $paymentId)
+    {
+        return [
+            'version'  => '1.0.2',
+            'CH'       => [
+                'enrolled' => 'U',
+            ],
+        ];
+    }
 }

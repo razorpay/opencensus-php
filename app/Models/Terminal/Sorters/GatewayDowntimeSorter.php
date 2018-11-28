@@ -24,6 +24,7 @@ class GatewayDowntimeSorter extends Terminal\Sorter
     protected $allowedMethods = [
         Payment\Method::CARD,
         Payment\Method::EMI,
+        Payment\Method::UPI,
     ];
 
     /**

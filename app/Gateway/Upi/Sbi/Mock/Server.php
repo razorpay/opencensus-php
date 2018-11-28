@@ -23,6 +23,8 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($request);
 
+        $this->request($request, 'authorize');
+
         $response = $this->getAuthorizeResponseArray($request);
 
         $content = [
@@ -130,7 +132,7 @@ class Server extends Base\Mock\Server
             ],
             ResponseFields::PAYEE_TYPE         => [
                 ResponseFields::VIRTUAL_ADDRESS => $vpa,
-                ResponseFields::NAME            => 'Mayank Amencherla',
+                ResponseFields::NAME            => 'Test User',
             ],
             ResponseFields::STATUS             => Status::AVAILABLE_VPA,
             ResponseFields::STATUS_DESCRIPTION => 'VPA is valid'

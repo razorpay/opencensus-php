@@ -268,6 +268,8 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testFailedVpaValidation()
     {
+        $this->markTestSkipped();
+
         $this->payment['vpa'] = 'invalidvpa@hdfcbank';
 
         $payment = $this->payment;
@@ -512,6 +514,36 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertSame('ZA', $upiEntity['status_code']);
     }
 
+    public function testCollectRejectedFailureUnknownRespCode()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'unknownrespcode@hdfcbank';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $this->makeS2SCallbackAndGetContent($content);
+        });
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testPaymentWithExpiryPrivateAuth()
     {
         $this->fixtures->merchant->addFeatures(['s2supi']);
@@ -543,13 +575,19 @@ class UpiMindgateGatewayTest extends TestCase
     {
         $this->payment['vpa'] = 'failedrefund@hdfcbank';
 
+        $this->getFailureInVerifyRefund();
+
         $payment = $this->testPayment();
 
         $refund = $this->refundPayment($payment['id'], 10000);
 
         $entity = $this->getEntityById('refund', $refund['id'], 'admin');
 
-        $this->assertEquals('failed', $entity['status']);
+        //
+        // For scrooge refunds, status will always be created.
+        //
+        $this->assertEquals('created', $entity['status']);
+
         $this->assertEquals(false, $entity['gateway_refunded']);
 
         $upi = $this->getDbLastEntity('upi');
@@ -557,9 +595,22 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('BT', $upi['status_code']);
     }
 
+    protected function getFailureInVerifyRefund()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+    }
+
     public function testRetryRefund()
     {
         $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $this->getFailureInVerifyRefund();
 
         $payment = $this->testPayment();
 
@@ -584,13 +635,11 @@ class UpiMindgateGatewayTest extends TestCase
             }
         });
 
-        $refund = $this->retryFailedRefund($refund['id']);
-
-        $this->assertEquals($refund['status'], 'processed');
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($refund['attempts'], 2);
+        $this->assertEquals($refund['status'], 'processed');
     }
 
     public function testBankDetailsAreSaved()
@@ -657,7 +706,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaSuccess()
     {
-        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+        Gateway::$upiValidateVpaTerminals[Mode::TEST] = ['100UPIMindgate'];
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
@@ -668,7 +717,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaFailure()
     {
-        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+        Gateway::$upiValidateVpaTerminals[Mode::TEST] = ['100UPIMindgate'];
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
@@ -734,6 +783,8 @@ class UpiMindgateGatewayTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['verified'], 1);
+
+        $this->getFailureInVerifyRefund();
 
         $this->refundAuthorizedPayment($paymentEntity['id']);
 

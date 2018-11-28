@@ -863,6 +863,9 @@ trait PaymentTrait
         $input['gateway'] = $this->gateway;
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
+        $input['attempts'] = $refund['attempts'] ?? 0;
+        $input['amount'] = $refund['amount'] ?? $input['amount'];
+        $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
 
         $this->ba->scroogeAuth();
 
@@ -976,6 +979,7 @@ trait PaymentTrait
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
+            $response['attempts'] = 1;
 
             $this->scroogeRefund($response);
         }
@@ -987,17 +991,6 @@ trait PaymentTrait
     {
         $this->ba->adminAuth();
 
-        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
-
-        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
-
-        $admin = $this->ba->getAdmin();
-
-        // Linking merchant with admin because admins can access only linked merchants.
-        $admin->merchants()->attach($merchant);
-
-        $this->ba->addAccountAuth($merchant->getId());
-
         $request = array(
             'method'  => 'POST',
             'url'     => '/payments/'.$id.'/authorize_refund',
@@ -1008,7 +1001,7 @@ trait PaymentTrait
         $this->assertEquals('refund', $refund['entity']);
 
         //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
         {
             $this->scroogeRefund($refund);
         }

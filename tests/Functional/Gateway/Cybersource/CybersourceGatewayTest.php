@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Cybersource\Fields;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
@@ -321,7 +322,8 @@ class CybersourceGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
@@ -387,7 +389,9 @@ class CybersourceGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
@@ -409,7 +413,8 @@ class CybersourceGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
@@ -423,15 +428,19 @@ class CybersourceGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->scroogeRefund($refund);
+
+        $this->assertEquals(false, $response['success']);
+        $this->assertEquals('SERVER_ERROR_RUNTIME_ERROR', $response['status_code']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
         $actualRefund = $this->getEntityById('refund', $id, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
-        $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+
+        $this->assertEquals('created', $actualRefund['status']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
 
@@ -445,7 +454,8 @@ class CybersourceGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
@@ -459,14 +469,18 @@ class CybersourceGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
         $actualRefund = $this->getEntityById('refund', $id, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
-        $this->assertEquals('failed', $actualRefund['status']);
+
+        $this->assertEquals('created', $actualRefund['status']);
+
         $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
@@ -481,7 +495,8 @@ class CybersourceGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
@@ -518,7 +533,7 @@ class CybersourceGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
@@ -543,8 +558,7 @@ class CybersourceGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('refund', true);
-
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
@@ -569,7 +583,7 @@ class CybersourceGatewayTest extends TestCase
         $actualRefund = $this->getEntityById('refund', $id, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
-        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals('created', $actualRefund['status']);
         $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
@@ -578,7 +592,13 @@ class CybersourceGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
+
+        $response = $this->scroogeRefund($refund);
+
+        // Adding the following checks just to assert scrooge response - at this point the refund is already processed
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('REFUND_SUCCESSFUL', $response['status_code']);
 
         $refund = $this->getLastEntity('refund', true);
 

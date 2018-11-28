@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
@@ -365,7 +364,7 @@ return [
                     [
                         'token'         => '10001cardtoken',
                         'method'        => 'card',
-                        'card'          =>  [
+                        'card'          => [
                             'last4'         => '1111',
                             'network'       => 'Visa',
                         ]
@@ -373,7 +372,7 @@ return [
                     [
                         'token'         => '10000cardtoken',
                         'method'        => 'card',
-                        'card'          =>  [
+                        'card'          => [
                             'last4'         => '1111',
                             'network'       => 'Visa',
                         ]
@@ -470,12 +469,12 @@ return [
         'response' => [
             'content' => [
                 'method' => 'card',
-                'card'   =>  [
+                'card'   => [
                     'last4'   => '3335',
                     'network' => 'Visa',
                 ],
-                'wallet'    => null,
-                'bank'      => null
+                'wallet' => null,
+                'bank'   => null,
             ],
         ],
     ],
@@ -526,16 +525,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'    => 'collection',
-                'items'     =>  [
+                'entity' => 'collection',
+                'items'  => [
                     [
                         'token' => '1000gcardtoken',
                         'card'  => [
-                            'last4'     => '1111',
-                            'network'   => 'Visa'
+                            'last4'   => '1111',
+                            'network' => 'Visa',
                         ],
-                    ]
-                 ],
+                    ],
+                ],
             ],
         ],
     ],
@@ -692,4 +691,83 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCustomerWalletPayoutInsufficientWalletBalance' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 300,
+                'method'      => 'fund_transfer',
+                'purpose'     => 'refund',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payout failed due to insufficient balance in wallet',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE,
+        ],
+    ],
+
+    'testCustomerWalletPayoutInsufficientMerchantBalance' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 800,
+                'method'      => 'fund_transfer',
+                'purpose'     => 'refund',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant does not have enough balance for negative adjustment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+        ],
+    ],
+
+    'testCustomerWalletPayout' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => 800,
+                'method'      => 'fund_transfer',
+                'purpose'     => 'refund',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'customer_id' => 'cust_100000customer',
+                'destination' => 'ba_1000000lcustba',
+                'currency'    => 'INR',
+                'amount'      => 800,
+                'status'      => 'created',
+            ]
+        ],
+
+    ]
 ];

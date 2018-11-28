@@ -29,7 +29,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
             return null;
         }
-        
+
         return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
     }
 

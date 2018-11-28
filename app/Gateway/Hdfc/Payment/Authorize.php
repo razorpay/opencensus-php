@@ -550,7 +550,7 @@ trait Authorize
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,
             $this->authSecondRecurringResponse);
-       
+
         // Check for auth success.
         if ($this->isAuthSuccess($this->authSecondRecurringResponse) === true)
         {
@@ -588,7 +588,7 @@ trait Authorize
         $this->runRequestResponseFlow(
             $this->debitPinAuthenticationRequest,
             $this->debitPinAuthenticationResponse);
-        
+
         $this->trace->info(
             TraceCode::GATEWAY_DEBIT_PIN_AUTHENTICATION_RESPONSE,
             [

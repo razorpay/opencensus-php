@@ -14,6 +14,9 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
             Entity::NOTES       => 'sometimes|notes_fetch',
         ],
+        AuthType::PROXY_AUTH => [
+            Entity::RECEIVER_TYPE => 'sometimes|in:bank_account,qr_code',
+        ],
     ];
 
     const ACCESSES = [
@@ -24,6 +27,9 @@ class Fetch extends BaseFetch
             Entity::STATUS,
             Entity::NOTES,
             Entity::CUSTOMER_ID,
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::RECEIVER_TYPE,
         ],
     ];
 

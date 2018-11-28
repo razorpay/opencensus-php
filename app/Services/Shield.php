@@ -131,6 +131,7 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_ID]             = $merchant->getId();
         $payloadDetails[ShieldConstants::MERCHANT_NAME]           = $merchant->getBillingLabel();
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY]       = $merchant->getCategory2();
+        $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
     }
@@ -189,8 +190,7 @@ class Shield
 
     protected function populatePaymentRequestDetails(Payment\Entity $payment, array & $payloadDetails)
     {
-        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] =
-            $this->request->header('Accept-Language') ?: ShieldConstants::DEFAULT_ACCEPT_LANGUAGE;
+        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
         $paymentAnalytics = $payment->getMetadata("payment_analytics");
 

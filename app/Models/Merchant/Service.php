@@ -30,6 +30,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorDescription;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -422,6 +423,7 @@ class Service extends Base\Service
             ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
+            // TODO need to discuss this
             $balance[Balance\Entity::ID]      = $merchantId;
             $balance[Balance\Entity::BALANCE] = 0;
 
@@ -2518,5 +2520,85 @@ class Service extends Base\Service
         $response = ['result' => $result];
 
         return $response;
+    }
+
+    public function submitSupportCallRequest(array $input): array
+    {
+        $validator = new Validator;
+        $validator->validateNowIsWorkingHour();
+        $validator->validateInput(__FUNCTION__, $input);
+
+        $allowCallRequest = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::SUPPORT_CALL,
+            $this->mode ?? 'live');
+
+        $isActivated = $this->merchant->isActivated();
+
+        $this->trace->info(
+            TraceCode::SUBMIT_SUPPORT_CALL_REQUEST,
+            compact('input', 'allowCallRequest', 'isActivated'));
+
+        // Dashboard also does treatment check hence happening this is a invalid request.
+        if (($allowCallRequest === 'off') or ($isActivated === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid request.');
+        }
+
+        return $this->app->myoperator->submitSupportCallRequest($input);
+    }
+
+    public function bulkRegenerateBalanceIds(array $input)
+    {
+        $limit = (int) ($input['limit'] ?? 1000);
+
+        $balances = $this->repo->balance->getBalances($limit);
+
+        $failed = 0;
+        $failedIds = [];
+        $success = 0;
+        $total = count($balances);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_BACKFILL_REQUEST,
+            [
+                'merchant_ids' => $balances->pluck(Entity::MERCHANT_ID)->toArray(),
+                'total'        => $total,
+            ]);
+
+        foreach ($balances as $balance)
+        {
+            try
+            {
+                $id = $balance->generateUniqueIdFromTimestamp($balance->getCreatedAt());
+
+                $balance->setAttribute(Entity::ID, $id);
+
+                $balance->saveOrFail();
+
+                $success++;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_BALANCE_BACKFILL_ERROR,
+                    [
+                        'id' => $balance->getMerchantId(),
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $balance->getMerchantId();
+            }
+        }
+
+        return [
+            'total' => $total,
+            'success' => $success,
+            'failed' => $failed,
+            'failed_ids' => $failedIds,
+        ];
     }
 }

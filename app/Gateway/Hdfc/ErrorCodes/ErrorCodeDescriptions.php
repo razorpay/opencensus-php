@@ -489,6 +489,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'I'           => 'Maximum credit amount set for per card for rolling 24 hrs has been crossed',
         'J'           => 'Maximum transaction set for per card for rolling 24 hrs has been crossed',
         'K'           => 'Amount Less than Minimum Amount configured',
+        'P'           => '(HDFC internal DB issue)',
         'X'           => 'BIN is added as negative BIN in PG',
         'Y'           => 'Card is present in negative card list and will be decline in future also unless it is not removed manually.',
         'Z'           => 'Card is present in decline card database, will be declined for short time',

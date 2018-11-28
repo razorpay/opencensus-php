@@ -1,0 +1,40 @@
+<?php
+
+namespace RZP\Http\Controllers\P2p;
+
+class Requests
+{
+    const P2P_CUSTOMER_START_VERIFICATION                   = 'p2p_customer_start_verification';
+    const P2P_CUSTOMER_VERIFICATION_STATUS                  = 'p2p_customer_verification_status';
+    const P2P_CUSTOMER_REFRESH_TOKEN                        = 'p2p_customer_refresh_token';
+    const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
+
+    const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';
+    const P2P_CUSTOMER_BA_RETRIEVE                          = 'p2p_customer_ba_retrieve';
+    const P2P_CUSTOMER_BA_FETCH_ALL                         = 'p2p_customer_ba_fetch_all';
+    const P2P_CUSTOMER_BA_FETCH                             = 'p2p_customer_ba_fetch';
+    const P2P_CUSTOMER_BA_INITIATE_SET_UPI_PIN              = 'p2p_customer_ba_initiate_set_upi_pin';
+    const P2P_CUSTOMER_BA_SET_UPI_PIN                       = 'p2p_customer_ba_set_upi_pin';
+    const P2P_CUSTOMER_BA_INITIATE_FETCH_BALANCE            = 'p2p_customer_ba_initiate_fetch_balance';
+    const P2P_CUSTOMER_BA_FETCH_BALANCE                     = 'p2p_customer_ba_fetch_balance';
+
+    const P2P_HANDLES_FETCH_ALL                             = 'p2p_handles_fetch_all';
+    const P2P_CUSTOMER_VPA_CREATE                           = 'p2p_customer_vpa_create';
+    const P2P_CUSTOMER_VPA_FETCH_ALL                        = 'p2p_customer_vpa_fetch_all';
+    const P2P_CUSTOMER_VPA_FETCH                            = 'p2p_customer_vpa_fetch';
+    const P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT              = 'p2p_customer_vpa_assign_bank_account';
+    const P2P_CUSTOMER_VPA_CHECK_AVAILABILITY               = 'p2p_customer_vpa_check_availability';
+    const P2P_CUSTOMER_VPA_DELETE                           = 'p2p_customer_vpa_delete';
+
+    const P2P_CUSTOMER_BENEFICIARIES                        = 'p2p_customer_beneficiaries';
+    const P2P_CUSTOMER_BENEFICIARIES_VALIDATE               = 'p2p_customer_beneficiaries_validate';
+    const P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL              = 'p2p_customer_beneficiaries_fetch_all';
+
+    const P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY            = 'p2p_customer_transactions_initiate_pay';
+    const P2P_CUSTOMER_TRANSACTIONS_INITIATE_COLLECT        = 'p2p_customer_transactions_initiate_collect';
+    const P2P_CUSTOMER_TRANSACTIONS_FETCH_ALL               = 'p2p_customer_transactions_fetch_all';
+    const P2P_CUSTOMER_TRANSACTIONS_FETCH                   = 'p2p_customer_transactions_fetch';
+    const P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE      = 'p2p_customer_transactions_initiate_authorize';
+    const P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE               = 'p2p_customer_transactions_authorize';
+    const P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT          = 'p2p_customer_transactions_reject_collect';
+}

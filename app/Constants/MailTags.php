@@ -63,6 +63,7 @@ class MailTags
     const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
+    const BATCH_AUTH_LINK_FILE             = 'batch_auth_link_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';
@@ -114,6 +115,7 @@ class MailTags
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
+    const INSTANT_ACTIVATION               = 'instant_activation';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
 

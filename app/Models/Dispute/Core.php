@@ -403,7 +403,7 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
         ];
 
-        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+        (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
         $dispute->setAmountDeducted($amount);
     }
@@ -421,7 +421,7 @@ class Core extends Base\Core
             Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
         ];
 
-        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+        (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
         $dispute->setAmountReversed($amount);
     }

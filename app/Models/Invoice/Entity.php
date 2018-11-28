@@ -21,6 +21,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Subscription\Entity $subscription
@@ -65,6 +66,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION               = 'description';
     const MERCHANT_GSTIN            = 'merchant_gstin';
     const MERCHANT_LABEL            = 'merchant_label';
+    const ENTITY_TYPE               = 'entity_type';
+    const ENTITY_ID                 = 'entity_id';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -852,6 +855,17 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function isTypeOfSubscriptionRegistration(): bool
+    {
+        return (($this->getEntityType() !== null) and
+               ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity));
+    }
+
     /**
      * Returns the path component of Dashboard view url.
      *
@@ -1453,6 +1467,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(User\Entity::class);
     }
 
+    public function entity()
+    {
+        return $this->morphTo();
+    }
     /**
      * Gets the most recent invoice pdf file, or null
      *

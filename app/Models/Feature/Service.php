@@ -46,7 +46,12 @@ class Service extends Base\Service
             $data[Constants::FEATURES][$feature] = "1";
         }
 
-        (new Merchant\Validator)->validateVisibleFeatures($data);
+        $merchantValidator = new Merchant\Validator;
+
+        $merchantValidator->validateVisibleAndEditableFeatures($data);
+
+        // Do not allow the merchant to update the product features in live mode. Eg: marketplace
+        $merchantValidator->validateModeForProductFeatures($data);
 
         return $this->addFeatures($input);
     }
@@ -470,4 +475,3 @@ class Service extends Base\Service
         return $response;
     }
 }
-

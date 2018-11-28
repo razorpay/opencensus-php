@@ -23,6 +23,7 @@ class Entity extends Base\Entity
     const GATEWAY_PAYMENT_ID     = 'gateway_payment_id';
     const RESPONSE_CODE          = 'response_code';
     const RESPONSE_DESCRIPTION   = 'response_description';
+    const ACS_URL                = 'acs_url';
 
     protected $fields = [
         self::ID,
@@ -41,6 +42,7 @@ class Entity extends Base\Entity
         self::GATEWAY_PAYMENT_ID,
         self::RESPONSE_CODE,
         self::RESPONSE_DESCRIPTION,
+        self::ACS_URL,
     ];
 
     protected $fillable = [
@@ -58,6 +60,7 @@ class Entity extends Base\Entity
         self::GATEWAY_PAYMENT_ID,
         self::RESPONSE_CODE,
         self::RESPONSE_DESCRIPTION,
+        self::ACS_URL,
     ];
 
     protected $casts = [
@@ -76,6 +79,11 @@ class Entity extends Base\Entity
     public function refund()
     {
         return $this->belongsTo('RZP\Models\Refund\Entity', self::REFUND_ID, self::ID);
+    }
+
+    public function getAcsUrl()
+    {
+        return $this->getAttribute(self::ACS_URL);
     }
 
     public function getAmount()
@@ -126,6 +134,11 @@ class Entity extends Base\Entity
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
+    }
+
+    public function setAcsUrl(string $url)
+    {
+        $this->setAttribute(self::ACS_URL, $url);
     }
 
     public function setAmount($amount)

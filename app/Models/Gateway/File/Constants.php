@@ -31,6 +31,7 @@ class Constants
     const OBC              = 'obc';
     const ALLA             = 'allahabad';
     const ISG              = 'isg';
+    const CORPORATION      = 'corporation';
 
 
     /**
@@ -44,6 +45,7 @@ class Constants
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
+            self::CORPORATION
         ],
         Type::CLAIM => [
         ],
@@ -106,6 +108,7 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
+            self::CORPORATION   => ['corporation.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -119,8 +122,8 @@ class Constants
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
             self::ALLA     => ['settlements@razorpay.com'],
             self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
-            self::IDFC     => ['settlements@razorpay.com'],
-         ],
+            self::IDFC     => ['idfc.netbanking.refunds@razorpay.com'],
+        ],
 
         Type::EMANDATE_REGISTER => [
             self::HDFC      => ['hdfc.emandate@razorpay.com'],
