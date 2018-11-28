@@ -10,6 +10,7 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 use RZP\Gateway\Utility;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
+use RZP\Models\Base as ModelBase;
 
 class Hdfc extends Base
 {
@@ -29,33 +30,31 @@ class Hdfc extends Base
         $this->gatewayRepo = $this->repo->netbanking;
     }
 
-    protected function getClientCode(Payment\Entity $payment): string
+    protected function getClientCode(ModelBase\PublicEntity $token): string
     {
-        $email = $payment->getEmail() ?: Payment\Entity::DUMMY_EMAIL;
+        $email = $token['payment_email'] ?: Payment\Entity::DUMMY_EMAIL;
 
         $clientCode = Utility::stripEmailSpecialChars($email);
 
         return $clientCode;
     }
 
-    protected function formatDataForFile($payments)
+    protected function formatDataForFile($tokens)
     {
         $rows = [];
 
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $paymentId = $payment->getId();
+            $paymentId = $token['payment_id'];
 
-            $startDate = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)->format('d/m/Y');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
+            $startDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('d/m/Y');
 
             $row = [
                 Headings::TRANSACTION_REF_NO  => $paymentId,
-                Headings::SUB_MERCHANT_NAME   => $payment->merchant->getFilteredDba(),
+                Headings::SUB_MERCHANT_NAME   => $token->merchant->getFilteredDba(),
                 Headings::MANDATE_ID          => $token->getId(),
                 Headings::ACCOUNT_NO          => $token->getAccountNumber(),
-                Headings::AMOUNT              => $this->getFormattedAmount($payment->getAmount()),
+                Headings::AMOUNT              => $this->getFormattedAmount($token['payment_amount']),
                 Headings::SIP_DATE            => $startDate,
                 Headings::FREQUENCY           => self::ADHOC,
                 Headings::FROM_DATE           => $startDate,
@@ -73,10 +72,10 @@ class Hdfc extends Base
         return new Netbanking\Base\Entity;
     }
 
-    protected function getGatewayAttributes(Payment\Entity $payment): array
+    protected function getGatewayAttributes(ModelBase\PublicEntity $token): array
     {
         return [
-            Netbanking\Base\Entity::CLIENT_CODE => $this->getClientCode($payment),
+            Netbanking\Base\Entity::CLIENT_CODE => $this->getClientCode($token),
         ];
     }
 }

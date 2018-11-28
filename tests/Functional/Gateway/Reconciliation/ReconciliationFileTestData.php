@@ -354,6 +354,26 @@ return [
             'Payment Date'                => '31-07-2018',
             'Transaction Status'          => 'PAID',
         ],
+
+        'testAmexPaymentRecon' => [
+            [
+                'Transaction date'          => '2/10/2018',
+                'Charge amount'             => '500.00',
+                'Charge reference number'   => '650127322',
+                'Card number'               => '376935XXXXX1003',
+                'Location ID'               => '-',
+                'Merchant account number'   => '9820651354',
+                'SOC invoice number'        => '001017',
+                'Type'                      => 'Sale',
+                'Airline ticket number'     => '-',
+                'Rental agreement number'   => '650127322',
+                'Reference identifier'      => 'R',
+                'Rejection reason'          => '-',
+                'Terminal ID'               => '80000001',
+                'Reference number'          => '650127322',
+                'Settlement date'           => '3/10/2018',
+            ],
+        ],
     ],
 
     'reconciliate' => [

@@ -200,7 +200,7 @@ class Reconciliate extends Base\Core
      * @param array $fileDetails
      * @return bool
      */
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         return false;
     }

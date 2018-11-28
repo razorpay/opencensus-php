@@ -13,6 +13,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\EMandate;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base as ModelBase;
 
 abstract class Base extends EMandate\Base
 {
@@ -23,9 +24,9 @@ abstract class Base extends EMandate\Base
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $payments = $this->repo->payment->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+        $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
 
-        $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
+        $paymentIds = $tokens->pluck('payment_id')->toArray();
 
         $this->trace->info(
             TraceCode::EMANDATE_DEBIT_REQUEST,
@@ -36,17 +37,17 @@ abstract class Base extends EMandate\Base
                 'end'             => $end,
             ]);
 
-        return $payments;
+        return $tokens;
     }
 
-    public function generateData(PublicCollection $payments)
+    public function generateData(PublicCollection $tokens)
     {
         try
         {
-            $data = $payments;
+            $data = $tokens;
 
             // Create gateway entities
-            $this->createGatewayEntities($payments);
+            $this->createGatewayEntities($tokens);
 
             return $data;
         }
@@ -61,11 +62,11 @@ abstract class Base extends EMandate\Base
         }
     }
 
-    protected function createGatewayEntities(PublicCollection $payments)
+    protected function createGatewayEntities(PublicCollection $tokens)
     {
-        foreach ($payments as $payment)
+        foreach ($tokens as $token)
         {
-            $paymentId = $payment->getId();
+            $paymentId = $token['payment_id'];
 
             $gatewayPayment = $this->gatewayRepo->findByPaymentIdAndAction(
                                     $paymentId, GatewayAction::AUTHORIZE);
@@ -79,13 +80,13 @@ abstract class Base extends EMandate\Base
                 continue;
             }
 
-            $this->createGatewayEntity($payment);
+            $this->createGatewayEntity($token);
         }
     }
 
-    protected function createGatewayEntity(Payment\Entity $payment)
+    protected function createGatewayEntity(ModelBase\PublicEntity $token)
     {
-        $paymentId = $payment->getId();
+        $paymentId = $token['payment_id'];
 
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -93,11 +94,11 @@ abstract class Base extends EMandate\Base
 
         $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
 
-        $gatewayPayment->setBank($payment->getBank());
+        $gatewayPayment->setBank($token['bank']);
 
-        $gatewayPayment->setAmount($payment->getAmount());
+        $gatewayPayment->setAmount($token['payment_amount']);
 
-        $attributes = $this->getGatewayAttributes($payment);
+        $attributes = $this->getGatewayAttributes($token);
 
         $gatewayPayment->fill($attributes);
 
@@ -114,20 +115,20 @@ abstract class Base extends EMandate\Base
      *
      * @return array
      */
-    protected function getGatewayAttributes(Payment\Entity $payment): array
+    protected function getGatewayAttributes(ModelBase\PublicEntity $token): array
     {
         $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
 
-        $merchant = $payment->merchant;
+        $merchant = $token->merchant;
 
         $attributes = [
-            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
+            Netbanking\Base\Entity::MERCHANT_CODE => $merchant->getId(),
             Netbanking\Base\Entity::DATE          => $date,
         ];
 
         if ($merchant->isTPVRequired() === true)
         {
-            $attributes[Netbanking\Base\Entity::ACCOUNT_NUMBER] = $payment->order->getAccountNumber();
+            $attributes[Netbanking\Base\Entity::ACCOUNT_NUMBER] = $token['account_number'];
         }
 
         return $attributes;

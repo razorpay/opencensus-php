@@ -1,5 +1,8 @@
 <?php
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 /**
  * getallheaders() polyfill for nginx servers
  *
@@ -663,5 +666,25 @@ if (! function_exists('str_wrap'))
     function str_wrap(string $value, string $wrap): string
     {
         return str_finish(str_start($value, $wrap), $wrap);
+    }
+}
+
+if (! function_exists('is_rzp_business_hour'))
+{
+    /**
+     * Returns true if now or custom carbon instance passed is a Razorpay business hour.
+     * @param  Carbon|null $dateTime
+     * @return boolean
+     */
+    function is_rzp_business_hour(Carbon $dateTime = null): bool
+    {
+        $dateTime = $dateTime ?: Carbon::now(Timezone::IST);
+
+        // Todo: Use Settlements/Holiday.php once interface and issue is fixed there, that handles holidays.
+
+        return (($dateTime->isWeekday() === true) and
+                // Between 9 AM - 6 PM (Both inclusive)
+                ($dateTime->hour >= 9) and
+                ($dateTime->hour < 18));
     }
 }

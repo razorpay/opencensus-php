@@ -30,22 +30,29 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
+        $this->createTerminals();
+
+        $this->bankAccount = $this->createVirtualAccount();
+
+        $this->ba->appAuth();
+    }
+
+    protected function createTerminals()
+    {
         // Creating Generic Bank Account Terminal,
         // Fallback Terminals are those terminals which are created with just Root
         // and are assigned to the Shared Merchant to get unexpected payments.
-        $terminalAttributes = [ 'id' =>'GENERICBANKACC', 'gateway_merchant_id2' => '', 'enabled' => false ];
+        $terminalAttributes = [ 'id' => 'GENERICBANKACC', 'gateway_merchant_id2' => '', 'enabled' => false ];
 
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
 
-        $terminalAttributes = ['id' =>'GENERICABNKACC', 'gateway_merchant_id2' => '', 'enabled' => false];
+        $terminalAttributes = ['id' => 'GENERICABNKACC', 'gateway_merchant_id2' => '', 'enabled' => false];
 
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num', $terminalAttributes);
 
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num');
-
-        $this->bankAccount = $this->createVirtualAccount();
 
         $this->fixtures->create('terminal:bharat_qr_terminal');
 
@@ -56,8 +63,6 @@ class BankTransferTest extends TestCase
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->on('test');
-
-        $this->ba->appAuth();
     }
 
     public function testBankTransferProcess()
@@ -91,6 +96,38 @@ class BankTransferTest extends TestCase
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
+    public function testBankTransferMultiPricingPlan()
+    {
+        // This creates a plan with 2 rules:
+        // Amount 1   - 100            : Percent rate 16%
+        // Amount 100 - 1,00,00,000    : Flat rate 15, plus percent rate 1%
+        $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_multi_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlanId]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Amount less than 100
+        $this->processBankTransfer($accountNumber, $ifsc, null, 80);
+        $transaction = $this->getLastEntity('transaction', true);
+        // Pricing 16%
+        $this->assertEquals($transaction['amount'] * 16 / 100, $transaction['fee'] - $transaction['tax']);
+
+        // Amount greater than 100
+        $this->processBankTransfer($accountNumber, $ifsc, null, 10000);
+        $transaction = $this->getLastEntity('transaction', true);
+        // Pricing 15 + 1%
+        $this->assertEquals(1500 + $transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
+
+        // Amount exactly 100
+        $this->processBankTransfer($accountNumber, $ifsc, null, 100);
+        $transaction = $this->getLastEntity('transaction', true);
+        // Both rules amount to the same
+        $this->assertEquals($transaction['amount'] * 16 / 100, $transaction['fee'] - $transaction['tax']);
+        $this->assertEquals(1500 + $transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
     public function testBankTransferTerminalDataMigration()
@@ -1627,9 +1664,9 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    protected function processBankTransfer($accountNumber, $ifsc, $utr = null)
+    protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null)
     {
-        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
+        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount);
     }
 
     protected function notifyBankTransfer($accountNumber, $ifsc, $utr = null)
@@ -1637,7 +1674,7 @@ class BankTransferTest extends TestCase
         return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
-    protected function processOrNotifyBankTransfer($accountNumber, $ifsc, $utr)
+    protected function processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount = null)
     {
         $request = $this->testData[__FUNCTION__];
 
@@ -1649,12 +1686,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        if (isset($utr) === false)
-        {
-            $utr = strtoupper(random_alphanum_string(22));
-        }
+        $utr = $utr ?: strtoupper(random_alphanum_string(22));
 
         $request['content']['transaction_id'] = $utr;
+
+        $request['content']['amount'] = $amount ?: 50000;
 
         $this->ba->appAuth();
 
@@ -1814,5 +1850,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals($payment['receiver_id'], $receiverId);
 
         $this->assertEquals($payment['receiver_type'], 'bank_account');
+    }
+
+    public function testBankTransferWithCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
+
+        // In the below scenario Virtual Account doesn't have any order associated.
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        // To make sure payment is created with fee even when
+        // virtual account did not have any associated order.
+        $this->assertNotNull($payment['fee']);
+        $this->assertNull($payment['order_id']);
     }
 }

@@ -212,7 +212,7 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRunAndLastRun(bool $considerHolidays = false)
+    public function updateNextRunAndLastRun(bool $ignoreHolidays = true)
     {
         $currentTime = Carbon::now(Timezone::IST);
 
@@ -231,21 +231,21 @@ class Entity extends Base\PublicEntity
             $minTime = $currentTime;
         }
 
-        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($refTime, $minTime, $considerHolidays);
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($refTime, $minTime, $ignoreHolidays);
     }
 
     /**
-     * @param Carbon $refTime           reference time refers to the base time
+     * @param Carbon   $refTime           reference time refers to the base time
      *                                  from which next run should be calculated
      * @param int|null $minTime
-     * @param bool $considerHolidays
+     * @param bool     $ignoreHolidays
      *
      * @throws \RZP\Exception\LogicException
      */
     public function updateNextRunAndLastRunFromGivenMinTimeAndRefTime(
         $refTime,
         $minTime = null,
-        $considerHolidays = false)
+        $ignoreHolidays = false)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
@@ -254,7 +254,7 @@ class Entity extends Base\PublicEntity
         // schedules, this will not be used and will be ignored completely.
         // Unanchored will work with/without the minTime.
         //
-        $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
+        $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $ignoreHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
@@ -377,7 +377,7 @@ class Entity extends Base\PublicEntity
 
         $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($referenceTime);
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($referenceTime, $minTime = null, $ignoreHolidays = true);
     }
 
     public function isTypeSettlement()

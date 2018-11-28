@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Action;
 
 class UpiErrorCodes
 {
@@ -37,6 +38,25 @@ class UpiErrorCodes
         'DF'    => 'DUPLICATE RRN FOUND IN THE TRANSACTION. (BENEFICIARY)',
         'YD'    => 'DO NOT HONOUR (BENEFICIARY)',
         'K1'    => 'SUSPECTED FRAUD, DECLINE / TRANSACTIONS DECLINED BASED ON RISK SCORE BY REMITTER',
+        'NA'    => 'TRANSACTION FAILED',
+        'RNF'   => 'TRANSACTION FAILED',
+        '51'    => 'NOT SUFFICIENT FUNDS',
+        '96'    => 'Reversal Failure',
+        'AM'    => 'MPIN not set by customer',
+        'B1'    => 'Registered Mobile number linked to the account has been changed/removed',
+        'UT'    => 'REMITTER/ISSUER UNAVAILABLE (TIMEOUT)',
+        'UX'    => 'EXPIRED VIRTUAL ADDRESS',
+        'XH'    => 'ACCOUNT DOES NOT EXIST (REMITTER)',
+        'XV'    => 'TRANSACTION CANNOT BE COMPLETED. COMPLIANCE VIOLATION (REMITTER)',
+        'Z6'    => 'No of PIN tries exceeded',
+        'Z7'    => 'TRANSACTION FREQUENCY LIMIT EXCEEDED AS SET BY REMITTING MEMBER',
+        'Z8'    => 'PER TRANSACTION LIMIT EXCEEDED AS SET BY REMITTING MEMBER',
+        'ZA'    => 'TRANSACTION DECLINED BY CUSTOMER',
+        'ZE'    => 'TRANSACTION NOT PERMITTED TO VPA by the PSP',
+        'ZG'    => 'VPA RESTRICTED BY CUSTOMER',
+        'ZH'    => 'INVALID VIRTUAL ADDRESS',
+        'ZM'    => 'Invalid / Incorrect MPIN',
+        'ZX'    => 'INACTIVE OR DORMANT ACCOUNT (REMITTER)',
     ];
 
     protected static $errorCodeMap = [
@@ -70,10 +90,44 @@ class UpiErrorCodes
         'DF'    => ErrorCode::GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND,
         'YD'    => ErrorCode::GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY,
         'K1'    => ErrorCode::GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER,
+        'NA'    => ErrorCode::BAD_REQUEST_REFUND_FAILED,
+        'RNF'   => ErrorCode::BAD_REQUEST_REFUND_FAILED,
+        '51'    => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        '96'    => ErrorCode::GATEWAY_ERROR_REVERSAL_FAILURE,
+        'AM'    => ErrorCode::BAD_REQUEST_UPI_MPIN_NOT_SET,
+        'B1'    => ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND,
+        'UT'    => ErrorCode::GATEWAY_ERROR_PSP_NOT_AVAILABLE,
+        'UX'    => ErrorCode::BAD_REQUEST_EXPIRED_VPA,
+        'XH'    => ErrorCode::BAD_REQUEST_UPI_INVALID_PAYER_BANK_ACCOUNT,
+        'XV'    => ErrorCode::GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION,
+        'Z6'    => ErrorCode::BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,
+        'Z7'    => ErrorCode::BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED,
+        'Z8'    => ErrorCode::BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,
+        'ZA'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+        'ZE'    => ErrorCode::BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA,
+        'ZG'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+        'ZH'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+        'ZM'    => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
+        'ZX'    => ErrorCode::BAD_REQUEST_UPI_INVALID_PAYER_BANK_ACCOUNT,
     ];
 
-    public static function getApiErrorCode($code = null)
+    public static function getApiErrorCode($code = null, $action = Action::REFUND)
     {
+        if ($action === Action::CALLBACK)
+        {
+            if (($code === 'NA') or ($code === 'RNF'))
+            {
+                return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+            }
+
+            if (isset(self::$errorCodeMap[$code]))
+            {
+                return self::$errorCodeMap[$code];
+            }
+
+            return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        }
+
         if (isset(self::$errorCodeMap[$code]))
         {
             return self::$errorCodeMap[$code];

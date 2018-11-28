@@ -23,6 +23,8 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($request);
 
+        $this->request($request, 'authorize');
+
         $response = $this->getAuthorizeResponseArray($request);
 
         $content = [

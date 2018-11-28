@@ -24,4 +24,3 @@ class InfoCode
 
     const FAILED_REFUND_ARN_ABSENT      = 'FAILED_REFUND_ARN_ABSENT';
 }
-

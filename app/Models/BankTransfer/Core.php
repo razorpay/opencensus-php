@@ -7,11 +7,11 @@ use Config;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -155,6 +155,12 @@ class Core extends Base\Core
         // bank transfers are never supposed to fail. Trace accordingly.
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+
+        // Skip slack alerts in test mode
+        if ($this->isTestMode() === true)
+        {
+            return;
+        }
 
         $this->app['slack']->queue(
             TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
@@ -427,23 +433,24 @@ class Core extends Base\Core
      */
     public function getFeesForOrder(Order\Entity $order)
     {
-        return $this->getFees($order->getAmountDue(), $order);
+        return $this->getFees($order->getAmountDue(), $order->merchant, $order->getCurrency());
     }
 
-    public function getFeesForBankTransfer(Entity $bankTransfer, Order\Entity $order)
+    public function getFeesForBankTransfer(Entity $bankTransfer, Merchant\Entity $merchant)
     {
-        return $this->getFees($bankTransfer->getAmount(), $order);
+        // TODO: Change the third parameter below once we add currency support in Bank Transfer
+        return $this->getFees($bankTransfer->getAmount(), $merchant, Currency::INR);
     }
 
-    protected function getFees(int $amount, Order\Entity $order)
+    protected function getFees(int $amount, Merchant\Entity $merchant, string $currency)
     {
         $request = [
             Payment\Entity::AMOUNT   => $amount,
-            Payment\Entity::CURRENCY => $order->getCurrency(),
+            Payment\Entity::CURRENCY => $currency,
             Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
         ];
 
-        $paymentProcessor = new PaymentProcessor($order->merchant);
+        $paymentProcessor = new PaymentProcessor($merchant);
 
         $data = $paymentProcessor->processAndReturnFees($request);
 

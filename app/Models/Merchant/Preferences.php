@@ -33,6 +33,7 @@ class Preferences
     const MID_ANGEL_BROKING         = 'AC4DJNMIX9xXOz';
     const MID_SHELLHATCH            = 'A7W1rwbYMRmn6M';
     const MID_PAISABAZAAR_MARKETING = 'B1uh6CFFBKk35S';
+    const MID_FLYREMIT              = 'BFnwkJtHkMqswv';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -129,6 +130,7 @@ class Preferences
         self::MID_ANGEL_BROKING,
         self::MID_SHELLHATCH,
         self::MID_PAISABAZAAR_MARKETING,
+        self::MID_FLYREMIT,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [

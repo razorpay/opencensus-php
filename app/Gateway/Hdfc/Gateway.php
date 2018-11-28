@@ -720,7 +720,7 @@ class Gateway extends Base\Gateway
 
         $this->requestVar = $request;
 
-        try 
+        try
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);

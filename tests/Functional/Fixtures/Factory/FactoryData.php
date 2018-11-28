@@ -32,6 +32,7 @@ final class FactoryData
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
+            'activated_at'             => time(),
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
@@ -927,6 +928,12 @@ final class FactoryData
             'registration_status' => 'created',
             'merchant_id'         => $faker->uniqueid,
             'bank_account_id'     => $faker->uniqueid,
+        ]);
+
+        $factory(\RZP\Models\SubscriptionRegistration\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'customer_id' => '100000customer',
         ]);
     }
 }

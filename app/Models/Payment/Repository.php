@@ -44,6 +44,7 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
         Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
+        Entity::RECURRING          => 'sometimes|boolean|in:0,1',
         self::EXPAND . '.*'        => 'filled|string|in:card',
     ];
 
@@ -59,6 +60,7 @@ class Repository extends Base\Repository
         Entity::CAPTURED        => 'sometimes|boolean',
         Entity::BATCH_ID        => 'sometimes|string|size:20',
         Entity::RECURRING       => 'sometimes|boolean',
+        // @codingStandardsIgnoreLine
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
@@ -225,6 +227,32 @@ class Repository extends Base\Repository
                     ->where($terminalEmi, '=', false)
                     ->with('card.globalCard')
                     ->with('emiPlan')
+                    ->select($paymentData)
+                    ->get();
+    }
+
+    public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        return $this->newQuery()
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where(Entity::BANK, '=', $bank)
+                    ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
+                    ->with($relations)
                     ->select($paymentData)
                     ->get();
     }
@@ -1252,42 +1280,6 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
-    {
-        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
-
-        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
-
-        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
-
-        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
-
-        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
-
-        $selectCols = $this->dbColumn('*');
-
-        return $this->newQuery()
-                    ->select($selectCols)
-                    ->join(
-                        Table::TOKEN,
-                        function ($join)
-                        use($tokenIdColumn)
-                        {
-                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
-                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
-                        })
-                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
-                    ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
-                    ->where(Entity::GATEWAY, '=', $gateway)
-                    ->whereBetween($paymentAuthorizedAtColumn, [$from, $to])
-                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
-                    ->where($tokenRecurringColumn, '!=', 1)
-                    ->whereNotNull(Entity::AUTHORIZED_AT)
-                    ->with(['localToken', 'globalToken', 'customer', 'merchant'])
-                    ->get();
-    }
-
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
@@ -1329,7 +1321,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    public function fetchPendingEmandateDebit(string $gateway, $from, $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 

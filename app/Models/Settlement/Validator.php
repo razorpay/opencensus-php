@@ -71,6 +71,12 @@ class Validator extends Base\Validator
         Entity::STATUS    => 'required_without_all:fta_ids,from|string|in:initiated,failed,processed',
     ];
 
+    protected static $settlementInitiateRules = [
+        'use_queue'           => 'sometimes|boolean',
+        'all'                 => 'sometimes|integer',
+        'testSettleTimeStamp' => 'sometimes|integer',
+    ];
+
     protected function validateGateway($attribute, $value)
     {
         Payment\Gateway::validateGateway($value);

@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
@@ -332,7 +333,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+        $this->checkCallbackResponseStatus($content);
 
         // Gateways must return array in callback
         return [
@@ -340,6 +341,30 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    private function checkCallbackResponseStatus($response, string $successStatus = Status::SUCCESS)
+    {
+        if ($response[ResponseFields::STATUS] !== $successStatus)
+        {
+            if (empty($response[ResponseFields::RESPCODE]) === false)
+            {
+                $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE], Action::CALLBACK);
+
+                $errorMessage =  UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]);
+            }
+            else
+            {
+                $errorCode = ResponseCodeMap::getApiErrorCode($response[ResponseFields::STATUS]);
+
+                $errorMessage = ResponseCode::getResponseMessage($response[ResponseFields::STATUS]);
+            }
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[ResponseFields::STATUS],
+                $errorMessage);
+        }
     }
 
     protected function parseBankAccountDetails($bankReference)
@@ -878,7 +903,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $scroogeResponse = new Base\ScroogeResponse();
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
 
         if ($this->isUnprocessedRefund($input) === true)
         {
@@ -911,6 +936,7 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
             return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
                                    ->toArray();
         }
 

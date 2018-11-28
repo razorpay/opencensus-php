@@ -1092,7 +1092,7 @@ trait Refund
 
         $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $payment->getMerchantId());
 
-        if (($isScroogeGateway === false) and
+        if ((($isScroogeGateway === false) or ($retry === true)) and
             ($this->isFundTransferAttemptRefund($payment, $data) === true))
         {
             return $this->refundViaFundTransfer($payment, $data);

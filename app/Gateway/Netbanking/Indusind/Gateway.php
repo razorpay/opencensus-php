@@ -402,4 +402,3 @@ class Gateway extends Base\Gateway
         return $aes->decryptString($encryptedString);
     }
 }
-

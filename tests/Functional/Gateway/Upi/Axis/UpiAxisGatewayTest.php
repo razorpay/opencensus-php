@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
+use RZP\Gateway\Upi\Axis\Url;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Axis\Fields;
+use RZP\Gateway\Upi\Axis\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -80,6 +83,74 @@ class UpiAxisGatewayTest extends TestCase
         $this->capturePayment($payment->getPublicId(), $payment['amount']);
 
         return $payment;
+    }
+
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIAXISTpvl', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
+    }
+
+    public function testFailedTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = $order['amount'];
+
+        $payment['bank'] = $order['bank'];
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = '111';
+        }, $this->gateway);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            \RZP\Exception\GatewayErrorException::class);
     }
 
     public function testVerifyPayment()
@@ -242,6 +313,243 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertNotNull($payment->getVerifyAt());
     }
 
+    public function testIntentPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('UPIAXISIntTmnl', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(
+            [
+                'callBackstatusCode'        => '00',
+                'callBackstatusDescription' => 'Success',
+                'callBacktxnId'             => 'AXIS00090439839'
+            ],
+            $response);
+
+        $payment->reload();
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment['amount']);
+
+        return $payment;
+    }
+
+    public function testIntentPaymentVerifyAndRefund()
+    {
+        $payment = $this->testIntentPayment();
+
+        $response = $this->verifyPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertEquals($upi['vpa'], 'default@axis');
+
+        $this->assertSame(1, $payment['verified']);
+
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $upi1 = $this->getDbLastEntity('upi');
+
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $upi2 = $this->getDbLastEntity('upi');
+
+        $refund = $this->getDbLastRefund();
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $this->assertNotNull($upi1['refund_id']);
+        $this->assertNotNull($upi2['refund_id']);
+
+        $this->assertSame($upi1['payment_id'], $upi2['payment_id']);
+
+        $this->assertNotSame($upi1['refund_id'], $upi2['refund_id']);
+
+        $this->assertSame('refund', $upi1['action']);
+        $this->assertSame('refund', $upi2['action']);
+
+        $this->assertSame(true, $upi1['received']);
+        $this->assertSame(true, $upi2['received']);
+
+        $this->assertNotNull($upi1['status_code']);
+        $this->assertNotNull($upi2['status_code']);
+    }
+
+    public function testIntentPaymentFailure()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            // validation error
+            $content[Fields::CODE] = '111';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
+    }
+
+    public function testIntentPaymentCallbackFailure()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray(), 'U30');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testIntentDisabledPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['disable_upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testIntentTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_axis_intent_tpv_terminal');
+
+        $this->fixtures->merchant->enableTPV();
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $this->createOrder([
+            'amount'         => 50000,
+            'currency'       => 'INR',
+            'receipt'        => 'rcptid42',
+            'method'         => 'upi',
+            'bank'           => 'RATN',
+            'account_number' => '04030403040304',
+        ]);
+
+        $order = $this->getDbLastEntity('order');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['order_id'] = $order->getPublicId();
+        $this->payment['bank'] = $order->getBank();
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('100UPIAXISTpvl', $payment['terminal_id']);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(
+            [
+                'callBackstatusCode'        => '00',
+                'callBackstatusDescription' => 'Success',
+                'callBacktxnId'             => 'AXIS00090439839'
+            ],
+            $response);
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($payment->getPublicId(), $payment['amount']);
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);
@@ -250,6 +558,4 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertEquals($expectedStatus, $status);
     }
-
 }
-
