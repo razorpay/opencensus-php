@@ -1120,6 +1120,7 @@ class Gateway
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
         Netbanking::BARB_C => Gateway::NETBANKING_BOB,
+        Netbanking::PUNB_C => Gateway::NETBANKING_PNB,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
