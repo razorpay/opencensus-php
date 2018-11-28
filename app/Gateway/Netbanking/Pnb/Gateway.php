@@ -571,7 +571,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getSalt()
+    public function getSalt()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -589,5 +589,20 @@ class Gateway extends Base\Gateway
                 $this->action
             );
         }
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        unset($content[static::CHECKSUM_ATTRIBUTE]);
+
+        $response_json = json_encode($content);
+
+        $hash_data = $this->getSalt() . $response_json;
+
+        $generated = strtoupper(hash('sha512', $hash_data));
+
+        $this->compareHashes($actual, $generated);
     }
 }

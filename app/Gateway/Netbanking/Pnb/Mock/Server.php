@@ -161,4 +161,18 @@ class Server extends Base\Mock\Server
     {
         return number_format($amount / 100, 2, '.', '');
     }
+
+    protected function generateHash($content)
+    {
+        $response_json = json_encode($content);
+
+        $hash_data = $this->getSalt() . $response_json;
+
+        return strtoupper(hash('sha512', $hash_data));
+    }
+
+    protected function getSalt()
+    {
+        return $this->getGatewayInstance()->getSalt();
+    }
 }
