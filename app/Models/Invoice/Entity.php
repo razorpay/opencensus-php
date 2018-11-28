@@ -255,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => Type::INVOICE,
         self::USER_ID                   => null,
         self::PARTIAL_PAYMENT           => false,
+        self::FIRST_PAYMENT_MIN_AMOUNT  => null,
         self::GROSS_AMOUNT              => null,
         self::TAX_AMOUNT                => null,
         self::AMOUNT                    => null,
@@ -287,6 +288,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::PARTIAL_PAYMENT,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
@@ -390,6 +392,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::NOTES,
@@ -455,7 +458,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
-        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::INVOICE_NUMBER,
         self::TAXABLE_AMOUNT,
     ];
@@ -469,6 +471,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_STATUS,
         self::SUPPLY_STATE_CODE,
         self::USER_ID,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $casts = [
@@ -1241,16 +1244,6 @@ class Entity extends Base\PublicEntity
         return $this->order->getAmountDue();
     }
 
-    public function getFirstPaymentMinAmountAttribute()
-    {
-        if ($this->getOrderId() === null)
-        {
-            return null;
-        }
-
-        return $this->order->getFirstPaymentMinAmount();
-    }
-
     public function getInvoiceNumberAttribute()
     {
         return $this->getAttribute(self::RECEIPT);
@@ -1314,6 +1307,24 @@ class Entity extends Base\PublicEntity
         if ($basicAuth->isProxyOrPrivilegeAuth() === false)
         {
             unset($array[self::SUBSCRIPTION_STATUS]);
+        }
+    }
+
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
+    public function setPublicFirstPaymentMinAmountAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = $app['basicauth'];
+
+        // Unset the attribute, only on strictly private auth
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::FIRST_PAYMENT_MIN_AMOUNT]);
         }
     }
 

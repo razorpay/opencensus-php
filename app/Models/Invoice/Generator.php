@@ -438,8 +438,12 @@ class Generator extends Base\Core
             Order\Entity::CURRENCY                 => $orderCurrency,
             Order\Entity::RECEIPT                  => $orderReceipt,
             Order\Entity::PAYMENT_CAPTURE          => true,
-            Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $firstMinAmount,
         ];
+
+        if ($firstMinAmount !== null)
+        {
+            $orderInput[Order\Entity::FIRST_PAYMENT_MIN_AMOUNT] = $firstMinAmount;
+        }
 
         if (($this->externalEntity !== null) and
             ($this->invoice->isTypeOfSubscriptionRegistration() === true))
