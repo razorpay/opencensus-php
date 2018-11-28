@@ -350,7 +350,7 @@ class Gateway extends Base\Gateway
 
         // If gateway payment does not contain apprcode and if apprcode
         // is present in verify response, update it.
-        if ((empty($gatewayPayment[Entity::APPRCODE]) === null) and
+        if ((empty($gatewayPayment[Entity::APPRCODE]) === true) and
             (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]) === false)
         )
         {

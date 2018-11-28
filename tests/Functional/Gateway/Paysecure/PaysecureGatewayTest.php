@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -298,6 +299,52 @@ class PaysecureGatewayTest extends TestCase
             ],
             $verify
         );
+    }
+
+    public function testVerifyFailedPayment()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'auth_response')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            }
+        );
+
+        $data = $this->testData['testAuthorizeFailed'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $payment = $this->getDbLastEntity('payment');
+
+            $this->verifyPayment($payment->getPublicId());
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'method' => 'card',
+                'gateway' => $this->gateway,
+                'amount' => 50000,
+                // Verify mismatch
+                'verified' => 0,
+            ],
+            $payment
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertNotNull($paysecure['apprcode']);
     }
 
     protected function assertSuccess($authResponse, $flow)
