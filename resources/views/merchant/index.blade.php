@@ -15,9 +15,10 @@
     ) {
 
       document.write(
-        "<link rel='stylesheet' href='{{$cdnDashboardUrl}}/css/generated/singup_businessbanking.css' type='text/css'/>"
+        "<link rel='stylesheet' href='{{ config('app.banking_service_url') }}/dist/pgClient.css' type='text/css'/>"
       );
 
+      document.write("<script src='{{ config('app.banking_service_url') }}/dist/pgClient.js'>\<\/script>");
 
       window.RZP.appHost = "{{ config('app.banking_service_url') }}";
       window.RZP.appName = "businessbanking";
