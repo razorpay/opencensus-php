@@ -11,7 +11,10 @@ return [
         'url'     => '/virtual_accounts',
         'method'  => 'post',
         'content' => [
-            'receiver_types' => 'qr_code'
+            'receiver_types' => 'qr_code',
+            'notes'          => [
+                'key' => 'value',
+            ],
         ],
     ],
 

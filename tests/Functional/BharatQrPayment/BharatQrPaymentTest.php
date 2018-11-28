@@ -78,6 +78,11 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('hitachi', $payment['gateway']);
         $this->assertEquals('qr_code', $payment['receiver_type']);
 
+        // Notes from the VA are copied over to the payment
+        $this->assertArrayHasKey('notes', $payment);
+        $this->assertArrayHasKey('key', $payment['notes']);
+        $this->assertEquals('value', $payment['notes']['key']);
+
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
 
@@ -143,7 +148,6 @@ class BharatQrPaymentTest extends TestCase
         $t = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->edit('terminal', $t['id'], ['expected' => true]);
-
 
         $request = [
             'url'     => '/bharatqr/pay/test',
@@ -379,7 +383,6 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('active', $virtualAccount['status']);
 
         $qrCode = $this->getDbLastEntity('qr_code','live');
-
 
         $vid = $virtualAccount['id'];
 
