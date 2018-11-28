@@ -4412,6 +4412,10 @@ ALTER TABLE balance
     ADD INDEX `balance_merchant_id_index` (`merchant_id`),
     ALGORITHM=INPLACE, LOCK=NONE;
 
+
+UPDATE balance SET merchant_id = id , currency = 'INR'
+    where merchant_id IS NULL LIMIT 1000;
+
 ALTER TABLE subscription_registrations
     ADD COLUMN notes TEXT AFTER expire_at,
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
