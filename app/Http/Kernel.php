@@ -48,5 +48,6 @@ class Kernel extends HttpKernel
         'workflow'           => Middleware\Workflow::class,
         'merchant_ip_filter' => Middleware\MerchantIpFilter::class,
         'event_tracker'      => Middleware\EventTracker::class,
+        'p2p'                => Middleware\P2p::class,
     ];
 }

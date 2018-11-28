@@ -34,6 +34,7 @@ class ProviderCode
     const BANDHAN            = 'bandhan';
     const BARODAMPAY         = 'barodampay';
     const BIRLA              = 'birla';
+    const BOB                = 'bob';
     const BOI                = 'boi';
     const CBIN               = 'cbin';
     const CBOI               = 'cboi';
@@ -154,6 +155,7 @@ class ProviderCode
         self::BANDHAN            => IFSC::BDBL,
         self::BARODAMPAY         => IFSC::BARB,
         self::BIRLA              => IFSC::ABPB,
+        self::BOB                => IFSC::BARB,
         self::BOI                => IFSC::BKID,
         self::CBIN               => IFSC::CBIN,
         self::CBOI               => IFSC::CBIN,

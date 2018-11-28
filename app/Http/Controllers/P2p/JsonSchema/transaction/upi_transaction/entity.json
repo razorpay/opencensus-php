@@ -1,0 +1,115 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/transaction/upi_transaction/entity.json",
+    "type": "object",
+    "required": [],
+    "properties": {
+        "transaction_id": {
+            "$id": "#/properties/transaction_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "device_id": {
+            "$id": "#/properties/device_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "handle": {
+            "$id": "#/properties/handle",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "gateway_data": {
+            "$id": "#/properties/gateway_data",
+            "type": "object"
+        },
+        "action": {
+            "$id": "#/properties/action",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "status": {
+            "$id": "#/properties/status",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "network_transaction_id": {
+            "$id": "#/properties/network_transaction_id",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "gateway_transaction_id": {
+            "$id": "#/properties/gateway_transaction_id",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "gateway_reference_id": {
+            "$id": "#/properties/gateway_reference_id",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "rrn": {
+            "$id": "#/properties/rrn",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "ref_id": {
+            "$id": "#/properties/ref_id",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "gateway_error_code": {
+            "$id": "#/properties/gateway_error_code",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "gateway_error_description": {
+            "$id": "#/properties/gateway_error_description",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "risk_scores": {
+            "$id": "#/properties/risk_scores",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "payer_account_number": {
+            "$id": "#/properties/payer_account_number",
+            "type": ["string", "null"],
+            "maxLength" : 50
+        },
+        "payer_ifsc_code": {
+            "$id": "#/properties/payer_ifsc_code",
+            "type": ["string", "null"],
+            "maxLength" : 11
+        },
+        "payee_account_number": {
+            "$id": "#/properties/payee_account_number",
+            "type": ["string", "null"],
+            "maxLength" : 50
+        },
+        "payee_ifsc_code": {
+            "$id": "#/properties/payee_ifsc_code",
+            "type": ["string", "null"],
+            "maxLength" : 20
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer"
+        },
+        "updated_at": {
+            "$id": "#/properties/updated_at",
+            "type": "integer"
+        }
+    },
+    "actions": [
+        "initiatePay",
+        "initiateCollect",
+        "fetchAll",
+        "fetch",
+        "initiateAuthorize",
+        "authorize",
+        "reject"
+    ]
+}

@@ -66,6 +66,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
@@ -101,6 +107,40 @@ class Gateway extends Base\Gateway
                 'vpa'   => $this->getDefaultPayeeVpa()
             ]
         ];
+    }
+
+    protected function authorizeIntent(array $input)
+    {
+        $attributes = [
+            Entity::TYPE => Base\Type::PAY,
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        $request = $this->getPayAuthorizeRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseGatewayResponse($response->body, $input);
+
+        $this->updateGatewayPaymentEntity($payment, $content);
+
+        if ((isset($content[Fields::CODE])) and
+            (isset($content[Fields::DATA])) and
+            ($content[Fields::CODE] == Status::TOKEN_SUCCESS))
+        {
+            return $this->getIntentRequest($input, $content);
+        }
+
+        throw new Exception\GatewayErrorException(
+            Error\ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+            null,
+            null,
+            [
+                'response'     => $content,
+                'gateway'      => $this->gateway,
+                'payment_id'   => $input['payment']['id'],
+            ]);
     }
 
     protected function fetchToken($input, string $action)
@@ -277,6 +317,15 @@ class Gateway extends Base\Gateway
             Fields::EXPIRY          => (string) $input['upi']['expiry_time'],
             Fields::S_ID            => '',
         ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $accNumber = bin2hex($this->encrypt($input['order']['account_number']));
+
+            $data[Fields::ACCOUNT_NUM] = $accNumber;
+
+            $data[Fields::IFSC_CODE] = $input['order']['bank'];
+        }
 
         $dataStr = implode('', $data);
 
@@ -749,5 +798,70 @@ class Gateway extends Base\Gateway
     public function getSecret()
     {
         return $this->config['aes_encryption_key'];
+    }
+
+    protected function getPayAuthorizeRequestArray(array $input)
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::MERCH_CHAN_ID => $this->getMerchantId2(),
+            Fields::ORDER_ID      => $payment['id'],
+            Fields::CREDIT_VPA    => $this->getMerchantVpa(),
+        ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($input['order']['account_number']));
+
+            $data[Fields::IFSC_CODE] = $input['order']['bank'];
+        }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        $content = json_encode($data);
+
+        $request = $this->getStandardRequestArray($content, 'post', Base\Type::PAY);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'content'           => $data,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $payment['id'],
+                'terminal_id'       => $input['terminal']['id'],
+            ]);
+
+        return $request;
+    }
+
+    protected function getMerchantVpa()
+    {
+        return $this->terminal->getVpa();
+    }
+
+    protected function getIntentRequest($input, $response)
+    {
+        $content = [
+            Base\IntentParams::PAYEE_ADDRESS => $this->getMerchantVpa(),
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '',
+                                                             $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_REF_ID    => $response[Fields::DATA],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
+            Base\IntentParams::MCC           => '5411',
+        ];
+
+        if (isset($input['upi']['reference_url']) === true)
+        {
+            $content[Base\IntentParams::URL] = $input['upi']['reference_url'];
+        }
+
+        return ['data' => ['intent_url' => $this->generateIntentString($content)]];
     }
 }

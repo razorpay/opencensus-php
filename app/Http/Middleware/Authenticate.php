@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\P2pRoute;
 use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 
@@ -130,6 +131,10 @@ class Authenticate
                 $ret = $this->ba->publicAuth();
             }
         }
+        else if (in_array($route, P2pRoute::$public, true) === true)
+        {
+            $ret = $this->ba->publicAuth();
+        }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
             if ($this->ba->hasPartnerAuthCallbackKey() === true)
@@ -152,6 +157,10 @@ class Authenticate
         else if (in_array($route, Route::$device, true) === true)
         {
             $ret = $this->ba->deviceAuth();
+        }
+        else if (in_array($route, P2pRoute::$device, true) === true)
+        {
+            $ret = $this->ba->p2pDeviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {

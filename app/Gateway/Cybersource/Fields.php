@@ -205,6 +205,10 @@ class Fields
     // Verify Fields
     const R_FLAG                        = 'RFlag';
 
+    const R_CODE                        = 'RCode';
+
+    const R_MSG                         = 'RMsg';
+
     const APPLICATION_REPLIES           = 'ApplicationReplies';
 
     const APPLICATION_REPLY             = 'ApplicationReply';
@@ -214,4 +218,6 @@ class Fields
     const REQUEST                       = 'Request';
 
     const NAME                          = 'Name';
+
+    const ATTRIBUTES                    = '@attributes';
 }

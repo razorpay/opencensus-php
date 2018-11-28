@@ -690,10 +690,12 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                  = 'Multiple refunds found at gateway';
+    const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 
+    const BAD_REQUEST_SETTLEMENT_ANOTHER_QUEUE_OPERATION_IN_PROGRESS            = 'Request failed because another settlement queue operation in progress';
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
 
     // ---------------------- UPI (NPCI) Error codes -------------------------------
@@ -726,4 +728,14 @@ class PublicErrorDescription
     const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
     const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate RRN found for the transaction on beneficiary side.';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
+    const GATEWAY_ERROR_REVERSAL_FAILURE                                            = 'Reversal Failure';
+    const GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION                               = 'Upi compliance violation (remitter)';
+
+    const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
+    const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';
+    const BAD_REQUEST_EXPIRED_VPA                                                   = 'Payment failed because VPA is marked as Expired';
+    const BAD_REQUEST_UPI_INVALID_PAYER_BANK_ACCOUNT                                = 'Payment failed because Account linked to VPA is invalid';
+    const BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED                          = 'Payment failed because Transaction frequency limit has exceeded';
+    const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'Payment failed because Transaction amount limit has exceeded';
+    const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
 }

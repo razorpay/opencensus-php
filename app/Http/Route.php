@@ -217,6 +217,7 @@ final class Route
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
+        'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                         ],
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
@@ -921,6 +922,8 @@ final class Route
 
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
+
+        'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
 
         // subscription registration
         'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
@@ -1773,6 +1776,7 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
+        'merchant_balance_bulk_backfill_ids'
     ];
 
     public static $routePermission = [
@@ -2135,6 +2139,7 @@ final class Route
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'merchant_balance_bulk_backfill_ids'       => '*',
     ];
 
     public static $direct = [

@@ -58,9 +58,9 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 1,
+                'count' => 2,
                 'items' =>  [
-                     [
+                    [
                         'name'        => 'Basic T3',
                         'merchant_id' => '100000Razorpay',
                         'period'      => 'daily',
@@ -68,6 +68,13 @@ return [
                         'anchor'      => null,
                         'hour'        => 5,
                         'delay'       => 3,
+                    ],
+                    [
+                        'name'        => 'Basic T60',
+                        'merchant_id' => '100000Razorpay',
+                        'period'      => 'daily',
+                        'interval'    => 1,
+                        'delay'       => 60,
                     ],
                 ]
             ],

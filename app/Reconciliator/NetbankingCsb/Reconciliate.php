@@ -56,7 +56,7 @@ class Reconciliate extends Base\Reconciliate
         return self::DELIMITER;
     }
 
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
         if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') !== false)
         {

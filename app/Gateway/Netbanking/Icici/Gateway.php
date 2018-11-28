@@ -329,7 +329,7 @@ class Gateway extends Base\Gateway
             (isset($input['payment']['recurring_type']) === true) and
             ($input['payment']['recurring_type'] === 'auto'))
         {
-           return ;
+           return;
         }
 
         $verify = new Verify($this->gateway, $input);

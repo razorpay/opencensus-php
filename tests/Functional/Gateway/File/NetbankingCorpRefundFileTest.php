@@ -7,9 +7,11 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\File\Type;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NetbankingCorpRefundFileTest extends TestCase
@@ -90,7 +92,7 @@ class NetbankingCorpRefundFileTest extends TestCase
             $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return ($mail->hasFrom('refunds@razorpay.com') and
-                ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_CORPORATION])));
+                ($mail->hasTo(GatewayFileConstants::RECIPIENTS_MAP[Type::REFUND][GatewayFileConstants::CORPORATION])));
         });
     }
 }

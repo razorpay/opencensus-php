@@ -577,6 +577,21 @@ class Core extends Base\Core
 
         $merchant = $refund->merchant;
 
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_CREATED_USING_V2,
+                [
+                    'refund_id' => $refund->getId()
+                ]);
+
+            $txnProcessor = (new TransactionProcessor\Refund($refund));
+
+            list($txn, $feesSplit) = $txnProcessor->createTransaction();
+
+            return $txn;
+        }
+
         // create Transaction
         $txn = new Transaction\Entity;
 
@@ -610,8 +625,6 @@ class Core extends Base\Core
         }
 
         $txn->fill($txnData);
-
-        $paymentStatus = $payment->getStatus();
 
         if ($payment->getStatus() === Payment\Status::CAPTURED)
         {

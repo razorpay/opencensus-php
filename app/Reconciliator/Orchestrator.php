@@ -168,7 +168,7 @@ class Orchestrator extends Base\Core
 
         foreach ($this->allFilesDetails as $fileIndex => $fileDetails)
         {
-            $skipFile = $this->shouldSkipFile($fileDetails);
+            $skipFile = $this->shouldSkipFile($fileDetails, $this->inputDetails);
 
             if ($skipFile === true)
             {
@@ -214,10 +214,10 @@ class Orchestrator extends Base\Core
         return $result;
     }
 
-    protected function shouldSkipFile(array $fileDetails): bool
+    protected function shouldSkipFile(array $fileDetails, array $inputDetails = []): bool
     {
         // Checks if this particular file needs to be excluded for the gateway
-        $shouldExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
+        $shouldExclude = $this->gatewayReconciliator->inExcludeList($fileDetails, $inputDetails);
 
         if ($shouldExclude === true)
         {
