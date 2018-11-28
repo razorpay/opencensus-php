@@ -12,8 +12,10 @@ const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
 const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
-export const fetchVirtualAccounts = params =>
-  fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
+export const fetchVirtualAccounts = params => {
+  params.receiver_type = 'bank_account';
+  return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
+};
 
 export const fetchItem = id => {
   let virtualAccount = new VirtualAccount();
