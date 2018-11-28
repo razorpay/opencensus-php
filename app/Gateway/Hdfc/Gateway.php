@@ -40,6 +40,7 @@ use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Base\Action as BaseAction;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Capability as TerminalCapability;
 
 class Gateway extends Base\Gateway
 {
@@ -47,6 +48,12 @@ class Gateway extends Base\Gateway
     use Payment\Authorize;
     use Payment\Support;
     use Payment\Inquiry;
+    use Base\CardCacheTrait;
+
+    const CACHE_KEY = 'hdfc_fss_%s_card_details';
+    const CACHE_TTL = 20;
+
+    protected $secureCacheDriver;
 
     protected $gateway = 'hdfc';
 
@@ -367,6 +374,13 @@ class Gateway extends Base\Gateway
         $this->repo = new Hdfc\Repository;
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->secureCacheDriver = $this->getDriver($input);
+    }
+
 // ---------------------------Gateway operations -------------------------------
 
     /**
@@ -389,7 +403,7 @@ class Gateway extends Base\Gateway
             return $this->authorizeDebitPin($input);
         }
 
-        if ($input['terminal']['capability'] === Terminal\Capability::AUTHORIZE)
+        if ($input['terminal']->getCapability() === TerminalCapability::AUTHORIZE)
         {
             $authenticationGateway = $this->decideAuthenticationGateway($input);
 
@@ -535,7 +549,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyCallback($input);
         }
-        else if ($input['terminal'][Terminal::CAPABILITY] === Terminal\Capability::AUTHORIZE)
+        else if ($input['terminal']->getCapability() === TerminalCapability::AUTHORIZE)
         {
             $this->setCardNumberAndCvv($input);
 
@@ -545,7 +559,7 @@ class Gateway extends Base\Gateway
 
             $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
-            $input['authenticate'] = $this->callAuthenticationGateway($input, $authenticationGateway);
+            $input['authentication'] = $this->callAuthenticationGateway($input, $authenticationGateway);
 
             $this->postPreAuthRequest($input);
         }

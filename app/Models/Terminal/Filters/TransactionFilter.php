@@ -802,7 +802,7 @@ class TransactionFilter extends Terminal\Filter
             case Method::EMI:
                 $allowedNetworks = [Network::MAES, Network::VISA, Network::MC];
 
-                if (in_array($this->input['card']->getNetworkCode(), $allowedNetworks, true) === true)
+                if (in_array($payment->card->getNetworkCode(), $allowedNetworks, true) === true)
                 {
                     return true;
                 }

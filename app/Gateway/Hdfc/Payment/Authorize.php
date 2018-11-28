@@ -571,7 +571,7 @@ trait Authorize
             'cavv'               => $input['authentication']['cavv'],
             'xid'                => $input['authentication']['xid'],
             'enrollmentflag'     => $input['authentication']['enrolled'],
-            'authenticationflag' => $input['authentication']['pares_status'],
+            'authenticationflag' => $input['authentication']['status'],
             'eci'                => $input['authentication']['eci'],
             'type'               => Hdfc\Constants::PRE_AUTH_TYPE,
         ];
@@ -612,7 +612,7 @@ trait Authorize
             $this->preAuthorizeRequest,
             $this->preAuthorizeResponse);
 
-        $this->tracePreAuthResponse();
+        $this->tracePreAuthResponse($this->preAuthorizeResponse);
 
         $this->persistAfterPreAuth();
 

@@ -67,6 +67,49 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($payment['verify_at']);
     }
 
+    public function testPaymentForAuthorizationTerminal()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['recurring' => 2]);
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $payment = $this->defaultAuthPayment($payment);
+        // $payment['card']['number'] = '5567630000002004';
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('hdfc', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHdfcPaymentEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
+    }
+
     public function testTamperedPayment()
     {
         $payment = $this->doAuthPayment();

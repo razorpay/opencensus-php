@@ -591,4 +591,29 @@ trait Support
 
         assertTrue($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        if ((isset($input['authenticate']['gateway']) === true) and
+            ($input['authenticate']['gateway'] === PaymentModel\Gateway::MPI_ENSTAGE))
+        {
+            $authenticationGateway = PaymentModel\Gateway::MPI_ENSTAGE;
+        }
+        else
+        {
+            $authenticationGateway = PaymentModel\Gateway::MPI_BLADE;
+        }
+
+        return $authenticationGateway;
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
+    }
+
 }
