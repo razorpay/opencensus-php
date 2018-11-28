@@ -16,14 +16,33 @@ export default function DataDetails(props) {
       />
 
       {!configOptions.loading ? (
-        <SelectField name="template.file_meta.extension" label="File Format">
-          <option value="">Select...</option>
-          {configOptions.data.extensions.map(extension => (
-            <option value={extension} key={extension}>
-              {extension}
-            </option>
-          ))}
-        </SelectField>
+        <>
+          <SelectField name="template.file_meta.extension" label="File Format">
+            <option value="">Select...</option>
+            {configOptions.data.extensions.map(extension => (
+              <option value={extension} key={extension}>
+                {extension}
+              </option>
+            ))}
+          </SelectField>
+          {props.extension === 'txt' &&
+            (function() {
+              const delimiters = configOptions.data.delimiters.txt;
+              return (
+                <SelectField
+                  label="File Delimiter"
+                  name="template.file_meta.delimiter"
+                >
+                  <option value="">Select...</option>
+                  {Object.keys(delimiters).map(delimiter => (
+                    <option value={delimiters[delimiter]}>
+                      {delimiter}({delimiters[delimiter]})
+                    </option>
+                  ))}
+                </SelectField>
+              );
+            })()}
+        </>
       ) : (
         <FetchingDataForField label="File Format" />
       )}

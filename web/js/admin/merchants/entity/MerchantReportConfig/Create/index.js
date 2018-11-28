@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import { adminFetch, adminPost } from 'common/fetch';
+import { closeModal, notifySuccess } from 'common/modal';
 
 import EntityRow from 'ui/EntityRow';
 import Form from 'ui/Form';
@@ -41,7 +42,7 @@ export default class CreateMerchantReportConfig extends Component {
 
   handleSubmitClick = () => {
     const data = { ...this.state.values };
-    const template = this.configDetails.getValue();
+    const template = this.configDetails ? this.configDetails.getValue() : {};
 
     data.template = {
       ...data.template,
@@ -57,13 +58,12 @@ export default class CreateMerchantReportConfig extends Component {
     return adminPost({
       url: `live_${this.props.merchantId}/reporting/configs`,
       data,
-    })
-      .then(response => {
-        console.log({ response });
-      })
-      .catch(error => {
-        console.log({ error });
-      });
+    }).then(response => {
+      if (response) {
+        notifySuccess('Report Config Added Successfully');
+        closeModal();
+      }
+    });
   };
 
   handleChangeIn = ({ target }) => {
@@ -122,23 +122,25 @@ export default class CreateMerchantReportConfig extends Component {
                 configOptions={this.state.configOptions}
                 reportEmails={details.transaction_report_email}
                 onChange={this.handleChangeIn}
+                extension={
+                  ((this.state.values.template || {}).file_meta || {}).extension
+                }
                 onReportTypeChange={this.handleReportTypeChange}
               />
             ) : (
               <div class="spinner center" />
             )}
-
-            <AsyncButton
-              text="Create"
-              class="btn"
-              pendingClass="small spinner"
-              onClick={this.handleSubmitClick}
-            />
           </Form>
 
           <ConfigDetails
             {...this.state.configComponents.data}
             ref={ref => (this.configDetails = ref)}
+          />
+          <AsyncButton
+            text="Create"
+            class="btn"
+            pendingClass="small spinner"
+            onClick={this.handleSubmitClick}
           />
         </div>
       </>

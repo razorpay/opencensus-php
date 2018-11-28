@@ -37,7 +37,7 @@ export default class MerchantReportConfigList extends Component {
 
   handleViewClick = item => () => {
     openModal(
-      <div style={{ width: '750px' }}>
+      <div style={{ width: '1050px' }}>
         <ModalContent header="Report Config">
           <Entity config={item} />
         </ModalContent>
@@ -47,7 +47,7 @@ export default class MerchantReportConfigList extends Component {
 
   addNew = () => {
     openModal(
-      <div style={{ width: '750px' }}>
+      <div style={{ width: '1050px' }}>
         <ModalContent header="Create New Report Config">
           <CreateEntity merchantId={this.props.match.params.id} />
         </ModalContent>
