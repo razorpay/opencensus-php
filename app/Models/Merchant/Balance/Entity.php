@@ -119,7 +119,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', 'id');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public static function buildFromMerchant($merchant)
@@ -129,7 +129,7 @@ class Entity extends Base\PublicEntity
 
         $balance->merchant()->associate($merchant);
         $balance->setAttribute(self::BALANCE, 0);
-        $balance->setAttribute(self::MERCHANT_ID, $merchant->getId());
+        $balance->setAttribute(self::ID, $merchant->getId());
         $balance->setAttribute(self::CURRENCY, Currency::INR);
         $balance->setAttribute(self::TYPE, Type::PRIMARY);
 

@@ -753,8 +753,7 @@ class Validator extends Base\Validator
 
         $this->failIfNotAuthorized($payment);
 
-        // Removing this temporarily
-        // $this->captureAmountValidate($payment, $amount);
+        $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
     }

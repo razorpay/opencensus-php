@@ -4,9 +4,11 @@ namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Netbanking\Icici;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -14,6 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
     const COLUMN_PAYMENT_DATE    = 'Date';
+    const COLUMN_PAYMENT_AMOUNT  = 'Amount';
 
     protected $netbankingRepo;
 
@@ -34,21 +37,68 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
-//     protected function getReferenceNumber($row)
-//     {
-//         if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
-//         {
-//             return $row[self::COLUMN_BANK_PAYMENT_ID];
-//         }
-//
-//         return null;
-//     }
+    protected function getReferenceNumber($row)
+    {
+        if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
+        {
+            return $row[self::COLUMN_BANK_PAYMENT_ID];
+        }
+
+        return null;
+    }
+
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
+    {
+        $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
+
+        if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== $referenceNumber))
+        {
+            $this->trace->info(
+                TraceCode:: RECON_MISMATCH,
+                [
+                    'info_code'              => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'payment_id'             => $this->payment->getId(),
+                    'db_reference_number'    => $dbReferenceNumber,
+                    'recon_reference_number' => $referenceNumber,
+                    'gateway'                => $this->gateway
+                ]
+            );
+        }
+
+        $gatewayPayment->setBankPaymentId($referenceNumber);
+    }
 
     protected function getGatewayPayment($paymentId)
     {
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
                                                                      [Icici\Confirmation::YES]);
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
     }
 
     protected function setAllowForceAuthorization(Payment\Entity $payment)
@@ -79,7 +129,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function validatePaymentForForceAuthorize(Payment\Entity $payment)
     {
-        $createdTime = $payment->getCreatedAt() ;
+        $createdTime = $payment->getCreatedAt();
 
         $createdDate =  Carbon::createFromTimestamp($createdTime, Timezone::IST);
 
