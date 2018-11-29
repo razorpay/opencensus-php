@@ -49,15 +49,33 @@ export default class RefundsList extends Component {
             </Link>
           </header>
         </div>
-        <PageTable model={this.collection} fields={fields} href={showRefund} />
+        <PageTable model={this.collection} fields={fields} />
       </div>
     );
   }
 }
 
+const refundLink = item =>
+  item.id && (
+    <Link class="link" to={`/scrooge/refund/${item.id}`} target="_blank">
+      {item.id}
+    </Link>
+  );
+
+const paymentLink = item =>
+  item.payment_id && (
+    <Link
+      class="link"
+      to={`/entity/payment/live/pay_${item.payment_id}`}
+      target="_blank"
+    >
+      {item.payment_id}
+    </Link>
+  );
+
 const fields = [
-  ['Refund ID', item => item.id],
-  ['Payment ID', item => item.payment_id],
+  ['Refund ID', refundLink],
+  ['Payment ID', paymentLink],
   ['Merchant ID', item => item.merchant_id],
   ['Refund Amount', item => item.amount],
   ['Payment Amount', item => item.payment_amount],
@@ -66,5 +84,3 @@ const fields = [
   ['Attempts', item => item.attempts],
   ['Refund Created At', item => formatDate(item.created_at)],
 ];
-
-const showRefund = item => `/scrooge/refund/${item.id}`;
