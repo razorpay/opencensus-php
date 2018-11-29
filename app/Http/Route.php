@@ -2561,19 +2561,26 @@ final class Route
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
-        // 'subscription_cancel',
+        'subscription_cancel',
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
         'subscription_test_charge',
+        'subscription_manual_retry',
+        // Crons
+        'subscriptions_expire',
+        // 'subscriptions_charge_invoices',
+        // 'subscriptions_retry',
     ];
 
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
+        'subscription_cancel',
         'subscription_test_charge',
+        'subscription_manual_retry',
     ];
 
     /**
