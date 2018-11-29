@@ -54,12 +54,13 @@ class CreateBalance extends Migration
             $table->integer(Balance::CREATED_AT);
             $table->integer(Balance::UPDATED_AT);
 
-            $table->foreign(Balance::ID)
+            $table->foreign(Balance::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->index(Balance::CREATED_AT);
+            $table->index(Balance::MERCHANT_ID);
         });
     }
 

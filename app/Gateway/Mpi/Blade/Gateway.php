@@ -73,7 +73,12 @@ class Gateway extends Base\Gateway
      */
     public function authenticate(array $input)
     {
-        // TODO: Add card range cache
+        $runEnrollmentCheck = $this->runEnrollmentCheckForCard($input);
+
+        if ($runEnrollmentCheck === false)
+        {
+            return null;
+        }
 
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
@@ -83,6 +88,18 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($attributes, $input);
 
         return $this->decideAuthStepAfterEnroll($input, $response);
+    }
+
+    protected function runEnrollmentCheckForCard(array $input)
+    {
+        // We will skip the enrollment check for all the US issued cards
+        if (($input['card']['country'] === 'US') and
+            ($input['merchant']->isFeatureEnabled('skip_international_auth') === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function decideAuthStepAfterEnroll(array $input, array $response)

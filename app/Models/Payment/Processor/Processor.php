@@ -7,8 +7,6 @@ use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
-use RZP\Dashboard\Dashboard;
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Listeners\ApiEventSubscriber;
@@ -233,39 +231,16 @@ class Processor
 
             return $this->authorize($payment, $input, $gatewayInput);
         }
-        catch (Exception\BaseException $e)
-        {
-            $attributes = [];
-
-            if (($e->getError() !== null) and ($e->getError() instanceof Error))
-            {
-                $attributes = $e->getError()->getAttributes();
-            }
-
-            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = false;
-
-            if (isset($payment) === true)
-            {
-                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
-            }
-
-            $this->pushPaymentCreateErrorMetrics($attributes);
-
-            throw $e;
-        }
         catch (\Throwable $e)
         {
-            $attributes = [
-                Metric::LABEL_TRACE_CODE         => $e->getCode(),
-                Metric::LABEL_PAYMENT_IS_CREATED => false,
-            ];
+            $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            if (isset($payment) === true)
+            if ((isset($payment) === true) and ($payment instanceof Payment\Entity))
             {
-                $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
+                $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }
 
-            $this->pushPaymentCreateErrorMetrics($attributes);
+            (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
             throw $e;
         }
@@ -307,7 +282,8 @@ class Processor
     {
         assert($this->subscription->isExternal() === true);
 
-        if ($this->subscription->hasCurrentInvoice() === true)
+        if (($this->subscription->hasCurrentInvoice() === true) and
+            (isset($input[Payment\Entity::ORDER_ID]) === false))
         {
             $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
 
@@ -2400,18 +2376,5 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
-    }
-
-    protected function pushPaymentCreateErrorMetrics(array $errorAttributes)
-    {
-        $this->trace->count(
-            Metric::PAYMENT_PROCESS_FAILED,
-            [
-                Metric::LABEL_TRACE_CODE            => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
-                Metric::LABEL_TRACE_FIELD           => array_get($errorAttributes, Error::FIELD),
-                Metric::LABEL_TRACE_SOURCE          => array_get($errorAttributes, Error::ERROR_CLASS),
-                Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
-            ]
-        );
     }
 }

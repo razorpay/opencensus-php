@@ -597,7 +597,6 @@ class Entity
     {
         if (self::isValidEntity($entity) === false)
         {
-            sd($entity);
             App::getFacadeRoot()['trace']->error(
                 TraceCode::ERROR_INVALID_ARGUMENT,
                 ['entity' => $entity]);

@@ -2,20 +2,16 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Throwable;
 use RZP\Exception;
-use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
@@ -85,7 +81,7 @@ trait Capture
 
         try
         {
-            $payment = $this->capturePayment($payment, $amount, $currency);
+            $this->capturePayment($payment, $amount, $currency);
         }
         catch (Exception\BaseException $e)
         {
@@ -298,13 +294,56 @@ trait Capture
      */
     protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
-        $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
+        try
+        {
+            $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
 
-        //
-        // If the fee bearer is customer then please to adjust input amount
-        // with the available fee for the payment.
-        //
-        // @todo: fee bearer cannot work with mandate registration
+            $this->modifyCaptureAmountForPaymentFee($payment, $captureAmount);
+
+            $autoCaptured = $payment->getAutoCaptured();
+
+            $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
+
+            $data = [
+                'payment' => $payment->toArrayGateway(),
+                'amount' => $captureAmount,
+                'currency' => $payment->getCurrency()
+            ];
+
+            if ($payment->isMethodCardOrEmi())
+            {
+                $card = $this->repo->card->fetchForPayment($payment);
+                $data['card'] = $card->toArray();
+            }
+
+            if ($payment->getConvertCurrency() === true)
+            {
+                $data['amount'] = $payment->getBaseAmount();
+                $data['currency'] = Currency\Currency::INR;
+            }
+
+            $this->captureOnGateway($data, $autoCaptured);
+
+            return $payment;
+        }
+        catch (\Throwable $e)
+        {
+            (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * If the fee bearer is customer then adjust input amount
+     * with the available fee for the payment.
+     * @todo: fee bearer cannot work with mandate registration
+     *
+     * @param  Payment\Entity $payment
+     * @param  integer        $captureAmount
+     */
+    protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
+    {
         if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
@@ -312,51 +351,11 @@ trait Capture
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
-                    'payment_id'        => $payment->getId(),
-                    'capture_amount'    => $captureAmount,
-                    'message'           => 'Adds fee to the amount because fee bearer is customer',
-                ]);
-        }
-
-        $autoCaptured = $payment->getAutoCaptured();
-
-        if ($captureAmount !== $payment->getAmount())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
-                Payment\Entity::AMOUNT,
-                [
+                    'payment_id' => $payment->getId(),
                     'capture_amount' => $captureAmount,
-                    'payment_amount' => $payment->getAmount(),
-                    'payment_id'     => $payment->getId(),
+                    'message' => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
-
-        //$payment->getValidator()->captureAmountValidate($payment, $amount);
-
-        $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
-
-        $data = [
-            'payment'   => $payment->toArrayGateway(),
-            'amount'    => $captureAmount,
-            'currency'  => $payment->getCurrency()
-        ];
-
-        if ($payment->isMethodCardOrEmi())
-        {
-            $card = $this->repo->card->fetchForPayment($payment);
-            $data['card'] = $card->toArray();
-        }
-
-        if ($payment->getConvertCurrency() === true)
-        {
-            $data['amount'] = $payment->getBaseAmount();
-            $data['currency'] = Currency\Currency::INR;
-        }
-
-        $this->captureOnGateway($data, $autoCaptured);
-
-        return $payment;
     }
 
     protected function modifyCaptureAmountForDiscountedOrder(Payment\Entity $payment, int & $captureAmount)
@@ -430,7 +429,7 @@ trait Capture
                 $this->repo->saveOrFail($this->payment);
             }
         }
-        catch (Throwable $ex)
+        catch (\Throwable $ex)
         {
             $this->handleExceptionOnCapture($data, $ex);
         }
@@ -445,7 +444,7 @@ trait Capture
      *
      * @throws Throwable
      */
-    protected function handleExceptionOnCapture(array $data, Throwable $ex)
+    protected function handleExceptionOnCapture(array $data, \Throwable $ex)
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
@@ -472,7 +471,7 @@ trait Capture
         }
     }
 
-    protected function dispatchCaptureFailure(Throwable $ex, array $data)
+    protected function dispatchCaptureFailure(\Throwable $ex, array $data)
     {
         $this->trace->traceException($ex);
 

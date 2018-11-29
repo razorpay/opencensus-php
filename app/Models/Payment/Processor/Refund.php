@@ -1388,7 +1388,7 @@ trait Refund
 
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
-        $refundData = $refund->toArrayGateway();
+        $refundData = $refund->toArray();
 
         $extraData = [
             'method'                    => $payment->getMethod(),
