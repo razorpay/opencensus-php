@@ -189,7 +189,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getRequestContentData($input);
 
-        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+        $content[RequestFields::CHECKSUM] = $this->generateHash($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
@@ -207,18 +207,6 @@ class Gateway extends Base\Gateway
             RequestFields::API_KEY        => $content[RequestFields::API_KEY],
             RequestFields::ENCRYPTED_DATA => $encrypted
         ];
-    }
-
-    protected function getStringToHash($input, $glue = '|'): string
-    {
-        $hash_data = parent::getStringToHash($input, $glue);
-
-        return $this->getSalt() . '|' . $hash_data;
-    }
-
-    protected function getHashOfString($str): string
-    {
-        return strtoupper(hash('sha512', $str));
     }
 
     protected function getRequestContentData(array $input): array
@@ -341,7 +329,7 @@ class Gateway extends Base\Gateway
             $content[RequestFields::BANK_CODE] = Constants::BANK_CODE_CORPORATE;
         }
 
-        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+        $content[RequestFields::CHECKSUM] = $this->generateHash($content);
 
         return $content;
     }
@@ -357,7 +345,7 @@ class Gateway extends Base\Gateway
             RequestFields::DESCRIPTION     => Constants::REFUND_DESCRIPTION,
         ];
 
-        $data[RequestFields::CHECKSUM] = $this->getHashOfArray($data);
+        $data[RequestFields::CHECKSUM] = $this->generateHash($data);
 
         return $data;
     }
@@ -591,18 +579,28 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash(array $content)
+    function generateHash($content)
     {
-        $actual = $this->getHashValueFromContent($content);
+        $secure_hash = null;
 
-        unset($content[static::CHECKSUM_ATTRIBUTE]);
+        ksort($content);
 
-        $response_json = json_encode($content);
+        $hash_data = $this->getSalt();
 
-        $hash_data = $this->getSalt() . $response_json;
+        foreach ($content as $key => $value)
+        {
+            if (strlen($value) > 0)
+            {
+                $hash_data .= '|' . $value;
+            }
+        }
 
-        $generated = strtoupper(hash('sha512', $hash_data));
+        if (strlen($hash_data) > 0)
+        {
+            $secure_hash = strtoupper(hash('sha512', $hash_data));
+        }
 
-        $this->compareHashes($actual, $generated);
+        return $secure_hash;
     }
+
 }

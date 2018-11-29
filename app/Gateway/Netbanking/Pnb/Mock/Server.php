@@ -6,7 +6,6 @@ use DOMDocument;
 
 use http\Env\Request;
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Pnb\Status;
 use RZP\Gateway\Netbanking\Pnb\RequestFields;
 use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
@@ -83,7 +82,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYMENT_ID      => $input[ResponseFields::PAYMENT_ID],
             ResponseFields::AMOUNT          => $this->formatAmount($payment->getAmount()),
             ResponseFields::BANK_CODE       => $input[RequestFields::BANK_CODE],
-            ResponseFields::RESPONSE_CODE   => '0',
+            ResponseFields::RESPONSE_CODE   => 0,
         ];
 
         $this->content($data, 'verify');
@@ -114,7 +113,7 @@ class Server extends Base\Mock\Server
     protected function getCallbackResponseData(array $input)
     {
         $data = [
-            ResponseFields::RESPONSE_CODE   => Status::SUCCESS,
+            ResponseFields::RESPONSE_CODE   => 0,
             ResponseFields::BANK_PAYMENT_ID => self::MOCK_TRANSACTION_ID,
             ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT]
@@ -160,19 +159,5 @@ class Server extends Base\Mock\Server
     protected function formatAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
-    }
-
-    protected function generateHash($content)
-    {
-        $response_json = json_encode($content);
-
-        $hash_data = $this->getSalt() . $response_json;
-
-        return strtoupper(hash('sha512', $hash_data));
-    }
-
-    protected function getSalt()
-    {
-        return $this->getGatewayInstance()->getSalt();
     }
 }
