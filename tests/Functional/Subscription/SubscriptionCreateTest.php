@@ -727,6 +727,16 @@ class SubscriptionCreateTest extends TestCase
         $this->assertArrayHasKey('type', $subscription);
     }
 
+    public function testCreateSubscriptionForViewTest()
+    {
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->callViewUrlAndMakeAssertions($subscription['id']);
+    }
+
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
     {
         $requestContent = $this->testData[$function];
@@ -742,5 +752,26 @@ class SubscriptionCreateTest extends TestCase
         $requestContent['response']['content']['plan_id'] = $planId;
 
         return $requestContent;
+    }
+
+    protected function callViewUrlAndMakeAssertions(
+        string $id,
+        int $code = 200,
+        string $errorMessage = null)
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/t/subscriptions/$id", ['key_id' => $this->ba->getKey()]);
+
+        $response->assertStatus($code);
+
+        if (empty($errorMessage) === false)
+        {
+            $this->assertContains($errorMessage, $response->getContent());
+        }
+        else
+        {
+            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+        }
     }
 }

@@ -361,8 +361,6 @@ class Service extends Base\Service
 
         $subscription = $this->repo->subscription->findByPublicId($subscriptionId);
 
-        $subscription->getValidator()->validateSubscriptionViewable();
-
         return (new ViewDataSerializer($subscription))->serializeForHosted();
     }
 
