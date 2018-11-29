@@ -297,14 +297,16 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus(array $content)
     {
-        if ($content[ResponseFields::RESPONSE_CODE] !== Status::SUCCESS)
+        if (Status::isSuccess($content[ResponseFields::RESPONSE_CODE]) === true)
         {
-            //TODO : take error codes into consideration
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
-            );
+            return;
         }
+
+        //TODO : take error codes into consideration
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        );
     }
 
     protected function getVerifyRequestData(Verify $verify): array
@@ -443,7 +445,7 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::RESPONSE_CODE]) === true) and
-            ($response[ResponseFields::RESPONSE_CODE] === Status::SUCCESS))
+            (Status::isSuccess($response[ResponseFields::RESPONSE_CODE]) === true))
         {
             $verify->gatewaySuccess = true;
         }
