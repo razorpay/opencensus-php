@@ -132,16 +132,47 @@ class ReportColumns extends Component {
     });
   };
 
+  moveUp = column => () => {
+    this.moveColumn(column, -1);
+  };
+
+  moveDown = column => () => {
+    this.moveColumn(column, 1);
+  };
+
+  moveColumn(column, direction) {
+    const outputFields = [...this.state.outputFields];
+    const oldIndex = outputFields.indexOf(column);
+    const newIndex = oldIndex + direction;
+    [outputFields[newIndex], outputFields[oldIndex]] = [
+      outputFields[oldIndex],
+      outputFields[newIndex],
+    ];
+    this.setState({ outputFields });
+  }
+
   render() {
     const { outputFields } = this.state;
+    const lastIndex = outputFields.length - 1;
     return (
       <div>
-        {outputFields.map(column => {
+        {outputFields.map((column, index) => {
           const [fieldName, columnName] = column.split('.');
           return (
             <div key={column} class="ReportConfig--report-column">
               <div class="label">
-                <label for={column}>{column}</label>
+                <span>{column}</span>
+                <span class="reorder-icons pull-right">
+                  {index !== 0 && (
+                    <i className="i-arrow-up" onClick={this.moveUp(column)} />
+                  )}
+                  {lastIndex !== index && (
+                    <i
+                      className="i-arrow-down"
+                      onClick={this.moveDown(column)}
+                    />
+                  )}
+                </span>
               </div>
               <div class="input">
                 <input
