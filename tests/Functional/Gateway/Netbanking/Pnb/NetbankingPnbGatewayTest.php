@@ -228,7 +228,7 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content['response_code'] = '1000';
+                $content['response_code'] = 1000;
             }
         });
     }
@@ -239,7 +239,7 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content['response_code'] = '1000';
+                $content['response_code'] = 1000;
             }
         });
     }
