@@ -69,7 +69,7 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE,
              ]
         ],
 
@@ -95,7 +95,7 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE,
              ]
         ],
 

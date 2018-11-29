@@ -41,7 +41,7 @@ class RedisLagCheckerTest extends TestCase
         Cache::shouldReceive('get')
                 ->once()
                 ->with(ConfigKey::SKIP_SLAVE)
-                ->andReturn(false);
+                ->andReturn(0);
 
         $result = $lagChecker->useReadPdoIfApplicable(new MockPDO());
 
@@ -57,7 +57,7 @@ class RedisLagCheckerTest extends TestCase
         Cache::shouldReceive('get')
                 ->once()
                 ->with(ConfigKey::SKIP_SLAVE)
-                ->andReturn(true);
+                ->andReturn(100);
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
         {
