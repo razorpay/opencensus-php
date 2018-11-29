@@ -1345,7 +1345,7 @@ class DatabaseSeeder extends Seeder
             'gateway'                   => Gateway::PAYSECURE,
             'card'                      => '1',
             'shared'                    => '1',
-            'gateway_merchant_id'       => 'test_merchant_cybersource',
+            'gateway_merchant_id'       => 'test_merchant_paysecure',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);

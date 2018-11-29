@@ -526,7 +526,7 @@ class Gateway
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
         self::HITACHI             => Settlement\Channel::KOTAK,
-        self::PAYSECURE      => Settlement\Channel::KOTAK,
+        self::PAYSECURE           => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -657,7 +657,7 @@ class Gateway
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
-        self::PAYSECURE        => [],
+        self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
