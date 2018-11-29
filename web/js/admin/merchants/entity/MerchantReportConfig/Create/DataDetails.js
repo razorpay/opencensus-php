@@ -81,7 +81,7 @@ export default function DataDetails(props) {
         name="emails"
         label="Email ID(s)"
         helpMsg="Write comma separated values"
-        defaultValue={reportEmails.join(',')}
+        defaultValue={reportEmails}
       />
 
       <SelectField

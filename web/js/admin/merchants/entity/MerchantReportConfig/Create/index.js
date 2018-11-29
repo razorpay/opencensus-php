@@ -8,8 +8,6 @@ import EntityRow from 'ui/EntityRow';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 
-import Model from '../../model';
-
 import ConfigDetails from './ConfigDetails';
 import DataDetails from './DataDetails';
 
@@ -23,20 +21,28 @@ export default class CreateMerchantReportConfig extends Component {
     configComponents: {
       loading: false,
     },
+    merchantDetails: {
+      loading: true,
+      data: {},
+    },
     values: {},
   };
-  constructor(props) {
-    super();
-
-    this.model = new Model({
-      fetchFn: adminFetch,
-      merchantId: props.merchantId,
-    });
-  }
 
   componentWillMount() {
+    fetchMerchantDetails(this.props.merchantId).then(data => {
+      this.setState({
+        merchantDetails: { loading: false, data },
+        values: {
+          ...this.state.values,
+          emails: data.transaction_report_email.join(','),
+        },
+      });
+    });
+
     fetchConfigOptions().then(({ file: data }) => {
-      this.setState({ configOptions: { loading: false, data } });
+      this.setState({
+        configOptions: { loading: false, data },
+      });
     });
   }
 
@@ -93,21 +99,17 @@ export default class CreateMerchantReportConfig extends Component {
 
   render() {
     const merchantId = this.props.merchantId;
-    const { details } = this.model.merchant;
+    const { merchantDetails: details, configOptions } = this.state;
 
     return (
       <>
         <div class="box">
           <div class="heading">Merchant Id: {merchantId}</div>
-          {Object.keys(details).length ? (
-            [
-              <EntityRow key={0} label="Merchant Name" value={details.name} />,
-              <EntityRow
-                key={1}
-                label="Registered Email"
-                value={details.email}
-              />,
-            ]
+          {!details.loading && details.data ? (
+            <>
+              <EntityRow label="Merchant Name" value={details.data.name} />,
+              <EntityRow label="Registered Email" value={details.data.email} />
+            </>
           ) : (
             <div class="spinner center" />
           )}
@@ -116,11 +118,11 @@ export default class CreateMerchantReportConfig extends Component {
         <div class="box ReportConfig">
           <div class="heading">Create New Config Form</div>
           <Form class="full-span full-elements" onChange={this.handleChangeIn}>
-            {Object.keys(details).length ? (
+            {!details.loading && !configOptions.loading ? (
               <DataDetails
                 partnerType={details.partner_type}
                 configOptions={this.state.configOptions}
-                reportEmails={details.transaction_report_email}
+                reportEmails={this.state.values.emails}
                 onChange={this.handleChangeIn}
                 extension={
                   ((this.state.values.template || {}).file_meta || {}).extension
@@ -152,6 +154,19 @@ const selfServeReportBase = 'live/admin-reporting/';
 
 function fetchConfigOptions() {
   return adminFetch(selfServeReportBase + 'config-options').then(response => {
+    if (response) {
+      return response;
+    }
+  });
+}
+
+function fetchMerchantDetails(merchantId) {
+  return adminFetch({
+    url: 'live/merchants/details',
+    headers: {
+      'X-Razorpay-Account': merchantId,
+    },
+  }).then(response => {
     if (response) {
       return response;
     }
