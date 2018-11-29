@@ -1746,13 +1746,13 @@ class Terminal extends Base
             'gateway'               => Gateway::NETBANKING_ALLAHABAD,
             'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
             'gateway_merchant_id2'  => 'netbanking_alla_merchant_id2',
+            'gateway_secure_secret' => 'razorpay_password',
             'netbanking'            => 1,
-            'card'                  => 0,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])

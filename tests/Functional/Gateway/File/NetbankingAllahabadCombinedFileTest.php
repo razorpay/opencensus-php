@@ -24,6 +24,8 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
         parent::setUp();
 
+        $this->setMockGatewayTrue();
+
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
     }
 
