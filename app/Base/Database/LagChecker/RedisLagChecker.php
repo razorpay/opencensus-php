@@ -60,7 +60,7 @@ class RedisLagChecker implements LagChecker
 
         try
         {
-            $skipSlavePercentage = (int) Cache::get($this->config['flag']);
+            $skipSlavePercentage = (int) Cache::get($this->config['flag2']);
 
             //
             // If skip_slave config is set to 0 or any non integer character, it will always go to master

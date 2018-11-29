@@ -70,6 +70,7 @@ return array(
             'lag_check' => [
                 'driver' => 'redis',
                 'flag'   => ConfigKey::SKIP_SLAVE,
+                'flag2'  => ConfigKey::MASTER_PERCENT,
              ]
         ],
 
@@ -96,6 +97,7 @@ return array(
             'lag_check' => [
                 'driver' => 'redis',
                 'flag'   => ConfigKey::SKIP_SLAVE,
+                'flag2'  => ConfigKey::MASTER_PERCENT,
              ]
         ],
 

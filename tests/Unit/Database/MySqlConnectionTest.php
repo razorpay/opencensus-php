@@ -317,6 +317,7 @@ class MySqlConnectionTest extends TestCase
             'lag_check' => [
                 'driver' => 'redis',
                 'flag'   => ConfigKey::SKIP_SLAVE,
+                'flag2'  => ConfigKey::MASTER_PERCENT,
             ],
         ];
 
