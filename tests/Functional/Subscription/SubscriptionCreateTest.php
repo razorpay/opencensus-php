@@ -729,7 +729,6 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionForViewTest()
     {
-
         $this->testCreateSubscriptionWithNoStartAt();
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -772,6 +771,8 @@ class SubscriptionCreateTest extends TestCase
         else
         {
             $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+
+            $this->assertContains($id, $response->getContent());
         }
     }
 }
