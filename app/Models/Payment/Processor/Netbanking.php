@@ -407,6 +407,11 @@ class Netbanking
                 IFSC::ESFB,
             ]
         ],
+        Gateway::NETBANKING_ALLAHABAD => [
+            'retail' => [
+                IFSC::ALLA,
+            ]
+        ],
     ];
 
    protected static $defaultDisabled = [];
