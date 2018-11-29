@@ -192,7 +192,7 @@ export default class User {
   }
 
   get isChargeAtWillEnabled() {
-    return this.findTag('Hosted_emandate');
+    return this.findTag('Charge_at_will');
   }
 
   get isAgentRole() {
@@ -209,11 +209,7 @@ export default class User {
 
   get showInstantActivation() {
     return (
-      this.isOrgRZP &&
-      (!!this.activation_flow ||
-        (this.experiments &&
-          this.experiments.instant_activations &&
-          this.experiments.instant_activations.result === 'on'))
+      this.isOrgRZP && (!!this.activation_flow || this.instant_activations)
     );
   }
 
@@ -248,6 +244,14 @@ export default class User {
 
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
+  }
+
+  get isDiwaliPromoEnabled() {
+    return this.findTag('diwali_promotional_plan');
+  }
+
+  get showFTXPassAnnouncement() {
+    return this.findTag('announcement_ftx_passes');
   }
 }
 

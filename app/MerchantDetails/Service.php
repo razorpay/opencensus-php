@@ -98,6 +98,8 @@ class Service extends Base\Service
 
         $merchantDetails['activated'] = (int) ($merchantDetails['activated'] ?? 0);
 
+        $merchantDetails['activation_flow'] = $merchantDetails['activation_flow'] ?? null;
+
         return $merchantDetails;
     }
 

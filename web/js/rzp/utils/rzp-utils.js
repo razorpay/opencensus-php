@@ -11,7 +11,7 @@ moment.updateLocale('en', {
 });
 
 export function isMobileResolution() {
-  return window.innerWidth <= 768;
+  return window && window.innerWidth <= 768;
 }
 
 export function isFunction(value) {
@@ -494,6 +494,7 @@ export const autoPrefixUrls = url => {
 
 // Check if webkit browsers
 export const isWebkit =
+  typeof window !== 'undefined' &&
   typeof window.getComputedStyle(document.documentElement)[
     '-webkit-text-security'
   ] === 'string'

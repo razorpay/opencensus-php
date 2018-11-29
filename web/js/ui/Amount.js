@@ -4,6 +4,7 @@ import { getFormattedAmount } from 'common/util';
 const currencies = {
   INR: '₹',
   USD: 'US$',
+  SGD: 'S$',
 };
 
 export default ({ value, currency = 'INR', className, ...attrs }) => {

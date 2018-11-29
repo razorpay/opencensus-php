@@ -251,4 +251,6 @@ return array(
     ),
 
     'cdn_dashboard_url'   => env('CDN_DASHBOARD_URL'),
+
+    'banking_service_url' => env('BANKING_SERVICE_URL'),
 );

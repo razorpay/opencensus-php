@@ -42,15 +42,13 @@ export default class BatchList extends ListContainer {
   };
 
   handleDownloadClick = id => {
-    let windowRef = window.open('', '_blank');
     this.props.gaEvents.trackDownloadProcessedBatchReport();
     this.props
       .batchDownload(id)
       .then(response => {
-        windowRef.location.href = response.data.url;
+        window.location = response.data.url;
       })
       .catch(({ errors }) => {
-        windowRef.close();
         this.props.showNotification({
           type: 'error',
           message: errors,

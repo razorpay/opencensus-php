@@ -41,6 +41,7 @@ const gateWayOptions = [
   'Netbanking Rbl',
   'Netbanking Indusind',
   'Netbanking Pnb',
+  'Netbanking Equitas',
   'First Data',
   'Virtual Accounts Kotak',
   'Virtual Accounts Yes Bank',

@@ -17,7 +17,7 @@ const typeToTargetMap = {
   '': ' ',
   refund: ['hdfc', 'icici', 'csb'],
   emi: ['indusind', 'kotak', 'axis', 'rbl', 'scbl'],
-  combined: ['kotak', 'axis', 'federal', 'bob', 'rbl', 'indusind', 'obc', 'idfc'],
+  combined: ['kotak', 'axis', 'federal', 'bob', 'rbl', 'indusind', 'obc', 'idfc', 'equitas'],
   emandate_register: ['hdfc'],
   emandate_debit: ['hdfc', 'axis'],
   // TODO: uncomment this when api branch supporting this gets merge

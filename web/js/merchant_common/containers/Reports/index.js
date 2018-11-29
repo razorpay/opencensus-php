@@ -75,6 +75,7 @@ export default function Reports(store, opts) {
         type: selector(state, 'type'),
         date: selector(state, 'date'),
         invoiceDate: selector(state, 'invoiceDate'),
+        reportType: selector(state, 'reportType'),
         config: state.config,
       };
     },
@@ -185,11 +186,24 @@ export default function Reports(store, opts) {
     onConfigChange({ option }) {
       trackReportTabsClick(option.label);
       this.setState({ selectedConfig: option });
+      this.setFileFormat(option);
     }
 
     onAccountChange(account) {
       this.setState({ selectedAccount: account });
     }
+
+    setFileFormat = config => {
+      if (config.type !== 'custom') {
+        let fileFormat = this.getFileFormat(config._item);
+
+        this.props.change('reportType', fileFormat);
+      }
+    };
+
+    getFileFormat = config => {
+      return ((config.template || {}).file_meta || {}).extension || 'csv';
+    };
 
     validateInvoiceMonthYear(current) {
       const isGSTDisabled = this.props.user.isGSTDisabled;
@@ -271,6 +285,7 @@ export default function Reports(store, opts) {
               accounts,
               selectedAccount: this.defaultAccount,
             });
+            this.setFileFormat(configs[0]);
           } else {
             return this.props.showNotification({
               type: 'error',
@@ -303,7 +318,7 @@ export default function Reports(store, opts) {
     generateReport() {
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
-        { date, type, invoiceDate } = this.props,
+        { date, type, invoiceDate, reportType } = this.props,
         day = date.date(),
         month = date.month() + 1, // Jan is 0 in moment library
         year = date.year(),
@@ -365,6 +380,15 @@ export default function Reports(store, opts) {
               generated_by: selectedAccountId,
               start_time: startTime,
               end_time: endTime,
+              // report file type option has to override default configs
+              ...(reportType !== this.getFileFormat(selectedConfig._item) && {
+                template_overrides: {
+                  file_meta: {
+                    extension: reportType,
+                    delimiter: ',',
+                  },
+                },
+              }),
             };
 
           this.props.showNotification(downloadStartedMessage);
@@ -582,7 +606,7 @@ export default function Reports(store, opts) {
         currentReportList,
       } = this.state;
 
-      const { type, date, invoiceDate } = this.props;
+      const { type, date, invoiceDate, reportType } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
@@ -609,6 +633,12 @@ export default function Reports(store, opts) {
           </div>
         );
       } else {
+        let configReportType = null;
+
+        if (selectedConfig.type !== 'custom') {
+          configReportType = this.getFileFormat(selectedConfig._item);
+        }
+
         content = (
           <div className={reportWrapperClasses}>
             {/*Report Type Selection*/}
@@ -711,6 +741,33 @@ export default function Reports(store, opts) {
                     </div>
                   )}
               </div>
+
+              {/* File type for Reports */}
+              {selectedConfig.type !== 'custom' && (
+                <div class="form-element">
+                  <div class="title">SELECT FILE FORMAT</div>
+                  <div class="col-sm-3 col-xs-12">
+                    <div class="form-group form-control">
+                      <Field
+                        name="reportType"
+                        class="fix-select"
+                        component="select"
+                      >
+                        {/* Add option on the fly for txt, tsv or other formats */}
+                        {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
+                          0 && (
+                          <option value={configReportType}>
+                            {configReportType.toUpperCase()}
+                          </option>
+                        )}
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">Excel (xlsx)</option>
+                        <option value="xls">Old Excel (xls)</option>
+                      </Field>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div class="form-element">
                 <button class="btn btn-primary" onClick={this.generateReport}>

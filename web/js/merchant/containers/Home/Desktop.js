@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
 import Amount from 'rzp/ui/Amount';
-import Banner from 'rzp/ui/Banner';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
@@ -17,10 +16,9 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
-import { showOrHideTour } from 'merchant/modules/session';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import FTXPassAnnouncement from 'merchant/components/Announcements/ftx';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
@@ -35,7 +33,6 @@ import {
 } from './ga';
 
 @connect(state => ({ user: state.session.user, config: state.config }), {
-  showOrHideTour,
   openModal,
 })
 class AnalyticsDesktop extends Component {
@@ -44,50 +41,8 @@ class AnalyticsDesktop extends Component {
 
     const { isAdmin, mode } = props;
 
-    this.state = {
-      hasNewAnalyticsTour:
-        !isAdmin &&
-        mode === 'live' &&
-        !LocalStorageService.getItem('hide_new_analytics_banner'),
-      dismissNewAnalyticsBanner: false, // used for transition
-    };
-
-    this.onShowTour = this.onShowTour.bind(this);
-    this.onHideNewAnalyticsBanner = this.onHideNewAnalyticsBanner.bind(this);
     this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(
       this
-    );
-  }
-
-  onShowTour() {
-    this.onHideNewAnalyticsBanner(() => {
-      this.props.setScrollAmountToStickHeader();
-      this.props.showOrHideTour(true);
-    });
-
-    trackViewTour();
-  }
-
-  onHideNewAnalyticsBanner(cb) {
-    LocalStorageService.setItem('hide_new_analytics_banner', true);
-
-    this.setState(
-      {
-        dismissNewAnalyticsBanner: true,
-      },
-      () => {
-        window.setTimeout(() => {
-          this.setState(
-            {
-              dismissNewAnalyticsBanner: false,
-              hasNewAnalyticsTour: false,
-            },
-            () => {
-              typeof cb === 'function' && cb();
-            }
-          );
-        }, 500); // let the trasition to hide banner complete
-      }
     );
   }
 
@@ -135,10 +90,6 @@ class AnalyticsDesktop extends Component {
       trafficSectionTitle,
     } = this.props;
 
-    const { hasNewAnalyticsTour, dismissNewAnalyticsBanner } = this.state;
-
-    const { onShowTour, onHideNewAnalyticsBanner } = this;
-
     const hasSecondaryBanner =
       showInstantActivation && config.config && !config.config.hasPersonalised;
 
@@ -154,43 +105,11 @@ class AnalyticsDesktop extends Component {
               : ''
           }`}
         >
-          {!isAdmin && (
-            <div>
-              {hasNewAnalyticsTour && (
-                <div
-                  className={`v2-tour-banner${
-                    dismissNewAnalyticsBanner ? ' dismiss' : ''
-                  }`}
-                >
-                  <div className="banner-icon">
-                    <i className="i i-loudspeaker" />
-                  </div>
-                  <div className="banner-content">
-                    <Banner cta="View Tour" ctaOnClick={onShowTour}>
-                      <span>
-                        Take a quick tour to learn how to use dashboard
-                        analytics effectively.
-                      </span>
-                    </Banner>
-                  </div>
-                  <div className="banner-close">
-                    <a
-                      className="banner-close-icon"
-                      onClick={onHideNewAnalyticsBanner}
-                    >
-                      <i className="i i-close" />
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          <EarlySettlementAnnouncement from="Home-Desktop" />
+          {user.showFTXPassAnnouncement && <FTXPassAnnouncement />}
 
           <div
             className={`v2-onboarding-card${
