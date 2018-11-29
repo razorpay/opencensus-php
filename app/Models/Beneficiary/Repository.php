@@ -12,16 +12,4 @@ use RZP\Models\Base;
 class Repository extends Base\Repository
 {
     protected $entity = 'beneficiary';
-
-    protected $entityFetchParamRules = [
-        //
-    ];
-
-    protected $proxyFetchParamRules = [
-        //
-    ];
-
-    protected $appFetchParamRules = [
-        //
-    ];
 }

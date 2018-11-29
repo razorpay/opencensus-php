@@ -46,9 +46,6 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BENEFICIARY_DELETE_REQUEST, ['id' => $beneficiary->getId()]);
 
-        return $this->repo->transaction(function () use ($beneficiary)
-        {
-            return $this->repo->deleteOrFail($beneficiary);
-        });
+        return $this->repo->deleteOrFail($beneficiary);
     }
 }

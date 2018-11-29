@@ -14,8 +14,4 @@ class EsRepository extends Base\EsRepository
     protected $indexedFields = [
         //
     ];
-
-    protected $esFetchParams = [
-        //
-    ];
 }

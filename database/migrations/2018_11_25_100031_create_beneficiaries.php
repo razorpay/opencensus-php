@@ -57,10 +57,11 @@ class CreateBeneficiaries extends Migration
 
             $table->index(Beneficiary::DELETED_AT);
 
-            $table->foreign(Beneficiary::MERCHANT_ID)
-                  ->references(Merchant::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
+            // TODO: Uncomment after merge
+            //$table->foreign(Beneficiary::MERCHANT_ID)
+            //      ->references(Merchant::ID)
+            //      ->on(Table::MERCHANT)
+            //      ->on_delete('restrict');
         });
     }
 
@@ -71,10 +72,10 @@ class CreateBeneficiaries extends Migration
      */
     public function down()
     {
-        Schema::table(Table::BENEFICIARY, function($table)
-        {
-            $table->dropForeign(Table::BENEFICIARY . '_' . Beneficiary::MERCHANT_ID . '_foreign');
-        });
+        //Schema::table(Table::BENEFICIARY, function($table)
+        //{
+        //    $table->dropForeign(Table::BENEFICIARY . '_' . Beneficiary::MERCHANT_ID . '_foreign');
+        //});
 
         Schema::drop(Table::BENEFICIARY);
     }
