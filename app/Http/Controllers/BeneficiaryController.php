@@ -2,8 +2,6 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-
 use RZP\Models\Beneficiary;
 
 /**

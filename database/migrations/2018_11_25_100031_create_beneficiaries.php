@@ -26,10 +26,10 @@ class CreateBeneficiaries extends Migration
 
             $table->char(Beneficiary::MERCHANT_ID, 14);
 
-            $table->string(Beneficiary::NAME, 50)
+            $table->string(Beneficiary::NAME, 255)
                   ->nullable();
 
-            $table->string(Beneficiary::CONTACT, 20)
+            $table->string(Beneficiary::CONTACT, 255)
                   ->nullable();
 
             $table->string(Beneficiary::EMAIL, 255)
@@ -57,11 +57,10 @@ class CreateBeneficiaries extends Migration
 
             $table->index(Beneficiary::DELETED_AT);
 
-            // TODO: Uncomment after merge
-            //$table->foreign(Beneficiary::MERCHANT_ID)
-            //      ->references(Merchant::ID)
-            //      ->on(Table::MERCHANT)
-            //      ->on_delete('restrict');
+            $table->foreign(Beneficiary::MERCHANT_ID)
+                 ->references(Merchant::ID)
+                 ->on(Table::MERCHANT)
+                 ->on_delete('restrict');
         });
     }
 
@@ -72,10 +71,10 @@ class CreateBeneficiaries extends Migration
      */
     public function down()
     {
-        //Schema::table(Table::BENEFICIARY, function($table)
-        //{
-        //    $table->dropForeign(Table::BENEFICIARY . '_' . Beneficiary::MERCHANT_ID . '_foreign');
-        //});
+        Schema::table(Table::BENEFICIARY, function($table)
+        {
+           $table->dropForeign(Table::BENEFICIARY . '_' . Beneficiary::MERCHANT_ID . '_foreign');
+        });
 
         Schema::drop(Table::BENEFICIARY);
     }
