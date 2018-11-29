@@ -170,7 +170,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::BILLING_START            => 'filled|epoch',
@@ -189,7 +189,7 @@ class Validator extends Base\Validator
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY                => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -247,14 +247,20 @@ class Validator extends Base\Validator
     // Custom validators.
     //
 
-    protected static $createValidators =[
+    protected static $createValidators = [
         Entity::AMOUNT,
         Entity::CUSTOMER_ID,
+        Entity::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
         Entity::CUSTOMER_ID,
+        Entity::FIRST_PAYMENT_MIN_AMOUNT,
+    ];
+
+    protected static $editIssuedValidators = [
+        Entity::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected static $validExternalEntities = [
@@ -461,8 +467,26 @@ class Validator extends Base\Validator
 
             if ($isDuplicateReceipt === true)
             {
-                throw new BadRequestValidationFailureException("receipt must be unique for each item : {$receipt}");
+                throw new BadRequestValidationFailureException(
+                    "receipt must be unique for each item : {$receipt}");
             }
+        }
+    }
+
+    function validateFirstPaymentMinAmount(array $input)
+    {
+        $partialPaymentEnabled = array_key_exists(Entity::PARTIAL_PAYMENT, $input) ?
+                                    $input[Entity::PARTIAL_PAYMENT] : $this->entity->isPartialPaymentAllowed();
+
+        $partialPaymentEnabled = (bool) $partialPaymentEnabled;
+
+        $firstPaymentAmount = $input[Entity::FIRST_PAYMENT_MIN_AMOUNT] ?? null;
+
+        if (($partialPaymentEnabled === false) and
+            ($firstPaymentAmount !== null))
+        {
+            throw new BadRequestValidationFailureException(
+                "First payment min amount cannot be set when partial payment is disabled");
         }
     }
 

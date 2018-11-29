@@ -320,6 +320,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::METHOD, $method);
     }
 
+    public function setFirstPaymentMinAmount(int $amount = null)
+    {
+        return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -404,6 +409,12 @@ class Entity extends Base\PublicEntity
         $value = ($this->isPartialPaymentAllowed() === false);
 
         $this->setPartialPayment($value);
+
+        // If partial payment is set to false, unset first_payment_min_amount
+        if ($value === false)
+        {
+            $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, null);
+        }
     }
 
     public function incrementAttempts()

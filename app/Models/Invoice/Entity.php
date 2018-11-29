@@ -1131,6 +1131,11 @@ class Entity extends Base\PublicEntity
         $this->setStatus($newStatus);
     }
 
+    public function setFirstPaymentMinAmount(int $amount = null)
+    {
+        return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
+    }
+
     // -------------------------------------- End Setters ------------
 
     // -------------------------------------- Accessors --------------
