@@ -39,6 +39,9 @@ class Entity extends Base\PublicEntity
 
     const PASSWORD_TOKEN_LENGTH = 50;
 
+    // Boolean attribute is true if contact mobile is verified via OTP
+    const CONTACT_MOBILE_VERIFIED = 'contact_mobile_verified';
+
     protected $entity = 'user';
 
     protected $fillable = [
@@ -58,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::CONTACT_MOBILE,
+        self::CONTACT_MOBILE_VERIFIED,
         self::CONFIRMED,
         self::CREATED_AT,
     ];
@@ -76,6 +80,14 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::EMAIL,
+    ];
+
+    protected $defaults = [
+        self::CONTACT_MOBILE_VERIFIED => 0,
+    ];
+
+    protected $casts = [
+        self::CONTACT_MOBILE_VERIFIED => 'bool',
     ];
 
     protected $generateIdOnCreate = true;
