@@ -225,14 +225,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $emiSbiTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:sbi_emi',
+        Entity::GATEWAY                    => 'required|in:' . Gateway::EMI_SBI,
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::ENABLED                    => 'required|in:0',
     ];
 
     protected static $emiSbiEditTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:sbi_emi',
+        Entity::GATEWAY                    => 'required|in:' . Gateway::EMI_SBI,
         Entity::ENABLED                    => 'required|in:0,1',
     ];
 

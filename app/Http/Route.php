@@ -550,6 +550,7 @@ final class Route
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test_post'              => ['post',     't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
+        'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                             => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
@@ -1445,8 +1446,6 @@ final class Route
         'merchant_methods_edit',
         'merchant_fetch_methods',
         'on_demand_settlement',
-        // Only to be used via Subscriptions Service
-        'payment_create_subscriptions',
         'merchant_instant_activation_post',
         'subscription_registration_list_tokens',
         'subscription_registration_list_links',
@@ -1456,6 +1455,9 @@ final class Route
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
         'merchant_submit_support_call_request',
+        // Only to be used via Subscriptions Service
+        'payment_create_subscriptions',
+        'token_fetch_card',
     ];
 
     // These will run on internal auth with the assurance
@@ -2337,6 +2339,7 @@ final class Route
             'webhook_fire',
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
+            'token_fetch_card',
         ],
 
         'kotak' => [
