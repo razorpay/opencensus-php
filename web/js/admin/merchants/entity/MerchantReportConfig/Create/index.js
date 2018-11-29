@@ -35,6 +35,11 @@ export default class CreateMerchantReportConfig extends Component {
         values: {
           ...this.state.values,
           emails: data.transaction_report_email.join(','),
+          template: {
+            file_meta: {
+              extension: 'csv',
+            },
+          },
         },
       });
     });
@@ -55,7 +60,7 @@ export default class CreateMerchantReportConfig extends Component {
       ...template,
     };
 
-    data.emails = data.emails.split(',');
+    data.emails = data.emails ? data.emails.split(',') : [];
 
     // hardcoded default values
     data.created_by = this.props.merchantId;
@@ -87,7 +92,7 @@ export default class CreateMerchantReportConfig extends Component {
 
   handleReportTypeChange = event => {
     const value = event.target.value;
-
+    this.setState({ configComponents: { loading: true } });
     if (!!value) {
       fetchConfigComponents(event.target.value).then(data => {
         this.setState({ configComponents: { loading: false, data } });
@@ -117,33 +122,40 @@ export default class CreateMerchantReportConfig extends Component {
 
         <div class="box ReportConfig">
           <div class="heading">Create New Config Form</div>
-          <Form class="full-span full-elements" onChange={this.handleChangeIn}>
-            {!details.loading && !configOptions.loading ? (
-              <DataDetails
-                partnerType={details.partner_type}
-                configOptions={this.state.configOptions}
-                reportEmails={this.state.values.emails}
+          {!details.loading && !configOptions.loading ? (
+            <>
+              <Form
+                class="full-span full-elements"
                 onChange={this.handleChangeIn}
-                extension={
-                  ((this.state.values.template || {}).file_meta || {}).extension
-                }
-                onReportTypeChange={this.handleReportTypeChange}
-              />
-            ) : (
-              <div class="spinner center" />
-            )}
-          </Form>
+              >
+                <DataDetails
+                  partnerType={details.partner_type}
+                  configOptions={this.state.configOptions}
+                  reportEmails={this.state.values.emails}
+                  onChange={this.handleChangeIn}
+                  extension={
+                    ((this.state.values.template || {}).file_meta || {})
+                      .extension
+                  }
+                  onReportTypeChange={this.handleReportTypeChange}
+                />
+              </Form>
 
-          <ConfigDetails
-            {...this.state.configComponents.data}
-            ref={ref => (this.configDetails = ref)}
-          />
-          <AsyncButton
-            text="Create"
-            class="btn"
-            pendingClass="small spinner"
-            onClick={this.handleSubmitClick}
-          />
+              <ConfigDetails
+                {...this.state.configComponents.data}
+                loadingConfigComponents={this.state.configComponents.loading}
+                ref={ref => (this.configDetails = ref)}
+              />
+              <AsyncButton
+                text="Create"
+                class="btn"
+                pendingClass="small spinner"
+                onClick={this.handleSubmitClick}
+              />
+            </>
+          ) : (
+            <div class="spinner center" />
+          )}
         </div>
       </>
     );

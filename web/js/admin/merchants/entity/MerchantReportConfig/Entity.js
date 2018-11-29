@@ -34,7 +34,7 @@ export default function ViewMerchantConfig(props) {
           <strong>Config Id:</strong> {config.id}
         </div>
         <EntityRow label="Report Name" value={config.name} />
-        <EntityRow label="Report Description" value={config.descripttion} />
+        <EntityRow label="Report Description" value={config.description} />
         <EntityRow
           label="Name of downloaded file"
           value={(config.template.file_meta || {}).filename}

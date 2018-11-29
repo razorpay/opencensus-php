@@ -4,7 +4,7 @@ import { snakeToTitleCase } from 'common/util';
 export default function DataDetails(props) {
   const { partnerType, reportEmails, configOptions } = props;
   return (
-    <div>
+    <div class="row-item">
       <Field name="name" label="Report Name" />
 
       <TextAreaField name="description" label="Report Description" />
@@ -12,13 +12,16 @@ export default function DataDetails(props) {
       <Field
         name="template.file_meta.filename"
         label="File Download Name"
-        helpMsg="Type as - Yourtext_{Merchant_ID}_{Merchant_name}_{Report_type}_{DD/MM/YY}_{HH:MM} - type the date/ time format you want"
+        helpMsg="Type as - Yourtext_{Merchant_ID}_{Merchant_name}_{date=d/m/Y H:i:s} - type the date/ time format you want"
       />
 
       {!configOptions.loading ? (
         <>
-          <SelectField name="template.file_meta.extension" label="File Format">
-            <option value="">Select...</option>
+          <SelectField
+            name="template.file_meta.extension"
+            label="File Format"
+            defaultValue="csv"
+          >
             {configOptions.data.extensions.map(extension => (
               <option value={extension} key={extension}>
                 {extension}
@@ -86,7 +89,7 @@ export default function DataDetails(props) {
 
       <SelectField
         name="type"
-        label={'Report to customized'}
+        label={'Report Type'}
         onChange={props.onReportTypeChange}
       >
         <option value="">Select...</option>

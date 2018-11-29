@@ -17,6 +17,15 @@ export default class ConfigDetails extends Component {
     });
   };
 
+  componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.loadingConfigComponents &&
+      !this.props.loadingConfigComponents
+    ) {
+      this.setState({ selectedColumns: {} });
+    }
+  }
+
   getValue = () => {
     return this.reportColumns.getValues();
   };
@@ -25,8 +34,8 @@ export default class ConfigDetails extends Component {
     const props = this.props;
     const { selectedColumns } = this.state;
     return (
-      <div>
-        {props.fields && (
+      <div class="row-item">
+        {!props.loading && props.fields ? (
           <>
             <strong>Select Report Fields</strong>
             {Object.keys(props.fields).map(fieldName => (
@@ -46,6 +55,12 @@ export default class ConfigDetails extends Component {
               ref={ref => (this.reportColumns = ref)}
             />
           </>
+        ) : (
+          <div class="text-center">
+            {props.loadingConfigComponents
+              ? 'Fetching Columns...'
+              : 'Select Type Report Type to see columns'}
+          </div>
         )}
       </div>
     );
@@ -156,6 +171,13 @@ class ReportColumns extends Component {
     const lastIndex = outputFields.length - 1;
     return (
       <div>
+        <div class="m-t m-b">
+          <strong>
+            {!!outputFields.length
+              ? 'Customized your selected Columns'
+              : 'Select Columns to be customized'}
+          </strong>
+        </div>
         {outputFields.map((column, index) => {
           const [fieldName, columnName] = column.split('.');
           return (
@@ -332,11 +354,12 @@ class CollapsiblePanel extends Component {
   };
 
   render() {
+    const collapsed = this.state.collapsed;
     return (
       <div class="collapsible">
         <div onClick={this.toggleCollapsed} class="heading clearfix">
           <span class="pull-left">{this.props.header}</span>
-          <i class="i-arrow-down pull-right" />
+          <i class={`i-arrow-${collapsed ? 'up' : 'down'} pull-right`} />
         </div>
         <div
           class={classList(
