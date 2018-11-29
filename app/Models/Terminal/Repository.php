@@ -32,7 +32,7 @@ class Repository extends Base\Repository
         Entity::MC_MPAN                 => 'sometimes|string|size:16',
         Entity::VISA_MPAN               => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
-        Entity::VPA                     => 'sometimes|string|max:20',
+        Entity::VPA                     => 'sometimes|string|max:255',
     );
 
     public function fetchForPayment(Payment\Entity $payment)

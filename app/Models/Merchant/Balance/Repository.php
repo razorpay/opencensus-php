@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
@@ -14,13 +15,30 @@ class Repository extends Base\Repository
     //     Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     // );
 
+    public function findOrFail($id, $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->firstOrFail();
+    }
+
+    public function findOrFailPublic($id, $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->firstOrFailPublic();
+    }
+
     public function getBalanceLockForUpdate($id)
     {
         assert ($this->isTransactionActive());
 
-        return Entity::lockForUpdate()->findOrFail($id);
+        return Entity::lockForUpdate()->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->firstOrFail();;
     }
 
+    // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {
         assert ($this->isTransactionActive());
@@ -141,8 +159,7 @@ class Repository extends Base\Repository
     {
         assert ($this->isTransactionActive());
 
-        return $this->newQuery()
-                    ->findOrFail(Merchant\Account::NODAL_ACCOUNT);
+        return $this->findOrFail(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getNodalBalanceLockForUpdate($channel)
@@ -164,5 +181,13 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
+    }
+
+    public function getBalances($limit)
+    {
+        return $this->newQuery()
+                    ->whereRaw(Entity::ID. '=' . Entity::MERCHANT_ID)
+                    ->limit($limit)
+                    ->get();
     }
 }
