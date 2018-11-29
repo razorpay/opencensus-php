@@ -1,5 +1,5 @@
 import Field, { SwitchField, SelectField, TextAreaField } from 'ui/Field';
-import { snakeToTitleCase } from 'common/util';
+import { types, availableDateFormats } from '../data';
 
 export default function DataDetails(props) {
   const { partnerType, reportEmails, configOptions } = props;
@@ -93,52 +93,15 @@ export default function DataDetails(props) {
         onChange={props.onReportTypeChange}
       >
         <option value="">Select...</option>
-        {types.map(type => (
-          <option value={type} key={type}>
-            {snakeToTitleCase(type)}
+        {types.map(({ label, value }) => (
+          <option value={value} key={value}>
+            {label}
           </option>
         ))}
       </SelectField>
     </div>
   );
 }
-
-const availableDateFormats = [
-  'd/m/Y H:i:s',
-  'd-m-Y',
-  'YmdHis',
-  'd/m/Y',
-  'Y-m-d',
-  'Ymd',
-];
-
-const types = [
-  'transactions',
-  'cards',
-  'settlements',
-  'refunds',
-  'orders',
-  'disputes',
-  'customers',
-  'payments',
-  'bank_accounts',
-  'virtual_accounts',
-  'bank_transfers',
-  'transfers',
-  'invoices',
-  'reversals',
-  'merchants',
-  'tokens',
-  'hdfc',
-  'terminals',
-  'offers',
-  'upi',
-  'emi_plans',
-  'discounts',
-  'subscriptions',
-  'plans',
-  'items',
-];
 
 function FetchingDataForField({ label }) {
   return (

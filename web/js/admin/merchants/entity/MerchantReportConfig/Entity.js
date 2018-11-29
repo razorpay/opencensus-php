@@ -1,6 +1,8 @@
 import Table from 'ui/Table';
 import EntityRow from 'ui/EntityRow';
 
+import { types } from './data';
+
 export default function ViewMerchantConfig(props) {
   const config = props.config;
 
@@ -36,8 +38,17 @@ export default function ViewMerchantConfig(props) {
         <EntityRow label="Report Name" value={config.name} />
         <EntityRow label="Report Description" value={config.description} />
         <EntityRow
+          label="Report Type"
+          value={(types.find(({ value }) => value === config.type) || {}).label}
+        />
+        <EntityRow label="Emails" value={(config.emails || []).join(',')} />
+        <EntityRow
           label="Name of downloaded file"
           value={(config.template.file_meta || {}).filename}
+        />
+        <EntityRow
+          label="Date Format"
+          value={(config.template.formats || {}).date}
         />
         <EntityRow
           label="Extension of File"
