@@ -23,7 +23,7 @@ trait PaymentNetbankingTrait
         {
             ;
         }
-
+        s($data);
         if ($gateway === 'netbanking_kotak' or $gateway === 'netbanking_corporation')
         {
             $response = $this->sendRequest($data);

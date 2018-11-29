@@ -224,7 +224,7 @@ trait RequestResponseFlowTrait
             'cookies' => array(),
             'files' => array(),
             'raw' => '');
-
+        s($request);
         $request = array_merge($defaults, $request);
 
         if ($this->ba->isPublicAuth() === false)
@@ -332,7 +332,7 @@ trait RequestResponseFlowTrait
     }
 
     protected function makeRequestAndGetContent($request, &$callback = null)
-    {
+    {   s($request);
         $response = $this->sendRequest($request, $callback);
 
         return $this->getJsonContentFromResponse($response, $callback);

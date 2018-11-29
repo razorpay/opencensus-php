@@ -288,7 +288,7 @@ trait PaymentTrait
             'url'     => '/payments/create/jsonp',
             'content' => $content
         ];
-
+        s($request);
         $this->ba->publicAuth();
 
         $content = $this->makeRequestAndGetContent($request, $content['callback']);
@@ -1340,9 +1340,9 @@ trait PaymentTrait
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
-
+        s($request);
         $response = $this->makeRequestParent($request);
-
+        s($response);
         $url = $request['url'];
 
         if ($this->isPaymentCreationUrl($url))
