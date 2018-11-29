@@ -937,12 +937,12 @@ final class Route
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
-        // Payee Routes
-        'payee_get'                                => ['get',      'payees/{id}',                                    'PayeeController@get'                                                ],
-        'payee_list'                               => ['get',      'payees',                                         'PayeeController@list'                                               ],
-        'payee_create'                             => ['post',     'payees',                                         'PayeeController@create'                                             ],
-        'payee_update'                             => ['patch',    'payees/{id}',                                    'PayeeController@update'                                             ],
-        'payee_delete'                             => ['delete',   'payees/{id}',                                    'PayeeController@delete'                                             ],
+        // Beneficiary Routes
+        'beneficiary_get'                          => ['get',      'beneficiaries/{id}',                             'BeneficiaryController@get'                                         ],
+        'beneficiary_list'                         => ['get',      'beneficiaries',                                  'BeneficiaryController@list'                                        ],
+        'beneficiary_create'                       => ['post',     'beneficiaries',                                  'BeneficiaryController@create'                                      ],
+        'beneficiary_update'                       => ['patch',    'beneficiaries/{id}',                             'BeneficiaryController@update'                                      ],
+        'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
 
     ];
 
@@ -1171,11 +1171,11 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
-        'payee_get',
-        'payee_list',
-        'payee_create',
-        'payee_update',
-        'payee_delete',
+        'beneficiary_get',
+        'beneficiary_list',
+        'beneficiary_create',
+        'beneficiary_update',
+        'beneficiary_delete',
     ];
 
     // Only routes defined in internalApps go here

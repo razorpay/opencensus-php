@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Models\Payee;
+namespace RZP\Models\Beneficiary;
 
 use RZP\Models\Base;
 
 /**
  * Class EsRepository
  *
- * @package RZP\Models\Payee
+ * @package RZP\Models\Beneficiary
  */
 class EsRepository extends Base\EsRepository
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Models\Payee;
+namespace RZP\Models\Beneficiary;
 
 use RZP\Models\Base;
 
 /**
  * Class Service
  *
- * @package RZP\Models\Payee
+ * @package RZP\Models\Beneficiary
  */
 class Service extends Base\Service
 {
@@ -29,6 +29,6 @@ class Service extends Base\Service
 
         $this->core = new Core;
 
-        $this->entityRepo = $this->repo->payee;
+        $this->entityRepo = $this->repo->beneficiary;
     }
 }

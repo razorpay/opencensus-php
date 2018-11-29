@@ -26,7 +26,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Feature\Repository              $feature
  * @property Models\Order\Repository                $order
  * @property Models\Transaction\Repository          $transaction
- * @property Models\Payee\Repository                $payee
+ * @property Models\Beneficiary\Repository          $beneficiary
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

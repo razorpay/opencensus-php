@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payee;
+namespace RZP\Models\Beneficiary;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -11,7 +11,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 /**
  * Class Entity
  *
- * @package RZP\Models\Payee
+ * @package RZP\Models\Beneficiary
  */
 class Entity extends Base\PublicEntity
 {
@@ -65,9 +65,9 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected static $sign = 'payee';
+    protected static $sign = 'bene';
 
-    protected $entity = 'payee';
+    protected $entity = 'beneficiary';
 
     // --------------- Getters ---------------
 

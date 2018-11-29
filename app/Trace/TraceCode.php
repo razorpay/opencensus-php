@@ -1180,10 +1180,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_TO_POSTPAID_FAILED               = 'TRANSACTIONS_TO_POSTPAID_FAILED';
     const TRANSACTIONS_TO_POSTPAID_RESPONSE             = 'TRANSACTIONS_TO_POSTPAID_RESPONSE';
 
-    // Trace codes for Payee and Payee account CRUD
-    const PAYEE_CREATE_REQUEST                          = 'PAYEE_CREATE_REQUEST';
-    const PAYEE_UPDATE_REQUEST                          = 'PAYEE_UPDATE_REQUEST';
-    const PAYEE_DELETE_REQUEST                          = 'PAYEE_DELETE_REQUEST';
+    // Trace codes for Beneficiary and Beneficiary account CRUD
+    const BENEFICIARY_CREATE_REQUEST                    = 'BENEFICIARY_CREATE_REQUEST';
+    const BENEFICIARY_UPDATE_REQUEST                    = 'BENEFICIARY_UPDATE_REQUEST';
+    const BENEFICIARY_DELETE_REQUEST                    = 'BENEFICIARY_DELETE_REQUEST';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';

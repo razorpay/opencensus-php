@@ -1,17 +1,17 @@
 <?php
 
-namespace RZP\Models\Payee;
+namespace RZP\Models\Beneficiary;
 
 use RZP\Models\Base;
 
 /**
  * Class Repository
  *
- * @package RZP\Models\Payee
+ * @package RZP\Models\Beneficiary
  */
 class Repository extends Base\Repository
 {
-    protected $entity = 'payee';
+    protected $entity = 'beneficiary';
 
     protected $entityFetchParamRules = [
         //

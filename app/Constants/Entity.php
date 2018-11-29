@@ -30,7 +30,6 @@ class Entity
     const ADDON                     = 'addon';
     const BATCH                     = 'batch';
     const OFFER                     = 'offer';
-    const PAYEE                     = 'payee';
     const ORDER                     = 'order';
     const TOKEN                     = 'token';
     const GEO_IP                    = 'geo_ip';
@@ -67,6 +66,7 @@ class Entity
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
     const SETTLEMENT                = 'settlement';
+    const BENEFICIARY               = 'beneficiary';
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const PAYMENT_LINK              = 'payment_link';

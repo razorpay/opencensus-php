@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Payee;
+namespace RZP\Models\Beneficiary;
 
 use RZP\Base;
 use RZP\Exception;
@@ -8,7 +8,7 @@ use RZP\Exception;
 /**
  * Class Validator
  *
- * @package RZP\Models\Payee
+ * @package RZP\Models\Beneficiary
  */
 class Validator extends Base\Validator
 {
