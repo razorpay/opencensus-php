@@ -238,7 +238,6 @@ class Gateway extends Base\Gateway
         {
             $data[RequestFields::BANK_CODE] = Constants::BANK_CODE_CORPORATE;
         }
-        $data['bank_code'] = 'PNBM';
 
         return $data;
     }
