@@ -51,7 +51,7 @@ trait PaymentCreationTrait
     protected function submitPaymentCallbackRequest($request)
     {
         $this->ba->publicCallbackAuth();
-
+        s($request);
         $response = $this->makeRequestParent($request);
 
         if ($this->isResponseInstanceType($response, 'json') === true)
@@ -103,7 +103,7 @@ trait PaymentCreationTrait
     }
 
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
-    {
+    {   s($request);
         $content = $response->getContent();
 
         $gateway = null;
