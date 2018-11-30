@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import Smooch from 'smooch';
 
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
@@ -26,6 +25,8 @@ import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+
+import initChat from 'merchant/chat';
 
 @withRouter
 @connect(
@@ -135,7 +136,7 @@ export default class App extends Component {
         this.redirectToRoute(role);
 
         setTimeout(() => {
-          this.initSmooch(user);
+          initChat(user);
         });
         return data;
       }),
@@ -268,28 +269,6 @@ export default class App extends Component {
         case null:
           return this.props.history.replace('/profile');
       }
-    }
-  }
-
-  initSmooch(data) {
-    if (location.hostname === 'dashboard.razorpay.com') {
-      let role = data.userRole;
-      Smooch.init({ appId: '54d849a9c99af8250046dbf8' }).then(function() {
-        Smooch.updateUser({
-          givenName: data.name,
-          email: data.email,
-          properties: {
-            id: data.id,
-            activated: data.activated,
-            locked: data.locked,
-            submitted: data.submitted,
-            role: role,
-            userEmail: data.user.email,
-            dashboardLink:
-              location.origin + '/admin#/app/merchants/' + data.id + '/detail',
-          },
-        });
-      });
     }
   }
 

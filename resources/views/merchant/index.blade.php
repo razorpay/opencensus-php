@@ -32,6 +32,7 @@
   </script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
+    <script src="https://wchat.freshchat.com/js/widget.js"></script>
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
