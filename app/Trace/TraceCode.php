@@ -1369,6 +1369,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_DUAL_WRITE_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
     const REDIS_DUAL_WRITE_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
 
+    // redis sessoin migration
+
+    const REDIS_SESSION_STORE_ERROR                  = 'REDIS_SESSION_STORE_ERROR';
+    const REDIS_SESSION_READ_ERROR                   = 'REDIS_SESSION_READ_ERROR';
+    const REDIS_SESSION_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
+    const REDIS_SESSION_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
+
     const BENEFICIARY_UNSUPPORTED_IFSC_CODE             = 'BENEFICIARY_UNSUPPORTED_IFSC_CODE';
 
     const SUBMIT_SUPPORT_CALL_REQUEST                   = 'SUBMIT_SUPPORT_CALL_REQUEST';
