@@ -2578,6 +2578,20 @@ final class Route
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
+        'plan_create',
+        'plan_fetch',
+        'plan_fetch_multiple',
+        'subscription_create',
+        'subscription_fetch',
+        'subscription_fetch_multiple',
+        'subscription_cancel',
+        'addon_fetch',
+        'addon_fetch_multiple',
+        'addon_delete',
+        'subscription_create_addon',
+        'subscription_fetch_due_addons',
+        'subscription_test_charge',
+        'subscription_manual_retry',
         'subscription_cancel',
         'subscription_test_charge',
         'subscription_manual_retry',
