@@ -16,8 +16,8 @@ const CustomInput = props => {
           >
             <PopoverBody>
               <div>
-                You can set a minimum payable amount for the first transaction
-                to be paid by your customer
+                You can set a minimum payable amount for the first payment made
+                by your customer
               </div>
             </PopoverBody>
           </Popover>
@@ -74,6 +74,7 @@ export default [
       addonBefore: '₹',
       placeholder: '0.00',
       size: 'half_big',
+      _autoRenderImpure: true,
       _cmp: CustomInput,
       validator: function(val) {
         if (!val) {
@@ -91,11 +92,16 @@ export default [
         }
 
         const filledAmount = this.state.dirty.amount;
-        if (Number(val) > filledAmount) {
-          return 'Minimum Payable amount cannot exceed Amount';
+        if (Number(val) >= filledAmount) {
+          return 'Minimum Payable amount must be less than Amount';
         }
       },
-      _when: form => form.state.dirty.partial_payment == '1',
+      _when: function(form) {
+        return (
+          form.state.dirty.partial_payment == '1' &&
+          form.props.user.isMinimumFirstPaymentEnabled
+        );
+      },
     },
   ],
   {

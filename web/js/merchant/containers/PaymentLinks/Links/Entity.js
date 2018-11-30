@@ -239,6 +239,7 @@ export default class InvoiceDetailContainer extends Component {
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
         isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
+        isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
       />
     );
   }

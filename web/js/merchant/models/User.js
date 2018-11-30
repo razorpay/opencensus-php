@@ -213,6 +213,10 @@ export default class User {
     );
   }
 
+  get isMinimumFirstPaymentEnabled() {
+    return this.isFeatureEnabled('pl_first_min_amount');
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());

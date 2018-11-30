@@ -43,9 +43,31 @@ export default class EditMinimumAmount extends React.Component {
     if (Number(val) > 0 && Number(val) < 1) {
       return 'Minimum Payable amount should be atleast ₹1';
     }
-    if (Number(val) > this.props.maximum / 100) {
-      return 'Minimum Payable amount cannot exceed Amount';
+    if (Number(val) >= this.props.maximum / 100) {
+      return 'Minimum Payable amount must be less than Amount';
     }
+  };
+
+  handleSubmit = () => {
+    let first_payment_min_amount = null;
+    if (
+      this.state.first_payment_min_amount !== '0' &&
+      this.state.first_payment_min_amount
+    ) {
+      first_payment_min_amount = this.state.first_payment_min_amount * 100;
+    }
+
+    return this.props
+      .editFn({
+        first_payment_min_amount,
+      })
+      .then(resp => {
+        if (resp && resp.data) {
+          this.setState(this.resetState());
+
+          this.props.trackerFn('Edit Minimum Payable Amount (Saved)');
+        }
+      });
   };
 
   render() {
@@ -67,8 +89,8 @@ export default class EditMinimumAmount extends React.Component {
             <Popover align="top">
               <PopoverBody>
                 <div>
-                  You can set a minimum payable amount for the first transaction
-                  to be paid by your customer
+                  You can set a minimum payable amount for the first payment
+                  made by your customer
                 </div>
               </PopoverBody>
             </Popover>
@@ -85,6 +107,7 @@ export default class EditMinimumAmount extends React.Component {
     if (this.state.isEditableMode) {
       content = (
         <div style={{ marginTop: 4 }}>
+          Minimum Payable Amount
           <Input
             name="first_payment_min_amount"
             placeholder="Minimum Payable Amount"
@@ -116,30 +139,7 @@ export default class EditMinimumAmount extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={!!this.validate(this.state.first_payment_min_amount)}
-              onClick={() => {
-                let first_payment_min_amount = null;
-                if (
-                  this.state.first_payment_min_amount !== '0' &&
-                  this.state.first_payment_min_amount
-                ) {
-                  first_payment_min_amount =
-                    this.state.first_payment_min_amount * 100;
-                }
-
-                return this.props
-                  .editFn({
-                    first_payment_min_amount,
-                  })
-                  .then(resp => {
-                    if (resp && resp.data) {
-                      this.setState(this.resetState());
-
-                      this.props.trackerFn(
-                        'Edit Minimum Payable Amount (Saved)'
-                      );
-                    }
-                  });
-              }}
+              onClick={this.handleSubmit}
               showLoader={false}
               pendingState="Saving..."
             >

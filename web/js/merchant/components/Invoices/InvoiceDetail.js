@@ -108,6 +108,7 @@ export default props => {
     statusMsg,
     editPaymentLink,
     isRoleAllowedEdit,
+    isMinimumFirstPaymentEnabled,
   } = props;
 
   let status = invoice.status;
@@ -215,17 +216,18 @@ export default props => {
                                 {isPartialPayment ? 'Disable' : 'Enable'}
                               </AsyncBtn.Transparent>
                             )}
-                          {isPartialPayment && (
-                            <EditMinimumAmount
-                              value={invoice.first_payment_min_amount}
-                              maximum={invoice.amount}
-                              currency={invoice.currency}
-                              entityId={invoice.id}
-                              editFn={editPaymentLink}
-                              trackerFn={() => {}}
-                              isRoleAllowedEdit={isRoleAllowedEdit}
-                            />
-                          )}
+                          {isMinimumFirstPaymentEnabled &&
+                            isPartialPayment && (
+                              <EditMinimumAmount
+                                value={invoice.first_payment_min_amount}
+                                maximum={invoice.amount}
+                                currency={invoice.currency}
+                                entityId={invoice.id}
+                                editFn={editPaymentLink}
+                                trackerFn={() => {}}
+                                isRoleAllowedEdit={isRoleAllowedEdit}
+                              />
+                            )}
                         </div>
                       )}
                     />;
