@@ -470,12 +470,15 @@ class Gateway
         Payment\Gateway::FIRST_DATA     => [
             self::GO_LIVE_TIMESTAMP => 1537966190
         ],
+        Payment\Gateway::CARD_FSS       => [
+            self::GO_LIVE_TIMESTAMP => 1543573854
+        ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
-        ]
+        ],
     ];
 
     /**
