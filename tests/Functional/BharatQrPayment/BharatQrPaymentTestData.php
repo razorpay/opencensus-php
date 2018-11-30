@@ -57,4 +57,44 @@ return [
             Fields::PAYER_AMOUNT     => '100.00',
         ],
     ],
+
+    'testMakeTestPaymentSuccess' => [
+        'request' => [
+            'url'     => '/bharatqr/pay/test',
+            'method'  => 'post',
+            'content' => [
+                'reference' => null,
+                'method'    => 'card',
+                'amount'    => '100',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testMakeTestPaymentFailure' => [
+        'request' => [
+            'url'     => '/bharatqr/pay/test',
+            'method'  => 'post',
+            'content' => [
+                'reference' => null,
+                'method'    => 'card',
+                'amount'    => '100',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reference must be 17 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
