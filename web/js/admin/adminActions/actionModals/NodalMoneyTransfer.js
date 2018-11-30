@@ -63,4 +63,5 @@ const options = {
   yesbank: 'Yes Bank',
   hdfc: 'HDFC',
   rbl: 'RBL',
+  axis2: 'Power Access',
 };
