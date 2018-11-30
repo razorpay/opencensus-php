@@ -7,3 +7,57 @@
   .table
     .td
       max-width: none;
+
+#refunds-search-form
+  .gateways-select, .methods-select, .statuses-select
+    max-width: 172px;
+    max-height: 32px;
+    overflow: hidden;
+    .PowerSelect__Trigger
+      max-height: 32px;
+      overflow-y: scroll;
+      .PowerSelectMultiple__SelectedOptions >li
+        margin-top: 0;
+      .PowerSelectMultiple_TriggerInputContainer
+        width: 0;
+  //.action-btns
+  //  transform: translateY(30%);
+
+.refunds-tabs-box
+  margin-bottom: -29px;
+  .tabs-nav
+    list-style: none
+    padding: 0
+    margin-bottom: 0
+    position: relative
+
+    li
+      display: inline-block
+      cursor: pointer
+      text-align: center
+      background-color: #fff
+      box-shadow: 0 4px 7px rgba(0,0,0,.08);
+
+      a
+        display: block;
+        padding: 10px 14px
+      i
+        margin-right: 6px;
+
+      &.selected
+        border-bottom: 2px solid #528ff0
+        color: #5e70d2
+
+  .tabs-control
+    padding: 10px
+    overflow: auto
+    border-top: 1px solid #edf1f2
+
+    .pill
+      cursor: pointer
+
+    .prev
+      float: left
+
+    .next
+      float: right
