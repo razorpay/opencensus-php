@@ -320,6 +320,7 @@ class Entity
         self::MERCHANT_INVOICE          => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
+        self::BENEFICIARY_ACCOUNT       => \RZP\Models\Beneficiary\Account::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,

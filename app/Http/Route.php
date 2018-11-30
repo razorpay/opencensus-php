@@ -942,6 +942,12 @@ final class Route
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
+
+        'beneficiary_account_get'                  => ['get',      'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@get'                                  ],
+        'beneficiary_account_list'                 => ['get',      'beneficiaries/{beneId}/accounts',                'BeneficiaryAccountController@list'                                 ],
+        'beneficiary_account_create'               => ['post',     'beneficiaries/{beneId}/accounts',                'BeneficiaryAccountController@create'                               ],
+        'beneficiary_account_update'               => ['patch',    'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@update'                               ],
+        'beneficiary_account_delete'               => ['delete',   'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@delete'                               ],
     ];
 
     public static $public = [
@@ -1168,6 +1174,11 @@ final class Route
         'contact_create',
         'contact_update',
         //'contact_delete',
+        'beneficiary_account_get',
+        'beneficiary_account_list',
+        'beneficiary_account_create',
+        'beneficiary_account_update',
+        'beneficiary_account_delete',
     ];
 
     // Only routes defined in internalApps go here
@@ -1280,7 +1291,7 @@ final class Route
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
-    // Below rotues deal only with user entity without context of merchant.
+    // Below routes deal only with user entity without context of merchant.
     public static $userWhitelist = [
         'user_resend_verification',
         'user_fetch',
