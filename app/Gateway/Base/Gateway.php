@@ -1068,11 +1068,11 @@ class Gateway
     }
 
     public function getGatewayCertDirPath()
-    {
+    {sd($this->app['config']);
         $certificatePath = $this->app['config']->get('gateway.certificate_path');
-
-        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
-
+s($certificatePath);
+        $gatewayCertPath = $certificatePath  . $this->getGatewayCertDirName();
+s($gatewayCertPath);
         if (file_exists($gatewayCertPath) === false)
         {
             //

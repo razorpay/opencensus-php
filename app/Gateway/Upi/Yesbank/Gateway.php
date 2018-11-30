@@ -86,13 +86,13 @@ class Gateway extends Mindgate\Gateway
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
         $decryptedContent = implode('|', $request);
-
+s($decryptedContent);
         $encrypted = $this->encrypt($decryptedContent);
-
+s($encrypted);
         $content = [
             Fields::PGMERCHANTID    => $this->getGatewayMerchantId(),
             Fields::REQUESTMSG      => $encrypted,
-        ];
+        ];sd($content);
 
         $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'payout');
 
@@ -407,5 +407,10 @@ class Gateway extends Mindgate\Gateway
         ];
 
         return $request;
+    }
+
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 }

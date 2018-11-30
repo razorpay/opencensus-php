@@ -42,7 +42,10 @@ trait RequestTrait
 
     protected function getClientCertificate()
     {
-        $gatewayCertPath = $this->getGatewayCertDirPath();
+        $gatewayCertPath = 'app/Gateway/Upi/Yesbank/uat.yesbank.crt';
+
+        return $gatewayCertPath;
+        $this->getGatewayCertDirPath();
 
         $clientCertPath = $gatewayCertPath . '/' .
             $this->getClientCertificateName();
@@ -68,6 +71,9 @@ trait RequestTrait
 
     protected function getClientSslKey()
     {
+        $gatewayCertPath = 'app/Gateway/Upi/Yesbank/uat.yesbank.key';
+
+        return $gatewayCertPath;
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
         $clientCertPath = $gatewayCertPath . '/' .
