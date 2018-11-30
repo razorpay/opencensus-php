@@ -18,15 +18,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_DATE    = 'Date';
     const COLUMN_PAYMENT_AMOUNT  = 'Amount';
 
-    protected $netbankingRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)
@@ -71,7 +62,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
+        return $this->repo->netbanking->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
                                                                      [Icici\Confirmation::YES]);
     }
