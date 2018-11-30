@@ -243,6 +243,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
+
+        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -611,6 +613,15 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
+        });
+    }
+
+    protected function registerCustomSessionProvider()
+    {
+        $manager = $this->app['session'];
+
+        $manager->extend('custom', function($app) {
+            return new CustomSessionHandler($app);
         });
     }
 }

@@ -1138,7 +1138,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_REJECT                             = 'INVITATION_REJECT';
     const INVITATION_EMAIL                              = 'INVITATION_EMAIL';
 
-// Trace codes for gateway load rules
+    // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
     const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
@@ -1179,6 +1179,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_TO_POSTPAID_INPUT                = 'TRANSACTIONS_TO_POSTPAID_INPUT';
     const TRANSACTIONS_TO_POSTPAID_FAILED               = 'TRANSACTIONS_TO_POSTPAID_FAILED';
     const TRANSACTIONS_TO_POSTPAID_RESPONSE             = 'TRANSACTIONS_TO_POSTPAID_RESPONSE';
+
+    // Trace codes for Beneficiary and Beneficiary account CRUD
+    const BENEFICIARY_CREATE_REQUEST                    = 'BENEFICIARY_CREATE_REQUEST';
+    const BENEFICIARY_UPDATE_REQUEST                    = 'BENEFICIARY_UPDATE_REQUEST';
+    const BENEFICIARY_DELETE_REQUEST                    = 'BENEFICIARY_DELETE_REQUEST';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
@@ -1267,6 +1272,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const WEIGHTED_DATABASE_ROUTING                     = 'WEIGHTED_DATABASE_ROUTING';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
@@ -1362,6 +1368,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_DUAL_WRITE_READ_ERROR                   = 'REDIS_DUAL_WRITE_READ_ERROR';
     const REDIS_DUAL_WRITE_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
     const REDIS_DUAL_WRITE_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
+
+    // redis sessoin migration
+
+    const REDIS_SESSION_STORE_ERROR                  = 'REDIS_SESSION_STORE_ERROR';
+    const REDIS_SESSION_READ_ERROR                   = 'REDIS_SESSION_READ_ERROR';
+    const REDIS_SESSION_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
+    const REDIS_SESSION_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
 
     const BENEFICIARY_UNSUPPORTED_IFSC_CODE             = 'BENEFICIARY_UNSUPPORTED_IFSC_CODE';
 

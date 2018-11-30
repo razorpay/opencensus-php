@@ -250,6 +250,9 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
+        //
+        // reverse key will not be present in input if gateway is not supporting reversal.
+        //
         $input['reverse'] = $data['refund']['reverse'] ?? null;
 
         //
@@ -1122,6 +1125,26 @@ trait Refund
         else if ($this->gatewaySupportsReversal($payment) === true)
         {
             $refundData = $this->reverseOnGateway($data, $retry);
+        }
+        else
+        {
+            //
+            // Flow reaching here that means its an auto refund case, where transaction can not be refunded or reversed.
+            // Earlier, these refunds were kept in created state forever, now marking them as processed as they are being
+            // refunded by gateway automatically, we can't do anything here.
+            //
+            // If code reaching here, gateway refunded is set as true, hence
+            // for new refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
+            //
+            // Marking refund as processed here for all other gateways and also if refund is of the date before that gateway
+            // moved to scrooge.
+            //
+            $gateway = $data['payment'][Payment\Entity::GATEWAY];
+
+            if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($gateway, $this->refund->getCreatedAt()) === false)
+            {
+                $this->refund->setStatusProcessed();
+            }
         }
 
         return $refundData;

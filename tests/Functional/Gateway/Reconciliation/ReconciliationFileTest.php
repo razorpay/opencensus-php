@@ -269,6 +269,9 @@ class ReconciliationFileTest extends TestCase
             'gateway_acquirer' => 'barb',
         ]);
 
+        // Specifying the gateway because it is set to HDFC by default if left null
+        $this->gateway = 'card_fss';
+
         $payment = $this->getDefaultPaymentArray();
 
         $response = $this->doAuthAndCapturePayment($payment);
@@ -397,6 +400,9 @@ class ReconciliationFileTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
             'gateway_acquirer' => 'barb',
         ]);
+
+        // Specifying the gateway because it is set to HDFC by default if left null
+        $this->gateway = 'card_fss';
 
         $payment = $this->getDefaultPaymentArray();
 

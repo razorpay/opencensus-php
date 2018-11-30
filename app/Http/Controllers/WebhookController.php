@@ -13,6 +13,6 @@ class WebhookController extends Controller
 
         $this->service()->processWebhook($event, $input);
 
-        return ApiResponse::json(["status" => "success"]);
+        return ApiResponse::json([]);
     }
 }

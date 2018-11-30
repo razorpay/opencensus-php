@@ -186,7 +186,7 @@ class MySqlConnection extends BaseMySqlConnection
         // Reset record of previous DML operations made using this connection.
         $this->recordsHaveNotBeenModified();
 
-        // Reet the forceReadPdo flag to false if previously set to true.
+        // Reset the forceReadPdo flag to false if previously set to true.
         $this->forceReadPdo(false);
 
         //
