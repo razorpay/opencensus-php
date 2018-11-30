@@ -97,6 +97,7 @@ class Entity
     const CREDIT_TRANSACTION        = 'credit_transaction';
     const MERCHANT_EMI_PLANS        = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS        = 'terminal_analytics';
+    const BENEFICIARY_ACCOUNT       = 'beneficiary_account';
     const MERCHANT_ACCESS_MAP       = 'merchant_access_map';
     const BATCH_FUND_TRANSFER       = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
