@@ -23,6 +23,7 @@ import Reports from 'merchant/containers/Reports';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
+import Support from 'merchant/containers/Support';
 
 import ErrorBoundary from 'common/ErrorBoundary';
 
@@ -418,6 +419,7 @@ export default class Content extends Component {
         {BaseView}
         {DetailView}
         {ModalFormView}
+        <Support />
       </main>
     );
   }
