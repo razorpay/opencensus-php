@@ -73,6 +73,7 @@ final class FactoryData
             'title'       => 'Sample title',
             'description' => 'Sample description',
             'notes'       => null,
+            'terms'       => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [

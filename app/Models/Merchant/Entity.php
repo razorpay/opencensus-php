@@ -1579,9 +1579,11 @@ class Entity extends Base\PublicEntity
     {
         $liveConnection = app('basicauth')->getLiveConnection();
 
-        return $this->getConnectionName() === $liveConnection ?
+        $tags = $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
                 (clone $this)->setConnection($liveConnection)->tagNames();
+
+        return array_map('strtolower', $tags);
     }
 
     public function isEmailOptional()
@@ -1667,7 +1669,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        return in_array($tagName, $tagNames, true) === true;
+        return in_array(strtolower($tagName), $tagNames, true) === true;
     }
 
     public function toArrayUser()

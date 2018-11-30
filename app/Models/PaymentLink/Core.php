@@ -60,7 +60,12 @@ class Core extends Base\Core
 
         $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
-        $this->repo->saveOrFail($paymentLink);
+        $this->repo->transaction(function() use ($paymentLink, $input)
+        {
+            $this->upsertSettings($paymentLink, $input[Entity::SETTINGS] ?? []);
+
+            $this->repo->saveOrFail($paymentLink);
+        });
 
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
 
@@ -91,6 +96,8 @@ class Core extends Base\Core
             $paymentLink->edit($input);
 
             $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+
+            $this->upsertSettings($paymentLink, $input[Entity::SETTINGS] ?? []);
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -213,24 +220,20 @@ class Core extends Base\Core
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
         // 2. Validates Payment notes (UDF values), if applicable
-        $udfJsonschemaId = $paymentLink->getUdfJsonschemaId();
+        $udfSchema = new UdfSchema($paymentLink);
 
-        if ($udfJsonschemaId !== null)
+        if ($udfSchema->exists() === true)
         {
-            $udfSchema = new Template\UdfSchema($udfJsonschemaId);
-            $schema    = $udfSchema->getSchemaDecoded();
+            $paymentNotes = $payment->getNotes()->toArray();
 
-            if ($schema !== null)
-            {
-                $paymentNotes = $payment->getNotes()->toArray();
-
-                $udfSchema->validate($paymentNotes);
-            }
+            $udfSchema->validate($paymentNotes);
         }
 
         // 3. Validates payment link is active and has payment slots available
+        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
+        $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
         if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink) === false))
+            ($this->hasPaymentSlots($paymentLink, $paymentUnits) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
@@ -304,13 +307,11 @@ class Core extends Base\Core
 
     protected function updatePaymentLinkAfterPaymentCapture(Entity $paymentLink, Payment\Entity $payment)
     {
-        //
-        // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
-        // status which are shared in multiple payment process and entity operation in parallel.
-        //
+        // Multiple payment process attempts to update attributes of link entity.
         $this->repo->assertTransactionActive();
 
-        $paymentLink->incrementTimesPaid();
+        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
+        $paymentLink->incrementTimesPaidBy((int) ($payment->getNotes()[Entity::UNITS] ?? 1));
         $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
         if ($paymentLink->isTimesPayableExhausted() === true)
@@ -390,9 +391,10 @@ class Core extends Base\Core
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
      *
      * @param  Entity  $paymentLink
+     * @param  integer $paymentUnits
      * @return boolean
      */
-    protected function hasPaymentSlots(Entity $paymentLink): bool
+    protected function hasPaymentSlots(Entity $paymentLink, int $paymentUnits): bool
     {
         $timesPaid    = $paymentLink->getTimesPaid();
         $timesPayable = $paymentLink->getTimesPayable();
@@ -403,11 +405,11 @@ class Core extends Base\Core
             return true;
         }
 
-        $succeedingPaymentsCount = $this->repo->payment_link->getSucceedingPaymentsCount($paymentLink);
+        $succeedingPaymentUnits = $this->repo->payment_link->getSucceedingPaymentUnits($paymentLink);
 
-        $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentsCount;
+        $slotsAvailable = $timesPayable - $timesPaid - $succeedingPaymentUnits;
 
-        return ($slotsAvailable > 0);
+        return ($slotsAvailable >= $paymentUnits);
     }
 
     /**
@@ -430,7 +432,7 @@ class Core extends Base\Core
         catch (BaseException $e)
         {
             // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
-            if (str_contains($e->getDataAsString(), 'Duplicate') === true)
+            if (preg_match('/Duplicate|Blacklisted/', $e->getDataAsString()) === 1)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED,
@@ -520,10 +522,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns an array of the payload to be consumed by the
-     * Payment link view template
+     * Returns an array of the payload to be consumed by the view template.
      *
-     * @param Entity $paymentLink
+     * @param  Entity $paymentLink
      *
      * @return array
      */
@@ -533,15 +534,15 @@ class Core extends Base\Core
         $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
 
         // Append UDF Schema as a JSON string, if defined
-        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
+        $payload[Entity::UDF_SCHEMA] = (new UdfSchema($paymentLink))->getSchema();
 
         return $payload;
     }
 
     /**
-     * Returns the name of the Payment link view template to be used
+     * Returns the name of the Payment link view template to be used.
      *
-     * @param Entity $paymentLink
+     * @param  Entity $paymentLink
      *
      * @return string
      */
@@ -549,48 +550,21 @@ class Core extends Base\Core
     {
         $templateId = $paymentLink->getHostedTemplateId();
 
-        // Default view name
-        $defaultView = 'payment_link.hosted';
-
-        //
-        // If hosted_template_id is not sent for the Payment link,
-        // use the default view
-        //
-        if ($templateId === null)
+        if ($templateId !== null)
         {
-            return $defaultView;
+            $templateAccessor = new HostedTemplate($templateId);
+            $view = 'hostedpage.' . $templateAccessor->getViewName();
+        }
+        else if ($paymentLink->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
+        {
+            $view = 'payment_link.hosted_with_udf';
+        }
+        else
+        {
+            $view = 'payment_link.hosted';
         }
 
-        $templateAccessor = new HostedTemplate($templateId);
-
-        // If a custom hosted page template exists, use that
-        if ($templateAccessor->exists() === true)
-        {
-            $hostedPageHint = 'hostedpage.';
-            return $hostedPageHint . $templateAccessor->getViewName();
-        }
-
-        // else fallback to the default hosted view
-        return $defaultView;
-    }
-
-    /**
-     * @param Entity $paymentLink
-     *
-     * @return null|string
-     */
-    protected function getUdfSchemaIfDefined(Entity $paymentLink)
-    {
-        $jsonSchemaId = $paymentLink->getUdfJsonschemaId();
-
-        if ($jsonSchemaId === null)
-        {
-            return null;
-        }
-
-        $schemaAccessor = new UdfSchema($jsonSchemaId);
-
-        return $schemaAccessor->getSchema();
+        return $view;
     }
 
     /**
@@ -678,5 +652,18 @@ class Core extends Base\Core
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_HANDLED, $tracePayload);
+    }
+
+    /**
+     * Every payment link could have set of setting associated. Ref: Model\Settings.
+     * @param  Entity $paymentLink
+     * @param  array  $settings
+     */
+    protected function upsertSettings(Entity $paymentLink, array $settings)
+    {
+        if (empty($settings) === false)
+        {
+            $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+        }
     }
 }

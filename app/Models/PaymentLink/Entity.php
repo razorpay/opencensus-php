@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -32,6 +33,9 @@ class Entity extends Base\PublicEntity
     const TITLE              = 'title';
     const DESCRIPTION        = 'description';
     const NOTES              = 'notes';
+    const SUPPORT_CONTACT    = 'support_contact';
+    const SUPPORT_EMAIL      = 'support_email';
+    const TERMS              = 'terms';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined
@@ -64,10 +68,40 @@ class Entity extends Base\PublicEntity
     const ERROR              = 'error';
     const REQUEST_PARAMS     = 'request_params';
 
+    const CAPTURED_PAYMENTS_COUNT = 'captured_payments_count';
+
+    // List of keys stored against entity's settings.
+    const SETTINGS                     = 'settings';
+    const THEME                        = 'theme';
+    const UDF_SCHEMA                   = 'udf_schema';
+    const UNITS                        = 'units';
+    const ALLOW_MULTIPLE_UNITS         = 'allow_multiple_units';
+    const ALLOW_SOCIAL_SHARE           = 'allow_social_share';
+    const PAYMENT_SUCCESS_REDIRECT_URL = 'payment_success_redirect_url';
+    const PAYMENT_SUCCESS_MESSAGE      = 'payment_success_message';
+
+    const DEFAULT_THEME                = 'light';
+
+    const SETTINGS_KEYS                = [
+        self::THEME,
+        self::UDF_SCHEMA,
+        self::ALLOW_MULTIPLE_UNITS,
+        self::ALLOW_SOCIAL_SHARE,
+        self::PAYMENT_SUCCESS_REDIRECT_URL,
+        self::PAYMENT_SUCCESS_MESSAGE,
+    ];
+
+    /**
+     * Merchant having below tags have specific behavior -
+     * 1. Settings attribute is expected, if and only
+     * 2. New view is rendered for existing or new pages
+     */
+    const TAG_PAYMENT_PAGE_V2 = 'paymentpagesv2';
+
     /**
      * expire_by has to be atleast 15 minutes from current timestamp
      */
-    const MIN_EXPIRY_SECS    = 900;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $sign        = 'pl';
 
@@ -84,6 +118,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
     ];
 
     protected $visible = [
@@ -103,6 +140,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -125,6 +165,9 @@ class Entity extends Base\PublicEntity
         self::TITLE,
         self::DESCRIPTION,
         self::NOTES,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -134,11 +177,17 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::EXPIRE_BY,
+        self::TIMES_PAYABLE,
+        self::TIMES_PAID,
         self::STATUS,
+        self::STATUS_REASON,
         self::SHORT_URL,
         self::RECEIPT,
         self::TITLE,
         self::DESCRIPTION,
+        self::SUPPORT_CONTACT,
+        self::SUPPORT_EMAIL,
+        self::TERMS,
     ];
 
     protected $casts = [
@@ -168,6 +217,9 @@ class Entity extends Base\PublicEntity
         self::NOTES              => [],
         self::HOSTED_TEMPLATE_ID => null,
         self::UDF_JSONSCHEMA_ID  => null,
+        self::SUPPORT_CONTACT    => null,
+        self::SUPPORT_EMAIL      => null,
+        self::TERMS              => null,
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -314,6 +366,53 @@ class Entity extends Base\PublicEntity
         return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
     }
 
+    /**
+     * Gets the slug part from short URL.
+     * @return string|null
+     */
+    public function getSlugFromShortUrl()
+    {
+        $parts = explode('/', $this->getShortUrl());
+
+        return end($parts) ?: null;
+    }
+
+    public function getCapturedPaymentsCount(): int
+    {
+        return $this->payments()->whereNotNull(Payment\Entity::CAPTURED_AT)->count();
+    }
+
+    /**
+     * Get settings associated with payment link entity.
+     * @param  string|null $key
+     * @return \Razorpay\Spine\DataTypes\Dictionary|string
+     */
+    public function getSettings(string $key = null)
+    {
+        $accessor = $this->getSettingsAccessor();
+
+        return $key === null ? $accessor->all() : $accessor->get($key);
+    }
+
+    /**
+     * Used when expecting either a scalar string value against settings key or null(instead of Dictionary).
+     * In case of 'null', above call returns instance of Dictionary for some reason.
+     *
+     * @param  string $key
+     * @return string|null
+     */
+    public function getSettingsScalarElseNull(string $key)
+    {
+        $resp = $this->getSettings($key);
+
+        return (is_string($resp) === true) ? $resp : null;
+    }
+
+    public function getSettingsAccessor(): Settings\Accessor
+    {
+        return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK);
+    }
+
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -340,14 +439,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $url);
     }
 
-    public function incrementTimesPaid()
+    public function incrementTimesPaidBy(int $incrementValue)
     {
-        $this->setAttribute(self::TIMES_PAID, ($this->getTimesPaid() + 1));
+        $this->setAttribute(self::TIMES_PAID, ($this->getTimesPaid() + $incrementValue));
     }
 
     public function incrementTotalAmountPaidBy(int $incrementValue)
     {
         $this->setAttribute(self::TOTAL_AMOUNT_PAID, ($this->getTotalAmountPaid() + $incrementValue));
+    }
+
+    public function setUdfJsonschemaId(string $id)
+    {
+        $this->setAttribute(self::UDF_JSONSCHEMA_ID, $id);
     }
 
     // -------------------------------------- End Setters -----------------------------
