@@ -1135,8 +1135,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
     const REPORT_QUEUE_JOB_FAILED                       = 'REPORT_QUEUE_JOB_FAILED';
 
-// Trace codes for gateway
+    // Trace codes for Users module
     const USER_EDIT                                     = 'USER_EDIT';
+    const USERS_SEND_OTP_FOR_ACTION                     = 'USERS_SEND_OTP_FOR_ACTION';
+    const USERS_VERIFY_OTP_FOR_CONTACT_VERIFY           = 'USERS_VERIFY_OTP_FOR_CONTACT_VERIFY';
 
 // Trace code for Invitation
     const INVITATION_CREATE                             = 'INVITATION_CREATE';

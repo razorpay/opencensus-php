@@ -715,11 +715,13 @@ final class Route
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
-        'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
+        'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
+        'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
+        'user_otp_verify'                          => ['post',     'users/otp/verify',                               'UserController@verifyOtpForContactVerification'                    ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
@@ -1313,6 +1315,9 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'user_edit_self',
+        'user_otp_create',
+        'user_otp_verify',
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
@@ -1494,6 +1499,9 @@ final class Route
         'subscription_registration_charge_token',
         'merchant_submit_support_call_request',
         'token_fetch_card',
+        'user_edit_self',
+        'user_otp_create',
+        'user_otp_verify',
     ];
 
     // These will run on internal auth with the assurance

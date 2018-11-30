@@ -34,4 +34,18 @@ class Repository extends Base\Repository
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function saveOrFail($entity, array $options = [])
+    {
+        // If contact has been modified mark verified as false
+        if ($entity->isDirty(Entity::CONTACT_MOBILE) === true)
+        {
+            $entity->setContactMobileVerified(false);
+        }
+
+        return parent::saveOrFail($entity, $options);
+    }
 }

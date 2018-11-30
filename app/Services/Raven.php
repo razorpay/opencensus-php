@@ -105,7 +105,14 @@ class Raven
 
         if ($this->mode === Mode::TEST)
         {
-            $response['success'] = true;
+            if ($input['otp'] !== Mock\Raven::MOCK_VALID_OTP)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+            }
+            else
+            {
+                $response['success'] = true;
+            }
         }
         else
         {
