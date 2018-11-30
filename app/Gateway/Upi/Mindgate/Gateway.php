@@ -198,16 +198,24 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * @param string $status
+     * @param string $successStatus
+     * @param array $response
+     * @throws Exception\GatewayErrorException
+     */
     private function checkRefundResponseStatus(string $status, string $successStatus = Status::SUCCESS, array $response = [])
     {
         if ($status !== $successStatus)
         {
-            $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE]);
+            $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response);
+
+            $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[ResponseFields::RESPCODE],
-                UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]),
+                $errorMessage,
                 [
                     Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
                     Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
@@ -348,22 +356,19 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * @param $response
+     * @param string $successStatus
+     * @throws Exception\GatewayErrorException
+     */
     private function checkCallbackResponseStatus($response, string $successStatus = Status::SUCCESS)
     {
         if ($response[ResponseFields::STATUS] !== $successStatus)
         {
-            if (empty($response[ResponseFields::RESPCODE]) === false)
-            {
-                $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE], Action::CALLBACK);
+            $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response, Action::CALLBACK);
+//            sd($errorCode);
 
-                $errorMessage =  UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]);
-            }
-            else
-            {
-                $errorCode = ResponseCodeMap::getApiErrorCode($response[ResponseFields::STATUS]);
-
-                $errorMessage = ResponseCode::getResponseMessage($response[ResponseFields::STATUS]);
-            }
+            $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
