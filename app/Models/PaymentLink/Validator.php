@@ -309,7 +309,7 @@ class Validator extends Base\Validator
         $errorMsg                = null;
         $paymentLink             = $this->entity;
         $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
-        $paymentAmountWithoutFee = $payment->merchant->isFeeBearerCustomer() ? $paymentAmount : $payment->getAmount() - $payment->getFee();
+        $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
         $paymentLinkAmount       = $paymentLink->getAmount();
         $allowMultipleUnits      = (bool) $paymentLink->getSettingsScalarElseNull(Entity::ALLOW_MULTIPLE_UNITS);
 

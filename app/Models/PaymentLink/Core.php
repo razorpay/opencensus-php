@@ -62,7 +62,7 @@ class Core extends Base\Core
 
         $this->repo->transaction(function() use ($paymentLink, $input)
         {
-            $this->upsertSettings($paymentLink, $input);
+            $this->upsertSettings($paymentLink, $input[Entity::SETTINGS] ?? []);
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -97,7 +97,7 @@ class Core extends Base\Core
 
             $this->changeStatusAfterUpdateIfApplicable($paymentLink);
 
-            $this->upsertSettings($paymentLink, $input);
+            $this->upsertSettings($paymentLink, $input[Entity::SETTINGS] ?? []);
 
             $this->repo->saveOrFail($paymentLink);
         });
@@ -230,8 +230,10 @@ class Core extends Base\Core
         }
 
         // 3. Validates payment link is active and has payment slots available
+        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
+        $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
         if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink, $payment) === false))
+            ($this->hasPaymentSlots($paymentLink, $paymentUnits) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
@@ -388,16 +390,14 @@ class Core extends Base\Core
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
      *
-     * @param  Entity         $paymentLink
-     * @param  Payment\Entity $payment
+     * @param  Entity  $paymentLink
+     * @param  integer $paymentUnits
      * @return boolean
      */
-    protected function hasPaymentSlots(Entity $paymentLink, Payment\Entity $payment): bool
+    protected function hasPaymentSlots(Entity $paymentLink, int $paymentUnits): bool
     {
         $timesPaid    = $paymentLink->getTimesPaid();
         $timesPayable = $paymentLink->getTimesPayable();
-        // Note's units value is validated during payment creation against payment & link's amount, defaults to 1.
-        $paymentUnits = (int) ($payment->getNotes()[Entity::UNITS] ?? 1);
 
         // Just return if there is no limit on number of payments
         if ($timesPayable === null)
@@ -553,11 +553,7 @@ class Core extends Base\Core
         if ($templateId !== null)
         {
             $templateAccessor = new HostedTemplate($templateId);
-
-            if ($templateAccessor->exists() === true)
-            {
-                $view = 'hostedpage.' . $templateAccessor->getViewName();
-            }
+            $view = 'hostedpage.' . $templateAccessor->getViewName();
         }
         else if ($paymentLink->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
         {
@@ -661,12 +657,10 @@ class Core extends Base\Core
     /**
      * Every payment link could have set of setting associated. Ref: Model\Settings.
      * @param  Entity $paymentLink
-     * @param  array  $input
+     * @param  array  $settings
      */
-    protected function upsertSettings(Entity $paymentLink, array $input)
+    protected function upsertSettings(Entity $paymentLink, array $settings)
     {
-        $settings = $input[Entity::SETTINGS] ?? [];
-
         if (empty($settings) === false)
         {
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();

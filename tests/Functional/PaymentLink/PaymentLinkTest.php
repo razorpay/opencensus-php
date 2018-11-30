@@ -455,7 +455,7 @@ class PaymentLinkTest extends TestCase
     {
         $attributes = [
             PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
-            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::COMPLETED,
         ];
 
         $this->createPaymentLink(self::TEST_PL_ID, $attributes);

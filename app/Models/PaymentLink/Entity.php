@@ -383,11 +383,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Enhancement: Have a trait HasSettings which has nice and optimal(i.e. no
-     * multiple queries on subsequent calls) interface.
-     *
      * Get settings associated with payment link entity.
-     *
      * @param  string|null $key
      * @return \Razorpay\Spine\DataTypes\Dictionary|string
      */
