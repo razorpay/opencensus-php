@@ -174,6 +174,7 @@ class Fetch
 
         $this->addDefaultParams($params);
 
+
         $this->validateAndStripSignedIds($params);
     }
 
