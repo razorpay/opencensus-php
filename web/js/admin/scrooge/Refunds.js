@@ -83,6 +83,12 @@ export default class Refunds extends Component {
           .map(e => e.trim());
       }
 
+      if (filters['merchant-ids']) {
+        this.collection.data.data.query.merchant_id = filters['merchant-ids']
+          .split(',')
+          .map(e => e.trim());
+      }
+
       if (filters['payment-ids']) {
         this.collection.data.data.query.payment_id = filters['payment-ids']
           .split(',')
@@ -197,15 +203,6 @@ export default class Refunds extends Component {
               defaultValue={this.collection.extraFields.mode}
             />
 
-            <MultiSelectField
-              class="statuses-select"
-              label="Status(es)"
-              name="statuses"
-              options={statuses}
-              trackBy="value"
-              keys={['name']}
-            />
-
             <Field
               label="Refund Id(s)"
               name="refund-ids"
@@ -218,18 +215,37 @@ export default class Refunds extends Component {
               placeholder="comma separated"
             />
 
-            <FromField
-              label="Refund Date From"
-              format="X"
-              allowToday={true}
-              name="refunds-from"
+            <Field
+              label="Merchant Id(s)"
+              name="merchant-ids"
+              placeholder="comma separated"
             />
 
-            <ToField
-              label="Refund Date To"
-              format="X"
-              allowToday={true}
-              name="refunds-to"
+            <MultiSelectField
+              class="statuses-select"
+              label="Status(es)"
+              name="statuses"
+              options={statuses}
+              trackBy="value"
+              keys={['name']}
+            />
+
+            <MultiSelectField
+              class="gateways-select"
+              label="Gateway(s)"
+              name="gateways"
+              options={this.state.gateways}
+              trackBy="value"
+              keys={['name']}
+            />
+
+            <MultiSelectField
+              class="methods-select"
+              label="Method(s)"
+              name="methods"
+              options={this.state.methods}
+              trackBy="value"
+              keys={['name']}
             />
 
             <Field
@@ -250,22 +266,18 @@ export default class Refunds extends Component {
               type="number"
             />
 
-            <MultiSelectField
-              class="gateways-select"
-              label="Gateway(s)"
-              name="gateways"
-              options={this.state.gateways}
-              trackBy="value"
-              keys={['name']}
+            <FromField
+              label="Refund Date From"
+              format="X"
+              allowToday={true}
+              name="refunds-from"
             />
 
-            <MultiSelectField
-              class="methods-select"
-              label="Method(s)"
-              name="methods"
-              options={this.state.methods}
-              trackBy="value"
-              keys={['name']}
+            <ToField
+              label="Refund Date To"
+              format="X"
+              allowToday={true}
+              name="refunds-to"
             />
 
             <FromField
