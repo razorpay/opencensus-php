@@ -66,6 +66,7 @@ class Entity
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
     const SETTLEMENT                = 'settlement';
+    const BENEFICIARY               = 'beneficiary';
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const PAYMENT_LINK              = 'payment_link';

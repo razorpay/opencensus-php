@@ -4426,3 +4426,7 @@ ALTER TABLE blade
 
 ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
+
+# Drops foreign key on production on newly created table beneficiaries, leaving them on stage and local environment.
+ALTER TABLE beneficiaries
+    DROP FOREIGN KEY beneficiaries_merchant_id_foreign;
