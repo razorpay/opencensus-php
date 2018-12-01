@@ -3,6 +3,8 @@ import { getFormattedAmount } from 'rzp/utils/rzp-utils';
 const currencies = {
   INR: '₹',
   USD: 'US$',
+  SGD: 'S$',
+  EUR: '€',
 };
 
 export default ({ value, currency = 'INR', className, ...attrs }) => {

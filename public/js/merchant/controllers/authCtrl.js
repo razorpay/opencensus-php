@@ -1,6 +1,21 @@
 'use strict';
+
 //Signin Controller
 app
+  .factory('authCallbacks', [
+    function() {
+      var signinCallback = null;
+
+      return {
+        getSigninCallback: function() {
+          return signinCallback;
+        },
+        setSigninCallback: function(cb) {
+          return typeof cb === 'function' && (signinCallback = cb);
+        },
+      };
+    },
+  ])
   .controller('AuthCtrl', [
     '$scope',
     '$timeout',
@@ -15,6 +30,9 @@ app
     '$window',
     '$localStorage',
     'utils',
+    'isHostedInBB',
+    'appHost',
+    'authCallbacks',
     function(
       $scope,
       $timeout,
@@ -28,7 +46,10 @@ app
       transformRequestAsFormPost,
       $window,
       $localStorage,
-      utils
+      utils,
+      isHostedInBB,
+      appHost,
+      authCallbacks
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -280,7 +301,13 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard();
+                var signinSuccessCb = authCallbacks.getSigninCallback();
+
+                if (signinSuccessCb) {
+                  signinSuccessCb(data.user);
+                } else {
+                  $scope.goToDashboard();
+                }
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -812,7 +839,14 @@ app
                     return false;
                   }
                 }
-                $scope.goToDashboard();
+
+                var signinSuccessCb = authCallbacks.getSigninCallback();
+
+                if (signinSuccessCb) {
+                  signinSuccessCb(userDetails);
+                } else {
+                  $scope.goToDashboard();
+                }
               } else {
                 $scope.isLoggedIn = true;
                 hideSpinner();
@@ -995,6 +1029,43 @@ app
             toStepName
           );
       };
+
+      if (isHostedInBB) {
+        var supportedEvents = {
+          signin: 'signin',
+          signup: 'signup',
+          signinSuccess: 'signinSuccess',
+        };
+
+        window.RZP.rpcServer &&
+          window.RZP.rpcServer(
+            appHost,
+            [
+              {
+                name: supportedEvents.signin,
+                callback: function() {
+                  $scope.goToSigninLayout();
+                },
+              },
+              {
+                name: supportedEvents.signup,
+                callback: function() {
+                  $scope.goToSignupLayout();
+                },
+              },
+              {
+                name: supportedEvents.signinSuccess,
+                hasReply: true,
+                callback: function(reply) {
+                  authCallbacks.setSigninCallback(function(userData) {
+                    reply({ user: userData });
+                  });
+                },
+              },
+            ],
+            'auth'
+          );
+      }
     },
   ])
   .directive('overrideTab', [

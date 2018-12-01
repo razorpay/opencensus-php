@@ -163,4 +163,12 @@ var app = angular
       $idleProvider.warningDuration(15);
       $keepaliveProvider.interval(60);
     },
+  ])
+  .constant('appHost', window.RZP && window.RZP.appHost)
+  .constant('appName', window.RZP && window.RZP.appName)
+  .constant('isHostedInBB', [
+    'appName',
+    function(appName) {
+      return appname === 'businessbanking';
+    },
   ]);

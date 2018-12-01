@@ -192,7 +192,7 @@ export default class User {
   }
 
   get isChargeAtWillEnabled() {
-    return this.findTag('Hosted_emandate');
+    return this.findTag('Charge_at_will');
   }
 
   get isAgentRole() {
@@ -252,6 +252,14 @@ export default class User {
 
   get isPaymentPagesV2Enabled() {
     return this.findTag('paymentpagesv2');
+  }
+
+  get isDiwaliPromoEnabled() {
+    return this.findTag('diwali_promotional_plan');
+  }
+
+  get showFTXPassAnnouncement() {
+    return this.findTag('announcement_ftx_passes');
   }
 }
 
