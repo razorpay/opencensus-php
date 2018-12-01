@@ -1327,10 +1327,7 @@ trait Authorize
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
-        $gatewayInput['paymentAnalytics'] = $this->repo->payment_analytics
-                                                 ->findForPayment($payment->getId())
-                                                 ->first()
-                                                 ->toArrayPublic();
+        $gatewayInput['paymentAnalytics'] = $payment->getMetadata('payment_analytics')->toArray();
 
         if ($payment->hasOrder())
         {
