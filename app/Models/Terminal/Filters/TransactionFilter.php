@@ -758,10 +758,7 @@ class TransactionFilter extends Terminal\Filter
 
         $metadata = $payment->getMetadata();
 
-        //
-        // If a bank account is requested specifically for banking,
-        // only terminals with that type set can be selected
-        //
+        // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
         if (($metadata[Generator::BANKING] === true) and
             ($terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING) === false))
         {

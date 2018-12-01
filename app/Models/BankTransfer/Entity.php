@@ -201,11 +201,11 @@ class Entity extends Base\PublicEntity
 
     /**
      * For business banking there would be a transaction created per transfer.
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
      */
     public function transaction()
     {
-        return $this->hasOne(Transaction\Entity::class);
+        return $this->morphOne(Transaction\Entity::class, 'source');
     }
 
     // ----------------------- Generators --------------------------------------

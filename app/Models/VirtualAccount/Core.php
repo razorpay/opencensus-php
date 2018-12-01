@@ -109,8 +109,6 @@ class Core extends Base\Core
                     Entityt::BANK_ACCOUNT
                 ],
             ],
-            // Todo: What description to use? It is null-able.
-            // 'description' => '',
         ];
 
         return $this->create($input, $merchant, null, null, $merchant->bankingBalance());

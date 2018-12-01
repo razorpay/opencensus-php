@@ -85,12 +85,10 @@ class Processor extends VirtualAccount\Processor
 
         $this->repo->transaction(function() use ($bankTransfer)
         {
-            // Bank transfer's relation association, payer bank account creation and saving.
+            // Bank transfer's relation association
             $bankTransfer->merchant()->associate($this->merchant);
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
-
-            $this->createAndAssociatePayerBankAccount($bankTransfer);
 
             $this->repo->saveOrFail($bankTransfer);
 
@@ -114,6 +112,8 @@ class Processor extends VirtualAccount\Processor
             $payment = $this->getPaymentProcessor()->getPayment();
 
             $bankTransfer->payment()->associate($payment);
+
+            $this->createAndAssociatePayerBankAccount($bankTransfer);
 
             $this->repo->saveOrFail($bankTransfer);
 
