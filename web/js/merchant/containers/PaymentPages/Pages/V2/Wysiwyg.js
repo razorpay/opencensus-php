@@ -13,7 +13,11 @@ import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
-import { fetchPaymentPage, updateData } from 'merchant/modules/wysiwyg';
+import {
+  fetchPaymentPage,
+  updateData,
+  markDataSaved,
+} from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -35,6 +39,7 @@ const ERROR = {
   {
     updateData,
     fetchPaymentPage,
+    markDataSaved,
     showNotification,
     closeModal,
     openModal,
@@ -152,10 +157,16 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   handleClose = () => {
     this.context.confirm({
-      header: 'Discard Changes?',
+      header: this.props.isPageDirty
+        ? 'Discard Changes?'
+        : 'Go back to Dashboard',
       message: () => (
         <div class="text-semi-muted">
-          <p>Unsaved changes will be lost. Do you want to continue?</p>
+          <p>
+            {this.props.isPageDirty
+              ? 'Unsaved changes will be lost. Do you want to continue?'
+              : ''}
+          </p>
         </div>
       ),
       affirmativeLabel: 'Yes',
@@ -237,6 +248,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         .then(resp => {
           if (resp.data) {
             this.props.updateData(payload);
+            this.props.markDataSaved();
 
             this.setState({
               isSettingsOpened: false,
@@ -323,6 +335,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return requestAPIPromise
       .then(resp => {
         if (resp.data) {
+          this.props.markDataSaved();
+
           const entityId = resp.data.id;
 
           this.props.history.push(`/paymentpages/${entityId}/edit`);

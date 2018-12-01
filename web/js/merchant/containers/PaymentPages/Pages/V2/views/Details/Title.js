@@ -1,11 +1,8 @@
 import { classList } from 'common/util';
 import Input from 'component/Input';
+import debounce from 'rzp/utils/debounce';
 
 export default class extends React.Component {
-  handleOnInput = ({ target }) => {
-    this.autoAdjustHeight(target);
-  };
-
   autoAdjustHeight(target) {
     if (!target) {
       return;
@@ -25,20 +22,23 @@ export default class extends React.Component {
     );
   }
 
-  onBlur = e => {
+  onChange = value => {
     const hasError = !!document.querySelectorAll('#title .is-invalid').length;
-    let value = e.target.value;
-
-    if (hasError) {
-      value = '';
-    }
 
     this.props.updateData({
       target: {
         name: 'title',
-        value,
+        value: hasError ? '' : value,
       },
     });
+  };
+
+  debounce_onChange = debounce(this.onChange, 100);
+
+  handleOnInput = ({ target }) => {
+    this.autoAdjustHeight(target);
+
+    this.debounce_onChange(target.value);
   };
 
   render() {
@@ -57,7 +57,6 @@ export default class extends React.Component {
           info="Heading of your page"
           defaultValue={this.props.title}
           onInput={this.handleOnInput}
-          onBlur={this.onBlur}
           required
           validator={val => {
             if (!val) {

@@ -54,10 +54,15 @@ export const addInSchema = field => ({
   field,
 });
 
+export const markDataSaved = _ => ({
+  type: 'MARK_DATA_SAVED',
+});
+
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
   FORM_SCHEMA: [FIELD_CONST.email, FIELD_CONST.phone], // Email and Phone not to be sent in udf_schema in all cases.
+  isPageDirty: false,
 };
 
 export default function(state = initialState, action) {
@@ -106,39 +111,50 @@ export default function(state = initialState, action) {
           ...initialState,
           payment_page_id: action.id,
           paymentPageEntity: { id: action.id },
+          isPageDirty: false,
         };
       } else {
-        return set(
-          state,
-          'paymentPageEntity',
-          deepMerge(
+        return {
+          ...state,
+          isPageDirty: true,
+          paymentPageEntity: deepMerge(
             // Needed for settings
             state.paymentPageEntity,
             action.fields
-          )
-        );
+          ),
+        };
       }
 
     case 'DELETE_IN_SCHEMA':
-      return set(
-        state,
-        'FORM_SCHEMA',
-        removeItem(state.FORM_SCHEMA, action.index)
-      );
+      return {
+        ...state,
+        isPageDirty: true,
+        FORM_SCHEMA: removeItem(state.FORM_SCHEMA, action.index),
+      };
 
     case 'UPDATE_IN_SCHEMA':
-      return set(
-        state,
-        'FORM_SCHEMA',
-        updateItem(
+      return {
+        ...state,
+        isPageDirty: true,
+        FORM_SCHEMA: updateItem(
           state.FORM_SCHEMA,
           action.payload.index,
           action.payload.field
-        )
-      );
+        ),
+      };
 
     case 'ADD_IN_SCHEMA':
-      return set(state, 'FORM_SCHEMA', push(state.FORM_SCHEMA, action.field));
+      return {
+        ...state,
+        isPageDirty: true,
+        FORM_SCHEMA: push(state.FORM_SCHEMA, action.field),
+      };
+
+    case 'MARK_DATA_SAVED':
+      return {
+        ...state,
+        isPageDirty: false,
+      };
 
     default:
       return state;

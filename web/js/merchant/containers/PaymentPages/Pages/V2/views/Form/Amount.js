@@ -41,7 +41,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                   {paymentPageEntity.settings &&
                     paymentPageEntity.settings.allow_multiple_units && (
                       <React.Fragment>
-                        <span style={{ margin: '0 24px' }}>×</span>
+                        <span style={{ margin: '0 12px' }}>×</span>
                         <div class="Field Field--counter Field--small">
                           <div class="Field-content">
                             <div
