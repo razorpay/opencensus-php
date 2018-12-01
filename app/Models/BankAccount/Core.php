@@ -10,10 +10,10 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Beneficiary;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-
 
 class Core extends Base\Core
 {
@@ -69,6 +69,17 @@ class Core extends Base\Core
         $this->repo->saveOrFail($newBankAccount);
 
         return $newBankAccount;
+    }
+
+    public function createBankAccountForBankingBeneficiary(array $input, Beneficiary\Entity $beneficiary): Entity
+    {
+        $bankAccount = $this->buildBankAccount($input, $beneficiary->merchant, $this->mode);
+
+        $bankAccount->associateSource($beneficiary, Type::BENEFICIARY);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
     }
 
     public function editBankAccount(Entity $bankAccount, array $input)
@@ -258,7 +269,9 @@ class Core extends Base\Core
      * All bank account creation happens via this function
      *
      * @param  array  $input
+     * @param         $merchant
      * @param  string $mode
+     *
      * @return BankAccount\Entity
      */
     protected function createBankAccount($input, $merchant, $mode)

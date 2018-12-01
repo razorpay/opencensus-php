@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_ID     = 'account_id';
     const ACTIVE         = 'active';
 
+    const ACCOUNT        = 'account';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -36,7 +38,12 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::ACCOUNT_ID,
         self::ACTIVE,
+        self::ACCOUNT,
         self::CREATED_AT,
+    ];
+
+    protected $embeddedRelations = [
+        self::ACCOUNT,
     ];
 
     protected $defaults = [

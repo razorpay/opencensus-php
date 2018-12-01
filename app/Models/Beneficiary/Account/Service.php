@@ -51,9 +51,11 @@ class Service extends Base\Service
         return $entities->toArrayPublic();
     }
 
-    public function create(array $input): array
+    public function create(string $beneId, array $input): array
     {
-        $entity = $this->core->create($input, $this->merchant);
+        $beneficiary = $this->fetchBeneficiary($beneId, $this->merchant);
+
+        $entity = $this->core->create($input, $beneficiary, $this->merchant);
 
         return $entity->toArrayPublic();
     }

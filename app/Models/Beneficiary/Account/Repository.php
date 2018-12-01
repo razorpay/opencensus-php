@@ -15,6 +15,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'beneficiary_account';
 
+    protected $expands = [
+        Entity::ACCOUNT,
+    ];
+
     public function findByPublicIdAndBeneficiaryAndMerchant(
         string $id,
         Beneficiary\Entity $bene,
