@@ -155,9 +155,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       header: 'Discard Changes?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            Do you want to discard all the changes and go back to Dashboard?
-          </p>
+          <p>Unsaved changes will be lost. Do you want to continue?</p>
         </div>
       ),
       affirmativeLabel: 'Yes',

@@ -113,6 +113,9 @@
   padding-top: 30px
   animation: 0.3s fadein ease-in
 
+  .content-container
+    min-width: 854px
+
 /* Paymentpages v2 styles*/
 #payment-pages-v2
   .spinner-container
@@ -205,7 +208,7 @@
           background: transparent
           resize: none
           border: 1px solid transparent
-          color: #212121
+          color: #6F7691
 
         .Input-highlight .Input-el
           &[name="title"], &[name="description"]
@@ -238,6 +241,7 @@
         line-height: 32px
         font-weight: 600
         padding: 1px 5px 2px // 1px less cuz of border
+        color: #0d2366
 
       .Input-error
         line-height: 14px
@@ -486,9 +490,10 @@
         top: 8px
         margin-right: 16px
         float: left
+        margin-bottom: 4px
 
       .Input-el:not([type=checkbox])
-        width: 160px
+        width: 144px
 
     .section-2
       .Input-el:not([type=checkbox])
@@ -519,3 +524,22 @@
   padding: 0 4px 0 0 // 4px acts as lookahead to create new line
   line-height: 22px
   font-size: 14px
+
+
+@media (max-width: 1023px)
+  #desktop-container
+    #form-section #fin-logo
+      width: 160px
+
+@media (max-width: 960px)
+  #desktop-container
+    .content
+      padding-left: 16px
+
+      &::before
+        left: 0
+        min-width: 724px
+        border-left-width: 8px
+
+    #details-view, #header-details
+      width: 45%

@@ -444,7 +444,7 @@ export default class extends React.Component {
 
           const keys = { ...data };
           if (
-            this.props.user.isPaymentPagesV2 &&
+            this.props.user.isPaymentPagesV2Enabled &&
             keys.hasOwnProperty('times_payable')
           ) {
             keys.quantity = keys.times_payable;
@@ -714,7 +714,7 @@ export default class extends React.Component {
       );
     }
 
-    return this.props.user.isPaymentPagesV2 ? (
+    return this.props.user.isPaymentPagesV2Enabled ? (
       <PaymentPagesV2Entity
         {...this.props}
         {...this.state}

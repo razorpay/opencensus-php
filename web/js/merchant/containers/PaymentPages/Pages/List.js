@@ -143,7 +143,7 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
 
-            {!user.isPaymentPagesV2 && (
+            {!user.isPaymentPagesV2Enabled && (
               <div class="form-group list-filter-item">
                 <label>Receipt No.</label>
                 <Field
