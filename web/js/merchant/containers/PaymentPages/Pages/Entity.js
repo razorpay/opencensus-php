@@ -86,7 +86,6 @@ export class PaymentPagesEntity extends React.Component {
       component: (
         <ShareView
           handleClose={this.props.closeModal}
-          handleClick={this.sendLink}
           handleAction={sendLink.bind(null, paymentPageEntity.id)}
           showNotification={this.props.showNotification}
           url={paymentPageEntity.short_url}
@@ -443,9 +442,18 @@ export default class extends React.Component {
         if (resp.data) {
           this.props.updatePPInReduxList(resp.data, false);
 
+          const keys = { ...data };
+          if (
+            this.props.user.isPaymentPagesV2Enabled &&
+            keys.hasOwnProperty('times_payable')
+          ) {
+            keys.quantity = keys.times_payable;
+            delete keys.times_payable;
+          }
+
           this.props.showNotification({
             type: 'success',
-            message: `${keysToSentence(data)} updated successfully`,
+            message: `${keysToSentence(keys)} updated successfully`,
           });
 
           this.setState({
@@ -706,7 +714,7 @@ export default class extends React.Component {
       );
     }
 
-    return this.props.user.isPaymentPagesV2 ? (
+    return this.props.user.isPaymentPagesV2Enabled ? (
       <PaymentPagesV2Entity
         {...this.props}
         {...this.state}

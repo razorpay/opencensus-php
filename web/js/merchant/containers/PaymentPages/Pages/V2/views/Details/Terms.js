@@ -1,8 +1,5 @@
 import Input from 'component/Input';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import Button from 'component/Button';
-
-const infoText = 'Add Terms & Conditions';
 
 export default class extends React.PureComponent {
   state = { isEditable: false };
@@ -20,8 +17,17 @@ export default class extends React.PureComponent {
       '#terms-details .fake-textarea'
     );
 
+    let newLineChars = 0;
+    for (let i = 0; i < content.length; i++) {
+      if (content[i] === '\n') {
+        newLineChars++;
+      }
+    }
+
+    let fakeLinesHeight = newLineChars * 22; // 22 is line-height
+
     fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 14 + 'px'; // 14 is combination of vertical padding and line height of the textarea in css
+    this.elHeight = fakeEle.scrollHeight + fakeLinesHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
     target.style.height = this.elHeight;
   }
 
@@ -44,7 +50,6 @@ export default class extends React.PureComponent {
               name="terms"
               placeholder="Enter Terms & Conditions"
               defaultValue={this.props.terms}
-              info={infoText}
               onInput={this.handleOnInput}
               onBlur={e => {
                 this.setState({ isEditable: false });
@@ -62,19 +67,14 @@ export default class extends React.PureComponent {
             />
           </React.Fragment>
         ) : (
-          <span class="help-content">
-            <Button.Transparent
-              class="btn-link"
-              onClick={() => {
-                this.setState({ isEditable: true });
-              }}
-            >
-              + Add Terms & Conditions
-            </Button.Transparent>
-            <Popover align="right" theme="dark">
-              <PopoverBody>{infoText}</PopoverBody>
-            </Popover>
-          </span>
+          <Button.Transparent
+            class="btn-link"
+            onClick={() => {
+              this.setState({ isEditable: true });
+            }}
+          >
+            + Add Terms & Conditions
+          </Button.Transparent>
         )}
       </div>
     );

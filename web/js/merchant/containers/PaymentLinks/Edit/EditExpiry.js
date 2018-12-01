@@ -86,9 +86,7 @@ export default class EditExpiry extends React.Component {
               onClick={() => {
                 return this.props
                   .editFn({
-                    expire_by: this.state.expire_by
-                      ? Math.floor(this.state.expire_by / 1000)
-                      : null,
+                    expire_by: this.state.expire_by,
                   })
                   .then(resp => {
                     if (resp && resp.data) {

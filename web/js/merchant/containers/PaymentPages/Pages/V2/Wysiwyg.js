@@ -59,6 +59,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       this.setState({
         isPageLoadError: null,
         isIntroOpened: false,
+        isSettingsOpened: false,
       });
 
       if (!nextProps.id) {
@@ -132,8 +133,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     // TODO: Change to prod CDN url
     // script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
-    script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
-    // script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
+    // script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
+    script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
 
@@ -142,18 +143,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!this.props.id) {
       this.changeFETheme('light');
     }
-
-    window.addEventListener('beforeunload', this.reloadAlert);
   }
 
   componentWillUnmount() {
     document.title = 'Razorpay Dashboard'; // Revert title of dashboard
-    document.removeEventListener('beforeunload', this.reloadAlert);
-  }
-
-  reloadAlert(e) {
-    (e || window.event).returnValue = null;
-    return null;
+    this.props.closeModal();
   }
 
   handleClose = () => {
@@ -161,9 +155,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       header: 'Discard Changes?',
       message: () => (
         <div class="text-semi-muted">
-          <p>
-            Do you want to discard all the changes and go back to Dashboard?
-          </p>
+          <p>Unsaved changes will be lost. Do you want to continue?</p>
         </div>
       ),
       affirmativeLabel: 'Yes',
@@ -179,7 +171,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormView />, document.getElementById('form-section'));
   };
 
-  openPPShareView = (id, shortUrl, title, description) => {
+  openPPShareView = (id, shortUrl, title, description, isEditExistingId) => {
     this.props.openModal({
       size: 'small',
       component: (
@@ -194,6 +186,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           description={description}
           trackerFn={function() {}}
           closeModal={this.props.closeModal}
+          isEditExistingId={isEditExistingId}
           AddonAction={
             <div class="label--faded m-t">
               You can customize this url from{' '}
@@ -245,11 +238,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           if (resp.data) {
             this.props.updateData(payload);
 
-            this.props.showNotification({
-              type: 'success',
-              message: 'Page Settings are successfully updated',
-            });
-
             this.setState({
               isSettingsOpened: false,
             });
@@ -260,7 +248,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               entityId,
               resp.data.short_url,
               resp.data.title,
-              resp.data.description
+              resp.data.description,
+              true
             );
           }
         })
@@ -292,7 +281,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       amount,
       title,
       description,
-      stock,
+      quantity,
       terms,
       support_email,
       support_contact,
@@ -313,7 +302,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       amount: amount || null,
       title,
       description: description || null,
-      times_payable: stock || null,
+      times_payable: quantity || null,
       terms: terms || null,
       support_email: support_email || null,
       support_contact: support_contact || null,
@@ -326,7 +315,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     };
     // console.log('REQ PAYLOAD...', reqPayload);
 
-    const isEditExistingId = this.props.id;
+    const isEditExistingId = !!this.props.id;
     const requestAPIPromise = isEditExistingId
       ? editPaymentPage(this.props.id, reqPayload)
       : createPaymentPage(reqPayload);
@@ -336,20 +325,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         if (resp.data) {
           const entityId = resp.data.id;
 
-          if (isEditExistingId) {
-            this.props.showNotification({
-              type: 'success',
-              message: 'Paymentpage is successfully Saved and Published',
-            });
-          } else {
-            this.props.history.push(`/paymentpages/${entityId}/edit`);
-          }
-
+          this.props.history.push(`/paymentpages/${entityId}/edit`);
           this.openPPShareView(
             entityId,
             resp.data.short_url,
             resp.data.title,
-            resp.data.description
+            resp.data.description,
+            isEditExistingId
           );
         } else {
           throw new Error(resp.errors);
@@ -387,7 +369,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     setTimeout(function() {
       const titleEle = document.querySelector(
-        '#description-details input[name="title"]'
+        '#description-details .Input-el[name="title"]'
       );
       titleEle && titleEle.focus();
     }, 100);
@@ -418,6 +400,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         <Button.Transparent
           type="button"
           style={{ color: '#fff' }}
+          disabled={
+            paymentPageEntity.id &&
+            typeof paymentPageEntity.title === 'undefined'
+          }
           onClick={this.togglePageSettings}
         >
           Page Settings
@@ -525,6 +511,10 @@ const IntroMask = ({ onClose }) => {
       class="payment-pages-v2-intro"
       isBlur={true}
     >
+      <Link class="back-btn" to="/paymentpages/">
+        <i class="i i-chevron-left" />
+        Back to Dashboard
+      </Link>
       <Modal showCloseBtn={false}>
         <ModalContent>
           <div class="heading">Create New Payment Page</div>

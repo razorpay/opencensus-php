@@ -33,11 +33,11 @@ export function flattenFIELD_TYPES() {
     if (FIELD.options) {
       for (let j = 0; j < FIELD.options.length; j++) {
         const SUB_FIELD = FIELD.options[j];
-        SUB_FIELD.index = String(i) + 1 + String(j); // "01" will become "11" because first option is '--Select--'
+        SUB_FIELD.level = [i, j];
         flatten.push(SUB_FIELD);
       }
     } else {
-      FIELD.index = String(i);
+      FIELD.level = [i];
       flatten.push(FIELD);
     }
   }
@@ -85,7 +85,7 @@ export function mapFieldToIndex(field) {
       }
     }
 
-    selectedIndexInOptions = fieldTypes.index;
+    selectedIndexInOptions = fieldTypes[i].level;
     break;
   }
 
@@ -98,16 +98,23 @@ export function mapFieldToIndex(field) {
 
 export function getFieldFromIndices(indicesString) {
   let FIELD;
-  const indicesTree = String(indicesString).split('');
 
-  if (indicesTree.length === 1) {
-    FIELD = FIELD_TYPES[indicesTree[0]];
+  if (indicesString === null || indicesString === undefined) {
+    return false;
+  }
+
+  indicesString = indicesString.split(' ');
+
+  if (indicesString.length === 1) {
+    FIELD = FIELD_TYPES[indicesString[0]];
   } else {
-    const sub_options = FIELD_TYPES[indicesTree[0]].options;
+    FIELD = FIELD_TYPES[indicesString[0]];
+    const sub_options = FIELD && FIELD.options;
+
     if (!sub_options) {
       return false;
     }
-    FIELD = sub_options[indicesTree[1]];
+    FIELD = sub_options[indicesString[1]];
   }
 
   return FIELD && FIELD.schema;
@@ -116,7 +123,7 @@ export function getFieldFromIndices(indicesString) {
 export function constructFieldSchema(fieldData) {
   const { title, required, description, field_type } = fieldData;
 
-  if (isNaN(field_type) || field_type < 0) {
+  if (field_type === null || field_type === undefined) {
     return false;
   }
 
@@ -126,13 +133,15 @@ export function constructFieldSchema(fieldData) {
     return false;
   }
 
+  const prettyTitle = title.trim().replace('  ', ' ');
+
   return {
-    name: title
+    name: prettyTitle
       .trim()
       .toLowerCase()
       .split(' ')
       .join('_'),
-    title,
+    title: prettyTitle,
     required: typeof required !== 'undefined' ? required : undefined,
     description: typeof description !== 'undefined' ? description : undefined,
     ...SCHEMA,

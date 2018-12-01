@@ -87,7 +87,7 @@ export default function(state = initialState, action) {
       entityData.settings.allow_multiple_units =
         entityData.settings.allow_multiple_units === '1';
 
-      entityData.stock = entityData.times_payable;
+      entityData.quantity = entityData.times_payable;
       delete entityData.times_payable;
 
       return {

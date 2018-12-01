@@ -3,6 +3,15 @@
   text-align: center
   z-index: 999999 // Has to be highest
 
+  .back-btn
+    position: absolute
+    left: 20px
+    top: 16px
+    color: #fff
+
+    &:hover
+      opacity: 0.84
+
   .Modal-container
     top: 40%
 
@@ -104,6 +113,9 @@
   padding-top: 30px
   animation: 0.3s fadein ease-in
 
+  .content-container
+    min-width: 854px
+
 /* Paymentpages v2 styles*/
 #payment-pages-v2
   .spinner-container
@@ -170,6 +182,11 @@
 
   // Wysiwyg elements
   #details-section
+    width: 100%
+
+    #description-details
+      white-space: inherit
+
     label
       display: inherit
 
@@ -191,6 +208,7 @@
           background: transparent
           resize: none
           border: 1px solid transparent
+          color: #6F7691
 
         .Input-highlight .Input-el
           &[name="title"], &[name="description"]
@@ -214,12 +232,16 @@
         font-size: 14px
 
     .title--big
+      .Input
+        margin-bottom: -16px
+
       .Input-el
         min-height: 42px
         font-size: 24px
         line-height: 32px
         font-weight: 600
         padding: 1px 5px 2px // 1px less cuz of border
+        color: #0d2366
 
       .Input-error
         line-height: 14px
@@ -230,13 +252,13 @@
         font-size: 24px
 
     textarea.Input-el
-      min-height: 30px
-      height: 30px
+      min-height: 32px
+      height: 32px
       max-height: 230px // Supports 720 char on desktop
       line-height: 22px
 
-      &[name="description"]
-        min-height: 70px
+    .Input-highlight textarea.Input-el[name="description"]
+      min-height: 70px
 
     .Input
       margin: -4px -6px
@@ -313,16 +335,16 @@
 
     .i
       position absolute
-      top: 13px
+      top: 15px
       right: 4px
-      font-size: 20px
+      font-size: 18px
       padding: 2px 8px
       cursor: pointer
       visibility: hidden
       color: #bfbfbf
 
       &:hover
-        color: $textDangerColor
+        color: #7b8199
 
     &:not(.disable-hover):hover
       background-color: #fff
@@ -422,7 +444,7 @@
       margin: 0
 
     .dropdown-options
-      margin-top: 12px
+      margin-top: 20px
 
       .Input-content
         max-height: 232px
@@ -468,9 +490,10 @@
         top: 8px
         margin-right: 16px
         float: left
+        margin-bottom: 4px
 
       .Input-el:not([type=checkbox])
-        width: 160px
+        width: 144px
 
     .section-2
       .Input-el:not([type=checkbox])
@@ -491,11 +514,32 @@
 
 /* Style for extendable-on-keypress text area */
 .fake-textarea
+  width: 100%
+  height: 0
   overflow: hidden
   word-wrap: break-word
-  white-space: pre-wrap
-  height: 0
-  margin: 0 16px 0 -6px // Has no vertical footprint. 16px to act as look-ahead while typing -6 is same as .Input
-  padding: 0 5px
-  line-height: 20px
+  white-space: normal
+  margin: 0 -6px; // Has no vertical footprint. -6 adjusts the width same as textarea.
+  left: 6px;
+  padding: 0 4px 0 0 // 4px acts as lookahead to create new line
+  line-height: 22px
   font-size: 14px
+
+
+@media (max-width: 1023px)
+  #desktop-container
+    #form-section #fin-logo
+      width: 160px
+
+@media (max-width: 960px)
+  #desktop-container
+    .content
+      padding-left: 16px
+
+      &::before
+        left: 0
+        min-width: 724px
+        border-left-width: 8px
+
+    #details-view, #header-details
+      width: 45%

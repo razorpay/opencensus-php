@@ -107,7 +107,7 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base keys
 
 describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fields in constructed schema', function() {
   const validFieldSchemas = [
-    constructFieldSchema({ title: 'Test title', field_type: '01' }),
+    constructFieldSchema({ title: 'Test title', field_type: '0 1' }),
     constructFieldSchema({
       title: 'Test title',
       field_type: 1,
@@ -115,20 +115,20 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fiel
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '02',
+      field_type: '0 2',
       required: false,
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '03',
+      field_type: '0 3',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '04',
+      field_type: '0 4',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '05',
+      field_type: '0 5',
     }),
   ];
 
@@ -144,6 +144,8 @@ describe('containers/PaymentPages/V2/../Fields/helpers Fn: Validity of base fiel
 
   const invalidFieldSchemas = [
     constructFieldSchema({ title: 'Test title' }), // Missing field_type
+    constructFieldSchema({ title: 'Test title', field_type: '01' }), // This technically seems right but we strictly expect '1' / 1 to be a valid field_type instead of '01'.
+    constructFieldSchema({ title: 'Test title', field_type: '11' }), // Field is not present
     constructFieldSchema({ title: 'Test title', field_type: '0' }), // This will fail because 0th options has multiple options, so 0 is invalid field_type
     constructFieldSchema({ title: 'Test title', field_type: '2' }), // '2' doesn't exist in FIELD_TYPES
     constructFieldSchema({

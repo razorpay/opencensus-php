@@ -26,10 +26,14 @@ function setNativeValue(element, value) {
 /*
  * Returns object or value inside that object at a given level
  * */
-export function getValueOfKeyAtLevel(key, optionObj, indicesString) {
+export function getValueOfKeyAtLevel(key, optionObj, stringTree) {
+  if (!stringTree) {
+    return optionObj[0];
+  }
+
   return (function getVal(optionObj, indices) {
-    if (indices.length === 0) {
-      return key ? optionObj[key] : optionObj;
+    if (indices.length === 1) {
+      return key ? optionObj[indices[0]][key] : optionObj[indices[0]];
     }
 
     // For last index, options shouldn't exist
@@ -37,36 +41,52 @@ export function getValueOfKeyAtLevel(key, optionObj, indicesString) {
       optionObj[indices[0]].options || optionObj[indices[0]],
       indices.splice(1)
     );
-  })(optionObj, indicesString.split(''));
+  })(optionObj, stringTree.split(' '));
 }
 
 export default class PowerDropdown extends React.Component {
   className = 'Input--PowerDropdown';
 
-  constructor(props) {
-    super(props);
+  state = {
+    mature: this.props.mature,
+    selectedOptionIndexTree:
+      typeof this.props.defaultValue !== 'undefined'
+        ? this.props.defaultValue
+        : '',
+  };
 
-    let defaultIndex = 0;
-    const hasDefaultValue = typeof this.props.defaultValue !== 'undefined';
+  componentWillReceiveProps(nextProps) {
+    if (nextProps !== this.props) {
+      this.el && this.valid();
+    }
+  }
 
-    if (hasDefaultValue) {
-      if (typeof props.options[0] === 'object') {
-        props.options.forEach((o, i) => {
-          if (o.value === props.defaultValue) {
-            defaultIndex = i;
-            return false;
-          }
-        });
-      } else {
-        defaultIndex = props.options.indexOf(props.defaultValue);
-      }
+  valid() {
+    let { required, validator, requiredError, patternError } = this.props;
+
+    let el = this.el;
+    let value = el.value;
+    let validity = el.validity;
+    let error = '';
+
+    if (validity.valueMissing) {
+      error = requiredError || this.requiredError;
+    } else if (validity.patternMismatch) {
+      error = patternError || this.patternError;
+    } else if (validator) {
+      error = validator(value) || '';
+      el.setCustomValidity(error);
     }
 
-    this.state = {
-      mature: this.props.mature,
-      selectedOptionIndexTree: String(defaultIndex) || '0',
-    };
+    this.setState({ error });
   }
+
+  setRef = el => {
+    this.el = el;
+    if (el) {
+      this.valid();
+    }
+  };
 
   focus = e => {
     this.setState({ focus: true });
@@ -74,6 +94,10 @@ export default class PowerDropdown extends React.Component {
 
   blur = e => {
     this.setState({ focus: false });
+
+    if (this.state.touched) {
+      this.setState({ mature: true });
+    }
   };
 
   onSelection = e => {
@@ -83,25 +107,29 @@ export default class PowerDropdown extends React.Component {
     if (dataSet && dataSet.optionIndex !== void 0) {
       const selectedOptionIndexTree = dataSet.optionIndex;
 
-      const indexTree = String(selectedOptionIndexTree).split('');
-
       // Assuming all options are of same type, so checking 0th index
-      const selectedValue = getValueOfKeyAtLevel(
+      const selectedOption = getValueOfKeyAtLevel(
         undefined,
-        this.props.options,
+        options,
         selectedOptionIndexTree
       );
 
       this.setState({ selectedOptionIndexTree });
 
       const mainFormElement = document.getElementsByName(this.props.name)[0];
-      setNativeValue(mainFormElement, selectedOptionIndexTree);
+      // Sets value as stringed tree if nested, otherwise value of that option
+      setNativeValue(mainFormElement, selectedOption.value);
       mainFormElement.dispatchEvent(new Event('change', { bubbles: true }));
 
+      this.valid();
+
       onChange &&
-        onChange({ index: selectedOptionIndexTree, value: selectedValue });
+        onChange({ index: selectedOptionIndexTree, option: selectedOption });
 
       this.toggleExpansion();
+      if (!this.state.mature || !this.state.touched) {
+        this.setState({ touched: true });
+      }
     }
 
     e.stopPropagation();
@@ -125,15 +153,25 @@ export default class PowerDropdown extends React.Component {
 
     // Assuming all options are of same type, so checking just 0th index
     const selectedOptionLabel = getValueOfKeyAtLevel(
-      typeof options[0] === 'object' ? 'label' : undefined,
+      'label',
       options,
       selectedOptionIndexTree
     );
 
     return (
-      <div class={inputClass(this)}>
+      <div
+        class={inputClass(this)}
+        ref={el => {
+          this.powerDropdown = el;
+        }}
+      >
         {/* Contains actual value of dropdown. Automatically considered in Form using via serializer */}
-        <input name={name} defaultValue={defaultValue} hidden />
+        <input
+          name={name}
+          defaultValue={defaultValue}
+          hidden
+          ref={this.setRef}
+        />
         <Label text={label} />
         <div class="Input-content">
           <div class="Input-elWrapper Select-elWrapper">
@@ -166,6 +204,7 @@ export default class PowerDropdown extends React.Component {
                 </div>
               )}
             </div>
+            <Error text={this.state.error || this.props.propagatedError} />
 
             {isDropdownExpanded && (
               <DropDownList
@@ -175,6 +214,7 @@ export default class PowerDropdown extends React.Component {
                 OptionComponent={OptionComponent}
                 toggleExpansion={this.toggleExpansion}
                 level={0}
+                parentRef={this.powerDropdown}
               />
             )}
           </div>
@@ -202,14 +242,17 @@ class DropDownList extends React.PureComponent {
     }
   }
 
-  handleDocumentClick(e) {
-    if (findDOMNode(this.dropdownlist).contains(e.target)) {
+  handleDocumentClick = e => {
+    if (
+      !this.props.parentRef ||
+      findDOMNode(this.props.parentRef).contains(e.target)
+    ) {
       e.stopPropagation();
       return;
     }
 
     this.props.toggleExpansion();
-  }
+  };
 
   handleEscapePress = ::this.handleEscapePress;
   handleDocumentClick = ::this.handleDocumentClick;
@@ -224,34 +267,31 @@ class DropDownList extends React.PureComponent {
       level,
     } = this.props;
 
-    return (
-      <div
-        class="Input-list"
-        ref={dropdownlist => {
-          this.dropdownlist = dropdownlist;
-        }}
-      >
-        {options.map((o, i) => {
-          let optionVal, displayLabel;
-          if (typeof o === 'object') {
-            optionVal = typeof o.value === 'undefined' ? i : o.value;
-            displayLabel = o.label;
-          } else {
-            optionVal = i === 0 ? '' : i;
-            displayLabel = o;
-          }
+    const selectedIndexAtLevel = selectedOptionIndexTree
+      ? selectedOptionIndexTree.split(' ')[0]
+      : selectedOptionIndexTree;
+    let valueAtSelectedIndex;
 
+    if (typeof selectedIndexAtLevel !== 'undefined') {
+      valueAtSelectedIndex = selectedIndexAtLevel
+        ? options[selectedIndexAtLevel].value
+        : options[0].value;
+    }
+    return (
+      <div class="Input-list">
+        {options.map((o, i) => {
+          const displayLabel = typeof o === 'object' ? o.label : o;
           const hasSubOptions = !!o.options;
 
           return (
             <div
               class={classList(
                 'Input-list-item',
-                selectedOptionIndexTree[level] == i && 'selected'
+                valueAtSelectedIndex === o.value && 'selected'
               )}
               key={i}
-              onClick={hasSubOptions ? this.ignoreClick : onSelection}
-              data-option-index={level == 0 ? i : level + '' + i}
+              onClick={hasSubOptions ? undefined : onSelection}
+              data-option-index={level == 0 ? i : level + ' ' + i}
             >
               {OptionComponent ? (
                 <React.Fragment key={i}>
@@ -267,9 +307,17 @@ class DropDownList extends React.PureComponent {
               {hasSubOptions && (
                 <DropDownList
                   options={o.options}
-                  selectedOptionIndexTree={selectedOptionIndexTree
-                    .split('')
-                    .splice(1)}
+                  selectedOptionIndexTree={(() => {
+                    let s = selectedOptionIndexTree.split(' ');
+
+                    if (s.length > Number(level) + 1) {
+                      s = s.splice(1).join(' ');
+                    } else {
+                      s = undefined;
+                    }
+
+                    return s;
+                  })()}
                   onSelection={onSelection}
                   OptionComponent={OptionComponent}
                   toggleExpansion={toggleExpansion}

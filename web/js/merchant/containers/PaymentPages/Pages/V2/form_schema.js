@@ -51,7 +51,7 @@ const UISCHEMA = [
     type: 'number',
     title: 'Some Counter Field',
     minimum: '2', // Optional
-    maximum: '4', // Required keyword, Product wise defines Stock
+    maximum: '4', // Required keyword, Product wise defines Quantity
     options: {
       cmp: 'Counter', // type:number can be represented as Input.Counter component
     },
