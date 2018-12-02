@@ -1,6 +1,10 @@
 import { Component } from 'react';
 
 import { snakeToTitleCase, classList } from 'common/util';
+import { openModal, closeModal, notifyError } from 'common/modal';
+import { ModalContent } from 'component/Modal';
+
+import AddCustomNote from './AddCustomNote';
 
 export default class ConfigDetails extends Component {
   state = {
@@ -24,15 +28,27 @@ export default class ConfigDetails extends Component {
     ) {
       this.setState({ selectedColumns: {} });
     }
+
+    this.fieldsWithNotes = haveNotesField(nextProps.fields);
   }
 
   getValue = () => {
     return this.reportColumns.getValues();
   };
 
+  toggleField = (field, status) => {
+    this.setState({
+      selectedColumns: {
+        ...this.state.selectedColumns,
+        [field]: status,
+      },
+    });
+  };
+
   render() {
     const props = this.props;
     const { selectedColumns } = this.state;
+
     return (
       <div class="row-item">
         {!props.loading && props.fields ? (
@@ -51,6 +67,8 @@ export default class ConfigDetails extends Component {
               selectedColumns={Object.keys(selectedColumns).filter(
                 column => selectedColumns[column]
               )}
+              fieldsWithNotes={this.fieldsWithNotes}
+              toggleField={this.toggleField}
               filters={props.filters}
               ref={ref => (this.reportColumns = ref)}
             />
@@ -88,6 +106,31 @@ class ReportColumns extends Component {
       ...this.getInitialState(nextProps.selectedColumns),
     });
   }
+
+  handleAddNotesClick = () => {
+    openModal(
+      <ModalContent header="Add Custom Note Field">
+        <AddCustomNote
+          onSave={this.handleCustomNoteSave}
+          fields={this.props.fieldsWithNotes}
+        />
+      </ModalContent>
+    );
+  };
+
+  handleCustomNoteSave = values => {
+    const fieldName = `${values.field}.notes.${values.subColumn}`;
+    if (this.state.outputFields.indexOf(fieldName) > -1) {
+      notifyError('Field already exist in config');
+    } else {
+      this.props.toggleField(fieldName, true);
+      closeModal();
+    }
+  };
+
+  handleRemoveClick = fieldName => () => {
+    this.props.toggleField(fieldName, false);
+  };
 
   handleOutPutFieldChange = ({ target }) => {
     const { name, value } = target;
@@ -183,17 +226,25 @@ class ReportColumns extends Component {
           return (
             <div key={column} class="ReportConfig--report-column">
               <div class="label">
-                <span>{column}</span>
+                <span onClick={this.handleRemoveClick(column)}>
+                  <i class="i-no" />
+                </span>
+                <span class="m-l">{column}</span>
                 <span class="reorder-icons pull-right">
-                  {index !== 0 && (
-                    <i className="i-arrow-up" onClick={this.moveUp(column)} />
-                  )}
-                  {lastIndex !== index && (
-                    <i
-                      className="i-arrow-down"
-                      onClick={this.moveDown(column)}
-                    />
-                  )}
+                  <i
+                    class={classList(
+                      'i-arrow-up',
+                      index === 0 && 'visibility-hidden'
+                    )}
+                    onClick={this.moveUp(column)}
+                  />
+                  <i
+                    class={classList(
+                      'i-arrow-down',
+                      lastIndex === index && 'visibility-hidden'
+                    )}
+                    onClick={this.moveDown(column)}
+                  />
                 </span>
               </div>
               <div class="input">
@@ -235,6 +286,11 @@ class ReportColumns extends Component {
             </div>
           );
         })}
+        {!!this.props.fieldsWithNotes.length && (
+          <button class="btn" onClick={this.handleAddNotesClick}>
+            Add Custom Notes Field
+          </button>
+        )}
       </div>
     );
   }
@@ -339,6 +395,7 @@ class FilterValue extends Component {
   }
 }
 
+// need to shift this to some common place
 class CollapsiblePanel extends Component {
   constructor(props) {
     super();
@@ -372,4 +429,11 @@ class CollapsiblePanel extends Component {
       </div>
     );
   }
+}
+
+// helper methods
+function haveNotesField(fields = {}) {
+  return Object.keys(fields).filter(
+    field => fields[field].indexOf('notes') > -1
+  );
 }
