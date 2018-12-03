@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Beneficiary;
+namespace RZP\Models\Contact;
 
 use RZP\Base;
 use RZP\Http\BasicAuth\Type as AuthType;
@@ -8,7 +8,7 @@ use RZP\Http\BasicAuth\Type as AuthType;
 /**
  * Class Fetch
  *
- * @package RZP\Models\Beneficiary
+ * @package RZP\Models\Contact
  */
 class Fetch extends Base\Fetch
 {

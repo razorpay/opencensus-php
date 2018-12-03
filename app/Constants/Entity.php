@@ -38,6 +38,7 @@ class Entity
     const PAYOUT                    = 'payout';
     const REFUND                    = 'refund';
     const REPORT                    = 'report';
+    const CONTACT                   = 'contact';
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
@@ -66,7 +67,6 @@ class Entity
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
     const SETTLEMENT                = 'settlement';
-    const BENEFICIARY               = 'beneficiary';
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const PAYMENT_LINK              = 'payment_link';

@@ -26,6 +26,7 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
@@ -39,7 +40,6 @@ class Table
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
     const PAYMENT_LINK          = 'payment_links';
-    const BENEFICIARY           = 'beneficiaries';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,

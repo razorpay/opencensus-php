@@ -1182,10 +1182,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_BULK_UPDATE_BALANCE_ID_REQUEST   = 'TRANSACTIONS_BULK_UPDATE_BALANCE_ID_REQUEST';
     const TRANSACTIONS_BULK_UPDATE_BALANCE_ID_ERROR     = 'TRANSACTIONS_BULK_UPDATE_BALANCE_ID_ERROR';
 
-    // Trace codes for Beneficiary and Beneficiary account CRUD
-    const BENEFICIARY_CREATE_REQUEST                    = 'BENEFICIARY_CREATE_REQUEST';
-    const BENEFICIARY_UPDATE_REQUEST                    = 'BENEFICIARY_UPDATE_REQUEST';
-    const BENEFICIARY_DELETE_REQUEST                    = 'BENEFICIARY_DELETE_REQUEST';
+    // Trace codes for Contact and Fund account CRUD
+    const CONTACT_CREATE_REQUEST                        = 'CONTACT_CREATE_REQUEST';
+    const CONTACT_UPDATE_REQUEST                        = 'CONTACT_UPDATE_REQUEST';
+    const CONTACT_DELETE_REQUEST                        = 'CONTACT_DELETE_REQUEST';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';

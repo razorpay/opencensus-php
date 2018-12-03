@@ -940,13 +940,12 @@ final class Route
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
-        // Beneficiary Routes
-        'beneficiary_get'                          => ['get',      'beneficiaries/{id}',                             'BeneficiaryController@get'                                         ],
-        'beneficiary_list'                         => ['get',      'beneficiaries',                                  'BeneficiaryController@list'                                        ],
-        'beneficiary_create'                       => ['post',     'beneficiaries',                                  'BeneficiaryController@create'                                      ],
-        'beneficiary_update'                       => ['patch',    'beneficiaries/{id}',                             'BeneficiaryController@update'                                      ],
-        'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
-
+        // Banking Contact Routes
+        'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
+        'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
+        'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
+        'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
+        'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
     ];
 
     public static $public = [
@@ -1175,11 +1174,11 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
-        'beneficiary_get',
-        'beneficiary_list',
-        'beneficiary_create',
-        'beneficiary_update',
-        'beneficiary_delete',
+        'contact_get',
+        'contact_list',
+        'contact_create',
+        'contact_update',
+        //'contact_delete',
     ];
 
     // Only routes defined in internalApps go here
