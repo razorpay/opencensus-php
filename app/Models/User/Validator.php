@@ -80,7 +80,7 @@ class Validator extends Base\Validator
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
     ];
 
-    protected static $verifiyOtpRules = [
+    protected static $verifyOtpRules = [
         Entity::OTP => 'required|filled|min:4',
     ];
 
@@ -206,24 +206,28 @@ class Validator extends Base\Validator
 
     /**
      * Validates send OTP operation
+     *
      * @param  array $input
      * @throws BadRequestValidationFailureException
      */
     public function validateSendOtpOperation(array $input)
     {
+        /** @var Entity $user */
+        $user = $this->entity;
+
         $this->validateInput('createOtp', $input);
 
         if ($input[Entity::MEDIUM] === Entity::MEDIUM_SMS)
         {
             // Contact mobile is optional attribute in user.
-            if ($this->entity->getContactMobile() === null)
+            if ($user->getContactMobile() === null)
             {
                 throw new BadRequestValidationFailureException('User\'s contact mobile does not exist');
             }
 
             // For action other than to verify the contact itself, contact mobile must be verified.
             if (($input[Entity::ACTION] !== Entity::ACTION_VERIFY_CONTACT) and
-                ($this->entity->isContactMobileVerified() === false))
+                ($user->isContactMobileVerified() === false))
             {
                 throw new BadRequestValidationFailureException('User\'s contact mobile must be verified');
             }

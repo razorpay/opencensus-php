@@ -721,7 +721,7 @@ final class Route
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
-        'user_otp_verify'                          => ['post',     'users/otp/verify',                               'UserController@verifyOtpForContactVerification'                    ],
+        'user_otp_verify'                          => ['post',     'users/otp/verify',                               'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 

@@ -45,8 +45,8 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::USER_EDIT,
                 [
-                    'user_id'     => $user->getId(),
-                    'input'       => $input
+                    'user_id' => $user->getId(),
+                    'input'   => $input
                 ]);
         }
 
@@ -274,6 +274,7 @@ class Core extends Base\Core
      * Input format:
      *     - action - E.g. create_payout, verify_contact
      *     - medium - sms|email
+     *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
@@ -283,12 +284,14 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION, compact('input'));
 
         $func = 'sendOtpVia' . studly_case($input[Entity::MEDIUM]);
+
         $this->$func($input, $merchant, $user);
     }
 
     /**
-     * Ref: sendOtp()
-     * Sends OTP to user's contact via Raven.
+     * Ref: `sendOtp()`
+     * Sends OTP to user's contact via SMS.
+     *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
@@ -300,6 +303,7 @@ class Core extends Base\Core
         $receiver = $user->getContactMobile();
         $source   = 'api';
         $template = 'sms.user_action_otp';
+
         // Action must read as verb so can be used like to {action} in raven's generic template.
         $params   = [Entity::ACTION => str_replace('_', ' ', $action)];
 
@@ -308,8 +312,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Ref: sendOtp()
+     * Ref: `sendOtp()`
      * Sends OTP to user's email.
+     *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
@@ -322,11 +327,12 @@ class Core extends Base\Core
     /**
      * Verifies input OTP against specific action(hence context) i.e. verify_contact.
      * Additionally marks users.contact_mobile_verified flag as true if success.
+     *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
      */
-    public function verifyOtpForContactVerification(array $input, Merchant\Entity $merchant, Entity $user)
+    public function verifyContactWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
     {
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_CONTACT_VERIFY, compact('input'));
 

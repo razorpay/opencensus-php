@@ -212,6 +212,7 @@ class Service extends Base\Service
 
     /**
      * Edit user action for logged in user (via Dashboard headers).
+     *
      * @param  array  $input
      * @return array
      */
@@ -550,11 +551,11 @@ class Service extends Base\Service
         $this->core()->sendOtp($input, $this->merchant, $this->user);
     }
 
-    public function verifyOtpForContactVerification(array $input): array
+    public function verifyContactWithOtp(array $input): array
     {
-        $this->user->getValidator()->validateInput('verifiyOtp', $input);
+        $this->user->getValidator()->validateInput('verifyOtp', $input);
 
-        $this->core()->verifyOtpForContactVerification($input, $this->merchant, $this->user);
+        $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
 
         return $this->user->toArrayPublic();
     }
