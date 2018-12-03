@@ -1,14 +1,14 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Beneficiary;
+use RZP\Models\Contact;
 
 /**
  * Class Service
  *
- * @package RZP\Models\Beneficiary\Account
+ * @package RZP\Models\FundAccount
  */
 class Service extends Base\Service
 {
@@ -33,7 +33,7 @@ class Service extends Base\Service
 
     public function fetch(string $beneId, string $id, array $input): array
     {
-        $bene = $this->fetchBeneficiary($beneId);
+        $bene = $this->fetchContact($beneId);
 
         $entity = $this->entityRepo
                        ->findByPublicIdAndBeneficiaryAndMerchant($id, $bene, $this->merchant, $input);
@@ -43,7 +43,7 @@ class Service extends Base\Service
 
     public function fetchMultiple(string $beneId, array $input): array
     {
-        $input[Entity::BENEFICIARY_ID] = Beneficiary\Entity::verifyIdAndStripSign($beneId);
+        $input[Entity::CONTACT_ID] = Contact\Entity::verifyIdAndStripSign($beneId);
 
         $entities = $this->entityRepo
                          ->fetch($input, $this->merchant->getId());
@@ -53,7 +53,7 @@ class Service extends Base\Service
 
     public function create(string $beneId, array $input): array
     {
-        $beneficiary = $this->fetchBeneficiary($beneId, $this->merchant);
+        $beneficiary = $this->fetchContact($beneId, $this->merchant);
 
         $entity = $this->core->create($input, $beneficiary, $this->merchant);
 
@@ -79,10 +79,10 @@ class Service extends Base\Service
         return $entity->toArrayDeleted();
     }
 
-    public function fetchBeneficiary(string $beneId): Beneficiary\Entity
+    public function fetchContact(string $contactId): Contact\Entity
     {
-        /** @var Beneficiary\Entity $beneficiary */
-        $beneficiary = $this->repo->beneficiary->findByPublicIdAndMerchant($beneId, $this->merchant);
+        /** @var Contact\Entity $beneficiary */
+        $beneficiary = $this->repo->beneficiary->findByPublicIdAndMerchant($contactId, $this->merchant);
 
         return $beneficiary;
     }

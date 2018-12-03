@@ -1,19 +1,19 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Beneficiary;
+use RZP\Models\Contact;
 
 /**
  * Class Repository
  *
- * @package RZP\Models\Beneficiary\Account
+ * @package RZP\Models\FundAccount
  */
 class Repository extends Base\Repository
 {
-    protected $entity = 'beneficiary_account';
+    protected $entity = 'fund_account';
 
     protected $expands = [
         Entity::ACCOUNT,
@@ -21,7 +21,7 @@ class Repository extends Base\Repository
 
     public function findByPublicIdAndBeneficiaryAndMerchant(
         string $id,
-        Beneficiary\Entity $bene,
+        Contact\Entity $contact,
         Merchant\Entity $merchant,
         array $input = null): Entity
     {
@@ -29,10 +29,10 @@ class Repository extends Base\Repository
 
         $query = $this->getQueryForFindWithParams($input);
 
-        $beneAccount = $query->merchantId($merchant->getId())
-                             ->where(Entity::BENEFICIARY_ID, $bene->getId())
+        $fundAccount = $query->merchantId($merchant->getId())
+                             ->where(Entity::CONTACT_ID, $contact->getId())
                              ->findOrFailPublic($id);
 
-        return $beneAccount;
+        return $fundAccount;
     }
 }

@@ -7,10 +7,10 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Beneficiary;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -71,11 +71,11 @@ class Core extends Base\Core
         return $newBankAccount;
     }
 
-    public function createBankAccountForBankingBeneficiary(array $input, Beneficiary\Entity $beneficiary): Entity
+    public function createBankAccountForBankingContact(array $input, Contact\Entity $contact): Entity
     {
-        $bankAccount = $this->buildBankAccount($input, $beneficiary->merchant, $this->mode);
+        $bankAccount = $this->buildBankAccount($input, $contact->merchant, $this->mode);
 
-        $bankAccount->associateSource($beneficiary, Type::BENEFICIARY);
+        $bankAccount->associateSource($contact, Type::BENEFICIARY);
 
         $this->repo->saveOrFail($bankAccount);
 

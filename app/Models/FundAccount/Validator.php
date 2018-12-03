@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 
 /**
  * Class Validator
  *
- * @package RZP\Models\Beneficiary\Account
+ * @package RZP\Models\FundAccount
  */
 class Validator extends Base\Validator
 {

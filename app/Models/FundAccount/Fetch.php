@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Http\BasicAuth\Type as AuthType;
@@ -8,19 +8,19 @@ use RZP\Http\BasicAuth\Type as AuthType;
 /**
  * Class Fetch
  *
- * @package RZP\Models\Beneficiary\Account
+ * @package RZP\Models\FundAccount
  */
 class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::BENEFICIARY_ID => 'sometimes|string'
+            Entity::CONTACT_ID => 'sometimes|string'
         ],
     ];
 
     const ACCESSES = [
         self::DEFAULTS => [
-            Entity::BENEFICIARY_ID,
+            Entity::CONTACT_ID,
         ],
         AuthType::PRIVATE_AUTH => [
             //

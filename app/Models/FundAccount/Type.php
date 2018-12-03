@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use RZP\Constants\Entity;
 use RZP\Exception\BadRequestValidationFailureException;

@@ -1,29 +1,29 @@
 <?php
 
-namespace RZP\Models\Beneficiary\Account;
+namespace RZP\Models\FundAccount;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
-use RZP\Models\Beneficiary;
 
 /**
  * Class Entity
  *
- * @package RZP\Models\Beneficiary\Account
+ * @package RZP\Models\FundAccount
  */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
     // Attributes
-    const BENEFICIARY_ID = 'beneficiary_id';
-    const ACCOUNT_TYPE   = 'account_type';
-    const ACCOUNT_ID     = 'account_id';
-    const ACTIVE         = 'active';
+    const CONTACT_ID   = 'contact_id';
+    const ACCOUNT_TYPE = 'account_type';
+    const ACCOUNT_ID   = 'account_id';
+    const ACTIVE       = 'active';
 
-    const ACCOUNT        = 'account';
+    const ACCOUNT = 'account';
 
     protected $generateIdOnCreate = true;
 
@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::BENEFICIARY_ID,
+        self::CONTACT_ID,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_ID,
         self::ACTIVE,
@@ -58,15 +58,15 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected static $sign = 'beneacc';
+    protected static $sign = 'fundacc';
 
-    protected $entity = 'beneficiary_account';
+    protected $entity = 'fund_account';
 
     // --------------- Getters ---------------
 
     public function getBeneficiaryId()
     {
-        return $this->getAttribute(self::BENEFICIARY_ID);
+        return $this->getAttribute(self::CONTACT_ID);
     }
 
     public function getAccountType()
@@ -106,9 +106,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
-    public function beneficiary()
+    public function contact()
     {
-        return $this->belongsTo(Beneficiary\Entity::class);
+        return $this->belongsTo(Contact\Entity::class);
     }
 
     public function account()
