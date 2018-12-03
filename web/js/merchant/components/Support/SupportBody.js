@@ -29,7 +29,7 @@ export default class SupportBody extends Component {
         onChat();
         return;
       }
-
+      onToggle();
       rzpTicketSystem.openModal(`#${id}`);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
@@ -71,33 +71,40 @@ export default class SupportBody extends Component {
                 For integration, account and payment issues
               </small>
             </li>
-            <li
-              class={`support-item p-all chat ${
-                shouldDisable ? 'disabled' : ''
-              }`}
-              onClick={() => handleClick('chat')}
-            >
-              Chat with us{' '}
-              <small class="help-content">(9am-6pm, working days)</small>
-              {notifyCount > 0 && (
-                <span class="support-notify m-l">{notifyCount}</span>
+            {window.rzp_user &&
+              window.rzp_user.activated && (
+                <li
+                  class={`support-item p-all chat ${
+                    shouldDisable ? 'disabled' : ''
+                  }`}
+                  onClick={() => handleClick('chat')}
+                >
+                  Chat with us{' '}
+                  <small class="help-content">(9am-6pm, working days)</small>
+                  {notifyCount > 0 && (
+                    <span class="support-notify m-l">{notifyCount}</span>
+                  )}
+                  <small class="help-block">
+                    For quick questions or help on dashboard
+                  </small>
+                </li>
               )}
-              <small class="help-block">
-                For quick questions or help on dashboard
-              </small>
-            </li>
-            <li
-              class={`support-item p-all call ${
-                shouldDisable ? 'disabled' : ''
-              }`}
-              onClick={() => handleClick('call')}
-            >
-              Call Support{' '}
-              <small class="help-content">(9am-6pm, working days)</small>
-              <small class="help-block">
-                For queries and help on the dashboard
-              </small>
-            </li>
+            {window.rzp_user &&
+            window.rzp_user.experiments.support_call &&
+            window.rzp_user.experiments.support_call.result === 'on' ? (
+              <li
+                class={`support-item p-all call ${
+                  shouldDisable ? 'disabled' : ''
+                }`}
+                onClick={() => handleClick('call')}
+              >
+                Call Support{' '}
+                <small class="help-content">(9am-6pm, working days)</small>
+                <small class="help-block">
+                  For queries and help on the dashboard
+                </small>
+              </li>
+            ) : null}
           </ul>
 
           <div class="support-feedback">

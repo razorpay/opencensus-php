@@ -64,10 +64,8 @@ export default class Support extends Component {
   };
 
   getCSSClass = () => {
-    const { isOpened, isHidden } = this.state;
+    const { isHidden } = this.state;
     let className = 'support';
-
-    if (isOpened) className += ' open';
 
     if (isHidden) className += ' hidden';
 
