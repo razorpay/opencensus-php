@@ -151,7 +151,11 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content, array $input)
     {
-        $content[NetbankingEntity::RECEIVED] = true;
+        $content = [
+            NetbankingEntity::RECEIVED            => true,
+            ResponseFields::STATUS                => $input['gateway'][ResponseFields::STATUS],
+            ResponseFields::BANK_REFERENCE_NUMBER => $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER]
+        ];
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
@@ -175,16 +179,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify);
 
-        if (isset($content[RequestFields::BANK_REFERENCE_NUMBER]))
-        {
-            $type = $this->action . '_' . 'BID_PRESENT';
-        }
-        else
-        {
-            $type = $this->action . '_' . 'BID_ABSENT';
-        }
-
-        $request = $this->getStandardRequestArray($content, 'get', $type);
+        $request = $this->getStandardRequestArray($content, 'get');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -206,7 +201,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+        $verify->verifyResponseContent = $response->body;
     }
 
     protected function verifyPayment($verify)
@@ -231,6 +226,8 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->input['payment'];
 
+        $gatewayPayment = $verify->payment;
+
         $content = [
             RequestFields::MERCHANT_CONSTANT => Constants::MERCHANT_CONSTANT,
             RequestFields::PAYMENT_ID        => $payment['id'],
@@ -239,25 +236,16 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL        => 'abc' //TODO find what needs to be sent here
         ];
 
-        if (isset($input['gateway'][NetbankingEntity::BANK_PAYMENT_ID]))
-        {
-            $content[RequestFields::BANK_REFERENCE_NUMBER] = $verify->input['gateway'][NetbankingEntity::BANK_PAYMENT_ID];
-        }
+        $content[RequestFields::BANK_REFERENCE_NUMBER] = $gatewayPayment[NetbankingEntity::BANK_PAYMENT_ID] ?? '';
 
         return $content;
-    }
-
-    protected function parseVerifyResponse($body): array
-    {
-
-        return [NetbankingEntity::STATUS => $body];
     }
 
     protected function checkVerifyGatewaySuccess($verify)
     {
         $verify->gatewaySuccess = false;
 
-        if (VerifyResponse::isSuccess($verify->verifyResponseContent[NetbankingEntity::STATUS]) === true)
+        if (VerifyResponse::isSuccess($verify->verifyResponseContent) === true)
         {
             $verify->gatewaySuccess = true;
         }
