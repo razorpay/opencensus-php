@@ -208,6 +208,62 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
+
+            [
+                'id'             => '1L8dUj9MzP3Bj4',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Nsi8IbQ3pWP7A',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Otj9JcY5qYB9X',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Otj9JcY6dYB9Y',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
         ];
     }
 
