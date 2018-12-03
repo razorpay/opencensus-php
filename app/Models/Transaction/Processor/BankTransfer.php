@@ -44,7 +44,7 @@ class BankTransfer extends Base
      */
     protected function setMerchantBalance()
     {
-        $this->merchantBalance = $this->txn->merchant->bankingBalance();
+        $this->merchantBalance = $this->txn->merchant->bankingBalance;
     }
 
     /**
@@ -61,7 +61,6 @@ class BankTransfer extends Base
      */
     public function updateTransaction()
     {
-        $this->repo->saveOrFail($this->txn);
     }
 
     /**
@@ -70,5 +69,15 @@ class BankTransfer extends Base
     public function calculateFees()
     {
         $this->credit = $this->source->getAmount();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function updateBalances(bool $updateNodalBalance = true)
+    {
+        parent::updateBalances($updateNodalBalance);
+
+        $this->repo->saveOrFail($this->txn);
     }
 }

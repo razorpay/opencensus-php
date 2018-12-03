@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -198,7 +200,17 @@ class Entity extends Base\PublicEntity
 
         $this->validateEntityIdUnique();
 
-        $entity->transaction()->associate($this);
+        //
+        // Besides transactions having source_id and source_type, most such
+        // source contain transaction_id (belongsTo) or transaction (morphTo)
+        // relation and hence below association is being done. But now newer
+        // source entities e.g. BankTransfer do not contain later kind of columns
+        // in them, is unnecessary.
+        //
+        if ($entity->transaction() instanceof BelongsTo)
+        {
+            $entity->transaction()->associate($this);
+        }
     }
 
     public function settlement()

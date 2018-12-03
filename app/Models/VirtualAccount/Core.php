@@ -111,7 +111,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, null, null, $merchant->bankingBalance());
+        return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
     }
 
     protected function buildVirtualAccountAndReceivers(
