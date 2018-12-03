@@ -4,5 +4,18 @@ namespace RZP\Models\Merchant\Balance;
 
 class Type
 {
-    const PRIMARY = 'primary';
+    /*
+     * PG balance types.
+     */
+    const PRIMARY        = 'primary';
+    const FEE_CREDITS    = 'fee_credits';
+    const REFUND_CREDITS = 'refund_credits';
+    const AMOUNT_CREDITS = 'amount_credits';
+
+    public static $pgBalances = [
+        self::PRIMARY,
+        self::FEE_CREDITS,
+        self::REFUND_CREDITS,
+        self::AMOUNT_CREDITS,
+    ];
 }
