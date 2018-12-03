@@ -14,17 +14,6 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Payment extends Base
 {
-    public function setSourceDefaults()
-    {
-        $txnData = [
-            Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => $this->source->merchant->getChannel(),
-        ];
-
-        $this->txn->fill($txnData);
-    }
-
     public function updateTransaction()
     {
         $this->trace->info(
@@ -59,6 +48,16 @@ class Payment extends Base
         }
 
         return parent::createTransaction();
+    }
+
+    protected function shouldUpdateBalance()
+    {
+        if ($this->source->isAuthorized() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function fillEmptyTxnFeesAndAmount()

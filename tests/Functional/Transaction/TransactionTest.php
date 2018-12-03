@@ -42,7 +42,8 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterAddingAdjustment'];
         $testData['entity_id'] = $adj['id'];
-        $this->assertArraySelectiveEquals($testData, $txn);
+        $testData['balance_id'] = '10000000000000';
+        $response = $this->assertArraySelectiveEquals($testData, $txn);
 
         return $adj;
     }
@@ -95,7 +96,6 @@ class TransactionTest extends TestCase
 
         $this->assertEquals($txn['entity_id'], $payment['id']);
         $this->assertEquals($txn['type'], 'payment');
-
         return $payment;
     }
 
@@ -143,6 +143,52 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
+    public function testTransactionAfterRefundUsingTransactionV2Feature()
+    {
+        $this->fixtures->merchant->addFeatures('transaction_v2');
+
+        return $this->testTransactionAfterRefund();
+    }
+
+    public function testAuthOnlyTransactionAfterRefund()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        // This time we do not capture the payment and refund it
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterRefundingAuthOnlyPayment'];
+        $testData['entity_id'] = $refund['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        // Now running the transaction V2 Flow for same
+        $this->fixtures->merchant->addFeatures('transaction_v2');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        // This time we do not capture the payment and refund it
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterRefundingAuthOnlyPaymentUsingTransactionV2'];
+        $testData['entity_id'] = $refund['id'];
+
+        // Balance is set to Merchant Balance and
+        // Debit Amount is set to zero for this scenario.
+        // Note: Merchant is not charged any fees in this scenario.
+        $this->assertArraySelectiveEquals($testData, $txn);
+    }
+
     public function testCreateDisputeWithDeduct()
     {
         $payment = $this->fixtures->create('payment:captured');
@@ -155,6 +201,7 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['txnDataAfterDisputingPayment'];
         $testData['entity_id'] = $adjustment['id'];
+        $testData['balance_id'] = '10000000000000';
 
         $this->assertArraySelectiveEquals($testData, $txn);
 
@@ -170,7 +217,7 @@ class TransactionTest extends TestCase
         $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterDisputingPaymentWithoutDeduct'];
-
+        $testData['balance_id'] = '10000000000000';
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $dispute;
@@ -237,6 +284,7 @@ class TransactionTest extends TestCase
         $this->assertEquals($payment['id'], $transaction['entity_id']);
         $this->assertEquals(0, $transaction['credit']);
         $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
         $this->assertEquals('prepaid', $transaction['fee_model']);
         $this->assertEquals('fee', $transaction['credit_type']);
         $this->assertEquals($payment['fee'], $transaction['fee_credits']);
@@ -307,6 +355,88 @@ class TransactionTest extends TestCase
         $this->assertEquals('default', $transaction['credit_type']);
         $this->assertEquals(0, $transaction['fee_credits']);
         $this->assertEquals($payment['fee'], $transaction['fee']);
+    }
+
+    public function testTransactionsBulkUpdateBalanceId()
+    {
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEmpty($response);
+
+        $this->createMultipleTransactions();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['count'] = 5;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content'] = [];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEmpty($response);
+
+        $this->createMultipleTransactions();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_ids'] = ['10000000000000'];
+        $testData['response']['content']['count'] = 5;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $this->createMultipleTransactions();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_limit'] = 0;
+        $testData['response']['content'] = [];
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEmpty($response);
+    }
+
+    public function testTransactionsBulkUpdateBalanceIdLimitTest()
+    {
+        $this->createMultipleTransactions();
+
+        $testData = $this->testData['testTransactionsBulkUpdateBalanceId'];
+
+        $testData['request']['content']['limit'] = 1;
+        $testData['response']['content']['count'] = 1;
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    protected function createMultipleTransactions()
+    {
+        $payments = $this->fixtures->times(5)->create(
+                'payment:captured',
+                [
+                    'merchant_id' => '10000000000000',
+                    'amount' => '10000',
+                ]
+            );
+
+        foreach ($payments as $payment)
+        {
+            $txn = $payment->transaction;
+            $this->fixtures->edit('transaction', $txn->getId(), ['balance_id' => null]);
+        }
     }
 
     protected function createDirectSettlementPayment()

@@ -508,7 +508,7 @@ class Gateway extends Base\Gateway
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;
         }
-        else if (isset($ex) === true)
+        else if ((isset($ex) === true) and ($ex instanceOf Exception\GatewayErrorException))
         {
             $attributes[Field::STATUS_CODE] = Status::NO_RECORDS;
 

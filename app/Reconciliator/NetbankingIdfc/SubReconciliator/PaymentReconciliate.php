@@ -2,24 +2,20 @@
 
 namespace RZP\Reconciliator\NetbankingIdfc\SubReconciliator;
 
-use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Status;
+use RZP\Reconciliator\NetbankingIdfc\Constants;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_PAYMENT_ID             = 'aggregatormerchant_txn_reference_no';
-    const COLUMN_BANK_REFERENCE_NUMBER  = 'rib_txn_id';
-    const COLUMN_SERVICE_TAX            = 'service_tax';
-    const COLUMN_GATEWAY_FEE            = [ 'service_charge', 'commission' ];
-    const COLUMN_PAYMENT_STATUS         = 'e_comm_payment_status';
-
     public function getPaymentId(array $row)
     {
-        if ((empty($row[self::COLUMN_PAYMENT_ID]) === false) or
-            ($row[self::COLUMN_PAYMENT_STATUS] === 'SUCCESS'))
+        if (empty($row[Constants::RZP_PAYMENT_ID]) === false)
         {
-            return $row[self::COLUMN_PAYMENT_ID];
+            return $row[Constants::RZP_PAYMENT_ID];
         }
 
         return null;
@@ -27,45 +23,42 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::COLUMN_BANK_REFERENCE_NUMBER];
-    }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
-    }
-
-    protected function getGatewayFee($row)
-    {
-        $gatewayFee = 0;
-
-        foreach(self::COLUMN_GATEWAY_FEE as $fee)
-        {
-            if (isset($row[$fee]) === true)
-            {
-                $gatewayFee += Helper::getIntegerFormattedAmount($row[$fee]);
-            }
-        }
-
-        return $gatewayFee;
-    }
-
-    protected function getGatewayServiceTax($row)
-    {
-        $gatewayServiceTax = 0;
-
-        if (isset($row[self::COLUMN_SERVICE_TAX]) === true)
-        {
-            $gatewayServiceTax += Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
-        }
-
-        return $gatewayServiceTax;
+        return $row[Constants::BANK_REFERENCE_NO];
     }
 
     public function getGatewayPayment($paymentId)
     {
-        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, 'authorize');
+        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
 
         return $gatewayPayment;
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        return ($row[Constants::STATUS] === 'SUCCESS') ? Status::AUTHORIZED : Status::FAILED;
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway,
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getReconPaymentAmount(array $row)
+    {
+        return Helper::getIntegerFormattedAmount($row[Constants::TRANSACTION_AMOUNT] ?? null);
     }
 }

@@ -30,6 +30,7 @@ class Constants
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
     const ISG              = 'isg';
+    const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
 
     /**
@@ -52,6 +53,7 @@ class Constants
             self::AXIS,
             self::RBL,
             self::SCBL,
+            self::SBI,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -104,7 +106,7 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
-            self::CORPORATION   => ['ibank@corpbank.co.in', 'settlements@razorpay.com'],
+            self::CORPORATION   => ['corporation.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -137,6 +139,7 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
+            self::SBI      => [''],
         ],
 
         Type::REFUND_FAILED => [

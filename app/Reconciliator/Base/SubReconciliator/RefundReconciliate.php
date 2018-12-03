@@ -7,6 +7,7 @@ use App;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
@@ -43,11 +44,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $refund;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Entity $batch = null)
     {
-        parent::__construct($gateway);
+        parent::__construct($gateway, $batch);
 
         $this->messenger = new Messenger();
+
+        $this->messenger->batch = $batch;
     }
 
     public function runReconciliate($row)

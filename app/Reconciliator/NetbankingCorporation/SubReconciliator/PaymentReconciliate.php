@@ -11,13 +11,6 @@ use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     protected function getPaymentId(array $row)
     {
         return $row[ReconciliationFields::MERCHANT_TXN_ID];
@@ -25,7 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+        return $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
     protected function getReferenceNumber($row)
@@ -61,18 +54,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getGatewayPaymentDate($row)
     {
         return $row[ReconciliationFields::TXN_EXECUTED_DATE] ?? null;
-    }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
-    }
-
-    protected function getInputForForceAuthorize($row)
-    {
-        return [
-            'gateway_payment_id' => $row[ReconciliationFields::BANK_TXN_ID],
-        ];
     }
 
     protected function getReconPaymentStatus(array $row)

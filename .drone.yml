@@ -287,7 +287,7 @@ pipeline:
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
-    channel: dev-test-2
+    channel: tech_builds
     username: drone
     icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
     template: >
@@ -424,6 +424,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: func
     tag:
@@ -461,6 +463,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: beta
     tag:
@@ -498,6 +502,8 @@ pipeline:
       - api-canary-sqs-webhooks-failure
       - api-canary-sqs-webhooks-live
       - api-canary-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: beta
     tag:
@@ -560,6 +566,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: echo
     tag:
@@ -621,6 +629,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: delta
     tag:
@@ -681,6 +691,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: charlie
     tag:
@@ -743,6 +755,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: api
     tag:
@@ -859,6 +873,8 @@ pipeline:
       - api-sqs-webhooks-failure
       - api-sqs-webhooks-live
       - api-sqs-webhooks-test
+      - api-sqs-settlements-test
+      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: zeta
     tag:

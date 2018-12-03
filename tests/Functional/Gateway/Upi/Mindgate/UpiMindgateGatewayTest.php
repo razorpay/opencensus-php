@@ -514,6 +514,36 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertSame('ZA', $upiEntity['status_code']);
     }
 
+    public function testCollectRejectedFailureUnknownRespCode()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'unknownrespcode@hdfcbank';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $this->makeS2SCallbackAndGetContent($content);
+        });
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testPaymentWithExpiryPrivateAuth()
     {
         $this->fixtures->merchant->addFeatures(['s2supi']);

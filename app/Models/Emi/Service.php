@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 class Service extends Base\Service
@@ -29,6 +30,12 @@ class Service extends Base\Service
             $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+        }
+
+        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        {
+            // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
+            unset($plans[IFSC::SBIN]);
         }
 
         return $plans;
@@ -76,8 +83,7 @@ class Service extends Base\Service
                 }
             }
             // If offer is forced, there's no need to show the other EMI plans
-            else if (($order === null) or
-                     ($order->isOfferForced() === false))
+            else if ($this->shouldShowNotOfferEmiOption($offers, $order, $plan) === true)
             {
                 $plans[$issuer][] = [
                     'duration'   => $duration,
@@ -88,7 +94,40 @@ class Service extends Base\Service
             }
         }
 
+        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        {
+            // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
+            unset($plans[IFSC::SBIN]);
+        }
+
         return $plans;
+    }
+
+    protected function shouldShowNotOfferEmiOption($offers, $order, $plan): bool
+    {
+        // If there's no order involved, there's no reason to do any filtering
+        if ($order === null)
+        {
+            return true;
+        }
+
+        // Whether regular EMI options are to be shown
+        // now depends on whether the order is forced-EMI
+        if (($offers->count() === 1) and
+            ($order->isOfferForced() === true))
+        {
+            $offer = $offers->first();
+
+            if ($this->checkIfPlanMatchesOffer($plan, $offer) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // For not forced offers, again there's no need to filter anything
+        return true;
     }
 
     public function fetch($id)
@@ -184,17 +223,9 @@ class Service extends Base\Service
                 return;
             }
 
-            $bank = $offer->getIssuer();
-
-            $network = $offer->getPaymentNetwork();
-
-            $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
-
             foreach($emiPlans as $emiPlan)
             {
-                if (($emiPlan->getBank() === $bank) and
-                    ($emiPlan->getNetwork() === $network) and
-                    (in_array($emiPlan->getDuration(), $durations, true) === true))
+                if ($this->checkIfPlanMatchesOffer($emiPlan, $offer) === true)
                 {
                     $emiOfferPlans = [$emiPlan->getId() => $offer->getPublicId()] + $emiOfferPlans;
                 }
@@ -202,6 +233,34 @@ class Service extends Base\Service
         });
 
         return $emiOfferPlans;
+    }
+
+    protected function checkIfPlanMatchesOffer($emiPlan, $offer)
+    {
+        $bank = $offer->getIssuer();
+
+        if (($bank !== null) and
+            ($emiPlan->getBank() !== $bank))
+        {
+            return false;
+        }
+
+        $network = $offer->getPaymentNetwork();
+
+        if (($network !== null) and
+            ($emiPlan->getNetwork() !== $network))
+        {
+            return false;
+        }
+
+        $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
+
+        if (in_array($emiPlan->getDuration(), $durations, true) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email = null)

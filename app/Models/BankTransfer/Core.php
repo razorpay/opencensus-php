@@ -156,6 +156,12 @@ class Core extends Base\Core
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
+        // Skip slack alerts in test mode
+        if ($this->isTestMode() === true)
+        {
+            return;
+        }
+
         $this->app['slack']->queue(
             TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
             array_merge($input, ['message' => $ex->getMessage()]),

@@ -1163,4 +1163,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkRegenerateBalanceIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkRegenerateBalanceIds($input);
+
+        return ApiResponse::json($response);
+    }
 }

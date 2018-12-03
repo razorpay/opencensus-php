@@ -61,6 +61,7 @@ final class Route
         'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
+        'payment_redirect_3ds'                	   => ['post',     'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
@@ -217,6 +218,7 @@ final class Route
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
+        'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                         ],
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
@@ -318,6 +320,7 @@ final class Route
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
+        'transactions_bulk_update_balance_id'      => ['post',     'transactions/bulk/balanceid',                    'TransactionController@transactionsBulkUpdateBalanceId'             ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -493,6 +496,7 @@ final class Route
         'payment_link_view_get'                    => ['get',      'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_view_post'                   => ['post',     'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
+        'payment_link_get_details'                 => ['get',      'payment_links/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
         'payment_link_create'                      => ['post',     'payment_links',                                  'PaymentLinkController@create'                                      ],
         'payment_link_update'                      => ['patch',    'payment_links/{id}',                             'PaymentLinkController@update'                                      ],
@@ -549,6 +553,7 @@ final class Route
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test_post'              => ['post',     't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
+        'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                             => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
@@ -922,6 +927,8 @@ final class Route
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
 
+        'dynamic_netbanking_url_update'            => ['post',     'gateway/netbanking/urlsync/{driver}',            'GatewayController@updateNetbankingUrlInStatusCake'                 ],
+
         // subscription registration
         'subscription_registration_list_tokens'    => ['get',      'subscription_registration/tokens',               'SubscriptionRegistrationController@listTokens'                     ],
         'subscription_registration_list_links'     => ['get',      'subscription_registration/auth_links',           'SubscriptionRegistrationController@listAuthLinks'                  ],
@@ -932,6 +939,14 @@ final class Route
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
+
+        // Beneficiary Routes
+        'beneficiary_get'                          => ['get',      'beneficiaries/{id}',                             'BeneficiaryController@get'                                         ],
+        'beneficiary_list'                         => ['get',      'beneficiaries',                                  'BeneficiaryController@list'                                        ],
+        'beneficiary_create'                       => ['post',     'beneficiaries',                                  'BeneficiaryController@create'                                      ],
+        'beneficiary_update'                       => ['patch',    'beneficiaries/{id}',                             'BeneficiaryController@update'                                      ],
+        'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
+
     ];
 
     public static $public = [
@@ -994,6 +1009,7 @@ final class Route
         'device_create',
         'merchant_methods_downtime',
         'virtual_account_order_create',
+        'payment_redirect_3ds',
     ];
 
     public static $device = [
@@ -1159,6 +1175,11 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'beneficiary_get',
+        'beneficiary_list',
+        'beneficiary_create',
+        'beneficiary_update',
+        'beneficiary_delete',
     ];
 
     // Only routes defined in internalApps go here
@@ -1429,6 +1450,7 @@ final class Route
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
         'payment_link_get',
+        'payment_link_get_details',
         'payment_link_list',
         'payment_link_create',
         'payment_link_update',
@@ -1442,8 +1464,10 @@ final class Route
         'merchant_methods_edit',
         'merchant_fetch_methods',
         'on_demand_settlement',
+
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
+
         'merchant_instant_activation_post',
         'subscription_registration_list_tokens',
         'subscription_registration_list_links',
@@ -1453,6 +1477,7 @@ final class Route
         'subscription_registration_delete_token',
         'subscription_registration_charge_token',
         'merchant_submit_support_call_request',
+        'token_fetch_card',
     ];
 
     // These will run on internal auth with the assurance
@@ -1773,6 +1798,8 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
+        'transactions_bulk_update_balance_id',
+        'merchant_balance_bulk_backfill_ids'
     ];
 
     public static $routePermission = [
@@ -2135,6 +2162,8 @@ final class Route
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'transactions_bulk_update_balance_id'      => '*',
+        'merchant_balance_bulk_backfill_ids'       => '*',
     ];
 
     public static $direct = [
@@ -2332,6 +2361,7 @@ final class Route
             'webhook_fire',
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
+            'token_fetch_card',
         ],
 
         'kotak' => [
@@ -2536,19 +2566,40 @@ final class Route
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
-        // 'subscription_cancel',
+        'subscription_cancel',
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
         'subscription_test_charge',
+        'subscription_manual_retry',
+        // Crons
+        'subscriptions_expire',
+        // 'subscriptions_charge_invoices',
+        // 'subscriptions_retry',
     ];
 
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
+        'plan_create',
+        'plan_fetch',
+        'plan_fetch_multiple',
+        'subscription_create',
+        'subscription_fetch',
+        'subscription_fetch_multiple',
+        'subscription_cancel',
+        'addon_fetch',
+        'addon_fetch_multiple',
+        'addon_delete',
+        'subscription_create_addon',
+        'subscription_fetch_due_addons',
         'subscription_test_charge',
+        'subscription_manual_retry',
+        'subscription_cancel',
+        'subscription_test_charge',
+        'subscription_manual_retry',
     ];
 
     /**

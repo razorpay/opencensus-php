@@ -39,6 +39,7 @@ class Table
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
     const PAYMENT_LINK          = 'payment_links';
+    const BENEFICIARY           = 'beneficiaries';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -176,6 +177,18 @@ class Table
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
 
     const SETTING               = 'settings';
+
+    // P2P Service Tables
+    const P2P_DEVICE            = 'p2p_devices';
+    const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';
+    const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
+    const P2P_BANK              = 'p2p_banks';
+    const P2P_BANK_ACCOUNT      = 'p2p_bank_accounts';
+    const P2P_VPA               = 'p2p_vpa';
+    const P2P_HANDLE            = 'p2p_handles';
+    const P2P_BENEFICIARY       = 'p2p_beneficiaries';
+    const P2P_TRANSACTION       = 'p2p_transactions';
+    const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

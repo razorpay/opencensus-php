@@ -16,6 +16,7 @@ use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
@@ -24,6 +25,7 @@ use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -656,10 +658,42 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function balances()
+    {
+        return $this->hasMany(Balance\Entity::class);
+    }
+
+    /**
+     * @deprecated
+     * This method won't work correctly for merchant having multiple balances.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function balance()
     {
-        return $this->hasOne(
-            'RZP\Models\Merchant\Balance\Entity', self::ID, 'id');
+        app('trace')->error(TraceCode::MERCHANT_DEPR_BALANCE_REFERRRED);
+
+        return $this->hasOne(Balance\Entity::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function primaryBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function bankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
     public function bankAccount()
@@ -1579,9 +1613,11 @@ class Entity extends Base\PublicEntity
     {
         $liveConnection = app('basicauth')->getLiveConnection();
 
-        return $this->getConnectionName() === $liveConnection ?
+        $tags = $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
                 (clone $this)->setConnection($liveConnection)->tagNames();
+
+        return array_map('strtolower', $tags);
     }
 
     public function isEmailOptional()
@@ -1667,7 +1703,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        return in_array($tagName, $tagNames, true) === true;
+        return in_array(strtolower($tagName), $tagNames, true) === true;
     }
 
     public function toArrayUser()
@@ -1816,6 +1852,12 @@ class Entity extends Base\PublicEntity
     // delete this after 31st
     protected function setDiwaliPromotionalFeatureIfApplicable()
     {
+        // Linked accounts don't have Diwali
+        if ($this->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or

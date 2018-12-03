@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Gateway\Downtime\Webhook;
+use RZP\Jobs\DynamicNetBankingUrlUpdater;
 
 class Service extends Base\Service
 {

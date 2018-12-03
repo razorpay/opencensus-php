@@ -199,6 +199,12 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $verify->verifyResponseContent = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($verify->verifyResponseContent);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function getVerifyAttributesToSave(array $content, $gatewayPayment): array
@@ -267,30 +273,6 @@ class Gateway extends Base\Gateway
         $gatewayEntity->fill($attrs);
 
         $this->repo->saveOrFail($gatewayEntity);
-    }
-
-    public function forceAuthorizeFailed($input)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                                        $input['payment']['id'],
-                                        Payment\Action::AUTHORIZE);
-
-        // If it's already authorized on gateway side, We just return.
-        if (($gatewayPayment->getReceived() === true) and
-            ($gatewayPayment->getStatus() === StatusCode::SUCCESS_CODE))
-        {
-            return true;
-        }
-
-        $attrs = [
-            Base\Entity::STATUS => StatusCode::SUCCESS_CODE,
-        ];
-
-        $gatewayPayment->fill($attrs);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return true;
     }
 
     protected function getContentArrayForChecksumCalculation($input)

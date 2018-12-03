@@ -312,13 +312,11 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $bankRefNumber = '';
-
         if ($this->action === Action::VERIFY)
         {
             $gatewayPayment = $verify->payment;
 
-            $bankRefNumber = $gatewayPayment['bank_payment_id'];
+            $bankRefNumber = $gatewayPayment['bank_payment_id'] ?? '';
         }
         elseif ($this->action === Action::CALLBACK)
         {

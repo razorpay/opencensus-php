@@ -60,6 +60,7 @@ class Repository extends Base\Repository
         Entity::CAPTURED        => 'sometimes|boolean',
         Entity::BATCH_ID        => 'sometimes|string|size:20',
         Entity::RECURRING       => 'sometimes|boolean',
+        // @codingStandardsIgnoreLine
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
@@ -226,6 +227,32 @@ class Repository extends Base\Repository
                     ->where($terminalEmi, '=', false)
                     ->with('card.globalCard')
                     ->with('emiPlan')
+                    ->select($paymentData)
+                    ->get();
+    }
+
+    public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
+    {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
+        return $this->newQuery()
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where(Entity::BANK, '=', $bank)
+                    ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
+                    ->with($relations)
                     ->select($paymentData)
                     ->get();
     }
@@ -1294,7 +1321,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    public function fetchPendingEmandateDebit(string $gateway, $from, $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 

@@ -188,11 +188,47 @@ class Gateway extends Base\Gateway
             {
                 $this->checkErrorsAndThrowException($response);
             }
+
+            return [
+                Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+            ];
         }
         catch (SoapFault $exception)
         {
             $this->handleSoapFault($exception, 'Refund failed');
         }
+    }
+
+    protected function getGatewayData($refundFields)
+    {
+        if ((is_array($refundFields) === true) and (empty($refundFields) === false))
+        {
+            return [
+                F::REQUEST_ID              => $refundFields[F::REQUEST_ID] ?? null,
+                F::DECISION                => $refundFields[F::DECISION] ?? null,
+                F::REASON_CODE             => stringify($refundFields[F::REASON_CODE] ?? null),
+                F::REFUND_DATETIME         =>
+                    $refundFields[Fields::CC_CREDIT_REPLY][F::REFUND_DATETIME] ?? null,
+                F::REQUEST_DATETIME        =>
+                    $refundFields[Fields::CC_CREDIT_REPLY][F::REQUEST_DATETIME] ?? null,
+            ];
+        }
+        return [];
+    }
+
+    protected function getGatewayVerifyData($verifyRefundFields)
+    {
+        if ((is_array($verifyRefundFields) === true) and (empty($verifyRefundFields) === false))
+        {
+            return [
+                F::ATTRIBUTES              => json_encode($verifyRefundFields[Fields::ATTRIBUTES] ?? null),
+                F::R_CODE                  => $verifyRefundFields[Fields::R_CODE] ?? null,
+                F::R_FLAG                  => $verifyRefundFields[Fields::R_FLAG] ?? null,
+                F::R_MSG                   => $verifyRefundFields[Fields::R_MSG] ?? null,
+            ];
+        }
+        return [];
     }
 
     public function reverse(array $input)
@@ -221,6 +257,11 @@ class Gateway extends Base\Gateway
             {
                 $this->checkErrorsAndThrowException($response);
             }
+
+            return [
+                Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+            ];
         }
         catch (SoapFault $exception)
         {
@@ -237,21 +278,27 @@ class Gateway extends Base\Gateway
      *
      * @param array $input
      *
-     * @return bool
+     * @return array
      * @throws Exception\LogicException
      */
     public function verifyRefund(array $input)
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $content = $this->sendRefundVerifyRequest($input);
@@ -275,9 +322,11 @@ class Gateway extends Base\Gateway
                 {
                     throw new Exception\LogicException(
                         'Unexpected status',
-                        null,
+                        ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
                         [
-                            'received_status' => $refundReply[0]['@attributes'][F::NAME]
+                            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($refundReply),
+                            Payment\Gateway::GATEWAY_KEYS      =>
+                                ['received_status' => $refundReply[0]['@attributes'][F::NAME]]
                         ]);
                 }
 
@@ -304,11 +353,18 @@ class Gateway extends Base\Gateway
                     $this->createGatewayRefundEntity($attributes, $input);
                 }
 
-                return true;
+                return $scroogeResponse->setSuccess(true)
+                                       ->setGatewayResponse($content)
+                                       ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
+                                       ->toArray();
             }
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->setGatewayResponse($content)
+                               ->setGatewayKeys($this->getGatewayVerifyData($content))
+                               ->toArray();
     }
 
     protected function getRefundAttributesFromVerify(array $request)
@@ -1618,7 +1674,15 @@ class Gateway extends Base\Gateway
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
 
         throw new Exception\GatewayErrorException(
-                $code, $reasonCode, $desc, [], null, $action);
+                $code,
+                $reasonCode,
+                $desc,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ],
+                null,
+                $action);
     }
 
     protected function validateCallbackGatewayFields(array $input)

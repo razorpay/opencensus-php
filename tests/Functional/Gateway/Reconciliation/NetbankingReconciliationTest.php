@@ -9,6 +9,7 @@ use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Reconciliator\NetbankingEquitas\Constants;
 
 class NetbankingReconciliationTest extends TestCase
 {
@@ -138,9 +139,11 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
 
-        $batch = $this->getDbLastEntityToArray('batch', 'test');
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals(Status::PROCESSED, $batch['status']);
 
@@ -160,19 +163,27 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'F');
 
+        $this->fixtures->edit('netbanking', $netbanking->getId(), ['bank_payment_id' => null]);
+
         $fileContents = $this->generateFile('equitas', []);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile('NetbankingEquitas', $uploadedFile);
 
-        $transactionEntity = $this->getDbLastEntityToArray('transaction', 'test');
+        $transactionEntity = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
 
-        $batch = $this->getDbLastEntityToArray('batch', 'test');
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals(Status::PROCESSED, $batch['status']);
+
+        $netbankingEntity = $this->getDbLastEntityToArray('netbanking');
+
+        $this->assertNotNull($netbankingEntity['bank_payment_id']);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -194,7 +205,7 @@ class NetbankingReconciliationTest extends TestCase
             {
                 if ($action === 'equitas_recon')
                 {
-                    $content['TransactionAmount'] = '50.00';
+                    $content[Constants::AMOUNT] = '50.00';
                 }
             });
 
@@ -204,7 +215,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->reconcile('NetbankingEquitas', $uploadedFile);
 
-        $transactionEntity = $this->getLastEntity('transaction', true);
+        $transactionEntity = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNull($transactionEntity['reconciled_at']);
     }
@@ -339,7 +350,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'F');
+        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'ACT001');
+
+        $this->fixtures->edit('netbanking', $netbanking->getId(), ['bank_payment_id' => null]);
 
         $fileContents = $this->generateFile('idfc', []);
 
@@ -354,6 +367,14 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $netbankingEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($netbankingEntity['bank_payment_id']);
+
+        $this->assertEquals($netbankingEntity['status'], 'SUC000');
     }
 
     public function testObcManualReconciliation()
@@ -375,6 +396,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $netbankingEntity = $this->getLastEntity('netbanking', true);
 
@@ -408,6 +431,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $batch = $this->getLastEntity('batch', true);
 
@@ -479,7 +504,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -534,6 +561,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
     }
 
     public function testIciciManualReconciliation()
@@ -542,7 +571,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createPayment('netbanking_icici');
 
-        $this->createNetbanking($payment['id'], 'ICIC', 'S');
+        $this->createNetbanking($payment['id'], 'ICIC', 'Y');
 
         $fileContents = $this->generateFile('icici', []);
 
@@ -559,6 +588,33 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testIciciAmountMismatch()
+    {
+        $this->gateway = 'netbanking_icici';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'Y');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[0]['amount'] = '1.00';
+            });
+
+        $fileContents = $this->generateFile('icici', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIcici', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     public function testCorporationSuccessRecon()

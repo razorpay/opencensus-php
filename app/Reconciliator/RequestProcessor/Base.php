@@ -134,7 +134,7 @@ class Base extends Core
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN                  => ['saurav.chowdhury@razorpay.com'],
+        self::ADMIN                  => ['kajol.nigam@razorpay.com'],
     ];
 
     /**

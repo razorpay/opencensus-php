@@ -65,6 +65,8 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
+
+        'p2p_upi_sharp',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -118,6 +120,8 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
+
+    'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -502,6 +506,9 @@ return [
 
         'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
         'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+
+        // Aditiya birla direct settlement TID
+        'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),
     ],
 
     'netbanking_axis' => [

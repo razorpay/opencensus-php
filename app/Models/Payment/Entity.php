@@ -2913,6 +2913,11 @@ class Entity extends Base\PublicEntity
         return 'upi.polling.' . $id . '.status';
     }
 
+    public function getCacheInputKey(): string
+    {
+        return 'payment:fallback.' . $this->getId() . '.card_number';
+    }
+
     public function getTransactionType()
     {
         if ($this->isRecurring() === true)

@@ -436,9 +436,15 @@ class NetbankingHdfcEmandateTest extends TestCase
     {
         // Validate debit success entities
 
-        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id']);
+
+        $transaction = $payment->transaction;
+
+        $payment = $payment->toArray();
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 

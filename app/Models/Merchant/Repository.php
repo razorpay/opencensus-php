@@ -465,7 +465,7 @@ class Repository extends Base\Repository
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
 
-        $serialized[Entity::BALANCE] = optional($entity->balance)->getBalance() ?: 0;
+        $serialized[Entity::BALANCE] = optional($entity->primaryBalance)->getBalance() ?: 0;
 
         return $serialized;
     }
@@ -610,5 +610,30 @@ class Repository extends Base\Repository
                       ->whereNull($accessMapsDeletedAt);
 
         return $query;
+    }
+
+    public function fetchMerchantsForSettlement(array $inMerchantIds = [], array $notInMerchantIds = [])
+    {
+        $merchantId             = $this->dbColumn(Entity::ID);
+        $colHoldFunds           = $this->dbColumn(Entity::HOLD_FUNDS);
+        $colActivatedAt         = $this->dbColumn(Entity::ACTIVATED_AT);
+
+        $activatedMerchants = $this->repo->merchant
+                                   ->newQuery()
+                                   ->select($merchantId)
+                                   ->where($colHoldFunds, 0)
+                                   ->whereNotNull($colActivatedAt);
+
+        if (empty($inMerchantIds) === false)
+        {
+            $activatedMerchants->whereIn($merchantId, $inMerchantIds);
+        }
+
+        if (empty($notInMerchantIds) === false)
+        {
+            $activatedMerchants->whereNotIn($merchantId, $notInMerchantIds);
+        }
+
+        return $activatedMerchants;
     }
 }

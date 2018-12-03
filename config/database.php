@@ -69,7 +69,8 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE,
+                'flag2'  => ConfigKey::MASTER_PERCENT,
              ]
         ],
 
@@ -95,7 +96,8 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE
+                'flag'   => ConfigKey::SKIP_SLAVE,
+                'flag2'  => ConfigKey::MASTER_PERCENT,
              ]
         ],
 
@@ -212,16 +214,14 @@ return array(
             ]
         ],
 
-
         'redis_labs' => [
-            'host'               => env('REDIS_LABS_HOST'),
-            'port'               => env('REDIS_LABS_PORT'),
-            'timeout'            => 30,
-            'options'            => [
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 30,
+            'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ],
+            ]
         ],
-
     ],
 
     /*

@@ -14,6 +14,12 @@ use RZP\Trace\TraceCode;
  */
 class RedisLagChecker implements LagChecker
 {
+    // connection identifiers
+
+    const MASTER      = 'master';
+
+    const SLAVE       = 'slave';
+
     /**
      * @var array
      */
@@ -24,11 +30,21 @@ class RedisLagChecker implements LagChecker
      */
     protected $trace;
 
+    /**
+     * @var int
+     */
+    protected $weight;
 
     public function __construct(array $config)
     {
         $this->trace  = TraceFacade::getFacadeRoot();
+
         $this->config = $config;
+
+        //
+        // set this once for connection because this will execute multiple times for single request
+        //
+        $this->weight = rand(1, 100);
     }
 
     /**
@@ -44,7 +60,34 @@ class RedisLagChecker implements LagChecker
 
         try
         {
-            $skipSlave = (bool) Cache::get($this->config['flag']);
+            $skipSlavePercentage = (int) Cache::get($this->config['flag2']);
+
+            //
+            // If skip_slave config is set to 0 or any non integer character, it will always go to master
+            //
+            // If skip_slave config is set to number between 1 - 100 (inclusive of both),
+            // we can skip slave (route to master) for percentage mentioned.
+            // For example: if skip_slave = 10,
+            // 10% of the traffic will skip slave (request is served by master)
+            // remaining 90% will NOT skip slave (request is served by slave)
+            //
+
+            if ($skipSlavePercentage === 0)
+            {
+                $skipSlave = false;
+            }
+            else
+            {
+                $skipSlave = ($this->weight <= $skipSlavePercentage);
+
+                $connection = ($skipSlave === true) ? self::MASTER : self::SLAVE;
+
+                $this->trace->info(
+                    TraceCode::WEIGHTED_DATABASE_ROUTING,
+                    [
+                        'connection' => $connection,
+                    ]);
+            }
         }
         catch (\Throwable $ex)
         {

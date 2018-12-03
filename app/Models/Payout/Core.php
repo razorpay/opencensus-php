@@ -359,7 +359,7 @@ class Core extends Base\Core
         }
         else
         {
-            $merchantBalance = $merchant->balance->getBalance();
+            $merchantBalance = $merchant->primaryBalance->getBalance();
 
             if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
