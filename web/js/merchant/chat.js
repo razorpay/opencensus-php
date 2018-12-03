@@ -7,7 +7,12 @@ const FRESHCHAT_HOST = 'https://wchat.freshchat.com';
 
 const initSmooch = data => {
   let role = data.userRole;
-  Smooch.init({ appId: SMOOCH_APP_ID }).then(function() {
+  Smooch.init({
+    appId: SMOOCH_APP_ID,
+    displayStyle: 'button',
+    buttonHeight: '0',
+    buttonWidth: '0',
+  }).then(function() {
     Smooch.updateUser({
       givenName: data.name,
       email: data.email,
@@ -23,6 +28,9 @@ const initSmooch = data => {
       },
     });
   });
+
+  // export smooch instance to window object
+  window.Smooch = Smooch;
 };
 
 const initFreshchat = data => {
@@ -30,6 +38,9 @@ const initFreshchat = data => {
   fcWidget.init({
     token: FRESHCHAT_TOKEN,
     host: FRESHCHAT_HOST,
+    config: {
+      headerProperty: { hideChatButton: true },
+    },
   });
   fcWidget.setExternalId(data.id);
   fcWidget.user.setFirstName(data.name);

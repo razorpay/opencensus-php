@@ -1,10 +1,43 @@
 import { Component } from 'react';
 
 import SupportHeader from 'merchant/components/Support/SupportHeader';
+import SupportBody from 'merchant/components/Support/SupportBody';
 
 export default class Support extends Component {
   state = {
     isOpened: false,
+    isHidden: false,
+    notifyCount: 0,
+  };
+
+  componentDidMount() {
+    this.bindEvents();
+  }
+
+  bindEvents = () => {
+    //bind events for freshchat if available
+    if (window.fcWidget) {
+      window.fcWidget.on('widget:opened', () => {
+        this.handleVisibility(true);
+      });
+      window.fcWidget.on('widget:closed', () => {
+        this.handleVisibility(false);
+      });
+
+      window.fcWidget.on('unreadCount:notify', response => {
+        this.setState({ notifyCount: response.count });
+      });
+    }
+
+    //bind events for smooch if available
+    if (window.Smooch) {
+      window.Smooch.on('widget:opened', () => {
+        this.handleVisibility(true);
+      });
+      window.Smooch.on('widget:closed', () => {
+        this.handleVisibility(false);
+      });
+    }
   };
 
   handleToggle = () => {
@@ -14,12 +47,48 @@ export default class Support extends Component {
     });
   };
 
+  handleVisibility = shouldHide => {
+    this.setState({ isHidden: shouldHide });
+  };
+
+  handleChat = () => {
+    if (window.Smooch) {
+      window.Smooch.open();
+    }
+
+    if (window.fcWidget) {
+      window.fcWidget.open();
+    }
+
+    this.handleVisibility(true);
+  };
+
+  getCSSClass = () => {
+    const { isOpened, isHidden } = this.state;
+    let className = 'support';
+
+    if (isOpened) className += ' open';
+
+    if (isHidden) className += ' hidden';
+
+    return className;
+  };
+
   render() {
+    const { notifyCount, isOpened } = this.state;
+
     return (
-      <div>
+      <div class={this.getCSSClass()}>
         <SupportHeader
-          isOpen={this.state.isOpened}
           onToggle={this.handleToggle}
+          isOpened={isOpened}
+          notifyCount={notifyCount}
+        />
+        <SupportBody
+          onToggle={this.handleToggle}
+          isOpened={isOpened}
+          onChat={this.handleChat}
+          notifyCount={notifyCount}
         />
       </div>
     );
