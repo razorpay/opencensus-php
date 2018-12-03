@@ -2,7 +2,11 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\GatewayErrorException;
+use RZP\Gateway\Netbanking\Vijaya;
+use RZP\Exception\PaymentVerificationException;
 
 return [
     'testPayment' => [
@@ -32,9 +36,107 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
-        'bank_payment_id' => '12345678',
+        'bank_payment_id' => Vijaya\Mock\Server::BANK_REF_NUMBER,
         'received'        => true,
         'bank'            => 'VIJB',
+        'status'          => Vijaya\Status::SUCCESS,
+    ],
+
+    'testPaymentFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
+
+    'testAmountTampering' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => LogicException::class,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
+    ],
+
+    'netbankingPaymentFailed' => [
+        'amount'          => 50000,
+        'status'          => 'N',
+    ],
+
+/*    'netbankingPaymentFailedVerifySuccess' => [
+        'amount'          => 50000,
         'status'          => 'Y',
+        'bank_payment_id' => '9999999999',
+    ],*/
+
+    'netbankingVerify' => [
+        'bank_payment_id' => Vijaya\Mock\Server::BANK_REF_NUMBER,
+        'received'        => true,
+        'bank'            => 'VIJB',
+        'status'          => Vijaya\Status::SUCCESS
+    ],
+
+    'testPaymentVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        ],
     ],
 ];
