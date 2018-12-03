@@ -365,6 +365,7 @@ class ReconciliationFileTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
 
         $gatewayPayment = $this->getLastEntity('card_fss', true);
 
@@ -380,8 +381,8 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0]['Auth/Approval Code'], $updatedPayment['reference2']);
 
         $updatedTransaction = $this->getLastEntity('transaction', true);
-
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
         $this->assertNotNull($updatedTransaction['gateway_settled_at']);
         $this->assertNotNull($updatedTransaction['gateway_fee']);
         $this->assertNotNull($updatedTransaction['gateway_service_tax']);
@@ -416,6 +417,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertNull($transaction['reconciled_at']);
 
+        $this->assertNull($transaction['reconciled_type']);
+
         $gatewayRefund = $this->getLastEntity('card_fss', true);
 
         $entries[] = $this->overrideCardFssRefund($gatewayRefund, $gatewayPayment);
@@ -430,6 +433,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -484,7 +488,8 @@ class ReconciliationFileTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(null, $transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
 
         $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
 
@@ -505,6 +510,7 @@ class ReconciliationFileTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transaction['reconciled_at']);
+        $this->assertNotNull($transaction['reconciled_type']);
 
         // Beneficiary name should be overridden by the one in the file.
         $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
@@ -685,6 +691,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
         $this->assertNotNull($updatedTransaction['gateway_settled_at']);
         $this->assertNotNull($updatedTransaction['gateway_fee']);
         $this->assertNotNull($updatedTransaction['gateway_service_tax']);
@@ -711,6 +718,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should be null
         $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
 
         $entries[] = $this->overrideBilldeskRefund($gatewayRefund);
 
@@ -723,6 +731,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -848,6 +857,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1336,6 +1346,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1360,6 +1371,7 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1393,6 +1405,7 @@ class ReconciliationFileTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
         $this->assertNotNull($transactionEntity['settled_at']);
         $this->assertNotNull($transactionEntity['gateway_fee']);
         $this->assertNotNull($transactionEntity['gateway_service_tax']);
@@ -1455,6 +1468,8 @@ class ReconciliationFileTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
         $this->assertNotNull($transactionEntity['settled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);

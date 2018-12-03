@@ -351,6 +351,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
@@ -384,6 +385,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)
@@ -414,8 +416,10 @@ class AttemptReconcileTest extends TestCase
         $this->assertTestResponse($batch, $batchTestData);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertEquals($sourceType, $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+        $this->assertNotNull($txn['reconciled_type']);
     }
 
     public function testRetrySettlementKotak()

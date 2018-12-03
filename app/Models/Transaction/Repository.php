@@ -533,13 +533,17 @@ class Repository extends Base\Repository
      * Updated reconciled_at to current time for given entities
      *
      * @param $entityIds
+     * @param $reconciledType
      * @return mixed
      */
-    public function bulkReconciliationUpdate($entityIds)
+    public function bulkReconciliationUpdate($entityIds, $reconciledType = ReconciledType::NA)
     {
         $time = time();
 
-        $attributes = [Entity::RECONCILED_AT => $time];
+        $attributes = [
+                        Entity::RECONCILED_AT   => $time,
+                        Entity::RECONCILED_TYPE => $reconciledType
+                      ];
 
         return $this->newQuery()
                     ->whereIn(Entity::ENTITY_ID, $entityIds)
