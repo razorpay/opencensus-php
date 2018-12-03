@@ -79,12 +79,6 @@ return [
         'status'          => 'N',
     ],
 
-/*    'netbankingPaymentFailedVerifySuccess' => [
-        'amount'          => 50000,
-        'status'          => 'Y',
-        'bank_payment_id' => '9999999999',
-    ],*/
-
     'netbankingVerify' => [
         'bank_payment_id' => Vijaya\Mock\Server::BANK_REF_NUMBER,
         'received'        => true,
