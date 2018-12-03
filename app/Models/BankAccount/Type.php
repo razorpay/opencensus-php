@@ -10,7 +10,7 @@ class Type
     const CUSTOMER        = 'customer';
     const VIRTUAL_ACCOUNT = 'virtual_account';
     const REFUND          = 'refund';
-    const BENEFICIARY     = 'beneficiary';
+    const CONTACT         = 'contact';
 
     public static function validateType($type)
     {

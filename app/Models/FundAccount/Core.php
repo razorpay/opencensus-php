@@ -52,6 +52,9 @@ class Core extends Base\Core
                 $account = (new BankAccount\Core)->createBankAccountForBankingContact($accountInput, $contact);
                 break;
 
+            case Type::VPA:
+                // TODO
+
             default:
                 throw new LogicException('Temp');
         }

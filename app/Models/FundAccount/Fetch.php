@@ -14,19 +14,24 @@ class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::CONTACT_ID => 'sometimes|string'
+            Entity::CONTACT_ID   => 'sometimes|string',
+            Entity::ACCOUNT_TYPE => 'sometimes|string',
         ],
     ];
 
+    const SIGNED_IDS = [
+        Entity::CONTACT_ID,
+    ];
+
     const ACCESSES = [
-        self::DEFAULTS => [
+        self::DEFAULTS         => [
             Entity::CONTACT_ID,
+            Entity::ACCOUNT_TYPE,
         ],
         AuthType::PRIVATE_AUTH => [
             //
         ],
         AuthType::PROXY_AUTH   => [
-            //
         ],
     ];
 

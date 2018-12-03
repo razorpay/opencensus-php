@@ -15,6 +15,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -26,7 +27,6 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Models\Beneficiary;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
@@ -463,7 +463,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
-            'beneficiary'               => Beneficiary\Entity::class,
+            'contact'                   => Contact\Entity::class,
         ]);
     }
 

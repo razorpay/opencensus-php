@@ -35,6 +35,8 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
+        // TODO: Validate/enforce contact_id in input
+
         $contactId = array_pull($input, Entity::CONTACT_ID);
 
         /** @var Contact\Entity $contact */

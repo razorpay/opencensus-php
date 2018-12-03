@@ -75,7 +75,7 @@ class Core extends Base\Core
     {
         $bankAccount = $this->buildBankAccount($input, $contact->merchant, $this->mode);
 
-        $bankAccount->associateSource($contact, Type::BENEFICIARY);
+        $bankAccount->associateSource($contact, Type::CONTACT);
 
         $this->repo->saveOrFail($bankAccount);
 
