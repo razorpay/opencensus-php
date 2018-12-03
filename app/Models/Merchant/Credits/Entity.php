@@ -130,7 +130,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        $balance = $this->merchant->primaryBalance();
+        $balance = $this->merchant->primaryBalance;
 
         switch ($this->getType())
         {

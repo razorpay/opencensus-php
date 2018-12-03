@@ -668,10 +668,8 @@ class Entity extends Base\PublicEntity
 
     /**
      * @deprecated
-     * Important: This method won't work correctly for merchant having multiple
-     * balances. But keeping this method here until no following traces as most
-     * merchants are pg type only still.
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne|null
+     * This method won't work correctly for merchant having multiple balances.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function balance()
     {
@@ -681,23 +679,21 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * @return Balance\Entity|null
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function primaryBalance()
     {
-        return $this->balances()
-                    ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
-                    ->first();
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY);
     }
 
-     /**
-     * @return Balance\Entity|null
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function bankingBalance()
     {
-        return $this->balances()
-                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
-                    ->first();
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
     public function bankAccount()

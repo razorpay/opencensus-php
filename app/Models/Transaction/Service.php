@@ -167,7 +167,7 @@ class Service extends Base\Service
         {
             try
             {
-                $balanceId = $merchant->balance->getId();
+                $balanceId = $merchant->primaryBalance->getId();
                 $merchantId = $merchant->getId();
 
                 $tempCount = $this->repo->transaction->bulkUpdateBalanceId($merchantId, $balanceId, $limit);

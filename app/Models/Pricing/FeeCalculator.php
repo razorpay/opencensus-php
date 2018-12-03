@@ -133,7 +133,7 @@ class FeeCalculator
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->primaryBalance();
+        $merchantBalance = $this->entity->merchant->primaryBalance;
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
