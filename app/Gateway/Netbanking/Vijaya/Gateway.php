@@ -201,7 +201,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyResponseContent = $response->body;
+        $verify->verifyResponseContent = Utility::parseHTMLAndGetTagContents($response->body, 'h4');
     }
 
     protected function verifyPayment($verify)
