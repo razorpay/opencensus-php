@@ -471,7 +471,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1537966190
         ],
         Payment\Gateway::CARD_FSS       => [
-            self::GO_LIVE_TIMESTAMP => 1543573854
+            self::GO_LIVE_TIMESTAMP => 1543816680
         ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
