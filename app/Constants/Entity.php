@@ -76,6 +76,7 @@ class Entity
     const FILE_HANDLER              = 'file_handler';
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
+    const FUND_ACCOUNT              = 'fund_account';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
@@ -97,7 +98,6 @@ class Entity
     const CREDIT_TRANSACTION        = 'credit_transaction';
     const MERCHANT_EMI_PLANS        = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS        = 'terminal_analytics';
-    const BENEFICIARY_ACCOUNT       = 'beneficiary_account';
     const MERCHANT_ACCESS_MAP       = 'merchant_access_map';
     const BATCH_FUND_TRANSFER       = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
@@ -320,7 +320,6 @@ class Entity
         self::MERCHANT_INVOICE          => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
-        self::BENEFICIARY_ACCOUNT       => \RZP\Models\Beneficiary\Account::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,

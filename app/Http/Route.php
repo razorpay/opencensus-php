@@ -943,11 +943,11 @@ final class Route
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
 
-        'beneficiary_account_get'                  => ['get',      'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@get'                                  ],
-        'beneficiary_account_list'                 => ['get',      'beneficiaries/{beneId}/accounts',                'BeneficiaryAccountController@list'                                 ],
-        'beneficiary_account_create'               => ['post',     'beneficiaries/{beneId}/accounts',                'BeneficiaryAccountController@create'                               ],
-        'beneficiary_account_update'               => ['patch',    'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@update'                               ],
-        'beneficiary_account_delete'               => ['delete',   'beneficiaries/{beneId}/accounts/{accId}',        'BeneficiaryAccountController@delete'                               ],
+        'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
+        'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
+        'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
+        'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
+        'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
     ];
 
     public static $public = [
@@ -1174,11 +1174,11 @@ final class Route
         'contact_create',
         'contact_update',
         //'contact_delete',
-        'beneficiary_account_get',
-        'beneficiary_account_list',
-        'beneficiary_account_create',
-        'beneficiary_account_update',
-        'beneficiary_account_delete',
+        'fund_account_get',
+        'fund_account_list',
+        'fund_account_create',
+        'fund_account_update',
+        'fund_account_delete',
     ];
 
     // Only routes defined in internalApps go here

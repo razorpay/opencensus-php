@@ -12,6 +12,8 @@ use RZP\Models\Contact;
  */
 class Service extends Base\Service
 {
+    use Base\Traits\ServiceHasCrudMethods;
+
     /**
      * @var Core
      */
@@ -28,27 +30,7 @@ class Service extends Base\Service
 
         $this->core = new Core;
 
-        $this->entityRepo = $this->repo->beneficiary_account;
-    }
-
-    public function fetch(string $beneId, string $id, array $input): array
-    {
-        $bene = $this->fetchContact($beneId);
-
-        $entity = $this->entityRepo
-                       ->findByPublicIdAndBeneficiaryAndMerchant($id, $bene, $this->merchant, $input);
-
-        return $entity->toArrayPublic();
-    }
-
-    public function fetchMultiple(string $beneId, array $input): array
-    {
-        $input[Entity::CONTACT_ID] = Contact\Entity::verifyIdAndStripSign($beneId);
-
-        $entities = $this->entityRepo
-                         ->fetch($input, $this->merchant->getId());
-
-        return $entities->toArrayPublic();
+        $this->entityRepo = $this->repo->fund_account;
     }
 
     public function create(string $beneId, array $input): array
@@ -72,18 +54,19 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+        /** @var Entity $fundAccount */
+        $fundAccount = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $this->core->delete($entity);
+        $this->core->delete($fundAccount);
 
-        return $entity->toArrayDeleted();
+        return $fundAccount->toArrayDeleted();
     }
 
     public function fetchContact(string $contactId): Contact\Entity
     {
-        /** @var Contact\Entity $beneficiary */
-        $beneficiary = $this->repo->beneficiary->findByPublicIdAndMerchant($contactId, $this->merchant);
+        /** @var Contact\Entity $contact */
+        $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
 
-        return $beneficiary;
+        return $contact;
     }
 }
