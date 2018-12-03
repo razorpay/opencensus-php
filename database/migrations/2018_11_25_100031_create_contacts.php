@@ -21,10 +21,10 @@ class CreateContacts extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Contact::ID, 14)
+            $table->char(Contact::ID, Contact::ID_LENGTH)
                   ->primary();
 
-            $table->char(Contact::MERCHANT_ID, 14);
+            $table->char(Contact::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->string(Contact::NAME, 255)
                   ->nullable();
