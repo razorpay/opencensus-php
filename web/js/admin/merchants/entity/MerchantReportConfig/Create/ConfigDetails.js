@@ -5,6 +5,7 @@ import { openModal, closeModal, notifyError } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 
 import AddCustomNote from './AddCustomNote';
+import AddConstantField from './AddConstantField';
 
 export default class ConfigDetails extends Component {
   state = {
@@ -118,6 +119,14 @@ class ReportColumns extends Component {
     );
   };
 
+  handleAddConstantClick = () => {
+    openModal(
+      <ModalContent header="Add Constant Field">
+        <AddConstantField onSave={this.handleConstantSave} />
+      </ModalContent>
+    );
+  };
+
   handleCustomNoteSave = values => {
     const fieldName = `${values.field}.notes.${values.subColumn}`;
     if (this.state.outputFields.indexOf(fieldName) > -1) {
@@ -126,6 +135,12 @@ class ReportColumns extends Component {
       this.props.toggleField(fieldName, true);
       closeModal();
     }
+  };
+
+  handleConstantSave = values => {
+    const fieldName = `constant:${values.field}`;
+    this.props.toggleField(fieldName, true);
+    closeModal();
   };
 
   handleRemoveClick = fieldName => () => {
@@ -291,6 +306,9 @@ class ReportColumns extends Component {
             Add Custom Notes Field
           </button>
         )}
+        <button class="btn" onClick={this.handleAddConstantClick}>
+          Add Constant Field
+        </button>
       </div>
     );
   }
