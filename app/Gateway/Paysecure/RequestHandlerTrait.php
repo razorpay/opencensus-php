@@ -178,6 +178,15 @@ trait RequestHandlerTrait
      */
     protected function sendRequest($command, $params)
     {
+        $this->traceGatewayPaymentRequest(
+            [
+                'command'    => $command,
+                'parameters' => $params,
+                'gateway'    => $this->gateway,
+            ],
+            $this->input
+        );
+
         $requestBody    = $this->getRequestBody($params, $command);
 
         try
@@ -215,7 +224,9 @@ trait RequestHandlerTrait
         $this->app['trace']->info(
             TraceCode::GATEWAY_RESPONSE,
             [
-                'response' => $arrayResponse
+                'response'   => $arrayResponse,
+                'payment_id' => $this->input['payment']['id'],
+                'gateway'    => $this->gateway,
             ]
         );
 
