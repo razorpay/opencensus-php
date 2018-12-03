@@ -38,7 +38,7 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'verify');
 
-        $content = 'Your Payment is Successful';
+        $content = '<HTML><head><title> Shopping Mall Message Page </title></head><body><LINK rel="stylesheet" href="" type="text/css"><BODY bgcolor="#ffffff" link="#ff3300" vlink="#bbbbbb"><table border=0 width=100% CELLPADDING="5" cellspacing=0><tr><td><H4>Your Payment is Successful</H4>&nbsp;</TD></tr></table><center><!--p--><a href="">Return To Shopping Site<a/><!--/p--></center></body></HTML>';
 
         $this->content($content, 'verify');
 
