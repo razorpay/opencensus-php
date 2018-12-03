@@ -89,10 +89,25 @@ export default class ActivationWizard extends React.Component {
         window.RZP.appHost,
         [
           {
-            name: 'activationSuccess',
+            name: 'submitForm',
             hasReply: true,
             callback: reply => {
               this.onActivationSuccess = reply;
+              this.submitForm();
+            },
+          },
+          {
+            name: 'notifyWindowResize',
+            hasReply: true,
+            callback: reply => {
+              this.onFormUIUpdate = reply;
+            },
+          },
+          {
+            name: 'notifyFormValidity',
+            hasReply: true,
+            callback: reply => {
+              this.onTabValidityChange = reply;
             },
           },
         ],
@@ -316,6 +331,21 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  handleUiUpdate() {
+    if (this.onFormUIUpdate) {
+      const body = document.body;
+      this.onFormUIUpdate(body.clientWidth, body.clientHeight);
+    }
+  }
+
+  componentDidMount() {
+    this.handleUiUpdate();
+  }
+
+  componentDidUpdate() {
+    this.handleUiUpdate();
+  }
+
   render() {
     const isFormLocked = !!this.props.data.locked;
 
@@ -377,15 +407,20 @@ export default class ActivationWizard extends React.Component {
   tabValidity() {
     const data = this.formData;
 
-    return (
+    const isValid =
       data !== void 0 &&
       FORM_TABS.every(
         c =>
           Array.isArray(c)
             ? c.every(d => isFieldValid(d, this, data))
             : isFieldValid(c, this, data)
-      )
-    );
+      );
+
+    if (this.onTabValidityChange) {
+      this.onTabValidityChange(isValid);
+    }
+
+    return isValid;
   }
 }
 
