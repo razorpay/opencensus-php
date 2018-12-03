@@ -443,6 +443,8 @@ class Repository extends \Razorpay\Spine\Repository
         Models\Base\PublicEntity $entity,
         bool $withTrashed = false)
     {
+        assertTrue($this->isTransactionActive(), 'Lock for update attempted without transaction!');
+
         $lockedEntity = $this->lockForUpdate($entity->getId(), $withTrashed);
 
         $entity->setRawAttributes($lockedEntity->getAttributes(), true);

@@ -1076,22 +1076,25 @@ class Service extends Base\Service
         {
             if ($payment->shouldTimeout($now) === true)
             {
-                $this->repo->payment->lockForUpdateAndReload($payment);
-
-                try
+                $this->repo->transaction(function() use ($payment, & $count, & $error)
                 {
-                    $this->getNewProcessor($payment->merchant)
-                         ->setPayment($payment)
-                         ->timeoutPayment();
+                    $this->repo->payment->lockForUpdateAndReload($payment);
 
-                    $count++;
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->traceException($e);
+                    try
+                    {
+                        $this->getNewProcessor($payment->merchant)
+                             ->setPayment($payment)
+                             ->timeoutPayment();
 
-                    $error++;
-                }
+                        $count++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException($e);
+
+                        $error++;
+                    }
+                });
             }
         }
 
