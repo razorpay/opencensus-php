@@ -369,7 +369,7 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['response']['content']['count'] = 5;
+        $testData['response']['content']['totalUpdatedRowCounts'] = 5;
 
         $this->ba->adminAuth();
 
@@ -387,8 +387,8 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['merchant_ids'] = ['10000000000000'];
-        $testData['response']['content']['count'] = 5;
+        $testData['request']['content']['merchantIds'] = ['10000000000000'];
+        $testData['response']['content']['totalUpdatedRowCounts'] = 5;
 
         $this->ba->adminAuth();
 
@@ -415,7 +415,7 @@ class TransactionTest extends TestCase
         $testData = $this->testData['testTransactionsBulkUpdateBalanceId'];
 
         $testData['request']['content']['limit'] = 1;
-        $testData['response']['content']['count'] = 1;
+        $testData['response']['content']['totalUpdatedRowCounts'] = 1;
 
         $this->ba->adminAuth();
 

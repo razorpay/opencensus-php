@@ -844,4 +844,33 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $connection;
     }
+
+    public function getUniqueMerchantIdsWhereBalanceIdIsNull(int $limit): array
+    {
+        assertTrue(
+            in_array($this->entity, E::ENTITIES_WITH_BALANCE_ID_COLUMN),
+            "Entity not whitelisted for this query - $this->entity");
+
+        return $this->newQuery()
+                    ->select(PublicEntity::MERCHANT_ID)
+                    ->whereNull('balance_id')
+                    ->limit($limit)
+                    ->distinct()
+                    ->get()
+                    ->pluck(PublicEntity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function bulkUpdateBalanceId(string $merchantId, string $balanceId, int $limit)
+    {
+        assertTrue(
+            in_array($this->entity, E::ENTITIES_WITH_BALANCE_ID_COLUMN),
+            "Entity not whitelisted for this query - $this->entity");
+
+        return $this->newQueryWithoutTimestamps()
+                    ->where(PublicEntity::MERCHANT_ID, $merchantId)
+                    ->whereNull('balance_id')
+                    ->limit($limit)
+                    ->update(['balance_id' => $balanceId]);
+    }
 }
