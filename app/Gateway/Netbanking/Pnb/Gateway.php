@@ -140,7 +140,10 @@ class Gateway extends Base\Gateway
 
         $verify->payment = $this->saveVerifyContent($verify);
 
-        $this->setVerifyAmountMismatch($verify);
+        if ($verify->gatewaySuccess === true)
+        {
+            $this->setVerifyAmountMismatch($verify);
+        }
     }
 
     protected function getEncryptedString(array $input, $glue = '|')
@@ -380,6 +383,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
+            //TODO should I store transaction_id or refund_reference_no here ?
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $responseArray[ResponseFields::REFUND_REFERENCE_NO];
         }
 
@@ -414,7 +418,12 @@ class Gateway extends Base\Gateway
 
         // TODO : Add check for checksum ?
 
-        return $responseArray['data'][0];
+        if (isset($responseArray['data']) === true)
+        {
+            return $responseArray['data'][0];
+        }
+
+        return $responseArray;
     }
 
     protected function getVerifyStatus(Verify $verify) :string
