@@ -21,6 +21,12 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
+const accountTypes = [
+  'Select Account Type...',
+  { label: 'Savings', name: 'savings' },
+  { label: 'Current', name: 'current' },
+];
+
 const mandatoryFields = [
   'description',
   'mandateMethod',
@@ -120,6 +126,14 @@ export default class CreateNewAuthLinkContainer extends Component {
     this.setState({ notes });
   };
 
+  handleAuthTypeChange = event => {
+    let mandateBankAccountType = '';
+    if (event.target.value === 'netbanking') {
+      mandateBankAccountType = 'savings';
+    }
+    this.setState({ mandateBankAccountType });
+  };
+
   onCreate = () => {
     const data = { ...this.state };
     const notes =
@@ -150,7 +164,10 @@ export default class CreateNewAuthLinkContainer extends Component {
           data.mandateMethod === 'emandate' && !!data.mandateMaxAmount
             ? rupeesToPaise(data.mandateMaxAmount)
             : undefined,
-        auth_type: !data.skipBankDetails ? 'netbanking' : undefined, //hardcoded after aadhaar was disabled temporarily
+        auth_type:
+          data.mandateMethod === 'emandate' && !data.skipBankDetails
+            ? data.mandateAuthType
+            : undefined,
         expire_at: !Number(data.tokenHasNoExpiry)
           ? data.mandateExpireAt
           : undefined,
@@ -161,7 +178,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 ifsc_code: data.mandateBankAccountIFSC,
                 account_number: data.mandateBankAccountNumber,
                 beneficiary_name: data.mandateBeneficiaryName,
-                account_type: 'savings', // hardcoded after aadhaar was disabled temporarily
+                account_type: data.mandateBankAccountType || 'savings',
               }
             : undefined,
       },
@@ -344,6 +361,33 @@ export default class CreateNewAuthLinkContainer extends Component {
                   </div>
                 </Input.Group>
 
+                <Input.Group
+                  label="Authentication"
+                  class="InputGroup--inline"
+                  disabled={skipBankDetails}
+                >
+                  <div class="Input-content">
+                    <SelectAuthType
+                      emandateBanks={this.state.emandateBanks}
+                      mandateBankName={this.state.mandateBankName}
+                      skipBankDetails={skipBankDetails}
+                      handleAuthTypeChange={this.handleAuthTypeChange}
+                    />
+
+                    <Input.Select
+                      name="mandateBankAccountType"
+                      options={accountTypes}
+                      size="half_big"
+                      description="Type of Bank Account"
+                      value={this.state.mandateBankAccountType}
+                      disabled={
+                        !skipBankDetails &&
+                        this.state.mandateAuthType !== 'aadhaar'
+                      }
+                    />
+                  </div>
+                </Input.Group>
+
                 <Input.Group label="Token Expiry" class="InputGroup--vTop">
                   <Input.Check
                     fieldLabel="Until cancelled"
@@ -424,6 +468,23 @@ export default class CreateNewAuthLinkContainer extends Component {
   }
 }
 
+function SelectAuthType(props) {
+  const authTypeOptions = getAuthTypes(
+    props.mandateBankName,
+    props.emandateBanks
+  );
+  return (
+    <Input.Select
+      name="mandateAuthType"
+      options={authTypeOptions}
+      size="half_big"
+      description="Preferred Authentication Method"
+      onChange={props.handleAuthTypeChange}
+      disabled={!props.skipBankDetails && authTypeOptions.length < 2}
+    />
+  );
+}
+
 function PaymentMethod({ loading, avlblMethods }) {
   if (loading)
     return (
@@ -457,4 +518,25 @@ function PaymentMethodPlaceHolder({ content }) {
 // utils required
 function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';
+}
+
+function getAuthTypes(selectedBankName, emandateBanks) {
+  if (!selectedBankName) return ['Select Authentication'];
+  const authTypeOptions = getAuthTypeOptions(
+    filterAuthTypes(findBankFrom(emandateBanks, selectedBankName))
+  );
+  return ['Select Authentication', ...authTypeOptions];
+}
+
+function findBankFrom(banks, bankName) {
+  return banks.find(bank => bank.name === bankName);
+}
+
+function getAuthTypeOptions(authTypes) {
+  return authTypes.map(type => ({ label: titleCase(type), name: type }));
+}
+
+const ALLOWED_AUTH_TYPES = ['aadhaar', 'netbanking'];
+function filterAuthTypes({ authTypes = [] }) {
+  return authTypes.filter(type => ALLOWED_AUTH_TYPES.indexOf(type) > -1);
 }
