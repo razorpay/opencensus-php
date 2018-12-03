@@ -154,7 +154,7 @@ class Gateway extends Base\Gateway
         $content = [
             NetbankingEntity::RECEIVED            => true,
             ResponseFields::STATUS                => $input['gateway'][ResponseFields::STATUS],
-            ResponseFields::BANK_REFERENCE_NUMBER => $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER]
+            ResponseFields::BANK_REFERENCE_NUMBER => $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER] ?? null
         ];
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
