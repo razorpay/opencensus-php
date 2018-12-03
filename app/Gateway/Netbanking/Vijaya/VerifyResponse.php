@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Vijaya;
 
-use RZP\Exception;
+use DOMDocument;
 
 class VerifyResponse
 {
@@ -14,17 +14,29 @@ class VerifyResponse
         self::FAILURE
     ];
 
-    public static function isSuccess($status): bool
+    public static function isSuccess($body): bool
     {
-        if (in_array($status, self::STATUS_LIST) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                $status,
-                'Gateway response status is invalid'
-            );
-        }
+        $dom = new DOMDocument();
 
-        return ($status === self::SUCCESS);
+        libxml_use_internal_errors(true);
+
+        $dom->loadHTML($body);
+
+        $h4tags = [];
+
+        //TODO : should the entire html be searched or only h4 tags
+        foreach ($dom->getElementsByTagName('h4') as $node)
+        {
+            $h4tags[] = trim(strip_tags($dom->saveHTML($node)));
+        };
+
+        if (in_array(self::SUCCESS, $h4tags))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
