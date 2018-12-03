@@ -5,6 +5,8 @@ import CalendarPicker from './Calendar';
 import TimePicker from './Time';
 import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
+import PowerDropdown from './PowerDropdown';
+import EnumList from './EnumList';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -58,6 +60,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     validator,
@@ -83,6 +86,7 @@ export function separateDomProps(props) {
     description,
     options,
     defaultValue,
+    addonValueBefore,
     addonBefore,
     addonAfter,
     checkboxMaskLabel,
@@ -101,7 +105,7 @@ export function separateDomProps(props) {
   };
 }
 
-class Info extends React.Component {
+export class Info extends React.Component {
   render() {
     const { text } = this.props;
 
@@ -351,6 +355,9 @@ export default class Field extends React.Component {
                 {allProps.addonBefore}
               </span>
             )}
+            {allProps.addonValueBefore && (
+              <span class="Input-valueBefore">{allProps.addonValueBefore}</span>
+            )}
             {InputComponent}
             {allProps.addonAfter && (
               <span class="Input-addons Input-addons--after">
@@ -403,7 +410,11 @@ class Check extends Field {
             <label>
               <input
                 {...props}
-                defaultChecked={this.checked}
+                defaultChecked={
+                  typeof this.props.checked !== 'undefined'
+                    ? undefined
+                    : this.checked
+                }
                 class="Input-el"
                 type="checkbox"
                 onChange={this.toggle}
@@ -589,6 +600,8 @@ Field.Group = ({ label, className, children, ...otherProps }) => {
 
 Field.PairList = PairList;
 Field.EditablePairsList = EditablePairsList;
+Field.PowerDropdown = PowerDropdown;
+Field.EnumList = EnumList;
 
 const ToCalendar = _ => (
   <CalendarPicker

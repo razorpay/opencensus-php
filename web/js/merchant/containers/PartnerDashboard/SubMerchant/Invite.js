@@ -12,7 +12,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
-@connect(state => ({ ...state.submerchant.item, user: state.session.user }), {
+@connect(state => ({ ...state.submerchant.item }), {
   closeModal,
   inviteSubmerchant,
   showNotification,
@@ -64,8 +64,7 @@ export default class Invite extends Component {
             </div>
 
             <span class="help-block">
-              By inviting the merchant to sign up on{' '}
-              {user.isOrgRZP ? 'Razorpay' : 'the'} dashboard, you both can
+              By inviting the merchant to sign up on the dashboard, you both can
               manage the account.
             </span>
 

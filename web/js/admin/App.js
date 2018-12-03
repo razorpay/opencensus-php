@@ -249,7 +249,7 @@ const links = [
       'magic-hat',
     ],
     ['Ops Dashboard', '/operations', ''],
-    ['Refunds', '/scrooge/reports', ''],
+    ['Refunds', '/scrooge/refunds', ''],
   ],
 
   // workflow
@@ -275,5 +275,5 @@ const Heimdall_restrictRoutes = [
   '/activation',
   '/instant-activation',
   '/operations',
-  '/scrooge/reports',
+  '/scrooge/refunds',
 ];
