@@ -88,7 +88,7 @@ class Server extends Base\Mock\Server
         $this->content($data, 'verify');
 
         return [
-            'data'                   => $data,
+            'data'                   => [$data],
             ResponseFields::CHECKSUM => $this->generateHash($data)
         ];
     }
@@ -105,7 +105,7 @@ class Server extends Base\Mock\Server
         ];
 
         return [
-            'data'                   => json_encode($data),
+            'data'                   => $data,
             ResponseFields::CHECKSUM => $this->generateHash($data)
         ];
     }

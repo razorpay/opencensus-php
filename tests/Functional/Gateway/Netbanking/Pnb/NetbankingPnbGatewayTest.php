@@ -258,7 +258,7 @@ class NetbankingPnbGatewayTest extends TestCase
                     'message' => 'Invalid Parameters'
                 ];
 
-                $content['error'] = json_encode($error);
+                $content['error'] = $error;
             }
         });
     }

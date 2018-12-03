@@ -339,6 +339,8 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
+        //todo add exception if bank payment id is not present ?
+
         $data = [
             RequestFields::API_KEY         => $this->getMerchantId(),
             RequestFields::BANK_PAYMENT_ID => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
@@ -359,13 +361,15 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_RESPONSE,
             ['response' => $body]);
 
+        //TODO: add assertion for payment id ?
+
         if (isset($body['error']) === true)
         {
-            $responseArray = $this->jsonToArray($body['error']);
+            $responseArray = $body['error'];
         }
         else
         {
-            $responseArray = $this->jsonToArray($body['data']);
+            $responseArray = $body['data'];
         }
 
         $attributes = $this->getRefundAttributes($input);
@@ -410,7 +414,7 @@ class Gateway extends Base\Gateway
 
         // TODO : Add check for checksum ?
 
-        return $responseArray['data'];
+        return $responseArray['data'][0];
     }
 
     protected function getVerifyStatus(Verify $verify) :string
@@ -603,5 +607,4 @@ class Gateway extends Base\Gateway
 
         return $secure_hash;
     }
-
 }
