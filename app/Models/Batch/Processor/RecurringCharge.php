@@ -3,7 +3,9 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Order;
+use RZP\Models\Settings;
 use RZP\Models\Customer;
+use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -13,6 +15,9 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class RecurringCharge extends Base
 {
     const RESPONSE_PAYMENT_ID = 'razorpay_payment_id';
+
+    const AMOUNT_AS_RUPEE_CONFIG = 'amount_as_rupee';
+
 
     protected $paymentProcessor;
 
@@ -30,6 +35,8 @@ class RecurringCharge extends Base
     protected function processEntry(array & $entry)
     {
         $this->paymentProcessor->flushPaymentObjects();
+
+        $this->processCurrencyAndAmount($entry);
 
         $order = $this->createOrder($entry);
 
@@ -94,5 +101,28 @@ class RecurringCharge extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function processCurrencyAndAmount(array & $entry)
+    {
+        $config = Settings\Accessor::for($this->merchant, Settings\Module::BATCH)
+                                        ->get(Type::RECURRING_CHARGE);
+
+        if (empty($config))
+        {
+            return;
+        }
+
+        if ((isset($config[self::AMOUNT_AS_RUPEE_CONFIG]) === true) and
+            ($config[self::AMOUNT_AS_RUPEE_CONFIG] === '1'))
+        {
+            $amount = $entry[Header::RECURRING_CHARGE_AMOUNT];
+
+            $amount = (int) $amount;
+
+            $amount = $amount * 100;
+
+            $entry[Header::RECURRING_CHARGE_AMOUNT] = $amount;
+        }
     }
 }
