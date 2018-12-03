@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
@@ -16,7 +17,6 @@ use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
@@ -673,7 +673,10 @@ class Entity extends Base\PublicEntity
      */
     public function balance()
     {
-        app('trace')->error(TraceCode::MERCHANT_DEPR_BALANCE_REFERRRED);
+        // Constructing new Exception instance and tracing gives stack trace helpful for debugging.
+        app('trace')->traceException(
+            new LogicException('Deprecated method balance() of Merchant referenced!'),
+            Logger::WARNING);
 
         return $this->hasOne(Balance\Entity::class);
     }

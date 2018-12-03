@@ -1407,8 +1407,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_BACKFILL_ERROR                   = 'MERCHANT_BALANCE_BACKFILL_ERROR';
     const MERCHANT_BALANCE_BACKFILL_REQUEST                 = 'MERCHANT_BALANCE_BACKFILL_REQUEST';
 
-    const MERCHANT_DEPR_BALANCE_REFERRRED                   = 'MERCHANT_DEPR_BALANCE_REFERRRED';
-
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
