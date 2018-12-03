@@ -66,4 +66,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function transactionsBulkUpdateBalanceId()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->transactionsBulkUpdateBalanceId($input);
+
+        return ApiResponse::json($response);
+    }
 }

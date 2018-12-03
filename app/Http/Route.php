@@ -319,6 +319,7 @@ final class Route
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
+        'transactions_bulk_update_balance_id'      => ['post',     'transactions/bulk/balanceid',                    'TransactionController@transactionsBulkUpdateBalanceId'             ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -1795,6 +1796,7 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
+        'transactions_bulk_update_balance_id',
         'merchant_balance_bulk_backfill_ids'
     ];
 
@@ -2158,6 +2160,7 @@ final class Route
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'transactions_bulk_update_balance_id'      => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
     ];
 

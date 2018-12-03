@@ -171,7 +171,7 @@ return [
         'gateway_fee'     => 0,
         'api_fee'         => 0,
         'gratis'          => false,
-        'balance'         => 1000000,
+        'balance'         => 0,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
         'channel'         => 'axis',
@@ -244,5 +244,20 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
         ],
+    ],
+
+    'testTransactionsBulkUpdateBalanceId' => [
+        'request' => [
+            'url'    => '/transactions/bulk/balanceid',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testTransactionsBulkUpdateBalanceIdLimitTest' => [
     ],
 ];

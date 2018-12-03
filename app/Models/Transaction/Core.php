@@ -986,6 +986,8 @@ class Core extends Base\Core
     {
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
+        $txn->associateBalance($merchantBalance);
+
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
 

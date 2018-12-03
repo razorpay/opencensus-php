@@ -4421,6 +4421,11 @@ ALTER TABLE subscription_registrations
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
 
+ALTER TABLE transaction
+    CHANGE COLUMN `reference2` `balance_id` CHAR(14) DEFAULT NULL,
+    ADD INDEX `transactions_balance_id_index` (balance_id),
+    ALGORITHM=INPLACE, LOCK=NONE;
+    
 ALTER TABLE blade
     ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
 
