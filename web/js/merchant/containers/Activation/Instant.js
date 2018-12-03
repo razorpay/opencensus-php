@@ -221,7 +221,7 @@ export default class ActivationWizard extends React.Component {
     })
       .then(response => {
         if (this.onActivationSuccess) {
-          return this.onActivationSuccess(response);
+          return this.onActivationSuccess({ success: true, data: response });
         }
 
         this.updateSession(response.data); // Updating % activation_progress (side bar)
@@ -251,6 +251,10 @@ export default class ActivationWizard extends React.Component {
         }
 
         trackL1FormError();
+
+        if (this.onActivationSuccess) {
+          this.onActivationSuccess({ success: false });
+        }
 
         return err;
       });
