@@ -5,9 +5,9 @@ export default function DataDetails(props) {
   const { partnerType, reportEmails, configOptions } = props;
   return (
     <div class="row-item">
-      <Field name="name" label="Report Name" />
+      <Field name="name" label="Report Name" required />
 
-      <TextAreaField name="description" label="Report Description" />
+      <TextAreaField name="description" label="Report Description" required />
 
       <Field
         name="template.file_meta.filename"
@@ -55,6 +55,7 @@ export default function DataDetails(props) {
         label="Headers"
         enabledLabel="Yes"
         disabledLabel="No"
+        defaultValue
         onChange={props.onChange}
       />
 
@@ -71,8 +72,8 @@ export default function DataDetails(props) {
         name="template.formats.date"
         label="Date format in report"
         helpMsg="This will be applied across all date fields in the report"
+        defaultValue="d-m-Y"
       >
-        <option value="">Select Format...</option>
         {availableDateFormats.map(dateFormat => (
           <option value={dateFormat} key={dateFormat}>
             {dateFormat}
@@ -84,7 +85,6 @@ export default function DataDetails(props) {
         name="emails"
         label="Email ID(s)"
         helpMsg="Write comma separated values"
-        defaultValue={reportEmails}
       />
 
       <SelectField

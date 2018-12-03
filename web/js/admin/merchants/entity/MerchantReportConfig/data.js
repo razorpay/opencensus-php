@@ -1,5 +1,5 @@
 export const types = [
-  { label: 'Settlements Recon', value: 'settlements' },
+  { label: 'Settlements / Settlements Recon', value: 'settlements' },
   { label: 'Payments', value: 'payments' },
   { label: 'Transfers', value: 'transfers' },
   { label: 'Combined', value: 'transactions' },
@@ -12,8 +12,8 @@ export const types = [
 ];
 
 export const availableDateFormats = [
-  'd/m/Y H:i:s',
   'd-m-Y',
+  'd/m/Y H:i:s',
   'YmdHis',
   'd/m/Y',
   'Y-m-d',

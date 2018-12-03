@@ -34,10 +34,13 @@ export default class CreateMerchantReportConfig extends Component {
         merchantDetails: { loading: false, data },
         values: {
           ...this.state.values,
-          emails: data.transaction_report_email.join(','),
           template: {
+            formats: {
+              date: 'd-m-Y',
+            },
             file_meta: {
               extension: 'csv',
+              header: true,
             },
           },
         },
@@ -68,6 +71,9 @@ export default class CreateMerchantReportConfig extends Component {
 
     return adminPost({
       url: `live_${this.props.merchantId}/reporting/configs`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       data,
     }).then(response => {
       if (response) {
@@ -131,7 +137,6 @@ export default class CreateMerchantReportConfig extends Component {
                 <DataDetails
                   partnerType={details.partner_type}
                   configOptions={this.state.configOptions}
-                  reportEmails={this.state.values.emails}
                   onChange={this.handleChangeIn}
                   extension={
                     ((this.state.values.template || {}).file_meta || {})
