@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID          = 'customer_id';
     const ENTITY_ID            = 'entity_id';
     const ENTITY_TYPE          = 'entity_type';
+    const BALANCE_ID           = 'balance_id';
     const NOTES                = 'notes';
 
     const RECEIVER_TYPE        = 'receiver_type';
@@ -55,8 +56,6 @@ class Entity extends Base\PublicEntity
 
     // Used for creating shared virtual account
     const SHARED_ID            = 'ShrdVirtualAcc';
-
-    const BALANCE_ID           = 'balance_id';
 
     protected $fillable = [
         self::NAME,

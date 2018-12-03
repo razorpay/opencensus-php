@@ -104,9 +104,9 @@ class Core extends Base\Core
         $merchant->getValidator()->validateBusinessBankingActivated();
 
         $input = [
-            Entityt::RECEIVERS => [
-                Entityt::TYPES => [
-                    Entityt::BANK_ACCOUNT
+            Entity::RECEIVERS => [
+                Entity::TYPES => [
+                    Entity::BANK_ACCOUNT
                 ],
             ],
         ];

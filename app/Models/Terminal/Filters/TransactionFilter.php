@@ -765,7 +765,7 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        if ($input[Generator::NUMERIC] === true)
+        if ($metadata[Generator::NUMERIC] === true)
         {
             return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
         }

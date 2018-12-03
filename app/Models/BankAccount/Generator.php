@@ -108,7 +108,7 @@ class Generator extends Base\Core
     public function generate(VirtualAccount\Entity $virtualAccount): Entity
     {
         // Sets this option at this stage because in __construct the balance relation doesn't exist
-        $this->options[self::BANKING] = $virtualAccount->balance->isTypeBanking();
+        $this->options[self::BANKING] = (optional($virtualAccount->balance)->isTypeBanking() === true);
 
         $bankAccount = $this->buildBankAccountEntity($virtualAccount);
 
