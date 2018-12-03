@@ -19,20 +19,7 @@ class Repository extends Base\Repository
         Entity::ACCOUNT,
     ];
 
-    public function findByPublicIdAndBeneficiaryAndMerchant(
-        string $id,
-        Contact\Entity $contact,
-        Merchant\Entity $merchant,
-        array $input = null): Entity
-    {
-        Entity::verifyIdAndStripSign($id);
-
-        $query = $this->getQueryForFindWithParams($input);
-
-        $fundAccount = $query->merchantId($merchant->getId())
-                             ->where(Entity::CONTACT_ID, $contact->getId())
-                             ->findOrFailPublic($id);
-
-        return $fundAccount;
-    }
+    protected $signedIds = [
+        Entity::CONTACT_ID,
+    ];
 }

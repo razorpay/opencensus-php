@@ -42,6 +42,12 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::CONTACT_ID,
+    ];
+
     protected $embeddedRelations = [
         self::ACCOUNT,
     ];
@@ -56,6 +62,8 @@ class Entity extends Base\PublicEntity
 
     protected $dates = [
         self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     protected static $sign = 'fundacc';
@@ -87,6 +95,14 @@ class Entity extends Base\PublicEntity
     // ------------- End Getters -------------
 
     // --------------- Setters ---------------
+
+    public function setPublicContactIdAttribute(array & $array)
+    {
+        $contactId = $this->getAttribute(self::CONTACT_ID);
+
+        $array[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($contactId);
+    }
+
 
     // ------------- End Setters -------------
 
