@@ -87,8 +87,10 @@ export default class Form extends React.PureComponent {
       ({ name, value, type, checked }) => {
         if (type === 'checkbox') {
           data[name] = checked;
-        } else if (type === 'radio' && checked) {
-          data[name] = value;
+        } else if (type === 'radio') {
+          if (checked) {
+            data[name] = value;
+          }
         } else {
           data[name] = value;
         }
