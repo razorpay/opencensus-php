@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Vijaya;
 
 class Status
 {
-    const SUCCESS = 'S';
+    const SUCCESS = 'Y';
 
     //const FAILURE = 'N'; have to verify
 
