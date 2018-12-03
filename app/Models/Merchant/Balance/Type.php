@@ -12,6 +12,11 @@ class Type
     const REFUND_CREDITS = 'refund_credits';
     const AMOUNT_CREDITS = 'amount_credits';
 
+    /**
+     * Banking balance.
+     */
+    const BANKING        = 'banking';
+
     public static $pgBalances = [
         self::PRIMARY,
         self::FEE_CREDITS,

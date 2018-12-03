@@ -1,13 +1,14 @@
 <?php
 
 use RZP\Constants\Mode;
-use RZP\Constants\Table;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Pricing;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Payment\Gateway;
+use RZP\Constants\Table;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Gateway;
 use Illuminate\Database\Seeder;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class DatabaseSeeder extends Seeder
 {
@@ -232,6 +233,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::NODAL_ACCOUNT,
                     'merchant_id'   => Account::NODAL_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -267,6 +269,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::ATOM_ACCOUNT,
                     'merchant_id'   => Account::ATOM_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -303,6 +306,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::API_FEE_ACCOUNT,
                     'merchant_id'   => Account::API_FEE_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                     )
@@ -379,6 +383,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::TEST_ACCOUNT,
                     'merchant_id'   => Account::TEST_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'balance'       => 100000,
@@ -419,6 +424,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::SHARED_ACCOUNT,
                     'merchant_id'   => Account::SHARED_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )
@@ -456,6 +462,7 @@ class DatabaseSeeder extends Seeder
                 array(
                     'id'            => Account::DEMO_ACCOUNT,
                     'merchant_id'   => Account::DEMO_ACCOUNT,
+                    'type'          => Balance\Type::PRIMARY,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     )

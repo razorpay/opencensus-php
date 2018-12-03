@@ -465,7 +465,7 @@ class Repository extends Base\Repository
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
 
-        $serialized[Entity::BALANCE] = optional($entity->balance)->getBalance() ?: 0;
+        $serialized[Entity::BALANCE] = optional($entity->primaryBalance)->getBalance() ?: 0;
 
         return $serialized;
     }
