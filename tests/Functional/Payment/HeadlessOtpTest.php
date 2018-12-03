@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+use Cache;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayRequestException;
@@ -1261,6 +1262,134 @@ class HeadlessOtpTest extends TestCase
             $this->doAuthPayment($payment);
         },
         GatewayErrorException::class);
+    }
+
+    public function testHeadlessRedirect()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+        $this->setRedirectTo3ds(true);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessRedirectInvalidAuthType()
+    {
+        $payment = $this->fixtures->create('payment:netbanking_created');
+
+        $this->ba->publicAuth();
+
+        $url = $this->getPaymentRedirectTo3dsUrl($payment->getPublicId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $url;
+
+        $this->makeRequestAndCatchException(
+        function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestException::class,
+        'Payment failed');
+    }
+
+    public function testHeadlessRedirectNoInputDetailsInCache()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+        $this->setRedirectTo3ds(true);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->setOtp('213433');
+
+        $store = Cache::store();
+
+        // TODO remove this after session migration
+        Cache::shouldReceive('driver')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
+        Cache::shouldReceive('store')
+                ->withAnyArgs()
+                ->andReturn($store);
+
+        Cache::shouldReceive('put')
+            ->andReturnUsing(function($key)
+            {
+                return true;
+            });
+
+        Cache::shouldReceive('get')
+            ->andReturnUsing(function() use ($payment)
+            {
+                return null;
+            });
+
+
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        \RZP\Exception\BadRequestException::class,
+        'The payment has already been processed');
     }
 
     // @codingStandardsIgnoreLine

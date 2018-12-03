@@ -102,6 +102,13 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isOtpFallbackUrl($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\/[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
         $content = $response->getContent();

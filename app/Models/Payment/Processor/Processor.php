@@ -33,6 +33,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base\CardCacheTrait;
 
 class Processor
 {
@@ -50,6 +51,7 @@ class Processor
     use Transfer;
     use Vpa;
     use AuthorizePush;
+    use CardCacheTrait;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -78,7 +80,13 @@ class Processor
      * A payment created today can only be cancelled within few minutes and
      * not on next day.
      */
-    const PAYMENT_CANCEL_TIME_DURATION = 1800;  // 30 min * 60 sec
+    const PAYMENT_CANCEL_TIME_DURATION   = 1800;  // 30 min * 60 sec
+
+    /**
+     * We only allow payment to fallback within a certain duration.
+     * A payment can fallback only within few minutes
+     */
+    const PAYMENT_FALLBACK_TIME_DURATION = 600;  // 10 min * 60 sec
 
     /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
@@ -95,6 +103,13 @@ class Processor
      * Minimum payment amount for which mdr should be calculated
      */
     const MIN_MDR_PAYMENT_AMOUNT = 200000;
+
+    /**
+     * Timeout to store card details for fallback auth type
+     */
+    const CACHE_TTL = 10;
+
+    const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
      * @var Merchant\Entity
@@ -160,6 +175,8 @@ class Processor
 
     protected $cache;
 
+    protected $secureCacheDriver;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -190,6 +207,8 @@ class Processor
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
+
+        $this->secureCacheDriver = $this->getDriver();
     }
 
     public function flushPaymentObjects()
@@ -2331,6 +2350,75 @@ class Processor
         $this->eventOrderPaid();
     }
 
+    public function redirectTo3ds($id)
+    {
+        $payment = $this->retrieve($id);
+
+        $diff = time() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_FALLBACK_TIME_DURATION)
+        {
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT);
+        }
+
+        $authType = $payment->getAuthType();
+
+        if (($authType === null) or
+            (Payment\AuthType::isRedirectTo3dsAuth($authType) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REDIRECT_INVALID_AUTH,
+                null,
+                [
+                    'auth_type' => $authType
+                ]
+            );
+        }
+
+        $key = $payment->getCacheInputKey();
+
+        $inputDetails = $this->cache->get($key);
+
+        if ($inputDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        $this->setCardNumberAndCvv($inputDetails);
+
+        $resource = $this->getCallbackMutexResource($payment);
+
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $inputDetails)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
+
+                if ($payment->hasBeenAuthorized() === true)
+                {
+                    return $this->processPaymentCallbackSecondTime($payment);
+                }
+
+                $payment->setAuthType(Payment\AuthType::_3DS);
+
+                $this->repo->saveOrFail($payment);
+
+                return $this->authorize($payment, $inputDetails);
+            },
+            120,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
+    }
 
     protected function getUpiStatus(string $id)
     {

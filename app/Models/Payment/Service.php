@@ -245,6 +245,11 @@ class Service extends Base\Service
         return $this->getNewProcessor()->redirectCallback($id);
     }
 
+    public function redirectTo3ds($id)
+    {
+        return $this->getNewProcessor()->redirectTo3ds($id);
+    }
+
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);
