@@ -8,7 +8,7 @@ use RZP\Constants\Table;
 use RZP\Models\Contact\Entity as Contact;
 use RZP\Models\Merchant\Entity as Merchant;
 
-class CreateBeneficiaries extends Migration
+class CreateContacts extends Migration
 {
     /**
      * Run the migrations.

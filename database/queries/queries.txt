@@ -4425,7 +4425,7 @@ ALTER TABLE transaction
     CHANGE COLUMN `reference2` `balance_id` CHAR(14) DEFAULT NULL,
     ADD INDEX `transactions_balance_id_index` (balance_id),
     ALGORITHM=INPLACE, LOCK=NONE;
-    
+
 ALTER TABLE blade
     ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
 
@@ -4440,3 +4440,11 @@ ALTER TABLE payment_links
     ADD COLUMN support_contact VARCHAR(255) DEFAULT NULL AFTER udf_jsonschema_id,
     ADD COLUMN support_email VARCHAR(255) DEFAULT NULL AFTER support_contact,
     ADD COLUMN terms TEXT AFTER support_email;
+
+UPDATE migrations
+	SET migration="2018_11_25_100031_create_contacts"
+	WHERE migration="2018_11_25_100031_create_beneficiaries"
+	LIMIT 1;
+
+ALTER TABLE beneficiaries
+	RENAME TO contacts;
