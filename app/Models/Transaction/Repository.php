@@ -1241,23 +1241,4 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
     }
-
-    public function getMerchantIdsWhereBalanceIdIsNull(int $limit)
-    {
-        return $this->newQuery()
-                    ->select(Transaction\Entity::MERCHANT_ID)
-                    ->whereNull(Transaction\Entity::BALANCE_ID)
-                    ->limit($limit)
-                    ->distinct()
-                    ->get();
-    }
-
-    public function bulkUpdateBalanceId(string $merchantId, string $balanceId, int $limit)
-    {
-        return $this->newQueryWithoutTimestamps()
-                    ->where(Transaction\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereNull(Transaction\Entity::BALANCE_ID)
-                    ->limit($limit)
-                    ->update([Transaction\Entity::BALANCE_ID => $balanceId]);
-    }
 }

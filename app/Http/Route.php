@@ -320,7 +320,6 @@ final class Route
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
-        'transactions_bulk_update_balance_id'      => ['post',     'transactions/bulk/balanceid',                    'TransactionController@transactionsBulkUpdateBalanceId'             ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -389,6 +388,7 @@ final class Route
         'admin_fetch_terminal_by_id'               => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                 => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'entity_tax_update'                        => ['put',      'admin/{entity}/tax_update',                      'AdminController@updateEntityTax'                                   ],
+        'entity_balance_id_update'                 => ['post',     'admin/{entity}/balance_id_update',               'AdminController@updateEntityBalanceIdInBulk'                       ],
         'admin_get_file'                           => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
         'send_test_newsletter'                     => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                          => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
@@ -1797,8 +1797,8 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
-        'transactions_bulk_update_balance_id',
-        'merchant_balance_bulk_backfill_ids'
+        'entity_balance_id_update',
+        'merchant_balance_bulk_backfill_ids',
     ];
 
     public static $routePermission = [
@@ -2161,7 +2161,7 @@ final class Route
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
-        'transactions_bulk_update_balance_id'      => '*',
+        'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
     ];
 

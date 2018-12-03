@@ -253,6 +253,17 @@ class Entity
         self::PAYMENT_LINK,
     ];
 
+    /**
+     * These entities have BALANCE_ID columns added recently. This is a temporary list to validate API operation to
+     * backfill balance_id column for old rows in batches.
+     * Refer: AdminController@updateEntityBalanceIdInBulk()
+     */
+    const ENTITIES_WITH_BALANCE_ID_COLUMN = [
+        Entity::TRANSACTION,
+        Entity::VIRTUAL_ACCOUNT,
+        Entity::PAYOUT,
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,

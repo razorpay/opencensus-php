@@ -248,12 +248,11 @@ return [
 
     'testTransactionsBulkUpdateBalanceId' => [
         'request' => [
-            'url'    => '/transactions/bulk/balanceid',
+            'url'    => '/admin/transaction/balance_id_update',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-
             ],
         ],
     ],
