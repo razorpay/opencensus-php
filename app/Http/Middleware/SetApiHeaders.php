@@ -14,7 +14,6 @@ class SetApiHeaders {
 	 * @var Guard
 	 */
 	protected $auth;
-
 	/**
 	 * Create a new filter instance.
 	 *
@@ -35,9 +34,13 @@ class SetApiHeaders {
 	 */
 	public function handle($request, Closure $next)
 	{
+        $originDomain = \Request::server('HTTP_ORIGIN');
+
         $domain = \Request::server('SERVER_NAME');
 
         ApiRequest::addHeader('X-Org-Hostname', $domain);
+
+        ApiRequest::addHeader('X-Request-Origin', $originDomain);
 
         return $next($request);
 	}
