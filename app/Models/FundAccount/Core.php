@@ -16,7 +16,7 @@ use RZP\Exception\LogicException;
  */
 class Core extends Base\Core
 {
-    public function create(array $input, Contact\Entity $contact, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, Contact\Entity $contact = null): Entity
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
 
