@@ -120,7 +120,7 @@ class Constants
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
             //TODO: ADD this value
-            self::VIJAYA   => [''],
+            self::VIJAYA   => ['vijaya.netbanking.refunds@razorpay.com'],
             self::IDFC     => ['idfc.netbanking.refunds@razorpay.com'],
         ],
 
