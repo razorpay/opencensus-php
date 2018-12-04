@@ -18,8 +18,4 @@ class Repository extends Base\Repository
     protected $expands = [
         Entity::ACCOUNT,
     ];
-
-    protected $signedIds = [
-        Entity::CONTACT_ID,
-    ];
 }

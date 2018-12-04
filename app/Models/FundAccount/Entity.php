@@ -66,13 +66,13 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
     ];
 
-    protected static $sign = 'fundacc';
+    protected static $sign = 'fa';
 
     protected $entity = 'fund_account';
 
     // --------------- Getters ---------------
 
-    public function getBeneficiaryId()
+    public function getContactId()
     {
         return $this->getAttribute(self::CONTACT_ID);
     }
@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_ID);
     }
 
-    public function getActive()
+    public function getActive(): bool
     {
         return $this->getAttribute(self::ACTIVE);
     }
@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
         // Expose the account relation in the `details` attribute.
         $publicAttributes = $this->account->toArrayPublic();
 
+        // For now, don't expose the public id and entity attributes from any of the related entities
         array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
 
         $array[self::DETAILS] = $publicAttributes;

@@ -28,11 +28,6 @@ class Fetch extends Base\Fetch
             Entity::CONTACT_ID,
             Entity::ACCOUNT_TYPE,
         ],
-        AuthType::PRIVATE_AUTH => [
-            //
-        ],
-        AuthType::PROXY_AUTH   => [
-        ],
     ];
 
     const ES_FIELDS = [

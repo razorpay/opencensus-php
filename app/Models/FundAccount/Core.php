@@ -20,8 +20,7 @@ class Core extends Base\Core
     {
         $fundAccount = (new Entity)->build();
 
-        $this->repo->transaction(function() use ($input, $merchant, $contact, $fundAccount)
-        {
+        $this->repo->transaction(function() use ($input, $merchant, $contact, $fundAccount) {
             $account = $this->createAccount($input, $contact);
 
             $fundAccount->merchant()->associate($merchant);
@@ -36,7 +35,7 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
-    public function createAccount(array & $input, Contact\Entity $contact): Base\PublicEntity
+    protected function createAccount(array & $input, Contact\Entity $contact): Base\PublicEntity
     {
         //
         // We want the account_type attribute to be filled in by association, and not via input
@@ -73,8 +72,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::FUND_ACCOUNT_UPDATE_REQUEST,
             [
-                'id'    => $fundAccount->getId(),
-                'input' => $input,
+                'id'     => $fundAccount->getId(),
+                'entity' => $fundAccount->toArray(),
+                'input'  => $input,
             ]);
 
         $fundAccount->edit($input);

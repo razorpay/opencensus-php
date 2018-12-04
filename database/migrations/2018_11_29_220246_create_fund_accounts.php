@@ -44,11 +44,17 @@ class CreateFundAccounts extends Migration
             $table->integer(FundAccount::DELETED_AT)
                   ->nullable();
 
-            $table->index([FundAccount::CONTACT_ID, FundAccount::MERCHANT_ID, FundAccount::ACCOUNT_TYPE]);
+            $table->index(FundAccount::CONTACT_ID);
 
-            $table->index([FundAccount::ACCOUNT_ID, FundAccount::ACCOUNT_TYPE]);
+            $table->index(FundAccount::ACCOUNT_ID);
+
+            $table->index(FundAccount::ACCOUNT_TYPE);
 
             $table->index([FundAccount::MERCHANT_ID, FundAccount::CREATED_AT]);
+
+            $table->index(FundAccount::CREATED_AT);
+
+            $table->index(FundAccount::UPDATED_AT);
 
             $table->index(FundAccount::DELETED_AT);
 
