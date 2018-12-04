@@ -20,7 +20,7 @@ class Service extends Transaction\Service
         return $statements->toArrayPublic();
     }
 
-    public function fetch(string $id, array $input)
+    public function fetch(string $id)
     {
         $statement = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
 

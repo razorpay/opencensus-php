@@ -27,9 +27,7 @@ class StatementController extends Controller
 
     public function fetch($id)
     {
-        $input = Request::all();
-
-        $response = $this->service()->fetch($id, $input);
+        $response = $this->service()->fetch($id);
 
         return ApiResponse::json($response);
     }
