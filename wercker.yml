@@ -55,7 +55,7 @@ build:
           overwrite: true
           content: |
               zend.assertions=1
-              assert.exception=On
+              assert.exception=1
       - script:
           name: Composer set-up
           code: |

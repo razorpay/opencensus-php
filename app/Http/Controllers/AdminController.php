@@ -249,4 +249,11 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateEntityBalanceIdInBulk(string $entity)
+    {
+        $response = $this->service()->updateEntityBalanceIdInBulk($entity, Request::all());
+
+        return ApiResponse::json($response);
+    }
 }

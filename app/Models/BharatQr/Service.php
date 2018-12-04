@@ -57,17 +57,11 @@ class Service extends Base\Service
             // notification was sent by the gateway or some other source .
             $gatewayClass->verifyBharatQrNotification($gatewayResponse);
         }
-        catch (Exception\GatewayErrorException $ex)
-        {
-            $this->trace->traceException($ex);
-
-            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
-        }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            return $gatewayClass->getBharatQrResponse(false, $input);
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
 
         $valid = $this->core->processPayment($gatewayResponse, $terminal);

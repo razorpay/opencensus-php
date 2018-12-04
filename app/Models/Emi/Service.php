@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 class Service extends Base\Service
@@ -29,6 +30,12 @@ class Service extends Base\Service
             $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+        }
+
+        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        {
+            // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
+            unset($plans[IFSC::SBIN]);
         }
 
         return $plans;
@@ -85,6 +92,12 @@ class Service extends Base\Service
                     'min_amount' => $minAmount,
                 ];
             }
+        }
+
+        if ((new Merchant\Service)->isSbiEmiEnabled() === false)
+        {
+            // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
+            unset($plans[IFSC::SBIN]);
         }
 
         return $plans;

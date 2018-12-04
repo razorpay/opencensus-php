@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'balance';
 
-    protected $generateIdOnCreate = false;
+    protected $generateIdOnCreate = true;
 
     protected $revisionEnabled = true;
 
@@ -107,6 +107,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function isTypePrimary(): bool
+    {
+        return $this->getType() === Type::PRIMARY;
+    }
+
+    public function isTypeBanking(): bool
+    {
+        return $this->getType() === Type::BANKING;
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -119,7 +129,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', 'id');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public static function buildFromMerchant($merchant)
@@ -129,7 +139,6 @@ class Entity extends Base\PublicEntity
 
         $balance->merchant()->associate($merchant);
         $balance->setAttribute(self::BALANCE, 0);
-        $balance->setAttribute(self::MERCHANT_ID, $merchant->getId());
         $balance->setAttribute(self::CURRENCY, Currency::INR);
         $balance->setAttribute(self::TYPE, Type::PRIMARY);
 
