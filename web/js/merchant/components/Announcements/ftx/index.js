@@ -33,18 +33,6 @@ export default class FTXPassAnnouncement extends React.PureComponent {
           >
             Speakers & Agenda
           </a>
-          <span class="dot--primary">&#9679;</span>
-          <a
-            class="btn-link"
-            target="_blank"
-            href={`https://razorpay.typeform.com/to/SWOXx5?source=dashboard&mid=${
-              user.current
-            }`}
-            onClick={passLink}
-          >
-            Claim your FREE ticket{' '}
-            <i class="i i-chevron-right" style={{ fontSize: 20 }} />
-          </a>
         </div>
       </Announcement>
     );
