@@ -8,9 +8,9 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
-use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits\HasBalance;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -22,9 +22,8 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
     use NotesTrait;
+    use HasBalance;
 
-    const ID                   = 'id';
-    const MERCHANT_ID          = 'merchant_id';
     const STATUS               = 'status';
     const NAME                 = 'name';
     const DESCRIPTOR           = 'descriptor';
@@ -140,11 +139,6 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
-    }
-
-    public function balance()
-    {
-        return $this->belongsTo(Balance\Entity::class);
     }
 
     // ----------------------- Modifiers ---------------------------------------
