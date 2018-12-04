@@ -84,35 +84,17 @@ export default class ActivationWizard extends React.Component {
     super(props);
     this.prepareTabs(props);
 
-    if (window.RZP && window.RZP.appName === 'businessbanking') {
-      this.rpc = window.RZP.rpcServer(
-        window.RZP.appHost,
-        [
-          {
-            name: 'submitForm',
-            hasReply: true,
-            callback: reply => {
-              this.onActivationSuccess = reply;
-              this.submitForm();
-            },
-          },
-          {
-            name: 'notifyWindowResize',
-            hasReply: true,
-            callback: reply => {
-              this.onFormUIUpdate = reply;
-            },
-          },
-          {
-            name: 'notifyFormValidity',
-            hasReply: true,
-            callback: reply => {
-              this.onTabValidityChange = reply;
-            },
-          },
-        ],
-        'activation'
-      );
+    if (props.rpc) {
+      const { submitForm, notifyFormValidity, notifyWindowResize } = props.rpc;
+
+      submitForm(reply => {
+        this.onActivationSuccess = reply;
+        this.submitForm();
+      });
+
+      notifyFormValidity(reply => {
+        this.onFormUIUpdate = reply;
+      });
     }
   }
 
@@ -221,7 +203,7 @@ export default class ActivationWizard extends React.Component {
     })
       .then(response => {
         if (this.onActivationSuccess) {
-          return this.onActivationSuccess({ success: true, data: response });
+          return this.onActivationSuccess(response);
         }
 
         this.updateSession(response.data); // Updating % activation_progress (side bar)
@@ -335,19 +317,16 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
-  handleUiUpdate() {
-    if (this.onFormUIUpdate) {
-      const body = document.body;
-      this.onFormUIUpdate(body.clientWidth, body.clientHeight);
-    }
+  handleUIUpdate() {
+    return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
 
   componentDidMount() {
-    this.handleUiUpdate();
+    this.handleUIUpdate();
   }
 
   componentDidUpdate() {
-    this.handleUiUpdate();
+    this.handleUIUpdate();
   }
 
   render() {
@@ -420,8 +399,8 @@ export default class ActivationWizard extends React.Component {
             : isFieldValid(c, this, data)
       );
 
-    if (this.onTabValidityChange) {
-      this.onTabValidityChange(isValid);
+    if (this.props.onFormValidityChange) {
+      this.props.onFormValidityChange(isValid);
     }
 
     return isValid;
