@@ -97,10 +97,10 @@ class Base extends BaseModel\Core
     protected $outputFileType;
 
     /**
-     * Override from child processor to use new spreadsheet library.
+     * Override from child processor to use legacy library.
      * @var boolean
      */
-    protected $useSpreadSheetLibrary = false;
+    protected $useSpreadSheetLibrary = true;
 
     public function __construct(Batch\Entity $batch)
     {

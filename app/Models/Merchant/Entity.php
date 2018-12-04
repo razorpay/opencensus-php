@@ -22,6 +22,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
@@ -33,6 +34,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 /**
  * @property Detail\Entity $merchantDetail
  * @property Methods\Entity $methods
+ * @property BankAccount\Entity $bankAccount
  */
 class Entity extends Base\PublicEntity
 {

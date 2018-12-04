@@ -8,10 +8,15 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 
+/**
+ * @property Customer\Entity    $customer
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -54,7 +59,7 @@ class Entity extends Base\PublicEntity
     const MODULO                 = 'modulo';
     const BUFFER_AMOUNT          = 'buffer_amount';
 
-    //Constants for payout types
+    // Constants for payout types
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 

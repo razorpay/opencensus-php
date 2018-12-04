@@ -709,6 +709,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_CREATED                               = 'VPA_CREATED';
     const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
     const VPA_DELETED                               = 'VPA_DELETED';
+    const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';
@@ -1408,6 +1409,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_LINK_BATCH_INPUT                             = 'AUTH_LINK_BATCH_INPUT';
     const MERCHANT_BALANCE_BACKFILL_ERROR                   = 'MERCHANT_BALANCE_BACKFILL_ERROR';
     const MERCHANT_BALANCE_BACKFILL_REQUEST                 = 'MERCHANT_BALANCE_BACKFILL_REQUEST';
+
+    const PAYOUT_CUSTOMER_CREATE_REQUEST          = 'PAYOUT_CUSTOMER_CREATE_REQUEST';
+    const PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST   = 'PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST';
+    const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
+    const PAYOUT_FOR_PAYMENT_CREATE_REQUEST       = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
+    const PAYOUT_CREATED                          = 'PAYOUT_CREATED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

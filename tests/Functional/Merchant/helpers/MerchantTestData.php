@@ -1315,13 +1315,13 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'ifsc_code' => 'RZPB0000000',
-                'account_number' => '10010101011',
-                'beneficiary_name' => 'random_name',
-                'beneficiary_address1' => 'address1',
-                'beneficiary_address2' => 'address2',
-                'beneficiary_address3' => 'address3',
-                'beneficiary_address4' => 'address4',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
                 'beneficiary_email' => 'random@email.com',
                 'beneficiary_mobile' => '9988776655',
             ]

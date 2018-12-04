@@ -445,6 +445,7 @@ final class Route
         'customer_fetch_multiple'                  => ['get',      'customers',                                      'CustomerController@getCustomers'                                   ],
         'customer_delete'                          => ['delete',   'customers/{id}',                                 'CustomerController@deleteCustomer'                                 ],
         'customer_add_bank_account'                => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
+        'customer_add_vpa'                         => ['post',     'customers/{id}/vpa',                             'CustomerController@createVpa'                                      ],
         'customer_fetch_bank_account'              => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
         'customer_wallet_payout'                   => ['post',     'customers/{id}/payouts',                         'CustomerController@postCustomerWalletPayout',                      ],
         'customer_create_token'                    => ['post',     'customers/{id}/tokens',                          'CustomerController@addToken'                                       ],
@@ -644,7 +645,6 @@ final class Route
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
-        'vpa_fetch_private'                        => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
         'device_create'                            => ['post',     'upi/devices',                                    'DeviceController@createDevice'                                     ],
         'device_refresh_token'                     => ['put',      'upi/device/upi_token',                           'DeviceController@refreshUpiToken'                                  ],
@@ -656,13 +656,6 @@ final class Route
         'reset_mpin'                               => ['put',      'upi/bank_accounts/{id}/mpin',                    'CustomerController@resetMpin'                                      ],
         'set_mpin'                                 => ['post',     'upi/bank_accounts/{id}/mpin',                    'CustomerController@setMpin'                                        ],
         'upi_customer_razor_accounts_fetch'        => ['get',      'upi/bank_accounts',                              'CustomerController@fetchUpiBankAccounts'                           ],
-        'vpa_fetch_multiple'                       => ['get',      'upi/vpa/',                                       'UpiController@getVpas'                                             ],
-        'vpa_available'                            => ['get',      'upi/vpa/available/{vpa}',                        'UpiController@isAvailableVpa'                                      ],
-        'vpa_valid'                                => ['get',      'upi/vpa/valid/{vpa}',                            'UpiController@isValidVpa'                                          ],
-        'vpa_create'                               => ['post',     'upi/vpa/',                                       'CustomerController@createVpa'                                      ],
-        'vpa_delete'                               => ['delete',   'upi/vpa/{id}',                                   'UpiController@deleteVpa'                                           ],
-        'vpa_edit'                                 => ['put',      'upi/vpa/{id}',                                   'UpiController@editVpa'                                             ],
-        'vpa_fetch'                                => ['get',      'upi/vpa/{id}',                                   'UpiController@getVpa'                                              ],
         'customer_collect_request_fetch'           => ['get',      'upi/customers/requests/collect',                 'P2pController@fetchCollectRequests'                                ],
         'upi_get_key_list'                         => ['get',      'upi/keyList',                                    'UpiController@getPublicKeyList'                                    ],
         'upi_npci_request'                         => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                           ],
@@ -678,9 +671,9 @@ final class Route
         'upi_psp_disallow'                         => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                            => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
+        'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postCustomerPayout'                               ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
-        'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
         'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -774,11 +767,11 @@ final class Route
         // Github issue: https://github.com/gin-gonic/gin/issues/388
         // 1. `refund/bulk-status-update` will conflict with `refund/:id/:action`
         // 2. `POST` because the above URLs are identified as identical and one url can have only one PUT API, but can have multiple POST APIs
-        'scrooge_refunds_update_multiple'          => ['post',      'scrooge/refunds/bulk-status-update',            'ScroogeController@bulkStatusUpdate'                                ],
-        'scrooge_reports_get_multiple'             => ['post',      'scrooge/reports',                               'ScroogeController@listReports'                                     ],
-        'scrooge_refunds_get_multiple'             => ['post',      'scrooge/refunds',                               'ScroogeController@listRefunds'                                     ],
-        'scrooge_refunds_get'                      => ['get',       'scrooge/refunds/{id}',                          'ScroogeController@get'                                             ],
-        'scrooge_refunds_update'                   => ['post',      'scrooge/refunds/{id}/status-update',            'ScroogeController@statusUpdate'                                    ],
+        'scrooge_refunds_update_multiple'          => ['post',     'scrooge/refunds/bulk-status-update',             'ScroogeController@bulkStatusUpdate'                                ],
+        'scrooge_reports_get_multiple'             => ['post',     'scrooge/reports',                                'ScroogeController@listReports'                                     ],
+        'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
+        'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
+        'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -790,7 +783,10 @@ final class Route
         'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
-        'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+        // This is a different route from /payouts since we need a different auth (internal) for this
+        // Hence, created two different routes - one for customer and another for merchant.
+        'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postInternalMerchantPayout'                       ],
+        // TODO: Fix the route. Changes on dashboard would be required.
         'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
 
         // Settings routes
@@ -1014,19 +1010,12 @@ final class Route
     public static $device = [
         'set_mpin',
         'reset_mpin',
-        'vpa_create',
-        'vpa_delete',
-        'vpa_edit',
         'customer_balance_fetch',
         'customer_bank_account_fetch',
-        'vpa_available',
-        'vpa_valid',
-        'vpa_fetch_multiple',
         'upi_customer_bank_accounts_fetch',
         'upi_customer_razor_accounts_fetch',
         'device_fetch',
         'device_refresh_token',
-        'vpa_fetch',
         'p2p_create',
         'p2p_fetch_multiple',
         'p2p_fetch',
@@ -1105,6 +1094,7 @@ final class Route
         'customer_fetch_token',
         'customer_fetch_tokens',
         'customer_add_bank_account',
+        'customer_add_vpa',
         'customer_fetch_bank_account',
         'customer_wallet_payout',
         'invoice_create',
@@ -1136,7 +1126,6 @@ final class Route
         'addon_fetch_multiple',
         'addon_delete',
         'p2p_fetch_private',
-        'vpa_fetch_private',
         'customer_collect_request_fetch_private',
         'payout_fetch_by_id',
         'payout_fetch_multiple',
