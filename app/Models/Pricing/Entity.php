@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Product;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Constants\Product;
 
 class Entity extends Base\PublicEntity
 {
@@ -350,11 +352,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
-    /*
-     * For adding plan id easily in queries
+    /**
+     * For adding plan_id filter in queries
+     *
+     * @param $query
+     * @param $planId
      */
     public function scopePlanId($query, $planId)
     {
         $query->where(self::PLAN_ID, '=', $planId);
+    }
+
+    /**
+     * @param        $query
+     * @param string $product
+     */
+    public function scopeProduct(Builder $query, string $product = Product::PRIMARY)
+    {
+        $query->where(self::PRODUCT, '=', $product);
     }
 }

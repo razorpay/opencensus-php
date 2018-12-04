@@ -4,6 +4,7 @@ namespace RZP\Models\Pricing;
 
 use App;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -119,6 +120,7 @@ class Repository extends Base\Repository
         $orgId = $merchant->org->getId();
 
         return $this->newQuery()
+                    ->product(Product::PRIMARY)
                     ->planId(Pricing\Entity::ZERO_PRICING)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
@@ -161,6 +163,7 @@ class Repository extends Base\Repository
     public function getGatewayPricingPlans()
     {
         return $this->newQueryWitOrgIdParam()
+                    ->product(Product::PRIMARY)
                     ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
