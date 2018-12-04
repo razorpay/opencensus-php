@@ -4,11 +4,9 @@ namespace RZP\Gateway\Paysecure;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Isg\Field;
 use SoapFault;
 use SoapHeader;
 use SoapVar;
-use SoapClient;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -196,7 +194,7 @@ trait RequestHandlerTrait
                 'trace'               => true,
                 'exceptions'          => true,
                 'connection_timeout'  => 30,
-                'soap_version'        => SOAP_1_2,
+//                'soap_version'        => SOAP_1_2,
             ];
 
             $request = [
@@ -206,10 +204,11 @@ trait RequestHandlerTrait
 
             $soapClient = $this->getSoapClientObject($request);
 
-            $response = $soapClient->CallPaySecure($requestBody);
+            $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
 
-//            echo '<pre>'; print_r($response); echo '</pre>';
+//            s($response);
 //            $this->printLastSoapXml($soapClient);
+
         }
         catch (SoapFault $sf)
         {
