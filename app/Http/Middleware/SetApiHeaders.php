@@ -1,8 +1,9 @@
 <?php namespace App\Http\Middleware;
 
 use Auth;
-use Closure;
 use Gate;
+use Closure;
+use App\Http\ApiUrl;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -34,7 +35,7 @@ class SetApiHeaders {
 	 */
 	public function handle($request, Closure $next)
 	{
-        $originDomain = \Request::server('HTTP_ORIGIN');
+        $originDomain = ApiUrl::getRequestOriginUrl();
 
         $domain = \Request::server('SERVER_NAME');
 

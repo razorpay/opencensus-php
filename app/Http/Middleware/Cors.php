@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Http\ApiUrl;
 
 class Cors
 {
@@ -19,7 +20,7 @@ class Cors
      */
     public function handle($request, Closure $next)
     {
-        $originDomain = \Request::server('HTTP_ORIGIN');
+        $originDomain = ApiUrl::getRequestOriginUrl();
 
         $originHost = parse_url($originDomain, PHP_URL_HOST);
 

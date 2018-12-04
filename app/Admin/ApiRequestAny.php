@@ -80,7 +80,7 @@ class ApiRequestAny
 
         $domain = \Request::server('SERVER_NAME');
 
-        $originDomain = \Request::server('HTTP_ORIGIN');
+        $originDomain = ApiUrl::getRequestOriginUrl();
 
         $defaultHeaders = [
             'X-Dashboard'       => 'true',

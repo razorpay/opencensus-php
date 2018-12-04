@@ -65,4 +65,14 @@ class ApiUrl
         return (($allowedHosts === '*') or
             (in_array($cookie, $allowedHosts, true) === true));
     }
+
+    public static function getRequestOriginUrl()
+    {
+        // Fallback for origin is referrer.
+        // OSWAP suggests to use referrer if origin header is not present.
+        // https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Identifying_Source_Origin_.28via_Origin.2FReferer_header.29
+        $originDomain = \Request::server('HTTP_ORIGIN') ?? \Request::server('HTTP_REFERER');
+
+        return $originDomain;
+    }
 }
