@@ -1058,9 +1058,9 @@ class MerchantTest extends TestCase
 
         // mock carbon to test timestamp check
 
-        $firstDay2019 = Carbon::createFromTimestamp(1546324200);
+        $feb2019 = Carbon::createFromTimestamp(1549002600);
 
-        Carbon::setTestNow($firstDay2019);
+        Carbon::setTestNow($feb2019);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -1070,6 +1070,24 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($payment['id'], $transaction['entity_id']);
         $this->assertEquals(1000, $transaction['fee']);
+    }
+
+    public function testDiwaliPromotionalPlanFeatureRemoval()
+    {
+        $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
+        $this->fixtures->pricing->createStandardPlan();
+        $this->fixtures->merchant->disableInternational();
+
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
+
+        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
+        $this->ba->adminAuth();
+        $this->merchantAssignPricingPlan('1A0Fkd38fGZPVC', '10000000000000');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
+
+        $this->assertFalse($merchant->isFeatureEnabled('diwali_promotional_plan'));
     }
 
     public function testSetBanks()
