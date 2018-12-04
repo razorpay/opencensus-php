@@ -1193,7 +1193,6 @@ final class Route
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'vpa_payout',
-<<<<<<< Updated upstream
         'contact_get',
         'contact_list',
         'contact_create',
@@ -1207,7 +1206,6 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         //'fund_account_delete',
-=======
         'beneficiary_get',
         'beneficiary_list',
         'beneficiary_create',
@@ -1215,7 +1213,6 @@ final class Route
         'beneficiary_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
->>>>>>> Stashed changes
     ];
 
     // Only routes defined in internalApps go here

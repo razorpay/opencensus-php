@@ -43,7 +43,9 @@ class Service extends Base\Service
 
         $this->modifyRequestFromOldFormat($input);
 
-        $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
+        // $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
+
+        $virtualAccount = $this->core->createForBankingBalance($this->merchant);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,

@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Statement;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Models\BankTransfer;
 
 /**
  * Class Entity
@@ -93,13 +94,17 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if ($this->getType() === Constants\Entity::BANK_ACCOUNT)
+        if ($this->getType() === Constants\Entity::BANK_TRANSFER)
         {
-            // TODO need to do this
+            unset($array['source'][BankTransfer\Entity::PAYMENT_ID]);
+            unset($array['source'][BankTransfer\Entity::VIRTUAL_ACCOUNT_ID]);
+            $array['source'][BankTransfer\Entity::PAYER_NAME] = $this->source->getPayerName();
+            $array['source'][BankTransfer\Entity::PAYER_ACCOUNT] = $this->source->getPayerAccount();
+            $array['source'][BankTransfer\Entity::PAYER_IFSC] = $this->source->getPayerIfsc();
             return;
         }
 
-        unset($amount['source']);
+        unset($array['source']);
     }
 
     public function setPublicUtrAttribute(array & $array)

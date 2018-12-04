@@ -212,6 +212,11 @@ class Merchant extends Base
         return $merchant;
     }
 
+    public function createBankingBalance($merchantId = '10000000000000')
+    {
+        $this->fixtures->create('balance', ['id' => '100000000000BB', 'merchant_id' => $merchantId, 'balance' => 100000, 'type' => 'banking']);
+    }
+
     /**
      * Creates merchant and merchant details entity with given attributes.
      *
