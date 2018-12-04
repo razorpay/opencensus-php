@@ -1,8 +1,8 @@
 import Smooch from 'smooch';
 
 const SMOOCH_APP_ID = '54d849a9c99af8250046dbf8';
-const FRESHCHAT_TOKEN = 'ecf81a9c-2040-43d2-b65f-af058b1508d9'; //test
-// const FRESHCHAT_TOKEN = '188cc5ce-796c-4918-8029-c2dc1d924274'; //live
+// const FRESHCHAT_TOKEN = 'ecf81a9c-2040-43d2-b65f-af058b1508d9'; //test
+const FRESHCHAT_TOKEN = '188cc5ce-796c-4918-8029-c2dc1d924274'; //live
 const FRESHCHAT_HOST = 'https://wchat.freshchat.com';
 
 const initSmooch = data => {
