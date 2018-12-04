@@ -45,6 +45,17 @@ export default class SupportBody extends Component {
     }
   };
 
+  handleFeedback = () => {
+    const { onToggle } = this.props;
+
+    document.querySelector('[class$="feedback_minimized_label"]').click();
+    onToggle();
+  };
+
+  handleFaqs = () => {
+    window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
+  };
+
   render() {
     const { notifyCount, isOpened } = this.props;
     const { handleClick, isWorkingDay } = this;
@@ -80,24 +91,23 @@ export default class SupportBody extends Component {
                 For integration, account and payment issues
               </small>
             </li>
-            {window.rzp_user &&
-              window.rzp_user.activated && (
-                <li
-                  class={`support-item p-all chat ${
-                    shouldDisable ? 'disabled' : ''
-                  }`}
-                  onClick={() => handleClick('chat')}
-                >
-                  Chat with us{' '}
-                  <small class="help-content">(9am-6pm, working days)</small>
-                  {notifyCount > 0 && (
-                    <span class="support-notify m-l">{notifyCount}</span>
-                  )}
-                  <small class="help-block">
-                    For quick questions or help on dashboard
-                  </small>
-                </li>
-              )}
+            {window.rzp_user && window.rzp_user.activated ? (
+              <li
+                class={`support-item p-all chat ${
+                  shouldDisable ? 'disabled' : ''
+                }`}
+                onClick={() => handleClick('chat')}
+              >
+                Chat with us{' '}
+                <small class="help-content">(9am-6pm, working days)</small>
+                {notifyCount > 0 && (
+                  <span class="support-notify m-l">{notifyCount}</span>
+                )}
+                <small class="help-block">
+                  For quick questions or help on dashboard
+                </small>
+              </li>
+            ) : null}
             {window.rzp_user &&
             window.rzp_user.experiments.support_call &&
             window.rzp_user.experiments.support_call.result === 'on' ? (
@@ -117,19 +127,11 @@ export default class SupportBody extends Component {
           </ul>
 
           <div class="support-feedback">
-            <button class="btn-default">
+            <button class="btn-default" onClick={this.handleFeedback}>
               <i class="i i-voice-record m-r" />
               Share Feedback
             </button>
-            <button
-              class="btn-default"
-              onClick={() => {
-                window.open(
-                  'https://razorpay.com/knowledgebase/#merchant',
-                  '_blank'
-                );
-              }}
-            >
+            <button class="btn-default" onClick={this.handleFaqs}>
               <i class="i i-help  m-r" />
               FAQs
             </button>
