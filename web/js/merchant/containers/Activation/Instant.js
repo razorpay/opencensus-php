@@ -83,6 +83,22 @@ export default class ActivationWizard extends React.Component {
   constructor(props) {
     super(props);
     this.prepareTabs(props);
+
+    if (window.RZP && window.RZP.appName === 'businessbanking') {
+      this.rpc = window.RZP.rpcServer(
+        window.RZP.appHost,
+        [
+          {
+            name: 'activationSuccess',
+            hasReply: true,
+            callback: reply => {
+              this.onActivationSuccess = reply;
+            },
+          },
+        ],
+        'activation'
+      );
+    }
   }
 
   prepareTabs(props) {
@@ -189,6 +205,10 @@ export default class ActivationWizard extends React.Component {
       accountId: this.props.accountId,
     })
       .then(response => {
+        if (this.onActivationSuccess) {
+          return this.onActivationSuccess(response);
+        }
+
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);

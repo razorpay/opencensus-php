@@ -82,7 +82,7 @@ export const testChargeSubscription = (subscriptionId, success) => {
 export const paymentManualAttempt = (subscriptionId, invoiceId) =>
   merchantFetch({
     url: `subscriptions/${subscriptionId}/invoices/${invoiceId}/charge`,
-    method: 'post'
+    method: 'post',
   });
 
 // List Reducer

@@ -8,6 +8,27 @@
 
 @include('partials/common')
 
+<script>
+  document.domain = window.location.hostname.split(".").slice(-2).join(".");
+
+  window.RZP = window.RZP || {};
+
+  if (
+    window.parent !== window &&
+    ~window.parent.location.href.indexOf("{{ config('app.banking_service_url') }}")
+  ) {
+
+    document.write(
+      "<link rel='stylesheet' href='{{ config('app.banking_service_url') }}/dist/pgClient.css' type='text/css'/>"
+    );
+
+    document.write("<script src='{{ config('app.banking_service_url') }}/dist/pgClient.js'>\<\/script>");
+
+    window.RZP.appHost = "{{ config('app.banking_service_url') }}";
+    window.RZP.appName = "businessbanking";
+  }
+</script>
+
 <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
 @if(env('APP_ENV') === 'production')
   <script>
