@@ -39,6 +39,9 @@ export default class Support extends Component {
       window.Smooch.on('widget:closed', () => {
         this.handleVisibility(false);
       });
+      window.Smooch.on('unreadCount', unreadCount => {
+        this.setState({ notifyCount: unreadCount });
+      });
     }
   };
 
