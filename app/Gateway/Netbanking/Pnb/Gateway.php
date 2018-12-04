@@ -2,13 +2,11 @@
 
 namespace RZP\Gateway\Netbanking\Pnb;
 
-use http\Env\Request;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -16,8 +14,6 @@ use RZP\Exception\LogicException;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Netbanking;
-
-use Carbon\Carbon;
 
 class Gateway extends Base\Gateway
 {
@@ -30,7 +26,7 @@ class Gateway extends Base\Gateway
     protected $bank = 'pnb';
 
     protected $map = [
-        RequestFields::AMOUNT => Base\Entity::AMOUNT,
+        RequestFields::AMOUNT      => Base\Entity::AMOUNT,
         RequestFields::PAYMENT_ID  => Base\Entity::PAYMENT_ID,
     ];
 
@@ -146,13 +142,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getEncryptedString(array $input, $glue = '|')
-    {
-        $str = urldecode(http_build_query($input, '', $glue));
-
-        return $this->encryptString($str);
-    }
-
     public function encryptString(string $jsonString): string
     {
         $secret = $this->getSecret();
@@ -181,7 +170,7 @@ class Gateway extends Base\Gateway
     protected function getNetbankingEntityAttributes(array $input): array
     {
         $entityAttributes = [
-            RequestFields::AMOUNT => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
+            RequestFields::AMOUNT      => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
             RequestFields::PAYMENT_ID  => $input['payment'][Payment\Entity::ID],
         ];
 
@@ -416,7 +405,9 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        // TODO : Add check for checksum ?
+        $responseArray['data'][0][self::CHECKSUM_ATTRIBUTE] = $responseArray[self::CHECKSUM_ATTRIBUTE];
+
+        $this->verifySecureHash($responseArray['data'][0]);
 
         if (isset($responseArray['data']) === true)
         {
@@ -509,7 +500,7 @@ class Gateway extends Base\Gateway
                     TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
                     [
                         'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
-                        'verify_bid'    => $content[ResponseFields::BANK_TRANSACTION_ID_VERIFY]
+                        'verify_bid'    => $content[ResponseFields::BANK_PAYMENT_ID]
                     ]
                 );
             }

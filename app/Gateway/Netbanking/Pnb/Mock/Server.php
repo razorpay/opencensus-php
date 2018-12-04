@@ -51,8 +51,6 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        //TODO verify hash
-
         $data = $this->getVerifyResponseData($input);
 
         return $this->makeResponse($data);
@@ -63,8 +61,6 @@ class Server extends Base\Mock\Server
         parent::refund($input);
 
         $this->validateActionInput($input);
-
-        //TODO verify hash
 
         $response = $this->getRefundResponseData($input);
 
