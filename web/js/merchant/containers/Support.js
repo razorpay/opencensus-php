@@ -3,6 +3,8 @@ import { Component } from 'react';
 import SupportHeader from 'merchant/components/Support/SupportHeader';
 import SupportBody from 'merchant/components/Support/SupportBody';
 
+import { classList } from 'common/util';
+
 export default class Support extends Component {
   state = {
     isOpened: false,
@@ -63,20 +65,11 @@ export default class Support extends Component {
     this.handleVisibility(true);
   };
 
-  getCSSClass = () => {
-    const { isHidden } = this.state;
-    let className = 'support';
-
-    if (isHidden) className += ' hidden';
-
-    return className;
-  };
-
   render() {
-    const { notifyCount, isOpened } = this.state;
+    const { notifyCount, isOpened, isHidden } = this.state;
 
     return (
-      <div class={this.getCSSClass()}>
+      <div class={classList('support', isHidden && 'hidden')}>
         <SupportHeader
           onToggle={this.handleToggle}
           isOpened={isOpened}

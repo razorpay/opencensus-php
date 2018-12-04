@@ -2,17 +2,6 @@ import { Component } from 'react';
 import Banner from 'rzp/ui/Banner';
 
 export default class SupportBody extends Component {
-  isWorkingDay = () => {
-    const today = new Date();
-    const day = today.getDay();
-    const hours = today.getHours();
-
-    if (day >= 1 && day <= 5 && (hours >= 9 && hours < 18)) {
-      return true;
-    }
-    return false;
-  };
-
   handleClick = id => {
     const { onToggle, onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
@@ -20,14 +9,14 @@ export default class SupportBody extends Component {
     if (rzpTicketSystem) {
       // if not working day for call/chat support, do nothing
       if (id === 'call') {
-        if (!this.isWorkingDay()) {
+        if (!isWorkingDay()) {
           return;
         }
       }
 
       if (id === 'chat') {
         // if notifications pending, then enable chat
-        if (!this.isWorkingDay() && notifyCount < 1) {
+        if (!isWorkingDay() && notifyCount < 1) {
           return;
         }
 
@@ -56,7 +45,7 @@ export default class SupportBody extends Component {
 
   render() {
     const { notifyCount, isOpened } = this.props;
-    const { handleClick, isWorkingDay } = this;
+    const { handleClick } = this;
     let shouldDisable = !isWorkingDay();
 
     return (
@@ -139,3 +128,14 @@ export default class SupportBody extends Component {
     );
   }
 }
+
+const isWorkingDay = () => {
+  const today = new Date();
+  const day = today.getDay();
+  const hours = today.getHours();
+
+  if (day >= 1 && day <= 5 && (hours >= 9 && hours < 18)) {
+    return true;
+  }
+  return false;
+};
