@@ -73,10 +73,13 @@ final class FactoryData
             'title'       => 'Sample title',
             'description' => 'Sample description',
             'notes'       => null,
+            'terms'       => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'type'                      => 'primary',
             'balance'                   => 0,
         ]);
 

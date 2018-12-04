@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
@@ -173,9 +174,11 @@ abstract class EntityProcessor extends Base\Core
         $this->repo->saveOrFail($this->source);
     }
 
-    protected function updateTransactionEntity()
+    protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
     {
         $this->source->transaction->setReconciledAt($this->reconciledAt);
+
+        $this->source->transaction->setReconciledType($reconciledType);
 
         $this->source->transaction->saveOrFail();
     }

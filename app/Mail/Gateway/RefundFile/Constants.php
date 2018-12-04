@@ -11,7 +11,7 @@ class Constants extends Base\Constants
     const RECIPIENT_EMAILS_MAP = [
         Gateway::NETBANKING_HDFC        => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_ICICI       => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-        Gateway::NETBANKING_CORPORATION => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_FEDERAL     => ['settlements@razorpay.com'],
         Gateway::NETBANKING_BOB         => ['bob.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_RBL         => ['settlements@razorpay.com'],

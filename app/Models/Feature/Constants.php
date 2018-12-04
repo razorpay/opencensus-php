@@ -100,6 +100,7 @@ class Constants
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -241,6 +242,7 @@ class Constants
         self::IRCTC_METHODS                   => true,
         self::SKIP_CVV                        => true,
         self::BLOCK_SETTLEMENTS               => true,
+        self::SKIP_INTERNATIONAL_AUTH         => true,
     ];
 
     // Entity type constants

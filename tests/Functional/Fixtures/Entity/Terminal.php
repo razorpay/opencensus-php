@@ -1304,6 +1304,31 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedHitachiEmiTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => 'ShrdHtchEmiTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hitachi',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hitachi',
+            'gateway_terminal_password' => 'hitachi',
+            'gateway_secure_secret'     => 'secret',
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+            'emi_subvention'            => 'customer',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedMobikwikTerminal()
     {
         $termId = \RZP\Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
@@ -1929,6 +1954,16 @@ class Terminal extends Base
         return $this->createSharedUpiHulkIntentTerminal(array_merge($attributes, $override));
     }
 
+    public function createSharedUpiAxisIntentTpvTerminal(array $override = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiAxisIntentTerminal(array_merge($attributes, $override));
+    }
+
     public function createSharedAepsIciciTerminal(array $attributes)
     {
         $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
@@ -1994,6 +2029,20 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiAxisIntentTerminal(array $override)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_AXIS_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ],
+            'vpa'                       => 'test@vpa'
+        ];
+
+        return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)

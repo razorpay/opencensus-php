@@ -4412,7 +4412,43 @@ ALTER TABLE balance
     ADD INDEX `balance_merchant_id_index` (`merchant_id`),
     ALGORITHM=INPLACE, LOCK=NONE;
 
+
+UPDATE balance SET merchant_id = id , currency = 'INR'
+    where merchant_id IS NULL LIMIT 1000;
+
 ALTER TABLE subscription_registrations
     ADD COLUMN notes TEXT AFTER expire_at,
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
+
+ALTER TABLE transaction
+    CHANGE COLUMN `reference2` `balance_id` CHAR(14) DEFAULT NULL,
+    ADD INDEX `transactions_balance_id_index` (balance_id),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE blade
+    ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
+
+ALTER TABLE hitachi
+    ADD INDEX `hitachi_prrn_index` (pRRN);
+
+# Drops foreign key on production on newly created table beneficiaries, leaving them on stage and local environment.
+ALTER TABLE beneficiaries
+    DROP FOREIGN KEY beneficiaries_merchant_id_foreign;
+
+ALTER TABLE payment_links
+    ADD COLUMN support_contact VARCHAR(255) DEFAULT NULL AFTER udf_jsonschema_id,
+    ADD COLUMN support_email VARCHAR(255) DEFAULT NULL AFTER support_contact,
+    ADD COLUMN terms TEXT AFTER support_email;
+
+UPDATE migrations
+	SET migration="2018_11_25_100031_create_contacts"
+	WHERE migration="2018_11_25_100031_create_beneficiaries"
+	LIMIT 1;
+
+ALTER TABLE beneficiaries
+	RENAME TO contacts;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN balance_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX virtual_accounts_balance_id_merchant_id_index (balance_id, merchant_id);

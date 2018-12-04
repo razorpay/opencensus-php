@@ -641,7 +641,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
 
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
-    const BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH                      = 'Payment amount provided does not match amount expected for the payment link';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
@@ -694,37 +693,46 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
+  
+    const BAD_REQUEST_PAYMENT_REDIRECT_INVALID_AUTH                             = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS                         = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT                                   = 'Payment already processed';
 
+    const BAD_REQUEST_SETTLEMENT_ANOTHER_QUEUE_OPERATION_IN_PROGRESS            = 'Request failed because another settlement queue operation in progress';
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
 
     // ---------------------- UPI (NPCI) Error codes -------------------------------
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';
-    const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Remitter CBS is offline';
-    const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_BENEFICIARY          = 'Invalid transaction or member is not able to find any appropriate response code on beneficiary side';
+    const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Banking system is offline, please try after sometime.';
     const GATEWAY_ERROR_INACTIVE_DORMANT_BENEFICIARY_ACCOUNT                        = 'Beneficiary account is inactive or dormant';
     const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_DOES_NOT_EXIST                          = 'Beneficiary account does not exist';
     const GATEWAY_ERROR_INVALID_BENEFICIARY_CREDENTIALS                             = 'Beneficiary credentials are invalid';
     const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_BLOCKED                                 = 'Beneficiary account is blocked';
-    const GATEWAY_ERROR_BENEFICIARY_CBS_OFFLINE                                     = 'Beneficiary cbs is offline';
-    const GATEWAY_ERROR_BENEFICIARY_INTERNAL_EXCEPTION                              = 'Unable to process due to internal exception at server/cbs/etc on beneficiary side';
     const GATEWAY_ERROR_BENEFICIARY_COMPLIANCE_VIOLATION                            = 'Transaction cannot be completed. Compliance violation on beneficiary side';
     const GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED                       = 'Transaction not permitted to cardholder on beneficiary side';
     const GATEWAY_ERROR_BENEFICIARY_EXPIRED_CARD                                    = 'Transaction is declined at beneficiary side due to Expired card';
-    const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER             = 'Invalid transaction or member is not able to find any appropriate response code on remitter side';
-    const GATEWAY_ERROR_PSP_NOT_AVAILABLE                                           = 'Psp is not available';
-    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT                         = 'Connection timeout in reqpay credit';
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
     const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
     const GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND                      = 'No original debit or credit request found';
     const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
-    const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Insufficient funds in remitter account';
+    const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
-    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by remitter';
-    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_BENEFICARY             = 'Suspected fraud or transaction is declined based on risk score by beneficiary';
-    const GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS                              = 'Beneficiary cut-off is in progress';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by bank';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_BENEFICARY             = 'Suspected fraud or transaction is declined based on risk score by bank';
     const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
-    const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate RRN found for the transaction on beneficiary side.';
+    const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate reference number found for the transaction on bank side.';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
+
+    const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
+    const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';
+    const BAD_REQUEST_EXPIRED_VPA                                                   = 'Payment failed because VPA is marked as Expired';
+    const BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT                                      = 'Payment failed because Account linked to VPA is invalid';
+    const BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED                          = 'Payment failed because Transaction frequency limit has exceeded';
+    const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'Payment failed because Transaction amount limit has exceeded';
+    const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
+    const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
+    const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';
+    const BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA                                    = 'Invalid VPA. Please enter a valid Virtual Payment Address';
 }

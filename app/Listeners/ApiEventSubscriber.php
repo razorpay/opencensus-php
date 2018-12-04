@@ -684,7 +684,7 @@ class ApiEventSubscriber extends Base\Core
         return (($enabledForApps or $enabledForMerchant) === true);
     }
 
-    protected function isWebhookActiveAndEnabled(WebhookEntity $webhook = null): bool
+    protected function isWebhookActiveAndEnabled($webhook = null): bool
     {
         return (($webhook !== null) and
                 ($webhook->isActive() === true) and
