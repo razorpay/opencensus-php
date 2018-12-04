@@ -431,7 +431,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
+        $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['reference1']);
         $this->assertNotNull($updatedTransaction['reconciled_at']);
         $this->assertNotNull($updatedTransaction['reconciled_type']);
 
@@ -615,7 +615,7 @@ class ReconciliationFileTest extends TestCase
         $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertNull($refund1['arn']);
+        $this->assertNull($refund1['reference1']);
 
         $entries[] = $this->overrideHdfcRefund($gatewayPayment1);
 
@@ -624,7 +624,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['reference1']);
 
         // Test for for update ARN
         $entries[0][HDFCPaymentRecon::COLUMN_ARN] .= str_random(2);
@@ -634,7 +634,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['reference1']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -650,7 +650,7 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('cybersource');
 
-        $this->assertNull($refund[Refund\Entity::ARN]);
+        $this->assertNull($refund[Refund\Entity::REFERENCE1]);
 
         $entries[] = $this->overrideHdfcCybersourceOnusRefund($gatewayRefund);
 
@@ -659,7 +659,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund = $this->getDbEntityById('refund', $refund['id'])->toArrayAdmin();
 
-        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::REFERENCE1]);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1248,7 +1248,7 @@ class ReconciliationFileTest extends TestCase
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
 
-        $this->assertNull($refund1['arn']);
+        $this->assertNull($refund1['reference1']);
 
         $entries[] = $this->overrideHitachiRefund($gatewayPayment1);
 
@@ -1257,7 +1257,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['reference1']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1270,7 +1270,7 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertNull($refund[Refund\Entity::ARN]);
+        $this->assertNull($refund[Refund\Entity::REFERENCE1]);
 
         $entries[] = $this->overrideHdfcOnusRefund($gatewayRefund);
 
@@ -1281,9 +1281,9 @@ class ReconciliationFileTest extends TestCase
 
         $updatedGatewayRefund = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::REFERENCE1]);
 
-        $this->assertEquals($updatedRefund[Refund\Entity::ARN], $updatedGatewayRefund['arn_no']);
+        $this->assertEquals($updatedRefund[Refund\Entity::REFERENCE1], $updatedGatewayRefund['arn_no']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
