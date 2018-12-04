@@ -16,19 +16,5 @@ class StatementController extends Controller
 {
     protected $service = Transaction\Statement\Service::class;
 
-    public function fetchMultiple()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->fetchMultiple($input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function fetch($id)
-    {
-        $response = $this->service()->fetch($id);
-
-        return ApiResponse::json($response);
-    }
+    use Traits\HasCrudMethods;
 }
