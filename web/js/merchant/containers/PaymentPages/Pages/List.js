@@ -143,14 +143,16 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
 
-            <div class="form-group list-filter-item">
-              <label>Receipt No.</label>
-              <Field
-                name="receipt"
-                component="input"
-                class="form-control input-sm"
-              />
-            </div>
+            {!user.isPaymentPagesV2Enabled && (
+              <div class="form-group list-filter-item">
+                <label>Receipt No.</label>
+                <Field
+                  name="receipt"
+                  component="input"
+                  class="form-control input-sm"
+                />
+              </div>
+            )}
 
             <div class="form-group list-filter-item">
               <label>Status</label>
@@ -184,7 +186,11 @@ export default class PaymentPagesContainer extends ListContainer {
                   <th>Title</th>
                   <th>Amount</th>
                   <th>Payments Made</th>
-                  <th>Times Payable</th>
+                  <th>
+                    {user.isPaymentPagesV2Enabled
+                      ? 'Total Quantity'
+                      : 'Times Payable'}
+                  </th>
                   <th>Total Sales</th>
                   <th>Page Url</th>
                   <th>Created At</th>
@@ -210,7 +216,11 @@ export default class PaymentPagesContainer extends ListContainer {
                       </NavLink>
                     </td>
                     <td>
-                      <Amount value={item.amount} currency={item.currency} />
+                      {item.amount ? (
+                        <Amount value={item.amount} currency={item.currency} />
+                      ) : (
+                        '--'
+                      )}
                     </td>
                     <td>{item.times_paid}</td>
                     <td>{item.times_payable || '--'}</td>

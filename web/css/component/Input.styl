@@ -7,6 +7,22 @@
   .Input-content
     position: relative
 
+  .Input-valueBefore
+    position: absolute
+    top: 1px
+    left: 1px
+    bottom: 1px
+    font-size: 14px
+    background: #fff
+    color: #57666D
+    line-height: 36px
+    pointer-events: none
+    padding-left: 12px
+    opacity: 0.5
+
+    & + .Input-el
+      padding-left: 100px
+
   .Input-addons
     position: absolute
     top: 1px
@@ -63,7 +79,7 @@
   &.is-mature:not(.is-focused)
     .is-invalid, &.is-invalid
       .Input-addons
-        background-color: rgba(167, 4, 5, 0.17);
+        background-color: rgba(167, 4, 5, 0.17)
 
   &.Input-addons--transparent
     .Input-addons
@@ -102,10 +118,77 @@
 
 .Input--checkbox.Input--checkbox
   .Input-elWrapper
-    width: 100%;
+    width: 100%
 
 .Input--capitalize .Input-el
   text-transform: uppercase
+
+.Input--PowerDropdown
+  .Input-elWrapper
+    z-index: 9999
+    cursor: pointer
+
+  .Input-el--customSelection
+    line-height: 32px
+
+  .Input-list
+    position: absolute
+    width: 100%
+    border-radius: 2px
+    background: #fff
+    box-shadow: 0 0 6px rgba(0,0,0,0.12)
+
+  .Input-list-item
+    position: relative
+    width: 100%
+    line-height: 24px
+    padding: 6px 12px
+    font-size: 14px
+    cursor: pointer
+
+    &:last-of-type
+      border-bottom-left-radius: 2px
+      border-bottom-right-radius: 2px
+
+    .display-label
+      width: 82%
+      display: inline-block
+      pointer-events: none
+      user-select: none
+
+    .Input-list
+      top: 0;
+      left: -100%;
+      visibility: hidden
+
+      &:hover
+        visibility: visible
+
+    &:hover
+      background: #f6f6f6
+
+      .Input-list
+        visibility: visible
+
+    &.selected
+      background: #eff5fe
+
+  &.is-focused .Input-el
+    border-color: #528ff0
+
+  i
+    display: inline-block
+    vertical-align: middle
+    font-size: 16px
+    margin-right: 8px
+    line-height: inherit
+    pointer-events: none
+
+  .i-chevron-right
+    position: absolute
+    top: 10px
+    right: 4px
+    margin: 0
 
 .Input--pair
   .Input-pair
@@ -178,15 +261,19 @@
 
   &.Select-elWrapper
     &::before
-      content: '\f105'
+      content: ''
       position: absolute
-      left: 236px
-      top: 4px
-      font-size: 20px
-      font-family: merchant-icons !important
-      font-style: normal
-      font-weight: normal !important
+      right: 8px
+      margin-top: 12px
+      width: 0;
+      height: 0;
+      border-top: 4px dashed;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+
+
       pointer-events: none
+      z-index: 100
 
   select
     -webkit-appearance: none
@@ -261,6 +348,13 @@
 
   &--after
     padding-right: 48px
+
+  &[type=number]
+    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button
+      -webkit-appearance: none
+      -moz-appearance: none
+      appearance: none
+      margin: 0
 
 .Input:not(.Input--disabled) .Input-el
     &:hover
@@ -424,6 +518,52 @@ textarea.Input-el
   &:-moz-placeholder /* Firefox 18- */
     opacity: 0.8
     text-transform: initial
+
+/**/
+.Input--enum-list
+  .btn-link
+    margin: 8px
+    font-size: 13px
+
+    i
+      margin-right: 4px
+      display: inline-block
+
+  .Input-enum-option
+    overflow: auto
+
+    &.is-focused
+      z-index: 2
+
+    .Input-el
+      padding-right: 32px
+      border-radius: 0
+      position: relative
+
+    &:not(:nth-of-type(1))
+      margin-top: -1px
+
+    &:nth-of-type(1) .Input-el
+      border-top-left-radius: 2px
+      border-top-right-radius: 2px
+
+    &:last-of-type .Input-el
+      border-bottom-left-radius: 2px
+      border-bottom-right-radius: 2px
+
+    .Input-el-btn
+      font-size: 20px
+      position: absolute
+      right: 12px
+      top: 5px
+      width: 20px
+      line-height: 20px
+      text-align: center
+      cursor: pointer
+      color: #bfbfbf
+
+      &:hover
+        color: #7b8199
 
 /* Calendar picker styles */
 .Input--Calendar-content

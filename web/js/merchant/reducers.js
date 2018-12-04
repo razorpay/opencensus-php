@@ -67,6 +67,8 @@ import { plansReducer, planReducer } from 'merchant/modules/plans';
 import { addOnsReducer } from 'merchant/modules/addons';
 import { reportsReducer } from 'merchant/modules/reports';
 
+import wysiwygReducer from 'merchant/modules/wysiwyg';
+
 export default combineReducers({
   modal: modalReducer,
   slider: sliderReducer,
@@ -119,6 +121,7 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  wysiwyg: wysiwygReducer,
   authLinks: authLinksReducer,
   authLink: authLinkReducer,
   tokens: tokensReducer,

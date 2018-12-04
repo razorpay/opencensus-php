@@ -318,8 +318,6 @@ export default class CreateNewContainer extends React.Component {
       parentFormLock: true,
     });
 
-    const notificationMSG = 'Payment page created successfully.';
-
     const reqPayload = { ...this.state.dirty };
 
     /* Removing unrequired fields */
