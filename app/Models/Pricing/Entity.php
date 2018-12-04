@@ -342,7 +342,12 @@ class Entity extends Base\PublicEntity
 
     public function getFeature()
     {
-        return $this->attributes[self::FEATURE];
+        return $this->getAttribute(self::FEATURE);
+    }
+
+    public function getProduct()
+    {
+        return $this->getAttribute(self::PRODUCT);
     }
 
     /*
