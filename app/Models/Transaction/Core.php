@@ -957,7 +957,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
-            Transaction\Entity::CHANNEL             => $payout->merchant->getChannel(),
+            Transaction\Entity::CHANNEL             => $payout->getChannel(),
         ];
 
         $txn->fill($values);

@@ -316,10 +316,10 @@ return [
         ],
     ],
 
-    'deviceRoute' => [
-        'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'vpa_create:test:device:0::10000000000000::',
-        'settings'        => [
-        ],
-    ],
+    // 'deviceRoute' => [
+    //     'id_settings_key' => '10000000000000',
+    //     'throttle_key'    => 'vpa_create:test:device:0::10000000000000::',
+    //     'settings'        => [
+    //     ],
+    // ],
 ];
