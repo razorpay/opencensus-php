@@ -4724,11 +4724,13 @@ trait Authorize
 
         $key = $payment->getCacheInputKey();
 
-        // storing card details for fallback purpose
-        $this->persistCardDetailsTemporarily($input);
-
-        unset($input['card']['number']);
-        unset($input['card']['cvv']);
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            // storing card details for fallback purpose
+            $this->persistCardDetailsTemporarily($input);
+            unset($input['card']['number']);
+            unset($input['card']['cvv']);
+        }
 
         $this->cache->put($key, $input, static::CACHE_TTL);
     }
