@@ -37,6 +37,9 @@ export default class Support extends Component {
         this.handleVisibility(true);
       });
       window.Smooch.on('widget:closed', () => {
+        // smooch doesn't update notification count when chat is opened
+        this.setState({ notifyCount: 0 });
+
         this.handleVisibility(false);
       });
       window.Smooch.on('unreadCount', unreadCount => {
