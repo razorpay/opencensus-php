@@ -13,7 +13,6 @@ class Service extends Transaction\Service
 {
     public function fetchMultiple(array $input)
     {
-        // TODO get banking balance id
         $input[Entity::BALANCE_ID]  = $this->merchant->bankingBalance->getId();
 
         $statements = $this->repo->statement->fetch($input, $this->merchant->getId());
