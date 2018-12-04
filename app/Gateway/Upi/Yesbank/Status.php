@@ -11,4 +11,5 @@ class Status
     const TXN_CREDIT_CONFIRM         = 'TCC';
     const REMITTER_RETURN_INITIATED  = 'RET';
     const REMITTER_RETURN_POSTED     =' RRC';
+    const VERIFY_SUCCESS             = 'SUCCESS';
 }

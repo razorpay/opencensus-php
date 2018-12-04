@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Yesbank\Fields;
+use RZP\Gateway\Upi\Base\Entity;
 use Razorpay\Trace\Logger as Trace;
 
 trait Vpa
@@ -54,7 +56,7 @@ trait Vpa
 
     public function payoutVpa(array $input, $type)
     {
-        $action = ($type === 'pay') ? Payment\Action::PAYOUT_VPA : Payment\Action::PAYOUT_VPA_VERIFY;
+        $action = ($type === 'pay') ? Payment\Action::PAYOUT : Payment\Action::PAYOUT_VERIFY;
 
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
@@ -62,8 +64,6 @@ trait Vpa
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
         $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
-
-        $success = false;
 
         foreach ($terminals as $terminal)
         {
@@ -73,17 +73,22 @@ trait Vpa
 
                 $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
 
-                $success = true;
-
                 break;
             }
             catch (\Exception $exception)
             {
                 $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
+
+                $error = $exception->getError()->getAttributes();
+
+                $response = [
+                    Fields::SUCCESS        => false,
+                    Fields::ERROR_MESSAGE  => $error['gateway_error_desc'],
+                    Fields::RRN            => $input[Fields::GATEWAY_INPUT][Fields::REF_ID]
+                ];
+
             }
         }
-
-        $response['success'] = $success;
 
         return $response;
     }

@@ -9,5 +9,5 @@ class Url
 
     const VALIDATE_VPA         = 'CheckVirtualAddress';
     const PAYOUT               = 'mePayServerReqImps';
-    const VERIFY_PAYOUT        = 'metransactionStatusQuery';
+    const VERIFY_PAYOUT        = 'meTransStatusQuery';
 }

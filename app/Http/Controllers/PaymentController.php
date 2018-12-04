@@ -433,16 +433,34 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $this->trace->info(
-            TraceCode::VPA_PAYOUT_REQUEST,
-            [
-                'input' => $input,
-                'type'  => $type,
-            ]);
+        $headers = Request::header();
 
-        $data = $this->service()->payoutVpa($input, $type);
+        // since it is a private route, that should not be exposed to the merchant
+        // that is why to restrict the access we are hardcoding some keys, only
+        // which can call this route.
+        $allowedMerchantKeys = ["rzp_test_TheTestAuthKey"];
 
-        return ApiResponse::json($data);
+        $key = $headers['php-auth-user'][0];
+
+        if (in_array($key, $allowedMerchantKeys) === true)
+        {
+            $this->trace->info(
+                TraceCode::VPA_PAYOUT_REQUEST,
+                [
+                    'input' => $input,
+                    'type'  => $type,
+                ]);
+
+            $data = $this->service()->payoutVpa($input, $type);
+
+            return ApiResponse::json($data);
+        }
+        else
+        {
+            $data = ['message' => 'access prohibited'];
+
+            return ApiResponse::json($data);
+        }
     }
 
     public function getPaymentFlowsPrivate()

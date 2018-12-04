@@ -47,8 +47,13 @@ class UpiYesbankGatewayTest extends TestCase
     public function testPayoutToVpa()
     {
         $attributes = [
-            'vpa'       => 'Raj1@yesb',
+            'terminal'  => ['gateway_merchant_id' => '123456'],
+            'merchant'  => ['category' => '1520'],
+            'gateway_input' => [
+            'vpa'       => 'komal@yesb',
             'amount'    => '100',
+            'ref_id'    => time() .  str_random(4)
+            ]
         ];
 
         $request = $this->getPayoutRequest($attributes, 'pay');
@@ -58,6 +63,7 @@ class UpiYesbankGatewayTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response['success']);
+        $this->assertNotNull($response['rrn']);
 
         $gatewayEntity = $this->getLastEntity('upi', true);
 
@@ -77,8 +83,13 @@ class UpiYesbankGatewayTest extends TestCase
     public function testPayoutToVpaFailed()
     {
         $attributes = [
-            'vpa'       => 'Raj1@yesb',
-            'amount'    => '100',
+            'terminal'  => ['gateway_merchant_id' => '123456'],
+            'merchant'  => ['category' => '1520'],
+            'gateway_input' => [
+                'vpa'       => 'raj1@yesb',
+                'amount'    => '100',
+                'ref_id'    => time() .  str_random(4)
+            ]
         ];
 
         $request = $this->getPayoutRequest($attributes, 'pay');
@@ -116,8 +127,13 @@ class UpiYesbankGatewayTest extends TestCase
     {
         $response = $this->testPayoutToVpa();
 
+        $upi = $this->getDbLastEntity('upi');
+
         $attributes = [
-            'merchant_reference' => $response['merchant_reference'],
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => $upi['merchant_reference'],
+            ]
         ];
 
         $this->ba->privateAuth();
@@ -150,7 +166,10 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('F', $gatewayEntity['status_code']);
 
         $attributes = [
-            'merchant_reference' => $gatewayEntity['merchant_reference'],
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => $gatewayEntity['merchant_reference'],
+            ]
         ];
 
         $this->ba->privateAuth();
@@ -167,7 +186,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['received']);
         $this->assertNotNull($gatewayEntity['merchant_reference']);
         $this->assertNotNull($gatewayEntity['gateway_payment_id']);
-        $this->assertEquals('S', $gatewayEntity['status_code']);
+        $this->assertEquals('SUCCESS', $gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
         $this->assertEquals('pay', $gatewayEntity['type']);
@@ -183,7 +202,10 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('F', $gatewayEntity['status_code']);
 
         $attributes = [
-            'merchant_reference' => $gatewayEntity['merchant_reference'],
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => $gatewayEntity['merchant_reference'],
+            ]
         ];
 
         $this->ba->privateAuth();
@@ -193,7 +215,7 @@ class UpiYesbankGatewayTest extends TestCase
             {
                 if ($action === 'payout_verify')
                 {
-                    $content['status_code']  = 'T';
+                    $content['statuscode']  = 'T';
                     $content['timed_out_txn_status'] = 'RCC';
                 }
             });
@@ -226,7 +248,10 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('F', $gatewayEntity['status_code']);
 
         $attributes = [
-            'merchant_reference' => $gatewayEntity['merchant_reference'],
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => $gatewayEntity['merchant_reference'],
+            ]
         ];
 
         $this->ba->privateAuth();
@@ -247,13 +272,18 @@ class UpiYesbankGatewayTest extends TestCase
 
         $this->assertFalse($response['success']);
 
+        $this->assertNotNull($response['error_message']);
+
         $this->assertEquals('F', $gatewayEntity['status_code']);
     }
 
     public function testPayoutVpaVerifyForIncorrectPayoutReference()
     {
         $attributes = [
-            'merchant_reference' => '1234',
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => 'merchant_reference',
+            ]
         ];
 
         $this->ba->privateAuth();
@@ -261,6 +291,8 @@ class UpiYesbankGatewayTest extends TestCase
         $request = $this->getPayoutRequest($attributes, 'verify');
 
         $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('No payout exists for the given reference id', $response['error_message']);
 
         $this->assertFalse($response['success']);
     }

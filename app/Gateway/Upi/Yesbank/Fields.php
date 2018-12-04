@@ -76,6 +76,12 @@ class Fields
     const PAYEE_ACC_NAME         = 'payee_account_name';
     const TIMED_OUT_TXN_STATUS   = 'timed_out_txn_status';
 
+    // fields which FTA service will use to talk to gateway
+    const REF_ID                 = 'ref_id';
+    const GATEWAY_INPUT          = 'gateway_input';
+    const SUCCESS                = 'success';
+    const ERROR_MESSAGE          = 'error_message';
+
     const PAYOUT = [
       self::YBLREFNO,
       self::ORDERNO,
@@ -133,7 +139,6 @@ class Fields
         self::PAYEE_AADHAR,
         self::PAYEE_ACC_NAME,
         self::TIMED_OUT_TXN_STATUS,
-        self::ADD1,
         self::ADD2,
         self::ADD3,
         self::ADD4,

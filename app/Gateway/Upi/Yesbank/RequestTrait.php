@@ -17,6 +17,8 @@ trait RequestTrait
             'X-IBM-Client-Secret'   => $this->getClientSecret()
         ];
 
+        $request['content'] = json_encode($request['content']);
+
         return parent::sendGatewayRequest($request);
     }
 
@@ -42,9 +44,6 @@ trait RequestTrait
 
     protected function getClientCertificate()
     {
-        $gatewayCertPath = 'app/Gateway/Upi/Yesbank/uat.yesbank.crt';
-
-        return $gatewayCertPath;
         $this->getGatewayCertDirPath();
 
         $clientCertPath = $gatewayCertPath . '/' .
@@ -71,9 +70,6 @@ trait RequestTrait
 
     protected function getClientSslKey()
     {
-        $gatewayCertPath = 'app/Gateway/Upi/Yesbank/uat.yesbank.key';
-
-        return $gatewayCertPath;
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
         $clientCertPath = $gatewayCertPath . '/' .
@@ -146,7 +142,6 @@ trait RequestTrait
             return $this->config['test_client_id'];
         }
 
-        // This is set on all environments, we will be using this regardless of auth
         return $this->config['live_client_id'];
     }
 
@@ -157,7 +152,6 @@ trait RequestTrait
             return $this->config['test_client_secret'];
         }
 
-        // This is set on all environments, we will be using this regardless of auth
         return $this->config['live_client_secret'];
     }
 }

@@ -76,7 +76,7 @@ class Server extends Base\Mock\Server
             Fields::ORDERNO                 => $requestArray[1],
             Fields::AMOUNT                  => '1.00',
             Fields::DATE                    => '',
-            Fields::STATUSCODE              => Yesbank\Status::SUCCESS,
+            Fields::STATUSCODE              => Yesbank\Status::VERIFY_SUCCESS,
             Fields::STATUSDESC              => 'SUCCESS',
             Fields::RESPCODE                => '00',
             Fields::APPROVALNUM             => random_integer(5),

@@ -163,13 +163,19 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
-    protected static $payoutVpaRules = [
-        'vpa'    => 'required|string|filled|max:100|custom',
-        'amount' => 'required|integer',
+    protected static $payoutRules = [
+        'terminal'              => 'required|array',
+        'merchant'              => 'required|array',
+        'gateway_input'         => 'required|array',
+        'gateway_input.vpa'     => 'required|string|filled|max:100',
+        'gateway_input.amount'  => 'required|integer',
+        'gateway_input.ref_id'  => 'required|string',
     ];
 
-    protected static $payoutVpaVerifyRules = [
-        'merchant_reference'    => 'required|string',
+    protected static $payoutVerifyRules = [
+        'terminal'              => 'required|array',
+        'gateway_input'         => 'required|array',
+        'gateway_input.ref_id'  => 'required|string',
     ];
 
     protected static $createValidators = [

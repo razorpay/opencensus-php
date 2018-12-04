@@ -314,12 +314,9 @@ return [
       'live_client_id'              => env('UPI_YESBANK_LIVE_CLIENT_ID'),
       'test_client_secret'          => env('UPI_YESBANK_TEST_CLIENT_SECRET'),
       'live_client_secret'          => env('UPI_YESBANK_LIVE_CLIENT_SECRET'),
-      'test_terminal_password'      => env('UPI_YESBANK_TEST_TERMINAL_PASSWORD'),
-      'gateway_terminal_password'   => env('UPI_YESBANK_GATEWAY_TERMINAL_PASSWORD'),
-      'test_username'               => env('UPI_YESBANK_TEST_USERNAME'),
-      'live_username'               => env('UPI_YESBANK_LIVE_USERNAME'),
       'cert_dir_name'               => env('UPI_YESBANK_GATEWAY_CERT_DIR'),
-      'gateway_encryption_key'      => env('UPI_YESBANK_GATEWAY_ENCRYPTION_KEY')
+      'client_cert'                 => env('UPI_YESBANK_GATEWAY_CLIENT_CERT'),
+      'client_key'                  => env('UPI_YESBANK_GATEWAY_CLIENT_KEY')
     ],
 
     'aeps_icici' => [
@@ -626,6 +623,4 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
-
-    'gateway.certificate_path' => env('GATEWAY_CERT_PATH'),
 ];
