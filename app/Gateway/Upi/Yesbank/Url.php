@@ -7,7 +7,6 @@ class Url
     const LIVE_DOMAIN          = 'https://sky.yesbank.in:444/app/upi/';
     const TEST_DOMAIN          = 'https://uatsky.yesbank.in:444/app/uat/upi/';
 
-    const VALIDATE_VPA         = 'CheckVirtualAddress';
     const PAYOUT               = 'mePayServerReqImps';
     const VERIFY_PAYOUT        = 'meTransStatusQuery';
 }

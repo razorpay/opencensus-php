@@ -1071,7 +1071,7 @@ class Gateway
     {
         $certificatePath = $this->app['config']->get('gateway.certificate_path');
 
-        $gatewayCertPath = $certificatePath  . $this->getGatewayCertDirName();
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
 
         if (file_exists($gatewayCertPath) === false)
         {

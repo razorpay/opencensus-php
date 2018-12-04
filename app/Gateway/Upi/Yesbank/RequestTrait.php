@@ -109,32 +109,6 @@ trait RequestTrait
         return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 
-    protected function getGatewayMerchantId()
-    {
-        return 'UPI000000000001';
-    }
-
-    protected function getGatewayUsername(): string
-    {
-        if ($this->isTestMode() === true)
-        {
-            return $this->config['test_username'];
-        }
-
-        return $this->config['live_username'];
-    }
-
-    protected function getGatewayPassword(): string
-    {
-        if ($this->isTestMode() === true)
-        {
-            return $this->config['test_terminal_password'];
-        }
-
-        // This is set on all environments, we will be using this regardless of auth
-        return $this->config['gateway_terminal_password'];
-    }
-
     protected function getClientId()
     {
         if ($this->isTestMode() === true)
