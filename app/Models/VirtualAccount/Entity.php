@@ -268,6 +268,26 @@ class Entity extends Base\PublicEntity
         return new Receiver($this);
     }
 
+    /**
+     * Returns balance type, handles old entities which have balance_id not
+     * filled yet by defaulting to type 'primary'.
+     * @return string
+     */
+    public function getBalanceType(): string
+    {
+        return optional($this->balance)->getType() ?: Balance\Type::PRIMARY;
+    }
+
+    public function isBalanceTypePrimary(): bool
+    {
+        return $this->getBalanceType() === Balance\Type::PRIMARY;
+    }
+
+    public function isBalanceTypeBanking(): bool
+    {
+        return $this->getBalanceType() === Balance\Type::BANKING;
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     /**

@@ -93,7 +93,7 @@ class Processor extends VirtualAccount\Processor
 
             $this->repo->saveOrFail($bankTransfer);
 
-            $balanceType = $this->virtualAccount->balance->getType();
+            $balanceType = $this->virtualAccount->getBalanceType();
 
             switch ($balanceType)
             {
@@ -120,7 +120,7 @@ class Processor extends VirtualAccount\Processor
 
     protected function processPaymentForPg(Entity $bankTransfer)
     {
-        assertTrue($this->virtualAccount->balance->isTypePrimary(), 'Attempted processing VA payment incorrectly!');
+        assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
         assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
 
         // Prepares payment input and creates payment and its transaction etc.
@@ -148,7 +148,7 @@ class Processor extends VirtualAccount\Processor
 
     protected function processPaymentForBanking(Entity $bankTransfer)
     {
-        assertTrue($this->virtualAccount->balance->isTypeBanking(), 'Attempted processing VA payment incorrectly!');
+        assertTrue($this->virtualAccount->isBalanceTypeBanking(), 'Attempted processing VA payment incorrectly!');
         assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
 
         $this->trace->info(
