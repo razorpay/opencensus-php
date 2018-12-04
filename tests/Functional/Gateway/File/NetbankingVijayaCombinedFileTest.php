@@ -98,9 +98,9 @@ class NetbankingVijayaCombinedFileTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            //$this->checkRefundsFile($mail->viewData['refundsFile']);
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
 
-            //$this->checkClaimsFile($mail->viewData['claimsFile']);
+            $this->checkClaimsFile($mail->viewData['claimsFile']);
 
             $this->assertCount(2, $mail->attachments);
 
@@ -109,19 +109,27 @@ class NetbankingVijayaCombinedFileTest extends TestCase
     }
 
 
-    /*protected function checkRefundsFile(array $refundFileData)
+    protected function checkRefundsFile(array $refundFileData)
     {
         $refundsFileContents = file($refundFileData['url']);
 
-        $this->assertCount(2, $refundsFileContents);
+        $refundsFileLine1 = explode('||', $refundsFileContents[0]);
+
+        $this->assertCount(5, $refundsFileLine1);
+
+        $this->assertEquals($refundsFileLine1[1], 'RFND');
+
+        $this->assertEquals($refundsFileLine1[2], 'VijayaBank');
+
+        $this->assertEquals($refundsFileLine1[3], '500.00');
     }
 
     protected function checkClaimsFile(array $claimsFileData)
     {
-        $claimsFileContents = file($claimsFileData['url']);
+        $date = Carbon::today(Timezone::IST)->format('dmY');
 
-        $claimsFileLine1 = explode('|', $claimsFileContents[1]);
+        $name = 'RazorPay-MIS-' . $date . '.xlsx';
 
-        $this->assertCount(4, $claimsFileLine1);
-    }*/
+        $this->assertEquals($claimsFileData['name'], $name);
+    }
 }
