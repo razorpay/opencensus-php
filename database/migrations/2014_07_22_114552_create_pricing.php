@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Constants\Product;
 use RZP\Models\Pricing\Entity as Pricing;
 
 class CreatePricing extends Migration
@@ -25,6 +26,9 @@ class CreatePricing extends Migration
             $table->char(Pricing::PLAN_ID, Pricing::ID_LENGTH);
 
             $table->string(Pricing::PLAN_NAME);
+
+            $table->string(Pricing::PRODUCT, 255)
+                  ->default(Product::PRIMARY);
 
             $table->string(Pricing::FEATURE, 20);
 

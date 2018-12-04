@@ -4507,3 +4507,6 @@ INSERT INTO schedule_tasks
         	SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
         )
     )
+
+ALTER TABLE pricing
+	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
