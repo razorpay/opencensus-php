@@ -18,8 +18,6 @@ class Core extends Base\Core
 {
     public function create(array $input, Merchant\Entity $merchant, Contact\Entity $contact = null): Entity
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
-
         $fundAccount = (new Entity)->build();
 
         $this->repo->transaction(function() use ($input, $merchant, $contact, $fundAccount)
@@ -40,9 +38,17 @@ class Core extends Base\Core
 
     public function createAccount(array & $input, Contact\Entity $contact): Base\PublicEntity
     {
+        //
+        // We want the account_type attribute to be filled in by association, and not via input
+        // hence, we remove this from the input array.
+        //
         $accountType = array_pull($input, Entity::ACCOUNT_TYPE);
 
-        $accountInput = array_pull($input, $accountType);
+        //
+        // The `details` object is passed on as input to the create function of the respective
+        // account type (bank account, vpa, etc). This is not required
+        //
+        $accountInput = array_pull($input, Entity::DETAILS);
 
         $account = null;
 
@@ -56,7 +62,7 @@ class Core extends Base\Core
                 // TODO
 
             default:
-                throw new LogicException('Temp');
+                throw new LogicException('Creation logic not defined for fund account type: ' . $accountType);
         }
 
         return $account;

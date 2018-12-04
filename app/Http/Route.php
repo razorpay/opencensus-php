@@ -1178,7 +1178,7 @@ final class Route
         'fund_account_list',
         'fund_account_create',
         'fund_account_update',
-        'fund_account_delete',
+        //'fund_account_delete',
     ];
 
     // Only routes defined in internalApps go here

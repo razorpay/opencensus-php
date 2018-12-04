@@ -27,7 +27,8 @@ class CreateFundAccounts extends Migration
 
             $table->char(FundAccount::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(FundAccount::CONTACT_ID, Contact::ID_LENGTH);
+            $table->char(FundAccount::CONTACT_ID, Contact::ID_LENGTH)
+                  ->nullable();
 
             $table->char(FundAccount::ACCOUNT_TYPE, 255);
 
@@ -42,6 +43,8 @@ class CreateFundAccounts extends Migration
 
             $table->integer(FundAccount::DELETED_AT)
                   ->nullable();
+
+            $table->index([FundAccount::CONTACT_ID, FundAccount::MERCHANT_ID, FundAccount::ACCOUNT_TYPE]);
 
             $table->index([FundAccount::ACCOUNT_ID, FundAccount::ACCOUNT_TYPE]);
 

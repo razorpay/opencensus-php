@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Trace\TraceCode;
 
 /**
  * Class Service
@@ -35,8 +36,11 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        // TODO: Validate/enforce contact_id in input
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
 
+        (new Validator)->validateInput('create_fund_account', $input);
+
+        // Contact ID is fetched and passed along as an Entity. Not required for create input
         $contactId = array_pull($input, Entity::CONTACT_ID);
 
         /** @var Contact\Entity $contact */
