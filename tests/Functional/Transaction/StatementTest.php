@@ -41,7 +41,7 @@ class StatementTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/statements/' . $payout['id'];
+        $testData['request']['url'] = '/statements/transaction/' . $payout['id'];
         $testData['response']['content'] = $payout;
 
         $this->ba->proxyAuth();

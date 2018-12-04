@@ -969,7 +969,7 @@ final class Route
         'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
 
         // statements
-        'transaction_statement_fetch_multiple'     => ['get',      'statements/{id}',                                'StatementController@fetch'                                         ],
+        'transaction_statement_fetch_multiple'     => ['get',      'statements/transaction/{id}',                    'StatementController@fetch'                                         ],
         'transaction_statement_fetch'              => ['get',      'statements',                                     'StatementController@fetchMultiple'                                 ],
     ];
 
