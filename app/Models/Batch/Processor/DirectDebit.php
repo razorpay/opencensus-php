@@ -25,11 +25,6 @@ class DirectDebit extends Base
     /** @var Customer\Core */
     protected $customerCore;
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $useSpreadSheetLibrary = true;
-
     const RESPONSE_PAYMENT_ID = 'razorpay_payment_id';
 
     public function __construct(Batch\Entity $batch)
