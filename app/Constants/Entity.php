@@ -268,7 +268,7 @@ class Entity
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
-        self::VPA                       => \RZP\Models\Upi\Vpa::class,
+        self::VPA                       => \RZP\Models\Vpa::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::EBS                       => \RZP\Gateway\Ebs::class,

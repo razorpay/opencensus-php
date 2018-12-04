@@ -4421,7 +4421,7 @@ ALTER TABLE subscription_registrations
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
 
-ALTER TABLE transaction
+ALTER TABLE transactions
     CHANGE COLUMN `reference2` `balance_id` CHAR(14) DEFAULT NULL,
     ADD INDEX `transactions_balance_id_index` (balance_id),
     ALGORITHM=INPLACE, LOCK=NONE;
@@ -4442,12 +4442,12 @@ ALTER TABLE payment_links
     ADD COLUMN terms TEXT AFTER support_email;
 
 UPDATE migrations
-	SET migration="2018_11_25_100031_create_contacts"
-	WHERE migration="2018_11_25_100031_create_beneficiaries"
-	LIMIT 1;
+    SET migration="2018_11_25_100031_create_contacts"
+    WHERE migration="2018_11_25_100031_create_beneficiaries"
+    LIMIT 1;
 
 ALTER TABLE beneficiaries
-	RENAME TO contacts;
+    RENAME TO contacts;
 
 ALTER TABLE virtual_accounts
     ADD COLUMN balance_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,

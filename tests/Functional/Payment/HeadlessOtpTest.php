@@ -10,6 +10,8 @@ use RZP\Exception\GatewayRequestException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
@@ -1390,6 +1392,115 @@ class HeadlessOtpTest extends TestCase
         },
         \RZP\Exception\BadRequestException::class,
         'The payment has already been processed');
+    }
+
+    public function testHeadlessRedirectSaveCard()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['save'] = 1;
+        $payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        // create payment and fetch entities
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        // validations
+        $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
+
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
+
+        $this->assertEquals('card_'.$token[Token::CARD_ID], $card['id']);
+
+        $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_100000customer');
+
+        $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], null);
+
+        $this->assertEquals($token[Token::USED_COUNT], 1);
+
+        $this->assertNotEquals($token[Token::USED_AT], null);
+
+
+        // test haeadless with save card;
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = array('cvv' => 111);
+        $payment['token'] = $token[Payment::TOKEN];
+        $payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+        $this->setOtp(1234);
+
+        $response = $this->doAuthPayment($payment);
+
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        // redirect flow
+        $this->setRedirectTo3ds(true);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = array('cvv' => 111);
+        $payment['token'] = $token[Payment::TOKEN];
+        $payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+        $this->setOtp(1234);
+
+        $response = $this->doAuthPayment($payment);
+
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     // @codingStandardsIgnoreLine

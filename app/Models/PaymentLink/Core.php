@@ -120,7 +120,8 @@ class Core extends Base\Core
      */
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
-        if (($slug = $input[Entity::SLUG] ?? null) !== null)
+        if ((($slug = $input[Entity::SLUG] ?? null) !== null) and
+            ($this->isTestMode() === false))
         {
             $this->createAndSetShortUrl($paymentLink, $slug);
 
@@ -421,6 +422,18 @@ class Core extends Base\Core
      */
     protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
     {
+        //
+        // Temporary: We ignore custom slug in test mode. Practical case is
+        // merchant consumes his slug in test mode while exploring and we want
+        // to avoid it. Better approach being discussed but for now this us safeguard.
+        // Same check exists at updateShortUrlIfApplicable() as well.
+        //
+        if (($this->isTestMode() === true) and
+            ($slug !== null))
+        {
+            $slug = null;
+        }
+
         list($url, $params, $fail) = $this->getShortenUrlRequestParams($paymentLink, $slug);
 
         try

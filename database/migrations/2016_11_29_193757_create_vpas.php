@@ -4,11 +4,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Upi\Vpa\Entity;
+use RZP\Models\Vpa\Entity;
 use RZP\Models\Customer\Entity as Customer;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
-class CreateVpa extends Migration
+class CreateVpas extends Migration
 {
     /**
      * Run the migrations.
@@ -24,34 +25,33 @@ class CreateVpa extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::ENTITY_TYPE, 40)
+                  ->nullable();
+
             $table->char(Entity::USERNAME, 50);
 
             $table->char(Entity::HANDLE, 20);
 
-            $table->char(Entity::FREQUENCY, 10);
-
-            $table->char(Entity::BANK_ACCOUNT_ID, Entity::ID_LENGTH)
-                  ->nullable();
+            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
-            $table->integer(Entity::DELETED_AT)
-                  ->nullable();
 
-            $table->foreign(Entity::BANK_ACCOUNT_ID)
-                  ->references(BankAccount::ID)
-                  ->on(Table::BANK_ACCOUNT)
-                  ->on_delete('restrict');
+            //
+            // $table->foreign(Entity::MERCHANT_ID)
+            //       ->references(Merchant::ID)
+            //       ->on(Table::MERCHANT)
+            //       ->on_delete('restrict');
 
-            $table->foreign(Entity::CUSTOMER_ID)
-                  ->references(Customer::ID)
-                  ->on(Table::CUSTOMER)
-                  ->on_delete('restrict');
+            $table->unique([Entity::USERNAME, Entity::HANDLE]);
 
-            $table->unique( [Entity::USERNAME, Entity::HANDLE] );
+            $table->index(Entity::MERCHANT_ID);
 
             $table->index(Entity::CREATED_AT);
         });
@@ -64,12 +64,10 @@ class CreateVpa extends Migration
      */
     public function down()
     {
-        Schema::table(Table::VPA, function($table)
-        {
-            $table->dropForeign(Table::VPA . '_' . Entity::CUSTOMER_ID . '_foreign');
-
-            $table->dropForeign(Table::VPA . '_' . Entity::BANK_ACCOUNT_ID . '_foreign');
-        });
+        // Schema::table(Table::VPA, function($table)
+        // {
+        //     $table->dropForeign(Table::VPA . '_' . Entity::MERCHANT_ID . '_foreign');
+        // });
 
         Schema::drop(Table::VPA);
     }

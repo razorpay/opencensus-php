@@ -2,9 +2,19 @@
 
 namespace RZP\Models\Payout\Processor;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Payout\Metric;
+use RZP\Trace\TraceCode;
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -13,6 +23,9 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
  */
 abstract class Base extends BaseCore
 {
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
 
     protected $customer = null;
@@ -37,7 +50,7 @@ abstract class Base extends BaseCore
 
     protected $channel;
 
-    public function __construct()
+    public function __construct(Merchant\Entity $merchant, string $customerId = null)
     {
         parent::__construct();
 
@@ -45,36 +58,30 @@ abstract class Base extends BaseCore
 
         $this->fees = 0;
 
-        $this->customer = null;
+        $this->merchant = $merchant;
+        $this->setCustomerFromId($customerId);
     }
 
-    /**
-     * Create Payout will drive the payout cycle for merchant/customer.
-     *
-     * @param array $input
-     *
-     * @return Payout\Entity
-     */
-    public function createPayoutEntity(array $input)
+    protected function setCustomerFromId(string $customerId = null)
     {
-        $payout = (new Payout\Entity)->build($input);
+        if ($customerId !== null)
+        {
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        }
 
-        $payout->merchant()->associate($this->merchant);
-
-        $payout->customer()->associate($this->customer);
-
-        $payout->setChannel($this->channel);
-
-        $payout->destination()->associate($this->destination);
-
-        return $payout;
+        $this->customer = $customer ?? null;
     }
 
     public function createPayout(array $input)
     {
         return $this->repo->transaction(function () use ($input)
         {
-            $this->setPayoutDestination($input);
+            $this->preValidations();
+
+            // TODO: Figure out something better for `typeEntity` concept
+            $typeEntity = $this->customer ?? $this->merchant;
+
+            $this->setPayoutDestination($input, $typeEntity);
 
             $this->setChannel();
 
@@ -87,24 +94,148 @@ abstract class Base extends BaseCore
             // Create merchant/customer transactions and link it to payout.
             $this->createTxns($payout);
 
-            // Set Fees and tax in payout.
-            $payout->setFees($this->fees);
-            $payout->setTax($this->tax);
-
             $this->repo->saveOrFail($payout);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_CREATED,
+                [
+                    'input' => $input,
+                    'payout' => $payout->toArray(),
+                    'type_entity' => $typeEntity->getId(),
+                ]);
+
+            $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
 
             return $payout;
         });
     }
 
-    public function createFundTransferAttemptEntity($payout): FundTransferAttempt\Entity
+    /**
+     * Create Payout will drive the payout cycle for merchant/customer.
+     *
+     * @param array $input
+     *
+     * @return Payout\Entity
+     */
+    protected function createPayoutEntity(array $input)
     {
-        return (new Payout\Core)->createPayoutAttemptEntity($payout);
+        $payout = (new Payout\Entity)->build($input);
+
+        $this->runInputValidations($payout, $input);
+
+        $payout->merchant()->associate($this->merchant);
+
+        $payout->customer()->associate($this->customer);
+
+        $payout->setChannel($this->channel);
+
+        $payout->destination()->associate($this->destination);
+
+        return $payout;
+    }
+
+    protected function createFundTransferAttemptEntity(Payout\Entity $payout): FundTransferAttempt\Entity
+    {
+        // TODO: move all this to FTA Core!
+
+        $fundTransferAttempt = new FundTransferAttempt\Entity;
+
+        $values = [
+            FundTransferAttempt\Entity::PURPOSE         => $payout->getPurpose(),
+            FundTransferAttempt\Entity::CHANNEL         => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION       => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($values);
+
+        $fundTransferAttempt->source()->associate($payout);
+
+        $fundTransferAttempt->merchant()->associate($payout->merchant);
+
+        $fundTransferAttempt->bankAccount()->associate($payout->destination);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
+    }
+
+    protected function preValidations()
+    {
+        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
+        // then we don't check the merchant funds_on_hold and proceed with payout creation
+        if (($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
+            ($this->merchant->getHoldFunds() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
+        }
+    }
+
+    protected function runInputValidations(Payout\Entity $payout, array $input)
+    {
+        $validatorOperation = camel_case(class_basename(get_called_class()));
+
+        $validator = $payout->getValidator();
+
+        $validator->validateInput(camel_case($validatorOperation), $input);
+    }
+
+    /**
+     * @param array        $input
+     * @param PublicEntity $typeEntity This can either be a merchant or a customer.
+     *                                 The destination must belong to either the customer or the merchant
+     *                                 based on the type of payout this is.
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function setPayoutDestination(array $input, PublicEntity $typeEntity)
+    {
+        $destinationId = $this->getDestinationId($input);
+
+        if (is_string($destinationId) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "the destination field is required",
+                Payout\Entity::DESTINATION,
+                [
+                    'input' => $input,
+                    'type_entity' => $typeEntity->getEntityName(),
+                    'entity_id' => $typeEntity->getId(),
+                ]);
+        }
+
+        $destination = null;
+
+        if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
+        {
+            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destinationId, $this->merchant);
+
+            // Check if the bank account destination is linked to the typeEntity
+            if ($destination->getEntityId() !== $typeEntity->getId())
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid destination_id: " . $destination->getPublicId());
+            }
+        }
+
+        if (empty($destination) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Destination not valid for the method " . $input[Payout\Entity::METHOD]);
+        }
+
+        $this->destination = $destination;
+    }
+
+    protected function getDestinationId(array $input)
+    {
+        return $input[Payout\Entity::DESTINATION] ?? null;
     }
 
     abstract protected function setChannel();
-
-    abstract protected function setPayoutDestination($input);
 
     abstract protected function createTxns(Payout\Entity $payout);
 }

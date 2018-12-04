@@ -6,6 +6,7 @@ use App;
 use Razorpay\IFSC\IFSC;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
@@ -190,7 +191,7 @@ class Entity extends Base\PublicEntity
 
     public function vpa()
     {
-        return $this->hasOne('RZP\Models\Upi\Vpa\Entity');
+        return $this->hasOne(Vpa\Entity::class);
     }
 
     public function source()

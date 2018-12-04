@@ -13,6 +13,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * Class Entity
@@ -23,10 +24,10 @@ use RZP\Models\Payment\Refund;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID                  = 'id';
+    use HasBalance;
+
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
-    const MERCHANT_ID         = 'merchant_id';
     const AMOUNT              = 'amount';
     const DEBIT               = 'debit';
     const CREDIT              = 'credit';
@@ -223,11 +224,6 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(FeeBreakup\Entity::class, 'transaction_id');
     }
 
-    public function balance()
-    {
-        return $this->belongsTo(Merchant\Balance\Entity::class);
-    }
-
     public function getCredit()
     {
         return $this->getAttribute(self::CREDIT);
@@ -251,11 +247,6 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
-    }
-
-    public function getBalanceId()
-    {
-        return $this->getAttribute(self::BALANCE_ID);
     }
 
     public function getBalance()

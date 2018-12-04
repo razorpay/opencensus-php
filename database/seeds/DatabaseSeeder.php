@@ -860,8 +860,8 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'TestSenderVpa',
                 'username'              => 'sender',
                 'handle'                => 'razor',
-                'frequency'             => 'multiple',
                 'customer_id'           => 'TestGloblCstmr',
+                'merchant_id'           => Account::TEST_ACCOUNT,
                 'created_at'            => time(),
                 'updated_at'            => time(),
             )
@@ -872,8 +872,8 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'TestReceivrVpa',
                 'username'              => 'receiver',
                 'handle'                => 'razor',
-                'frequency'             => 'multiple',
                 'customer_id'           => 'TestGloblCstmr',
+                'merchant_id'           => Account::TEST_ACCOUNT,
                 'created_at'            => time(),
                 'updated_at'            => time(),
             )
