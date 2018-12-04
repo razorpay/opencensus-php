@@ -14,6 +14,12 @@ export default class Support extends Component {
 
   componentDidMount() {
     this.bindEvents();
+
+    // hide smooch's iframe messenger button when a notifcation arrives
+    document
+      .getElementById('web-messenger-container')
+      .contentWindow.document.getElementById('messenger-button').style.display =
+      'none';
   }
 
   bindEvents = () => {
