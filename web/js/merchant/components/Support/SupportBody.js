@@ -53,7 +53,7 @@ export default class SupportBody extends Component {
         {shouldDisable && (
           <Banner>
             <span>
-              Our chat and call support is currently offline, kindly{' '}
+              Our chat and call support are currently offline, kindly{' '}
               <span
                 class="btn-link"
                 onClick={() => {
