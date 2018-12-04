@@ -91,6 +91,7 @@ class Table
     const CUSTOMER_TRANSACTION      = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
+    const STATEMENT                 = 'transactions';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

@@ -103,6 +103,7 @@ class Entity
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
+    const STATEMENT                 = 'statement';
 
     // heimdall
     const ORG                   = 'org';
@@ -335,6 +336,7 @@ class Entity
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
+        self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

@@ -38,9 +38,9 @@ trait TransactionTrait
         });
     }
 
-    protected function createTransactionFromPayout($payout)
+    protected function createTransactionFromPayout($payout, $updateBalance = false)
     {
-        return $this->transaction(function() use ($payout)
+        return $this->transaction(function() use ($payout, $updateBalance)
         {
             return (new TransactionCore)->createFromPayout($payout);
         });

@@ -949,7 +949,6 @@ final class Route
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
-
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
@@ -962,6 +961,16 @@ final class Route
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
+        // Beneficiary Routes
+        'beneficiary_get'                          => ['get',      'beneficiaries/{id}',                             'BeneficiaryController@get'                                         ],
+        'beneficiary_list'                         => ['get',      'beneficiaries',                                  'BeneficiaryController@list'                                        ],
+        'beneficiary_create'                       => ['post',     'beneficiaries',                                  'BeneficiaryController@create'                                      ],
+        'beneficiary_update'                       => ['patch',    'beneficiaries/{id}',                             'BeneficiaryController@update'                                      ],
+        'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
+
+        // statements
+        'transaction_statement_fetch_multiple'     => ['get',      'statements/{id}',                                'StatementController@fetch'                                         ],
+        'transaction_statement_fetch'              => ['get',      'statements',                                     'StatementController@fetchMultiple'                                 ],
     ];
 
     public static $public = [
@@ -1184,6 +1193,7 @@ final class Route
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'vpa_payout',
+<<<<<<< Updated upstream
         'contact_get',
         'contact_list',
         'contact_create',
@@ -1197,6 +1207,15 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         //'fund_account_delete',
+=======
+        'beneficiary_get',
+        'beneficiary_list',
+        'beneficiary_create',
+        'beneficiary_update',
+        'beneficiary_delete',
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple',
+>>>>>>> Stashed changes
     ];
 
     // Only routes defined in internalApps go here
