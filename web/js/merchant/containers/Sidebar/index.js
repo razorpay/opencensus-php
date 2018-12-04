@@ -361,12 +361,6 @@ export default class Sidebar extends Component {
                       )
                     }
                   />
-                  <MainNavLink
-                    label="Contact Support"
-                    icon="i i-support text-warning"
-                    to={routes.request}
-                    id="nav-contact-support"
-                  />
                 </div>;
               }
             }}
