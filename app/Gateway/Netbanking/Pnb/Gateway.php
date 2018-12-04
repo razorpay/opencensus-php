@@ -293,10 +293,14 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        //TODO : take error codes into consideration
+        $internalErrorCode = ErrorCodes::getErrorCodeMap($content[ResponseFields::RESPONSE_CODE]);
+
+        $gatewayErrorDesc = $content[ResponseFields::ERROR_DESC] ?? '';
 
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            $internalErrorCode,
+            $content[ResponseFields::RESPONSE_CODE],
+            $gatewayErrorDesc
         );
     }
 
