@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const ACTIVE       = 'active';
 
     const ACCOUNT = 'account';
+    const DETAILS = 'details';
 
     protected $generateIdOnCreate = true;
 
@@ -36,9 +37,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CONTACT_ID,
         self::ACCOUNT_TYPE,
-        self::ACCOUNT_ID,
+        self::DETAILS,
         self::ACTIVE,
-        self::ACCOUNT,
         self::CREATED_AT,
     ];
 
@@ -46,12 +46,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CONTACT_ID,
+        self::DETAILS,
     ];
 
     protected $embeddedRelations = [
         self::ACCOUNT,
     ];
-
     protected $defaults = [
         self::ACTIVE => true,
     ];
@@ -103,6 +103,15 @@ class Entity extends Base\PublicEntity
         $array[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($contactId);
     }
 
+    public function setPublicDetailsAttribute(array & $array)
+    {
+        // Expose the account relation in the `details` attribute.
+        $publicAttributes = $this->account->toArrayPublic();
+
+        array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
+
+        $array[self::DETAILS] = $publicAttributes;
+    }
 
     // ------------- End Setters -------------
 
