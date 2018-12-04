@@ -28,6 +28,53 @@ export default class ActivationContainer extends Component {
     if (props.user.showInstantActivation) {
       setInstantActivationsTracking();
     }
+
+    if (window.RZP && window.RZP.appName === 'businessbanking') {
+      const commonActivationMethods = [
+          {
+            name: 'notifyWindowResize',
+            hasReply: true,
+            callback: reply => {
+              this.handleUIUpdate = () => {
+                const body = document.body;
+                reply(body.clientWidth, body.clientHeight);
+              };
+            },
+          },
+        ],
+        iaActivationMethods = [
+          {
+            name: 'submitForm',
+            hasReply: true,
+          },
+          {
+            name: 'notifyFormValidity',
+            hasReply: true,
+            callback: reply => {
+              this.handleIAFormValidityChange = reply;
+            },
+          },
+        ],
+        kycActivationMethods = [
+          {
+            name: 'notifyOnKYCSuccess',
+            hasReply: true,
+            callback: reply => {
+              this.handleKYCSuccess = reply;
+            },
+          },
+        ];
+
+      const { isL1Submitted } = props.user.instantActivation;
+
+      this.rpc = window.RZP.rpcServer(
+        window.RZP.appHost,
+        (isL1Submitted ? kycActivationMethods : iaActivationMethods).concat(
+          commonActivationMethods
+        ),
+        'activation'
+      );
+    }
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -81,6 +128,8 @@ export default class ActivationContainer extends Component {
         fetchActivationDetails: this.fetchActivationDetails,
         data,
         categories,
+        handleUIUpdate: this.handleUIUpdate,
+        rpc: this.rpc,
       },
       isLoading = !data,
       // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
@@ -111,13 +160,19 @@ export default class ActivationContainer extends Component {
           'Activation--wizard',
           'Activation--wizard--Instant',
         ]);
-        content = <InstantActivation {...commonProps} />;
+        content = (
+          <InstantActivation
+            {...commonProps}
+            onFormValidityChange={this.handleIAFormValidityChange}
+          />
+        );
       } else {
         content = (
           <KycForm
             {...commonProps}
             onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
+            onKYCSuccess={this.handleKYCSuccess}
           />
         );
       }
@@ -138,7 +193,9 @@ export default class ActivationContainer extends Component {
         </Modal>
       </div>
     ) : (
-      <div className={`ActivationContainer${showL1Modal ? ' instant' : ''}`}>
+      <div
+        className={`ActivationContainer${showL1Modal ? ' instant' : ' kyc'}`}
+      >
         {content || spinner}
       </div>
     );

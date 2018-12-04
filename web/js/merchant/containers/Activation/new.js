@@ -135,6 +135,10 @@ export default class ActivationContainer extends React.Component {
           throw { errors: ['Some mandatory fields are required'] };
         }
 
+        if (this.props.onKYCSuccess) {
+          return this.props.onKYCSuccess(response);
+        }
+
         this.postSubmitStep(response);
 
         return response;
@@ -307,6 +311,14 @@ export default class ActivationContainer extends React.Component {
     this.props.history.replace(`/`);
   };
 
+  handleUIUpdate = () => {
+    return this.props.handleUIUpdate && this.props.handleUIUpdate();
+  };
+
+  componentDidMount() {
+    this.handleUIUpdate();
+  }
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -358,6 +370,7 @@ export default class ActivationContainer extends React.Component {
           submitForm={this.submitForm}
           getPincodeDetails={this.getPincodeDetails}
           defaultMsg={this.props.defaultMsg}
+          handleUIUpdate={this.handleUIUpdate}
         />
       );
     }
