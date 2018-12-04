@@ -195,7 +195,8 @@ trait RequestHandlerTrait
             $soapClientOptions = [
                 'trace'               => true,
                 'exceptions'          => true,
-                'connection_timeout'   => 30,
+                'connection_timeout'  => 30,
+                'soap_version'        => SOAP_1_2,
             ];
 
             $request = [
@@ -206,6 +207,9 @@ trait RequestHandlerTrait
             $soapClient = $this->getSoapClientObject($request);
 
             $response = $soapClient->CallPaySecure($requestBody);
+
+//            echo '<pre>'; print_r($response); echo '</pre>';
+//            $this->printLastSoapXml($soapClient);
         }
         catch (SoapFault $sf)
         {
@@ -303,4 +307,15 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
+
+    protected function printLastSoapXml($soapClient)
+    {
+        $xml = $soapClient->__getLastRequest();
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml);
+        echo '<pre>'.htmlentities($dom->saveXML()).'</pre>';
+        die;
+    }
 }
