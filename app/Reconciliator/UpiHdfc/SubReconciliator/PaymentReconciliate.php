@@ -157,4 +157,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $this->setFailUnprocessedRow(false);
         }
     }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
+        ];
+    }
 }

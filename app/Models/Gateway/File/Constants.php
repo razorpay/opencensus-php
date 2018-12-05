@@ -14,6 +14,7 @@ class Constants
     const EQUITAS          = 'equitas';
     const BOB              = 'bob';
     const IDFC             = 'idfc';
+    const VIJAYA           = 'vijaya';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -65,6 +66,7 @@ class Constants
             self::CSB,
             self::EQUITAS,
             self::IDFC,
+            self::VIJAYA,
             self::CORPORATION,
         ],
         Type::EMANDATE_REGISTER => [
@@ -77,7 +79,6 @@ class Constants
             self::ENACH_RBL,
         ],
         Type::REFUND_FAILED => [
-            'All',
             self::UPI_ICICI,
             self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
@@ -120,6 +121,7 @@ class Constants
             self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [
