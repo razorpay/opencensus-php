@@ -21,13 +21,14 @@ use Razorpay\Trace\Logger as Trace;
 class Gateway extends Mindgate\Gateway
 {
     use RequestTrait;
+
     /**
      * Default request timeout duration in seconds.
      * @var  integer
      */
     const TIMEOUT = 20;
 
-    const ACQUIRER = 'yesbank';
+    const ACQUIRER = 'yesb';
 
     protected $gateway = 'upi_yesbank';
 
@@ -55,22 +56,26 @@ class Gateway extends Mindgate\Gateway
 
     public function authorize(array $input)
     {
-        throw new Exception\LogicException('Live payment authorize not available on UPI Yesbank');
+        throw new Exception\LogicException(
+            'Live payment authorize not available on UPI Yesbank');
     }
 
     public function callback(array $input) :array
     {
-        throw new Exception\LogicException('Live payment callback not available on UPI Yesbank');
+        throw new Exception\LogicException(
+            'Live payment callback not available on UPI Yesbank');
     }
 
     public function refund(array $input)
     {
-        throw new Exception\LogicException('Live payment refund not available on UPI Yesbank');
+        throw new Exception\LogicException(
+            'Live payment refund not available on UPI Yesbank');
     }
 
     public function verify(array $input)
     {
-        throw new Exception\LogicException('Live payment verify not available on UPI Yesbank');
+        throw new Exception\LogicException(
+            'Live payment verify not available on UPI Yesbank');
     }
 
     public function payout(array $input)
@@ -82,7 +87,7 @@ class Gateway extends Mindgate\Gateway
 
         parent::action($input, Action::PAYOUT);
 
-        $attributes = $this->getGatewayEntityAttributes($input, Action::PAYOUT,Base\Type::PAY);
+        $attributes = $this->getGatewayEntityAttributes($input, Action::PAYOUT, Base\Type::PAY);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
@@ -130,66 +135,64 @@ class Gateway extends Mindgate\Gateway
 
             return $response;
         }
-        else
+
+        $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
+
+        $decryptedContent = implode('|', $request);
+
+        $encrypted = $this->encrypt($decryptedContent);
+
+        $content = [
+            Fields::PGMERCHANTID    => $this->getGatewayMerchantId($input),
+            Fields::REQUESTMSG      => $encrypted,
+        ];
+
+        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'verify_payout');
+
+        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
+
+        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
+
+        try
         {
-            $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
+            // we need to send the FTS service only the reason of failure, so catching
+            // the exception.
+            $this->assertAmount($this->getIntegerFormattedAmount($responseArray[Fields::AMOUNT]),
+                $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT]));
 
-            $decryptedContent = implode('|', $request);
-
-            $encrypted = $this->encrypt($decryptedContent);
-
-            $content = [
-                Fields::PGMERCHANTID    => $this->getGatewayMerchantId($input),
-                Fields::REQUESTMSG      => $encrypted,
-            ];
-
-            $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'verify_payout');
-
-            $traceRequest['decryptedContent'] = $decryptedContent;
-
-            $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
-
-            $response = $this->sendGatewayRequest($request);
-
-            $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
-
-            try
+            if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
             {
-                // we need to send the FTS service only the reason of failure, so catching
-                // the exception.
-                $this->assertAmount($this->getIntegerFormattedAmount($responseArray[Fields::AMOUNT]),
-                    $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT]));
-
-                if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
-                        null,
-                        null,
-                        [
-                            'response' => $responseArray,
-                            'input'    => $input,
-                        ]
-                    );
-                }
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+                    null,
+                    null,
+                    [
+                        'response' => $responseArray,
+                        'input'    => $input,
+                    ]
+                );
             }
-            catch(\Exception $e)
-            {
-                $this->trace->traceException($e);
-
-                $error = $e->getError()->getAttributes();
-
-                $response = [
-                    Fields::SUCCESS        => false,
-                    Fields::ERROR_MESSAGE  => ResponseMessage::VALIDATION_ERROR,
-                    Fields::RRN            => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
-                ];
-            }
-
-            $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
-
-            return $this->generateResponse($responseArray, $gatewayEntity);
         }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            $error = $e->getError()->getAttributes();
+
+            $response = [
+                Fields::SUCCESS        => false,
+                Fields::ERROR_MESSAGE  => ResponseMessage::VALIDATION_ERROR,
+                Fields::RRN            => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
+            ];
+        }
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
+
+        return $this->generateResponse($responseArray, $gatewayEntity);
     }
 
     protected function getGatewayEntityAttributes( array $input,
@@ -319,7 +322,7 @@ class Gateway extends Mindgate\Gateway
 
         foreach ($fields as $index => $key)
         {
-            $result[$key]     =   $values[$index];
+            $result[$key] = $values[$index];
         }
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
