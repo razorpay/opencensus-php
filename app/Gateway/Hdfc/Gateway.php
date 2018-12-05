@@ -379,31 +379,40 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $shouldRetry = function ($e)
-        {
-            $errorCodes =[
-                Hdfc\ErrorCodes\ErrorCodes::CM00030,
-                Hdfc\ErrorCodes\ErrorCodes::CM90000,
-                Hdfc\ErrorCodes\ErrorCodes::CM90001,
-                Hdfc\ErrorCodes\ErrorCodes::CM90002,
-                Hdfc\ErrorCodes\ErrorCodes::CM90003,
-                Hdfc\ErrorCodes\ErrorCodes::CM90004,
-                Hdfc\ErrorCodes\ErrorCodes::CM90005,
-                Hdfc\ErrorCodes\ErrorCodes::CM900000,
-            ];
-
-            if ($e instanceof Exception\BaseException)
-            {
-                return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
-            }
-
-        };
-
         $this->retryHandler(
             [$this, 'supportPayment'],
-            [$input,'capture'],
-            $shouldRetry,
-            2);
+            [$input, 'capture'],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
+    }
+
+    protected function shouldRetry($e)
+    {
+        $baseCheck = parent::shouldRetry($e);
+
+        // These are HDFC internal database/cache errors. We usually receive these when hdfc is unable
+        // to process next request (capture/refund) immediately after authorizing the payment. Adding
+        // them here ensures that there's some delay and second request succeeds. If we keep getting
+        // these errors after retrying, we may have to add some time delay here
+        $errorCodes =[
+            ErrorCode::CM00030,
+            ErrorCode::CM90000,
+            ErrorCode::CM90001,
+            ErrorCode::CM90002,
+            ErrorCode::CM90003,
+            ErrorCode::CM90004,
+            ErrorCode::CM90005,
+            ErrorCode::CM900000,
+        ];
+
+        if ($e instanceof Exception\BaseException)
+        {
+            $hdfcSpecficCheck = in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+
+            return $baseCheck or $hdfcSpecficCheck;
+        }
+
+        return $baseCheck;
     }
 
     /**

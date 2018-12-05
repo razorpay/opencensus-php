@@ -84,6 +84,7 @@ class Base extends Core
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';
     const UPI_HULK               = 'UpiHulk';
+    const UPI_AXIS               = 'UpiAxis';
     const AMEX                   = 'Amex';
 
     /**
@@ -130,13 +131,14 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
+        self::UPI_AXIS               => ['upisupport@axisbank.com'],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN                  => ['saurav.chowdhury@razorpay.com'],
+        self::ADMIN                  => ['kajol.nigam@razorpay.com'],
     ];
 
     /**

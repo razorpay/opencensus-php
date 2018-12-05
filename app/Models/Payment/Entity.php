@@ -2686,7 +2686,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayTraceRelevant()
     {
-        $fields = array(
+        $fields = [
             self::ID,
             self::MERCHANT_ID,
             self::CARD_ID,
@@ -2699,7 +2699,8 @@ class Entity extends Base\PublicEntity
             self::RECEIVER_ID,
             self::RECEIVER_TYPE,
             self::VERIFY_AT,
-            self::VERIFY_BUCKET);
+            self::VERIFY_BUCKET,
+        ];
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2911,6 +2912,11 @@ class Entity extends Base\PublicEntity
         parent::verifyIdAndStripSign($id);
 
         return 'upi.polling.' . $id . '.status';
+    }
+
+    public function getCacheInputKey(): string
+    {
+        return 'payment:fallback.' . $this->getId() . '.card_number';
     }
 
     public function getTransactionType()

@@ -6,13 +6,13 @@ class Table
 {
     // Core entities
     const P2P                   = 'p2p';
-    const VPA                   = 'vpa';
+    const VPA                   = 'vpas';
     const IIN                   = 'iins';
     const KEY                   = 'keys';
-    const CARD                  = 'cards';
-    const PLAN                  = 'plans';
-    const ITEM                  = 'items';
     const RISK                  = 'risk';
+    const PLAN                  = 'plans';
+    const CARD                  = 'cards';
+    const ITEM                  = 'items';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
@@ -26,10 +26,10 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
-    const UPI_VPA               = 'upi_vpa';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
@@ -189,7 +189,7 @@ class Table
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
 
-    protected static $entityToTableMap = array(
+    protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,
         Entity::AMEX                => self::MIGS,
@@ -199,7 +199,7 @@ class Table
         Entity::WALLET_PAYUMONEY    => self::WALLET,
         Entity::MPI_BLADE           => self::BLADE,
         Entity::MPI_ENSTAGE         => self::BLADE,
-    );
+    ];
 
     public static function getTableNameForEntity(string $entity)
     {

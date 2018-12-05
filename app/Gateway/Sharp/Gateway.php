@@ -135,6 +135,8 @@ class Gateway extends Base\Gateway
 
     protected function getQrData(array $input)
     {
+        (new Validator)->validateInput('test_bharatqr_payment', $input);
+
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
             BharatQr\GatewayResponseParams::METHOD                => $input[Fields::METHOD],
@@ -164,6 +166,21 @@ class Gateway extends Base\Gateway
             'callback_data' => $input,
             'qr_data'       => $qrData
         ];
+    }
+
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        if ($exception !== null)
+        {
+            throw $exception;
+        }
+
+        //
+        // This is a fairly useless response. But it's better for the
+        // merchant than the one in base gateway, and keeping in empty
+        // means we can add stuff later without breaking compatibility.
+        //
+        return [];
     }
 
     protected function getIntentRequest($input)
@@ -497,7 +514,8 @@ class Gateway extends Base\Gateway
             // Validation failure
             case ($amount === 8888):
 
-                $response['result']         = 'Your account does not have enough credits to carry out the refund operation.';
+                $response['result']         = 'Your account does not have enough credits '.
+                                                'to carry out the refund operation.';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS;
                 break;
 
@@ -511,7 +529,8 @@ class Gateway extends Base\Gateway
              // Soft failure
             case (($amount === 5555) or ($amount === 6666)):
 
-                $response['result']         = 'Your account does not have enough balance to carry out the refund operation.';
+                $response['result']         = 'Your account does not have enough balance to '.
+                                                'carry out the refund operation.';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
                 break;
 
@@ -600,7 +619,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount'], $input['payment']['amount_refunded']);
+            $gatewayResponse = $this->getVerifyGatewayResponse(
+                                        $input['refund']['amount'],
+                                        $input['payment']['amount_refunded']);
         }
 
         if (($action === 'refund') and ($gatewayResponse['status_code'] !== 'REFUND_SUCCESSFUL'))
@@ -624,7 +645,6 @@ class Gateway extends Base\Gateway
                 'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
             ]
         ];
-
 
         if ($action === 'verify')
         {

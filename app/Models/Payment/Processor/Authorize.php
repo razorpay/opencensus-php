@@ -85,6 +85,8 @@ trait Authorize
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
+        $this->validateAndSaveInputDetailsIfRequired($payment, $input);
+
         if ($ret !== null)
         {
             return $ret;
@@ -381,6 +383,8 @@ trait Authorize
         {
             $card = $payment->card;
 
+            $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+
             $metaData = [
                 'issuer'     => $card->getIssuer(),
                 'network'    => $card->getNetworkCode(),
@@ -388,6 +392,7 @@ trait Authorize
             ];
 
             $response['metadata'] = $metaData;
+            $response['redirect'] = $redirectUrl;
 
             $templateData = [
                'data' => $response,
@@ -418,6 +423,7 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
+                'redirect'   => $redirectUrl,
             ];
         }
 
@@ -4612,6 +4618,17 @@ trait Authorize
         return $otpSubmitUrl;
     }
 
+    protected function getPaymentRedirectTo3dsUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpFallbackUrl = $this->route->getUrlWithPublicAuth('payment_redirect_3ds', $params);
+
+        return $otpFallbackUrl;
+    }
+
     protected function getPaymentIdAndHashParams(): array
     {
         $publicId = $this->payment->getPublicId();
@@ -4689,5 +4706,32 @@ trait Authorize
     {
         return ((empty($input[Payment\Entity::RECURRING]) === false) and
                 ($input[Payment\Entity::RECURRING] === 'preferred'));
+    }
+
+    protected function validateAndSaveInputDetailsIfRequired($payment, $input)
+    {
+        $authType = $payment->getAuthType();
+
+        if (($authType === null) or
+            (Payment\AuthType::isRedirectTo3dsAuth($authType) === false))
+        {
+            return;
+        }
+
+        $input['payment']['id'] = $payment->getId();
+
+        $cache = Cache::getFacadeRoot();
+
+        $key = $payment->getCacheInputKey();
+
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            // storing card details for fallback purpose
+            $this->persistCardDetailsTemporarily($input);
+            unset($input['card']['number']);
+            unset($input['card']['cvv']);
+        }
+
+        $this->cache->put($key, $input, static::CACHE_TTL);
     }
 }

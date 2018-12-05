@@ -1,23 +1,18 @@
 <?php
 
-namespace RZP\Models\Upi\Vpa;
+namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
-
-    const ID                    = 'id';
-    const USERNAME              = 'username';
-    const HANDLE                = 'handle';
-    const FREQUENCY             = 'frequency';
-    const BANK_ACCOUNT_ID       = 'bank_account_id';
-    const CUSTOMER_ID           = 'customer_id';
-
-    const DELETED_AT            = 'deleted_at';
+    const ID              = 'id';
+    const ENTITY_ID       = 'entity_id';
+    const ENTITY_TYPE     = 'entity_type';
+    const USERNAME        = 'username';
+    const HANDLE          = 'handle';
+    const MERCHANT_ID     = 'merchant_id';
 
     const ADDRESS               = 'address';
 
@@ -32,16 +27,11 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::USERNAME,
         self::HANDLE,
-        self::FREQUENCY,
     ];
 
     protected $public = [
         self::ID,
         self::ADDRESS,
-        self::USERNAME,
-        self::HANDLE,
-        self::CUSTOMER_ID,
-        self::BANK_ACCOUNT_ID,
     ];
 
     protected $appends = [
@@ -56,9 +46,13 @@ class Entity extends Base\PublicEntity
         self::ADDRESS,
     ];
 
-    protected $defaults = array(
-        self::FREQUENCY => Frequency::MULTIPLE,
-    );
+    public function matches(array $input)
+    {
+        // We do a build so that validations and other things are run before checking for duplicate
+        $new = (new Entity)->build($input);
+
+        return ($this->getAddress() === $new->getAddress());
+    }
 
     // ----------------------- Generators ------------------
 
@@ -87,6 +81,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADDRESS);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setHandle($handle)
@@ -103,18 +102,13 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Relations -----------------------
 
-    public function bankAccount()
-    {
-        return $this->belongsTo('RZP\Models\BankAccount\Entity', self::BANK_ACCOUNT_ID, BankAccount\Entity::ID);
-    }
-
-    public function customer()
-    {
-        return $this->belongsTo('RZP\Models\Customer\Entity');
-    }
-
     public function merchant()
     {
-        return $this->customer->merchant();
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function entity()
+    {
+        return $this->morphTo();
     }
 }

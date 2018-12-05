@@ -8,7 +8,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Models\Upi\Vpa;
+use RZP\Models\Vpa;
 use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
@@ -73,16 +73,18 @@ class Service extends Base\Service
             (($field === 'source') and
              ($input[Entity::TYPE] === Type::COLLECT)))
         {
-            $vpa = $this->repo->vpa->findByAddress($input[$field]);
-
-            if ($vpa === null)
-            {
-                $body = [
-                    Vpa\Entity::ADDRESS => $input[$field],
-                ];
-
-                $vpa = (new Vpa\Core)->createVpa($body);
-            }
+            // Commenting this block out because we have removed/redesigned vpa related functions.
+            //
+            // $vpa = $this->repo->vpa->findByAddress($input[$field]);
+            //
+            // if ($vpa === null)
+            // {
+            //     $body = [
+            //         Vpa\Entity::ADDRESS => $input[$field],
+            //     ];
+            //
+            //     $vpa = (new Vpa\Core)->createVpa($body);
+            // }
         }
         else
         {

@@ -104,6 +104,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_INVALID_CONTACT_NUMBER                = 'PAYMENT_INVALID_CONTACT_NUMBER';
     const PAYMENT_CAPTURE_CREATE_TRANSACTION            = 'PAYMENT_CAPTURE_CREATE_TRANSACTION';
     const PAYMENT_TRANSFER_CREATE_TRANSACTION           = 'PAYMENT_TRANSFER_CREATE_TRANSACTION';
+    const BANK_TRANSFER_CREATE_TRANSACTION              = 'BANK_TRANSFER_CREATE_TRANSACTION';
     const PAYMENT_TRANSFER_TO_ACCOUNT                   = 'PAYMENT_TRANSFER_TO_ACCOUNT';
     const PAYMENT_TRANSFER_TO_CUSTOMER                  = 'PAYMENT_TRANSFER_TO_CUSTOMER';
     const PAYMENT_CAPTURE_UPDATE_TRANSACTION            = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
@@ -702,11 +703,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENTS_QUEUED_FOR_CREATION           = 'SETTLEMENTS_QUEUED_FOR_CREATION';
     const SETTLEMENT_QUEUE_TRANSACTIONS_FAILED      = 'SETTLEMENT_QUEUE_TRANSACTIONS_FAILED';
     const SETTLEMENTS_PROCESS_FAILED_FOR_MERCHANT   = 'SETTLEMENTS_PROCESS_FAILED_FOR_MERCHANT';
+    const SETTLEMENT_RECON_NOTIFIER_FAILED          = 'SETTLEMENT_RECON_NOTIFIER_FAILED';
 
     const VPA_CREATE_REQUEST                        = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                               = 'VPA_CREATED';
     const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
     const VPA_DELETED                               = 'VPA_DELETED';
+    const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';
@@ -1138,7 +1141,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVITATION_REJECT                             = 'INVITATION_REJECT';
     const INVITATION_EMAIL                              = 'INVITATION_EMAIL';
 
-// Trace codes for gateway load rules
+    // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
     const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
@@ -1179,6 +1182,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTIONS_TO_POSTPAID_INPUT                = 'TRANSACTIONS_TO_POSTPAID_INPUT';
     const TRANSACTIONS_TO_POSTPAID_FAILED               = 'TRANSACTIONS_TO_POSTPAID_FAILED';
     const TRANSACTIONS_TO_POSTPAID_RESPONSE             = 'TRANSACTIONS_TO_POSTPAID_RESPONSE';
+    const ENTITY_BULK_UPDATE_BALANCE_ID_REQUEST         = 'ENTITY_BULK_UPDATE_BALANCE_ID_REQUEST';
+    const ENTITY_BULK_UPDATE_BALANCE_ID_ERROR           = 'ENTITY_BULK_UPDATE_BALANCE_ID_ERROR';
+
+    // Trace codes for Contact and Fund account CRUD
+    const CONTACT_CREATE_REQUEST                        = 'CONTACT_CREATE_REQUEST';
+    const CONTACT_UPDATE_REQUEST                        = 'CONTACT_UPDATE_REQUEST';
+    const CONTACT_DELETE_REQUEST                        = 'CONTACT_DELETE_REQUEST';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
@@ -1267,6 +1277,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                          = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const WEIGHTED_DATABASE_ROUTING                     = 'WEIGHTED_DATABASE_ROUTING';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
@@ -1363,6 +1374,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_DUAL_WRITE_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
     const REDIS_DUAL_WRITE_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
 
+    // redis sessoin migration
+
+    const REDIS_SESSION_STORE_ERROR                  = 'REDIS_SESSION_STORE_ERROR';
+    const REDIS_SESSION_READ_ERROR                   = 'REDIS_SESSION_READ_ERROR';
+    const REDIS_SESSION_DELETE_ERROR                 = 'REDIS_DUAL_WRITE_DELETE_ERROR';
+    const REDIS_SESSION_BACKUP_ERROR                 = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
+
     const BENEFICIARY_UNSUPPORTED_IFSC_CODE             = 'BENEFICIARY_UNSUPPORTED_IFSC_CODE';
 
     const SUBMIT_SUPPORT_CALL_REQUEST                   = 'SUBMIT_SUPPORT_CALL_REQUEST';
@@ -1391,6 +1409,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_LINK_BATCH_INPUT                             = 'AUTH_LINK_BATCH_INPUT';
     const MERCHANT_BALANCE_BACKFILL_ERROR                   = 'MERCHANT_BALANCE_BACKFILL_ERROR';
     const MERCHANT_BALANCE_BACKFILL_REQUEST                 = 'MERCHANT_BALANCE_BACKFILL_REQUEST';
+    const GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES        = 'GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES';
+
+    const PAYOUT_CUSTOMER_CREATE_REQUEST          = 'PAYOUT_CUSTOMER_CREATE_REQUEST';
+    const PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST   = 'PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST';
+    const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
+    const PAYOUT_FOR_PAYMENT_CREATE_REQUEST       = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
+    const PAYOUT_CREATED                          = 'PAYOUT_CREATED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -165,7 +165,7 @@ class Reconciliate extends Base\Core
 
             $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
 
-            $this->setSubReconciliator($reconciliationType);
+            $this->setSubReconciliator($reconciliationType, $batch);
 
             $this->subReconciliator->setSource($source);
 
@@ -348,11 +348,11 @@ class Reconciliate extends Base\Core
         return $this->getTypeName($fileName);
     }
 
-    protected function setSubReconciliator($reconciliationType)
+    protected function setSubReconciliator($reconciliationType, Batch\Entity $batch = null)
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
 
-        $this->subReconciliator = new $subReconciliatorClassName($this->gateway);
+        $this->subReconciliator = new $subReconciliatorClassName($this->gateway, $batch);
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
