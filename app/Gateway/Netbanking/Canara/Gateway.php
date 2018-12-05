@@ -263,8 +263,8 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                        => $this->formatAmount($paymentEntity[PaymentEntity::AMOUNT] / 100), // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity[PaymentEntity::ID],
-            RequestFields::SUCCESS_STATIC_FLAG           => 'N',
-            RequestFields::FAILURE_STATIC_FLAG           => 'N',
+            RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
+            RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
             RequestFields::PUR_DATE                      => $date,
         ];
