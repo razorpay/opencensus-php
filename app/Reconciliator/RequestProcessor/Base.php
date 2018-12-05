@@ -55,6 +55,7 @@ class Base extends Core
     const PAYTM                  = 'Paytm';
     const OLAMONEY               = 'Olamoney';
     const FREECHARGE             = 'Freecharge';
+    const EMANDATE_AXIS          = 'EmandateAxis';
     const NETBANKING_AXIS        = 'NetbankingAxis';
     const NETBANKING_ICICI       = 'NetbankingIcici';
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
@@ -103,6 +104,7 @@ class Base extends Core
         self::KOTAK                  => ['bankalerts@kotak.com'],
         self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
+        self::EMANDATE_AXIS          => ['cmsdirect.debit@axisbank.com'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
