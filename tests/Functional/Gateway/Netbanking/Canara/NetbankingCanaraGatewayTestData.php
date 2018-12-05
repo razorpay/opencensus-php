@@ -36,7 +36,6 @@ return [
         'amount'                  => 500,
         'bank'                    => 'CNRB',
         'received'                => true,
-        'client_code'             => 'CLIENTCODE',
         'merchant_code'           => 'test_merchant_id',
         'entity'                  => 'netbanking',
     ],
