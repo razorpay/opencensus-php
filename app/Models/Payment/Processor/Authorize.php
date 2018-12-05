@@ -392,7 +392,6 @@ trait Authorize
             ];
 
             $response['metadata'] = $metaData;
-            $response['redirect'] = $redirectUrl;
 
             $templateData = [
                'data' => $response,
@@ -413,6 +412,15 @@ trait Authorize
                 unset($request['content']['next']);
             }
 
+            $otpResend = 'otp_resend';
+
+            $resendUrl = '';
+
+            if (in_array($otpResend, $next, true) === true)
+            {
+                $resendUrl  = $this->getOtpResendUrl();
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -424,6 +432,9 @@ trait Authorize
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
                 'redirect'   => $redirectUrl,
+                'submit_url' => $request['url'],
+                'resend_url' => $resendUrl,
+                'metadata'   => $metaData,
             ];
         }
 
@@ -4627,6 +4638,17 @@ trait Authorize
         $otpFallbackUrl = $this->route->getUrlWithPublicAuth('payment_redirect_3ds', $params);
 
         return $otpFallbackUrl;
+    }
+
+    protected function getOtpResendUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
+
+        return $otpResendUrl;
     }
 
     protected function getPaymentIdAndHashParams(): array
