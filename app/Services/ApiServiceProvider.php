@@ -15,6 +15,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -461,6 +462,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant_request'          => MerchantRequest\Entity::class,
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
+
+            'contact'                   => Contact\Entity::class,
         ]);
     }
 
