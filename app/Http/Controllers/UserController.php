@@ -72,7 +72,10 @@ class UserController extends Controller
         }
         else
         {
-            $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
+            if (empty($details) === false)
+            {
+                $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
+            }
 
             return view('merchant.index', $data);
         }
