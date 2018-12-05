@@ -105,10 +105,10 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            RequestFields::MERCHANT_CONSTANT => Constants::MERCHANT_CONSTANT,
+            RequestFields::MERCHANT_CONSTANT => $this->getMerchantConstant(),
             RequestFields::AMOUNT            => $this->formatAmount($payment[Payment::AMOUNT]),
             RequestFields::MERCHANT_NAME     => $input['merchant']['billing_label'],
-            RequestFields::MERCHANT_ID       => Constants::MERCHANT_CONSTANT,//$this->getMerchantId(),
+            RequestFields::MERCHANT_ID       => $this->getMerchantId(),
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::CURRENCY          => Constants::INDIAN_CURRENCY,
             RequestFields::PAYMENT_ID        => $payment[Payment::ID],
@@ -229,7 +229,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         $content = [
-            RequestFields::MERCHANT_CONSTANT => Constants::MERCHANT_CONSTANT,
+            RequestFields::MERCHANT_CONSTANT => $this->getMerchantConstant(),
             RequestFields::PAYMENT_ID        => $payment['id'],
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::AMOUNT            => $this->formatAmount($payment['amount']),
@@ -263,6 +263,11 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getLiveMerchantId();
+    }
+
+    protected function getMerchantConstant()
+    {
+        return $this->config['merchant_constant'];
     }
 
     public function formatAmount(int $amount): string

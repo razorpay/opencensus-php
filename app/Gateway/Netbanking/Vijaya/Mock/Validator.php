@@ -8,7 +8,7 @@ use RZP\Gateway\Netbanking\Vijaya\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        RequestFields::MERCHANT_CONSTANT => 'required|string|in:000000000010',
+        RequestFields::MERCHANT_CONSTANT => 'required|string|',
         RequestFields::AMOUNT            => 'required|numeric',
         RequestFields::MERCHANT_NAME     => 'required|string',
         RequestFields::MERCHANT_ID       => 'required|string',
@@ -21,7 +21,7 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::BANK_REFERENCE_NUMBER => 'sometimes|string',
-        RequestFields::MERCHANT_CONSTANT     => 'required|string|in:000000000010',
+        RequestFields::MERCHANT_CONSTANT     => 'required|string',
         RequestFields::AMOUNT                => 'required|numeric',
         RequestFields::ITEM_CODE             => 'required|string|in:Razorpay',
         RequestFields::RETURN_URL            => 'required|string', //TODO fix this

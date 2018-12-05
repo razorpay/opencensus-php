@@ -478,6 +478,7 @@ return [
 
     'netbanking_vijaya' => [
         'test_merchant_id'       => env('NETBANKING_VIJAYA_GATEWAY_TEST_MERCHANT_ID'),
+        'merchant_constant'      => env('NETBANKING_VIJAYA_GATEWAY_MERCHANT_CONSTANT')
     ],
 
     'netbanking_idfc' => [
