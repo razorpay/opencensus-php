@@ -335,11 +335,21 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        //todo add exception if bank payment id is not present ?
+        $bankPaymentId = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
+
+        if (isset($bankPaymentId) === false)
+        {
+            throw new Exception\LogicException(
+                'Bank Payment id not present',
+                null,
+                [
+                    'payment_id' => $input['payment']['id']
+                ]);
+        }
 
         $data = [
             RequestFields::API_KEY         => $this->getMerchantId(),
-            RequestFields::BANK_PAYMENT_ID => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::BANK_PAYMENT_ID => $bankPaymentId,
             RequestFields::AMOUNT          => $this->formatAmount($input['refund']['amount']),
             RequestFields::DESCRIPTION     => Constants::REFUND_DESCRIPTION,
         ];
@@ -357,7 +367,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_RESPONSE,
             ['response' => $body]);
 
-        //TODO: add assertion for payment id ?
+        $this->assertPaymentId($input['payment']['id'], ResponseFields::MERCHANT_ORDER_ID);
 
         if (isset($body['error']) === true)
         {
@@ -409,9 +419,9 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $responseArray['data'][0][self::CHECKSUM_ATTRIBUTE] = $responseArray[self::CHECKSUM_ATTRIBUTE];
+        /*$responseArray['data'][0][self::CHECKSUM_ATTRIBUTE] = $responseArray[self::CHECKSUM_ATTRIBUTE];
 
-        $this->verifySecureHash($responseArray['data'][0]);
+        $this->verifySecureHash($responseArray['data'][0]);*/
 
         if (isset($responseArray['data']) === true)
         {
@@ -463,7 +473,7 @@ class Gateway extends Base\Gateway
         $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
 
         $verify->amountMismatch =
-            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]); //TODO verify if amount in UAT
+            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
     }
 
     protected function saveVerifyContent(Verify $verify)
