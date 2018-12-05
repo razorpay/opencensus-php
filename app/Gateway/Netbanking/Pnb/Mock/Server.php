@@ -11,9 +11,10 @@ use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    const MOCK_TRANSACTION_ID = '99999999';
+    const MOCK_TRANSACTION_ID      = '99999999';
+    const MOCK_REFUND_ID           = '11111111';
+    const MOCK_MERCHANT_REFUND_ID  = '12345678';
 
-    const MOCK_REFUND_ID = '11111111';
 
     public function authorize($input)
     {
@@ -91,12 +92,15 @@ class Server extends Base\Mock\Server
 
     protected function getRefundResponseData($request)
     {
+        $bid = $request[RequestFields::BANK_PAYMENT_ID];
+
+        $netbankingEntity = $this->repo->netbanking->findByGatewayPaymentIdAndAction($bid, Base\Action::AUTHORIZE);
+
         $data = [
             ResponseFields::REFUND_ID           => '123',
-            ResponseFields::BANK_PAYMENT_ID     => $request[RequestFields::BANK_PAYMENT_ID],
-            //TODO need clarity on below two fields
-            ResponseFields::MERCHANT_ORDER_ID   => '',
-            ResponseFields::MERCHANT_REFUND_ID  => '',
+            ResponseFields::BANK_PAYMENT_ID     => $bid,
+            ResponseFields::MERCHANT_ORDER_ID   => $netbankingEntity['payment_id'],
+            ResponseFields::MERCHANT_REFUND_ID  => self::MOCK_MERCHANT_REFUND_ID,
             ResponseFields::REFUND_REFERENCE_NO => self::MOCK_REFUND_ID,
         ];
 

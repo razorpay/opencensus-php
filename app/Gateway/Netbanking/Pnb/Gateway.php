@@ -361,26 +361,24 @@ class Gateway extends Base\Gateway
 
     protected function processRefundResponse($response, $input)
     {
-        $body = $this->jsonToArray($response->body);
+        $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
-            ['response' => $body]);
+            ['response' => $content]);
 
-        $this->assertPaymentId($input['payment']['id'], ResponseFields::MERCHANT_ORDER_ID);
-
-        if (isset($body['error']) === true)
+        if (isset($content['error']) === true)
         {
-            $responseArray = $body['error'];
+            $responseArray = $content['error'];
         }
         else
         {
-            $responseArray = $body['data'];
+            $responseArray = $content['data'];
         }
 
         $attributes = $this->getRefundAttributes($input);
 
-        if (isset($body['error']) === true)
+        if (isset($content['error']) === true)
         {
             $attributes[Base\Entity::ERROR_MESSAGE] = $responseArray[ResponseFields::ERROR_MESSAGE];
         }
@@ -392,7 +390,9 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes);
 
-        $this->checkRefundStatus($body);
+        $this->checkRefundStatus($content);
+
+        $this->assertPaymentId($input['payment']['id'], $responseArray[ResponseFields::MERCHANT_ORDER_ID]);
     }
 
     protected function getRefundAttributes($input)
