@@ -84,6 +84,11 @@ class Entity extends Base\PublicEntity
     const OFFERS            = 'offers';
 
     /**
+     * Used in creation request to create and link bank account
+     */
+    const BANK_ACCOUNT      = 'bank_account';
+
+    /**
      * Enforce usage of an offer for payment of this order
      */
     const FORCE_OFFER       = 'force_offer';
@@ -219,6 +224,12 @@ class Entity extends Base\PublicEntity
         $this->offers()->attach($offer);
     }
 
+    public function bankAccount()
+    {
+        return $this->hasOne(
+            'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
     /** End Related Models */
 
     /** Appends */
@@ -277,6 +288,16 @@ class Entity extends Base\PublicEntity
     public function setPartialPayment(bool $partialPayment)
     {
         $this->setAttribute(self::PARTIAL_PAYMENT, $partialPayment);
+    }
+
+    public function setAccountNumber(string $bank)
+    {
+        return $this->setAttribute(self::ACCOUNT_NUMBER, $bank);
+    }
+
+    public function setPayerName(string $bank)
+    {
+        return $this->setAttribute(self::PAYER_NAME, $bank);
     }
 
     public function setBank(string $bank)
@@ -347,19 +368,6 @@ class Entity extends Base\PublicEntity
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);
-    }
-
-    public function getMaskedAccountNumber()
-    {
-        $accountNumber = $this->getAccountNumber();
-
-        $accountNumberLength = strlen($accountNumber);
-
-        $last2Digits = substr($accountNumber, -2);
-
-        $formattedNumber = str_repeat('X', $accountNumberLength - 2) . $last2Digits;
-
-        return $formattedNumber;
     }
 
     /** End Setters And Getters */

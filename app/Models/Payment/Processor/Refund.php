@@ -4,8 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 use RZP\Exception;
-use RZP\Models\Bank;
 use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
@@ -1785,13 +1785,7 @@ trait Refund
         {
             $order = $payment->order;
 
-            $ifscCode = Bank\BankCodes::getIfscForBankCode($order->getBank());
-
-            $beneficiaryName = $order->getPayerName();
-
-            $input[BankAccount\Entity::IFSC_CODE]          = $ifscCode;
-            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
-            $input[BankAccount\Entity::BENEFICIARY_NAME]   = ($beneficiaryName === null) ? '' : $beneficiaryName;
+            $input = (new Order\Core)->getAccountForRefund($order);
         }
         else if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
         {
@@ -1850,7 +1844,6 @@ trait Refund
                     $bankAccountInput,
                     $this->merchant,
                     $this->refund,
-                    BankAccount\Type::REFUND,
                     'addBankTransfer'
                 );
 
