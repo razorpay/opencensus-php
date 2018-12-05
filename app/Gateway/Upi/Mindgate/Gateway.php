@@ -366,7 +366,6 @@ class Gateway extends Base\Gateway
         if ($response[ResponseFields::STATUS] !== $successStatus)
         {
             $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response, Action::CALLBACK);
-//            sd($errorCode);
 
             $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
