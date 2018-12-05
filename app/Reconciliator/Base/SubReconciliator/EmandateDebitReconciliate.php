@@ -229,6 +229,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             // are confirmed. This will also create a transaction.
             //
             $processor->processAuth($this->payment);
+
+            $this->persistReconciledAt($this->payment);
         }
         else
         {
@@ -315,6 +317,19 @@ class EmandateDebitReconciliate extends PaymentReconciliate
         $gatewayStatusCode = $rowDetails[BaseReconciliate::GATEWAY_STATUS_CODE];
 
         $gatewayPayment->setStatus($gatewayStatusCode);
+    }
+
+    /*
+     * Overriding this here, since we do not want to increse the success count here.
+     */
+    protected function persistReconciledAt($entity)
+    {
+        $transaction = $entity->transaction;
+        $time = time();
+        $transaction->setReconciledAt($time);
+        $transaction->saveOrFail();
+
+        $this->pushSuccessReconMetrics($entity);
     }
 
     /**

@@ -58,8 +58,8 @@ class EmandateDebitReconciliationTest extends TestCase
         $debitPaymentIds[] = $this->createDebitPayment($this->bank, 3500);
 
         $content = [
-            "type" => "emandate_debit",
-            "targets" => ["axis"]
+            'type' => 'emandate_debit',
+            'targets' => ['axis']
         ];
 
         $this->generateDebitFile($content);
@@ -286,7 +286,7 @@ class EmandateDebitReconciliationTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        $mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         $uploadedFile = new UploadedFile(
             $file,
@@ -324,6 +324,10 @@ class EmandateDebitReconciliationTest extends TestCase
             ->toArray();
 
         $this->assertEquals('Success', $gatewayPayment['status']);
+
+        $transaction = $this->getDbEntityById('transaction', $debitPayment['transaction_id'])->toArray();
+
+        $this->assertNotNull($transaction['reconciled_at']);
     }
 
     protected function assertFailureDebitPayment($debitPaymentId)
