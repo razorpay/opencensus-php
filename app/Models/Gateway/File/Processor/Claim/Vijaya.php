@@ -11,7 +11,7 @@ class Vijaya extends Base
 {
     static $filename = 'RazorPay-MIS';
 
-    const EXTENSION               = FileStore\Format::XLSX;
+    const EXTENSION               = FileStore\Format::XLS;
     const FILE_TYPE               = FileStore\Type::VIJAYA_NETBANKING_CLAIM;
     const GATEWAY                 = Payment\Gateway::NETBANKING_VIJAYA;
 
