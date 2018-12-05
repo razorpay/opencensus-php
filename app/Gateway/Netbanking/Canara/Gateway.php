@@ -31,7 +31,6 @@ class Gateway extends Base\Gateway
     const CHECKSUM_ATTRIBUTE = ResponseFields::CHECKSUM;
 
     protected $map = [
-        RequestFields::CLIENT_CODE             => NetbankingEntity::CLIENT_CODE,
         RequestFields::MERCHANT_CODE           => NetbankingEntity::MERCHANT_CODE,
         RequestFields::AMOUNT                  => NetbankingEntity::AMOUNT,
         RequestFields::DATE                    => NetbankingEntity::DATE,
@@ -388,11 +387,6 @@ class Gateway extends Base\Gateway
 
 
     // -------------------------- General helper methods --------------------------
-
-    public function stripEmailSpecialChars($email)
-    {
-        return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
-    }
 
     public function getFormatedDate($created_at)
     {
