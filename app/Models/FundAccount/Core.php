@@ -18,7 +18,7 @@ class Core extends Base\Core
 {
     public function create(array $input, Merchant\Entity $merchant, Contact\Entity $contact = null): Entity
     {
-        $fundAccount = (new Entity)->build();
+        $fundAccount = (new Entity)->build($input);
 
         $this->repo->transaction(function() use ($input, $merchant, $contact, $fundAccount) {
             $account = $this->createAccount($input, $contact);
@@ -35,19 +35,11 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
-    protected function createAccount(array & $input, Contact\Entity $contact): Base\PublicEntity
+    protected function createAccount(array $input, Contact\Entity $contact): Base\PublicEntity
     {
-        //
-        // We want the account_type attribute to be filled in by association, and not via input
-        // hence, we remove this from the input array.
-        //
-        $accountType = array_pull($input, Entity::ACCOUNT_TYPE);
+        $accountType = $input[Entity::ACCOUNT_TYPE];
 
-        //
-        // The `details` object is passed on as input to the create function of the respective
-        // account type (bank account, vpa, etc). This is not required
-        //
-        $accountInput = array_pull($input, Entity::DETAILS);
+        $accountInput = $input[Entity::DETAILS];
 
         $account = null;
 

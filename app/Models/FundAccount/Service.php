@@ -38,13 +38,10 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
 
-        (new Validator)->validateInput('create_fund_account', $input);
-
-        // Contact ID is fetched and passed along as an Entity. Not required for create input
-        $contactId = array_pull($input, Entity::CONTACT_ID);
+        (new Validator)->validateInput('create', $input);
 
         /** @var Contact\Entity $contact */
-        $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
+        $contact = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
 
         $entity = $this->core->create($input, $this->merchant, $contact);
 

@@ -12,17 +12,13 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        //
+        Entity::CONTACT_ID   => 'required|public_id',
+        Entity::ACCOUNT_TYPE => 'required|string|custom',
+        Entity::DETAILS      => 'required|associative_array',
     ];
 
     protected static $editRules = [
         Entity::ACTIVE => 'filled|boolean',
-    ];
-
-    protected static $createFundAccountRules = [
-        Entity::DETAILS      => 'required|associative_array',
-        Entity::CONTACT_ID   => 'required|public_id',
-        Entity::ACCOUNT_TYPE => 'required|string|custom',
     ];
 
     public function validateAccountType($attribute, $value)
