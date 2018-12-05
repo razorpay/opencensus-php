@@ -582,6 +582,7 @@ return [
     'netbanking_sbi' => [
         'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
+        'iv'                => env('NETBANKING_SBI_IV')
     ],
 
     'sharp' => [

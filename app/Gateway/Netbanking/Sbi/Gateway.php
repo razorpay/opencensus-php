@@ -17,10 +17,6 @@ use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
 
 class Gateway extends Base\Gateway
 {
-    const TEST_IV = '343644ebb6c78272bce7e5417297e92b';
-
-    const LIVE_IV = ''; // TODO: fill in this after getting live creds
-
     protected $gateway = Payment\Gateway::NETBANKING_SBI;
 
     /**
@@ -482,10 +478,10 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            return hex2bin(self::LIVE_IV);
+            return hex2bin($this->config['iv']);
         }
 
-        return hex2bin(self::TEST_IV);
+        return hex2bin($this->config['iv']);
     }
 
     protected function getMerchantId()
