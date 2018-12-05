@@ -2,7 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Vijaya;
 
-use DOMDocument;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 
 class VerifyResponse
 {
@@ -20,9 +21,19 @@ class VerifyResponse
         {
             return true;
         }
-        else
+        else if (in_array(self::FAILURE, $content))
         {
             return false;
+        }
+        else
+        {
+            throw new LogicException(
+                'Invalid Verify Response',
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                [
+                    'gateway' => 'netbanking_vijaya',
+                    'content' => $content
+                ]);
         }
     }
 }
