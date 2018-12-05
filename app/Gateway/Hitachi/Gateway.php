@@ -128,7 +128,7 @@ class Gateway extends Base\Gateway
 
         $mpiEntity = $this->app['repo']
                           ->mpi
-                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+                          ->findByPaymentIdAndActionGetLastOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
@@ -221,6 +221,8 @@ class Gateway extends Base\Gateway
     {
         if ($isBharatQr === true)
         {
+            $input = $this->processInput($input);
+
             $qrData = $this->validateChecksumAndGetQrData($input);
 
             return [
@@ -1090,5 +1092,28 @@ class Gateway extends Base\Gateway
         $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
 
         return $clientCertPath;
+    }
+
+    /*
+     * Hitachi might send the request in a plain string format, to process the request we need an array.
+     * If the input is a plain text with no header set, we get the content(body)
+     * of the request and convert it into an array. For case where input header is set, input will come
+     * in the form of an array.
+     */
+
+    protected function processInput($input)
+    {
+        if (empty($input['content']) === true)
+        {
+            $inputArray = [];
+
+            // Hitachi has sent a plain text without header,
+            // so parsing the request body into an array for processing
+            parse_str($input['raw'], $inputArray);
+
+            return $inputArray;
+        }
+
+        return $input['content'];
     }
 }

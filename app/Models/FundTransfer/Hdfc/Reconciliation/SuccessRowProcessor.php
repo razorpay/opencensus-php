@@ -40,7 +40,7 @@ class SuccessRowProcessor extends BaseRowProcessor
      *
      * @return string
      */
-    protected function getUtr(): string
+    protected function getUtr()
     {
         $transactionType = $this->getNullOnEmpty(Headings::TRANSACTION_TYPE);
 

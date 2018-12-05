@@ -76,8 +76,8 @@ class BulkRecon extends Base\Core
         $ftaIds = $this->repo
                        ->fund_transfer_attempt
                        ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to)
-                             ->pluck(FundTransferAttempt\Entity::ID)
-                             ->toArray();
+                       ->pluck(FundTransferAttempt\Entity::ID)
+                       ->toArray();
 
         $chunks = array_chunk($ftaIds, 1000);
 
@@ -122,9 +122,20 @@ class BulkRecon extends Base\Core
             }
         });
 
-        $summary = $this->getSummary();
+        try
+        {
+            $summary = $this->getSummary();
 
-        (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
+        }
 
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
@@ -278,7 +289,7 @@ class BulkRecon extends Base\Core
 
             if ($entity->getEntityName() === EntityConstants::SETTLEMENT)
             {
-                $settlementsCount += 1;
+                $settlementsCount++;
             }
         }
 

@@ -4,13 +4,12 @@ namespace RZP\Models\Customer;
 
 use Request;
 use RZP\Models\Base;
-use RZP\Models\Customer;
+use RZP\Models\Payout;
 use RZP\Models\Address;
-use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Models\Payment;
+use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
-use RZP\Models\Device;
+use RZP\Models\BankAccount;
 
 class Service extends Base\Service
 {
@@ -606,5 +605,12 @@ class Service extends Base\Service
         }
 
         return $records->toArrayPublic();
+    }
+
+    public function processCustomerWalletPayout(string $customerId, array $input = []): array
+    {
+        $payout = (new Payout\Core)->createPayoutToCustomerWallet($customerId, $input, $this->merchant);
+
+        return $payout->toArrayPublic();
     }
 }

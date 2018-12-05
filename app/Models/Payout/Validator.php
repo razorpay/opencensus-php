@@ -13,10 +13,32 @@ use RZP\Models\FundTransfer\Attempt;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::DESTINATION     => 'required|public_id',
+        Entity::PURPOSE         => 'sometimes|string',
+        Entity::METHOD          => 'sometimes|string',
+        Entity::AMOUNT          => 'sometimes|integer',
+        Entity::CURRENCY        => 'sometimes|size:3',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::CUSTOMER_ID     => 'sometimes|public_id',
+        Entity::DESTINATION     => 'sometimes|public_id',
+        Entity::TYPE            => 'sometimes|string'
+    ];
+
+    protected static $customerPayoutRules = [
         Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
         Entity::METHOD          => 'required|string',
-        Entity::AMOUNT          => 'required|integer|max:500000000',
-        Entity::CURRENCY        => 'required|size:3',
+        Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
+        Entity::CURRENCY        => 'required|size:3|in:INR',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::CUSTOMER_ID     => 'required|public_id',
+        Entity::DESTINATION     => 'required|public_id',
+    ];
+
+    protected static $customerWalletPayoutRules = [
+        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
+        Entity::METHOD          => 'required|string',
+        Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
+        Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'required|public_id',
         Entity::DESTINATION     => 'required|public_id',

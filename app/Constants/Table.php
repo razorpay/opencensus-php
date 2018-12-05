@@ -6,13 +6,13 @@ class Table
 {
     // Core entities
     const P2P                   = 'p2p';
-    const VPA                   = 'vpa';
+    const VPA                   = 'vpas';
     const IIN                   = 'iins';
     const KEY                   = 'keys';
-    const CARD                  = 'cards';
-    const PLAN                  = 'plans';
-    const ITEM                  = 'items';
     const RISK                  = 'risk';
+    const PLAN                  = 'plans';
+    const CARD                  = 'cards';
+    const ITEM                  = 'items';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
@@ -26,10 +26,10 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
-    const UPI_VPA               = 'upi_vpa';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
@@ -44,51 +44,52 @@ class Table
     // It will be used for basic CRUD operations over regular merchants,
     // sub-merchants as well as linked accounts. For more information, please
     // follow the discussions in #tech_accounts channel and PR: #2179
-    const ACCOUNT               = 'merchants';
+    const ACCOUNT                   = 'merchants';
 
-    const EMI_PLAN              = 'emi_plans';
-    const SCHEDULE              = 'schedules';
-    const TERMINAL              = 'terminals';
-    const CUSTOMER              = 'customers';
-    const TRANSFER              = 'transfers';
-    const REVERSAL              = 'reversals';
-    const BHARAT_QR             = 'bharat_qr';
-    const PROMOTION             = 'promotions';
-    const LINE_ITEM             = 'line_items';
-    const INVITATION            = 'invitations';
-    const FILE_STORE            = 'files';
-    const ADJUSTMENT            = 'adjustment';
-    const SETTLEMENT            = 'settlements';
-    const ENTITY_OFFER          = 'entity_offer';
-    const FEE_BREAKUP           = 'fees_breakup';
-    const TRANSACTION           = 'transactions';
-    const APP_TOKEN             = 'customer_apps';
-    const BANK_ACCOUNT          = 'bank_accounts';
-    const SUBSCRIPTION          = 'subscriptions';
-    const METHODS               = 'merchant_banks';
-    const BANK_TRANSFER         = 'bank_transfers';
-    const GATEWAY_TOKEN         = 'gateway_tokens';
-    const SCHEDULE_TASK         = 'schedule_tasks';
-    const MERCHANT_USERS        = 'merchant_users';
-    const MERCHANT_OFFER        = 'merchant_offer';
-    const LINE_ITEM_TAX         = 'line_item_taxes';
-    const DISPUTE_REASON        = 'dispute_reasons';
-    const MERCHANT_EMAIL        = 'merchant_emails';
-    const VIRTUAL_ACCOUNT       = 'virtual_accounts';
-    const MERCHANT_DETAIL       = 'merchant_details';
-    const CUSTOMER_BALANCE      = 'customer_balance';
-    const MERCHANT_INVOICE      = 'merchant_invoice';
-    const MERCHANT_REQUEST      = 'merchant_requests';
-    const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const NODAL_BENEFICIARY     = 'nodal_beneficiaries';
-    const MERCHANT_PROMOTION    = 'merchant_promotion';
-    const CREDIT_TRANSACTION    = 'credit_transaction';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
-    const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
-    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
-    const BATCH_FUND_TRANSFER   = 'daily_settlements';
-    const CUSTOMER_TRANSACTION  = 'customer_transactions';
-    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
+    const EMI_PLAN                  = 'emi_plans';
+    const SCHEDULE                  = 'schedules';
+    const TERMINAL                  = 'terminals';
+    const CUSTOMER                  = 'customers';
+    const TRANSFER                  = 'transfers';
+    const REVERSAL                  = 'reversals';
+    const BHARAT_QR                 = 'bharat_qr';
+    const PROMOTION                 = 'promotions';
+    const LINE_ITEM                 = 'line_items';
+    const INVITATION                = 'invitations';
+    const FILE_STORE                = 'files';
+    const ADJUSTMENT                = 'adjustment';
+    const SETTLEMENT                = 'settlements';
+    const ENTITY_OFFER              = 'entity_offer';
+    const FEE_BREAKUP               = 'fees_breakup';
+    const TRANSACTION               = 'transactions';
+    const APP_TOKEN                 = 'customer_apps';
+    const BANK_ACCOUNT              = 'bank_accounts';
+    const SUBSCRIPTION              = 'subscriptions';
+    const METHODS                   = 'merchant_banks';
+    const BANK_TRANSFER             = 'bank_transfers';
+    const GATEWAY_TOKEN             = 'gateway_tokens';
+    const SCHEDULE_TASK             = 'schedule_tasks';
+    const MERCHANT_USERS            = 'merchant_users';
+    const MERCHANT_OFFER            = 'merchant_offer';
+    const LINE_ITEM_TAX             = 'line_item_taxes';
+    const DISPUTE_REASON            = 'dispute_reasons';
+    const MERCHANT_EMAIL            = 'merchant_emails';
+    const VIRTUAL_ACCOUNT           = 'virtual_accounts';
+    const MERCHANT_DETAIL           = 'merchant_details';
+    const CUSTOMER_BALANCE          = 'customer_balance';
+    const MERCHANT_INVOICE          = 'merchant_invoice';
+    const MERCHANT_REQUEST          = 'merchant_requests';
+    const MERCHANT_TERMINAL         = 'merchant_terminal';
+    const NODAL_BENEFICIARY         = 'nodal_beneficiaries';
+    const MERCHANT_PROMOTION        = 'merchant_promotion';
+    const CREDIT_TRANSACTION        = 'credit_transaction';
+    const SETTLEMENT_DETAILS        = 'settlement_details';
+    const MERCHANT_EMI_PLANS        = 'merchant_emi_plans';
+    const MERCHANT_ACCESS_MAP       = 'merchant_access_map';
+    const BATCH_FUND_TRANSFER       = 'daily_settlements';
+    const CUSTOMER_TRANSACTION      = 'customer_transactions';
+    const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
+    const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -176,7 +177,19 @@ class Table
 
     const SETTING               = 'settings';
 
-    protected static $entityToTableMap = array(
+    // P2P Service Tables
+    const P2P_DEVICE            = 'p2p_devices';
+    const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';
+    const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
+    const P2P_BANK              = 'p2p_banks';
+    const P2P_BANK_ACCOUNT      = 'p2p_bank_accounts';
+    const P2P_VPA               = 'p2p_vpa';
+    const P2P_HANDLE            = 'p2p_handles';
+    const P2P_BENEFICIARY       = 'p2p_beneficiaries';
+    const P2P_TRANSACTION       = 'p2p_transactions';
+    const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
+
+    protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,
         Entity::AMEX                => self::MIGS,
@@ -186,7 +199,7 @@ class Table
         Entity::WALLET_PAYUMONEY    => self::WALLET,
         Entity::MPI_BLADE           => self::BLADE,
         Entity::MPI_ENSTAGE         => self::BLADE,
-    );
+    ];
 
     public static function getTableNameForEntity(string $entity)
     {

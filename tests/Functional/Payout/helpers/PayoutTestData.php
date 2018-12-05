@@ -119,6 +119,7 @@ return [
                 'currency'    => 'INR',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_9LfZofLRJIpwrH',
+                'customer_id' => 'cust_100000customer',
                 'notes'       => [
                     'abc' => 'xyz',
                 ],

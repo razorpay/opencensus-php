@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
@@ -132,7 +133,7 @@ class FeeCalculator
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->balance;
+        $merchantBalance = $this->entity->merchant->primaryBalance;
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
@@ -193,6 +194,7 @@ class FeeCalculator
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
         $method = $this->entity->getMethod();
+        $orgId = $this->entity->merchant->org->getId();
 
         $filters = array(
             [Pricing\Entity::FEATURE,         $feature, false, null  ],
@@ -208,7 +210,8 @@ class FeeCalculator
         // In this case, we add the zero pricing rule and return
         //
         if (($rulesCount === 0) and
-            (Feature::isFeaturePricingOptional($feature) === true))
+            (Feature::isFeaturePricingOptional($feature) === true) and
+            ($orgId === Org\Entity::RAZORPAY_ORG_ID))
         {
             $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
 
@@ -271,6 +274,10 @@ class FeeCalculator
         else if ($method === Payment\Method::EMI)
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
+        }
+        else if ($method === Payment\Method::BANK_TRANSFER)
+        {
+            $rule = $this->getRelevantPricingRuleForBankTransfer($rules);
         }
         // else if ($method === Payment\Method::TRANSFER)
         // {
@@ -356,6 +363,11 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForBankTransfer($rules)
+    {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

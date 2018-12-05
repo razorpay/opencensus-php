@@ -1491,7 +1491,7 @@ return [
         ]
     ],
 
-    'testSubscriptionCardChangeOnAuthenticated' => [
+    'testSubscriptionCardChangeOnCancelled' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -1592,6 +1592,23 @@ return [
                 'billing_label'            => 'Test Merchant',
                 'receipt_email_enabled'    => true,
                 'parent_id'                => null,
+            ],
+        ],
+    ],
+
+    'testSubscriptionServiceTokenCardFetch' => [
+        'request' => [
+            'url'       => '/tokens/<tokenId>/card',
+            'method'    => 'get',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'card',
+                'last4'        => '3335',
+                'network'      => 'Visa',
+                'expiry_month' => 12,
+                'expiry_year'  => 2024,
             ],
         ],
     ],

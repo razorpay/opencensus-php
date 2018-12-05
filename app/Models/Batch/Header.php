@@ -71,6 +71,7 @@ class Header
     const ACCOUNT_ID          = 'account_id';
 
     // Sub-merchant headers
+    const REFERENCE1               = 'reference1';
     const MERCHANT_NAME            = 'merchant_name';
     const MERCHANT_EMAIL           = 'merchant_email';
     const MERCHANT_ID              = 'merchant_id';
@@ -83,6 +84,8 @@ class Header
     const INTERNATIONAL            = 'international';
     const PAYMENTS_FOR             = 'payments_for';
     const BUSINESS_MODEL           = 'business_model';
+    const BUSINESS_CATEGORY        = 'business_category';
+    const BUSINESS_SUB_CATEGORY    = 'business_sub_category';
     const REGISTERED_ADDRESS       = 'registered_address';
     const REGISTERED_CITY          = 'registered_city';
     const REGISTERED_STATE         = 'registered_state';
@@ -98,7 +101,6 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
-    const PARTNER_TOKEN            = 'Partner Token';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -315,6 +317,7 @@ class Header
     const ACCESS_TOKEN                 = 'access_token';
     const PUBLIC_TOKEN                 = 'public_token';
     const REFRESH_TOKEN                = 'refresh_token';
+    const EXPIRES_IN                   = 'expires_in';
 
     // Partner submerchant headers
     const PARTNER_TYPE         = 'partner_type';
@@ -327,6 +330,36 @@ class Header
     const ENTITY_TO_IDS        = 'entity_to_ids';
     const ENTITY_FROM_TYPE     = 'entity_from_type';
     const ENTITY_TO_TYPE       = 'entity_to_type';
+
+    //
+    // Auth Link Headers
+    //
+    const AUTH_LINK_CUSTOMER_NAME       = 'name';
+    const AUTH_LINK_CUSTOMER_EMAIL      = 'email';
+    const AUTH_LINK_CUSTOMER_PHONE      = 'phone';
+    const AUTH_LINK_AMOUNT_IN_PAISE     = 'amount';
+    const AUTH_LINK_CURRENCY            = 'currency';
+    const AUTH_LINK_TOKEN_EXPIRE_BY     = 'token_expiry_by';
+    const AUTH_LINK_METHOD              = 'method';
+    const AUTH_LINK_MAX_AMOUNT          = 'token_max_amount';
+    const AUTH_LINK_EXPIRE_BY           = 'link_expiry_by';
+    const AUTH_LINK_AUTH_TYPE           = 'auth_type';
+    const AUTH_LINK_BANK                = 'bank';
+    const AUTH_LINK_NAME_ON_ACCOUNT     = 'account_holder_name';
+    const AUTH_LINK_IFSC                = 'ifsc';
+    const AUTH_LINK_ACCOUNT_NUMBER      = 'account_number';
+    const AUTH_LINK_ACCOUNT_TYPE        = 'account_type';
+    const AUTH_LINK_RECEIPT             = 'receipt';
+    const AUTH_LINK_DESCRIPTION         = 'description';
+    //
+    // Auth Link Output Headers
+    //
+    const AUTH_LINK_ID                  = 'authorization_link_id';
+    const AUTH_LINK_SHORT_URL           = 'authorization_link';
+    const AUTH_LINK_STATUS              = 'link_status';
+    const AUTH_LINK_MAIL_SENT           = 'sent_mail';
+    const AUTH_LINK_SMS_SENT            = 'sent_sms';
+    const AUTH_LINK_CREATED_AT          = 'created_at';
 
     /**
      * Input and output file headers
@@ -646,6 +679,8 @@ class Header
                 self::NOTES,
                 self::RECURRING_CHARGE_ORDER_ID,
                 self::RECURRING_CHARGE_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -851,6 +886,7 @@ class Header
         Type::SUB_MERCHANT => [
 
             self::INPUT  => [
+                self::REFERENCE1,
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
                 self::CONTACT_NAME,
@@ -863,6 +899,8 @@ class Header
                 self::INTERNATIONAL,
                 self::PAYMENTS_FOR,
                 self::BUSINESS_MODEL,
+                self::BUSINESS_CATEGORY,
+                self::BUSINESS_SUB_CATEGORY,
                 self::REGISTERED_ADDRESS,
                 self::REGISTERED_CITY,
                 self::REGISTERED_STATE,
@@ -882,11 +920,11 @@ class Header
             ],
 
             self::OUTPUT => [
+                self::REFERENCE1,
+                self::MERCHANT_ID,
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
                 self::STATUS,
-                self::MERCHANT_ID,
-                self::PARTNER_TOKEN,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -952,6 +990,7 @@ class Header
                 self::ACCESS_TOKEN,
                 self::PUBLIC_TOKEN,
                 self::REFRESH_TOKEN,
+                self::EXPIRES_IN,
 
                 self::STATUS,
                 self::ERROR_CODE,
@@ -987,6 +1026,60 @@ class Header
                 self::ENTITY_FROM_ID,
                 self::ENTITY_TO_IDS,
                 self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+                ]
+            ],
+
+        Type::AUTH_LINK => [
+
+            self::INPUT => [
+                self::AUTH_LINK_CUSTOMER_NAME,
+                self::AUTH_LINK_CUSTOMER_EMAIL,
+                self::AUTH_LINK_CUSTOMER_PHONE,
+                self::AUTH_LINK_AMOUNT_IN_PAISE,
+                self::AUTH_LINK_CURRENCY,
+                self::AUTH_LINK_METHOD,
+                self::AUTH_LINK_TOKEN_EXPIRE_BY,
+                self::AUTH_LINK_MAX_AMOUNT,
+                self::AUTH_LINK_AUTH_TYPE,
+                self::AUTH_LINK_BANK,
+                self::AUTH_LINK_NAME_ON_ACCOUNT,
+                self::AUTH_LINK_IFSC,
+                self::AUTH_LINK_ACCOUNT_NUMBER,
+                self::AUTH_LINK_ACCOUNT_TYPE,
+                self::AUTH_LINK_RECEIPT,
+                self::AUTH_LINK_DESCRIPTION,
+                self::AUTH_LINK_EXPIRE_BY,
+                self::NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::AUTH_LINK_CUSTOMER_NAME,
+                self::AUTH_LINK_CUSTOMER_EMAIL,
+                self::AUTH_LINK_CUSTOMER_PHONE,
+                self::AUTH_LINK_AMOUNT_IN_PAISE,
+                self::AUTH_LINK_CURRENCY,
+                self::AUTH_LINK_METHOD,
+                self::AUTH_LINK_TOKEN_EXPIRE_BY,
+                self::AUTH_LINK_MAX_AMOUNT,
+                self::AUTH_LINK_AUTH_TYPE,
+                self::AUTH_LINK_BANK,
+                self::AUTH_LINK_NAME_ON_ACCOUNT,
+                self::AUTH_LINK_IFSC,
+                self::AUTH_LINK_ACCOUNT_NUMBER,
+                self::AUTH_LINK_ACCOUNT_TYPE,
+                self::AUTH_LINK_RECEIPT,
+                self::AUTH_LINK_DESCRIPTION,
+                self::AUTH_LINK_EXPIRE_BY,
+                self::NOTES,
+                self::STATUS,
+                self::AUTH_LINK_ID,
+                self::AUTH_LINK_SHORT_URL,
+                self::AUTH_LINK_STATUS,
+                self::AUTH_LINK_MAIL_SENT,
+                self::AUTH_LINK_SMS_SENT,
+                self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

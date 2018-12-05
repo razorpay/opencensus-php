@@ -57,9 +57,9 @@ class Processor extends VirtualAccount\Processor
 
     protected function processPayment(Base\PublicEntity $bharatQr)
     {
-        $paymentProcessor = new PaymentProcessor($this->merchant);
+        $paymentProcessor = $this->getPaymentProcessor();
 
-        $payment = $this->repo->transaction(
+        $this->repo->transaction(
                         function() use ($bharatQr, $paymentProcessor)
                         {
                             $paymentInput = $this->getPaymentArray($bharatQr);
@@ -71,9 +71,9 @@ class Processor extends VirtualAccount\Processor
                             // as the payment has already gone through
                             // this terminal.
                             //
-                            $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $this->getTerminal()->getId();
+                            $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                            $res = $paymentProcessor->process($paymentInput, $this->callbackData);
+                            $this->createPayment($paymentInput, $this->callbackData);
 
                             $payment = $paymentProcessor->getPayment();
 
@@ -93,10 +93,7 @@ class Processor extends VirtualAccount\Processor
                             return $payment;
                         });
 
-        if ($bharatQr->isExpected() === true)
-        {
-            $paymentProcessor->autoCapturePayment($payment);
-        }
+        $this->refundOrCapturePayment($bharatQr);
 
         return $bharatQr;
     }
@@ -230,6 +227,7 @@ class Processor extends VirtualAccount\Processor
             Payment\Entity::METHOD      => $bharatQr->getMethod(),
             Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
             Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
+            Payment\Entity::NOTES       => $this->virtualAccount->getNotes()->toArray(),
         ];
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
@@ -239,7 +237,7 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentArray['card'] = $this->getDummyCardDetails();
         }
-        else
+        else if ($this->gatewayInput[Entity::METHOD] === Method::UPI)
         {
             $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
         }

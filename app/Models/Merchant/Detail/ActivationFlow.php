@@ -8,4 +8,3 @@ class ActivationFlow
     const BLACKLIST                     = 'blacklist';
     const GREYLIST                      = 'greylist';
 }
- 

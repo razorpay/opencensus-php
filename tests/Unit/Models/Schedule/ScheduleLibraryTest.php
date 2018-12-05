@@ -21,6 +21,11 @@ class ScheduleLibraryTest extends TestCase
         $this->startScheduleLibraryTest();
     }
 
+    public function testBasicT32Schedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
+
     public function testT3ScheduleWithMinTime()
     {
         $this->startScheduleLibraryTest();
@@ -100,7 +105,7 @@ class ScheduleLibraryTest extends TestCase
                 $minTime = $this->getTimeObjectFromFormatted($case['minTime']);
             }
 
-            $nextTime = Schedule\Library::computeFutureRun($schedule, $refTime, $minTime);
+            $nextTime = Schedule\Library::computeFutureRun($schedule, $refTime, $minTime, $ignoreBankHolidays = true);
 
             $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime->timestamp);
 

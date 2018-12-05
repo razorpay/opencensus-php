@@ -6,7 +6,6 @@ use DB;
 use Mail;
 use RZP\Constants;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use Razorpay\OAuth\Application;
@@ -388,6 +387,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
@@ -421,6 +424,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
@@ -454,6 +461,10 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
         {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
 
@@ -946,6 +957,28 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+    }
+
+    public function testBackFillMerchantId()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['limit'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 1;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [];
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 4;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 4;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 0;
 
         $this->startTest();
     }

@@ -7,18 +7,34 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
 {
     protected $virtualAccount;
+
     protected $validator;
+
     protected $receiver;
+
+    protected $paymentProcessor;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->validator = new Validator;
+    }
+
+    protected function getPaymentProcessor()
+    {
+        if (isset($this->paymentProcessor) === false)
+        {
+            $this->paymentProcessor = new PaymentProcessor($this->merchant);
+        }
+
+        return $this->paymentProcessor;
     }
 
     /**
@@ -81,6 +97,83 @@ abstract class Processor extends Base\Core
     abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
 
     abstract protected function getReceiver();
+
+    protected function shouldRefundOrderPayment(Base\PublicEntity $entity)
+    {
+        if ($entity->virtualAccount->hasOrder() === false)
+        {
+            return false;
+        }
+
+        // If Virtual Account has an Order but Bank Transfer/BharatQR Payment
+        // doesn't have an order then this is probably because
+        // Validations on Order are failing and Payment is created
+        // without Order to refund that while further processing.
+        if ($entity->payment->hasOrder() === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function refundOrCapturePayment(Base\PublicEntity $entity)
+    {
+        // For business banking flow there exists no payment, hence no refund/capture.
+        if ($this->virtualAccount->isBalanceTypeBanking() === true)
+        {
+            return;
+        }
+
+        $paymentProcessor = $this->getPaymentProcessor();
+
+        if ($entity->isExpected() === true)
+        {
+            if ($this->shouldRefundOrderPayment($entity) === true)
+            {
+                $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
+            }
+            else
+            {
+                $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
+            }
+        }
+    }
+
+    protected function createPaymentWithoutOrder(array $input, array $gatewayData = [])
+    {
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
+        }
+
+        $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
+    }
+
+    protected function createPayment(array $input, array $gatewayData = [])
+    {
+        try
+        {
+            $this->getPaymentProcessor()->process($input, $gatewayData);
+        }
+        catch (\Exception $e)
+        {
+            /*
+             * Exception might have been because of Validation Failure on Order.
+             * In this case we will make the payment without Order and refund
+             * it in later flow.
+             */
+            if (isset($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                throw $e;
+            }
+
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
+
+            $this->createPaymentWithoutOrder($input, $gatewayData);
+        }
+    }
 
     /**
      * A receiver is expected if there exists an active VA

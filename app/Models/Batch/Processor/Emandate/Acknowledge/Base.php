@@ -3,16 +3,11 @@
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
 use RZP\Models\Batch;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
     protected $gateway;
-
-    /**
-     * {@inheritDoc}
-     */
-    protected $useSpreadSheetLibrary = true;
 
     protected function shouldMarkProcessedOnFailures(): bool
     {

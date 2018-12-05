@@ -67,6 +67,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -677,6 +680,9 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
+
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
             });
 
         return $mock;
@@ -735,8 +741,10 @@ class MerchantFeeTest extends TestCase
             {
                 $mock->shouldReceive('getPricingPlanById')
                      ->andReturn($pricingPlan);
-            });
 
+                $mock->shouldReceive('getPricingPlanByIdWithoutOrgId')
+                     ->andReturn($pricingPlan);
+            });
         return $mock;
     }
 
@@ -1031,7 +1039,7 @@ class MerchantFeeTest extends TestCase
         // create merchant
         $merchant = $this->fixtures->create('merchant');
 
-        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId()]);
+        $balance = $this->fixtures->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
 
         $merchantDetails = $this->fixtures->create(
             'merchant_detail',

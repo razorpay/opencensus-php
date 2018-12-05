@@ -75,70 +75,52 @@ class Repository extends Base\Repository
      * @param string $channel
      * @param array $inMerchantIds
      * @param array $notInMerchantIds
+     * @param boolean $fetchAll
      * @return mixed
      */
     public function fetchUnsettledTransactions(
-        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [])
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true)
     {
-        $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        // SELECT `transactions`.`id`.`merchant_id`
+        // FROM transactions
+        // INNER JOIN
+        //     (SELECT `id`
+        //      FROM merchants
+        //      WHERE hold_funds = 0
+        //          AND merchants.activated_at IS NOT NULL
+        //          AND merchants.id NOT IN ('8ytYezIThlseJd',
+        //                                   '7BfRNg10LH7N6T')
+        //     ) AS settle_merchants ON settle_merchants.id = transactions.merchant_id
+        // WHERE settled_at < now()
+        //     AND on_hold = 0
+        //     AND settled = 0
+        //     AND transactions.channel = 'axis'
+        //     AND type != 'settlement'
 
-        $transactionMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
-        $transactionId = $this->dbColumn(Entity::ID);
+        $txnFetchStartTime      = microtime(true);
 
-        $transactionChannel = $this->dbColumn(Entity::CHANNEL);
+        $activatedMerchants = $this->repo->merchant->fetchMerchantsForSettlement($inMerchantIds, $notInMerchantIds);
 
-        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
         $transactionType        = $this->dbColumn(Entity::TYPE);
-        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
-        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
-        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
-        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
-        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
-        $transactionTax         = $this->dbColumn(Entity::TAX);
-        $transactionFee         = $this->dbColumn(Entity::FEE);
-        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
-        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
-        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
-        $txnFetchStartTime = microtime(true);
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement();
 
         $query = $this->newQuery()
-                      ->select(
-                          $transactionId,
-                          $transactionMerchantId,
-                          $transactionBalance,
-                          $transactionType,
-                          $transactionSourceId,
-                          $transactionSettledAt,
-                          $transactionSettled,
-                          $transactionAmount,
-                          $transactionCredit,
-                          $transactionDebit,
-                          $transactionTax,
-                          $transactionFee,
-                          $transactionFeeCredits,
-                          $transactionCreditsType,
-                          $transactionCreatedAt,
-                          $transactionChannel
-                      )
-                      ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                      ->where(Entity::SETTLED_AT, '<', $timestamp)
-                      ->where(Entity::ON_HOLD, 0)
-                      ->where(Entity::SETTLED, 0)
+                      ->select($selectedColumns)
+                      ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
+                                {
+                                    $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
+                                })
+                      ->mergeBindings($activatedMerchants->getQuery())
+                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
-                      ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                      ->where(Merchant\Entity::HOLD_FUNDS, 0);
-
-        if (empty($inMerchantIds) === false)
-        {
-            $query = $query->whereIn($merchantId, $inMerchantIds);
-        }
-
-        if (empty($notInMerchantIds) === false)
-        {
-            $query = $query->whereNotIn($merchantId, $notInMerchantIds);
-        }
+                      ->where($transactionType, '!=', Type::SETTLEMENT);
 
         $results = $query->get();
 
@@ -408,6 +390,8 @@ class Repository extends Base\Repository
         {
             $count = $this->newQuery()
                           ->whereIn(Transaction\Entity::ID, $batch)
+                          ->where(Transaction\Entity::SETTLED, 0)
+                          ->whereNull(Transaction\Entity::SETTLEMENT_ID)
                           ->update($values);
 
             $expected = count($batch);
@@ -549,13 +533,17 @@ class Repository extends Base\Repository
      * Updated reconciled_at to current time for given entities
      *
      * @param $entityIds
+     * @param $reconciledType
      * @return mixed
      */
-    public function bulkReconciliationUpdate($entityIds)
+    public function bulkReconciliationUpdate($entityIds, $reconciledType = ReconciledType::NA)
     {
         $time = time();
 
-        $attributes = [Entity::RECONCILED_AT => $time];
+        $attributes = [
+                        Entity::RECONCILED_AT   => $time,
+                        Entity::RECONCILED_TYPE => $reconciledType
+                      ];
 
         return $this->newQuery()
                     ->whereIn(Entity::ENTITY_ID, $entityIds)
@@ -719,7 +707,7 @@ class Repository extends Base\Repository
     /**
      * Raw sql query :
      *
-     *  select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
+     *  select FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
      *  COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
      *  COUNT(CASE
      *      WHEN transactions.reconciled_at is not null
@@ -784,7 +772,7 @@ class Repository extends Base\Repository
     /**
      * Raw sql query :
      *
-     *  select STRAIGHT_JOIN FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
+     *  select FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
      *  COUNT(transactions.entity_id) AS total_count,SUM(transactions.amount)/100 AS total_amount,
      *  COUNT(CASE
      *  WHEN transactions.reconciled_at is not null
@@ -905,7 +893,7 @@ class Repository extends Base\Repository
                     ELSE '. $terminalGatewayColumn . '
                   END) gateway, '. $paymentMethodColumn;
 
-        $dateCol = 'STRAIGHT_JOIN FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
+        $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
         $query = $this->newQuery()
                       ->selectRaw($dateCol . ',' . $params);
@@ -918,7 +906,7 @@ class Repository extends Base\Repository
      * This query is used in union query of all gateways.
      *
      * Payments:
-     * select STRAIGHT_JOIN transactions.created_at,payments.id as payment_id,
+     * select transactions.created_at,payments.id as payment_id,
      * payments.method as payment_method,payments.amount as payment_amount,
      * payments.status as payment_status,payments.disputed as payment_disputed,
      * payments.merchant_id as payment_merchant_id,
@@ -941,7 +929,7 @@ class Repository extends Base\Repository
      * order by `transactions`.`created_at` asc limit 100
      *
      * Refunds:
-     * select STRAIGHT_JOIN transactions.created_at,refunds.id as refund_id,
+     * select transactions.created_at,refunds.id as refund_id,
      * refunds.amount as refund_amount,refunds.status as refund_status,
      * payments.id as payment_id,payments.method as payment_method,
      * payments.amount as payment_amount,payments.status as payment_status,
@@ -1075,12 +1063,12 @@ class Repository extends Base\Repository
 
         if (empty($refundParams) === false)
         {
-            $selectParams = 'STRAIGHT_JOIN ' . $refundProcessedAtColumn . ',';
+            $selectParams = $refundProcessedAtColumn . ',';
             $selectParams .= (implode(',', $refundParams)) . ',';
         }
         else
         {
-            $selectParams = 'STRAIGHT_JOIN ' . $transactionsCreatedAtColumn . ',';
+            $selectParams = $transactionsCreatedAtColumn . ',';
         }
 
         $paymentParams = implode(',', $paymentParams);
@@ -1088,9 +1076,9 @@ class Repository extends Base\Repository
         $gatewayCol = '('.
             'CASE '.
             'WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")' .
-                'THEN '. $terminalGatewayAcquirerColumn .
-                'ELSE '. $terminalGatewayColumn .
-            'END' .
+                ' THEN '. $terminalGatewayAcquirerColumn .
+                ' ELSE '. $terminalGatewayColumn .
+            ' END' .
         ') gateway';
 
         $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
@@ -1174,5 +1162,83 @@ class Repository extends Base\Repository
 
         $query->join(Table::REFUND, Entity::ENTITY_ID, '=', $refundId)
               ->where($refundStatus, '=', Refund\Status::PROCESSED);
+    }
+
+    /**
+     * @param string $mid
+     * @param string $channel
+     * @return Base\PublicCollection
+     */
+    public function fetchUnsettledTransactionsForProcessing(string $mid, string $channel): Base\PublicCollection
+    {
+        $txnFetchStartTime = microtime(true);
+
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement();
+
+        $merchantId             = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        $query = $this->newQuery()
+                      ->select($selectedColumns)
+                      ->where($merchantId, $mid)
+                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
+                      ->where($transactionChannel, $channel)
+                      ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
+    }
+
+    public function fetchRequiredColumnsForSettlement(): array
+    {
+        $selectedColumns = [];
+
+        $columns = [
+            Transaction\Entity::ID,
+            Transaction\Entity::TAX,
+            Transaction\Entity::FEE,
+            Transaction\Entity::TYPE,
+            Transaction\Entity::DEBIT,
+            Transaction\Entity::CREDIT,
+            Transaction\Entity::AMOUNT,
+            Transaction\Entity::SETTLED,
+            Transaction\Entity::CHANNEL,
+            Transaction\Entity::BALANCE,
+            Transaction\Entity::ENTITY_ID,
+            Transaction\Entity::CREATED_AT,
+            Transaction\Entity::SETTLED_AT,
+            Transaction\Entity::CREDITS,
+            Transaction\Entity::MERCHANT_ID,
+            Transaction\Entity::CREDIT_TYPE
+        ];
+
+        foreach ($columns as $col)
+        {
+            $selectedColumns[] = $this->dbColumn($col);
+        }
+
+        return $selectedColumns;
+
+    }
+
+    public function fetchTransactionCountForSettlementId(string $setlId): int
+    {
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
+                    ->count();
     }
 }

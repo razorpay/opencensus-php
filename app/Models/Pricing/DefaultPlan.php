@@ -6,16 +6,12 @@ use RZP\Models\Admin\Org;
 
 class DefaultPlan
 {
-    const FULL_PLAN_ID             = '1AXludj60w4pSp';
-    const STARTUP_PLAN_ID          = '2atGxLIYLyHWg7';
-    const PROMOTIONAL_PLAN_ID      = '1In3Yh5Mluj605';
-    const HDFC_PROMOTIONAL_PLAN_ID = 'BAJq6FJDNJ4ZqD';
-    const BOB_PROMOTIONAL_PLAN_ID  = 'BAJvpnuxy4AUq3';
-
-    const ORG_TO_PROMOTIONAL_PLAN_ID = [
-        Org\Entity::HDFC_ORG_ID     => self::HDFC_PROMOTIONAL_PLAN_ID,
-        Org\Entity::BOB_ORG_ID      => self::BOB_PROMOTIONAL_PLAN_ID,
-    ];
+    const FULL_PLAN_ID                = '1AXludj60w4pSp';
+    const STARTUP_PLAN_ID             = '2atGxLIYLyHWg7';
+    const PROMOTIONAL_PLAN_ID         = '1In3Yh5Mluj605';
+    const HDFC_PROMOTIONAL_PLAN_ID    = 'BAJq6FJDNJ4ZqD';
+    const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
+    const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
 
     public static function getPricingSeedData()
     {
@@ -39,6 +35,7 @@ class DefaultPlan
                 'payment_method' => 'card',
                 'percent_rate'   => '290',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -52,6 +49,7 @@ class DefaultPlan
                 'payment_method' => 'netbanking',
                 'percent_rate'   => '290',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -65,6 +63,7 @@ class DefaultPlan
                 'payment_method' => 'emandate',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '10',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -78,6 +77,7 @@ class DefaultPlan
                 'payment_method' => 'wallet',
                 'percent_rate'   => '290',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -91,6 +91,7 @@ class DefaultPlan
                 'payment_method' => 'upi',
                 'percent_rate'   => '290',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -104,6 +105,7 @@ class DefaultPlan
                 'payment_method' => 'aeps',
                 'percent_rate'   => '290',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -117,6 +119,7 @@ class DefaultPlan
                 'payment_method' => 'transfer',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -130,6 +133,7 @@ class DefaultPlan
                 'payment_method' => 'bank_transfer',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -143,6 +147,7 @@ class DefaultPlan
                 'payment_method' => 'emi',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -156,6 +161,7 @@ class DefaultPlan
                 'payment_method' => 'card',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -169,6 +175,7 @@ class DefaultPlan
                 'payment_method' => 'netbanking',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -182,6 +189,7 @@ class DefaultPlan
                 'payment_method' => 'wallet',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -195,6 +203,63 @@ class DefaultPlan
                 'payment_method' => 'transfer',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1L8dUj9MzP3Bj4',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Nsi8IbQ3pWP7A',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Otj9JcY5qYB9X',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'wallet',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1Otj9JcY6dYB9Y',
+                'plan_id'        => 'BAJq6FJDNJ4ZqD',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::HDFC_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -213,6 +278,7 @@ class DefaultPlan
                 'payment_method' => 'card',
                 'percent_rate'   => '250',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -226,6 +292,7 @@ class DefaultPlan
                 'payment_method' => 'netbanking',
                 'percent_rate'   => '250',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -239,6 +306,7 @@ class DefaultPlan
                 'payment_method' => 'emandate',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '20',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -252,6 +320,7 @@ class DefaultPlan
                 'payment_method' => 'wallet',
                 'percent_rate'   => '250',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -265,6 +334,7 @@ class DefaultPlan
                 'payment_method' => 'transfer',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -278,6 +348,7 @@ class DefaultPlan
                 'payment_method' => 'emi',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -296,6 +367,7 @@ class DefaultPlan
                 'payment_method' => 'card',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -308,6 +380,7 @@ class DefaultPlan
                 'payment_method' => 'netbanking',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -320,6 +393,7 @@ class DefaultPlan
                 'payment_method' => 'emandate',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -332,6 +406,7 @@ class DefaultPlan
                 'payment_method' => 'wallet',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -344,6 +419,7 @@ class DefaultPlan
                 'payment_method' => 'transfer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -356,6 +432,7 @@ class DefaultPlan
                 'payment_method' => 'bank_transfer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -368,6 +445,7 @@ class DefaultPlan
                 'payment_method' => 'account',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -380,6 +458,7 @@ class DefaultPlan
                 'payment_method' => 'customer',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
@@ -392,6 +471,7 @@ class DefaultPlan
                 'payment_method' => 'emi',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()

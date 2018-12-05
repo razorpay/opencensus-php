@@ -40,6 +40,7 @@ class Gateway extends Base\Gateway
         Base\Entity::GATEWAY_MERCHANT_ID       => Base\Entity::GATEWAY_MERCHANT_ID,
         Base\Entity::VPA                       => Base\Entity::VPA,
         Base\Entity::ACTION                    => Base\Entity::ACTION,
+        Base\Entity::EXPIRY_TIME               => Base\Entity::EXPIRY_TIME,
 
         // Mapping response fields to entity variables
         ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
@@ -55,12 +56,16 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        // We validate the input VPA before initiating the collect request
-        $this->validateVpa($input, $gatewayPayment);
-
         $request = $this->getCollectRequestData($input);
 
-        $response = $this->sendGatewayRequest($request);
+        // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
+        // base/gateway's retry handler cannot be tested. so adding retry handler here to have
+        // atleast one gateway which can test this flow.
+        $response = $this->retryHandler(
+            [$this, 'sendGatewayRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
@@ -122,7 +127,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    private function validateVpa(array $input, Base\Entity $gatewayPayment)
+    public function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
 
@@ -131,9 +136,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $responseContent = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE);
-
-        // Update the gateway payment entity
-        $this->updateGatewayPaymentEntity($gatewayPayment, $responseContent);
 
         $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
     }
@@ -177,15 +179,15 @@ class Gateway extends Base\Gateway
         $this->setVerifyStatus($verify);
     }
 
-    private function getValidateVpaRequest(array $input): array
+    private function getValidateVpaRequest(array $payment): array
     {
         $content = [
             RequestFields::REQUEST_INFO => [
                 RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
-                RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                RequestFields::PSP_REFERENCE_NO => random_alpha_string(10),
             ],
             RequestFields::PAYEE_TYPE => [
-                RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA]
+                RequestFields::VIRTUAL_ADDRESS => $payment[Payment\Entity::VPA]
             ],
             RequestFields::VA_REQUEST_TYPE => Constants::VA_REQUEST_TYPE
         ];
@@ -307,7 +309,7 @@ class Gateway extends Base\Gateway
                 RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
             ],
             RequestFields::AMOUNT           => $this->formatAmount($input),
-            RequestFields::EXPIRY_TIME      => Constants::EXPIRY_TIME,
+            RequestFields::EXPIRY_TIME      => (string) $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
             RequestFields::PAYER_TYPE       => [
                 RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             ],
@@ -315,7 +317,7 @@ class Gateway extends Base\Gateway
                 RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
                 RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ],
-            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
+            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE,
         ];
 
         return $this->getStandardRequestArray($content);
@@ -355,7 +357,6 @@ class Gateway extends Base\Gateway
                 'encrypted'  => true,
                 'response'   => $body,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         $encryptedResponse = $this->jsonToArray($body)[ResponseFields::RESPONSE];
@@ -367,7 +368,6 @@ class Gateway extends Base\Gateway
                 'encrypted'  => false,
                 'response'   => $response,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         return $response;
@@ -400,7 +400,6 @@ class Gateway extends Base\Gateway
             [
                 'encrypted'  => false,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'content'    => $content
             ]);
 
@@ -422,7 +421,6 @@ class Gateway extends Base\Gateway
             [
                 'encrypted'  => true,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'request'    => $request
             ]);
 
@@ -441,6 +439,7 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
+            Base\Entity::EXPIRY_TIME         => $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
         ];
 
         return $attributes;
@@ -475,6 +474,15 @@ class Gateway extends Base\Gateway
         return $callback;
     }
 
+    public function postProcessServerCallback($input): array
+    {
+        return [
+            'pspRefNo' => $input['gateway'][ResponseFields::API_RESPONSE]['pspRefNo'],
+            'status'   => 'SUCCESS',
+            'message'  => 'Request Processed Successfully'
+        ];
+    }
+
     /**
      * @param array $response
      * @return mixed
@@ -505,6 +513,11 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId;
+    }
+
+    protected function getLiveMerchantId()
+    {
+        return $this->terminal['gateway_merchant_id'];
     }
 
     /**

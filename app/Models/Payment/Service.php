@@ -245,6 +245,11 @@ class Service extends Base\Service
         return $this->getNewProcessor()->redirectCallback($id);
     }
 
+    public function redirectTo3ds($id)
+    {
+        return $this->getNewProcessor()->redirectTo3ds($id);
+    }
+
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);
@@ -1071,22 +1076,25 @@ class Service extends Base\Service
         {
             if ($payment->shouldTimeout($now) === true)
             {
-                $this->repo->payment->lockForUpdateAndReload($payment);
-
-                try
+                $this->repo->transaction(function() use ($payment, & $count, & $error)
                 {
-                    $this->getNewProcessor($payment->merchant)
-                         ->setPayment($payment)
-                         ->timeoutPayment();
+                    $this->repo->payment->lockForUpdateAndReload($payment);
 
-                    $count++;
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->traceException($e);
+                    try
+                    {
+                        $this->getNewProcessor($payment->merchant)
+                             ->setPayment($payment)
+                             ->timeoutPayment();
 
-                    $error++;
-                }
+                        $count++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException($e);
+
+                        $error++;
+                    }
+                });
             }
         }
 
@@ -1385,6 +1393,11 @@ class Service extends Base\Service
     public function updateReceiverData()
     {
         return $this->core->updateReceiverData();
+    }
+
+    public function updateBankTransferTerminal($input)
+    {
+        return $this->core->updateBankTransferTerminal($input);
     }
 
     public function validateVpa($input)

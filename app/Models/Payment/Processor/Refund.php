@@ -250,8 +250,14 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
-        $input['reverse'] = $data['refund']['reverse'];
-        $data['refund'] = $input;
+        //
+        // This is required for upi mindgate refunds. Second request on gateway with same refund id fails with duplicate.
+        // Attempts will come from scrooge but still handling here to keep default value 0. Can't use API's attempts as
+        // for scrooge refunds API attempts will always be 1
+        //
+        $input['attempts'] = $input['attempts'] ?? 0;
+
+        $data['refund']['attempts'] = $input['attempts'];
 
         $gatewayRefundResponse = $this->mutex->acquireAndRelease(
             $payment->getId(),
@@ -841,7 +847,7 @@ trait Refund
                                                    'REFUND_SUCCESSFUL' :
                                                    (
                                                        (empty($exception) === false) ?
-                                                       $exception->getCode() :
+                                                       (string) $exception->getCode() :
                                                        ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
                                                    ),
             Payment\Gateway::GATEWAY_RESPONSE   => $gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ??
@@ -1084,7 +1090,7 @@ trait Refund
 
         $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $payment->getMerchantId());
 
-        if (($isScroogeGateway === false) and
+        if ((($isScroogeGateway === false) or ($retry === true)) and
             ($this->isFundTransferAttemptRefund($payment, $data) === true))
         {
             return $this->refundViaFundTransfer($payment, $data);
@@ -1114,6 +1120,26 @@ trait Refund
         else if ($this->gatewaySupportsReversal($payment) === true)
         {
             $refundData = $this->reverseOnGateway($data, $retry);
+        }
+        else
+        {
+            //
+            // Flow reaching here that means its an auto refund case, where transaction can not be refunded or reversed.
+            // Earlier, these refunds were kept in created state forever, now marking them as processed as they are being
+            // refunded by gateway automatically, we can't do anything here.
+            //
+            // If code reaching here, gateway refunded is set as true, hence
+            // for new refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
+            //
+            // Marking refund as processed here for all other gateways and also if refund is of the date before that gateway
+            // moved to scrooge.
+            //
+            $gateway = $data['payment'][Payment\Entity::GATEWAY];
+
+            if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($gateway, $this->refund->getCreatedAt()) === false)
+            {
+                $this->refund->setStatusProcessed();
+            }
         }
 
         return $refundData;
@@ -1380,7 +1406,7 @@ trait Refund
 
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
-        $refundData = $refund->toArrayGateway();
+        $refundData = $refund->toArray();
 
         $extraData = [
             'method'                    => $payment->getMethod(),

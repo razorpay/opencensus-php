@@ -16,6 +16,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -73,7 +74,8 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant,
         Subscription\Entity $subscription = null,
-        Batch\Entity $batch = null): Entity
+        Batch\Entity $batch = null,
+        Base\Entity $externalEntity = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
@@ -98,6 +100,7 @@ class Core extends Base\Core
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
+                        ->setExternalEntity($externalEntity)
                         ->setBatch($batch)
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
@@ -387,6 +390,10 @@ class Core extends Base\Core
      */
     public function expireInvoices(): array
     {
+        RuntimeManager::setMaxExecTime(600);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
         $time = time();
 
         $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();

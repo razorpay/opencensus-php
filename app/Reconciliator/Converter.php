@@ -31,6 +31,16 @@ class Converter extends Base\Core
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::CARD_FSS_BOB,
         RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_EQUITAS
+    ];
+
+    //
+    // This is the list of gateways for which file is xlsx but comes with extension xls.
+    // Maatwebsite not able to parse this file but spout is able to. Hence irrespective of extension,
+    // will use spout library to parse files for these gateways.
+    //
+    const SPOUT_GATEWAYS = [
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
@@ -70,12 +80,13 @@ class Converter extends Base\Core
      * @param array $sheetNames  sheet names to be considered
      * @param int   $startRow
      * @param array $keyColumnsNames
+     * @param string $gateway
      *
      * @return array
      */
-    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow, $keyColumnsNames = [])
+    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow, $keyColumnsNames = [], string $gateway = null)
     {
-        if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
+        if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION], $gateway) === true)
         {
             // getting contents using spout library for xlsx
             $sheetsContents = $this->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow, $keyColumnsNames);
@@ -429,9 +440,10 @@ class Converter extends Base\Core
         return $sheetContent['all_sheets_content'];
     }
 
-    protected function shouldUseSpoutLib(string $extension): bool
+    protected function shouldUseSpoutLib(string $extension, string $gateway = null): bool
     {
-        return ($extension === Format::XLSX);
+        return ($extension === Format::XLSX) or
+                (in_array($gateway, self::SPOUT_GATEWAYS, true) === true);
     }
 
     protected function getRowsFromExcelSheetsWithIndicesSpout($reader, int $startRow = 1, $keyColumnNames)

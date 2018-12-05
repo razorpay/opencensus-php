@@ -856,6 +856,31 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithDuplicateReceiptSucceedsIfAllowed' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'receipt'     => '00000000000001',
+                'currency'    => 'INR',
+                'line_items'  => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'invoice',
+                'receipt' => '00000000000001',
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithDuplicateReceiptSucceeds' => [
         'request' => [
             'url'     => '/invoices',
@@ -4068,6 +4093,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4133,6 +4165,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                        ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4201,6 +4240,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4257,6 +4303,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [
@@ -4320,6 +4373,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'range' => [
@@ -4379,6 +4439,13 @@ return [
                     ],
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'range' => [
@@ -4428,6 +4495,13 @@ return [
                 'bool' => [
                     'filter' => [
                         'bool' => [
+                            'must_not' => [
+                                [
+                                    'exists' => [
+                                        'field' => 'entity_type',
+                                    ],
+                                ],
+                            ],
                             'must' => [
                                 [
                                     'term' => [

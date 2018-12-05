@@ -60,6 +60,18 @@ trait EbsReconTestTrait
         $this->assertNull($ebs->getGatewayTransactionId());
         $entries[] = $this->overrideEbsPayment($payment, $ebs);
 
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($entries)
+            {
+                $replace = [
+                    '{{transactionId}}' => $entries[0]['transactionid'],
+                    '{{paymentId}}'     => $entries[0]['paymentid'],
+                ];
+
+                $content = strtr($content, $replace);
+            },
+            'ebs');
+
         $file = $this->writeToCsvFile($entries, 'EBS_SETTLEMENT_DETAILS');
         $this->runForFiles([$file], 'Ebs');
 
@@ -69,10 +81,10 @@ trait EbsReconTestTrait
         $transaction = $this->getDbLastEntity('transaction');
         $this->assertSame($payment->getId(), $transaction->getEntityId());
 
-        // Recon must fill gateway payment entries for failed payments
+        // Verify from recon must fill gateway payment entries for failed payments
         $ebs->reload();
-        $this->assertSame($entries[0]['transactionid'], $ebs->getGatewayTransactionId());
-        $this->assertSame($entries[0]['paymentid'], $ebs->getGatewayPaymentId());
+        $this->assertEquals($entries[0]['transactionid'], $ebs->getGatewayTransactionId());
+        $this->assertEquals($entries[0]['paymentid'], $ebs->getGatewayPaymentId());
 
         $this->assertSame(1304, $transaction['gateway_fee']);
         $this->assertSame(201, $transaction['gateway_service_tax']);
@@ -107,8 +119,8 @@ trait EbsReconTestTrait
         $amounts = $this->parseEbsReconFileAmount($payment->getAmount(), 'payment');
 
         $facade = [
-            'transactionid'    => (string) $ebs->transaction_id ?? random_integer(8),
-            'paymentid'        => (string) $ebs->getGatewayPaymentId() ?? random_integer(8),
+            'transactionid'    => (string) $ebs->transaction_id ?: random_integer(8),
+            'paymentid'        => (string) $ebs->getGatewayPaymentId() ?: random_integer(8),
             'merchant_refno'   => $ebs->getPaymentId(),
             'txn_date'         => Carbon::createFromTimestamp($payment->getCreatedAt())->format('d/m/Y'),
             'settlement_date'  => Carbon::createFromTimestamp($payment->getCreatedAt())->addDay()->format('d/m/Y'),

@@ -355,7 +355,8 @@ class PricingTest extends TestCase
             'merchant',
             array(
                 'id' => '1FcXNxsHt5dOPI',
-                'pricing_plan_id' => '1ycviEdCgurrFI'));
+                'pricing_plan_id' => '1ycviEdCgurrFI',
+                'org_id' => '100000razorpay'));
 
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
@@ -505,6 +506,55 @@ class PricingTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
+    public function testOrgIdPricing()
+    {
+        $fetchTestData = [
+            'request' => [
+                'content' => [
+                ],
+            ],
+            'response' => [
+                'content' => [
+                ]
+            ],
+        ];
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+        $this->startTest($testData);
+
+        $fetchTestData['request']['url'] = '/pricing/'.$content['id'];
+        $fetchTestData['request']['method'] = 'GET';
+
+        $response = $this->runRequestResponseFlow($fetchTestData);
+
+        $this->assertNotEmpty($response);
+
+        $org = $this->fixtures->org->createHdfcOrg();
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+         // fetching the same entity
+        $response = $this->runRequestResponseFlow($fetchTestData);
+         // no data;
+        $this->assertEmpty($response);
+
+        $content = $this->createPricingPlan(['org_id' => $org->getId(), 'plan_id' => '1ycviEdCguraFI']);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+        $this->startTest($testData);
+
+        $fetchTestData['request']['url'] = '/pricing/'.$content['id'];
+        $fetchTestData['request']['method'] = 'GET';
+        $response = $this->runRequestResponseFlow($fetchTestData);
+        $this->assertNotEmpty($response);
+        // org changed for the admin
+        $this->ba->adminAuth();
+        // fetching the same entity
+        $response = $this->runRequestResponseFlow($fetchTestData);
+         // no data;
+        $this->assertEmpty($response);
+    }
+
     protected function setDefaultMerchantMethods()
     {
         // Disable all methods and only enable card.
@@ -534,6 +584,7 @@ class PricingTest extends TestCase
             'payment_issuer'      => 'HDFC',
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay'
         ];
 
         $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);

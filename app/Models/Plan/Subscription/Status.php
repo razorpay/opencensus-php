@@ -89,6 +89,7 @@ class Status
 
     public static $cardChangeStatuses = [
         self::ACTIVE,
+        self::AUTHENTICATED,
         self::PENDING,
         self::HALTED,
     ];

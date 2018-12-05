@@ -245,16 +245,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
-        $shouldRetry = function ($e)
-        {
-            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
-        };
-
-        $response = $this->retryHandler(
-            [$this, 'getSoapResponse'],
-            [$requestContent],
-            $shouldRetry,
-            2);
+        $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
@@ -352,7 +343,7 @@ class Gateway extends Base\Gateway
 
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
-        $this->checkApprovalCode($reverseEntity);
+        $this->checkApprovalCode($reverseEntity, $response, $reverseFields);
 
         return [
             Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
@@ -483,6 +474,16 @@ class Gateway extends Base\Gateway
         return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
     }
 
+    /**
+     * This returns the formatted response expected by Scrooge service.
+     * gatewayResponse key should be a string only, scrooge will save as it is in DB.
+     *
+     * @param bool $success
+     * @param string $statusCode
+     * @param string $gatewayResponse
+     * @param array $refundFields
+     * @return array
+     */
     protected function prepareScroogeResponse(bool $success,
                                               $statusCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
                                               $gatewayResponse = '',
@@ -1126,7 +1127,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        if ($response->body === null)
+        if (empty($response->body) === true)
         {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
         }
@@ -2101,7 +2102,7 @@ class Gateway extends Base\Gateway
             $this->repo->saveOrFail($gatewayPayment);
         }
 
-        $this->checkApprovalCode($gatewayPayment);
+        $this->checkApprovalCode($gatewayPayment, $response, $attributes);
     }
 
     protected function mockApprovalCodeForS2s(array & $input)
@@ -2299,5 +2300,10 @@ class Gateway extends Base\Gateway
         $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
+    }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::AUTHORIZE, Action::CAPTURE];
     }
 }

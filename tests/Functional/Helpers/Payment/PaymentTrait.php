@@ -53,6 +53,8 @@ trait PaymentTrait
 
     protected $otp = null;
 
+    protected $redirectTo3ds = null;
+
     protected $gateway = null;
 
     protected $merchantCallbackUrl = null;
@@ -553,6 +555,16 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeRedirectTo3ds($url)
+    {
+        $request = [
+            'url'       => $url,
+            'method'    => 'POST',
+        ];
+
+        return $this->sendRequest($request);
+    }
+
     protected function makeS2sCallbackAndGetContent($content)
     {
         $request = [
@@ -657,6 +669,21 @@ trait PaymentTrait
     protected function setOtp($otp)
     {
         $this->otp = $otp;
+    }
+
+    protected function getRedirectTo3ds()
+    {
+        if ($this->redirectTo3ds === null)
+        {
+            return false;
+        }
+
+        return $this->redirectTo3ds;
+    }
+
+    protected function setRedirectTo3ds($bool)
+    {
+        $this->redirectTo3ds = $bool;
     }
 
     protected function getFeesForPayment($payment)
@@ -863,6 +890,9 @@ trait PaymentTrait
         $input['gateway'] = $this->gateway;
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
         $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
+        $input['attempts'] = $refund['attempts'] ?? 0;
+        $input['amount'] = $refund['amount'] ?? $input['amount'];
+        $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
 
         $this->ba->scroogeAuth();
 
@@ -976,6 +1006,7 @@ trait PaymentTrait
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
+            $response['attempts'] = 1;
 
             $this->scroogeRefund($response);
         }
@@ -987,17 +1018,6 @@ trait PaymentTrait
     {
         $this->ba->adminAuth();
 
-        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
-
-        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
-
-        $admin = $this->ba->getAdmin();
-
-        // Linking merchant with admin because admins can access only linked merchants.
-        $admin->merchants()->attach($merchant);
-
-        $this->ba->addAccountAuth($merchant->getId());
-
         $request = array(
             'method'  => 'POST',
             'url'     => '/payments/'.$id.'/authorize_refund',
@@ -1008,7 +1028,7 @@ trait PaymentTrait
         $this->assertEquals('refund', $refund['entity']);
 
         //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
         {
             $this->scroogeRefund($refund);
         }
@@ -1569,6 +1589,22 @@ trait PaymentTrait
     }
 
     /**
+     * Get Otp Submit Url
+     */
+    public function getPaymentRedirectTo3dsUrl($paymentId)
+    {
+        $params = [
+            'id' => $paymentId,
+            'key_id' => $this->ba->getKey()
+        ];
+
+        $url = \URL::route('payment_redirect_3ds', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    /**
      * Get Otp resend Url
      */
     public function getOtpResendUrl($paymentId)
@@ -1778,6 +1814,26 @@ trait PaymentTrait
                 ['test' => 'test'],
                 '',
                 Action::BLOCK);
+        });
+    }
+
+    protected function getGatewayRequestException()
+    {
+        $this->i = true;
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            if ($this->i === true)
+            {
+                $this->i = false;
+
+                $content = [
+                    'status_code'   => 500,
+                ];
+
+                throw new Exception\GatewayRequestException('cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ');
+            }
+
         });
     }
 

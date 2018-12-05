@@ -7,7 +7,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\Entity as GatewayEntity;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 abstract class Base extends BaseProcessor
 {
@@ -33,11 +33,6 @@ abstract class Base extends BaseProcessor
      * @var array Used for mapping the file content to the corresponding gateway entity
      */
     protected $gatewayPaymentMapping = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    protected $useSpreadSheetLibrary = true;
 
     protected function processEntry(array & $entry)
     {
@@ -96,10 +91,17 @@ abstract class Base extends BaseProcessor
             ($payment->hasBeenCaptured() === false))
         {
             $this->captureAuthorizedPayment($payment);
+
+            $this->reconcileEntity($payment);
         }
+        //
+        // We marked payment as refunded if registration is rejected
+        //
         else if ($data[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED)
         {
-            $this->refundPayment($payment);
+            $refund = $this->refundPayment($payment);
+
+            $this->reconcileEntity($refund);
         }
     }
 
@@ -173,7 +175,7 @@ abstract class Base extends BaseProcessor
             return;
         }
 
-        (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
+        return (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
     }
 
     protected function updateTokenEntity(Token\Entity $token, array $content)

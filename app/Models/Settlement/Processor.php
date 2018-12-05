@@ -12,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant as MerchantModel;
 
@@ -30,11 +31,13 @@ class Processor extends Base\Core
      */
     protected $merchants = null;
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s_%s';
+
+    const MUTEX_DAILY_RESOURCE  = 'SETTLEMENT_DAILY_PROCESSING_%s';
 
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
-    const MUTEX_LOCK_TIMEOUT    = 900;
+    const MUTEX_LOCK_TIMEOUT    = 1800;
 
     public function __construct()
     {
@@ -55,16 +58,21 @@ class Processor extends Base\Core
     {
         $this->increaseAllowedSystemLimits();
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+        $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
 
-        $data = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function ()
-            {
-                return $this->createDailySettlements();
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function ()
+                {
+                    return $this->createDailySettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
 
         return $data;
     }
@@ -101,17 +109,19 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
+        $useQueue = $this->shouldUseQueue($input);
+
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         if ($shouldProcess === true)
         {
-            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
-                function () use ($channel)
+                function () use ($channel, $useQueue)
                 {
-                    return $this->processSettlements($channel);
+                    return $this->processSettlements($channel, $useQueue);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -120,7 +130,7 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function processSettlements($channel)
+    protected function processSettlements($channel, $useQueue)
     {
         $response = [];
 
@@ -134,10 +144,17 @@ class Processor extends Base\Core
             {
                 $this->traceSetlInitiating($channel);
 
-                $setlResponse = $this->createSettlements($channel);
+                $setlResponse = $this->createSettlements($channel, $useQueue);
 
-                $response[$channel]['count']    += $setlResponse['settlement_count'];
-                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+                if ($useQueue === true)
+                {
+                    $response = $setlResponse;
+                }
+                else
+                {
+                    $response[$channel]['count']    += $setlResponse['settlement_count'];
+                    $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+                }
             }
 
             $this->trace->info(
@@ -448,29 +465,48 @@ class Processor extends Base\Core
 
     protected function getMerchantsToSkipForUsualSettlement(): array
     {
+        // MIDs that have daily settlements feature enabled
         $dailySetlMids = $this->getMerchantsOnDailySettlement();
 
+        //
+        // MIDs that have been hardcoded to be skipped
+        // Todo: Deprecate this in favour of feature based fetch
+        //
         $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
 
-        $skipMids = array_merge($dailySetlMids, $skipMfIds);
+        // MIDs that have the block_settlements feature enabled
+        $skipSetlFeatureMids = $this->repo
+                                    ->feature
+                                    ->findMerchantIdsHavingFeatures([Feature\Constants::BLOCK_SETTLEMENTS]);
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids);
 
         return $skipMids;
     }
 
     protected function getMerchantsOnDailySettlement()
     {
-        $features = [Feature\Constants::DAILY_SETTLEMENT];
-
-        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures($features);
-
-        $mids = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        $mids = $this->repo
+                     ->feature
+                     ->findMerchantIdsHavingFeatures([Feature\Constants::DAILY_SETTLEMENT]);
 
         return $mids;
     }
 
-    protected function createSettlements($channel): array
+    protected function createSettlements($channel, $useQueue): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
+
+        if ($useQueue === true)
+        {
+            $activatedMerchants = $this->repo
+                                       ->merchant
+                                       ->fetchMerchantsForSettlement([], $skipMids);
+
+            $activatedMerchants = $activatedMerchants->get()->getIds();
+
+            return $this->pushMerchantsToSettlementQueue($activatedMerchants, $channel);
+        }
 
         $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
 
@@ -574,11 +610,82 @@ class Processor extends Base\Core
      */
     protected function isTestMode(): bool
     {
-        if (in_array($this->env, ['testing', 'perf', 'func'], true) === true)
+        if (in_array($this->env, ['testing', 'perf', 'func', 'dev'], true) === true)
         {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @param array $merchants
+     * @param string $channel
+     * @return array
+     */
+    protected function pushMerchantsToSettlementQueue(array $merchants, string $channel): array
+    {
+        $totalCount[$channel]['merchant_count']    = 0;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
+            [
+                'channel' => $channel
+            ]);
+
+        foreach ($merchants as $merchantId)
+        {
+            try
+            {
+                SettlementJob::dispatch($this->mode, $channel, $merchantId);
+
+                $this->trace->info(TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT_TO_QUEUE, ['channel' => $channel, 'merchant_id' => $merchantId]);
+
+                $totalCount[$channel]['merchant_count'] += 1;
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::UNSETTLED_MERCHANT_DISPATCH_FAILED,
+                    [
+                        'channel'     => $channel,
+                        'merchant_id' => $merchantId
+                    ]
+                );
+            }
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE, $totalCount);
+
+        return $totalCount;
+    }
+
+    public function fetchAndProcessTransactionsForSettlement(string $channel, string $merchantId)
+    {
+        $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $txns = $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
+
+        $this->merchants = $this->repo
+                                ->merchant
+                                ->findManyWithRelations(
+                                    [$merchantId],
+                                    ['balance', 'bankAccount'],
+                                    [
+                                        MerchantModel\Entity::ID,
+                                        MerchantModel\Entity::PARENT_ID
+                                    ])
+                                ->keyBy(MerchantModel\Entity::ID);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        return $this->createSettlementEntities($groupedTxns, $channel);
+    }
+
+    protected function shouldUseQueue(array $input)
+    {
+        return (bool)isset($input['use_queue']) ?? false;
     }
 }

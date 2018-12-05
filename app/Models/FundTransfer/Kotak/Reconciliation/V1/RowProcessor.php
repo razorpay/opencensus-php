@@ -2,10 +2,11 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V1;
 
-use RZP\Models\FundTransfer\Attempt\Version;
-use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 use RZP\Models\Payout;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\FundTransfer\Attempt\Version;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 class RowProcessor extends Base\RowProcessor
 {
@@ -50,6 +51,7 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->saveOrFail();
 
         $this->reconEntity->transaction->setReconciledAt($this->reconciledAt);
+        $this->reconEntity->transaction->setReconciledType(ReconciledType::MIS);
         $this->reconEntity->transaction->saveOrFail();
 
         return $this->reconEntity;

@@ -29,6 +29,9 @@ abstract class Base extends Core
 
     protected $mutex;
 
+    /**
+     * @var $gatewayFile File\Entity
+     */
     protected $gatewayFile;
 
     public function __construct()
@@ -79,7 +82,10 @@ abstract class Base extends Core
     {
         try
         {
-            $entities = $this->fetchEntities();
+            $entities = $this->repo->useSlave(function ()
+            {
+                return $this->fetchEntities();
+            });
 
             $this->checkIfValidDataAvailable($entities);
 

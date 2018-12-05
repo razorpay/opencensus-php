@@ -88,4 +88,26 @@ class Utility
     {
         return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
     }
+
+    public static function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
+        }
+    }
 }

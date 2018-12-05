@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Invoice;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Helpers;
@@ -20,14 +21,11 @@ class PaymentLink extends Base
      */
     protected $usesNewPlHeader = false;
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $useSpreadSheetLibrary = true;
-
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
+
+        $this->increaseAllowedSystemLimits();
 
         $this->invoiceCore = new Invoice\Core;
     }
@@ -133,5 +131,13 @@ class PaymentLink extends Base
         }
 
         return $headings;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(3600);
+
     }
 }

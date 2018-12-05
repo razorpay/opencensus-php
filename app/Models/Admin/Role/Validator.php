@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME            => 'required|string|max:255',
-        Entity::DESCRIPTION     => 'sometimes|string|max:255',
+        Entity::DESCRIPTION     => 'required|string|max:255',
         Entity::PERMISSIONS     => 'sometimes|array|custom',
     ];
 
@@ -33,7 +33,6 @@ class Validator extends Base\Validator
         {
             return;
         }
-
 
         if ($role->isSuperAdminRole() === true)
         {

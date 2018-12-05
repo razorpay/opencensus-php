@@ -116,6 +116,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchTokenCard($id)
+    {
+        $data = $this->service(E::TOKEN)->fetchCard($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchTokensForGlobalCustomer()
     {
         $tokens = $this->service(E::TOKEN)->fetchTokensForGlobalCustomer();
@@ -166,11 +173,11 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createVpa()
+    public function createVpa(string $customerId)
     {
         $input = Request::all();
 
-        $data = $this->service(E::VPA)->create($input);
+        $data = $this->service(E::VPA)->create($customerId, $input);
 
         return ApiResponse::json($data);
     }
@@ -308,5 +315,19 @@ class CustomerController extends Controller
         $summary = $this->service(E::TOKEN)->migrateToGatewayTokens($input);
 
         return ApiResponse::json($summary);
+    }
+
+    /**
+     * @param string $customerId
+     *
+     * @return mixed
+     */
+    public function postCustomerWalletPayout(string $customerId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processCustomerWalletPayout($customerId, $input);
+
+        return ApiResponse::json($response);
     }
 }

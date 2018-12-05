@@ -255,6 +255,38 @@ return [
             ],
         ],
     ],
+
+    'testOrgIdPricing' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRuleWithDebitPinFeature' => [
         'request' => [
             'content' => [
@@ -359,7 +391,7 @@ return [
             'content' => [
                 'payment_method' => 'netbanking',
                 'percent_rate' => 1000,
-                'payment_network' => 'SIBL',
+                'payment_network' => 'BARB_R',
                 'amount_range_active' => true,
                 'amount_range_min' => 0,
                 'amount_range_max' => 100000
@@ -371,7 +403,7 @@ return [
                 'plan_name' => 'TestPlan1',
                 'payment_method' => 'netbanking',
                 'payment_method_type' => null,
-                'payment_network' => 'SIBL',
+                'payment_network' => 'BARB_R',
                 'payment_issuer' => null,
                 'percent_rate' => 1000,
                 'amount_range_active' => true,

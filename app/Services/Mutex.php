@@ -22,6 +22,8 @@ class Mutex
 
     protected $redis;
 
+    const PREFIX = 'mutex:';
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();
@@ -103,11 +105,24 @@ class Mutex
      */
     protected function acquireNoWait($resource, $ttl = 60) : bool
     {
-        $redis = Redis::getFacadeRoot();
+        $this->appendPrefix($resource);
 
         try
         {
-            $response = $redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            $resourceRedisValue = $this->redis->get($resource);
+
+            $requestId = $this->getRequestIdWithoutCount($resourceRedisValue);
+
+            if ($requestId === $this->requestId)
+            {
+                $requestId = $this->getRequestIdWithCount($resourceRedisValue);
+
+                $response = $this->redis->set($resource, $requestId, 'ex', $ttl, 'xx');
+            }
+            else
+            {
+                $response = $this->redis->set($resource, $this->requestId, 'ex', $ttl, 'nx');
+            }
         }
         catch (PredisException $e)
         {
@@ -200,14 +215,17 @@ class Mutex
      */
     public function release($resource)
     {
-        $redis = Redis::getFacadeRoot();
+        $this->appendPrefix($resource);
 
         try
         {
-            if (($redis->get($resource) === $this->requestId) and
-                ($redis->del($resource) === 1))
+            $resourceValue = $this->redis->get($resource);
+
+            $requestId = $this->getRequestIdWithoutCount($resourceValue);
+
+            if ($requestId === $this->requestId)
             {
-                return true;
+                return $this->resetRequestResourceCount($resource, $resourceValue);
             }
         }
         catch (PredisException $e)
@@ -258,5 +276,91 @@ class Mutex
                 $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
             }
         }
+    }
+
+    public function setRedisClient($client)
+    {
+        $this->redis = $client;
+    }
+
+    protected function appendPrefix(& $key)
+    {
+        $key = self::PREFIX . $key;
+    }
+
+    /**
+     * Returns new request id appended with an integer value indicating number of times resource is being locked
+     * in current request id
+     *
+     * @param $requestId
+     * @return string
+     */
+    protected function getRequestIdWithCount($requestId)
+    {
+        $requestIdArray = explode('_', $requestId);
+
+        $requestCount = $requestIdArray[1] ?? 0;
+
+        $requestId = $requestIdArray[0] . '_' . (++$requestCount);
+
+        return $requestId;
+    }
+
+    /**
+     * Returns original request id from the given request id.
+     * In case resource is locked multiple times, request id will contain integer value also.
+     *
+     * @param $requestId
+     * @return mixed
+     */
+    protected function getRequestIdWithoutCount($requestId)
+    {
+        $requestIdArray = explode('_', $requestId);
+
+        return $requestIdArray[0];
+    }
+
+    /**
+     * Resets the resource count in current request id after release is called.
+     * If release is called on resource which is not locked further, delete the resource from redis.
+     *
+     * @param $resource
+     * @param $ttl
+     * @param $requestId
+     * @return int
+     */
+    protected function resetRequestResourceCount($resource, $requestId)
+    {
+        $requestIdArray = explode('_', $requestId);
+
+        $requestCount = $requestIdArray[1] ?? 0;
+
+        try
+        {
+            if ($requestCount === 0)
+            {
+                return ($this->redis->del($resource) === 1);
+            }
+            else
+            {
+                $requestId = $requestIdArray[0] . '_' . (--$requestCount);
+
+                $ttl = $this->redis->ttl($resource);
+
+                $this->redis->set($resource, $requestId, 'ex', $ttl, 'xx');
+            }
+        }
+        catch (PredisException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MUTEX_UNABLE_TO_ACQUIRE,
+                [
+                    'resource'  => $resource,
+                ]);
+        }
+
+        return true;
     }
 }

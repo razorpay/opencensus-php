@@ -32,7 +32,7 @@ class Repository extends Base\Repository
         Entity::MC_MPAN                 => 'sometimes|string|size:16',
         Entity::VISA_MPAN               => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
-        Entity::VPA                     => 'sometimes|string|max:20',
+        Entity::VPA                     => 'sometimes|string|max:255',
     );
 
     public function fetchForPayment(Payment\Entity $payment)
@@ -150,6 +150,15 @@ class Repository extends Base\Repository
                       ->whereIn(Entity::GATEWAY, Payment\Gateway::getEmandateGatewaysForAuthType($authType));
 
         $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
+    public function getAllBankTransferTerminals(): PublicCollection
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::BANK_TRANSFER, true)
+                      ->withTrashed();
 
         return $query->get();
     }

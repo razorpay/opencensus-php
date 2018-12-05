@@ -80,6 +80,7 @@ class Handler extends ExceptionHandler
 
             case $e instanceof GatewayFileException:
                 $response = $this->gatewayFileExceptionHandler($e);
+                break;
 
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:

@@ -1,6 +1,6 @@
 # Amazon Pay Wallet
 
-**Documentation**: 
+**Documentation**:
 https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 
 **People**: Junaid / Vivek
@@ -34,7 +34,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
     ```
 # Encryption Logic
 - `AmazonPay` uses `AES-GCM` No Padding algorithm for plaintext encryption.
-- The plaintext is encrypted with a key and the key is then encrypted using `RSA-ECB` with `OAEPWithSHA-1AndMGF1Padding` algorithm. This concept of encrypting the key that can used to decrypt the `ciphertext` is called envelope encryption. The key encryption key `(KEK)` is used to encrypt the data key. 
+- The plaintext is encrypted with a key and the key is then encrypted using `RSA-ECB` with `OAEPWithSHA-1AndMGF1Padding` algorithm. This concept of encrypting the key that can used to decrypt the `ciphertext` is called envelope encryption. The key encryption key `(KEK)` is used to encrypt the data key.
 - `Razorpay` sends as part of the request, 3 parameters to `AmazonPay`
     ```
       1. The encrypted payload
@@ -56,14 +56,14 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
 - The Refund API has the following features
     ```
       1. Make a call to the RefundPayment API.
-      2. Listen for the Refund IPN returned by AmazonPay.  
-      3. Refunds are not processed in real time, and the initial status is always pending. 
-      4. When the refund is processed, the returned state is completed or declined. 
-      5. We can get the details of the refund via the GetRefundStatus API using the AmazonRefundId returned in the Refund API response. 
+      2. Listen for the Refund IPN returned by AmazonPay.
+      3. Refunds are not processed in real time, and the initial status is always pending.
+      4. When the refund is processed, the returned state is completed or declined.
+      5. We can get the details of the refund via the GetRefundStatus API using the AmazonRefundId returned in the Refund API response.
     ```
 - Refund API
     ```
-      1. Rate limited and throttled API 
+      1. Rate limited and throttled API
       2. Generate the Refund API request params
       3. Make a call to the SDK's refund API
       4. The returned response will be that of a refund in pending state
@@ -71,7 +71,7 @@ https://drive.google.com/open?id=1eYrSunmXQ3JFSQ5qm3pHYvaAxsq3LENT
       6. Razorpay gets the pending response, and notes that the refund was added to AmazonPay's request queue, and changes the internal refund status to INITIATED
       7. To get the status of the refund (processed, failed) from AmazonPay, we must go via the IPN flow, or the Verify Refund API
     ```
-    
+
 - Verify Refund API
     - `Razorpay` will get the status of the refund via this API and not via the IPN system
     ```

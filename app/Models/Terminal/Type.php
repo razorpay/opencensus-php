@@ -46,6 +46,9 @@ class Type
     // Terminal to be used for direct settlements
     const DIRECT_SETTLEMENT             = 'direct_settlement';
 
+    // Terminal to be used for specific product line - business banking during bank transfer payments
+    const BUSINESS_BANKING              = 'business_banking';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -61,6 +64,7 @@ class Type
         self::DIRECT_SETTLEMENT,
         self::NUMERIC_ACCOUNT,
         self::ALPHA_NUMERIC_ACCOUNT,
+        self::BUSINESS_BANKING,
     ];
 
     protected static $bitPosition = [
@@ -78,6 +82,7 @@ class Type
         self::DIRECT_SETTLEMENT             => 12,
         self::NUMERIC_ACCOUNT               => 13,
         self::ALPHA_NUMERIC_ACCOUNT         => 14,
+        self::BUSINESS_BANKING              => 15,
     ];
 
     /**
@@ -158,4 +163,3 @@ class Type
         return $hex;
     }
 }
-

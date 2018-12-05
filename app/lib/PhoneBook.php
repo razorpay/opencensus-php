@@ -3,6 +3,7 @@
 namespace Lib;
 
 use App;
+use libphonenumber\PhoneNumber;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\NumberParseException;
 
@@ -192,5 +193,14 @@ class PhoneBook
         }
 
         return $this->getRawInput();
+    }
+
+    /**
+     * Gets underlying PhoneNumber object.
+     * @return PhoneNumber|null
+     */
+    public function getPhoneNumber()
+    {
+        return $this->phoneNumber;
     }
 }

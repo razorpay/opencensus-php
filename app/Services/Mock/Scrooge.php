@@ -64,7 +64,7 @@ class Scrooge extends BaseScrooge
               ]}',true);
     }
 
-    public function bulkUpdateRefundStatus(array $input): array
+    public function bulkUpdateRefundStatus(array $input, bool $throwExceptionOnFailure = false): array
     {
         return json_decode('{
                "errors": [{

@@ -315,7 +315,7 @@ class Gateway extends Base\Gateway
     {
         return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
     }
-    
+
     protected function checkGatewayStatus(array $content)
     {
         if ((empty($content[ResponseFields::PAID]) === true) or

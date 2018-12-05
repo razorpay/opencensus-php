@@ -34,6 +34,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
     const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
 
+    const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
@@ -159,6 +160,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INACTIVE                           = 'Wallet account associated is inactive.';
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Payment failed due to wallet authentication failure';
     const BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE                       = 'Payment failed due to insufficient balance in wallet';
+    const BAD_REQUEST_WALLET_PAYOUT_INSUFFICIENT_BALANCE                        = 'Payout failed due to insufficient balance in wallet';
     const BAD_REQUEST_PAYMENT_WALLET_CONTACT_PAYUMONEY                          = 'Payment failed. Please contact care@payumoney.com using your registered email';
     const BAD_REQUEST_AIRTEL_MONEY_ACCOUNT_BLOCKED                              = 'Payment failed as airtel money account has been blocked. Please reset mPIN or call 400 for assistance';
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
@@ -180,6 +182,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
+    const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
@@ -257,6 +260,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
+    const BAD_REQUEST_INVALID_SUBCATEGORY                                       = 'The business subcategory is not valid';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
@@ -331,6 +335,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
     const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
     const BAD_REQUEST_PAYMENT_ALREADY_ACKNOWLEDGED                              = 'Payment has already been acknowledged.';
+    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                = 'Payment failed';
+    const BAD_REQUEST_PURCHASE_ERROR                                            = 'Payment failed';
+    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = 'Payment failed';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
@@ -441,6 +448,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TERMINAL_NO_GATEWAY_MAPPING_FOR_DIRECTSETTLEMENT          = 'No terminal gateway mapping for direct settlement';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
     const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
+    const BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY                          = 'This operation is not supported for the given business subcategory';
 
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
     const BAD_REQUEST_INVALID_COUNTRY                                           = 'Invalid country code/name passed';
@@ -482,6 +490,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';
+    const BAD_REQUEST_SETTLEMENT_VERIFICATION_IN_PROGRESS                       = 'Request failed because another settlement verification operation in progress';
 
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                           = 'Invalid Invoice Number.';
 
@@ -632,7 +641,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
 
     const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
-    const BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH                      = 'Payment amount provided does not match amount expected for the payment link';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
@@ -647,6 +655,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
     const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
@@ -660,10 +669,12 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
+    const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
+    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
@@ -677,6 +688,51 @@ class PublicErrorDescription
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                               = 'Payout amount including fees should be greater than Re 1';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                     = 'Can not refund chargeback transaction';
+    const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                  = 'Multiple refunds found at gateway';
+    const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
+    const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
+  
+    const BAD_REQUEST_PAYMENT_REDIRECT_INVALID_AUTH                             = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS                         = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT                                   = 'Payment already processed';
+
+    const BAD_REQUEST_SETTLEMENT_ANOTHER_QUEUE_OPERATION_IN_PROGRESS            = 'Request failed because another settlement queue operation in progress';
+    const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
+
+    // ---------------------- UPI (NPCI) Error codes -------------------------------
+    const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';
+    const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Banking system is offline, please try after sometime.';
+    const GATEWAY_ERROR_INACTIVE_DORMANT_BENEFICIARY_ACCOUNT                        = 'Beneficiary account is inactive or dormant';
+    const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_DOES_NOT_EXIST                          = 'Beneficiary account does not exist';
+    const GATEWAY_ERROR_INVALID_BENEFICIARY_CREDENTIALS                             = 'Beneficiary credentials are invalid';
+    const GATEWAY_ERROR_BENEFICIARY_ACCOUNT_BLOCKED                                 = 'Beneficiary account is blocked';
+    const GATEWAY_ERROR_BENEFICIARY_COMPLIANCE_VIOLATION                            = 'Transaction cannot be completed. Compliance violation on beneficiary side';
+    const GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED                       = 'Transaction not permitted to cardholder on beneficiary side';
+    const GATEWAY_ERROR_BENEFICIARY_EXPIRED_CARD                                    = 'Transaction is declined at beneficiary side due to Expired card';
+    const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
+    const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
+    const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
+    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
+    const GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND                      = 'No original debit or credit request found';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
+    const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
+    const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by bank';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_BENEFICARY             = 'Suspected fraud or transaction is declined based on risk score by bank';
+    const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'Unable to process credit from bank\'s pool or bgl account';
+    const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate reference number found for the transaction on bank side.';
+    const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
+
+    const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
+    const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';
+    const BAD_REQUEST_EXPIRED_VPA                                                   = 'Payment failed because VPA is marked as Expired';
+    const BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT                                      = 'Payment failed because Account linked to VPA is invalid';
+    const BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED                          = 'Payment failed because Transaction frequency limit has exceeded';
+    const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'Payment failed because Transaction amount limit has exceeded';
+    const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
+    const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
+    const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';
+    const BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA                                    = 'Invalid VPA. Please enter a valid Virtual Payment Address';
 }

@@ -4,10 +4,15 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
+    const MERCHANT_ID    = 'merchant_id';
+    const TYPE           = 'type';
+    const CURRENCY       = 'currency';
+    const NAME           = 'name';
     const BALANCE        = 'balance';
     const ON_HOLD        = 'on_hold';
     const AMOUNT_CREDITS = 'credits';
@@ -20,6 +25,10 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::MERCHANT_ID,
+        self::TYPE,
+        self::CURRENCY,
+        self::NAME,
         self::BALANCE,
         self::AMOUNT_CREDITS,
         self::FEE_CREDITS,
@@ -28,7 +37,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'balance';
 
-    protected $generateIdOnCreate = false;
+    protected $generateIdOnCreate = true;
 
     protected $revisionEnabled = true;
 
@@ -88,17 +97,50 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_CREDITS);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function isTypePrimary(): bool
+    {
+        return $this->getType() === Type::PRIMARY;
+    }
+
+    public function isTypeBanking(): bool
+    {
+        return $this->getType() === Type::BANKING;
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', 'id');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public static function buildFromMerchant($merchant)
     {
+        // TODO need to build it via input
         $balance = new static;
 
         $balance->merchant()->associate($merchant);
         $balance->setAttribute(self::BALANCE, 0);
+        $balance->setAttribute(self::CURRENCY, Currency::INR);
+        $balance->setAttribute(self::TYPE, Type::PRIMARY);
 
         return $balance;
     }

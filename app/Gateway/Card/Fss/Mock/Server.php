@@ -29,6 +29,8 @@ class Server extends Base\Mock\Server
 
         $requestData = $this->getDecryptedData($input[Fields::TRAN_DATA], $acquirer);
 
+        $this->request($requestData, 'authorize_decrypted');
+
         // Validating Transaction data which we sent to server after encrypting.
         $this->validateActionInput($requestData, 'authTransactionData');
 
@@ -41,7 +43,7 @@ class Server extends Base\Mock\Server
             Entity::REF                         => $this->generateId(9),
             Fields::AMOUNT                      => $requestData[Fields::AMOUNT],
             Entity::AUTH                        => $this->generateId(8),
-            Entity::POST_DATE                   => "null",
+            Entity::POST_DATE                   => 'null',
             Fields::RESULT                      => Fss\Status::CAPTURED,
         ];
 
@@ -95,7 +97,7 @@ class Server extends Base\Mock\Server
         $input = (array) simplexml_load_string($input);
 
         $responseData = [
-            Fields::RESULT         => Fss\Status::SUCCESS,
+            Fields::RESULT         => '',
             Fields::AMOUNT         => $input[Fields::AMOUNT],
             Fields::TRACK_ID       => $input[Fields::TRACK_ID],
             Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],
@@ -147,7 +149,7 @@ class Server extends Base\Mock\Server
 
         $secretKey = $this->getGatewaySecret($acquirer);
 
-        $encryptedText = "";
+        $encryptedText = '';
 
         switch ($acquirer)
         {
@@ -178,7 +180,7 @@ class Server extends Base\Mock\Server
     {
         $secretKey = $this->getGatewaySecret($acquirer);
 
-        $decryptedString = "";
+        $decryptedString = '';
 
         switch ($acquirer)
         {

@@ -51,11 +51,12 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function findByIinAndIssuer(int $iin, string $issuer)
+    public function findByIinWithIssuerAndType(int $iin, string $issuer, string $type)
     {
         $iin = $this->newQuery()
                     ->where(Entity::IIN, $iin)
                     ->where(Entity::ISSUER, $issuer)
+                    ->where(Entity::TYPE, $type)
                     ->first();
 
         return $iin;

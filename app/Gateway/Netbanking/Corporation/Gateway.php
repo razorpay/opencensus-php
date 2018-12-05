@@ -105,10 +105,12 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestDataAndCreateGatewayPayment($input)
     {
+        $merchantName = $input['merchant']->getBillingLabel();
+
         $data = [
             // Setting this as the merchant code shared with us
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
-            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
+            RequestFields::CUSTOMER_ID          => $merchantName,
             RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
@@ -310,13 +312,11 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $bankRefNumber = '';
-
         if ($this->action === Action::VERIFY)
         {
             $gatewayPayment = $verify->payment;
 
-            $bankRefNumber = $gatewayPayment['bank_payment_id'];
+            $bankRefNumber = $gatewayPayment['bank_payment_id'] ?? '';
         }
         elseif ($this->action === Action::CALLBACK)
         {
@@ -379,6 +379,38 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Verify helper methods end --------------------------
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === ResponseCodeMap::SUCCESS_CODE))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                null,
+                $input);
+        }
+
+        $attributes = [
+            Base\Entity::STATUS          => ResponseCodeMap::SUCCESS_CODE,
+            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     // -------------------------- General helper methods --------------------------
 
     public function getEncryptor($secret = null)
@@ -438,6 +470,15 @@ class Gateway extends Base\Gateway
     protected function getLiveSecret()
     {
         return $this->config['live_hash_secret'];
+    }
+
+    /**
+     * Since $this->mode is not set when calling preProcessServerCallback
+     * we can not assert the mode to test here.
+     */
+    protected function getTestSecret()
+    {
+        return $this->config['test_hash_secret'];
     }
 
     // -------------------------- General helper methods end ----------------------

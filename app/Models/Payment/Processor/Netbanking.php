@@ -342,6 +342,11 @@ class Netbanking
                 IFSC::CORP,
             ]
         ],
+        Gateway::NETBANKING_EQUITAS => [
+            'retail' => [
+                IFSC::ESFB
+            ]
+        ],
         Gateway::NETBANKING_AIRTEL => [
             'retail' => [
                 IFSC::AIRP,
@@ -359,8 +364,11 @@ class Netbanking
             'retail' => [
                 IFSC::INDB,
             ],
+            'tpv' => [
+                IFSC::INDB,
+            ],
         ],
-        Gateway::NETBANKING_KOTAK =>[
+        Gateway::NETBANKING_KOTAK => [
             'retail' => [
                 IFSC::KKBK
             ],
@@ -384,11 +392,19 @@ class Netbanking
         Gateway::NETBANKING_CSB => [
             'retail' => [
                 IFSC::CSBK,
-            ]
+            ],
+            'tpv' => [
+                IFSC::CSBK,
+            ],
         ],
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
+            ]
+        ],
+        Gateway::NETBANKING_EQUITAS => [
+            'retail' => [
+                IFSC::ESFB,
             ]
         ],
         Gateway::NETBANKING_SBI => [

@@ -19,4 +19,3 @@ class Fetch extends BaseFetch
         ],
     ];
 }
-

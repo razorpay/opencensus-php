@@ -2,6 +2,7 @@ box:
   id: razorpay/pithos:rzp-php7.1
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
+command-timeout: 35
 dev:
   steps:
     - internal/shell:
@@ -54,7 +55,7 @@ build:
           overwrite: true
           content: |
               zend.assertions=1
-              assert.exception=On
+              assert.exception=1
       - script:
           name: Composer set-up
           code: |

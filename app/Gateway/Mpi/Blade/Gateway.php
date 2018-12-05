@@ -73,7 +73,12 @@ class Gateway extends Base\Gateway
      */
     public function authenticate(array $input)
     {
-        // TODO: Add card range cache
+        $runEnrollmentCheck = $this->runEnrollmentCheckForCard($input);
+
+        if ($runEnrollmentCheck === false)
+        {
+            return null;
+        }
 
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
@@ -83,6 +88,18 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($attributes, $input);
 
         return $this->decideAuthStepAfterEnroll($input, $response);
+    }
+
+    protected function runEnrollmentCheckForCard(array $input)
+    {
+        // We will skip the enrollment check for all the US issued cards
+        if (($input['card']['country'] === 'US') and
+            ($input['merchant']->isFeatureEnabled('skip_international_auth') === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function decideAuthStepAfterEnroll(array $input, array $response)
@@ -99,6 +116,25 @@ class Gateway extends Base\Gateway
 
             case Base\Enrolled::N:
                 return null;
+
+            case Base\Enrolled::U:
+
+                if ($input['card'][Card\Entity::INTERNATIONAL] === true)
+                {
+                    return null;
+                }
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,
+                    $enrolled,
+                    'Invalid enrollment response',
+                    [
+                        'enrollment_status' => $enrolled,
+                        'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
+                        'iin' => $input['card'][Card\Entity::IIN]
+                    ],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
 
             default:
                 throw new Exception\GatewayErrorException(
