@@ -53,7 +53,7 @@ const gateWayOptions = [
   'Atom',
   'CardFssBob',
   'CardFssHdfc',
-  'UpiMindgate',
+  'UpiHdfc',
 ];
 
 const optionValueMap = {
