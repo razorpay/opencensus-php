@@ -1803,7 +1803,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
