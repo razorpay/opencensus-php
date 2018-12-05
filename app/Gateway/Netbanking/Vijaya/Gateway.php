@@ -218,6 +218,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
+        // Saving it as false as verify does not return amount
         $verify->amountMismatch = false;
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
