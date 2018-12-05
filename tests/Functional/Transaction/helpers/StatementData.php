@@ -3,7 +3,7 @@
 return [
     'testFetchStatements' => [
         'request' => [
-            'url' => '/statements',
+            'url' => '/transactions',
             'method' => 'GET'
         ],
         'response' => [

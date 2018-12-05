@@ -969,8 +969,8 @@ final class Route
         'beneficiary_delete'                       => ['delete',   'beneficiaries/{id}',                             'BeneficiaryController@delete'                                      ],
 
         // statements
-        'transaction_statement_fetch_multiple'     => ['get',      'statements/transaction/{id}',                    'StatementController@get'                                         ],
-        'transaction_statement_fetch'              => ['get',      'statements',                                     'StatementController@list'                                 ],
+        'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
     ];
 
     public static $public = [
@@ -1523,6 +1523,8 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple',
     ];
 
     // These will run on internal auth with the assurance

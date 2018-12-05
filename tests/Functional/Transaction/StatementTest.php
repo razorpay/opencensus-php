@@ -47,7 +47,7 @@ class StatementTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/statements/transaction/' . $payout['id'];
+        $testData['request']['url'] = '/transactions/' . $payout['id'];
         $testData['response']['content'] = $payout;
 
         $this->ba->proxyAuth();
@@ -66,7 +66,7 @@ class StatementTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/statements/transaction/' . $bankTransfer['id'];
+        $testData['request']['url'] = '/transactions/' . $bankTransfer['id'];
         $testData['response']['content'] = $bankTransfer;
 
         $this->ba->proxyAuth();
@@ -110,8 +110,8 @@ class StatementTest extends TestCase
         $customer = $payout->customer;
         $destination = $payout->destination;
 
-        $payoutEntry['id']        = 'stmt_' . $txn->getId();
-        $payoutEntry['entity']    = 'statement';
+        $payoutEntry['id']        = 'txn_' . $txn->getId();
+        $payoutEntry['entity']    = 'transaction';
         $payoutEntry['source_id'] = $payout->getPublicId();
         $payoutEntry['UTR']       = $payout->getUtr();
         $payoutEntry['amount']    = $txn->getAmount();
@@ -159,8 +159,8 @@ class StatementTest extends TestCase
     {
         $txn = $bankTransferEntity->transaction;
 
-        $btEntry['id'] = 'stmt_' . $txn->getId();
-        $btEntry['entity'] = 'statement';
+        $btEntry['id'] = 'txn_' . $txn->getId();
+        $btEntry['entity'] = 'transaction';
         $btEntry['source_id'] = $bankTransferEntity->getPublicId();
         $btEntry['UTR'] = $bankTransferEntity->getUtr();
         $btEntry['amount'] = $txn->getAmount();

@@ -24,13 +24,13 @@ class Entity extends Base\PublicEntity
     const SOURCE     = 'source';
     const CUSTOMER   = 'customer';
     const TYPE       = 'type';
-    const UTR        = 'UTR';
+    const UTR        = 'utr';
     const SOURCE_ID  = 'source_id';
     const ENTITY     = 'entity';
 
-    protected $entity = 'statement';
+    protected $entity = 'transaction';
 
-    protected static $sign = 'stmt';
+    protected static $sign = 'txn';
 
     protected $embeddedRelations = [
         self::SOURCE,
@@ -40,7 +40,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::SOURCE_ID,
-        self::UTR,
         self::AMOUNT,
         self::CREDIT,
         self::DEBIT,
@@ -53,7 +52,6 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::UTR,
         self::SOURCE_ID,
         self::SOURCE,
         self::ENTITY,
@@ -105,11 +103,6 @@ class Entity extends Base\PublicEntity
         }
 
         unset($array['source']);
-    }
-
-    public function setPublicUtrAttribute(array & $array)
-    {
-        $array[self::UTR] = $this->source->getUtr();
     }
 
     public function setPublicSourceIdAttribute(array & $array)
