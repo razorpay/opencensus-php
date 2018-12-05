@@ -19,7 +19,7 @@ class ErrorCodes extends Base\ErrorCodes\Upi\ErrorCodes
 
     public static function getErrorCode($content, $action = Base\Action::REFUND)
     {
-        if ($action === Base\Action::REFUND)
+        if ($action === Base\Action::CALLBACK)
         {
             self::$errorCodeMap = array_merge(
                 self::$errorCodeMap,
