@@ -14,7 +14,8 @@ trait RequestTrait
 
         $request['headers'] = [
             'X-IBM-Client-Id'       => $this->getClientId(),
-            'X-IBM-Client-Secret'   => $this->getClientSecret()
+            'X-IBM-Client-Secret'   => $this->getClientSecret(),
+            'Content-Type'          => 'application/json',
         ];
 
         $request['content'] = json_encode($request['content']);

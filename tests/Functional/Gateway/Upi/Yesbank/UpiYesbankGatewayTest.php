@@ -224,19 +224,9 @@ class UpiYesbankGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertTrue($response['success']);
+        $this->assertFalse($response['success']);
 
         $gatewayEntity = $this->getLastEntity('upi', true);
-
-        $this->assertNotNull($gatewayEntity['vpa']);
-        $this->assertNotNull($gatewayEntity['received']);
-        $this->assertNotNull($gatewayEntity['merchant_reference']);
-        $this->assertNotNull($gatewayEntity['gateway_payment_id']);
-        $this->assertEquals('RCC', $gatewayEntity['status_code']);
-        $this->assertNotNull($gatewayEntity['npci_txn_id']);
-        $this->assertNotNull($gatewayEntity['npci_reference_id']);
-        $this->assertEquals('pay', $gatewayEntity['type']);
-        $this->assertEquals($gatewayEntity['action'], 'payout');
     }
 
     public function testPayoutVpaVerifyFailed()

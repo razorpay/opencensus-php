@@ -75,9 +75,12 @@ class Gateway extends Mindgate\Gateway
 
     public function payout(array $input)
     {
-        parent::action($input, Action::PAYOUT);
-
         $request = $this->getPayOutRequest($input);
+
+        $input['payment']['id'] = $input[Fields::GATEWAY_INPUT][Fields::REF_ID];
+        $input['payment']['amount'] = $input[Fields::GATEWAY_INPUT][Fields::AMOUNT];
+
+        parent::action($input, Action::PAYOUT);
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::PAYOUT,Base\Type::PAY);
 
@@ -96,10 +99,6 @@ class Gateway extends Mindgate\Gateway
 
         $traceRequest['decryptedContent'] = $decryptedContent;
 
-        $traceRequest['headers'] = $request['headers'] = [
-            'Content-Type' => 'application/json',
-        ];
-
         $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
@@ -115,6 +114,8 @@ class Gateway extends Mindgate\Gateway
 
     public function payoutVerify(array $input)
     {
+        $input['payment']['id'] = $input[Fields::GATEWAY_INPUT][Fields::REF_ID];
+
         parent::action($input, Action::PAYOUT_VERIFY);
 
         $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
@@ -122,9 +123,9 @@ class Gateway extends Mindgate\Gateway
         if ($gatewayEntity === null)
         {
             $response = [
-                Fields::SUCCESS => false,
-                Fields::ERROR_MESSAGE => ResponseMessage::NO_PAYOUT_FOR_REF_ID,
-                Fields::RRN => $input[Fields::GATEWAY_INPUT][Fields::REF_ID]
+                Fields::SUCCESS        => false,
+                Fields::ERROR_MESSAGE  => ResponseMessage::NO_PAYOUT_FOR_REF_ID,
+                Fields::RRN            => $input[Fields::GATEWAY_INPUT][Fields::REF_ID]
             ];
 
             return $response;
@@ -145,10 +146,6 @@ class Gateway extends Mindgate\Gateway
             $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'verify_payout');
 
             $traceRequest['decryptedContent'] = $decryptedContent;
-
-            $traceRequest['headers'] = $request['headers'] = [
-                'Content-Type' => 'application/json'
-            ];
 
             $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
 
@@ -178,7 +175,7 @@ class Gateway extends Mindgate\Gateway
             }
             catch(\Exception $e)
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::RECOVERABLE_EXCEPTION);
+                $this->trace->traceException($e);
 
                 $error = $e->getError()->getAttributes();
 
@@ -293,33 +290,10 @@ class Gateway extends Mindgate\Gateway
         $this->trace->info(
             $traceCode,
             [
-                'input'     => $input,
-                'request'   => $request,
-                'gateway'   => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request,
+                'gateway'    => $this->gateway,
             ]);
-    }
-
-    protected function createGatewayPaymentEntity($attributes, $action = null)
-    {
-        $attr = $this->getMappedAttributes($attributes);
-
-        $entity = $this->getNewGatewayPaymentEntity();
-
-        $action = $action ?? $this->action;
-
-        $entity->setAction($action);
-
-        $entity->setAcquirer(self::ACQUIRER);
-
-        $entity->setGateway($this->gateway);
-
-        $entity->generate($attr);
-
-        $entity->fill($attr);
-
-        $this->repo->saveOrFail($entity);
-
-        return $entity;
     }
 
     protected function parseGatewayResponse($responseBody, $type = Action::PAYOUT)
@@ -377,7 +351,16 @@ class Gateway extends Mindgate\Gateway
                 $attributes[Fields::STATUSCODE] = $responseArray[Fields::TIMED_OUT_TXN_STATUS];
 
                 $this->updateGatewayPaymentEntity($gatewayEntity, $attributes);
-                break;
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                    null,
+                    null,
+                    [
+                        'gateway'  => $this->gateway,
+                        'response' => $responseArray,
+                    ]
+                );
 
             default:
                 $gatewayErrorCode = $responseArray[Fields::RESPCODE];
@@ -440,15 +423,15 @@ class Gateway extends Mindgate\Gateway
                 Fields::RRN             => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
             ];
         }
-        catch (Exception $exception)
+        catch (\Exception $exception)
         {
-            $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
+            $this->trace->traceException($exception);
 
             $error = $exception->getError()->getAttributes();
 
             $response = [
                 Fields::SUCCESS        => false,
-                Fields::ERROR_MESSAGE  => $error['gateway_error_desc'],
+                Fields::ERROR_MESSAGE  => $error['gateway_error_desc'] ?? '',
                 Fields::RRN            => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
             ];
         }
