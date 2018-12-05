@@ -39,18 +39,6 @@ class EmandateDebitReconciliate extends PaymentReconciliate
         }
     }
 
-    /**
-     * We can not use Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS here because
-     * for the same gateway, based on method, we'll have to segregate this list.
-     * For now, setting force autorize to true for all the emandate debit cases.
-     *
-     * @param Payment\Entity $payment
-     */
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
-    }
-
     protected function getRowDetailsStructured($row)
     {
         $rowDetails = parent::getRowDetailsStructured($row);
