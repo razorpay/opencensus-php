@@ -47,6 +47,6 @@ class Vijaya extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . $date . '01'; //TODO verify this
+        return self::FILE_NAME . $date . '01';
     }
 }
