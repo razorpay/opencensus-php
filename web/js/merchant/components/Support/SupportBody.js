@@ -53,7 +53,7 @@ export default class SupportBody extends Component {
         {shouldDisable && (
           <Banner>
             <span>
-              Our chat and call support is currently offline, kindly{' '}
+              Our chat and call support are currently offline, kindly{' '}
               <span
                 class="btn-link"
                 onClick={() => {
@@ -96,6 +96,7 @@ export default class SupportBody extends Component {
               </li>
             ) : null}
             {window.rzp_user &&
+            window.rzp_user.experiments &&
             window.rzp_user.experiments.support_call &&
             window.rzp_user.experiments.support_call.result === 'on' ? (
               <li

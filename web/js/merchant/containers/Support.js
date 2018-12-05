@@ -45,6 +45,20 @@ export default class Support extends Component {
       window.Smooch.on('unreadCount', unreadCount => {
         this.setState({ notifyCount: unreadCount });
       });
+
+      window.Smooch.on('ready', () => {
+        try {
+          // hide smooch's iframe messenger button when a notifcation arrives
+          let smoochIframe = document.getElementById('web-messenger-container');
+
+          smoochIframe.contentWindow.document.getElementById(
+            'messenger-button'
+          ).style.display =
+            'none';
+        } catch (err) {
+          console.log('Failed to hide smooch icon: ', err);
+        }
+      });
     }
   };
 
