@@ -4,10 +4,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
-    'testNetbankingCorpRefundFile' => [
+    'testNetbankingCorpcombinedFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund',
+                'type'    => 'combined',
                 'targets' => ['corporation'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
@@ -27,7 +27,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
-                        'type'                => 'refund',
+                        'type'                => 'combined',
                         'target'              => 'corporation',
                         'entity'              => 'gateway_file',
                         'admin'               => true
