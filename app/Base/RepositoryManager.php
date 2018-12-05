@@ -26,6 +26,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Feature\Repository              $feature
  * @property Models\Order\Repository                $order
  * @property Models\Transaction\Repository          $transaction
+ * @property Models\Vpa\Repository                  $vpa
  * @property Models\Contact\Repository              $contact
  */
 class RepositoryManager extends Illuminate\Support\Manager

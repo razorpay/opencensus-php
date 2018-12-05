@@ -11,11 +11,9 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-
-        $this->core = new Customer\Core;
     }
 
-    public function create(string $customerId, array $input)
+    public function createForCustomer(string $customerId, array $input)
     {
         $this->trace->info(
             TraceCode::VPA_CREATE_FOR_CUSTOMER_REQUEST,
@@ -26,7 +24,7 @@ class Service extends Base\Service
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
 
-        $vpa = (new Core)->createVpa($input, $this->merchant, $customer);
+        $vpa = (new Core)->createVpaForCustomer($input, $this->merchant, $customer);
 
         $this->trace->info(TraceCode::VPA_CREATED, ['vpa' => $vpa->toArray()]);
 

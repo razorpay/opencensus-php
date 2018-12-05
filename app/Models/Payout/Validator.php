@@ -12,6 +12,12 @@ use RZP\Models\FundTransfer\Attempt;
 
 class Validator extends Base\Validator
 {
+    //
+    // This is required for build. Currently, build does not
+    // accept ruleName as a parameter. Hence, this list needs
+    // to contain the master attributes. We run a different
+    // validation for the actual operation.
+    //
     protected static $createRules = [
         Entity::DESTINATION     => 'required|public_id',
         Entity::PURPOSE         => 'sometimes|string',
@@ -140,11 +146,7 @@ class Validator extends Base\Validator
 
         $card = $payment->card;
 
-        $payoutMethod      = $input[Entity::METHOD];
-        $destinationEntity = Method::getEntityName($payoutMethod);
-
-        if (($card->getType() === Card\Type::CREDIT) and
-            ($destinationEntity === E::BANK_ACCOUNT))
+        if ($card->getType() === Card\Type::CREDIT)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT);

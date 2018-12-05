@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -446,6 +447,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
             'bank_transfer'             => BankTransfer\Entity::class,
 
