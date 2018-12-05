@@ -128,7 +128,7 @@ class NetbankingVijayaCombinedFileTest extends TestCase
     {
         $date = Carbon::today(Timezone::IST)->format('dmY');
 
-        $name = 'RazorPay-MIS-' . $date . '.xlsx';
+        $name = 'RazorPay-MIS-' . $date . '.xls';
 
         $this->assertEquals($claimsFileData['name'], $name);
     }
