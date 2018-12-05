@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Order;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Offer;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Bank\BankCodes;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -17,6 +19,7 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      * @param boolean         $partialPayment
+     *
      *
      * @return Entity
      * @throws Exception\BadRequestValidationFailureException
@@ -52,6 +55,15 @@ class Core extends Base\Core
 
         $order = $this->repo->transaction(function() use ($order, $input)
         {
+            $ba = $this->createAndAssociateBankAccount($order, $input);
+
+            if (empty($ba) === false)
+            {
+                $order->setAccountNumber($ba->getAccountNumber());
+
+                $order->setPayerName($ba->getBeneficiaryName());
+            }
+
             $this->associateOffers($order, $input);
 
             $this->repo->saveOrFail($order);
@@ -65,6 +77,20 @@ class Core extends Base\Core
         );
 
         return $order;
+    }
+
+    protected function createAndAssociateBankAccount(Entity $order, array $input)
+    {
+        if (isset($input[Entity::BANK_ACCOUNT]) === false)
+        {
+            return;
+        }
+
+        return (new BankAccount\Core)->createBankAccountForSource(
+            $input[Entity::BANK_ACCOUNT],
+            $order->merchant,
+            $order,
+            'addTpvBankAccount');
     }
 
     protected function associateOffers(Entity $order, array $input)
@@ -129,9 +155,12 @@ class Core extends Base\Core
 
         if ($merchant->isTPVRequired() === true)
         {
+            // TODO: Change this after creating bank account entities for all the previous TPV orders
+            $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
+
             $data += [
                 Entity::BANK           => $order->getBank(),
-                Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
+                Entity::ACCOUNT_NUMBER => $this->getMaskedAccountNumber($accountNumber),
             ];
 
             $orderMethod = $order->getMethod();
@@ -149,6 +178,42 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    public function getMaskedAccountNumber($accountNumber)
+    {
+        $accountNumberLength = strlen($accountNumber);
+
+        $last2Digits = substr($accountNumber, -2);
+
+        $formattedNumber = str_repeat('X', $accountNumberLength - 2) . $last2Digits;
+
+        return $formattedNumber;
+    }
+
+    public function getAccountForRefund(Entity $order)
+    {
+        $payerAccount = $order->bankAccount;
+
+        // TODO: Change this after creating bank account entities for all the previous TPV orders
+        if (empty($payerAccount) === true)
+        {
+            $ifscCode = BankCodes::getIfscForBankCode($order->getBank());
+
+            $input[BankAccount\Entity::IFSC_CODE] = $ifscCode;
+            $input[BankAccount\Entity::ACCOUNT_NUMBER] = $order->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME] = $order->getPayerName();
+        }
+        else
+        {
+            $input = [
+                BankAccount\Entity::IFSC_CODE        => $payerAccount->getIfscCode(),
+                BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
+                BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
+            ];
+        }
+
+        return $input;
     }
 
     /**

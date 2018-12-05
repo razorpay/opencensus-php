@@ -250,7 +250,7 @@ class Core extends Base\Core
     }
 
 
-    public function createBankAccountForSource($input, $merchant, $source, $sourceType, $addRule)
+    public function createBankAccountForSource(array $input, Merchant\Entity $merchant, Base\PublicEntity $source, string $addRule)
     {
         $ba = new BankAccount\Entity;
 
@@ -258,7 +258,7 @@ class Core extends Base\Core
 
         $ba->merchant()->associate($merchant);
 
-        $ba->associateSource($source, $sourceType);
+        $ba->associateSource($source);
 
         $this->repo->saveOrFail($ba);
 
@@ -295,7 +295,7 @@ class Core extends Base\Core
 
         $ba = $ba->build($input);
 
-        $ba->getValidator()->validateIfscCode($mode);
+        $ba->getValidator()->validateIfscCode($input, $mode);
 
         $ba->merchant()->associate($merchant);
 
