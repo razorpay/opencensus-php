@@ -101,6 +101,40 @@ class BladeGatewayTest extends TestCase
         $this->assertNull($payment['approval_code']);
     }
 
+    public function testEnrolledUSCardWithSkipInternationalAuth()
+    {
+        $this->fixtures->create('iin', [
+            'iin' => 556763,
+            'network' => 'MasterCard',
+            'type' => 'credit',
+            'country' => 'US'
+        ]);
+
+        $this->fixtures->merchant->addFeatures('skip_international_auth');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(1, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNotNull($payment['transaction_id']);
+        $this->assertEquals('1000BladeTrmnl', $payment['terminal_id']);
+        $this->assertEquals('not_applicable', $payment['two_factor_auth']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNull($mpi);
+    }
+
     public function testInvalidMessage()
     {
         $this->runRequestResponseFlow(
@@ -311,12 +345,12 @@ class BladeGatewayTest extends TestCase
     {
         $payment = $this->defaultAuthPayment([
             'card' => [
-                'number'       => CardNumber::UNKNOWN_ENROLLED,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card',
-                'international'=> true
+                'number'        => CardNumber::UNKNOWN_ENROLLED,
+                'expiry_month'  => '02',
+                'expiry_year'   => '21',
+                'cvv'           => 123,
+                'name'          => 'Test Card',
+                'international' => true
             ]
         ]);
 

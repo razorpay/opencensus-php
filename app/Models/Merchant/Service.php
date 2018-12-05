@@ -19,6 +19,7 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -30,6 +31,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorDescription;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -335,7 +337,9 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -422,6 +426,7 @@ class Service extends Base\Service
             ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
+            // TODO need to discuss this
             $balance[Balance\Entity::ID]      = $merchantId;
             $balance[Balance\Entity::BALANCE] = 0;
 
@@ -492,6 +497,17 @@ class Service extends Base\Service
         $this->app['workflow']
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
+        {
+            // removing diwali_promotional_plan
+            (new Feature\Service)->deleteEntityFeature(
+                'accounts',
+                $merchant->getId(),
+                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
+                [Feature\Entity::SHOULD_SYNC => true]
+            );
+        }
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
@@ -2417,7 +2433,9 @@ class Service extends Base\Service
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -2544,5 +2562,86 @@ class Service extends Base\Service
         }
 
         return $this->app->myoperator->submitSupportCallRequest($input);
+    }
+
+    public function bulkRegenerateBalanceIds(array $input)
+    {
+        $limit = (int) ($input['limit'] ?? 1000);
+
+        $balances = $this->repo->balance->getBalances($limit);
+
+        $failed = 0;
+        $failedIds = [];
+        $success = 0;
+        $total = count($balances);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_BACKFILL_REQUEST,
+            [
+                'merchant_ids' => $balances->pluck(Entity::MERCHANT_ID)->toArray(),
+                'total'        => $total,
+            ]);
+
+        foreach ($balances as $balance)
+        {
+            try
+            {
+                $id = $balance->generateUniqueIdFromTimestamp($balance->getCreatedAt());
+
+                $balance->setAttribute(Entity::ID, $id);
+
+                $balance->saveOrFail();
+
+                $success++;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_BALANCE_BACKFILL_ERROR,
+                    [
+                        'id' => $balance->getMerchantId(),
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $balance->getMerchantId();
+            }
+        }
+
+        return [
+            'total' => $total,
+            'success' => $success,
+            'failed' => $failed,
+            'failed_ids' => $failedIds,
+        ];
+    }
+
+    /**
+     * Checks if sbi emi is enabled on checkout for a merchant.
+     *
+     * Fetches the terminal for a merchant with gateway:`emi_sbi`
+     * If null is returned
+     *      There is no SBI MID stored for this merchant.
+     *      This merchant has not been onboarded yet. return false
+     *
+     * Else if there's a emi_sbi terminal which is enabled. return true.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function isSbiEmiEnabled()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $terminal = $this->repo->terminal->getByMerchantIdAndGateway($merchantId, Payment\Gateway::EMI_SBI);
+
+        if ((empty($terminal) === false) and
+            ($terminal->isEnabled() === true))
+        {
+            return true;
+        }
+        return false;
     }
 }

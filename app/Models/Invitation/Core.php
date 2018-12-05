@@ -112,7 +112,8 @@ class Core extends Base\Core
         $updateParams = [
             Entity::ACTION           => User\Action::ATTACH,
             User\Entity::MERCHANT_ID => $invitation->getMerchantId(),
-            User\Entity::ROLE        => $invitation->getRole()
+            User\Entity::ROLE        => $invitation->getRole(),
+            Entity::PRODUCT          => $invitation->getProduct(),
         ];
 
         $user = $this->repo->user->findOrFailPublic($userId);

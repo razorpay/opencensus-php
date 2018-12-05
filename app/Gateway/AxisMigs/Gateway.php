@@ -915,16 +915,7 @@ class Gateway extends Base\Gateway
 
         $this->paymentId = $input['payment']['id'];
 
-        $shouldRetry = function ($e)
-        {
-            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
-        };
-
-        $response = $this->retryHandler(
-            [$this, 'postRequest'],
-            [$request],
-            $shouldRetry,
-            2);
+        $response = $this->postRequest($request);
 
         return $response;
     }

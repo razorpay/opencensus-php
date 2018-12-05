@@ -74,57 +74,6 @@ class UpiController extends Controller
         return ApiResponse::json($json);
     }
 
-    public function getVpas()
-    {
-        $data = (new Upi\Core)->getVpas();
-
-        return ApiResponse::json($data);
-    }
-
-    public function getVpa(string $id)
-    {
-        $data = (new Upi\Core)->getVpa($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getVpaPrivate(string $id)
-    {
-        $data = (new Upi\Core)->getVpaPrivate($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function deleteVpa($id)
-    {
-        $data = (new Upi\Core)->deleteVpa($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function editVpa($id)
-    {
-        $input = Request::all();
-
-        $data = (new Upi\Core)->editVpa($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function isValidVpa($vpa)
-    {
-        $data = (new Upi\Core)->isValidVpa($vpa);
-
-        return ApiResponse::json($data);
-    }
-
-    public function isAvailableVpa($vpa)
-    {
-        $data = (new Upi\Core)->isAvailableVpa($vpa);
-
-        return ApiResponse::json($data);
-    }
-
     // TODO: Start supporting these in the new flow
     // 'ReqListPsp', 'RespListKeys', 'ReqRegMob'], true))/
     protected function generateXmlResponse(string $xml)

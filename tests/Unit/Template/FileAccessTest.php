@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Trace;
 
 use RZP\Tests\TestCase;
 
+use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\PaymentLink\Template\Hosted as TemplateHosted;
 use RZP\Models\PaymentLink\Template\UdfSchema as TemplateUdfSchema;
 
@@ -11,18 +12,14 @@ class FileAccessTest extends TestCase
 {
     public function testGetFilePathUdfSchema()
     {
-        $accessor = new TemplateUdfSchema('test');
+        $paymentLink = new PaymentLink();
+        $paymentLink->setUdfJsonschemaId('test');
+        $accessor = new TemplateUdfSchema($paymentLink);
 
         $path = $accessor->driver->getFilePath();
 
         $this->assertStringEndsWith('resources/jsonschema/test-default.json', $path);
         $this->assertTrue($accessor->exists());
-
-        $accessor = new TemplateUdfSchema('test', 'custom_name');
-
-        $path = $accessor->driver->getFilePath();
-
-        $this->assertStringEndsWith('resources/jsonschema/test-custom_name.json', $path);
     }
 
     public function testGetFilePathHostedPage()
@@ -36,14 +33,18 @@ class FileAccessTest extends TestCase
 
     public function testFileExistsFalse()
     {
-        $accessor = new TemplateUdfSchema('test_invalid');
+        $paymentLink = new PaymentLink();
+        $paymentLink->setUdfJsonschemaId('test_invalid');
+        $accessor = new TemplateUdfSchema($paymentLink);
 
         $this->assertFalse($accessor->exists());
     }
 
     public function testGetUdfSchemaContent()
     {
-        $accessor = new TemplateUdfSchema('test');
+        $paymentLink = new PaymentLink();
+        $paymentLink->setUdfJsonschemaId('test');
+        $accessor = new TemplateUdfSchema($paymentLink);
 
         $expected = [
             "title"      => "Test Schema",

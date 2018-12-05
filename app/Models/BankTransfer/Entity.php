@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
@@ -196,6 +197,15 @@ class Entity extends Base\PublicEntity
     public function payerBankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
+    /**
+     * For business banking there would be a transaction created per transfer.
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
+     */
+    public function transaction()
+    {
+        return $this->morphOne(Transaction\Entity::class, 'source');
     }
 
     // ----------------------- Generators --------------------------------------

@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
@@ -43,6 +44,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::UPI_AXIS,
         RequestProcessor\Base::UPI_HULK,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
@@ -90,11 +92,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $allowForceAuthorization = false;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Entity $batch = null)
     {
         parent::__construct($gateway);
 
         $this->messenger = new Messenger;
+
+        $this->messenger->batch = $batch;
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
@@ -279,20 +283,26 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             return true;
         }
 
+        $this->traceRazorpayFailedPayment();
+
+        return $this->tryAuthorizeFailedPayment($row);
+    }
+
+    protected function traceRazorpayFailedPayment()
+    {
         //
         // In case the recon row's status field is a success, and api payment status is failed or created,
         // we would need to run the flow below, where we try to authorize the payment forcefully or via verify.
         //
-
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'message'    => 'Payment status is failed. Trying to authorize.',
-                'payment_id' => $this->payment->getId(),
-                'gateway'    => $this->gateway
+                'info_code'     => Base\InfoCode::RAZORPAY_FAILED_PAYMENT_RECON,
+                'message'       => 'Payment status is failed but present in MIS. Trying to authorize.',
+                'id'            => $this->payment->getId(),
+                'gateway'       => $this->gateway,
+                'payment'       => $this->payment->toArrayPublic()
             ]);
-
-        return $this->tryAuthorizeFailedPayment($row);
     }
 
     /**

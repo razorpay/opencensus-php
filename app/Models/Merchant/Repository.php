@@ -465,7 +465,7 @@ class Repository extends Base\Repository
 
         $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
 
-        $serialized[Entity::BALANCE] = optional($entity->balance)->getBalance() ?: 0;
+        $serialized[Entity::BALANCE] = optional($entity->primaryBalance)->getBalance() ?: 0;
 
         return $serialized;
     }
@@ -483,8 +483,13 @@ class Repository extends Base\Repository
         $model->__unset(Entity::MERCHANT_DETAIL);
     }
 
-    public function getMerchantUserMapping(string $merchantId, string $userId, string $role = null)
+    public function getMerchantUserMapping(string $merchantId,
+                                           string $userId,
+                                           string $role = null,
+                                           string $product = null)
     {
+        $product = $product ?? $this->auth->getRequestOriginProduct();
+
         $query = $this->newQuery()
                       ->find($merchantId)
                       ->users()
@@ -493,6 +498,11 @@ class Repository extends Base\Repository
         if (empty($role) === false)
         {
             $query->where(Entity::ROLE, $role);
+        }
+
+        if (empty($product) === false)
+        {
+            $query->where(Entity::PRODUCT, $product);
         }
 
         return $query->first();

@@ -33,8 +33,8 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_STATE               => 'sometimes|max:2',
         Entity::BENEFICIARY_PIN                 => 'sometimes|integer|digits:6',
         Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
-        Entity::BENEFICIARY_EMAIL               => 'required|email',
-        Entity::BENEFICIARY_MOBILE              => 'required|numeric|digits_between:10,12',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|numeric|digits_between:10,12',
     ];
 
     protected static $editRules = [

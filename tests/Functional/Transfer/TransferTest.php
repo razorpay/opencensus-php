@@ -722,6 +722,7 @@ class TransferTest extends TestCase
 
         $transaction = $this->getSingleTxn('reversal', $reversal['id']);
 
+        $this->assertEquals($transaction['balance_id'], '10000000000000');
         $this->assertEquals($amount, $transaction['credit']);
 
         $transfer = $this->getEntityById('transfer', $transfer['id']);

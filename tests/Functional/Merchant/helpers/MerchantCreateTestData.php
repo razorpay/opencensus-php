@@ -120,7 +120,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'            => '1X4hRFHFx4UiXt',
                 'merchant_id'   => '1X4hRFHFx4UiXt',
                 'currency'      => 'INR',
                 'balance'       => 0,
@@ -837,4 +836,18 @@ return [
         ],
     ],
 
+    'testBackFillMerchantId' => [
+        'request' => [
+            'url' => '/merchants/balances/backfill',
+            'method' => 'post',
+        ],
+        'response'  => [
+            'content'     => [
+                'total'      =>  5,
+                'success'    =>  5,
+                'failed'     =>  0,
+                'failed_ids' => [],
+            ],
+        ],
+    ],
 ];

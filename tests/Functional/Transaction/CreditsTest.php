@@ -475,7 +475,7 @@ class CreditsTest extends TestCase
         // 2. Balance is set to merchant Balance instead of 0.
         // 3. And, Credit Type is default.
         $this->assertEquals(0, $txn['fee_credits']);
-        $this->assertEquals(1000000, $txn['balance']);
+        $this->assertEquals(0, $txn['balance']);
         $this->assertEquals('default', $txn['credit_type']);
 
         $this->assertEquals(0, $txn['debit']);

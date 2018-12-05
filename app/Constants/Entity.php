@@ -38,6 +38,7 @@ class Entity
     const PAYOUT                    = 'payout';
     const REFUND                    = 'refund';
     const REPORT                    = 'report';
+    const CONTACT                   = 'contact';
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
@@ -75,6 +76,7 @@ class Entity
     const FILE_HANDLER              = 'file_handler';
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
+    const FUND_ACCOUNT              = 'fund_account';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
@@ -253,10 +255,21 @@ class Entity
         self::PAYMENT_LINK,
     ];
 
+    /**
+     * These entities have BALANCE_ID columns added recently. This is a temporary list to validate API operation to
+     * backfill balance_id column for old rows in batches.
+     * Refer: AdminController@updateEntityBalanceIdInBulk()
+     */
+    const ENTITIES_WITH_BALANCE_ID_COLUMN = [
+        Entity::TRANSACTION,
+        Entity::VIRTUAL_ACCOUNT,
+        Entity::PAYOUT,
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
-        self::VPA                       => \RZP\Models\Upi\Vpa::class,
+        self::VPA                       => \RZP\Models\Vpa::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::EBS                       => \RZP\Gateway\Ebs::class,

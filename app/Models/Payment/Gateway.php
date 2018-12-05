@@ -95,6 +95,9 @@ class Gateway
     const BT_KOTAK           = 'bt_kotak';
     const BT_DASHBOARD       = 'bt_dashboard';
 
+    // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
+    const EMI_SBI            = 'emi_sbi';
+
     const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
     //
@@ -468,12 +471,15 @@ class Gateway
         Payment\Gateway::FIRST_DATA     => [
             self::GO_LIVE_TIMESTAMP => 1537966190
         ],
+        Payment\Gateway::CARD_FSS       => [
+            self::GO_LIVE_TIMESTAMP => 1543816680
+        ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
-        ]
+        ],
     ];
 
     /**
@@ -1196,6 +1202,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::ICIC,
         IFSC::YESB,
+        IFSC::SBIN,
     ];
 
     public static $emiBankToGatewayMap = [
