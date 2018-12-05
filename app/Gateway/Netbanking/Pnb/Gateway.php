@@ -598,12 +598,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    function generateHash($content)
+    protected function getStringToHash($content, $glue = '|')
     {
-        $secure_hash = null;
-
-        ksort($content);
-
         $hash_data = $this->getSalt();
 
         foreach ($content as $key => $value)
@@ -614,9 +610,16 @@ class Gateway extends Base\Gateway
             }
         }
 
-        if (strlen($hash_data) > 0)
+        return $hash_data;
+    }
+
+    protected function getHashOfString($str)
+    {
+        $secure_hash = null;
+
+        if (strlen($str) > 0)
         {
-            $secure_hash = strtoupper(hash('sha512', $hash_data));
+            $secure_hash = strtoupper(hash('sha512', $str));
         }
 
         return $secure_hash;
