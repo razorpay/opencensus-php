@@ -66,7 +66,7 @@ class Constants
             self::CSB,
             self::EQUITAS,
             self::IDFC,
-            self::VIJAYA
+            self::VIJAYA,
             self::CORPORATION,
         ],
         Type::EMANDATE_REGISTER => [
@@ -79,7 +79,6 @@ class Constants
             self::ENACH_RBL,
         ],
         Type::REFUND_FAILED => [
-            'All',
             self::UPI_ICICI,
             self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
