@@ -187,8 +187,10 @@ class Gateway
     * since their verify API's stop working after a certain time
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
+        self::UPI_SBI,
         self::CARD_FSS,
         self::AXIS_MIGS,
+        self::FIRST_DATA,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
@@ -201,6 +203,7 @@ class Gateway
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
         self::UPI_ICICI,
+        self::UPI_MINDGATE,
     ];
 
     /**
