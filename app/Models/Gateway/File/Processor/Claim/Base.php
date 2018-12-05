@@ -26,6 +26,7 @@ class Base extends BaseProcessor
         Constants::OBC,
         Constants::VIJAYA,
         Constants::IDFC,
+        Constants::CORPORATION
     ];
 
     public function fetchEntities(): PublicCollection
