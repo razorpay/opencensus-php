@@ -15,7 +15,7 @@ class Vijaya extends Base
     use FileHandler;
 
     const FILE_NAME                  = '000000000010';
-    const EXTENSION                  = FileStore\Format::TXT;
+    const EXTENSION                  = FileStore\Format::IN;
     const FILE_TYPE                  = FileStore\Type::VIJAYA_NETBANKING_REFUND;
     const GATEWAY                    = Payment\Gateway::NETBANKING_VIJAYA;
     const PAYMENT_BANK               = 'VijayaBank';
