@@ -2,7 +2,7 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -10,9 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
-use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\BadRequestException;
 
 class Generator extends Base\Core
 {
@@ -92,7 +89,7 @@ class Generator extends Base\Core
 
         if ($terminal === null)
         {
-            throw new LogicException(
+            throw new Exception\LogicException(
                 'No Terminal applicable.',
                 null,
                 [
@@ -135,7 +132,7 @@ class Generator extends Base\Core
                  * But If Descriptor was passed by merchant then we throw
                  * bad request identical descriptor .
                  */
-                throw new BadRequestException(
+                throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
                     'descriptor',
                     [
@@ -157,7 +154,7 @@ class Generator extends Base\Core
             ]);
 
         // This should never happen
-        throw new BadRequestException(
+        throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
     }
 
@@ -265,7 +262,7 @@ class Generator extends Base\Core
 
         if (strlen($descriptor) > $availableLength)
         {
-            throw new BadRequestException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
                 'descriptor',
                 [
@@ -276,7 +273,7 @@ class Generator extends Base\Core
 
         if ($terminal->isShared() === true)
         {
-            throw new BadRequestValidationFailureException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Descriptor cannot be used with your account.',
                 null,
                 [
@@ -342,7 +339,7 @@ class Generator extends Base\Core
 
         if (strlen($accountNumber) > Entity::ACCOUNT_NUMBER_LENGTH)
         {
-            throw new LogicException(
+            throw new Exception\LogicException(
                 'Error in account number generation.',
                 null,
                 [
