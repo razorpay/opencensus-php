@@ -17,8 +17,7 @@ class Service extends Base\Service
     /**
      * List of gateways where we are doing recon processing via non-batch.
      */
-
-      const NON_BATCH_RECON_GATEWAYS = [
+    const NON_BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::PAYTM,
         RequestProcessor\Base::PAYUMONEY,
     ];
