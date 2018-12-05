@@ -234,7 +234,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID        => $payment['id'],
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::AMOUNT            => $this->formatAmount($payment['amount']),
-            RequestFields::RETURN_URL        => 'abc' //This value is not used as we get response immediately
+            RequestFields::RETURN_URL        => ''
         ];
 
         $content[RequestFields::BANK_REFERENCE_NUMBER] = $gatewayPayment[NetbankingEntity::BANK_PAYMENT_ID] ?? '';

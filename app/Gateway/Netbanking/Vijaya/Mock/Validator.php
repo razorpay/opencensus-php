@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         RequestFields::MERCHANT_NAME     => 'required|string',
         RequestFields::MERCHANT_ID       => 'required|string',
         RequestFields::ITEM_CODE         => 'required|string|in:Razorpay',
-        RequestFields::RETURN_URL        => 'required|url',
+        RequestFields::RETURN_URL        => 'sometimes|url',
         RequestFields::PAYMENT_ID        => 'required|alpha_num|size:14',
         RequestFields::CURRENCY          => 'required|string|in:INR',
 
@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         RequestFields::MERCHANT_CONSTANT     => 'required|string',
         RequestFields::AMOUNT                => 'required|numeric',
         RequestFields::ITEM_CODE             => 'required|string|in:Razorpay',
-        RequestFields::RETURN_URL            => 'required|string', //TODO fix this
+        RequestFields::RETURN_URL            => 'sometimes|string', //TODO fix this
         RequestFields::PAYMENT_ID            => 'required|alpha_num|size:14',
         RequestFields::CURRENCY              => 'required|string|in:INR',
 
