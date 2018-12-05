@@ -546,7 +546,7 @@ class Gateway extends Base\Gateway
         }
         elseif ($this->action === Action::CALLBACK)
         {
-            return $this->input['terminal']['gateway_secure_secret'];
+            return $this->input['terminal']['gateway_secure_secret2'];
         }
         else
         {
