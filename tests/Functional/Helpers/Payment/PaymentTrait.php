@@ -1817,6 +1817,26 @@ trait PaymentTrait
         });
     }
 
+    protected function getGatewayRequestException()
+    {
+        $this->i = true;
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            if ($this->i === true)
+            {
+                $this->i = false;
+
+                $content = [
+                    'status_code'   => 500,
+                ];
+
+                throw new Exception\GatewayRequestException('cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ');
+            }
+
+        });
+    }
+
     protected function mockTokenex()
     {
         $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();

@@ -41,6 +41,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
         Entity::ROLE                  => 'sometimes|string|custom',
     ];
 

@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         if (strlen($left) < 3)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Handle must be three characters: ' . $address);
+                'Handle must be at least three characters: ' . $address);
         }
     }
 }

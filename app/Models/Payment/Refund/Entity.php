@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
     const REVERSAL               = 'reversal';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const VPA_ID                 = 'vpa_id';
     const SETTLED_BY             = 'settled_by';
 
     // indicates refund is processed via scrooge service or not.
@@ -111,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
+        self::VPA_ID,
         self::SETTLED_BY,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -215,6 +217,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\Vpa\Entity');
+    }
+
     public function billdesk()
     {
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
@@ -284,6 +291,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     public function isGatewayRefunded()

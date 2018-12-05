@@ -38,7 +38,6 @@ class Base extends BaseProcessor
 
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
-        $gateway = static::GATEWAY;
 
         if ($this->shouldFetchReconciledPayments() === true)
         {

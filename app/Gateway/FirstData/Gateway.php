@@ -245,16 +245,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
-        $shouldRetry = function ($e)
-        {
-            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
-        };
-
-        $response = $this->retryHandler(
-            [$this, 'getSoapResponse'],
-            [$requestContent],
-            $shouldRetry,
-            2);
+        $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
@@ -2309,5 +2300,10 @@ class Gateway extends Base\Gateway
         $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
+    }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::AUTHORIZE, Action::CAPTURE];
     }
 }

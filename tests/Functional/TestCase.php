@@ -159,4 +159,15 @@ class TestCase extends ParentTestCase
 
         return $esMock;
     }
+
+    protected function setEsMockSearchExpectations($callee, $esMock, $method = 'search')
+    {
+        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
+        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
+
+        $esMock->expects($this->once())
+               ->method($method)
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
+    }
 }

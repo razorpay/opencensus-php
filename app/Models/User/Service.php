@@ -259,6 +259,8 @@ class Service extends Base\Service
 
     public function updateUserMerchantMapping(string $id, array $input): array
     {
+        $input[Merchant\Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
+
         $user = $this->repo->user->findOrFailPublic($id);
 
         $user = (new Core)->updateUserMerchantMapping($user, $input);
@@ -482,8 +484,8 @@ class Service extends Base\Service
         if (empty(\Cookie::get('rzp_utm')) === false)
         {
             $utmParams = json_decode(\Cookie::get('rzp_utm'), true);
-            $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? "";
-            $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? "";
+            $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? '';
+            $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? '';
 
             if (empty($utmParams[Constants::ATTRIBUTIONS]) === false)
             {
@@ -492,8 +494,8 @@ class Service extends Base\Service
 
                 foreach (Constants::$attributionList as $attribution)
                 {
-                    $data['first_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][0][$attribution] ?? "";
-                    $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution] ?? "";
+                    $data['first_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][0][$attribution] ?? '';
+                    $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution] ?? '';
                 }
             }
         }

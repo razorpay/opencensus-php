@@ -3646,4 +3646,16 @@ class MerchantTest extends TestCase
         Carbon::setTestNow(Carbon::create(2018, 11, 4, 10, null, null, Timezone::IST));
         $this->startTest();
     }
+
+    public function testSearchWithDateFilter()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
 }

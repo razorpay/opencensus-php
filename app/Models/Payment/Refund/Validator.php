@@ -35,7 +35,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryRules = [
-        'bank_account' => 'sometimes|array',
+        'bank_account'  => 'sometimes|array',
+        'vpa'           => 'sometimes|associative_array',
+        'vpa.address'   => 'required_with:vpa|filled|string',
     ];
 
     protected static $createValidators = [

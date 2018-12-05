@@ -86,6 +86,12 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
+    const PRODUCT                  = 'product';
+
+    // Source denotes if a merchant activation request came from PG or business banking.
+    const ACTIVATION_SOURCE        = 'activation_source';
+
+    const BUSINESS_BANKING         = 'business_banking';
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
@@ -293,6 +299,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::ACTIVATION_SOURCE,
+        self::BUSINESS_BANKING,
      ];
 
     protected $defaults = [
@@ -1554,10 +1562,13 @@ class Entity extends Base\PublicEntity
 
     /**
      * Get the owners of the merchant.
+     * This function is used in partners and primary product so filtering it by primary
+     *
+     * @param Balance/Type $product
      */
-    public function owners()
+    public function owners($product = Balance\Type::PRIMARY)
     {
-        return $this->users()->where('role','owner');
+        return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
 
     /**
@@ -1565,7 +1576,10 @@ class Entity extends Base\PublicEntity
      */
     public function primaryLinkedAccountOwner()
     {
-        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
+        return $this->users()
+                    ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
+                    ->where(self::PRODUCT, Balance\Type::PRIMARY)
+                    ->first();
     }
 
     /**

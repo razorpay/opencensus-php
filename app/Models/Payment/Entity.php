@@ -2699,7 +2699,7 @@ class Entity extends Base\PublicEntity
             self::RECEIVER_ID,
             self::RECEIVER_TYPE,
             self::VERIFY_AT,
-            self::VERIFY_BUCKET
+            self::VERIFY_BUCKET,
         ];
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
