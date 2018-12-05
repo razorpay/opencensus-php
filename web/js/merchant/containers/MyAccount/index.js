@@ -6,13 +6,10 @@ import AddFunds from 'merchant/containers/AddFunds';
 import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
-import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
 export default function MyAccount() {
   return (
     <React.Fragment>
-      <EarlySettlementAnnouncement from="MyAccount" />
-
       <tabbed-container>
         <header id="myaccount-header">
           <ShowWhen additionalCondition={user => user.isAllowedView('profile')}>

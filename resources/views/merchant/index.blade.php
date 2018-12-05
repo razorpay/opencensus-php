@@ -49,6 +49,7 @@
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
+    window.notifications = {!! $notifications !!};
     window.api_host = "{!! $api_host !!}"
   </script>
   <!-- Raven Code -->

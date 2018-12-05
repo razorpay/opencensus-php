@@ -5,6 +5,7 @@ use Auth;
 use Input;
 use App\User;
 use App\Admin;
+use App\Merchant;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
@@ -65,9 +66,14 @@ class UserController extends Controller
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
 
         // $data is used to run diferent pieces of JS
-        if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true) {
+        if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
+        {
             return view('merchant.la', $data);
-        } else {
+        }
+        else
+        {
+            $data['notifications'] = json_encode((new Merchant\Notifications\Service)->getNotificationsForUser($details));
+
             return view('merchant.index', $data);
         }
     }
