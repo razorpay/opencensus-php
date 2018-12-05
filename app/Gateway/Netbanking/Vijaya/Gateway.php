@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Entity as Payment;
@@ -110,7 +111,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_NAME     => $input['merchant']['billing_label'],
             RequestFields::MERCHANT_ID       => $this->getMerchantId(),
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
-            RequestFields::CURRENCY          => Constants::INDIAN_CURRENCY,
+            RequestFields::CURRENCY          => Currency::INR,
             RequestFields::PAYMENT_ID        => $payment[Payment::ID],
             RequestFields::RETURN_URL        => $input['callbackUrl'],
         ];
