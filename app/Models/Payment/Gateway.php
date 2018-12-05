@@ -881,6 +881,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
+        self::NETBANKING_VIJAYA,
     ];
 
     /**
