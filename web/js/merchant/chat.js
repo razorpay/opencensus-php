@@ -57,7 +57,7 @@ const initFreshchat = data => {
 };
 
 export default function initChat(data) {
-  const chatExp = window.rzp_user.experiments.chat_new || {};
+  const chatExp = (window.rzp_user.experiments || {}).new_chat || {};
 
   if (chatExp.result === 'on') {
     initFreshchat(data);

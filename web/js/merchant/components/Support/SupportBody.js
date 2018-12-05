@@ -96,6 +96,7 @@ export default class SupportBody extends Component {
               </li>
             ) : null}
             {window.rzp_user &&
+            window.rzp_user.experiments &&
             window.rzp_user.experiments.support_call &&
             window.rzp_user.experiments.support_call.result === 'on' ? (
               <li
