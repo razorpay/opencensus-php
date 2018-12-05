@@ -24,6 +24,7 @@ export default class Support extends Component {
       });
       window.fcWidget.on('widget:closed', () => {
         this.handleVisibility(false);
+        window.fcWidget.user.clear();
       });
 
       window.fcWidget.on('unreadCount:notify', response => {

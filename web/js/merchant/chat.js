@@ -51,6 +51,8 @@ const initFreshchat = data => {
     submitted: data.submitted,
     role,
     userEmail: data.user.email,
+    mid: data.id,
+    activationStatus: data.user.activation_status,
     dashboardLink:
       location.origin + '/admin#/app/merchants/' + data.id + '/detail',
   });
