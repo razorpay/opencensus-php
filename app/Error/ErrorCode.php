@@ -113,6 +113,7 @@ class ErrorCode
     const GATEWAY_ERROR_DUPLICATE_RECORD                                            = 'GATEWAY_ERROR_DUPLICATE_RECORD';
     const GATEWAY_ERROR_PREVIOUS_VOID_CHECK_FAILURE                                 = 'GATEWAY_ERROR_PREVIOUS_VOID_CHECK_FAILURE';
     const GATEWAY_ERROR_FORMATTING_FAILED                                           = 'GATEWAY_ERROR_FORMATTING_FAILED';
+    const GATEWAY_ERROR_INTERNAL_FORMAT_ERROR                                       = 'GATEWAY_ERROR_INTERNAL_FORMAT_ERROR';
     const GATEWAY_ERROR_HASH_GENERATION_ERROR                                       = 'GATEWAY_ERROR_HASH_GENERATION_ERROR';
     const GATEWAY_ERROR_INVALID_CAVV                                                = 'GATEWAY_ERROR_INVALID_CAVV';
     const GATEWAY_ERROR_INVALID_MERCHANT                                            = 'GATEWAY_ERROR_INVALID_MERCHANT';
