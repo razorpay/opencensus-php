@@ -548,12 +548,12 @@ class Service extends Base\Service
     {
         $this->user->getValidator()->validateSendOtpOperation($input);
 
-        $this->core()->sendOtp($input, $this->merchant, $this->user);
+        return $this->core()->sendOtp($input, $this->merchant, $this->user);
     }
 
     public function verifyContactWithOtp(array $input): array
     {
-        $this->user->getValidator()->validateInput('verifyOtp', $input);
+        $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
 
         $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
@@ -14,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
+use RZP\Mail\User\Otp as OtpMail;
 
 class Core extends Base\Core
 {
@@ -279,36 +281,39 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
      */
-    public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user)
+
+    /**
+     * Sends otp to user's contact/email basis input medium and action.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     * @return array
+     */
+    public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user): array
     {
         $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION, compact('input'));
 
         $func = 'sendOtpVia' . studly_case($input[Entity::MEDIUM]);
 
-        $this->$func($input, $merchant, $user);
+        return $this->$func($input, $merchant, $user);
     }
 
     /**
-     * Ref: `sendOtp()`
-     * Sends OTP to user's contact via SMS.
+     * Ref: sendOtp()
      *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
+     * @return array
      */
-    public function sendOtpViaSms(array $input, Merchant\Entity $merchant, Entity $user)
+    public function sendOtpViaSms(array $input, Merchant\Entity $merchant, Entity $user): array
     {
-        $action   = $input[Entity::ACTION];
-        $context  = sprintf('%s:%s:%s', $merchant->getId(), $user->getId(), $action);
-        $receiver = $user->getContactMobile();
-        $source   = 'api';
-        $template = 'sms.user_action_otp';
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+        // If the call to raven fails it is already rendered properly in final response.
+        $this->app->raven->sendOtp(array_only($payload, ['context', 'receiver', 'source', 'template', 'params']));
 
-        // Action must read as verb so can be used like to {action} in raven's generic template.
-        $params   = [Entity::ACTION => str_replace('_', ' ', $action)];
-
-        $payload = compact('context', 'receiver', 'source', 'template', 'params');
-        $this->app->raven->sendOtp($payload);
+        return array_only($payload, 'token');
     }
 
     /**
@@ -321,11 +326,18 @@ class Core extends Base\Core
      */
     public function sendOtpViaEmail(array $input, Merchant\Entity $merchant, Entity $user)
     {
-        // Todo
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+        // If the call to raven fails it is already rendered properly in final response.
+        $response = $this->app->raven->generateOtp(array_only($payload, ['context', 'receiver', 'source']));
+
+        $mailable = new OtpMail();
+        Mail::queue($mailable);
+
+        return array_only($payload, 'token');
     }
 
     /**
-     * Verifies input OTP against specific action(hence context) i.e. verify_contact.
+     * Verifies input otp against specific action(hence raven's context) i.e. verify_contact.
      * Additionally marks users.contact_mobile_verified flag as true if success.
      *
      * @param  array           $input
@@ -334,18 +346,50 @@ class Core extends Base\Core
      */
     public function verifyContactWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
     {
-        $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_CONTACT_VERIFY, compact('input'));
-
-        $context  = sprintf('%s:%s:%s', $merchant->getId(), $user->getId(), Entity::ACTION_VERIFY_CONTACT);
-        $receiver = $user->getContactMobile();
-        $source   = 'api';
-        $otp      = $input[Entity::OTP];
-
-        $payload = compact('context', 'receiver', 'source', 'otp');
-        $this->app->raven->verifyOtp($payload);
+        $this->verifyOtp($input + ['action' => 'verify_contact'], $merchant, $user);
 
         $user->setContactMobileVerified(true);
         $this->repo->saveOrFail($user);
+    }
+
+    /**
+     * Verifies otp for given input(action, token & otp).
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     */
+    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    {
+        $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
+
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+        // If the call to raven fails it is already rendered properly in final response.
+        $this->app->raven->verifyOtp($payload);
+    }
+
+    protected function getRavenOtpRequestPayload(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $action   = $input[Entity::ACTION];
+        $token    = $input['token'] ?? Entity::generateUniqueId();
+        $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $action, $token);
+        $receiver = $user->getContactMobile();
+        $source   = 'api';
+        $template = 'sms.user_action_otp';
+        // Raven's template params
+        $params   = [
+            // Action must read as verb so can be used like to {action} in raven's generic template.
+            Entity::ACTION => str_replace('_', ' ', $action),
+        ];
+
+        return compact(
+            'action',
+            'token',
+            'context',
+            'receiver',
+            'source',
+            'template',
+            'params');
     }
 
     protected function upsertSettings(Entity $user, array $settings)

@@ -1138,7 +1138,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for Users module
     const USER_EDIT                                     = 'USER_EDIT';
     const USERS_SEND_OTP_FOR_ACTION                     = 'USERS_SEND_OTP_FOR_ACTION';
-    const USERS_VERIFY_OTP_FOR_CONTACT_VERIFY           = 'USERS_VERIFY_OTP_FOR_CONTACT_VERIFY';
+    const USERS_VERIFY_OTP_FOR_ACTION                   = 'USERS_VERIFY_OTP_FOR_ACTION';
 
 // Trace code for Invitation
     const INVITATION_CREATE                             = 'INVITATION_CREATE';

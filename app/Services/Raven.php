@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 class Raven
 {
     const SMS_ID          = 'sms_id';
+    const OTP             = 'otp';
 
     const REQUEST_TIMEOUT = 60;
 
@@ -34,6 +35,7 @@ class Raven
         'send-sms'      => 'sms',
         'send-otp'      => 'sms/send-otp',
         'verify-otp'    => 'sms/verify-otp',
+        'generate-otp'  => 'sms/generate-otp',
     ];
 
     protected $validationErrors = [
@@ -73,6 +75,18 @@ class Raven
         }
 
         return $response;
+    }
+
+    public function generateOtp(array $input): array
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return [
+                self::OTP => self::MOCK_VALID_OTP,
+            ];
+        }
+
+        return $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 
@@ -21,6 +22,19 @@ class Service extends Base\Service
         $payout = $this->core->createPayoutToCustomer($input, $this->merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    /**
+     * Business banking: Forwards request to customerPayout() after verifying user's otp for the action.
+     * @param  array  $input
+     * @return array
+     */
+    public function customerPayoutWithOtp(array $input): array
+    {
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
+
+        return $this->create(array_except($input, ['otp', 'token']));
     }
 
     public function internalMerchantPayout(array $input): array

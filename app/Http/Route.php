@@ -680,6 +680,7 @@ final class Route
         'upi_psp_allow'                            => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postCustomerPayout'                               ],
+        'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postCustomerPayoutWithOtp'                        ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
@@ -721,7 +722,7 @@ final class Route
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
-        'user_otp_verify'                          => ['post',     'users/otp/verify',                               'UserController@verifyContactWithOtp'                               ],
+        'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
@@ -1317,7 +1318,8 @@ final class Route
         'user_merchant_upgrade',
         'user_edit_self',
         'user_otp_create',
-        'user_otp_verify',
+        'user_verify_contact',
+        'payout_create_with_otp',
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
@@ -1501,7 +1503,8 @@ final class Route
         'token_fetch_card',
         'user_edit_self',
         'user_otp_create',
-        'user_otp_verify',
+        'user_verify_contact',
+        'payout_create_with_otp',
     ];
 
     // These will run on internal auth with the assurance
@@ -2493,6 +2496,7 @@ final class Route
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
         'payment_payout'                       => [Feature::PAYOUT],
         'payout_create'                        => [Feature::PAYOUT],
+        'payout_create_with_otp'               => [Feature::PAYOUT],
         'payout_fetch_by_id'                   => [Feature::PAYOUT],
         'payout_fetch_multiple'                => [Feature::PAYOUT],
         'customer_get_wallet_balance'          => [Feature::OPENWALLET],

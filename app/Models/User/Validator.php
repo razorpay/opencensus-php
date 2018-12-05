@@ -81,7 +81,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyOtpRules = [
-        Entity::OTP => 'required|filled|min:4',
+        Entity::OTP   => 'required|filled|min:4',
+        Entity::TOKEN => 'required|unsigned_id',
     ];
 
     protected static $teamManagementValidators = [
@@ -217,20 +218,42 @@ class Validator extends Base\Validator
 
         $this->validateInput('createOtp', $input);
 
-        if ($input[Entity::MEDIUM] === Entity::MEDIUM_SMS)
-        {
-            // Contact mobile is optional attribute in user.
-            if ($user->getContactMobile() === null)
-            {
-                throw new BadRequestValidationFailureException('User\'s contact mobile does not exist');
-            }
+        $action = $input[Entity::ACTION];
+        $medium = $input[Entity::MEDIUM];
 
-            // For action other than to verify the contact itself, contact mobile must be verified.
-            if (($input[Entity::ACTION] !== Entity::ACTION_VERIFY_CONTACT) and
-                ($user->isContactMobileVerified() === false))
-            {
-                throw new BadRequestValidationFailureException('User\'s contact mobile must be verified');
-            }
+        if (($action === 'verify_contact') and
+            ($medium === 'email'))
+        {
+            throw new BadRequestValidationFailureException('Email is invalid medium for verifying contact');
         }
+
+        if (($action === 'verify_contact') and
+            ($user->isContactMobileVerified() === true))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        if (($medium === 'sms') and
+            ($user->getContactMobile() === null))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile does not exist');
+        }
+
+        if (($medium === 'sms') and
+            ($action !== 'verify_contact') and
+            ($user->isContactMobileVerified() === false))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is not verified');
+        }
+    }
+
+    public function validateVerifyContactWithOtpOperation(array $input)
+    {
+        if ($this->entity->isContactMobileVerified() === true)
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        $this->validateInput('verifyOtp', $input);
     }
 }

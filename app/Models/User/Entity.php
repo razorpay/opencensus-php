@@ -45,7 +45,6 @@ class Entity extends Base\PublicEntity
     // Additional input keys
     const MEDIUM                 = 'medium';
     const OTP                    = 'otp';
-    const ACTION_VERIFY_CONTACT  = 'verify_contact';
     const MEDIUM_SMS             = 'sms';
     const MEDIUM_EMAIL           = 'email';
     const SETTINGS               = 'settings';
