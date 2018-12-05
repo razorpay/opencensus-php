@@ -4421,6 +4421,10 @@ ALTER TABLE subscription_registrations
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
 
+ALTER TABLE merchants
+    ADD COLUMN activation_source VARCHAR(255) DEFAULT NULL AFTER handle,
+    ADD COLUMN business_banking TINYINT(1) DEFAULT 0 AFTER activation_source;
+
 ALTER TABLE transactions
     CHANGE COLUMN `reference2` `balance_id` CHAR(14) DEFAULT NULL,
     ADD INDEX `transactions_balance_id_index` (balance_id),

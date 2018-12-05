@@ -88,6 +88,11 @@ class Entity extends Base\PublicEntity
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
     const PRODUCT                  = 'product';
 
+    // Source denotes if a merchant activation request came from PG or business banking.
+    const ACTIVATION_SOURCE        = 'activation_source';
+
+    const BUSINESS_BANKING         = 'business_banking';
+
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
 
@@ -294,6 +299,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::ACTIVATION_SOURCE,
+        self::BUSINESS_BANKING,
      ];
 
     protected $defaults = [
