@@ -38,7 +38,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
 
-        (new Validator)->validateInput('create', $input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
         /** @var Contact\Entity $contact */
         $contact = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
