@@ -173,6 +173,29 @@ trait ReconTrait
         return $gatewayPayment;
     }
 
+    protected function getNewAxisUpiEntity($merchantId, $gateway)
+    {
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray($gateway);
+
+        $payment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->gateway = 'upi_axis';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('upi');
+
+        return $gatewayPayment;
+    }
+
     protected function getNewUpiHulkEntity($merchantId, $gateway, $overrideTxnId = true)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
