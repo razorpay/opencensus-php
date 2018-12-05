@@ -319,7 +319,10 @@ class GatewayController extends Controller
 
         $this->app['trace']->info(
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [ 'input' => $input ]
+            [
+                'input'   => $input ,
+                'gateway' => 'netbanking_canara'
+            ]
         );
 
         $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_CANARA);
