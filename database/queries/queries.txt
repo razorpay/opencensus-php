@@ -4429,6 +4429,14 @@ ALTER TABLE transactions
 ALTER TABLE blade
     ADD COLUMN acs_url VARCHAR(3000) DEFAULT NULL AFTER response_description;
 
+ALTER TABLE merchant_users
+    ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER user_id,
+    DROP INDEX `merchant_users_merchant_id_user_id_role_unique`,
+    ADD UNIQUE KEY `merchant_users_merchant_id_product_user_id_role_unique` (`merchant_id`, `product`, `user_id`, `role`);
+
+ALTER TABLE invitations
+    ADD COLUMN  product VARCHAR(255) DEFAULT 'primary' AFTER user_id;
+
 ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
 

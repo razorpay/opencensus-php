@@ -337,7 +337,9 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -2431,7 +2433,9 @@ class Service extends Base\Service
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $product);
 
         return $merchant->toArrayPublic();
     }
