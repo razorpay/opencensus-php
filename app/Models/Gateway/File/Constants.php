@@ -121,6 +121,7 @@ class Constants
             self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [
