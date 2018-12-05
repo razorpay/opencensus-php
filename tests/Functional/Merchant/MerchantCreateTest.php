@@ -961,6 +961,28 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testBackFillMerchantId()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['limit'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 1;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [];
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 4;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 4;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 0;
+
+        $this->startTest();
+    }
+
     protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

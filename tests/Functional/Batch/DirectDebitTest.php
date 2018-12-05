@@ -101,6 +101,13 @@ class DirectDebitTest extends TestCase
     {
         $store = Cache::store();
 
+        // TODO remove this after session migration
+        Cache::shouldReceive('driver')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
         Cache::shouldReceive('pull')
                 ->once()
                 ->with('ott')

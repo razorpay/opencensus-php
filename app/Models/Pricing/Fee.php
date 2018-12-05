@@ -32,10 +32,10 @@ class Fee extends Base\Core
 
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
 
-    // delete this after 31st dec
-    const DIWALI_END_TIMESTAMP = 1546237799;
+    // delete this after 31st jan
+    const DIWALI_END_TIMESTAMP = 1548916199;
 
-    // delete this after 31st dec
+    // delete this after 31st jan
     protected static $promotionalMethods = [
         'card',
         'netbanking',
@@ -76,7 +76,7 @@ class Fee extends Base\Core
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
-        // delete this after 31st december
+        // delete this after 31st jan
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $merchant = $entity->merchant;

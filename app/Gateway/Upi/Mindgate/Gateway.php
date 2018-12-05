@@ -68,6 +68,11 @@ class Gateway extends Base\Gateway
         Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
     ];
 
+    protected function getMaxRetryCount()
+    {
+        return 5;
+    }
+
     /**
      * Authorizes a payment using UPI Gateway
      * @param array $input

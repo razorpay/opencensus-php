@@ -128,7 +128,7 @@ class Gateway extends Base\Gateway
 
         $mpiEntity = $this->app['repo']
                           ->mpi
-                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+                          ->findByPaymentIdAndActionGetLastOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 

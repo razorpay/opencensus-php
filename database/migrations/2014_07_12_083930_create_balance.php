@@ -54,12 +54,13 @@ class CreateBalance extends Migration
             $table->integer(Balance::CREATED_AT);
             $table->integer(Balance::UPDATED_AT);
 
-            $table->foreign(Balance::ID)
+            $table->foreign(Balance::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->index(Balance::CREATED_AT);
+            $table->index(Balance::MERCHANT_ID);
         });
     }
 
@@ -70,11 +71,6 @@ class CreateBalance extends Migration
      */
     public function down()
     {
-        Schema::table(Table::BALANCE, function($table)
-        {
-            $table->dropForeign(Table::BALANCE.'_'.Balance::ID.'_foreign');
-        });
-
         Schema::drop(Table::BALANCE);
     }
 }

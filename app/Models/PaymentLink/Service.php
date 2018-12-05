@@ -32,6 +32,21 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
+    public function fetchWithDetailsForDashboard(string $id, array $input)
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
+        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
+
+        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
+        {
+            $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
+        }
+
+        return $entity->toArrayPublic() + $extra;
+    }
+
     public function create(array $input): array
     {
         $entity = $this->core->create($input, $this->merchant, $this->user);
@@ -74,7 +89,7 @@ class Service extends Base\Service
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL);
 
         /** @var Entity $paymentLink */
-        $paymentLink = $this->repo->payment_link->findByPublicId($id);
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 

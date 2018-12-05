@@ -1315,13 +1315,13 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'ifsc_code' => 'RZPB0000000',
-                'account_number' => '10010101011',
-                'beneficiary_name' => 'random_name',
-                'beneficiary_address1' => 'address1',
-                'beneficiary_address2' => 'address2',
-                'beneficiary_address3' => 'address3',
-                'beneficiary_address4' => 'address4',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
                 'beneficiary_email' => 'random@email.com',
                 'beneficiary_mobile' => '9988776655',
             ]
@@ -3582,4 +3582,127 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSearchWithDateFilter' => [
+        'request'  => [
+            'url'     => '/admins/merchants',
+            'method'  => 'get',
+            'content' => [
+                'count' => 20,
+                'skip'  => 0,
+                'from'  => 1514745000,
+                'to'    => 1543861800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'id'     => '10000000000016',
+                        'org_id' => '100000razorpay',
+                        'name'   => 'laboriosam',
+                        'email'  => 'emely97@kling.info',
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    // ----------------------------------------------------------------------
+    // Expectations for ES
+
+    'testSearchWithDateFilterExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX') . 'merchant_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX') . 'merchant_test',
+        'body'  => [
+            '_source' => true,
+            'from'    => '0',
+            'size'    => '20',
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'range' => [
+                                        'merchant_detail.submitted_at' => [
+                                            'gte' => 1514745000,
+                                            'lte' => 1543861800,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'org_id' => [
+                                            'value' => '100000razorpay',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'bool' => [
+                                        'should' => [
+                                            [
+                                                'terms' => [
+                                                    'admins' => [
+                                                        'RzrpySprAdmnId',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ]
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort'    => [
+                '_score'     => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testSearchWithDateFilterExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id'     => '10000000000016',
+                    '_source' => [
+                        'id'              => '10000000000016',
+                        'org_id'          => '100000razorpay',
+                        'name'            => 'laboriosam',
+                        'email'           => 'emely97@kling.info',
+                        'parent_id'       => null,
+                        'activated'       => false,
+                        'activated_at'    => 1543922927,
+                        'archived_at'     => null,
+                        'suspended_at'    => null,
+                        'website'         => 'http://www.green.com/quisquam-velit-ipsum-quae.html',
+                        'billing_label'   => 'rerum',
+                        'created_at'      => 1543922934,
+                        'updated_at'      => 1543922934,
+                        'merchant_detail' => [
+                            'merchant_id'         => '10000000000016',
+                            'steps_finished'      => '[]',
+                            'activation_progress' => 0,
+                            'activation_status'   => null,
+                            'archived_at'         => null,
+                            'submitted_at'        => null,
+                            'updated_at'          => 1543922934,
+                            'reviewer_id'         => null,
+                            'activation_flow'     => null,
+                        ],
+                        'is_marketplace'  => false,
+                        'referrer'        => null,
+                        'balance'         => 0,
+                    ],
+                ],
+            ]
+        ]
+    ]
 ];

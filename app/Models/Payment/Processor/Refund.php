@@ -9,21 +9,27 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Models\Vpa\Core;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
-use RZP\Models\Merchant\RefundSource;
-use RZP\Models\BankAccount;
-use RZP\Models\Customer\Token;
-use RZP\Models\Card\NetworkName;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Jobs\ScroogeRefundRetry;
+use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
+/**
+ * Trait Refund
+ *
+ * @package RZP\Models\Payment\Processor
+ *
+ * @property RefundEntity  $refund
+ */
 trait Refund
 {
     /**
@@ -250,8 +256,6 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
-        $input['reverse'] = $data['refund']['reverse'] ?? null;
-
         //
         // This is required for upi mindgate refunds. Second request on gateway with same refund id fails with duplicate.
         // Attempts will come from scrooge but still handling here to keep default value 0. Can't use API's attempts as
@@ -259,7 +263,7 @@ trait Refund
         //
         $input['attempts'] = $input['attempts'] ?? 0;
 
-        $data['refund'] = $input;
+        $data['refund']['attempts'] = $input['attempts'];
 
         $gatewayRefundResponse = $this->mutex->acquireAndRelease(
             $payment->getId(),
@@ -1123,6 +1127,26 @@ trait Refund
         {
             $refundData = $this->reverseOnGateway($data, $retry);
         }
+        else
+        {
+            //
+            // Flow reaching here that means its an auto refund case, where transaction can not be refunded or reversed.
+            // Earlier, these refunds were kept in created state forever, now marking them as processed as they are being
+            // refunded by gateway automatically, we can't do anything here.
+            //
+            // If code reaching here, gateway refunded is set as true, hence
+            // for new refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
+            //
+            // Marking refund as processed here for all other gateways and also if refund is of the date before that gateway
+            // moved to scrooge.
+            //
+            $gateway = $data['payment'][Payment\Entity::GATEWAY];
+
+            if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($gateway, $this->refund->getCreatedAt()) === false)
+            {
+                $this->refund->setStatusProcessed();
+            }
+        }
 
         return $refundData;
     }
@@ -1388,7 +1412,7 @@ trait Refund
 
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
-        $refundData = $refund->toArrayGateway();
+        $refundData = $refund->toArray();
 
         $extraData = [
             'method'                    => $payment->getMethod(),
@@ -1602,17 +1626,16 @@ trait Refund
 
         try
         {
-            $input = $this->getBankAccountInput($payment, $data);
-
             $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment);
 
-            if (($this->refund->hasBankAccount() === false) or
-                ($this->refund->bankAccount->matches($input) === false))
+            if (isset($data['vpa']) === true)
             {
-               $this->createAndAssociateBankAccount($input);
+                $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-
-            $fta = (new FundTransferAttempt\Core)->create($this->refund, $fundTransferAttemptInput);
+            else
+            {
+                $fta = $this->refundViaFundTransferToBankAccount($payment, $data, $fundTransferAttemptInput);
+            }
 
             $refundGateway = Settlement\Channel::getNodalGatewayFromChannel($fta->getChannel());
 
@@ -1626,12 +1649,9 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment(
-                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
 
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_REFUND_FAILURE);
+            $this->tracePaymentFailed($e->getError(), TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
@@ -1641,10 +1661,54 @@ trait Refund
         ];
     }
 
+    protected function refundViaFundTransferToVpa(array $data,
+                                                  array $fundTransferAttemptInput): FundTransferAttempt\Entity
+    {
+        $input = $data['vpa'];
+
+        return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
+        {
+            if (($this->refund->hasVpa() === false) or
+                ($this->refund->vpa->matches($input) === false))
+            {
+                $this->createAndAssociateVpa($input);
+            }
+
+            $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
+                                                                 $this->refund->vpa,
+                                                                 $fundTransferAttemptInput);
+
+            return $fta;
+        });
+    }
+
+    protected function refundViaFundTransferToBankAccount(Payment\Entity $payment,
+                                                          array $data,
+                                                          array $fundTransferAttemptInput): FundTransferAttempt\Entity
+    {
+        $input = $this->getBankAccountInput($payment, $data);
+
+        return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
+        {
+            if (($this->refund->hasBankAccount() === false) or
+                ($this->refund->bankAccount->matches($input) === false))
+            {
+                $this->createAndAssociateBankAccount($input);
+            }
+
+            $fta = (new FundTransferAttempt\Core)->createWithBankAccount($this->refund,
+                                                                         $this->refund->bankAccount,
+                                                                         $fundTransferAttemptInput);
+
+            return $fta;
+        });
+    }
+
     protected function isFundTransferAttemptRefund(Payment\Entity $payment, array $data = []): bool
     {
-        // Refund is explicitly being attempted towards a new bank account
-        if (isset($data['bank_account']) === true)
+        // Refund is explicitly being attempted towards a new bank account or vpa
+        if ((isset($data['bank_account']) === true) or
+            (isset($data['vpa']) === true))
         {
             return true;
         }
@@ -1771,6 +1835,13 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function createAndAssociateVpa(array $vpaInput)
+    {
+        $vpa = (new Core)->createVpa($vpaInput);
+
+        $this->refund->vpa()->associate($vpa);
     }
 
     protected function createAndAssociateBankAccount(array $bankAccountInput)

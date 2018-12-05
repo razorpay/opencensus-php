@@ -209,7 +209,7 @@
         <div id="box">
           <div class={{$data['invoice']['status']}}>
             <img id="logo" src="{{$data['merchant']['image']}}">
-            <div id="name">{{$data['invoice']['customer_details']['customer_name']}}&nbsp;</div>
+            <div id="name">{{{ $data['invoice']['customer_details']['customer_name'] }}}&nbsp;</div>
             Total Amount: <strong class="due">₹{{$data['invoice']['amount_formatted']}}</strong><br>
             Total Balance Due: <strong class="due">₹{{$data['invoice']['amount_due_formatted']}}</strong>
             <hr>
@@ -228,7 +228,7 @@
             maxlength="10"
             placeholder="Enter 10 Digit Indian Phone Number"
             pattern="^\d{10}$"
-            value="{{$data['invoice']['customer_details']['customer_contact']}}"
+            value="{{{ $data['invoice']['customer_details']['customer_contact'] }}}"
           >
           <span id="contact-help" class="help">Please enter 10 digit indian phone number</span>
           @if ($data['invoice']['partial_payment'])
@@ -320,7 +320,7 @@
                 amount: amountVal,
                 contact: contactVal,
                 @if ($data['invoice']['customer_details']['customer_email'])
-                email: "{{$data['invoice']['customer_details']['customer_email']}}"
+                email: "{{{ $data['invoice']['customer_details']['customer_email'] }}}"
                 @else
                 email: 'void@razorpay.com'
                 @endif

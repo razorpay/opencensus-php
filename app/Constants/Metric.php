@@ -17,6 +17,8 @@ class Metric
     const ASYNC_JOBS_RECEIVED_TOTAL             = 'async_jobs_received_total';
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
+    const SESSIONS_REDIS_LABS_MISS              = 'sessions_redis_labs_miss';
+    const SESSIONS_REDIS_READ_MISS              = 'sessions_redis_read_miss';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter

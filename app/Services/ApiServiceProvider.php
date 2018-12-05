@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -26,6 +27,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -243,6 +245,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
+
+        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -443,7 +447,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
+            'bank_transfer'             => BankTransfer\Entity::class,
 
             'subscription'              => Subscription\Entity::class,
             'promotion'                 => Promotion\Entity::class,
@@ -611,6 +617,15 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
+        });
+    }
+
+    protected function registerCustomSessionProvider()
+    {
+        $manager = $this->app['session'];
+
+        $manager->extend('custom', function($app) {
+            return new CustomSessionHandler($app);
         });
     }
 }
