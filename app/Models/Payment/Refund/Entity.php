@@ -105,7 +105,6 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::BATCH_ID,
-        self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
@@ -160,7 +159,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
-        self::ARN,
         self::ACQUIRER_DATA
     ];
 
@@ -540,21 +538,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        $app = \App::getFacadeRoot();
-
-        $auth = $app['basicauth'];
-
-        if (($auth->isAdminAuth() === true) or
-            (($auth->getMerchant() !== null) and
-             ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
-        {
-            $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
-        }
-    }
-
-    public function setPublicArnAttribute(array & $array)
-    {
-        $array[self::ARN] = $this->getAttribute(self::REFERENCE1);
+        $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
     }
 
     public function setReference1(string $value)

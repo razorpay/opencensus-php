@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Upi\Vpa;
+namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
 use RZP\Models\Customer\Repository as CustomerRepo;

@@ -14,6 +14,7 @@ class EsRepository extends \Razorpay\Spine\Repository
     use Base\Traits\Es\QueryBuilder
     {
         getSortParameter as public getDefaultSortParameter;
+        getFromAndToQueryAttribute as public getDefaultFromAndToQueryAttribute;
     }
 
     // Different actions on ES document
@@ -284,6 +285,17 @@ class EsRepository extends \Razorpay\Spine\Repository
     public function getSortParameter(): array
     {
         return $this->getDefaultSortParameter();
+    }
+
+    /**
+     * Returns the attribute on which range epoch parameters (i.e. from and to) are applied,
+     * defaults to created_at.
+     *
+     * @return string
+     */
+    public function getFromAndToQueryAttribute(): string
+    {
+        return $this->getDefaultFromAndToQueryAttribute();
     }
 
     /**

@@ -145,6 +145,7 @@ class Core extends Base\Core
 
         $mappingParams = [
              'role'       => $input[Entity::ROLE],
+             'product'    => $input[Merchant\Entity::PRODUCT],
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
         ];
@@ -153,7 +154,10 @@ class Core extends Base\Core
 
         $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $user->getId(), $input[Entity::ROLE]);
+        $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                                 $user->getId(),
+                                                                 $input[Entity::ROLE],
+                                                                 $input[Merchant\Entity::PRODUCT]);
 
         if (empty($mapping) === false)
         {
@@ -231,15 +235,17 @@ class Core extends Base\Core
      * @param Entity $user
      * @param string $merchantId
      * @param string $role
+     * @param string $product
      *
      * @return User
      */
-    public function detachAndAttachMerchantUser(Entity $user, string $merchantId, string $role)
+    public function detachAndAttachMerchantUser(Entity $user, string $merchantId, string $role, string $product)
     {
         // Detach the existing merchant User.
         $userMerchantMappingData = [
             'action'      => 'detach',
             'merchant_id' => $merchantId,
+            'product'     => $product,
         ];
 
         $this->updateUserMerchantMapping($user, $userMerchantMappingData);
@@ -249,6 +255,8 @@ class Core extends Base\Core
         $userMerchantMappingData['action'] = 'attach';
 
         $userMerchantMappingData['role'] = $role;
+
+        $userMerchantMappingData['product'] = $product;
 
         return $this->updateUserMerchantMapping($user, $userMerchantMappingData);
     }

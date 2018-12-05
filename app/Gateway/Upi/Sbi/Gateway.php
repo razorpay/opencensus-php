@@ -58,7 +58,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCollectRequestData($input);
 
-        $response = $this->sendGatewayRequest($request);
+        // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
+        // base/gateway's retry handler cannot be tested. so adding retry handler here to have
+        // atleast one gateway which can test this flow.
+        $response = $this->retryHandler(
+            [$this, 'sendGatewayRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 

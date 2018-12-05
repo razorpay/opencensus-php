@@ -5,17 +5,33 @@ namespace RZP\Models\PaymentLink\Template;
 use JsonSchema;
 use JsonSchema\Constraints\Constraint as JsonSchemaConstraint;
 
+use RZP\Models\Base\Entity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class UdfSchema
 {
+    /**
+     * We do not store regular expression in settings in db. A keyword is stored
+     * which is translated to regular expression per below map for validations.
+     * FE also has the same mapping for rendering view forms.
+     */
+    const PATTERN_NAME_TO_REGEX_MAP = [
+        'email'        => '^(?i)(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+        'number'       => '^[+-]?([0-9]*[.])?[0-9]+$',
+        'alphabets'    => '^(?i)([a-z]+ ?)*$',
+        'alphanumeric' => '^(?i)[a-z0-9]+$',
+        'phone'        => '^([0-9]){8,}$',
+        'amount'       => '^[0-9]+(.([0-9]){1,2})?$',
+        'url'          => '^(?i)(?:(?:http|https|ftp):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[0-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))|localhost)(?::\d{2,5})?(?:(\/|\?|#)[^\s]*)?$',
+    ];
+
     /**
      * @var string|null
      */
     public $schema;
 
     /**
-     * @var FileAccess
+     * @var StorageAccess
      */
     public $driver;
 
@@ -24,15 +40,12 @@ class UdfSchema
      */
     protected $exists = false;
 
-    public function __construct(string $id, string $name = null)
+    /**
+     * @param Entity $entity
+     */
+    public function __construct(Entity $entity)
     {
-        $path      = resource_path('jsonschema');
-        $extension = 'json';
-
-        // Initiate the file access driver
-        $this->driver = new FileAccess($path, $extension, $id, $name);
-
-        $this->init();
+        $this->init($entity);
     }
 
     public function exists(): bool
@@ -46,14 +59,52 @@ class UdfSchema
     }
 
     /**
-     * Return the JSON schema as an array
-     * Null, on error
+     * We keep schema in a variant format of RFC, except for the ones created in the beginning.
+     * Sample variant JSON schema: https://github.com/razorpay/dashboard/blob/f0fe97a7c96ce4501a958a73cbc2065d3bd01e56/web/js/merchant/containers/PaymentPages/Pages/V2/form_schema.js
+     * Sample standard JSON schema: http://json-schema.org/learn/miscellaneous-examples.html
      *
-     * @return mixed
+     * For validation purposes(existing libraries against RFC schema), this method does the conversion and returns the valid schema as array.
+     * @return array
      */
-    public function getSchemaDecoded()
+    public function getSchemaInRfcFormatForValidation(): array
     {
-        return json_decode($this->schema, true);
+        $schema = json_decode($this->schema, true);
+
+        // For backward compatibility.
+        if (is_sequential_array($schema) === false)
+        {
+            return $schema;
+        }
+
+        // Converts our variant JSON schema to standard JSON schema for validation usage.
+        $formatted = [
+            'title'      => '',
+            'type'       => 'object',
+            'required'   => [],
+            'properties' => [],
+        ];
+
+        foreach ($schema as $v)
+        {
+            $property = array_pull($v, 'name');
+            $required = array_pull($v, 'required');
+
+            if ($required === true)
+            {
+                $formatted['required'][] = $property;
+            }
+
+            // Remap pattern name to regular expression if exists
+            if ((isset($v['pattern']) === true) and
+                ((isset(self::PATTERN_NAME_TO_REGEX_MAP[$v['pattern']]) === true)))
+            {
+                $v['pattern'] = self::PATTERN_NAME_TO_REGEX_MAP[$v['pattern']];
+            }
+
+            $formatted['properties'][$property] = $v;
+        }
+
+        return $formatted;
     }
 
     /**
@@ -77,7 +128,7 @@ class UdfSchema
         //
         $validator->validate(
             $data,
-            $this->getSchemaDecoded(),
+            $this->getSchemaInRfcFormatForValidation(),
             JsonSchemaConstraint::CHECK_MODE_COERCE_TYPES);
 
         if ($validator->isValid() === false)
@@ -91,10 +142,25 @@ class UdfSchema
     }
 
     /**
-     * Initialize UDF schema properties
+     * Initialize UDF storage driver and underlying schema properties.
+     * @param Entity $entity
      */
-    protected function init()
+    protected function init(Entity $entity)
     {
+        // Initializes correct storage driver.
+        // For backward compatibility.
+        $jsonSchemaId = $entity->getUdfJsonschemaId();
+        if ($jsonSchemaId !== null)
+        {
+            $this->driver = new FileAccess(resource_path('jsonschema'), 'json', $jsonSchemaId);
+        }
+        // Now we use settings.
+        else
+        {
+            $this->driver = new SettingsAccess($entity);
+        }
+
+        // Loads schema and sets properties.
         $this->schema = $this->loadSchema();
         $this->exists = ($this->schema !== null);
     }

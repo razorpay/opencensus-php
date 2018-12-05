@@ -831,7 +831,7 @@ class RefundTest extends TestCase
             ['created_at' => $createdAt]);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
-        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000']);
+        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000', 'merchant_id' => '1MercShareTerm']);
 
         $payment = $this->fixtures->create(
             'payment:authorized',
@@ -1138,6 +1138,7 @@ class RefundTest extends TestCase
         $this->assertEquals('refund',$txn['type']);
 
         $this->assertEquals($refund['id'], $txn['entity_id']);
+        $this->assertEquals($txn['balance_id'], '10000000000000');
 
         Mail::assertQueued(RefundedMail::class);
     }

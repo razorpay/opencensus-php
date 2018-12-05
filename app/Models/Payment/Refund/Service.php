@@ -899,7 +899,8 @@ class Service extends Base\Service
             $refund->setErrorNull();
         }
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true)
+        if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
+                                                                  $refund->getCreatedAt()) === true)
         {
             $this->makeScroogeMarkRefundProcessedRequest($refund, $input);
         }
@@ -983,7 +984,8 @@ class Service extends Base\Service
                         'status' => $refund->getStatus()
                     ]);
 
-                if (Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true)
+                if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
+                                                                          $refund->getCreatedAt()) === true)
                 {
                     $data = [
                         Payment\Entity::STATUS => Status::PROCESSED

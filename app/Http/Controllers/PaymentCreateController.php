@@ -356,6 +356,13 @@ class PaymentCreateController extends Controller
         return $this->returnCallbackResponse($data);
     }
 
+    public function postRedirect3ds($id)
+    {
+        $data = $this->service(E::PAYMENT)->redirectTo3ds($id);
+
+        return $this->processCoprotoData($data);
+    }
+
     protected function returnCallbackResponse($data)
     {
         if (isset($data['type']))

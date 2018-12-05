@@ -38,6 +38,7 @@ class Options
         'currency_filter',
         'debit_recurring_filter',
         'atom_filter',
+        'sbi_emi_filter',
     ];
 
     public function __construct()

@@ -19,6 +19,7 @@ class Module
     const ONBOARDING    = 'onboarding';
     const OPENWALLET    = 'openwallet';
     const SUBSCRIPTIONS = 'subscriptions';
+    const PAYMENT_LINK  = 'payment_link';
 
     /**
      * @param string $module

@@ -97,7 +97,7 @@ class Server extends Base\Mock\Server
         $input = (array) simplexml_load_string($input);
 
         $responseData = [
-            Fields::RESULT         => Fss\Status::SUCCESS,
+            Fields::RESULT         => '',
             Fields::AMOUNT         => $input[Fields::AMOUNT],
             Fields::TRACK_ID       => $input[Fields::TRACK_ID],
             Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],

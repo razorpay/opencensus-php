@@ -228,7 +228,8 @@ class BankTransferTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
-        $this->assertEquals($attempt['utr'], $refund['arn']);
+
+        $this->assertEquals($attempt['utr'], $refund['reference1']);
     }
 
     public function testBankTransferRefundYesbank()
@@ -1500,7 +1501,7 @@ class BankTransferTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
-        $this->assertEquals($attempt['utr'], $refund['arn']);
+        $this->assertEquals($attempt['utr'], $refund['reference1']);
     }
 
     public function testBankTransferInsert()

@@ -71,11 +71,6 @@ class CreateBalance extends Migration
      */
     public function down()
     {
-        Schema::table(Table::BALANCE, function($table)
-        {
-            $table->dropForeign(Table::BALANCE.'_'.Balance::ID.'_foreign');
-        });
-
         Schema::drop(Table::BALANCE);
     }
 }

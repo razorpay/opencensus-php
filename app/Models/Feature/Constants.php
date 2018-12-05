@@ -101,6 +101,7 @@ class Constants
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
+    const INVOICE_NO_RECEIPT_UNIQUE       = 'invoice_no_receipt_unique';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -243,6 +244,7 @@ class Constants
         self::SKIP_CVV                        => true,
         self::BLOCK_SETTLEMENTS               => true,
         self::SKIP_INTERNATIONAL_AUTH         => true,
+        self::INVOICE_NO_RECEIPT_UNIQUE       => true,
     ];
 
     // Entity type constants
