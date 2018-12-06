@@ -7,6 +7,7 @@ use Mockery;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\RequestProcessor\Base;
 
 trait ReconTrait
 {
@@ -24,7 +25,7 @@ trait ReconTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function reconcile(UploadedFile $uploadedFile, $gateway)
+    protected function reconcile(UploadedFile $uploadedFile, $gateway, $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
 
@@ -33,6 +34,14 @@ trait ReconTrait
             'gateway'          => $gateway,
             'attachment-count' => 1,
         ];
+
+        if (empty($forceAuthorizePayments) === false)
+        {
+            foreach ($forceAuthorizePayments as $forceAuthorizePayment)
+            {
+                $input[Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
+            }
+        }
 
         $request = [
             'url'     => '/reconciliate',
