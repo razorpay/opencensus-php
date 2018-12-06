@@ -106,13 +106,14 @@ class Gateway
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
     //
     // Stores boolean value indicating refund was successful or not
-    const SUCCESS            = 'success';
+    const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
-    const STATUS_CODE        = 'status_code';
+    const STATUS_CODE               = 'status_code';
     // Stores array of gateway related keys such as refund_id, auth_code
-    const GATEWAY_KEYS       = 'gateway_keys';
+    const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
-    const GATEWAY_RESPONSE   = 'gateway_response';
+    const GATEWAY_RESPONSE          = 'gateway_response';
+    const GATEWAY_VERIFY_RESPONSE   = 'gateway_verify_response';
 
     //
     // If for a merchant, the esigner gateway is not assigned via config,
