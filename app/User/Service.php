@@ -504,7 +504,8 @@ class Service extends Base\Service
     {
         $enableInstantActivations = true;
 
-        if (isset($data['created_at']) === false)
+        if ((isset($data['created_at']) === false)
+            or ($data['activation_flow'] !== null))
         {
             $enableInstantActivations = true;
         }
