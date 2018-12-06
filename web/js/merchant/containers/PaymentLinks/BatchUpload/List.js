@@ -79,8 +79,8 @@ export default class BatchListContainer extends Component {
     const { sms_notify, email_notify } = this.state;
     const notify = sms_notify || email_notify;
     const batchFormInitialValues = {
-      draft: 0, //for backward compatibility
       config: {
+        draft: 0, //for backward compatibility
         sms_notify: false,
         email_notify: false,
       },
