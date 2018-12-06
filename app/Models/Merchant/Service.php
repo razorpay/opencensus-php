@@ -337,7 +337,9 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -495,6 +497,17 @@ class Service extends Base\Service
         $this->app['workflow']
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
+        {
+            // removing diwali_promotional_plan
+            (new Feature\Service)->deleteEntityFeature(
+                'accounts',
+                $merchant->getId(),
+                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
+                [Feature\Entity::SHOULD_SYNC => true]
+            );
+        }
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
@@ -2420,7 +2433,9 @@ class Service extends Base\Service
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $product);
 
         return $merchant->toArrayPublic();
     }

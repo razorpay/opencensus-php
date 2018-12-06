@@ -7,9 +7,38 @@ use Request;
 
 class PayoutController extends Controller
 {
+    public function postCustomerPayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->customerPayout($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMerchantPayoutOnDemand()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantPayoutOnDemand($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postInternalMerchantPayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalMerchantPayout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPayout(string $id)
     {
-        $data = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $data = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -23,38 +52,11 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postPayout()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->create($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postMerchantPayout()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->merchantPayout($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postPayoutRetry()
     {
         $input = Request::all();
 
         $data = $this->service()->processFailedPayouts($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postMerchantPayoutOnDemand()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->merchantPayoutOnDemand($input);
 
         return ApiResponse::json($data);
     }

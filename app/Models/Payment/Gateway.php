@@ -46,6 +46,7 @@ class Gateway
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
@@ -188,8 +189,10 @@ class Gateway
     * since their verify API's stop working after a certain time
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
+        self::UPI_SBI,
         self::CARD_FSS,
         self::AXIS_MIGS,
+        self::FIRST_DATA,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
@@ -202,6 +205,7 @@ class Gateway
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
         self::UPI_ICICI,
+        self::UPI_MINDGATE,
     ];
 
     /**
@@ -472,7 +476,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1537966190
         ],
         Payment\Gateway::CARD_FSS       => [
-            self::GO_LIVE_TIMESTAMP => 1543573854
+            self::GO_LIVE_TIMESTAMP => 1543816680
         ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
@@ -577,6 +581,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_VIJAYA,
         ],
 
         //
@@ -888,6 +893,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
+        self::NETBANKING_VIJAYA,
     ];
 
     /**
@@ -1150,6 +1156,7 @@ class Gateway
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1171,6 +1178,7 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

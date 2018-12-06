@@ -48,7 +48,7 @@
             var data = {!!utf8_json_encode($data)!!};
 
             var templateData = {
-                is_test_mode: true,
+                is_test_mode: data.is_test_mode,
                 merchant: data.merchant,
                 payment_page_data: data.payment_link,
                 context: {

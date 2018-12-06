@@ -397,5 +397,7 @@ return [
 
     E::PAYMENT_LINK => [],
 
-    E::BENEFICIARY => [],
+    E::CONTACT => [],
+
+    E::FUND_ACCOUNT => [],
 ];

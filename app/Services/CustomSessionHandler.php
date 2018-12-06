@@ -81,11 +81,6 @@ class CustomSessionHandler implements \SessionHandlerInterface
                 $this->write($sessionId, $response);
             }
 
-            if (empty($response) === true)
-            {
-                $this->trace->count(Metric::SESSIONS_REDIS_READ_MISS, []);
-            }
-
             return $response;
         }
         catch (\Throwable $e)

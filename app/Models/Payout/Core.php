@@ -2,37 +2,29 @@
 
 namespace RZP\Models\Payout;
 
-use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Customer;
-use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
-use RZP\Constants\Timezone;
-use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
-use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-
 
 class Core extends Base\Core
 {
     const PAYOUT_RETRY          = 'payout_retry_%s';
 
-    const MUTEX_RESOURCE        = 'ES_PROCESSING_%s_%s';
+    const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING_%s_%s';
 
     const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
 
     const MUTEX_LOCK_TIMEOUT    = 300;
 
-    const ES_MUTEX_LOCK_TIMEOUT = 180;
+    const PAYOUT_MUTEX_LOCK_TIMEOUT = 180;
 
     /**
      * @var Mutex
@@ -47,61 +39,25 @@ class Core extends Base\Core
     }
 
     /**
-     * Create a direct payout - source from merchant balance
-     *
-     * @param  array $input
-     * @param  Merchant\Entity $merchant
-     *
-     * @return Entity
-     */
-    public function directPayout(array $input, Merchant\Entity $merchant): Entity
-    {
-        return $this->repo->transaction(function () use ($input, $merchant)
-        {
-            $payout = $this->createCustomerPayout($input, $merchant);
-
-            $this->repo->saveOrFail($payout);
-
-            return $payout;
-        });
-    }
-
-    /**
-     * Create a payment payout - from a source payment
-     *
-     * @param  array $input
-     * @param  Payment\Entity $payment
-     * @param  Merchant\Entity $merchant
-     *
-     * @return Entity
-     */
-    public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant): Entity
-    {
-        (new Validator)->validatePaymentForPayout($input, $payment);
-
-        $payout = $this->createCustomerPayout($input, $merchant);
-
-        $payout->payment()->associate($payment);
-
-        $this->repo->saveOrFail($payout);
-
-        return $payout;
-    }
-
-    /**
      * Here, onDemand is used to do payout calculation for
      * merchant with es_on_demand feature enabled
      *
-     * @param array $input
      * @param Merchant\Entity $merchant
-     * @return array
-     * @throws Exception\BadRequestException
+     * @param array           $input
+     *
+     * @return mixed|null
      */
-    public function merchantPayout(array $input, Merchant\Entity $merchant): array
+    public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
+        $this->trace->info(
+            TraceCode::PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        $payout = $this->mutex->acquireAndRelease(
+        return $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use ($input, $merchant)
             {
@@ -119,18 +75,86 @@ class Core extends Base\Core
                     Entity::TYPE      => $onDemand,
                 ];
 
-                return $this->repo->transaction(function () use ($payoutInput, $merchant) {
-                    $payout = $this->createMerchantPayout($payoutInput, $merchant);
-
-                    $this->repo->saveOrFail($payout);
-
-                    $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
-
-                    return $payout->toArrayPublic();
-                });
+                return $this->getProcessor('merchant_payout', $merchant)->createPayout($payoutInput);
             },
-            self::ES_MUTEX_LOCK_TIMEOUT,
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+    }
+
+    public function createPayoutToCustomer(array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_CUSTOMER_CREATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $customerId = $input[Entity::CUSTOMER_ID] ?? null;
+
+        if (is_string($customerId) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('customer_id is mandatory for the payout');
+        }
+
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
+
+        return $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function() use ($input, $customerId, $merchant)
+            {
+                return $this->getProcessor('customer_payout', $merchant, $customerId)->createPayout($input);
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+    }
+
+    public function createPayoutToCustomerWallet(string $customerId, array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST,
+            [
+                'input' => $input,
+                'customer_id' => $customerId
+            ]);
+
+        // We are doing this so that validations do not fail in createPayout.
+        // We don't want to remove it from the input validation to ensure that
+        // customer wallet payout always has a customer_id.
+        // (instead of relying on function params)
+        $input[Entity::CUSTOMER_ID] = $customerId;
+
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
+
+        return $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function() use ($input, $customerId, $merchant)
+            {
+                return $this->getProcessor('customer_wallet_payout', $merchant, $customerId)->createPayout($input);
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+    }
+
+    public function createPayoutFromPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_FOR_PAYMENT_CREATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        //
+        // The mutex for this is handled in `createPayoutToCustomer`.
+        //
+
+        (new Validator)->validatePaymentForPayout($input, $payment);
+
+        $payout = $this->createPayoutToCustomer($input, $merchant);
+
+        $payout->payment()->associate($payment);
+
+        $this->repo->saveOrFail($payout);
 
         return $payout;
     }
@@ -215,140 +239,6 @@ class Core extends Base\Core
         return $payoutsRetried;
     }
 
-    protected function createCustomerPayout(array $input, Merchant\Entity $merchant): Entity
-    {
-        $this->validateMerchantStatus($merchant);
-
-        $payout = $this->createCustomerPayoutEntity($input, $merchant);
-
-        $payoutAttempt = $this->createPayoutAttemptEntity($payout);
-
-        $this->updatePayoutWithTxn($payout);
-
-        return $payout;
-    }
-
-    protected function createMerchantPayout(array $input, Merchant\Entity $merchant): Entity
-    {
-        $this->validateMerchantStatus($merchant);
-
-        $payout = $this->createMerchantPayoutEntity($input, $merchant);
-
-        $payoutAttempt = $this->createPayoutAttemptEntity($payout);
-
-        $this->updatePayoutWithTxn($payout);
-
-        return $payout;
-    }
-
-    protected function updatePayoutStatus(Base\PublicCollection $payouts, string $status)
-    {
-        $this->repo->payout->updateStatus($payouts, $status);
-    }
-
-    protected function createCustomerPayoutEntity(array $input, Merchant\Entity $merchant): Entity
-    {
-        $payout = (new Entity)->build($input);
-
-        $customer = $this->getCustomer($input, $merchant);
-
-        $destination = $this->getPayoutDestination($input, $merchant, $customer);
-
-        // $payout->setChannel($merchant->getChannel());
-        $payout->setChannel(Settlement\Channel::YESBANK);
-
-        $payout->merchant()->associate($merchant);
-
-        $payout->customer()->associate($customer);
-
-        $payout->destination()->associate($destination);
-
-        return $payout;
-    }
-
-    protected function createMerchantPayoutEntity(array $input, Merchant\Entity $merchant): Entity
-    {
-        $payout = new Entity;
-
-        $payout->getValidator()->validateInput('merchant_payout', $input);
-
-        $payout->generate($input);
-
-        $payout->fill($input);
-
-        $destination = $merchant->bankAccount;
-
-        $payout->setChannel($merchant->getChannel());
-
-        $payout->merchant()->associate($merchant);
-
-        $payout->destination()->associate($destination);
-
-        return $payout;
-    }
-
-    public function createPayoutAttemptEntity(Entity $payout): FundTransferAttempt\Entity
-    {
-        $fundTransferAttempt = new FundTransferAttempt\Entity;
-
-        $values = [
-            FundTransferAttempt\Entity::PURPOSE         => $payout->getPurpose(),
-            FundTransferAttempt\Entity::CHANNEL         => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
-            FundTransferAttempt\Entity::NARRATION       => 'RAZORPAY SETTLEMENT',
-            FundTransferAttempt\Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
-        ];
-
-        $fundTransferAttempt->fillAndGenerateId($values);
-
-        $fundTransferAttempt->source()->associate($payout);
-
-        $fundTransferAttempt->merchant()->associate($payout->merchant);
-
-        $fundTransferAttempt->bankAccount()->associate($payout->destination);
-
-        $this->repo->saveOrFail($fundTransferAttempt);
-
-        return $fundTransferAttempt;
-    }
-
-    protected function getCustomer(array $input, Merchant\Entity $merchant): Customer\Entity
-    {
-        $customerId = $input[Entity::CUSTOMER_ID];
-
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
-
-        return $customer;
-    }
-
-    public function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer)
-    {
-        $destId = $input[Entity::DESTINATION];
-
-        $destination = null;
-
-        if ($input[Entity::METHOD] === Method::FUND_TRANSFER)
-        {
-            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destId, $merchant);
-
-            // Check if the bank account destination is linked to the customer
-            if ($destination->getEntityId() !== $customer->getId())
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Invalid destination_id: " . $destination->getPublicId());
-            }
-        }
-
-        if (empty($destination) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Destination not valid for the method " . $input[Entity::METHOD]);
-        }
-
-        return $destination;
-    }
-
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
@@ -359,7 +249,7 @@ class Core extends Base\Core
         }
         else
         {
-            $merchantBalance = $merchant->balance->getBalance();
+            $merchantBalance = $merchant->primaryBalance->getBalance();
 
             if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
@@ -382,7 +272,6 @@ class Core extends Base\Core
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
-
             throw new Exception\BadRequestValidationFailureException(
                 "amount is less than min amount",
                 Entity::MIN_AMOUNT,
@@ -407,49 +296,6 @@ class Core extends Base\Core
         return $amount;
     }
 
-    protected function updatePayoutWithTxn(Entity $payout)
-    {
-        $txnCore = new Transaction\Core;
-
-        $txn = $txnCore->createFromPayout($payout);
-
-        $payout->setFees($txn->getFee());
-
-        $payout->setTax($txn->getTax());
-
-        $this->validateMerchantBalance($payout);
-
-        $txnCore->updateBalances($txn, true);
-
-        $this->repo->saveOrFail($txn);
-    }
-
-    protected function validateMerchantBalance(Entity $payout)
-    {
-        $debitAmount = $payout->getAmount() + $payout->getFees();
-
-        $hasBalance = (new Merchant\Balance\Core)
-                           ->checkMerchantBalance($payout->merchant, $debitAmount);
-
-        if ($hasBalance === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE);
-        }
-    }
-
-    protected function validateMerchantStatus(Merchant\Entity $merchant)
-    {
-        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
-        // then we don't check the merchant funds_on_hold and proceed with payout creation
-        if (($merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
-            ($merchant->getHoldFunds() === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
-        }
-    }
-
     protected function getCurrency(array $input): string
     {
         if (isset($input[Entity::CURRENCY]) === true)
@@ -463,5 +309,14 @@ class Core extends Base\Core
     protected function getOnDemandStatus(array $input): string
     {
         return ($input[Entity::TYPE] ?? Entity::DEFAULT);
+    }
+
+    protected function getProcessor(string $type, Merchant\Entity $merchant, ...$args): Processor\Base
+    {
+        $processor = __NAMESPACE__ . '\\' . 'Processor';
+
+        $processor .= '\\' . studly_case($type);
+
+        return new $processor($merchant, ...$args);
     }
 }

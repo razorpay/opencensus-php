@@ -17,7 +17,7 @@ class Repository extends Base\Repository
     public function findByEmail(string $email)
     {
         return $this->newQuery()
-                    ->where(Entity::EMAIL, '=', $email)
+                    ->where(Entity::EMAIL, '=', strtolower($email))
                     ->firstOrFailPublic();
     }
 

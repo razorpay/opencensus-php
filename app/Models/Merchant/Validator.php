@@ -999,4 +999,9 @@ class Validator extends Base\Validator
                 'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
     }
+
+    public function validateBusinessBankingActivated()
+    {
+        // Todo - If validated assumes banking type balance exists and allows virtual account creation
+    }
 }
