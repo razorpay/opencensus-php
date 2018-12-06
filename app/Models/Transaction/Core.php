@@ -1179,7 +1179,10 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
+            $merchant,
+            $payment->getMethod(),
+            $payment->isInternational());
 
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
@@ -1197,8 +1200,10 @@ class Core extends Base\Core
         else
         {
             // Unused as there wont be any merchant without schedule.
-            // TODO: fix test cases as this condition will run while runnig test. remove condition once tests fixed
-            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            // TODO: fix test cases as this condition will run while running test. remove condition once tests fixed
+            $addDays = $payment->isInternational() === true ?
+                       Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                       Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             //
             // Not handling 24x7 settlements for daily schedules.
@@ -1225,9 +1230,9 @@ class Core extends Base\Core
         return null;
     }
 
-    public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
+    public function calculateSettledAtTimestamp($capturedAtTimestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $capturedAt = Carbon::createFromTimestamp($capturedAtTimestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 

@@ -600,7 +600,7 @@ class Service extends Base\Service
         {
             try
             {
-                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+                $defaultDelay = Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
                 $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
