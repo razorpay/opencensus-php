@@ -135,6 +135,8 @@ class Service extends Base\Service
      */
     protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '')
     {
+        $merchantInputData[Merchant\Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
+
         $merchantData = (new Merchant\Service)->create($merchantInputData);
 
         if (empty($referrer) === false)
@@ -275,7 +277,7 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        $user = $this->auth->getUser();
 
         $response = (new Core)->get($user);
 
