@@ -18,6 +18,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingAllahabadGatewayTest extends TestCase
 {
+    protected $payment;
+
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -165,6 +167,42 @@ class NetbankingAllahabadGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testUserCancelledNetbankingEntity');
+    }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:allahabad_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['amount'] = $order['amount'];
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTpvPaymentEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
     protected function mockFailedCallbackResponse()

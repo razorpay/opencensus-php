@@ -79,6 +79,7 @@ class Shared
     const HITACHI_MOTO_TERMINAL              = '10hitachMotoTl';
     const ENSTAGE_TERMINAL                   = '100ensgageTrml';
     const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
+    const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

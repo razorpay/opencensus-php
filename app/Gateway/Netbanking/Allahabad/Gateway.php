@@ -118,6 +118,11 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
         ];
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
+
         return $data;
     }
 

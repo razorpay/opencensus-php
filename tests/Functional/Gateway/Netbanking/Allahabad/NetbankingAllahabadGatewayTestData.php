@@ -144,4 +144,36 @@ return [
         'status'          => 'C',
         'bank_payment_id' => null,
     ],
+
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'ALLA',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testTpvPaymentEntity' => [
+        'amount'          => 500,
+        'action'          => 'authorize',
+        'bank'            => 'ALLA',
+        'bank_payment_id' => '99999',
+        'status'          => 'Y',
+        'reference1'      => null,
+        'received'        => true,
+    ],
 ];
