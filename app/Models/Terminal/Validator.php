@@ -75,6 +75,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
+        Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
     ];
 
@@ -408,6 +409,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingVijayaTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+    ];
+
+    protected static $netbankingVijayaEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
     ];
 
     protected static $walletJiomoneyTerminalRules = [

@@ -76,6 +76,7 @@ class Netbanking
         IFSC::CSBK,
         IFSC::CNRB,
         IFSC::ESFB,
+        IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -333,6 +334,11 @@ class Netbanking
         Gateway::NETBANKING_IDFC => [
             'retail' => [
                 IFSC::IDFB
+            ]
+        ],
+        Gateway::NETBANKING_VIJAYA => [
+            'retail' => [
+                IFSC::VIJB
             ]
         ],
         Gateway::NETBANKING_HDFC => [
