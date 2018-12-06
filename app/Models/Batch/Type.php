@@ -38,6 +38,8 @@ class Type
 
     const AUTH_LINK             = 'auth_link';
 
+    const INSTANT_ACTIVATION    = 'instant_activation';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -98,6 +100,7 @@ class Type
         self::PARTNER_SUBMERCHANTS,
         self::ENTITY_MAPPING,
         self::AUTH_LINK,
+        self::INSTANT_ACTIVATION,
     ];
 
     /**
