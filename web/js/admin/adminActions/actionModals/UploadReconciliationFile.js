@@ -29,6 +29,7 @@ const gateWayOptions = [
   'Jiomoney',
   'Hitachi',
   'SBI Buddy',
+  'UpiAxis',
   'UpiSbi',
   'UpiIcici',
   'UpiHulk',
