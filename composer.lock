@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -5784,16 +5784,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.2.3",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "db64ebef5449b4143e44efb78c943e9eff4f8a25"
+                "reference": "457e17be7ccc728343d96d31d9faa1dcd89e1f36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/db64ebef5449b4143e44efb78c943e9eff4f8a25",
-                "reference": "db64ebef5449b4143e44efb78c943e9eff4f8a25",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/457e17be7ccc728343d96d31d9faa1dcd89e1f36",
+                "reference": "457e17be7ccc728343d96d31d9faa1dcd89e1f36",
                 "shasum": ""
             },
             "require": {
@@ -5827,7 +5827,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-10-26T06:26:16+00:00"
+            "time": "2018-12-06T08:48:51+00:00"
         },
         {
             "name": "razorpay/metrics-php",
