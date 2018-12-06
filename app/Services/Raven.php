@@ -20,6 +20,8 @@ class Raven
     const REQUEST_TIMEOUT = 60;
 
     const TEST_SMS_ID     = '10000000000sms';
+    // If raven service is mock, this OTP only is evaluated as true in verify.
+    const MOCK_VALID_OTP = '0007';
 
     protected $baseUrl;
 
@@ -86,7 +88,7 @@ class Raven
         if ($this->mode === Mode::TEST)
         {
             return [
-                self::OTP        => Mock\Raven::MOCK_VALID_OTP,
+                self::OTP        => self::MOCK_VALID_OTP,
                 self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
             ];
         }
@@ -124,7 +126,7 @@ class Raven
 
         if ($this->mode === Mode::TEST)
         {
-            if ($input['otp'] !== Mock\Raven::MOCK_VALID_OTP)
+            if ($input['otp'] !== self::MOCK_VALID_OTP)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
             }

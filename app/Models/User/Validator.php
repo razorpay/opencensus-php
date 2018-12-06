@@ -30,7 +30,6 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200',
-        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15',
         Entity::SETTINGS              => 'nullable|associative_array',
     ];

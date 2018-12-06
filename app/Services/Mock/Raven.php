@@ -2,13 +2,13 @@
 
 namespace RZP\Services\Mock;
 
+use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Services\Raven as BaseRaven;
+use RZP\Exception\BadRequestException;
 
 class Raven extends BaseRaven
 {
-    // If raven service is mock, this OTP only is evaluated as true in verify.
-    const MOCK_VALID_OTP = '0007';
-
     public function sendOtp(array $input): array
     {
         return [self::SMS_ID => self::TEST_SMS_ID];
@@ -21,6 +21,19 @@ class Raven extends BaseRaven
 
     public function verifyOtp(array $input): array
     {
-        return ['success' => ($input['otp'] === self::MOCK_VALID_OTP)];
+        if ($input[self::OTP] !== self::MOCK_VALID_OTP)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+        }
+
+        return ['success' => true];
+    }
+
+    public function generateOtp(array $input): array
+    {
+        return [
+            self::OTP        => self::MOCK_VALID_OTP,
+            self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
+        ];
     }
 }

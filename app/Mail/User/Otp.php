@@ -11,17 +11,17 @@ class Otp extends Mailable
     /**
      * @var string
      */
-    protected $action;
+    public $action;
 
     /**
      * @var array
      */
-    protected $user;
+    public $user;
 
     /**
      * @var array
      */
-    protected $otp;
+    public $otp;
 
     public function __construct(string $action, User\Entity $user, array $otp)
     {
