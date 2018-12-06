@@ -33,8 +33,8 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_STATE               => 'sometimes|max:2',
         Entity::BENEFICIARY_PIN                 => 'sometimes|integer|digits:6',
         Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
-        Entity::BENEFICIARY_EMAIL               => 'required|email',
-        Entity::BENEFICIARY_MOBILE              => 'required|numeric|digits_between:10,12',
+        Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
+        Entity::BENEFICIARY_MOBILE              => 'sometimes|numeric|digits_between:10,12',
     ];
 
     protected static $editRules = [
@@ -66,8 +66,14 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
     ];
 
+    protected static $addTpvBankAccountRules = [
+        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
+    ];
+
     protected static $addBankAccountValidators = [
-        Entity::BENEFICIARY_STATE
+        Entity::BENEFICIARY_STATE,
     ];
 
     protected static $beneficiaryStateCodes = [
@@ -121,9 +127,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIfscCode($mode = 'test')
+    public function validateIfscCode(array $input, $mode = 'test')
     {
-        $ifsc = $this->entity->getIfscCode();
+        $ifsc = $input[Entity::IFSC_CODE] ?? '';
 
         $ifsc = strtoupper($ifsc);
 

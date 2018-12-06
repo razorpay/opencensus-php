@@ -32,6 +32,7 @@ return [
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
+        'netbanking_vijaya',
         'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
@@ -85,6 +86,7 @@ return [
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
+    'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
@@ -474,6 +476,11 @@ return [
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_vijaya' => [
+        'test_merchant_id'       => env('NETBANKING_VIJAYA_GATEWAY_TEST_MERCHANT_ID'),
+        'merchant_constant'      => env('NETBANKING_VIJAYA_GATEWAY_MERCHANT_CONSTANT')
+    ],
+
     'netbanking_idfc' => [
         'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET'),
@@ -506,6 +513,9 @@ return [
 
         'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
         'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+
+        // Aditiya birla direct settlement TID
+        'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),
     ],
 
     'netbanking_axis' => [

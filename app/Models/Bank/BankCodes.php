@@ -114,6 +114,11 @@ class BankCodes
     const IFSC_VVSB = 'VVSB0000012';
     const IFSC_YESB = 'YESB0000001';
 
+    // inconsistent ifsc codes
+    const IFSC_BARB_R = 'BARB0MAINOF';
+    const IFSC_PUNB_R = 'PUNB0000100';
+    const IFSC_LAVB_R = 'LAVB0000175';
+    
     //
     // Kotak sends us 3 digit bank codes for IMPS transactions.
     // These are the ones we've collected till date.

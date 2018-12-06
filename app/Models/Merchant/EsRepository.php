@@ -446,4 +446,15 @@ class EsRepository extends Base\EsRepository
 
         return $query;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @return string
+     */
+    public function getFromAndToQueryAttribute(): string
+    {
+        return E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+    }
 }

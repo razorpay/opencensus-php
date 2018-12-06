@@ -245,16 +245,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
-        $shouldRetry = function ($e)
-        {
-            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
-        };
-
-        $response = $this->retryHandler(
-            [$this, 'getSoapResponse'],
-            [$requestContent],
-            $shouldRetry,
-            2);
+        $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
@@ -2309,5 +2300,49 @@ class Gateway extends Base\Gateway
         $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
+    }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::AUTHORIZE, Action::CAPTURE];
+    }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $requiredAction = Action::AUTHORIZE;
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $requiredAction = Action::PURCHASE;
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      $requiredAction);
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if (($gatewayPayment[Entity::TRANSACTION_RESULT] === Status::APPROVED) and
+            ($gatewayPayment[Entity::RECEIVED] === true))
+        {
+            return true;
+        }
+
+        $attributes = [
+            Entity::TRANSACTION_RESULT  => Status::APPROVED,
+            Entity::AUTH_CODE           => $input['gateway'][Entity::AUTH_CODE],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+
     }
 }

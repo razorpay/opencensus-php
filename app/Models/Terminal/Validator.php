@@ -74,6 +74,8 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
+        Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::EMI_SBI,
     ];
 
     protected static $createValidators = [
@@ -221,6 +223,18 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+    ];
+
+    protected static $emiSbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:' . Gateway::EMI_SBI,
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
+        Entity::ENABLED                    => 'required|in:0',
+    ];
+
+    protected static $emiSbiEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:' . Gateway::EMI_SBI,
+        Entity::ENABLED                    => 'required|in:0,1',
     ];
 
     protected static $axisMigsEditTerminalRules = [
@@ -382,6 +396,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingVijayaTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+    ];
+
+    protected static $netbankingVijayaEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+    ];
+
     protected static $walletJiomoneyTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_jiomoney',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -431,6 +455,7 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::TYPE                       => 'sometimes|array'
     ];
 
     protected static $upiHulkTerminalRules = [

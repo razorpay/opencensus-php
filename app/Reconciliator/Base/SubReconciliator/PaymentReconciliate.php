@@ -6,8 +6,9 @@ use App;
 
 use RZP\Models\Card;
 use RZP\Models\Payment;
-use Rzp\Trace\TraceCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
@@ -42,6 +43,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
         RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::UPI_AXIS,
         RequestProcessor\Base::UPI_HULK,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
@@ -89,11 +91,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $allowForceAuthorization = false;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Entity $batch = null)
     {
         parent::__construct($gateway);
 
         $this->messenger = new Messenger;
+
+        $this->messenger->batch = $batch;
 
         $this->paymentRepo     = $this->repo->payment;
         $this->iinRepo         = $this->repo->iin;
@@ -122,50 +126,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
-            // Setting reconciled attribute before pre Reconciled check to check for duplicate row
-            $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
-
-            // Increment the total count for the summary
-            $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
-
-            $this->runPreReconciledAtCheckRecon($rowDetails);
-
-            if ($this->reconciled === true)
-            {
-                $this->handleAlreadyReconciled($paymentId);
-
-                //
-                // Record gateway fee and service tax for reconciled payments
-                //
-                $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
-            }
-            else
-            {
-                $validate = $this->validatePaymentDetails($row);
-
-                if ($validate === true)
-                {
-                    $persistSuccess = $this->persistReconciliationData($rowDetails);
-
-                    if ($persistSuccess === false)
-                    {
-                        // Increment the failure count for the summary.
-                        $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
-                    }
-                }
-                else
-                {
-                    // Increment the failure count for the summary.
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
-                }
-            }
-
-            //
-            // Payment can be updated from setPaymentAcquirerData before validation or
-            // from markGatewayCapturedAsTrue after validation, for both cases we are
-            // saving payment entity here from single location to save update queries
-            //
-            $this->repo->saveOrFail($this->payment);
+            $this->processReconciliationRow($row, $rowDetails, $paymentId);
         }
         catch (\Exception $ex)
         {
@@ -188,6 +149,62 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    /**
+     * Core payment reconciliation functionalities
+     *
+     * @param $row
+     * @param $rowDetails
+     * @param $paymentId
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function processReconciliationRow($row, $rowDetails, $paymentId)
+    {
+        // Setting reconciled attribute before pre Reconciled check to check for duplicate row
+        $this->reconciled = $this->checkIfAlreadyReconciled($this->payment);
+
+        // Increment the total count for the summary
+        $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
+
+        $this->runPreReconciledAtCheckRecon($rowDetails);
+
+        if ($this->reconciled === true)
+        {
+            $this->handleAlreadyReconciled($paymentId);
+
+            //
+            // Record gateway fee and service tax for reconciled payments
+            //
+            $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
+        }
+        else
+        {
+            $validate = $this->validatePaymentDetails($row);
+
+            if ($validate === true)
+            {
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
+
+                if ($persistSuccess === false)
+                {
+                    // Increment the failure count for the summary.
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                }
+            }
+            else
+            {
+                // Increment the failure count for the summary.
+                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+            }
+        }
+
+        //
+        // Payment can be updated from setPaymentAcquirerData before validation or
+        // from markGatewayCapturedAsTrue after validation, for both cases we are
+        // saving payment entity here from single location to save update queries
+        //
+        $this->repo->saveOrFail($this->payment);
     }
 
     public function resetRowProcessingAttributes()
@@ -278,20 +295,26 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             return true;
         }
 
+        $this->traceRazorpayFailedPayment();
+
+        return $this->tryAuthorizeFailedPayment($row);
+    }
+
+    protected function traceRazorpayFailedPayment()
+    {
         //
         // In case the recon row's status field is a success, and api payment status is failed or created,
         // we would need to run the flow below, where we try to authorize the payment forcefully or via verify.
         //
-
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'message'    => 'Payment status is failed. Trying to authorize.',
-                'payment_id' => $this->payment->getId(),
-                'gateway'    => $this->gateway
+                'info_code'     => Base\InfoCode::RAZORPAY_FAILED_PAYMENT_RECON,
+                'message'       => 'Payment status is failed but present in MIS. Trying to authorize.',
+                'id'            => $this->payment->getId(),
+                'gateway'       => $this->gateway,
+                'payment'       => $this->payment->toArrayPublic()
             ]);
-
-        return $this->tryAuthorizeFailedPayment($row);
     }
 
     /**

@@ -36,7 +36,9 @@ class Core extends Base\Core
      * Creates a bank account entity, but doesn't save. Save is done later. Creation is needed
      * before because we need validations and generations to run for further processing.
      *
-     * @param array $input
+     * @param array  $input
+     *
+     * @param string $provider
      *
      * @return Entity
      */
@@ -57,7 +59,9 @@ class Core extends Base\Core
      * Implements mutex lock to avoid race conditions.
      * Catches validationExceptions to stop unnecessary retries.
      *
-     * @param array $input
+     * @param array  $input
+     *
+     * @param string $provider
      *
      * @return bool
      */
@@ -105,13 +109,14 @@ class Core extends Base\Core
         ];
     }
 
-     /*
+    /**
      * This exists for older bank transfer payments. For new payments, we
      * create the payer bank account with the mapped IFSC. For older ones,
      * if the bank account has no IFSC, we set it to the mapped IFSC now.
      *
-     * @param array  $input
      * @param Entity $bankTransfer
+     *
+     * @return BankAccount\Entity
      */
     protected function updateAndFetchPayerAccount(Entity $bankTransfer): BankAccount\Entity
     {
@@ -178,7 +183,9 @@ class Core extends Base\Core
      * when these APIs were being planned, but serves no real purpose now. To not lose the info,
      * all we do here is validate input, find the bank transfer and marked it as 'notified'.
      *
-     * @param array $input
+     * @param array  $input
+     *
+     * @param string $provider
      *
      * @return bool
      */
@@ -321,6 +328,8 @@ class Core extends Base\Core
      * If the last attempt failed with one of these messages, we
      * can consider it a hard bounce and not make more attempts.
      *
+     * @param $latestAttempt
+     *
      * @return boolean
      */
     protected function isRefundToNreAccount($latestAttempt)
@@ -429,7 +438,8 @@ class Core extends Base\Core
      * 2) To set fees in payment request, used in bank_tranfer_process
      *
      * @param  Order\Entity $order [description]
-     * @return [type]              [description]
+     *
+     * @return mixed
      */
     public function getFeesForOrder(Order\Entity $order)
     {
@@ -442,6 +452,13 @@ class Core extends Base\Core
         return $this->getFees($bankTransfer->getAmount(), $merchant, Currency::INR);
     }
 
+    /**
+     * @param int             $amount
+     * @param Merchant\Entity $merchant
+     * @param string          $currency
+     *
+     * @return mixed
+     */
     protected function getFees(int $amount, Merchant\Entity $merchant, string $currency)
     {
         $request = [

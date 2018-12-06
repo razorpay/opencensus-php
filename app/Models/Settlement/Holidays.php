@@ -195,7 +195,7 @@ class Holidays
         {
             $workingDay->addDay();
 
-            if (self::isWorkingDay($workingDay, $ignoreBankHolidays))
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays) === true)
             {
                 $countDays--;
             }

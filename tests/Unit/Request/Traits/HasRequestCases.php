@@ -188,10 +188,10 @@ trait HasRequestCases
         return $this->mockRouteRequest($name, $path);
     }
 
-    protected function mockDeviceRoute(
-        string $name = 'vpa_create',
-        string $path = 'upi/vpa'): Request
-    {
-        return $this->mockRouteRequest($name, $path, [], [self::$testKey, self::$testDeviceToken]);
-    }
+    // protected function mockDeviceRoute(
+    //     string $name = 'vpa_create',
+    //     string $path = 'vpa/create'): Request
+    // {
+    //     return $this->mockRouteRequest($name, $path, [], [self::$testKey, self::$testDeviceToken]);
+    // }
 }

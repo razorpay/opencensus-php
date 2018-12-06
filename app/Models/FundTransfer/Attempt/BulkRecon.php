@@ -122,9 +122,20 @@ class BulkRecon extends Base\Core
             }
         });
 
-        $summary = $this->getSummary();
+        try
+        {
+            $summary = $this->getSummary();
 
-        (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
+        }
 
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
