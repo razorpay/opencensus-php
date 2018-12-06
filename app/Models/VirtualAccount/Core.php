@@ -130,7 +130,7 @@ class Core extends Base\Core
 
             $virtualAccount->entity()->associate($order);
 
-            $balance = $balance ?: $virtualAccount->merchant->balance;
+            $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
 
             $virtualAccount->balance()->associate($balance);
 

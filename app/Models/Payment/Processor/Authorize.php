@@ -382,8 +382,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
+            $redirectUrl = null;
 
-            $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            if ($this->isRupayNetwork($payment) === false)
+            {
+                $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            }
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -414,7 +418,7 @@ trait Authorize
 
             $otpResend = 'otp_resend';
 
-            $resendUrl = '';
+            $resendUrl = null;
 
             if (in_array($otpResend, $next, true) === true)
             {
