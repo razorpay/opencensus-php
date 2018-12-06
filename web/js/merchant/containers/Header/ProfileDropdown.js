@@ -29,10 +29,6 @@ import SwitchMerchant, {
 )
 export default class ProfileDropdown extends Component {
   logout = () => {
-    if (window.fcWidget) {
-      // clear freshchat user promise on logout
-      window.fcWidget.user.clear();
-    }
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
