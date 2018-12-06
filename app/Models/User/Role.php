@@ -2,6 +2,8 @@
 
 namespace RZP\Models\User;
 
+use RZP\Models\Merchant\Balance\Type;
+
 class Role
 {
     const MANAGER               = 'manager';
@@ -54,9 +56,24 @@ class Role
         self::LINKED_ACCOUNT_OWNER
     ];
 
+    const PRODUCT_ROLES = [
+        Type::PRIMARY => self::ALL_ROLES,
+        Type::BANKING => [
+            self::OWNER,
+            self::ADMIN
+        ],
+    ];
+
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
+    }
+
+    public static function validateProductRole(string $role, string $product): bool
+    {
+        $productRoles = self::PRODUCT_ROLES[$product];
+
+        return (in_array($role, $productRoles, true) === true);
     }
 
     public static function allExceptPaymentLinkRoles()

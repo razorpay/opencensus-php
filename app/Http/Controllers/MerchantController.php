@@ -35,6 +35,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSwitchProductMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->switchProductMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchant($id)
     {
         $input = Request::all();

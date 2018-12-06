@@ -72,6 +72,10 @@ class Validator extends Base\Validator
         Entity::TOKEN                 => 'required|string|size:50',
     ];
 
+    protected static $actionValidators = [
+        'product_role'
+    ];
+
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',
@@ -106,6 +110,18 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateProductRole(array $input)
+    {
+        if (empty($input['role']) === false)
+        {
+            if (Role::validateProductRole($input['role'], $input['product']) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            }
+
+        }
+    }
+
     protected function validateOldPassword(array $input)
     {
         $user = $this->entity;
@@ -135,7 +151,8 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (Role::exists($role) === false) {
+        if (Role::exists($role) === false)
+        {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }
     }

@@ -2644,4 +2644,10 @@ class Service extends Base\Service
         }
         return false;
     }
+
+    protected function switchProductMerchant()
+    {
+        // Add Banking Role for the current merchant User.
+
+    }
 }
