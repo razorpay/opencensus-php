@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Models\Risk;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -76,9 +77,15 @@ trait HeadlessOtp
             return;
         }
 
-        $originalTermUrl = $request['content']['TermUrl'];
+        $originalTermUrl = null;
 
-        $this->setHeadlessDummyCallbackUrl($request['content']);
+        if (($this->isRupayNetwork($payment) === false) and
+            (isset($request['content']['TermUrl']) === true))
+        {
+            $originalTermUrl = $request['content']['TermUrl'];
+
+            $this->setHeadlessDummyCallbackUrl($request['content']);
+        }
 
         $data = [
             'payment_id' => $payment->getId(),
@@ -144,7 +151,10 @@ trait HeadlessOtp
         /*
          * If elf fail for unknow reason we are setting original termurl for fallback
         */
-        $request['content']['TermUrl'] = $originalTermUrl;
+        if ($originalTermUrl !== null)
+        {
+            $request['content']['TermUrl'] = $originalTermUrl;
+        }
 
         return $request;
     }
@@ -233,5 +243,18 @@ trait HeadlessOtp
         ]);
 
         (new IIN\Service)->disableIinFlow($iin, 'headless_otp');
+    }
+
+    protected function isRupayNetwork($payment)
+    {
+        $iinRelation = $payment->card->iinRelation;
+
+        if (($iinRelation !== null) and
+            ($iinRelation->getNetworkCode() === Card\Network::RUPAY))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
