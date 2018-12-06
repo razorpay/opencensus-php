@@ -181,6 +181,8 @@ class BladeGatewayTest extends TestCase
 
     public function testSignatureMissingFromValidPARes()
     {
+        $this->markTestSkipped('Temp: Contact @vivek to fix');
+
         $this->mockSignatureNotFound();
 
         $this->runRequestResponseFlow(
@@ -201,6 +203,8 @@ class BladeGatewayTest extends TestCase
 
     public function testBlankMessage()
     {
+        $this->markTestSkipped('Temp: Contact @vivek to fix');
+
         $this->runRequestResponseFlow(
             $data = $this->testData['testBlankMessage'],
             function()
@@ -279,6 +283,8 @@ class BladeGatewayTest extends TestCase
 
     public function testInvalidIReqCode()
     {
+        $this->markTestSkipped('Temp: Contact @vivek to fix');
+
         $response = $this->getInvalidIreqCode();
 
         $this->mockIReqCode($response);
