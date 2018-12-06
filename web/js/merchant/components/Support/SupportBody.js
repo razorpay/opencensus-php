@@ -78,22 +78,25 @@ export default class SupportBody extends Component {
                 For integration, account and payment issues
               </small>
             </li>
-            {window.rzp_user && window.rzp_user.activated ? (
-              <li
-                class={`support-item p-all chat ${
-                  shouldDisable && notifyCount < 1 ? 'disabled' : ''
-                }`}
-                onClick={() => handleClick('chat')}
-              >
-                Chat with us{' '}
-                <small class="help-content">(9am-6pm, working days)</small>
-                {notifyCount > 0 && (
-                  <span class="support-notify m-l">{notifyCount}</span>
-                )}
-                <small class="help-block">
-                  For quick questions or help on dashboard
-                </small>
-              </li>
+            {window.rzp_user ? (
+              window.rzp_user.activation_status === 'activated' ||
+              window.rzp_user.activation_status === 'under_review' ? (
+                <li
+                  class={`support-item p-all chat ${
+                    shouldDisable && notifyCount < 1 ? 'disabled' : ''
+                  }`}
+                  onClick={() => handleClick('chat')}
+                >
+                  Chat with us{' '}
+                  <small class="help-content">(9am-6pm, working days)</small>
+                  {notifyCount > 0 && (
+                    <span class="support-notify m-l">{notifyCount}</span>
+                  )}
+                  <small class="help-block">
+                    For quick questions or help on dashboard
+                  </small>
+                </li>
+              ) : null
             ) : null}
             {window.rzp_user &&
             window.rzp_user.experiments &&

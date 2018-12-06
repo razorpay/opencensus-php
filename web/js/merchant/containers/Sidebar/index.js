@@ -32,7 +32,6 @@ const BASE_ROUTES = {
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
-  request: '#request',
 };
 
 @withRouter

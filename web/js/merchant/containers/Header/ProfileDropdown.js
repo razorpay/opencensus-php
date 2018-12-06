@@ -29,6 +29,10 @@ import SwitchMerchant, {
 )
 export default class ProfileDropdown extends Component {
   logout = () => {
+    if (window.fcWidget) {
+      // clear freshchat user promise on logout
+      window.fcWidget.user.clear();
+    }
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
       .logout()
@@ -164,12 +168,6 @@ export default class ProfileDropdown extends Component {
                 </div>
               </React.Fragment>
             )}
-
-            <div className="media media-action">
-              <Link to="#request" className="media-body">
-                Raise a request
-              </Link>
-            </div>
 
             {mode === 'live' &&
               !showMobileNav && (
