@@ -74,7 +74,7 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($testData, $gatewayPayment);
 
-        $this->assertEquals($content['payment']['verified'], 1);
+        $this->assertEquals(1, $content['payment']['verified']);
     }
 
     public function testAuthorizeFailed()
@@ -172,9 +172,9 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($refund['status'], 'processed');
+        $this->assertEquals('processed', $refund['status']);
 
-        $this->assertEquals($refund['amount'], 50000);
+        $this->assertEquals(50000, $refund['amount']);
     }
 
     public function testRefundPartial()
@@ -185,13 +185,13 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['amount_refunded'], 10000);
+        $this->assertEquals(10000, $payment['amount_refunded']);
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($refund['amount'], 10000);
+        $this->assertEquals(10000, $refund['amount']);
 
-        $this->assertEquals($refund['status'], 'processed');
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testRefundFailed()
@@ -204,9 +204,9 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($refund['status'], 'failed');
+        $this->assertEquals('failed', $refund['status']);
 
-        $this->assertEquals($refund['internal_error_code'], 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED');
+        $this->assertEquals('GATEWAY_ERROR_PAYMENT_REFUND_FAILED', $refund['internal_error_code']);
     }
 
 
