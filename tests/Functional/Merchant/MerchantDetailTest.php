@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
@@ -57,7 +58,7 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
