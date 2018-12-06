@@ -17,6 +17,7 @@ export default function UploadSettlementReconciliation() {
         <option value="kotak">kotak</option>
         <option value="icici">icici</option>
         <option value="axis">axis</option>
+        <option value="axis2">Power Access</option>
         <option value="yesbank">yesbank</option>
         <option value="hdfc">hdfc</option>
         <option value="rbl">rbl</option>
