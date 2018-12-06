@@ -549,7 +549,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
-        if (($mode === MODE::LIVE) and
+        if (($mode === Mode::LIVE) and
             ($this->entity->transaction->isSettled() === false))
         {
             throw new Exception\BadRequestException(
@@ -753,8 +753,7 @@ class Validator extends Base\Validator
 
         $this->failIfNotAuthorized($payment);
 
-        // Removing this temporarily
-        // $this->captureAmountValidate($payment, $amount);
+        $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
     }

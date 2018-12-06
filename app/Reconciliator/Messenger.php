@@ -9,6 +9,8 @@ class Messenger
 {
     protected $app;
 
+    public $batch;
+
     protected $skipSlack = false;
 
     const ALERT = 'alert';
@@ -34,6 +36,14 @@ class Messenger
      */
     public function raiseReconAlert($data = [])
     {
+        //
+        // For recon summary alerts, batch_id will already be present. hence not replacing here.
+        //
+        if (empty($data['batch_id']) === true)
+        {
+            $data['batch_id'] = (empty($this->batch) === false) ? $this->batch->getId() : null;
+        }
+
         $this->notifySlack($data, self::ALERT);
         $this->traceReconAlert($data);
     }

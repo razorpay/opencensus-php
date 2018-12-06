@@ -50,6 +50,16 @@ class Payment extends Base
         return parent::createTransaction();
     }
 
+    protected function shouldUpdateBalance()
+    {
+        if ($this->source->isAuthorized() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function fillEmptyTxnFeesAndAmount()
     {
         $amount = $this->source->getBaseAmount();

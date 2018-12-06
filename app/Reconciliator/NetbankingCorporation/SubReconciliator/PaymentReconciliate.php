@@ -11,13 +11,6 @@ use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     protected function getPaymentId(array $row)
     {
         return $row[ReconciliationFields::MERCHANT_TXN_ID];
@@ -25,7 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+        return $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
     protected function getReferenceNumber($row)

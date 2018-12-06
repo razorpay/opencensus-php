@@ -81,6 +81,12 @@ return [
             'connection' => 'query_cache_live',
             'prefix'     => 'live',
         ],
+
+        'session' => [
+            'driver'     => 'redis',
+            'connection' => 'redis_labs',
+            'prefix'     => 'session',
+        ],
     ],
 
     /*

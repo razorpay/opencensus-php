@@ -10,15 +10,6 @@ use RZP\Reconciliator\NetbankingHdfc\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    protected $netbankingRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     protected function getPaymentId(array $row)
     {
         $reconStatus = $this->getReconPaymentStatus($row);
@@ -40,7 +31,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->netbankingRepo->findByPaymentIdAndAction($paymentId,
+        return $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
                                                                Action::AUTHORIZE);
     }
 

@@ -248,6 +248,13 @@ class BasicAuth
     protected $cloud;
 
     /**
+     * Request Origin Product gives the Product information (payment gateway or business banking).
+     *
+     * @var string
+     */
+    protected $requestOriginProduct = Merchant\Balance\Type::PRIMARY;
+
+    /**
      * Array of dashboard headers
      * @var array
      */
@@ -1894,6 +1901,32 @@ class BasicAuth
     public function getOrgHostName()
     {
         return $this->orgHostName;
+    }
+
+    /**
+     * @param string $requestOriginProduct
+     *
+     * @return $this
+     */
+    public function setRequestOriginProduct(string $requestOriginProduct)
+    {
+        $this->requestOriginProduct = $requestOriginProduct;
+
+        return $this;
+    }
+
+    public function getRequestOriginProduct(): string
+    {
+        return $this->requestOriginProduct;
+    }
+
+    /**
+     * Denotes if a request came from banking source or primary dashbaord
+     * @return bool
+     */
+    public function isBanking(): bool
+    {
+        return ($this->getRequestOriginProduct() === Merchant\Balance\Type::BANKING);
     }
 
     /**

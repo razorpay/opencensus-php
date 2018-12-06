@@ -48,6 +48,7 @@ class PayoutTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals('10000000000000', $txn['balance_id']);
 
         return $payout;
     }

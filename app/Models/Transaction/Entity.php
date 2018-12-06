@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -10,8 +12,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * Class Entity
@@ -22,10 +24,10 @@ use RZP\Models\Payment\Refund;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID                  = 'id';
+    use HasBalance;
+
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
-    const MERCHANT_ID         = 'merchant_id';
     const AMOUNT              = 'amount';
     const DEBIT               = 'debit';
     const CREDIT              = 'credit';
@@ -53,9 +55,9 @@ class Entity extends Base\PublicEntity
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
     const RECONCILED_TYPE     = 'reconciled_type';
+    const BALANCE_ID          = 'balance_id';
 
     // dummy columns usable later
-    const REFERENCE2          = 'reference2';
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
     const REFERENCE5          = 'reference5';
@@ -95,7 +97,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::CREDIT_TYPE,
         self::ON_HOLD,
-        self::SETTLED_AT
+        self::SETTLED_AT,
     ];
 
     protected $public = [
@@ -199,17 +201,27 @@ class Entity extends Base\PublicEntity
 
         $this->validateEntityIdUnique();
 
-        $entity->transaction()->associate($this);
+        //
+        // Besides transactions having source_id and source_type, most such
+        // source contain transaction_id (belongsTo) or transaction (morphTo)
+        // relation and hence below association is being done. But now newer
+        // source entities e.g. BankTransfer do not contain later kind of columns
+        // in them, is unnecessary.
+        //
+        if ($entity->transaction() instanceof BelongsTo)
+        {
+            $entity->transaction()->associate($this);
+        }
     }
 
     public function settlement()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Entity');
+        return $this->belongsTo(Settlement\Entity::class);
     }
 
     public function feesBreakup()
     {
-        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+        return $this->hasMany(FeeBreakup\Entity::class, 'transaction_id');
     }
 
     public function getCredit()
@@ -519,6 +531,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function setDebit($amount)
     {
         assert ($amount >= 0);
@@ -533,7 +550,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEntityIdAttribute(array & $array)
     {
-        $entity = Transaction\Type::getEntityClass($array[self::TYPE]);
+        $entity = Type::getEntityClass($array[self::TYPE]);
 
         $sign = $entity::getIdPrefix();
 
@@ -557,6 +574,11 @@ class Entity extends Base\PublicEntity
         assertTrue($tax >= 0);
 
         $this->setAttribute(self::TAX, $tax);
+    }
+
+    public function associateBalance(Merchant\Balance\Entity $balance)
+    {
+        $this->balance()->associate($balance);
     }
 
     public function setFeeBearer($bearer)

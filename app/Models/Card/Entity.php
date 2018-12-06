@@ -531,6 +531,7 @@ class Entity extends Base\PublicEntity
         // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
         // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
         $allowed = (($auth->isAdminAuth() === true) or
+                    ($auth->isSubscriptionsApp() === true) or
                     (($auth->isPrivilegeAuth() === false) and
                      (($auth->getMerchant() !== null) and
                       ($auth->getMerchant()->isExposeCardExpiryEnabled() === true))));
