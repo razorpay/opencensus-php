@@ -533,7 +533,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function addBankingRole()
+    public function addProductSwitchRole()
     {
         $user = $this->auth->getUser();
 
