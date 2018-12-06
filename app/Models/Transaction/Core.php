@@ -579,71 +579,9 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $merchant = $refund->merchant;
+        $txnProcessor = (new TransactionProcessor\Refund($refund));
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_CREATED_USING_V2,
-                [
-                    'refund_id' => $refund->getId()
-                ]);
-
-            $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-            list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-            return $txn;
-        }
-
-        // create Transaction
-        $txn = new Transaction\Entity;
-
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-
-        $txn->merchant()->associate($merchant);
-
-        $settledAt = $this->getSettledAtTimestampForRefund($refund);
-
-        $txnData = [
-            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
-            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
-            Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
-            Transaction\Entity::SETTLED_AT      => $settledAt
-        ];
-
-        if ($merchant->getRefundSource() === RefundSource::CREDITS)
-        {
-            $txnData[Transaction\Entity::DEBIT] = 0;
-
-            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
-
-            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
-        }
-
-        $txn->fill($txnData);
-
-        if ($payment->getStatus() === Payment\Status::CAPTURED)
-        {
-            // TODO : merge all balance and credits update in updateBalances
-            if ($merchant->getRefundSource() === RefundSource::CREDITS)
-            {
-                // transaction has to be saved as we create associated credit log
-                // transaction inside the updateCredits method.
-                $this->repo->saveOrFail($txn);
-
-                $this->updateCredits($txn, $refund);
-            }
-
-            $this->updateBalances($txn);
-        }
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
         return $txn;
     }
