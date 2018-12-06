@@ -4,6 +4,7 @@ namespace RZP\Trace\Metrics;
 
 use Razorpay\Metrics\Processors\Processor;
 use Razorpay\EC2Metadata\Ec2MetadataGetter;
+use RZP\Constants\Metric;
 
 class DimensionsProcessor implements Processor
 {
@@ -44,6 +45,14 @@ class DimensionsProcessor implements Processor
 
         // Stringify php values e.g. true -> 'true', 0 -> '0', as only unicode chars in label values is expected
         $dimensions = array_map('stringify', $dimensions);
+
+        foreach ($dimensions as $label => $value)
+        {
+            if ($value === '')
+            {
+                $dimensions[$label] = Metric::LABEL_NONE_VALUE;
+            }
+        }
 
         return $dimensions;
     }
