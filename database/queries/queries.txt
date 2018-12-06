@@ -4146,7 +4146,7 @@ ALTER TABLE refunds
     ADD COLUMN reference11 CHAR(14) DEFAULT NULL AFTER reference10,
     ADD COLUMN reference12 VARCHAR(255) DEFAULT NULL AFTER reference11;
 
-Alter table refunds
+ALTER TABLE refunds
     CHANGE reference8 bank_account_id VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
 
@@ -4412,7 +4412,6 @@ ALTER TABLE balance
     ADD INDEX `balance_merchant_id_index` (`merchant_id`),
     ALGORITHM=INPLACE, LOCK=NONE;
 
-
 UPDATE balance SET merchant_id = id , currency = 'INR'
     where merchant_id IS NULL LIMIT 1000;
 
@@ -4420,6 +4419,20 @@ ALTER TABLE subscription_registrations
     ADD COLUMN notes TEXT AFTER expire_at,
     ADD COLUMN token_id CHAR(14) AFTER customer_id,
     ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);
+
+ALTER TABLE refunds
+    CHANGE reference10 vpa_id CHAR(14) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN vpa_id CHAR(14) AFTER bank_account_id;
+
+ALTER TABLE vpas
+    DROP COLUMN customer_id;
+
+DROP TABLE vpa;
+
+DELETE FROM migrations WHERE migration = '2016_11_29_193757_create_vpa';
 
 ALTER TABLE merchants
     ADD COLUMN activation_source VARCHAR(255) DEFAULT NULL AFTER handle,
@@ -4464,3 +4477,7 @@ ALTER TABLE beneficiaries
 ALTER TABLE virtual_accounts
     ADD COLUMN balance_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD INDEX virtual_accounts_balance_id_merchant_id_index (balance_id, merchant_id);
+
+ALTER TABLE fund_accounts
+    DROP FOREIGN KEY fund_accounts_beneficiary_id_foreign,
+    DROP FOREIGN KEY fund_accounts_merchant_id_foreign;

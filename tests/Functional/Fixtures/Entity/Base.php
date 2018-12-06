@@ -64,6 +64,7 @@ class Base
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,
         'enach'             => \RZP\Gateway\Enach\Base\Entity::class,
+        'netbanking'        => \RZP\Gateway\Netbanking\Base\Entity::class,
         'wallet'            => \RZP\Gateway\Wallet\Base\Entity::class,
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,

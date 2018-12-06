@@ -860,7 +860,6 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'TestSenderVpa',
                 'username'              => 'sender',
                 'handle'                => 'razor',
-                'customer_id'           => 'TestGloblCstmr',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'created_at'            => time(),
                 'updated_at'            => time(),
@@ -872,7 +871,6 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'TestReceivrVpa',
                 'username'              => 'receiver',
                 'handle'                => 'razor',
-                'customer_id'           => 'TestGloblCstmr',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'created_at'            => time(),
                 'updated_at'            => time(),
@@ -1149,6 +1147,7 @@ class DatabaseSeeder extends Seeder
         $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingBobTerminals();
+        $this->createNetbankingVijayaTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createNetbankingCorporationTerminals();
         $this->createMobikwikTerminals();
@@ -1309,6 +1308,21 @@ class DatabaseSeeder extends Seeder
                 'corporate'             => '2',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createNetbankingVijayaTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_VIJAYA_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_VIJAYA,
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_vijaya',
                 'created_at'            => time(),
                 'updated_at'            => time(),
             )

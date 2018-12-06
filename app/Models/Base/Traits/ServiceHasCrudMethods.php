@@ -9,7 +9,6 @@ namespace RZP\Models\Base\Traits;
  * - $this->core
  * - $this->entityRepo
  * - $this->merchant
- *
  */
 trait ServiceHasCrudMethods
 {

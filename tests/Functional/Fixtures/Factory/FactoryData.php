@@ -672,7 +672,6 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
             'username'           => $faker->word,
             'handle'             => 'razorpay',
-            'customer_id'        => '100000customer',
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,

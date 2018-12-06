@@ -1084,6 +1084,19 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::INSTANT_ACTIVATION => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**

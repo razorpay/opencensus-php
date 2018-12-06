@@ -69,6 +69,7 @@ class Terminal extends Base
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingIdfcTerminal();
+        $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -1717,6 +1718,25 @@ class Terminal extends Base
             'netbanking'                => 1,
             'shared'                    => 1,
             'corporate'                 => 2,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingVijayaTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_VIJAYA_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_vijaya',
+            'gateway_merchant_id'       => 'netbanking_vijaya_merchant_id',
+            'gateway_merchant_id2'      => 'netbanking_vijaya_merchant_id2',
+            'netbanking'                => 1,
+            'shared'                    => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

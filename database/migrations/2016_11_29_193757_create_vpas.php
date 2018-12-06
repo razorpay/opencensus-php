@@ -37,17 +37,13 @@ class CreateVpas extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
-                  ->nullable();
-
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
-            //
-            // $table->foreign(Entity::MERCHANT_ID)
-            //       ->references(Merchant::ID)
-            //       ->on(Table::MERCHANT)
-            //       ->on_delete('restrict');
+            $table->foreign(Entity::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
             $table->unique([Entity::USERNAME, Entity::HANDLE]);
 
@@ -64,10 +60,10 @@ class CreateVpas extends Migration
      */
     public function down()
     {
-        // Schema::table(Table::VPA, function($table)
-        // {
-        //     $table->dropForeign(Table::VPA . '_' . Entity::MERCHANT_ID . '_foreign');
-        // });
+        Schema::table(Table::VPA, function($table)
+        {
+            $table->dropForeign(Table::VPA . '_' . Entity::MERCHANT_ID . '_foreign');
+        });
 
         Schema::drop(Table::VPA);
     }

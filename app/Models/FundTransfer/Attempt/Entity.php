@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID            = 'merchant_id';
     const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const VPA_ID                 = 'vpa_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
@@ -58,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::PURPOSE,
         self::BANK_ACCOUNT_ID,
+        self::VPA_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
         self::VERSION,
@@ -136,6 +138,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\Vpa\Entity');
+    }
+
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
@@ -176,11 +183,6 @@ class Entity extends Base\PublicEntity
     public function getBankStatusCode()
     {
         return $this->getAttribute(self::BANK_STATUS_CODE);
-    }
-
-    public function getEntityId()
-    {
-        return $this->getAttribute(self::ENTITY_ID);
     }
 
     public function getSourceId()
