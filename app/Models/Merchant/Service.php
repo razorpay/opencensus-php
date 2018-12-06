@@ -777,9 +777,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    /**
+     * Todo : $id is Not used to fetch merchant. Kept to support Backward Compatible.
+     * @param $id
+     * @param $input
+     * @return array
+     */
     public function addBankAccount($id, $input)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = app('basicauth')->getMerchant();
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
@@ -1274,11 +1280,15 @@ class Service extends Base\Service
 
         $failedIds = [];
 
+        $bankAccountCore = new BankAccount\Core;
+
         foreach ($merchantIds as $merchantId)
         {
             try
             {
-                $this->addBankAccount($merchantId, $bankAccount);
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $bankAccountCore->createOrChangeBankAccount($bankAccount, $merchant);
 
                 $successCount++;
             }
