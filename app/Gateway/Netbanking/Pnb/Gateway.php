@@ -419,10 +419,6 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        /*$responseArray['data'][0][self::CHECKSUM_ATTRIBUTE] = $responseArray[self::CHECKSUM_ATTRIBUTE];
-
-        $this->verifySecureHash($responseArray['data'][0]);*/
-
         if (isset($responseArray['data']) === true)
         {
             return $responseArray['data'][0];
