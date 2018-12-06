@@ -457,9 +457,7 @@ class PaymentController extends Controller
         }
         else
         {
-            $data = ['message' => 'access prohibited'];
-
-            return ApiResponse::json($data);
+            return ApiResponse::routeNotFound();
         }
     }
 

@@ -33,6 +33,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/UpiYesbankGatewayTestData.php';
+
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
@@ -42,6 +44,27 @@ class UpiYesbankGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+    }
+
+    public function testPayoutRouteWithAccess()
+    {
+        $attributes = [
+            'terminal'  => ['gateway_merchant_id' => '123456'],
+            'merchant'  => ['category' => '1520'],
+            'gateway_input' => [
+                'vpa'       => 'komal@yesb',
+                'amount'    => '100',
+                'ref_id'    => time() .  str_random(4)
+            ]
+        ];
+
+        $request = $this->getPayoutRequest($attributes, 'pay');
+
+        $this->ba->privateAuth('random_key');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTestResponse($response, 'testPayoutRouteWithAccess');
     }
 
     public function testPayoutToVpa()
