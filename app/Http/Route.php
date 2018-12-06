@@ -337,6 +337,7 @@ final class Route
         'setl_reconcile_test'                      => ['post',     'settlements/reconcile/test/all',                 'SettlementController@postReconcileInTestMode'                      ],
         'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcileThroughFile'           ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
+        'setl_notify_h2h'                          => ['post',     'settlements/h2hnotify/{channel}',                'SettlementController@postH2HSettlementNotifyErrors'                ],
         'setl_reconcile_pull'                      => ['post',     'settlements/reconcile/api/{channel}',            'SettlementController@postSettlementReconcileThroughApi'            ],
         'setl_verify'                              => ['post',     'settlements/verify/{channel}',                   'SettlementController@postSettlementVerifyThroughApi',              ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
@@ -1291,6 +1292,7 @@ final class Route
         'setl_verify',
         'apspdcl_bridge',
         'billdesk_reconcile_cancelled',
+        'setl_notify_h2h',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2418,6 +2420,7 @@ final class Route
             'setl_reconcile_h2h',
             'lambda_post_h2h',
             'reconciliate',
+            'setl_notify_h2h',
         ],
 
         'auth_service' => [
