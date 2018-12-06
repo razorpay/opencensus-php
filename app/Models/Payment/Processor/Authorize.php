@@ -3203,6 +3203,16 @@ trait Authorize
             return;
         }
 
+        //
+        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
+        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
+        // primarily for demo payment pages created internally by Razorpay.
+        //
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
+        {
+            return;
+        }
+
         try
         {
             $this->autoCapturePayment($payment);
