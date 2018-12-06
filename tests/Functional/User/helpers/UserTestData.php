@@ -52,7 +52,11 @@ return [
                         'suspended_at' => null,
                         'role'         => 'owner',
                     ],
-                ]
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
             ],
         ],
     ],

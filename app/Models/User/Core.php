@@ -123,20 +123,19 @@ class Core extends Base\Core
 
     public function get(Entity $user)
     {
-        $userArray = $user->toArrayPublic();
-
-        $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, null)
-                          ->callOnEveryItem('toArrayUser');
-
+        $response    = $user->toArrayPublic();
+        $merchants   = $user->merchants
+                            ->where(Merchant\Entity::SUSPENDED_AT, null)
+                            ->callOnEveryItem('toArrayUser');
         $invitations = $user->invitations
                             ->callOnEveryItem('toArrayUser');
+        $settings    = $user->getAllSettings();
 
-        $userArray[Entity::MERCHANTS] = $merchants;
+        $response[Entity::MERCHANTS]   = $merchants;
+        $response[Entity::INVITATIONS] = $invitations;
+        $response[Entity::SETTINGS]    = $settings;
 
-        $userArray[Entity::INVITATIONS] = $invitations;
-
-        return $userArray;
+        return $response;
     }
 
     /**
