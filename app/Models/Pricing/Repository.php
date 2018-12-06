@@ -115,12 +115,12 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant)
+    public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
     {
         $orgId = $merchant->org->getId();
 
         return $this->newQuery()
-                    ->product(Product::PRIMARY)
+                    ->product($product)
                     ->planId(Pricing\Entity::ZERO_PRICING)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
@@ -163,7 +163,6 @@ class Repository extends Base\Repository
     public function getGatewayPricingPlans()
     {
         return $this->newQueryWitOrgIdParam()
-                    ->product(Product::PRIMARY)
                     ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }

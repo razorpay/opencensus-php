@@ -367,7 +367,7 @@ class Entity extends Base\PublicEntity
      * @param        $query
      * @param string $product
      */
-    public function scopeProduct(Builder $query, string $product = Product::PRIMARY)
+    public function scopeProduct(Builder $query, string $product)
     {
         $query->where(self::PRODUCT, '=', $product);
     }
