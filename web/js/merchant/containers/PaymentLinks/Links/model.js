@@ -67,7 +67,7 @@ export function editPaymentLink(id, payload) {
   return merchantFetch({
     url: `invoices/${id}`,
     method: 'patch',
-    data: data,
+    data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },
