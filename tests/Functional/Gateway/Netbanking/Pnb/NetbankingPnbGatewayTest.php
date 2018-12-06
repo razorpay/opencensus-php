@@ -46,6 +46,37 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    public function testPaymentCorporate()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_pnb_corp_terminal');
+
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('PUNB_C');
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->verifyPayment($payment['id']);
+
+        $testData                = $this->testData['testPayment'];
+        $testData['bank']        = 'PUNB_C';
+        $testData['terminal_id'] = '100NbPunbCrpTl';
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+
+        $testData['bank'] = 'PUNB_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
+
+        $this->assertEquals($content['payment']['verified'], 1);
+    }
+
     public function testAuthorizeFailed()
     {
         $data = $this->testData[__FUNCTION__];
