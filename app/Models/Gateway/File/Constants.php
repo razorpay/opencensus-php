@@ -81,6 +81,7 @@ class Constants
             self::ENACH_RBL,
         ],
         Type::REFUND_FAILED => [
+            'All',
             self::UPI_ICICI,
             self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
