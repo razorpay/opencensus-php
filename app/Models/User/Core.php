@@ -330,7 +330,7 @@ class Core extends Base\Core
         // If the call to raven fails it is already rendered properly in final response.
         $response = $this->app->raven->generateOtp(array_only($payload, ['context', 'receiver', 'source']));
 
-        $mailable = new OtpMail();
+        $mailable = new OtpMail($input[Entity::ACTION], $user, $response);
         Mail::queue($mailable);
 
         return array_only($payload, 'token');

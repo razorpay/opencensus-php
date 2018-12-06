@@ -3,15 +3,19 @@
 namespace RZP\Services;
 
 use Requests;
+use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
+
 
 class Raven
 {
     const SMS_ID          = 'sms_id';
     const OTP             = 'otp';
+    const EXPIRES_AT      = 'expires_at';
 
     const REQUEST_TIMEOUT = 60;
 
@@ -82,7 +86,8 @@ class Raven
         if ($this->mode === Mode::TEST)
         {
             return [
-                self::OTP => self::MOCK_VALID_OTP,
+                self::OTP        => Mock\Raven::MOCK_VALID_OTP,
+                self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
             ];
         }
 
