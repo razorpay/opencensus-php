@@ -30,6 +30,7 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
+    const CANARA           = 'canara';
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
@@ -64,6 +65,7 @@ class Constants
             self::INDUSIND,
             self::OBC,
             self::CSB,
+            self::CANARA,
             self::EQUITAS,
             self::IDFC,
             self::VIJAYA,
@@ -110,6 +112,7 @@ class Constants
         ],
 
         Type::COMBINED => [
+            self::CANARA      => ['canara.netbanking.refunds@razorpay.com'],
             self::AXIS        => ['axis.netbanking.refunds@razorpay.com'],
             self::KOTAK       => ['settlements@razorpay.com'],
             self::RBL         => ['rbl.netbanking.refunds@razorpay.com'],

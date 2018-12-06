@@ -74,6 +74,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
+        Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
     ];
@@ -387,6 +388,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingCanaraTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+    ];
+
+    protected static $netbankingCanaraEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
     ];
 
     protected static $netbankingEquitasTerminalRules = [

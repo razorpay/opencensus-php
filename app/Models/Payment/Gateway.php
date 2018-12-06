@@ -56,6 +56,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -578,6 +579,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
 
@@ -1146,6 +1148,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
@@ -1167,6 +1170,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::CNRB => Gateway::NETBANKING_CANARA,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
