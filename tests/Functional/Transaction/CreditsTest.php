@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use Mail;
-use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CreditsTest extends TestCase
@@ -368,21 +368,75 @@ class CreditsTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
 
-        $balance = $this->getEntityById('balance', '10000000000000', true);
-
         $this->doAuthCaptureAndRefundPayment();
 
-        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $balanceAfterPayment = $this->getEntityById('balance', '10000000000000', true);
 
         $txn = $this->getLastEntity('transaction', true);
 
+        $this->assertEquals('refund', $txn['type']);
         $this->assertEquals($txn['fee_credits'], $txn['amount']);
         $this->assertEquals(0, $txn['debit']);
         $this->assertEquals(false, $txn['gratis']);
         $this->assertEquals('refund', $txn['credit_type']);
 
-        $this->assertEquals(1049000, $balance['balance']);
-        $this->assertEquals(100000 - $txn['fee_credits'], $balance['refund_credits']);
+        // Balance is increased by the payment amount - fees
+        $this->assertEquals(1049000, $balanceAfterPayment['balance']);
+        // Refund Credits get decreased by refund amount
+        $this->assertEquals(100000 - $txn['fee_credits'], $balanceAfterPayment['refund_credits']);
+
+        $credits = $this->getLastEntity('credits', true);
+        $this->assertEquals(50000, $credits['used']);
+    }
+
+    public function testRefundCreditsForAuthOnlyPayment()
+    {
+        $creditEntry = $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 100000
+            ]);
+
+        $this->fixtures->merchant->editRefundCredits('100000', '10000000000000');
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        // This time we do not capture the payment and refund it
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+
+        $balanceAfterPayment = $this->getEntityById('balance', '10000000000000', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('refund', $txn['type']);
+        $this->assertEquals(50000, $txn['amount']);
+
+        // 1. Fee Credits are not set to 0 where payment is not captured and refunded.
+        // 2. Balance is set to merchant Balance instead of 0.
+        // 3. And, Credit Type is default.
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals(0, $txn['balance']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals(false, $txn['gratis']);
+
+        // Balance is not increased as payment is not captured yet
+        $this->assertEquals(1000000, $balanceAfterPayment['balance']);
+        // Refund Credits are also not decreased as payment is not captured yet
+        $this->assertEquals(100000, $balanceAfterPayment['refund_credits']);
+
+        $credits = $this->getLastEntity('credits', true);
+        $this->assertEquals(0, $credits['used']);
+        // Checking if the last entry is still the same.
+        // because We don't want a zero entry to be created in this scenario.
+        $this->assertEquals($creditEntry['created_at'], $credits['created_at']);
     }
 
     public function testRefundWithPartialCredits()

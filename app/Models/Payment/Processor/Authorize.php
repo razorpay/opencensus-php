@@ -16,6 +16,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -83,6 +84,8 @@ trait Authorize
         $this->runPaymentInputValidations($payment, $input);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
+
+        $this->validateAndSaveInputDetailsIfRequired($payment, $input);
 
         if ($ret !== null)
         {
@@ -340,8 +343,8 @@ trait Authorize
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
-        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
-            ($gatewayInput["skip_gateway_call"] === true))
+        if ((isset($gatewayInput['skip_gateway_call']) === true) and
+            ($gatewayInput['skip_gateway_call'] === true))
         {
             return $this->processCreated($payment);
         }
@@ -376,9 +379,15 @@ trait Authorize
         ];
 
         // This is a hack to return direct method for IVR payments
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
+            $redirectUrl = null;
+
+            if ($this->isRupayNetwork($payment) === false)
+            {
+                $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            }
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -407,6 +416,15 @@ trait Authorize
                 unset($request['content']['next']);
             }
 
+            $otpResend = 'otp_resend';
+
+            $resendUrl = null;
+
+            if (in_array($otpResend, $next, true) === true)
+            {
+                $resendUrl  = $this->getOtpResendUrl();
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -417,6 +435,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
+                'redirect'   => $redirectUrl,
+                'submit_url' => $request['url'],
+                'resend_url' => $resendUrl,
+                'metadata'   => $metaData,
             ];
         }
 
@@ -1210,11 +1232,24 @@ trait Authorize
             );
         }
 
-        if ($payment->getAuthType() === null)
+        $authType = $payment->getAuthType();
+
+        if ($authType === null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The auth_type field is required when method is ' . Method::EMANDATE
             );
+        }
+
+        if ((in_array($authType, [Payment\AuthType::AADHAAR, Payment\AuthType::AADHAAR_FP], true) === true) and
+            ((bool) Admin\ConfigKey::get(Admin\ConfigKey::BLOCK_AADHAAR_REG, true) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected auth_type is invalid',
+                Payment\Entity::AUTH_TYPE,
+                [
+                    Payment\Entity::AUTH_TYPE => $authType,
+                ]);
         }
 
         $bank = $payment->getBank();
@@ -1223,7 +1258,7 @@ trait Authorize
 
         if (in_array(
                 $bank,
-                Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                Payment\Gateway::getAvailableEmandateBanksForAuthType($authType),
                 true) === false)
         {
             throw new Exception\BadRequestException(
@@ -1346,7 +1381,6 @@ trait Authorize
             switch ($method)
             {
                 case Payment\Method::EMANDATE:
-                {
                     //
                     // Todo: During NPCI eMandate integration, we need to have one more condition
                     // here to check if the auth method is aadhaar.
@@ -1390,11 +1424,11 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-                }
+
+                    break;
 
                 case Payment\Method::CARD:
                 case Payment\Method::EMI:
-                {
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
@@ -1410,7 +1444,8 @@ trait Authorize
                             $gatewayInput['authenticate']['gateway'] = $authGateway;
                         }
                     }
-                }
+
+                    break;
             }
         }
     }
@@ -2027,10 +2062,13 @@ trait Authorize
             if (($token !== null) and
                 ($token->isLocal() === true) and
                 ($token->isRecurring() === true) and
-                ($this->app['basicauth']->isPrivateAuth() === true) and
                 (isset($input['token']) === true))
             {
-                $type = Payment\RecurringType::AUTO;
+                if (($this->app['basicauth']->isPrivateAuth() === true) or
+                    ($this->app->runningInQueue() === true))
+                {
+                    $type = Payment\RecurringType::AUTO;
+                }
             }
         }
 
@@ -2090,7 +2128,7 @@ trait Authorize
             ($this->ba->isProxyAuth() === true) and
             (isset($input[Payment\Entity::TOKEN]) === true))
         {
-            $gatewayInput['test_success'] = $input['test_success'];
+            $gatewayInput['test_success'] = boolval($input['test_success']);
         }
     }
 
@@ -3092,6 +3130,8 @@ trait Authorize
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
+        $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
+
         return $this->processAuthorizeResponse($payment);
     }
 
@@ -3163,6 +3203,16 @@ trait Authorize
             return;
         }
 
+        //
+        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
+        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
+        // primarily for demo payment pages created internally by Razorpay.
+        //
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
+        {
+            return;
+        }
+
         try
         {
             $this->autoCapturePayment($payment);
@@ -3172,6 +3222,32 @@ trait Authorize
         {
             (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
         }
+    }
+
+    protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        $invoice = $payment->invoice;
+
+        if ($invoice->getEntityType() === null)
+        {
+            return;
+        }
+
+        if ($invoice->isTypeOfSubscriptionRegistration() == false)
+        {
+            return;
+        }
+
+        $subscriptionRegistration = $invoice->entity;
+
+        $subscriptionRegistration->token()->associate($payment->getGlobalOrLocalTokenEntity());
+
+        $this->repo->saveOrFail($subscriptionRegistration);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -4567,6 +4643,28 @@ trait Authorize
         return $otpSubmitUrl;
     }
 
+    protected function getPaymentRedirectTo3dsUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpFallbackUrl = $this->route->getUrlWithPublicAuth('payment_redirect_3ds', $params);
+
+        return $otpFallbackUrl;
+    }
+
+    protected function getOtpResendUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
+
+        return $otpResendUrl;
+    }
+
     protected function getPaymentIdAndHashParams(): array
     {
         $publicId = $this->payment->getPublicId();
@@ -4644,5 +4742,32 @@ trait Authorize
     {
         return ((empty($input[Payment\Entity::RECURRING]) === false) and
                 ($input[Payment\Entity::RECURRING] === 'preferred'));
+    }
+
+    protected function validateAndSaveInputDetailsIfRequired($payment, $input)
+    {
+        $authType = $payment->getAuthType();
+
+        if (($authType === null) or
+            (Payment\AuthType::isRedirectTo3dsAuth($authType) === false))
+        {
+            return;
+        }
+
+        $input['payment']['id'] = $payment->getId();
+
+        $cache = Cache::getFacadeRoot();
+
+        $key = $payment->getCacheInputKey();
+
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            // storing card details for fallback purpose
+            $this->persistCardDetailsTemporarily($input);
+            unset($input['card']['number']);
+            unset($input['card']['cvv']);
+        }
+
+        $this->cache->put($key, $input, static::CACHE_TTL);
     }
 }

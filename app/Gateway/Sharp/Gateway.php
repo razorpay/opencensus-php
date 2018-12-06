@@ -135,6 +135,8 @@ class Gateway extends Base\Gateway
 
     protected function getQrData(array $input)
     {
+        (new Validator)->validateInput('test_bharatqr_payment', $input);
+
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
             BharatQr\GatewayResponseParams::METHOD                => $input[Fields::METHOD],
@@ -164,6 +166,21 @@ class Gateway extends Base\Gateway
             'callback_data' => $input,
             'qr_data'       => $qrData
         ];
+    }
+
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        if ($exception !== null)
+        {
+            throw $exception;
+        }
+
+        //
+        // This is a fairly useless response. But it's better for the
+        // merchant than the one in base gateway, and keeping in empty
+        // means we can add stuff later without breaking compatibility.
+        //
+        return [];
     }
 
     protected function getIntentRequest($input)
@@ -497,7 +514,8 @@ class Gateway extends Base\Gateway
             // Validation failure
             case ($amount === 8888):
 
-                $response['result']         = 'Your account does not have enough credits to carry out the refund operation.';
+                $response['result']         = 'Your account does not have enough credits '.
+                                                'to carry out the refund operation.';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS;
                 break;
 
@@ -511,7 +529,8 @@ class Gateway extends Base\Gateway
              // Soft failure
             case (($amount === 5555) or ($amount === 6666)):
 
-                $response['result']         = 'Your account does not have enough balance to carry out the refund operation.';
+                $response['result']         = 'Your account does not have enough balance to '.
+                                                'carry out the refund operation.';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
                 break;
 
@@ -570,9 +589,15 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case ($amount === 5555):
+            case (($amount === 5555) and ($amount == $amountRefunded)):
                 $response['result']         = 'Refund Failed';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+
+                break;
+
+            case (($amount === 5555) and ($amount != $amountRefunded)):
+                $response['result']         = 'REFUND_SUCCESSFUL';
+                $response['status_code']    = 'REFUND_SUCCESSFUL';
 
                 break;
 
@@ -596,40 +621,45 @@ class Gateway extends Base\Gateway
     {
         if ($action === 'refund')
         {
-            $gatewayResponse = $this->getGatewayResponse($input['refund']['amount']);
+            $gatewayResponse['gateway_response'] = $this->getGatewayResponse($input['refund']['amount']);
         }
         else
         {
-            $gatewayResponse = $this->getVerifyGatewayResponse($input['refund']['amount'], $input['payment']['amount_refunded']);
+            $gatewayResponse['gateway_verify_response'] = $this->getVerifyGatewayResponse($input['refund']['amount'],
+                                                                $input['payment']['amount_refunded']);
         }
 
-        if (($action === 'refund') and ($gatewayResponse['status_code'] !== 'REFUND_SUCCESSFUL'))
+        if (($action === 'refund') and ($gatewayResponse['gateway_response']['status_code'] !== 'REFUND_SUCCESSFUL'))
         {
-            throw new Exception\GatewayErrorException($gatewayResponse['status_code'],
-                $gatewayResponse['status_code'],
-                $gatewayResponse['result'],
+            throw new Exception\GatewayErrorException($gatewayResponse['gateway_response']['status_code'],
+                $gatewayResponse['gateway_response']['status_code'],
+                $gatewayResponse['gateway_response']['result'],
                 [
-                    'gateway_response'  => json_encode($gatewayResponse),
+                    'gateway_response'      => json_encode($gatewayResponse['gateway_response']),
                     'gateway_keys'          => [
-                        'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
-                        'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
+                        'gateway_refund_id'     => $gatewayResponse['gateway_response']['gateway_refund_id'],
+                        'gateway_merchant_id'   => $gatewayResponse['gateway_response']['gateway_merchant_id']
                     ]
                 ]);
         }
 
+        $gatewayResponseFinal = (($action === 'verify') ?
+                            $gatewayResponse['gateway_verify_response'] :
+                            $gatewayResponse['gateway_response']);
+
         $response = [
-            'gateway_response'      => json_encode($gatewayResponse),
-            'gateway_keys'          => [
-                'gateway_refund_id'     => $gatewayResponse['gateway_refund_id'],
-                'gateway_merchant_id'   => $gatewayResponse['gateway_merchant_id']
+            'gateway_response'          => json_encode($gatewayResponse['gateway_response'] ?? ''),
+            'gateway_verify_response'   => json_encode($gatewayResponse['gateway_verify_response'] ?? ''),
+            'gateway_keys'              => [
+                    'gateway_refund_id'     => $gatewayResponseFinal['gateway_refund_id'],
+                    'gateway_merchant_id'   => $gatewayResponseFinal['gateway_merchant_id']
             ]
         ];
 
-
         if ($action === 'verify')
         {
-            $response['success'] = ($gatewayResponse['status_code'] === 'REFUND_SUCCESSFUL');
-            $response['status_code'] = $gatewayResponse['status_code'];
+            $response['success']        = ($gatewayResponseFinal['status_code'] === 'REFUND_SUCCESSFUL');
+            $response['status_code']    = $gatewayResponseFinal['status_code'];
         }
 
         return $response;

@@ -22,7 +22,7 @@ class Reconciliate extends Base\Reconciliate
     {
         return [
             FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 0
+            FileProcessor::LINES_FROM_BOTTOM => 1
         ];
     }
 
@@ -31,14 +31,13 @@ class Reconciliate extends Base\Reconciliate
         return '|';
     }
 
-    public function inExcludeList(array $fileDetails)
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
-        if (preg_match('/[0-9]{5}_[0-9]{8}_corpbank/', $fileDetails['file_name']) === 0)
+        if (preg_match('/[0-9]{5}_[0-9]{8}_olt/', $fileDetails['file_name']) === 1)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }
-

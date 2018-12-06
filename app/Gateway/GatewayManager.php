@@ -3,6 +3,7 @@
 namespace RZP\Gateway;
 
 use Config;
+
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
@@ -35,10 +36,19 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         $gateway->setGatewayParams($input, $mode, $terminal);
 
+        $this->registerTraceProcessor($input, $action);
+
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
-        return $gateway->call($action, $input);
+        try
+        {
+            return $gateway->call($action, $input);
+        }
+        finally
+        {
+            $this->revertTraceProcessor();
+        }
     }
 
     protected function registerMocks($gatewayConfig)
@@ -51,6 +61,20 @@ class GatewayManager extends \Illuminate\Support\Manager
                 $this->mocks[] = $gateway;
             }
         }
+    }
+
+    protected function registerTraceProcessor($input, $action)
+    {
+        $gatewayProcessor = $this->app['trace']->processor('gateway');
+
+        list($this->input, $this->action) = $gatewayProcessor->getInputAction();
+
+        $gatewayProcessor->setInputAction($input, $action);
+    }
+
+    protected function revertTraceProcessor()
+    {
+        $this->registerTraceProcessor($this->input, $this->action);
     }
 
     protected function createDriver($driver)
@@ -228,7 +252,7 @@ class GatewayManager extends \Illuminate\Support\Manager
     public function getReconClass($driver, array $input = [])
     {
         $reconClassName = (empty($input['type']) === false)
-                          ? (ucfirst($input['type']) . 'Reconciliator')
+                          ? (studly_case($input['type']) . 'Reconciliator')
                           : 'Reconciliator';
 
         $reconFQCN = $this->getGatewayNamespace($driver, true) . '\\' . $reconClassName;

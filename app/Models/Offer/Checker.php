@@ -123,7 +123,7 @@ class Checker extends Base\Core
 
         $card = $this->payment->card;
 
-        $result = ($offerPaymentMethodType === $card->getType());
+        $result = (strtolower($offerPaymentMethodType) === strtolower($card->getType()));
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
             'result'            => $result,
@@ -203,7 +203,7 @@ class Checker extends Base\Core
 
         $emiDuration = $this->payment->emiPlan->getDuration();
 
-        return  (in_array($emiDuration, $emiDurations, true));
+        return (in_array($emiDuration, $emiDurations, true) === true);
     }
 
     protected function checkInternational(): bool
@@ -285,15 +285,12 @@ class Checker extends Base\Core
 
     protected function checkOfferPeriod()
     {
-        $now = Carbon::now()->getTimestamp();
-
-        $result = (($now >= $this->offer->getStartsAt()) and
-                    ($now <= $this->offer->getEndsAt()));
+        $result = $this->offer->isPeriodActive();
 
         $this->traceCheckResult(
             TraceCode::OFFER_PERIOD_CHECK,
             [
-                'result' => $result
+                'result' => $result,
             ]);
 
         return $result;

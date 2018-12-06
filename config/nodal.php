@@ -53,5 +53,9 @@ return [
         'src_app_cd'        => env('KOTAK_NODAL_BALANCE_APPLICATION_ID'),
         'crn'               => env('KOTAK_NODAL_CRN'),
         'account_number'    => env('KOTAK_NODAL_ACCOUNT_NUMBER')
-    ]
+    ],
+
+    'axis2' => [
+        'axis2_nodal_pgp_encryption_key'  => env('AXIS2_NODAL_PGP_ENCRYPTION_KEY'),
+    ],
 ];

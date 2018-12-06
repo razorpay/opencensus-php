@@ -19,6 +19,8 @@ class Validator extends Base\Validator
         'expiry'        => 'required|string|max:255',
         'sId'           => 'sometimes|string|max:255',
         'checkSum'      => 'required|string|max:10000',
+        'accountNo'     => 'sometimes|alpha_num',
+        'Ifsc'          => 'sometimes|string|size:4',
     ];
 
     protected static $verifyRules = [

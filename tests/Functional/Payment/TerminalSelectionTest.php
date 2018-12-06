@@ -1291,7 +1291,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->on(Mode::LIVE)->create('terminal:shared_cybersource_hdfc_terminal');
 
         $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
-        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId()]);
+        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
 
         $this->fixtures->on(Mode::LIVE)->create('methods', [
             'merchant_id'    => '10000000001017',
@@ -1328,7 +1328,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->on(Mode::LIVE)->create('terminal:shared_axis_terminal');
 
         $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
-        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId()]);
+        $this->fixtures->on(Mode::LIVE)->create('balance', ['id' => $merchant->getId(), 'merchant_id' => $merchant->getId()]);
 
         $this->fixtures->on(Mode::LIVE)->create('methods', [
             'merchant_id'    => Preferences::MID_ZOMATO,
@@ -1477,8 +1477,6 @@ class TerminalSelectionTest extends TestCase
             'enabled_banks' => ['HDFC'],
         ]);
 
-        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
-
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
         $payment = $this->doAuthPayment($payment);
 
@@ -1488,9 +1486,9 @@ class TerminalSelectionTest extends TestCase
 
     public function testNetbankingTerminalNotSelectedWithoutEnabledBanks()
     {
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
-
-        $this->fixtures->merchant->addFeatures(['terminal_banks_filter']);
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal', [
+            'enabled_banks' => [],
+        ]);
 
         $this->makeRequestAndCatchException(function ()
         {

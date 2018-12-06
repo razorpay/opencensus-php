@@ -7,6 +7,7 @@ use RZP\Models\Customer;
 use RZP\Models\P2p;
 use RZP\Models\Device;
 use RZP\Models\Base;
+use RZP\Models\Vpa;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -27,8 +28,6 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->customerService = new Customer\Service;
-
-        $this->vpaService = new Vpa\Service;
     }
 
     public function callUpiGateway($method, array $gatewayData = [])
@@ -154,41 +153,6 @@ class Core extends Base\Core
         $this->callUpiGateway('makeRequest', $params);
     }
 
-    public function deleteVpa($id)
-    {
-        return $this->vpaService->delete($id);
-    }
-
-    public function editVpa($id, $input)
-    {
-        return $this->vpaService->edit($id, $input);
-    }
-
-    public function getVpa($vpaId)
-    {
-        return $this->vpaService->getById($vpaId);
-    }
-
-    public function getVpaPrivate($vpaId)
-    {
-        return $this->vpaService->getByIdPrivate($vpaId);
-    }
-
-    public function getVpas()
-    {
-        return $this->vpaService->getAll();
-    }
-
-    public function isValidVpa($vpa)
-    {
-        return $this->vpaService->isValid($vpa);
-    }
-
-    public function isAvailableVpa($vpa)
-    {
-        return $this->vpaService->isAvailable($vpa);
-    }
-
     protected function getSharedAccount()
     {
         return $this->repo->merchant->getSharedAccount();
@@ -196,15 +160,18 @@ class Core extends Base\Core
 
     /**
      * Verifies and sets the MPIN of the account
+     *
      * @param array $creds
-     *  'last6'
-     *  'expiry'
-     *  'otp'
-     *  'mpin'
-     *  'account'
+     *    'last6'
+     *    'expiry'
+     *    'otp'
+     *    'mpin'
+     *    'account'
      *    'IFSC'
      *    'NUM'
-     *  'reqMsgId'
+     *    'reqMsgId'
+     *
+     * @return array
      */
     protected function RespRegMob(array $creds)
     {

@@ -28,4 +28,3 @@ class Validator extends Base\Validator
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
     ];
 }
-

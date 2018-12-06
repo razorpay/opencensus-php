@@ -351,5 +351,91 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
+    'testPayAuthLinkAndCopyNotes' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'amount'      => '0',
+                'receipt'     => '00000000000001',
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+                'notes'       => [
+                    'note_key_1' => 'note_value_1',
+                ],
+                'subscription_registration' => [
+                    'method'  => 'emandate',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'amount'       => 0,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'link',
+                'notes'        => [
+                    'note_key_1' => 'note_value_1',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayAuthLink' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'amount'      => '10000',
+                'receipt'     => '00000000000001',
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+                'notes'       => ['note_key_1' => 'note_value_1'],
+
+                'subscription_registration' => [
+                    'method' => 'card',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '00000000000001',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'amount'       => 10000,
+                'currency'     => 'INR',
+                'payment_id'   => null,
+                'type'         => 'link',
+                'notes'       => ['note_key_1' => 'note_value_1'],
+            ],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];

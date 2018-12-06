@@ -443,6 +443,15 @@ class Validator extends Base\Validator
     {
         if (empty($receipt) === false)
         {
+            $skipUniquenessCheck = $this->entity
+                                        ->merchant
+                                        ->isFeatureEnabled(Feature\Constants::INVOICE_NO_RECEIPT_UNIQUE);
+
+            if ($skipUniquenessCheck === true)
+            {
+                return;
+            }
+
             $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
 
             if ($isDuplicateReceipt === true)

@@ -59,7 +59,11 @@ class Entity extends Base\PublicEntity
     const REVERSAL               = 'reversal';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const VPA_ID                 = 'vpa_id';
     const SETTLED_BY             = 'settled_by';
+
+    // indicates refund is processed via scrooge service or not.
+    const IS_SCROOGE             = 'is_scrooge';
 
     protected static $sign = 'rfnd';
 
@@ -102,13 +106,13 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::BATCH_ID,
-        self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
+        self::VPA_ID,
         self::SETTLED_BY,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -157,7 +161,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
-        self::ARN,
         self::ACQUIRER_DATA
     ];
 
@@ -212,6 +215,11 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\Vpa\Entity');
     }
 
     public function billdesk()
@@ -283,6 +291,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     public function isGatewayRefunded()
@@ -537,21 +550,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        $app = \App::getFacadeRoot();
-
-        $auth = $app['basicauth'];
-
-        if (($auth->isAdminAuth() === true) or
-            (($auth->getMerchant() !== null) and
-             ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
-        {
-            $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
-        }
-    }
-
-    public function setPublicArnAttribute(array & $array)
-    {
-        $array[self::ARN] = $this->getAttribute(self::REFERENCE1);
+        $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
     }
 
     public function setReference1(string $value)
@@ -708,5 +707,25 @@ class Entity extends Base\PublicEntity
         {
             app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
         }
+    }
+
+    /**
+     * Overriding this function to add is_scrooge attribute for admin array.
+     * is_scrooge will be true for the refunds which are of scrooge gateways.
+     *
+     * @return array
+     */
+    public function toArrayAdmin()
+    {
+        $array = parent::toArrayAdmin();
+
+        $gateway = $array[self::GATEWAY];
+
+        $array[self::IS_SCROOGE] = Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp(
+            $gateway,
+            $array[self::CREATED_AT]
+        );
+
+        return $array;
     }
 }

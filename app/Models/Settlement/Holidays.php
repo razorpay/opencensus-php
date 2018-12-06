@@ -144,6 +144,10 @@ class Holidays
             10 => [
                 2 => 'Mahatma Gandhi Jayanti',
             ],
+            11 => [
+                21 => 'Id-e-milad',
+                23 => 'Guru Nanak Jayanti'
+            ],
             12 => [
                 25 => 'Christmas',
             ],
@@ -191,7 +195,7 @@ class Holidays
         {
             $workingDay->addDay();
 
-            if (self::isWorkingDay($workingDay, $ignoreBankHolidays))
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays) === true)
             {
                 $countDays--;
             }

@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Repository extends Base\Repository
@@ -23,9 +24,25 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
     ];
 
+    protected $proxyFetchParamRules = [
+        Entity::RECEIVER_TYPE => 'sometimes|in:bank_account,qr_code',
+    ];
+
     protected $signedIds = [
         Entity::CUSTOMER_ID,
     ];
+
+    protected function addQueryParamReceiverType(BuilderEx $query, array $params)
+    {
+        if ($params[Entity::RECEIVER_TYPE] === Receiver::BANK_ACCOUNT)
+        {
+            $query->whereNotNull(Entity::BANK_ACCOUNT_ID);
+        }
+        else if ($params[Entity::RECEIVER_TYPE] === Receiver::QR_CODE)
+        {
+            $query->whereNotNull(Entity::QR_CODE_ID);
+        }
+    }
 
     public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
     {

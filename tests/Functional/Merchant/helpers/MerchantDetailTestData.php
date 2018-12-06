@@ -45,20 +45,21 @@ return [
     ],
 
     'testSubmit' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'submit' => true
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'submitted' => true,
+                'submitted'    => true,
                 'verification' => [
                     'status' => 'pending'
                 ],
-                'can_submit' => true,
+                'can_submit'   => true,
+                'locked'       => true,
             ],
         ],
     ],
@@ -839,14 +840,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
         ],
     ],
 

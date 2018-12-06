@@ -46,7 +46,7 @@ class Core extends Base\Core
         if ($type === Credits\Type::AMOUNT)
         {
             // Add the credits to merchant's main balance
-            $merchantAmountCredits = $merchant->balance->getAmountCredits();
+            $merchantAmountCredits = $merchant->primaryBalance->getAmountCredits();
 
             $newCredits = $merchantAmountCredits + $credits;
 
@@ -54,7 +54,7 @@ class Core extends Base\Core
         }
         else if ($type === Credits\Type::FEE)
         {
-            $merchantFeeCredits = $merchant->balance->getFeeCredits();
+            $merchantFeeCredits = $merchant->primaryBalance->getFeeCredits();
 
             $newCredits = $merchantFeeCredits + $credits;
 
@@ -62,7 +62,7 @@ class Core extends Base\Core
         }
         else if ($type === Credits\Type::REFUND)
         {
-            $merchantRefundCredits = $merchant->balance->getRefundCredits();
+            $merchantRefundCredits = $merchant->primaryBalance->getRefundCredits();
 
             $newCredits = $merchantRefundCredits + $credits;
 

@@ -40,6 +40,7 @@ class Gateway extends Base\Gateway
         Base\Entity::GATEWAY_MERCHANT_ID       => Base\Entity::GATEWAY_MERCHANT_ID,
         Base\Entity::VPA                       => Base\Entity::VPA,
         Base\Entity::ACTION                    => Base\Entity::ACTION,
+        Base\Entity::EXPIRY_TIME               => Base\Entity::EXPIRY_TIME,
 
         // Mapping response fields to entity variables
         ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
@@ -57,7 +58,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCollectRequestData($input);
 
-        $response = $this->sendGatewayRequest($request);
+        // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
+        // base/gateway's retry handler cannot be tested. so adding retry handler here to have
+        // atleast one gateway which can test this flow.
+        $response = $this->retryHandler(
+            [$this, 'sendGatewayRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
@@ -301,7 +309,7 @@ class Gateway extends Base\Gateway
                 RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
             ],
             RequestFields::AMOUNT           => $this->formatAmount($input),
-            RequestFields::EXPIRY_TIME      => Constants::EXPIRY_TIME,
+            RequestFields::EXPIRY_TIME      => (string) $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
             RequestFields::PAYER_TYPE       => [
                 RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             ],
@@ -309,7 +317,7 @@ class Gateway extends Base\Gateway
                 RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
                 RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ],
-            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
+            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE,
         ];
 
         return $this->getStandardRequestArray($content);
@@ -431,6 +439,7 @@ class Gateway extends Base\Gateway
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
+            Base\Entity::EXPIRY_TIME         => $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
         ];
 
         return $attributes;
@@ -463,6 +472,15 @@ class Gateway extends Base\Gateway
             ]);
 
         return $callback;
+    }
+
+    public function postProcessServerCallback($input): array
+    {
+        return [
+            'pspRefNo' => $input['gateway'][ResponseFields::API_RESPONSE]['pspRefNo'],
+            'status'   => 'SUCCESS',
+            'message'  => 'Request Processed Successfully'
+        ];
     }
 
     /**
@@ -508,5 +526,36 @@ class Gateway extends Base\Gateway
     public function getSecret(): string
     {
         return $this->config['hash_secret'];
+    }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      Action::AUTHORIZE);
+
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if ($gatewayPayment[Base\Entity::STATUS_CODE] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        $attributes = [
+            Base\Entity::STATUS_CODE        => Status::SUCCESS,
+            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

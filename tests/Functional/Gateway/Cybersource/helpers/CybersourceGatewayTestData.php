@@ -286,7 +286,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         ],
     ],
-    
+
     'testGatewayInvalidReasonCode' => [
         'response' => [
             'content' => [
@@ -360,7 +360,7 @@ return [
         'entity' => 'cybersource',
         'admin' => true
     ],
-    
+
     'testGatewayVerifyAuthResponseFailure' => [
        'response' => [
             'content' => [

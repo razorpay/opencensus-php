@@ -756,9 +756,16 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $input = $payment->getMetadata();
+        $metadata = $payment->getMetadata();
 
-        if ($input[Generator::NUMERIC] === true)
+        // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
+        if (($metadata[Generator::BANKING] === true) and
+            ($terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING) === false))
+        {
+            return false;
+        }
+
+        if ($metadata[Generator::NUMERIC] === true)
         {
             return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
         }

@@ -249,7 +249,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postBankAccount($id)
+    public function postBankAccount($id = null)
     {
         $input = Request::all();
 
@@ -1153,6 +1153,22 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->bulkAssignSchedule($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function submitSupportCallRequest()
+    {
+        $response = $this->service()->submitSupportCallRequest($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkRegenerateBalanceIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkRegenerateBalanceIds($input);
 
         return ApiResponse::json($response);
     }

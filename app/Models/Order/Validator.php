@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use RZP\Base;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -21,13 +22,15 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
         Entity::BANK            => 'filled',
-        Entity::ACCOUNT_NUMBER  => 'filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFERS          => 'sometimes|array',
+        Entity::BANK_ACCOUNT    => 'sometimes|array',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::BENEFICIARY_NAME   => 'sometimes|max:40|string',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::IFSC_CODE          => 'required_with:bank_account|alpha_num|size:11',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::ACCOUNT_NUMBER     => 'required_with:bank_account|alpha_num|between:5,20',
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
-        Entity::PAYER_NAME      => 'sometimes|string|max:100'
     );
 
     protected static $createValidators = [
@@ -329,14 +332,18 @@ class Validator extends Base\Validator
                 'Order bank does not match the payment bank');
         }
 
-        if (empty($order->getAccountNumber()))
+        // TODO: Change this after creating bank account entities for all the previous TPV orders
+        $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
+
+        if ((empty($payment) === false) and
+            (empty($accountNumber) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
         }
     }
 
-    protected function validateBank($input)
+    public function validateBank($input)
     {
         if (isset($input[Entity::BANK]) === false)
         {
@@ -383,7 +390,8 @@ class Validator extends Base\Validator
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
 
-        if (isset($input[Entity::ACCOUNT_NUMBER]) === false)
+        if ((isset($input[Entity::BANK_ACCOUNT]) === false) or
+            (isset($input[Entity::BANK_ACCOUNT][Entity::ACCOUNT_NUMBER]) === false))
         {
             return;
         }
@@ -400,7 +408,7 @@ class Validator extends Base\Validator
 
         $bank = $input[Entity::BANK];
 
-        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+        $accountNumber = $input[Entity::BANK_ACCOUNT][Entity::ACCOUNT_NUMBER];
 
         if (isset($accountNumberLengths[$bank]) === false)
         {

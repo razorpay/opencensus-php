@@ -53,13 +53,19 @@ class Validator extends Base\Core
                                                         "/^MIS Report File Dated "
                                                         . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/"
                                                      ],
+
+        RequestProcessor\Base::NETBANKING_CORPORATION => [
+                                                            "/^Corporation Bank - FEBA - RazorPay Recon File "
+                                                            . "(0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}/"
+                                                         ],
+
         RequestProcessor\Base::AXIS               => [
                                                         "/^Axis Estatement [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
                                                      ],
         RequestProcessor\Base::FIRST_DATA         => ["/Statement for Merchant MID No. razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/^RAZOR_VA_REPORT$/"],
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["Confidential | Cash Management MIS Report E-Collect"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Confidential \| Cash Management MIS Report E-Collect/"],
         RequestProcessor\Base::HITACHI            => ["/RAZORPAY RBL SETTLED REPORT for the date of [0-9]{2}-"
                                                      . "[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::UPI_ICICI          => [
@@ -73,9 +79,12 @@ class Validator extends Base\Core
                                                          ."20[0-9]{2}/"
                                                      ],
         RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
+        RequestProcessor\Base::UPI_AXIS           => [  "/Razorpay Software Pvt Ltd UPI transactions - "
+                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
+        RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -104,12 +113,13 @@ class Validator extends Base\Core
                                                             ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached RECON file for RazorPay/"],
         RequestProcessor\Base::PAYZAPP                 => [
                                                              "/Please find Merchant payout report attached for Date "
                                                              ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
                                                              ."20[0-9]{2}/"
                                                           ],
+        RequestProcessor\Base::UPI_AXIS                => ["/The summary of transaction initiated from \"(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}\"/"],
         RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
         RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => [
@@ -128,6 +138,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::FIRST_DATA         => 1,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
         RequestProcessor\Base::HITACHI            => 1,
+        RequestProcessor\Base::UPI_AXIS           => 2,
         RequestProcessor\Base::UPI_ICICI          => 1,
         RequestProcessor\Base::PAYZAPP            => 1,
         RequestProcessor\Base::AIRTEL             => 1,
@@ -430,6 +441,10 @@ class Validator extends Base\Core
 
     public function validateNetbankingCorporationEmail(array $emailDetails)
     {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_CORPORATION);
+
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
             RequestProcessor\Base::NETBANKING_CORPORATION);
@@ -448,6 +463,15 @@ class Validator extends Base\Core
             RequestProcessor\Base::CARD_FSS_HDFC);
 
         return ($validSubject and $validBody);
+    }
+
+    public function validateEmandateAxisEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::EMANDATE_AXIS);
+
+        return $validSubject;
     }
 
     /**

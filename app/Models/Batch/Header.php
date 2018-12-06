@@ -317,6 +317,7 @@ class Header
     const ACCESS_TOKEN                 = 'access_token';
     const PUBLIC_TOKEN                 = 'public_token';
     const REFRESH_TOKEN                = 'refresh_token';
+    const EXPIRES_IN                   = 'expires_in';
 
     // Partner submerchant headers
     const PARTNER_TYPE         = 'partner_type';
@@ -989,6 +990,7 @@ class Header
                 self::ACCESS_TOKEN,
                 self::PUBLIC_TOKEN,
                 self::REFRESH_TOKEN,
+                self::EXPIRES_IN,
 
                 self::STATUS,
                 self::ERROR_CODE,
@@ -1078,6 +1080,19 @@ class Header
                 self::AUTH_LINK_MAIL_SENT,
                 self::AUTH_LINK_SMS_SENT,
                 self::AUTH_LINK_CREATED_AT,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::INSTANT_ACTIVATION => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

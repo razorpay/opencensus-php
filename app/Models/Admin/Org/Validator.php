@@ -29,21 +29,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::DISPLAY_NAME          => 'sometimes|string|max:255',
-        Entity::BUSINESS_NAME         => 'sometimes|string|max:255',
-        Hostname\Entity::HOSTNAME     => 'sometimes|string',
-        Entity::EMAIL                 => 'sometimes|email',
-        Entity::EMAIL_DOMAINS         => 'sometimes|custom',
-        Entity::ALLOW_SIGN_UP         => 'sometimes|boolean',
-        Entity::AUTH_TYPE             => 'sometimes|string|max:255|in:password,google_auth',
-        Entity::LOGIN_LOGO_URL        => 'sometimes|url',
-        Entity::MAIN_LOGO_URL         => 'sometimes|url',
-        Entity::INVOICE_LOGO_URL      => 'sometimes|url',
-        Entity::CUSTOM_CODE           => 'sometimes',
-        Entity::FROM_EMAIL            => 'sometimes|email',
-        Entity::SIGNATURE_EMAIL       => 'sometimes|email',
-        Entity::PERMISSIONS           => 'sometimes|array',
-        Entity::WORKFLOW_PERMISSIONS  => 'sometimes|array',
+        Entity::DISPLAY_NAME             => 'sometimes|string|max:255',
+        Entity::BUSINESS_NAME            => 'sometimes|string|max:255',
+        Hostname\Entity::HOSTNAME        => 'sometimes|string',
+        Entity::EMAIL                    => 'sometimes|email',
+        Entity::EMAIL_DOMAINS            => 'sometimes|custom',
+        Entity::ALLOW_SIGN_UP            => 'sometimes|boolean',
+        Entity::AUTH_TYPE                => 'sometimes|string|max:255|in:password,google_auth',
+        Entity::LOGIN_LOGO_URL           => 'sometimes|url',
+        Entity::MAIN_LOGO_URL            => 'sometimes|url',
+        Entity::INVOICE_LOGO_URL         => 'sometimes|url',
+        Entity::CUSTOM_CODE              => 'sometimes',
+        Entity::FROM_EMAIL               => 'sometimes|email',
+        Entity::SIGNATURE_EMAIL          => 'sometimes|email',
+        Entity::PERMISSIONS              => 'sometimes|array',
+        Entity::WORKFLOW_PERMISSIONS     => 'sometimes|array',
+        Entity::DEFAULT_PRICING_PLAN_ID  => 'sometimes|alpha_num|size:14',
     ];
 
     protected function validateEmailDomains($attribute, $domains)

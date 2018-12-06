@@ -52,6 +52,8 @@ class Gateway extends Base\Gateway
 
         $this->checkForErrors($input, $request);
 
+        $this->updateUrlInCacheAndPushMetric($input, $request['url']);
+
         return $request;
     }
 

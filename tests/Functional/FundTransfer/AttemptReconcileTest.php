@@ -81,6 +81,18 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
+    protected function verifySettlementReconFileProcessForAxis2()
+    {
+        $channel = Channel::AXIS2;
+
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
     protected function verifySettlementReconProcessForRbl($failureTest = false)
     {
         $channel = Channel::RBL;
@@ -236,6 +248,13 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForAxis2()
+    {
+        $this->verifySettlementReconFileProcessForAxis2();
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
+    }
+
     public function testSettlementReconcileEntitiesSuccessForRbl()
     {
         $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
@@ -351,6 +370,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
@@ -384,6 +404,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)
@@ -414,8 +435,10 @@ class AttemptReconcileTest extends TestCase
         $this->assertTestResponse($batch, $batchTestData);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertEquals($sourceType, $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+        $this->assertNotNull($txn['reconciled_type']);
     }
 
     public function testRetrySettlementKotak()

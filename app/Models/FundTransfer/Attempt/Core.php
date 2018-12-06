@@ -5,20 +5,73 @@ namespace RZP\Models\FundTransfer\Attempt;
 use Carbon\Carbon;
 
 use RZP\Constants;
-use RZP\Exception\InvalidArgumentException;
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
+use RZP\Exception\LogicException;
+use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Mail\Base\Constants as MailConstants;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Core extends Base\Core
 {
+    public function createWithBankAccount(
+        Base\Entity $source,
+        BankAccountEntity $bankAccount,
+        array $values = []): Entity
+    {
+        $fundTransferAttempt = $this->create($source, $values);
+
+        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        $fundTransferAttempt->bankAccount()->associate($bankAccount);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
+    }
+
+    public function createWithVpa(Base\Entity $source, VpaEntity $vpa, array $values = []): Entity
+    {
+        $fundTransferAttempt = $this->create($source, $values);
+
+        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        $fundTransferAttempt->vpa()->associate($vpa);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function nodalFileUploadThroughBeam(array $input): array
+    {
+        (new Validator)->validateInput('retry_beam_file_upload', $input);
+
+        $fileStoreId = $input['file_id'];
+
+        $fileEntity = $this->repo->file_store->findOrFail($fileStoreId);
+
+        $filePath = $fileEntity->getLocation();
+
+        $channel  = $input[Entity::CHANNEL];
+
+        $fileType = $input[Entity::FILE_TYPE];
+
+        $jobName  =  $this->getJobNameForBeamPush($channel, $fileType);
+
+        $this->sendFile($filePath, $jobName, $fileType, $channel);
+
+        return [
+            'status' => 'Nodal file upload request sent to beam'
+        ];
+    }
+
     /**
      * Takes an array of the reconciled rows as an input, each of them having 2 keys
      *   - entity
@@ -55,17 +108,17 @@ class Core extends Base\Core
 
     /**
      * @param Base\Entity $source - currently refund entity
-     * @param $values Attributes of the created FTA
-    */
-    public function create(Base\Entity $source, array $values = [])
+     * @param array       $values Attributes of the created FTA
+     *
+     * @return Entity
+     */
+    protected function create(Base\Entity $source, array $values = [])
     {
         $fundTransferAttempt = new Entity;
 
         $fundTransferAttempt->merchant()->associate($source->merchant);
 
         $fundTransferAttempt->source()->associate($source);
-
-        $fundTransferAttempt->bankAccount()->associate($source->bankAccount);
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -79,38 +132,7 @@ class Core extends Base\Core
 
         $fundTransferAttempt->fillAndGenerateId($values);
 
-        $this->repo->saveOrFail($fundTransferAttempt);
-
         return $fundTransferAttempt;
-    }
-
-    /**
-     * @param array $input
-     * @return array
-     * @throws InvalidArgumentException
-     * @throws LogicException
-     */
-    public function nodalFileUploadThroughBeam(array $input): array
-    {
-        (new Validator)->validateInput('retry_beam_file_upload', $input);
-
-        $fileStoreId = $input['file_id'];
-
-        $fileEntity = $this->repo->file_store->findOrFail($fileStoreId);
-
-        $filePath = $fileEntity->getLocation();
-
-        $channel  = $input[Entity::CHANNEL];
-
-        $fileType = $input[Entity::FILE_TYPE];
-
-        $jobName  =  $this->getJobNameForBeamPush($channel, $fileType);
-
-        $this->sendFile($filePath, $jobName, $fileType, $channel);
-
-        return [
-            'status' => 'Nodal file upload request sent to beam'
-        ];
     }
 
     /**

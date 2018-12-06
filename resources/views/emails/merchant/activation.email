@@ -118,18 +118,8 @@
 {{{$merchant['billing_label']}}}
 @endif
 
-is now active. The pricing details associated with your account are:
+is now active.
 
-<ul align="left">
-  @if(count($rules['amountRangeRules']) === 2)
-    <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['low']}}</li>
-    <li style="text-align:left;" align="left">{{$rules['amountRangeRules']['high']}}</li>
-  @endif
-  @foreach ($rules['otherRules'] as $pricing => $methodDisplay)
-    <li style="text-align:left;" align="left">{{implode(', ', $methodDisplay)}} - {{$pricing}}</li>
-  @endforeach
-</ul>
-<p><i> GST Extra (18%)</i></p>
 <p>In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation">here</a>. Please ensure that your production website/app is using the live keys generated from the dashboard.</p>
 
 <p>If you face any issues while implementing this, feel free to reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>.</p>

@@ -18,9 +18,9 @@ abstract class Base extends Processor\Base
 {
     const FILE_METADATA            = [];
 
-    public function checkIfValidDataAvailable(PublicCollection $payments)
+    public function checkIfValidDataAvailable(PublicCollection $tokens)
     {
-        if ($payments->count() === 0)
+        if ($tokens->count() === 0)
         {
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);

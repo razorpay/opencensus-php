@@ -427,4 +427,18 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testEditOrgWithPricingPlan' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'default_pricing_plan_id' => ''
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

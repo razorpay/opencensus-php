@@ -46,7 +46,6 @@ class Constants
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
-    const TERMINAL_BANKS_FILTER           = 'terminal_banks_filter';
     const TPV                             = 'tpv';
     const IRCTC_REPORT                    = 'irctc_report';
     const DISABLE_MAESTRO                 = 'disable_maestro';
@@ -96,6 +95,23 @@ class Constants
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
     const GOOGLE_PAY                      = 'google_pay';
     const EMANDATE_MRN                    = 'emandate_mrn';
+    const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
+    const CUSTOMER_ADDRESS                = 'customer_address';
+    const IRCTC_METHODS                   = 'irctc_methods';
+    const SKIP_CVV                        = 'skip_cvv';
+    const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
+
+    /**
+     * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
+     */
+    const INVOICE_NO_RECEIPT_UNIQUE       = 'invoice_no_receipt_unique';
+
+    /**
+     * Disables auto-capture of payments made on payment pages
+     * (used for auto refunds on demo payment pages)
+     */
+    const PAYMENT_PAGES_NO_CAPTURE        = 'payment_pages_no_capture';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -125,6 +141,8 @@ class Constants
 
     const CHECKOUT_FEATURES = [
         self::GOOGLE_PAY,
+        self::CUSTOMER_ADDRESS,
+        self::IRCTC_METHODS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -228,9 +246,16 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
-        self::TERMINAL_BANKS_FILTER           => true,
-        self::EMANDATE_MRN                    => true,
         self::GOOGLE_PAY                      => true,
+        self::EMANDATE_MRN                    => true,
+        self::DIWALI_PROMOTIONAL_PLAN         => true,
+        self::CUSTOMER_ADDRESS                => true,
+        self::IRCTC_METHODS                   => true,
+        self::SKIP_CVV                        => true,
+        self::BLOCK_SETTLEMENTS               => true,
+        self::SKIP_INTERNATIONAL_AUTH         => true,
+        self::INVOICE_NO_RECEIPT_UNIQUE       => true,
+        self::PAYMENT_PAGES_NO_CAPTURE        => true,
     ];
 
     // Entity type constants

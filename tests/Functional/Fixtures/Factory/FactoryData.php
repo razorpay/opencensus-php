@@ -32,6 +32,7 @@ final class FactoryData
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
+            'activated_at'             => time(),
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
@@ -72,10 +73,13 @@ final class FactoryData
             'title'       => 'Sample title',
             'description' => 'Sample description',
             'notes'       => null,
+            'terms'       => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'type'                      => 'primary',
             'balance'                   => 0,
         ]);
 
@@ -664,13 +668,11 @@ final class FactoryData
             'registered_at'      => $faker->timestamp,
         ]);
 
-        $factory(\RZP\Models\Upi\Vpa\Entity::class, [
+        $factory(\RZP\Models\Vpa\Entity::class, [
             'id'                 => $faker->uniqueid,
             'username'           => $faker->word,
             'handle'             => 'razorpay',
-            'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
-            'customer_id'        => '100000customer',
-            'frequency'          => 'multiple',
+            'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
         ]);

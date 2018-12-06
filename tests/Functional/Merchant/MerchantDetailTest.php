@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
@@ -57,7 +58,7 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -639,7 +640,7 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
-    
+
     /**
      * checks that category and category2 details should be set on business subcategory change
      */
@@ -686,7 +687,7 @@ class MerchantDetailTest extends TestCase
         $this->assertSame(5399, $testMerchant->getCategory());
         $this->assertSame('others', $testMerchant->getCategory2());
     }
-    
+
     /**
      * blacklist activation flow should not be allowed to submit full activation form
      */
@@ -695,12 +696,12 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-        
+
         $this->startTest();
     }
-    
+
     /**
      * whitelist and greylist activation flow should be allowed to fill full activation form
      */
@@ -709,9 +710,9 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::WHITELIST
         ]);
-        
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
-        
+
         $this->startTest();
     }
 

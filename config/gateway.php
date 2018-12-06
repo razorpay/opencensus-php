@@ -32,6 +32,7 @@ return [
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
+        'netbanking_vijaya',
         'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
@@ -43,6 +44,7 @@ return [
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
+        'netbanking_canara',
         'netbanking_equitas',
         'paytm',
         'sharp',
@@ -66,6 +68,8 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
+
+        'p2p_upi_sharp',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -84,6 +88,7 @@ return [
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
+    'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
@@ -98,6 +103,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
+    'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -120,6 +126,8 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
+
+    'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -256,6 +264,9 @@ return [
         'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
         'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
         'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
+        'test_access_code'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'    => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'   => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'enach_rbl' => [],
@@ -468,6 +479,13 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_canara' => [
+        'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
+        //TODO add these values for live mode
+        'key'                    => env('NETBANKING_CANARA_GATEWAY_KEY'),
+        'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
+    ],
+
     'netbanking_obc' => [
         'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),
@@ -485,11 +503,20 @@ return [
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_vijaya' => [
+        'test_merchant_id'       => env('NETBANKING_VIJAYA_GATEWAY_TEST_MERCHANT_ID'),
+        'merchant_constant'      => env('NETBANKING_VIJAYA_GATEWAY_MERCHANT_CONSTANT')
+    ],
+
     'netbanking_idfc' => [
         'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET'),
         'live_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_LIVE_MERCHANT_ID'),
         'live_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_LIVE_HASH_SECRET'),
+        'client_certificate'     => env('NETBANKING_IDFC_CLIENT_CERTIFICATE'),
+        'test_client_certificate' => env('NETBANKING_IDFC_TEST_CLIENT_CERTIFICATE'),
+        'live_client_certificate' => env('NETBANKING_IDFC_LIVE_CLIENT_CERTIFICATE'),
+        'cert_dir_name'           => env('NETBANKING_IDFC_CERT_DIR_NAME'),
     ],
 
     'netbanking_icici' => [
@@ -513,6 +540,9 @@ return [
 
         'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
         'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+
+        // Aditiya birla direct settlement TID
+        'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),
     ],
 
     'netbanking_axis' => [
@@ -577,6 +607,8 @@ return [
     'netbanking_equitas' => [
         'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
         'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
+        'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
+        'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => [

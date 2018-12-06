@@ -164,13 +164,19 @@ class MerchantCreateTest extends TestCase
     {
         $this->ba->appAuthTest();
 
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
-        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
+        $scheduledTasks = $this->getEntities('schedule_task', ['count' => 2 ], true);
 
-        $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
-        $this->assertEquals($schedule['period'], 'daily');
-        $this->assertEquals($schedule['delay'], 3);
+        foreach ($scheduledTasks['items'] as $scheduledTask)
+        {
+            $schedule = $this->getEntityById('schedule', $scheduledTask['schedule_id'], true);
+
+            $delay = $scheduledTask['international'] ? 7 : 3;
+
+            $this->assertEquals($merchant['id'], $scheduledTask['merchant_id']);
+            $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
+            $this->assertEquals($schedule['period'], 'daily');
+            $this->assertEquals($schedule['delay'], $delay);
+        }
     }
 
     protected function checkNetbankingBanksInMode($mode)
@@ -957,6 +963,28 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+    }
+
+    public function testBackFillMerchantId()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['limit'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 1;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 1;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [];
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 4;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 4;
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['response']['content']['total'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['success'] = 0;
 
         $this->startTest();
     }

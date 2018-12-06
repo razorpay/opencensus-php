@@ -4,9 +4,11 @@ namespace RZP\Tests\Unit\EE\Exception;
 
 use Mockery;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Card;
 use RZP\Tests\TestCase;
 use RZP\Error\ErrorCode;
+use RZP\Error\ErrorClass;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\CustomerErrorDescription;
 
@@ -19,7 +21,7 @@ class ExceptionTest extends TestCase
         parent::setUp();
     }
 
-    public function testBadRequestExceptionWCustomerDescription()
+    public function testBadRequestExceptionWithCustomerDescription()
     {
         $this->mockExceptionHandlerReturnTestingFalse();
 
@@ -38,7 +40,9 @@ class ExceptionTest extends TestCase
         $content = json_decode($content, true);
 
         $this->assertEquals($content['error']['code'], ErrorCode::BAD_REQUEST_ERROR);
-        $this->assertEquals($content['error']['description'], CustomerErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+        $this->assertEquals(
+            $content['error']['description'],
+            CustomerErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
     }
 
     public function testValidationExceptionPublicAuth()
@@ -120,6 +124,53 @@ class ExceptionTest extends TestCase
 
         $this->assertEquals($content['error']['code'], ErrorCode::SERVER_ERROR);
         $this->assertEquals($content['error']['internal_error_code'], ErrorCode::SERVER_ERROR_TO_STRING_EXCEPTION);
+    }
+
+    public function testBadRequestErrorPublicDescriptions()
+    {
+        $reflector = new \ReflectionClass(ErrorCode::class);
+
+        $codesWithoutDescription = [];
+
+        foreach ($reflector->getConstants() as $code => $value)
+        {
+            if ($this->needsPublicDescription($code) === false)
+            {
+                continue;
+            }
+
+            try
+            {
+                $exception = new Error($code);
+
+                $this->assertNotNull($exception->getCustomerDescription());
+            }
+            catch(Exception\InvalidArgumentException $e)
+            {
+                $codesWithoutDescription[] = $code;
+            }
+        }
+
+        $codeList = implode($codesWithoutDescription, ",\n");
+
+        $this->assertEmpty($codesWithoutDescription, "Codes without description: " . $codeList);
+    }
+
+    protected function needsPublicDescription(string $code): bool
+    {
+        // Only BAD_REQUEST_ error codes use public descriptions in 'message'
+        if (str_before($code, '_') !== 'BAD')
+        {
+            return false;
+        }
+
+        // Message is built at runtime (see ExtraFieldsException)
+        if ($code === ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function assertJsonAndGetContent($content)

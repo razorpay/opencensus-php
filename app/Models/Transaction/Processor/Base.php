@@ -5,20 +5,21 @@ namespace RZP\Models\Transaction\Processor;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
-use RZP\Models\Merchant;
+use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
-use RZP\Models\Settlement\Holidays;
-use RZP\Mail\Merchant\FeeCreditsAlert;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\FeeModel;
-use RZP\Models\Transaction as TransactionModel;
-use RZP\Models\Base\Core as BaseCore;
-use RZP\Models\Base\Entity as BaseEntity;
-use RZP\Models\Base as BaseCollection;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\Base as BaseCollection;
+use RZP\Mail\Merchant\FeeCreditsAlert;
+use RZP\Models\Base\Entity as BaseEntity;
+use RZP\Models\Transaction as TransactionModel;
 
 abstract class Base extends BaseCore
 {
@@ -100,7 +101,7 @@ abstract class Base extends BaseCore
         // fetches credits, balance and calculates fees and taxes
         $this->setFeeDefaults();
 
-        // calculates fee sources and calulates credit and debit amounts
+        // calculates fee sources and calculates credit and debit amounts
         $this->calculateFees();
 
         // update credit and debit amounts, fees and taxes in transaction
@@ -109,19 +110,28 @@ abstract class Base extends BaseCore
         // updates entity specific attributes in transaction
         $this->updateTransaction();
 
-        // update merchant credits an balances
-        $this->setMerchantBalanceLockForUpdate();
+        if ($this->shouldUpdateBalance() === true)
+        {
+            // update merchant credits an balances
+            $this->setMerchantBalanceLockForUpdate();
 
-        $this->updateCredits();
+            $this->updateCredits();
 
-        $this->updateBalances();
+            $this->updateBalances();
+        }
 
         return [$this->txn, $this->feesSplit];
+    }
+
+    protected function shouldUpdateBalance()
+    {
+        return true;
     }
 
     public function setOtherDetails()
     {
         $this->txn->setCredit(0);
+
         $this->txn->setDebit(0);
 
         $this->txn->setFee($this->fees);
@@ -151,9 +161,18 @@ abstract class Base extends BaseCore
 
     abstract function updateTransaction();
 
-    abstract function setSourceDefaults();
-
     abstract function calculateFees();
+
+    public function setSourceDefaults()
+    {
+        $txnData = [
+            TransactionModel\Entity::TYPE            => $this->source->getEntity(),
+            TransactionModel\Entity::CURRENCY        => Currency\Currency::INR,
+            TransactionModel\Entity::CHANNEL         => $this->source->merchant->getChannel(),
+        ];
+
+        $this->txn->fill($txnData);
+    }
 
     public function setFeeDefaults()
     {
@@ -263,8 +282,6 @@ abstract class Base extends BaseCore
 
     protected function calculateFeeForFeeCredit()
     {
-        $amount = $this->txn->getAmount();
-
         $feeCredits = $this->fees;
 
         $this->txn->setCredits($feeCredits);
@@ -488,7 +505,7 @@ abstract class Base extends BaseCore
             return;
         }
 
-        $amount = $this->txn->getAmount();
+        $amount = $this->txn->getCredits();
 
         $merchantId = $this->merchantBalance->merchant->getId();
 
@@ -513,8 +530,10 @@ abstract class Base extends BaseCore
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances($updateNodalBalance = true)
+    public function updateBalances(bool $updateNodalBalance = true)
     {
+        $this->txn->associateBalance($this->merchantBalance);
+
         $this->updateMerchantBalance();
 
         // if ($updateNodalBalance === true)

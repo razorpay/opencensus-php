@@ -174,6 +174,8 @@ class Core extends Base\Core
 
         $txn->setReconciledAt(time());
 
+        $txn->setReconciledType(ReconciledType::NA);
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
         $txn->setAttribute(Entity::ON_HOLD, $onHold);
@@ -245,6 +247,7 @@ class Core extends Base\Core
         }
 
         $transaction->setReconciledAt(time());
+        $transaction->setReconciledType(ReconciledType::NA);
         $transaction->setGatewayFee(0);
         $transaction->setGatewayServiceTax(0);
 
@@ -282,7 +285,8 @@ class Core extends Base\Core
 
         if ($payment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
         {
-            $txnData[Entity::RECONCILED_AT] = time();
+            $txnData[Entity::RECONCILED_AT]     = time();
+            $txnData[Entity::RECONCILED_TYPE]   = ReconciledType::NA;
         }
 
         $txn->fill($txnData);
@@ -575,58 +579,9 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $merchant = $refund->merchant;
+        $txnProcessor = (new TransactionProcessor\Refund($refund));
 
-        // create Transaction
-        $txn = new Transaction\Entity;
-
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-
-        $txn->merchant()->associate($merchant);
-
-        $settledAt = $this->getSettledAtTimestampForRefund($refund);
-
-        $txnData = [
-            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
-            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
-            Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
-            Transaction\Entity::SETTLED_AT      => $settledAt
-        ];
-
-        if ($merchant->getRefundSource() === RefundSource::CREDITS)
-        {
-            $txnData[Transaction\Entity::DEBIT] = 0;
-
-            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
-
-            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
-        }
-
-        $txn->fill($txnData);
-
-        $paymentStatus = $payment->getStatus();
-
-        if ($payment->getStatus() === Payment\Status::CAPTURED)
-        {
-            // TODO : merge all balance and credits update in updateBalances
-            if ($merchant->getRefundSource() === RefundSource::CREDITS)
-            {
-                // transaction has to be saved as we create associated credit log
-                // transaction inside the updateCredits method.
-                $this->repo->saveOrFail($txn);
-
-                $this->updateCredits($txn, $refund);
-            }
-
-            $this->updateBalances($txn);
-        }
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
         return $txn;
     }
@@ -654,6 +609,7 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
@@ -736,14 +692,15 @@ class Core extends Base\Core
         }
 
         $values = [
-            Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
-            Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => $fee,
-            Transaction\Entity::RECONCILED_AT => time(),
-            Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $settledAt,
-            Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
-            Transaction\Entity::CHANNEL       => $transfer->merchant->getChannel(),
+            Transaction\Entity::CURRENCY        => $transfer->getCurrency(),
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::API_FEE         => $fee,
+            Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settledAt,
+            Transaction\Entity::TYPE            => Transaction\Type::TRANSFER,
+            Transaction\Entity::CHANNEL         => $transfer->merchant->getChannel(),
         ];
 
         $txn->fill($values);
@@ -786,19 +743,20 @@ class Core extends Base\Core
         $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
 
         $data = [
-            Transaction\Entity::DEBIT         => 0,
-            Transaction\Entity::CREDIT        => $amount,
-            Transaction\Entity::CURRENCY      => Currency\Currency::INR,
-            Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => 0,
-            Transaction\Entity::RECONCILED_AT => $settleTimestamp,
-            Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $settleTimestamp,
-            Transaction\Entity::FEE           => 0,
-            Transaction\Entity::TAX           => 0,
-            Transaction\Entity::AMOUNT        => $amount,
-            Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
-            Transaction\Entity::CHANNEL       => $reversal->merchant->getChannel(),
+            Transaction\Entity::DEBIT           => 0,
+            Transaction\Entity::CREDIT          => $amount,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::API_FEE         => 0,
+            Transaction\Entity::RECONCILED_AT   => $settleTimestamp,
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settleTimestamp,
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::TAX             => 0,
+            Transaction\Entity::AMOUNT          => $amount,
+            Transaction\Entity::TYPE            => Transaction\Type::REVERSAL,
+            Transaction\Entity::CHANNEL         => $reversal->merchant->getChannel(),
         ];
 
         $txn->fillAndGenerateId($data);
@@ -930,13 +888,14 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
             Transaction\Entity::API_FEE             => $fee,
             Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::RECONCILED_TYPE     => ReconciledType::NA,
             Transaction\Entity::SETTLED             => 0,
             Transaction\Entity::SETTLED_AT          => $settledAt,
             Transaction\Entity::FEE                 => $fee,
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
-            Transaction\Entity::CHANNEL             => $payout->merchant->getChannel(),
+            Transaction\Entity::CHANNEL             => $payout->getChannel(),
         ];
 
         $txn->fill($values);
@@ -972,6 +931,8 @@ class Core extends Base\Core
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
+
+        $txn->associateBalance($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
@@ -1218,7 +1179,10 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
+            $merchant,
+            $payment->getMethod(),
+            $payment->isInternational());
 
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
@@ -1236,8 +1200,10 @@ class Core extends Base\Core
         else
         {
             // Unused as there wont be any merchant without schedule.
-            // TODO: fix test cases as this condition will run while runnig test. remove condition once tests fixed
-            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            // TODO: fix test cases as this condition will run while running test. remove condition once tests fixed
+            $addDays = $payment->isInternational() === true ?
+                       Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                       Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             //
             // Not handling 24x7 settlements for daily schedules.
@@ -1264,9 +1230,9 @@ class Core extends Base\Core
         return null;
     }
 
-    public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
+    public function calculateSettledAtTimestamp($capturedAtTimestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $capturedAt = Carbon::createFromTimestamp($capturedAtTimestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 

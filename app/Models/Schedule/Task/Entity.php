@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE       = 'entity_type';
     const TYPE              = 'type';
     const METHOD            = 'method';
+    const INTERNATIONAL     = 'international';
     const SCHEDULE_ID       = 'schedule_id';
     const NEXT_RUN_AT       = 'next_run_at';
     const LAST_RUN_AT       = 'last_run_at';
@@ -41,7 +42,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::METHOD,
-        self::NEXT_RUN_AT
+        self::NEXT_RUN_AT,
+        self::INTERNATIONAL,
     ];
 
     protected $visible = [
@@ -51,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::TYPE,
         self::METHOD,
+        self::INTERNATIONAL,
         self::SCHEDULE_ID,
         self::SCHEDULE_NAME,
         self::NEXT_RUN_AT,
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::METHOD        => null,
         self::TYPE          => Type::SETTLEMENT,
+        self::INTERNATIONAL => 0,
         self::NEXT_RUN_AT   => null,
         self::LAST_RUN_AT   => null,
     ];
@@ -182,6 +186,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_RUN_AT);
     }
 
+    public function isInternational()
+    {
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
+    }
 
     // -------------------------- Setters --------------------------------------
 

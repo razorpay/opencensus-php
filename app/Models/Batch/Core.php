@@ -204,7 +204,25 @@ class Core extends Base\Core
      */
     protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) === true)
+        if (Type::isKubernetesJobGroup($batch->getType()) === true)
+        {
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::K8S_BATCH_TREATMENT,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                unset($input[Entity::FILE]);
+                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input);
+
+                return;
+            }
+        }
+
+        if  (Type::isQueueGroup($batch->getType()) === true)
         {
             unset($input[Entity::FILE]);
 

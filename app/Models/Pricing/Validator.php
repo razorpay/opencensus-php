@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -18,12 +19,13 @@ use RZP\Models\Bank\IFSC;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
+        Entity::PRODUCT             => 'sometimes|string|custom',
         Entity::FEATURE             => 'sometimes|alpha',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
-        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
+        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE           => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
@@ -346,6 +348,10 @@ class Validator extends Base\Validator
 
     /**
      * Check whether this new rule already exists
+     *
+     * @param Plan $plan
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateRuleDoesNotMatch(Plan $plan)
     {
@@ -438,6 +444,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
+    }
+
+    public function validateProduct($attribute, $value)
+    {
+        Product::validate($value);
     }
 
     protected function between($n, $min, $max)

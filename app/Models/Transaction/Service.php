@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
 
 class Service extends Base\Service

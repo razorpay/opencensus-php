@@ -66,7 +66,7 @@ class Validator extends Base\Validator
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
         Entity::NAME                    => 'filled|string|max:255',
-        Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
@@ -148,6 +148,16 @@ class Validator extends Base\Validator
         HdfcEMRegisterHeadings::MANDATE_ID                  => 'Mandate ID must be present',
         HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER     => 'Customer Account Number must be present',
         HdfcEMRegisterHeadings::STATUS                      => 'Status must be present',
+    ];
+
+    /**
+     * Defines the required keys to be present in instant activation batch file
+     * and the corresponding error message to be thrown when they are absent or empty
+     *
+     * @var array
+     */
+    protected static $instantActivationRequiredEntries = [
+        ME::MERCHANT_ID                  => 'merchant id must be present',
     ];
 
     /**
@@ -445,6 +455,15 @@ class Validator extends Base\Validator
         array $params,
         ME $merchant)
     {
+        // Skip the pre validation for payment links to reduce the execution time
+        // to support large files
+        // TODO:
+        // move this to async
+        if (count($entries) > Constants::ROW_LEVEL_VALIDATION_THRESHOLD)
+        {
+            return;
+        }
+
         // Associative array with index as input file's row index and values
         // as the error message.
 
@@ -625,5 +644,21 @@ class Validator extends Base\Validator
                 ]);
         }
     }
-}
 
+    protected function validateInstantActivationEntries(array & $entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $entry = array_map('trim', $entry);
+
+            foreach (self::$instantActivationRequiredEntries as $attr => $errorMessage)
+            {
+                if (empty($attr) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        $errorMessage, $attr, $entry);
+                }
+            }
+        }
+    }
+}

@@ -63,13 +63,19 @@ return [
         'failure_reason'    => null,
     ],
 
-    'matchAttemptForReconSuccessRbl' => [
+    'matchAttemptForReconSuccessAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
         'status'            => AttemptStatus::INITIATED,
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconSuccessRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'SUCCESS',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
     'matchAttemptForReconFailureRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Failure',
@@ -207,7 +213,6 @@ return [
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],
-
 
     'testRetrySettlement' => [
         'attempts'                  => 2,

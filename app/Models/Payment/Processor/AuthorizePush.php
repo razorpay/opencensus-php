@@ -37,8 +37,6 @@ trait AuthorizePush
 
                     return $this->authorizePushPayment($this->payment, $callbackData);
                 });
-
-            return ['success' => $success];
         }
         catch (\Throwable $ex)
         {
@@ -52,8 +50,10 @@ trait AuthorizePush
                 ]
             );
 
-            return ['success' => false];
+            $success = false;
         }
+
+        return ['success' => $success];
     }
 
     protected function validatePushPayment(string $gateway, array $callbackData, Terminal\Entity $terminal)

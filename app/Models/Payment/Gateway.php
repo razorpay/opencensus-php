@@ -46,6 +46,7 @@ class Gateway
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
@@ -55,6 +56,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -95,18 +97,24 @@ class Gateway
     const BT_KOTAK           = 'bt_kotak';
     const BT_DASHBOARD       = 'bt_dashboard';
 
+    // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
+    const EMI_SBI            = 'emi_sbi';
+
+    const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
+
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
     //
     // Stores boolean value indicating refund was successful or not
-    const SUCCESS            = 'success';
+    const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
-    const STATUS_CODE        = 'status_code';
+    const STATUS_CODE               = 'status_code';
     // Stores array of gateway related keys such as refund_id, auth_code
-    const GATEWAY_KEYS       = 'gateway_keys';
+    const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
-    const GATEWAY_RESPONSE   = 'gateway_response';
+    const GATEWAY_RESPONSE          = 'gateway_response';
+    const GATEWAY_VERIFY_RESPONSE   = 'gateway_verify_response';
 
     //
     // If for a merchant, the esigner gateway is not assigned via config,
@@ -183,15 +191,15 @@ class Gateway
     * since their verify API's stop working after a certain time
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
+        self::UPI_SBI,
         self::CARD_FSS,
         self::AXIS_MIGS,
+        self::FIRST_DATA,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
-        self::NETBANKING_EQUITAS,
-        self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
 
@@ -199,6 +207,7 @@ class Gateway
         //If you are seeing this after Sep'18, Please report to gateway payments team
         self::UPI_HULK,
         self::UPI_ICICI,
+        self::UPI_MINDGATE,
     ];
 
     /**
@@ -238,6 +247,8 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    // The 2 commented banks are mentioned at the bottom
+    // with their retail versions
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -252,6 +263,7 @@ class Gateway
         IFSC::AUCX,
         IFSC::BACB,
         IFSC::BACX,
+        // IFSC::BARB,
         IFSC::BCBM,
         IFSC::BGBX,
         IFSC::BHSX,
@@ -259,6 +271,7 @@ class Gateway
         IFSC::BKDN,
         IFSC::BKID,
         IFSC::BNPA,
+        IFSC::BORX,
         IFSC::BURX,
         IFSC::CBIN,
         IFSC::CHAS,
@@ -274,6 +287,7 @@ class Gateway
         IFSC::CSBK,
         IFSC::CSBX,
         IFSC::CURX,
+        IFSC::CZCX,
         IFSC::DBSS,
         IFSC::DCBL,
         IFSC::DCDX,
@@ -287,6 +301,7 @@ class Gateway
         IFSC::EUCX,
         IFSC::FDRL,
         IFSC::FGCB,
+        IFSC::FSCX,
         IFSC::GCBX,
         IFSC::GCUX,
         IFSC::GDCX,
@@ -302,14 +317,20 @@ class Gateway
         IFSC::IUCB,
         IFSC::JASB,
         IFSC::JHAX,
+        IFSC::JONX,
+        IFSC::JSBL,
         IFSC::JSBP,
         IFSC::JSCX,
         IFSC::JUCX,
         IFSC::KAAX,
         IFSC::KAIJ,
+        IFSC::KALX,
         IFSC::KARB,
+        IFSC::KARX,
         IFSC::KASX,
         IFSC::KBCX,
+        IFSC::KCOB,
+        IFSC::KCUB,
         IFSC::KDCX,
         IFSC::KDIX,
         IFSC::KHAX,
@@ -330,9 +351,16 @@ class Gateway
         IFSC::MERX,
         IFSC::MHSX,
         IFSC::MOGX,
+        IFSC::MPRX,
+        IFSC::MSAX,
+        IFSC::MSNU,
         IFSC::MSOX,
         IFSC::NAIX,
         IFSC::NALX,
+        // This is not in the IFSC package yet
+        // Cleanup post the 1.2.4 release
+        'NBMX',
+        IFSC::NCBX,
         IFSC::NCCX,
         IFSC::NDCX,
         IFSC::NICB,
@@ -342,6 +370,8 @@ class Gateway
         IFSC::NSGX,
         IFSC::NVSX,
         IFSC::ORBC,
+        IFSC::OSMX,
+        IFSC::PABX,
         IFSC::PALX,
         IFSC::PATX,
         IFSC::PCUX,
@@ -350,6 +380,8 @@ class Gateway
         IFSC::PMCB,
         IFSC::PRTH,
         IFSC::PSRX,
+        IFSC::PUGX,
+        // IFSC::PUNB,
         IFSC::RAMX,
         IFSC::RATN,
         IFSC::RCUX,
@@ -396,6 +428,7 @@ class Gateway
         IFSC::UBIN,
         IFSC::UCBA,
         IFSC::UCBS,
+        IFSC::UCBX,
         IFSC::UCUX,
         IFSC::UKGX,
         IFSC::UMSX,
@@ -435,9 +468,24 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
-        Payment\Gateway::SHARP,
-        Payment\Gateway::FIRST_DATA,
-        Payment\Gateway::UPI_MINDGATE
+        Payment\Gateway::SHARP => [
+            self::GO_LIVE_TIMESTAMP => 1535712088
+        ],
+        Payment\Gateway::AXIS_MIGS      => [
+            self::GO_LIVE_TIMESTAMP => 1542272247
+        ],
+        Payment\Gateway::FIRST_DATA     => [
+            self::GO_LIVE_TIMESTAMP => 1537966190
+        ],
+        Payment\Gateway::CARD_FSS       => [
+            self::GO_LIVE_TIMESTAMP => 1543816680
+        ],
+        Payment\Gateway::CYBERSOURCE => [
+            self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_MINDGATE   => [
+            self::GO_LIVE_TIMESTAMP => 1540826221
+        ],
     ];
 
     /**
@@ -533,6 +581,8 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_CANARA,
+            self::NETBANKING_VIJAYA,
         ],
 
         //
@@ -838,6 +888,9 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_CORPORATION,
+        self::NETBANKING_IDFC,
+        self::NETBANKING_VIJAYA,
     ];
 
     /**
@@ -1100,7 +1153,9 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1120,7 +1175,10 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::CNRB => Gateway::NETBANKING_CANARA,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1157,6 +1215,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::ICIC,
         IFSC::YESB,
+        IFSC::SBIN,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -1202,6 +1261,7 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_AXIS,
     ];
 
     public static $upiValidateVpaTerminals = [
@@ -1273,6 +1333,11 @@ class Gateway
         return in_array($gateway, self::$upiIntentGateways, true);
     }
 
+    public static function getScroogeGateways(): array
+    {
+        return array_keys(self::$scroogeGateways);
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1297,7 +1362,25 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        return (in_array($gateway, self::$scroogeGateways, true) === true);
+        return (in_array($gateway, self::getScroogeGateways(), true) === true);
+    }
+
+
+    /**
+     * This function checks if the gateway was live at a particular timestamp
+     *
+     * @param string $gateway
+     * @param int $timestamp
+     * @return bool
+     */
+    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway = null, int $timestamp = null): bool
+    {
+        return (
+            ($gateway !== null) and
+            ($timestamp !== null) and
+            isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
+            $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
+        );
     }
 
     /**

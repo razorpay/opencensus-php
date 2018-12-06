@@ -26,6 +26,12 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
+    public static $defaultInconsistentBankCodesMapping = [
+        IFSC::BARB => 'BARB_R',
+        IFSC::PUNB => 'PUNB_R',
+        IFSC::LAVB => 'LAVB_R',
+    ];
+
     public static $inconsistentIfsc = [
         self::BARB_R,
         self::PUNB_R,
@@ -68,7 +74,9 @@ class Netbanking
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
+        IFSC::CNRB,
         IFSC::ESFB,
+        IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -328,6 +336,11 @@ class Netbanking
                 IFSC::IDFB
             ]
         ],
+        Gateway::NETBANKING_VIJAYA => [
+            'retail' => [
+                IFSC::VIJB
+            ]
+        ],
         Gateway::NETBANKING_HDFC => [
             'retail' => [
                 IFSC::HDFC
@@ -339,6 +352,16 @@ class Netbanking
         Gateway::NETBANKING_CORPORATION => [
             'retail' => [
                 IFSC::CORP,
+            ]
+        ],
+        Gateway::NETBANKING_CANARA => [
+            'retail' => [
+                IFSC::CNRB,
+            ]
+        ],
+        Gateway::NETBANKING_EQUITAS => [
+            'retail' => [
+                IFSC::ESFB
             ]
         ],
         Gateway::NETBANKING_AIRTEL => [
@@ -358,8 +381,11 @@ class Netbanking
             'retail' => [
                 IFSC::INDB,
             ],
+            'tpv' => [
+                IFSC::INDB,
+            ],
         ],
-        Gateway::NETBANKING_KOTAK =>[
+        Gateway::NETBANKING_KOTAK => [
             'retail' => [
                 IFSC::KKBK
             ],
@@ -383,13 +409,21 @@ class Netbanking
         Gateway::NETBANKING_CSB => [
             'retail' => [
                 IFSC::CSBK,
-            ]
+            ],
+            'tpv' => [
+                IFSC::CSBK,
+            ],
         ],
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
             ]
-        ]
+        ],
+        Gateway::NETBANKING_EQUITAS => [
+            'retail' => [
+                IFSC::ESFB,
+            ]
+        ],
     ];
 
    protected static $defaultDisabled = [];

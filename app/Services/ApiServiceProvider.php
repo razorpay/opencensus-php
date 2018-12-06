@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -26,6 +28,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -78,6 +81,7 @@ class ApiServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->registerTraceProcessors();
+        $this->registerGatewayProcessors();
 
         $this->app->singleton('mailgun', function($app)
         {
@@ -238,6 +242,12 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerPincodeSearch();
 
         $this->registerDatabaseConnection();
+
+        $this->registerMyOperator();
+
+        $this->registerKubernetesClient();
+
+        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -438,7 +448,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
+            'bank_transfer'             => BankTransfer\Entity::class,
 
             'subscription'              => Subscription\Entity::class,
             'promotion'                 => Promotion\Entity::class,
@@ -450,6 +462,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant_request'          => MerchantRequest\Entity::class,
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
+
+            'contact'                   => Contact\Entity::class,
         ]);
     }
 
@@ -535,6 +549,13 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app['trace']->pushProcessor($apiProcessor);
     }
 
+    protected function registerGatewayProcessors()
+    {
+        $apiProcessor = new RZP\Trace\GatewayTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor, 'gateway');
+    }
+
     protected function registerPincodeSearch()
     {
         $this->app->singleton('pincodesearch', function($app)
@@ -580,6 +601,34 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new IlluminateMySqlConnection($connection, $database, $prefix, $config);
+        });
+    }
+
+    protected function registerMyOperator()
+    {
+        $this->app->singleton('myoperator', function()
+        {
+            $config = $this->app->config->get('applications.myoperator');
+            $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
+
+            return new $impl($this->app->trace, $config);
+        });
+    }
+
+    protected function registerKubernetesClient()
+    {
+        $this->app->singleton('k8s_client', function($app)
+        {
+            return new KubernetesClient($app);
+        });
+    }
+
+    protected function registerCustomSessionProvider()
+    {
+        $manager = $this->app['session'];
+
+        $manager->extend('custom', function($app) {
+            return new CustomSessionHandler($app);
         });
     }
 }

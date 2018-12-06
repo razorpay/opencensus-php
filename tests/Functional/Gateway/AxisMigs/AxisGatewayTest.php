@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -221,7 +222,8 @@ class AxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -234,10 +236,11 @@ class AxisGatewayTest extends TestCase
             }
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $payment['id']);
 
         $this->assertEquals($refund['id'], $response['refund_id']);
-        $this->assertEquals('processed', $response['status']);
+
+        $this->assertEquals('created', $response['status']);
     }
 
     public function testVerifyRefundFailedOnGateway()
@@ -258,7 +261,8 @@ class AxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -278,14 +282,16 @@ class AxisGatewayTest extends TestCase
             }
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['id'], $response['refund_id']);
-        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals('created', $response['status']);
     }
 
     public function testVerifyRefundFailedOnGatewayMultipleResponses()
     {
+        $this->markTestSkipped('the expected exceptions will not be caught through the scrooge flow');
+
         $payment = $this->doAuthAndCapturePayment();
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -318,7 +324,7 @@ class AxisGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($refund)
         {
-            $this->retryFailedRefund($refund['id']);
+            $this->retryFailedRefund($refund['id'], $refund['payment_id']);
         });
     }
 
@@ -349,6 +355,35 @@ class AxisGatewayTest extends TestCase
         {
             $this->retryFailedRefund($refund['id']);
         });
+    }
+
+    public function testVerifyRefundOldRefundScrooge()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $ts = Carbon::createFromDate(2017, 1, 1)->getTimestamp();
+
+        $this->fixtures->refund->edit($refund['id'], [
+            'status' => 'created',
+            'created_at' => $ts,
+            'gateway_refunded' => '0'
+        ]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($ts, $refund['created_at']);
+        $this->assertFalse($refund['gateway_refunded']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
     }
 
     public function testInvalidAmaCaptureError()
@@ -408,24 +443,6 @@ class AxisGatewayTest extends TestCase
         {
             $this->doAuthAndCapturePayment($testData['request']['content']);
         });
-    }
-
-    public function testCaptureGatewayRequestExceptionRetry()
-    {
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->getGatewayRequestExceptionInCapture();
-
-        $this->capturePayment($payment['id'], $payment['amount']);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(false, $this->i);
-
-        $this->assertEquals('captured', $payment['status']);
     }
 
     public function testFailedPaymentWithProperError()
@@ -600,8 +617,8 @@ class AxisGatewayTest extends TestCase
                 $content['vpc_AcqCSCRespCode']    = 'N';
                 $content['vpc_AcqResponseCode']   = '91';
                 $content['vpc_CSCResultCode']     = 'N';
-                $content['vpc_Message']           = 'E5415-09120704: Refund Error : 
-                                                     Field in error: \'initialTransaction.orderNumber\',  
+                $content['vpc_Message']           = 'E5415-09120704: Refund Error :
+                                                     Field in error: \'initialTransaction.orderNumber\',
                                                      value \'27950\' - reason: No order identified';
                 $content['vpc_TxnResponseCode']   = '3';
                 $content['vpc_VerSecurityLevel']  = '05';
@@ -757,5 +774,26 @@ class AxisGatewayTest extends TestCase
         {
             $this->doAuthPayment($testData['request']['content']);
         });
+    }
+
+    public function testPaymentRefundFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['vpc_TxnResponseCode'] = '7';
+                $content['vpc_Message'] = 'E5414-09281349 reason: Requested capture amount exceeds outstanding authorized amount';
+            }
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+        $response = $this->scroogeRefund($refund);
+
+        $this->assertEquals($response['success'], false);
+
+        $this->assertEquals($response['status_code'], ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH);
     }
 }
