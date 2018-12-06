@@ -52,7 +52,7 @@ const initFreshchat = data => {
     role,
     userEmail: data.user.email,
     mid: data.id,
-    activationStatus: data.user.activation_status,
+    activationStatus: data.activation_status,
     dashboardLink:
       location.origin + '/admin#/app/merchants/' + data.id + '/detail',
   });
