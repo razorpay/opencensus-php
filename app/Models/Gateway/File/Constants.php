@@ -123,6 +123,7 @@ class Constants
             self::CANARA   => ['hosettlement@canarabank.com', 'hodbspg@canarabank.com '],
             self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC     => ['idfc.netbanking.refunds@razorpay.com'],
+            self::CANARA   => ['canara.netbanking.refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [
