@@ -9,9 +9,11 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\BharatQr\Constants;
@@ -64,53 +66,105 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Processing the bank transfer
+     * Processing the bank transfer for both PG and Banking scenarios.
+     *
+     * Common
      *  - Create bank transfer, associate with the merchant, and the identified VA
-     *  - Create payment, associate with the bank transfer
      *  - Create payer bank account, associate with bank transfer
+     * PG:
+     *  - Create payment (and associated txn), associate with the bank transfer
      *  - Update VA amount fields and status, if necessary
+     * BB:
+     *  - Create transaction, associate with bank_transfers
      *
-     * @param Base\PublicEntity $bankTransfer
-     *
+     * @param  Base\PublicEntity $bankTransfer
      * @return null|Base\PublicEntity
      */
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
         $this->checkIfAccountIsBlocked($bankTransfer);
 
-        $paymentProcessor = $this->getPaymentProcessor();
+        $this->repo->transaction(function() use ($bankTransfer)
+        {
+            // Bank transfer's relation association
+            $bankTransfer->merchant()->associate($this->merchant);
 
-        $this->repo->transaction(
-                        function() use ($bankTransfer, $paymentProcessor)
-                        {
-                            $paymentInput = $this->getPaymentArray($bankTransfer);
+            $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
-                            $gatewayData[Payment\Entity::TERMINAL_ID] = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer)->getId();
+            $this->repo->saveOrFail($bankTransfer);
 
-                            $this->createPayment($paymentInput, $gatewayData);
+            $balanceType = $this->virtualAccount->getBalanceType();
 
-                            $payment = $paymentProcessor->getPayment();
+            switch ($balanceType)
+            {
+                case Balance\Type::PRIMARY:
+                    $this->processPaymentForPg($bankTransfer);
+                    break;
 
-                            $bankTransfer->payment()->associate($payment);
+                case Balance\Type::BANKING:
+                    $this->processPaymentForBanking($bankTransfer);
+                    break;
 
-                            $bankTransfer->merchant()->associate($this->merchant);
-
-                            $bankTransfer->virtualAccount()->associate($this->virtualAccount);
-
-                            $this->createAndAssociatePayerBankAccount($bankTransfer);
-
-                            $this->repo->saveOrFail($bankTransfer);
-
-                            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
-
-                            $this->repo->saveOrFail($this->virtualAccount);
-
-                            return $payment;
-                        });
+                default:
+                    throw new LogicException(
+                        'Invalid balance type, could not process payment.',
+                        null,
+                        compact('balanceType'));
+            }
+        });
 
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
+    }
+
+    protected function processPaymentForPg(Entity $bankTransfer)
+    {
+        assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
+        assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
+
+        // Prepares payment input and creates payment and its transaction etc.
+        $paymentInput = $this->getPaymentArray($bankTransfer);
+
+        $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+
+        $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
+
+        $this->createPayment($paymentInput, $gatewayData);
+
+        $payment = $this->getPaymentProcessor()->getPayment();
+
+        $bankTransfer->payment()->associate($payment);
+
+        $this->createAndAssociatePayerBankAccount($bankTransfer);
+
+        $this->repo->saveOrFail($bankTransfer);
+
+        // Updates virtual account's stats.
+        $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+
+        $this->repo->saveOrFail($this->virtualAccount);
+    }
+
+    protected function processPaymentForBanking(Entity $bankTransfer)
+    {
+        assertTrue($this->virtualAccount->isBalanceTypeBanking(), 'Attempted processing VA payment incorrectly!');
+        assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_CREATE_TRANSACTION,
+            [
+                'bank_transfer_id'   => $bankTransfer->getId(),
+                'virtual_account_id' => $this->virtualAccount->getId(),
+            ]);
+
+        // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
+        list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
+
+        // Updates virtual account's stats.
+        $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
+
+        $this->repo->saveOrFail($this->virtualAccount);
     }
 
     protected function setGateway(Payment\Entity $payment, string $provider)

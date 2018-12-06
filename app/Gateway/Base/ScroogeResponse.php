@@ -78,7 +78,9 @@ class ScroogeResponse
      */
     public function setGatewayResponse($gatewayResponse): self
     {
-        $this->gatewayResponse = json_encode($gatewayResponse);
+        $this->gatewayResponse = (is_string($gatewayResponse) === false) ?
+                                  json_encode($gatewayResponse) :
+                                  $gatewayResponse;
 
         return $this;
     }

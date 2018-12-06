@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Order;
 
+use Razorpay\IFSC\IFSC;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Order;
-use RZP\Models\Payment;
+use RZP\Models\BankAccount;
+use RZP\Models\Bank\BankCodes;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
 {
@@ -15,9 +17,121 @@ class Service extends Base\Service
 
         $this->modifyOfferRequestFromOldFormat($input);
 
+        $this->modifyBankAccountRequestFromOldFormat($input);
+
         $order = (new Core)->create($input, $merchant);
 
         return $order->toArrayPublic();
+    }
+
+    /**
+     * Old format:
+     * {
+     *   "payer_name": "string"
+     *   "bank_code": "SBIN"
+     *   "account_number": "string"
+     * }
+     *
+     * New format:
+     * {
+     *   "bank_account": {
+     *     "account_number": "string",
+     *     "ifsc_code" : "ifsc_code",
+     *     "beneficiary_name" : "string"
+     *   }
+     * }
+     *
+     * Both formats are to be concurrently supported.
+     * Here, we create the new format from the old one,
+     * Old format will continue to work the way it did
+     * until gateway side changes are made.
+     *
+     * @param  array $input
+     */
+    protected function modifyBankAccountRequestFromOldFormat(array & $input)
+    {
+        if ($this->isOldFormatBankAccountRequest($input) === false)
+        {
+            $this->addBankCodeFromBankAccount($input);
+
+            return;
+        }
+
+        (new Validator())->validateBank($input);
+
+        if (isset($input[Entity::BANK_ACCOUNT]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payer Name, Account Number and Bank is not required if you are sending Bank Account Entity.', null, [
+                Entity::BANK_ACCOUNT    => $input[Entity::BANK_ACCOUNT],
+            ]);
+        }
+
+        $additionalInput = [
+            Entity::BANK_ACCOUNT    => [
+                BankAccount\Entity::ACCOUNT_NUMBER      =>  $input[Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::IFSC_CODE           =>  BankCodes::getIfscForBankCode($input[Entity::BANK]),
+                BankAccount\Entity::BENEFICIARY_NAME    =>  $input[Entity::PAYER_NAME] ?? '',
+            ],
+        ];
+
+        unset($input[Entity::ACCOUNT_NUMBER]);
+
+        unset($input[Entity::PAYER_NAME]);
+
+        $input = array_merge($input, $additionalInput);
+    }
+
+    /**
+     * Old format:
+     * {
+     *   "payer_name": "string"
+     *   "bank_code": "SBIN"
+     *   "account_number": "string"
+     * }
+     *
+     * New format:
+     * {
+     *   "bank_account": {
+     *     "account_number": "string",
+     *     "ifsc_code" : "ifsc_code",
+     *     "beneficiary_name" : "string"
+     *   }
+     * }
+     *
+     * Both formats are to be concurrently supported.
+     * Here, we create the old format from the new one,
+     * Old format will continue to work the way it did
+     * until gateway side changes are made.
+     *
+     * @param  array $input
+     */
+    protected function addBankCodeFromBankAccount(array & $input)
+    {
+        if (isset($input[Entity::BANK_ACCOUNT]) === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::BANK_ACCOUNT][BankAccount\Entity::BENEFICIARY_NAME]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The bank account.beneficiary name field is required when bank account is present.',
+                Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::BENEFICIARY_NAME
+            );
+        }
+
+        (new BankAccount\Validator())->validateIfscCode($input[Entity::BANK_ACCOUNT], $this->mode);
+
+        // Get Bank Code from IFSC here.
+        $bankCode   = strtoupper(substr($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC_CODE], 0, 4));
+
+        if (array_key_exists($bankCode, Netbanking::$defaultInconsistentBankCodesMapping) === true)
+        {
+            $bankCode = Netbanking::$defaultInconsistentBankCodesMapping[$bankCode];
+        }
+
+        $input[Entity::BANK] =  $bankCode;
     }
 
     /**
@@ -41,7 +155,7 @@ class Service extends Base\Service
      */
     protected function modifyOfferRequestFromOldFormat(array & $input)
     {
-        if ($this->isOldFormat($input) === false)
+        if ($this->isOldFormatOfferRequest($input) === false)
         {
             return;
         }
@@ -67,9 +181,15 @@ class Service extends Base\Service
         unset($input[Entity::OFFER_ID]);
     }
 
-    protected function isOldFormat(array $input): bool
+    protected function isOldFormatOfferRequest(array $input): bool
     {
         return isset($input[Entity::OFFER_ID]) ? true : false;
+    }
+
+    protected function isOldFormatBankAccountRequest(array $input): bool
+    {
+        return ((isset($input[Entity::PAYER_NAME]) === true) or
+               (isset($input[Entity::ACCOUNT_NUMBER]) === true));
     }
 
     public function fetch($id)

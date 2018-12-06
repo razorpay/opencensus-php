@@ -50,6 +50,18 @@ class Refund extends Base
         return null;
     }
 
+    protected function shouldUpdateBalance()
+    {
+        $payment = $this->source->payment;
+
+        if ($payment->isAuthorized() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function calculateFees()
     {
         $refund = $this->source;

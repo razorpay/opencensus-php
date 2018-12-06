@@ -167,11 +167,16 @@ trait QueryBuilder
             return;
         }
 
-        $filter = [Es::RANGE => [Common::CREATED_AT => $clause]];
+        $filter = [Es::RANGE => [$this->getFromAndToQueryAttribute() => $clause]];
 
         $this->addFilter($query, $filter);
 
         unset($params[self::FROM], $params[self::TO]);
+    }
+
+    public function getFromAndToQueryAttribute() : string
+    {
+        return Common::CREATED_AT;
     }
 
     /**

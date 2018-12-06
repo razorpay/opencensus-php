@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "90253f1c0672d34f306b8e45d1ba112d",
+    "content-hash": "5024c0716e376f905650aa3fd972ddb3",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -5925,21 +5925,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "2719d3cb9b9cf8033378caa803d6a42ce19bb855"
+                "reference": "e3cf9dcc8617473717abf18ce71638308cb85ec1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/2719d3cb9b9cf8033378caa803d6a42ce19bb855",
-                "reference": "2719d3cb9b9cf8033378caa803d6a42ce19bb855",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/e3cf9dcc8617473717abf18ce71638308cb85ec1",
+                "reference": "e3cf9dcc8617473717abf18ce71638308cb85ec1",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": ">=5.3.3",
-                "rmccue/requests": "v1.6.1"
+                "php": ">=5.4.0",
+                "rmccue/requests": "v1.7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.0",
+                "phpunit/phpunit": "~4.8|~5.0",
                 "raveren/kint": "1.*"
             },
             "type": "library",
@@ -5974,7 +5974,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-08-03T11:25:15+00:00"
+            "time": "2018-11-28T09:56:41+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -6403,23 +6403,23 @@
         },
         {
             "name": "rmccue/requests",
-            "version": "v1.6.1",
+            "version": "v1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rmccue/Requests.git",
-                "reference": "6aac485666c2955077d77b796bbdd25f0013a4ea"
+                "reference": "87932f52ffad70504d93f04f15690cf16a089546"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rmccue/Requests/zipball/6aac485666c2955077d77b796bbdd25f0013a4ea",
-                "reference": "6aac485666c2955077d77b796bbdd25f0013a4ea",
+                "url": "https://api.github.com/repos/rmccue/Requests/zipball/87932f52ffad70504d93f04f15690cf16a089546",
+                "reference": "87932f52ffad70504d93f04f15690cf16a089546",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.2"
             },
             "require-dev": {
-                "satooshi/php-coveralls": "dev-master"
+                "requests/test-server": "dev-master"
             },
             "type": "library",
             "autoload": {
@@ -6448,7 +6448,7 @@
                 "iri",
                 "sockets"
             ],
-            "time": "2014-05-18T04:59:02+00:00"
+            "time": "2016-10-13T00:11:37+00:00"
         },
         {
             "name": "robrichards/xmlseclibs",

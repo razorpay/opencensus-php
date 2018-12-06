@@ -110,14 +110,22 @@ abstract class Base extends BaseCore
         // updates entity specific attributes in transaction
         $this->updateTransaction();
 
-        // update merchant credits an balances
-        $this->setMerchantBalanceLockForUpdate();
+        if ($this->shouldUpdateBalance() === true)
+        {
+            // update merchant credits an balances
+            $this->setMerchantBalanceLockForUpdate();
 
-        $this->updateCredits();
+            $this->updateCredits();
 
-        $this->updateBalances();
+            $this->updateBalances();
+        }
 
         return [$this->txn, $this->feesSplit];
+    }
+
+    protected function shouldUpdateBalance()
+    {
+        return true;
     }
 
     public function setOtherDetails()
@@ -522,8 +530,10 @@ abstract class Base extends BaseCore
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances($updateNodalBalance = true)
+    public function updateBalances(bool $updateNodalBalance = true)
     {
+        $this->txn->associateBalance($this->merchantBalance);
+
         $this->updateMerchantBalance();
 
         // if ($updateNodalBalance === true)

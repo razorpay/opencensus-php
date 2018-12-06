@@ -2,17 +2,18 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Models\Payout as PayoutModel;
+use RZP\Exception;
+use RZP\Models\Batch;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
-use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
+use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Batch\Helpers\Payout as Helper;
 
 class Payout extends Base
 {
     /**
-     * @var Payout\Core
+     * @var \RZP\Models\Payout\Core
      */
     protected $payoutCore;
 
@@ -20,6 +21,8 @@ class Payout extends Base
      * @var Customer\Core
      */
     protected $customerCore;
+
+    protected $bankAccountCore;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -77,11 +80,12 @@ class Payout extends Base
     {
         $payoutCreateInput = Helper::getPayoutCreateInput($entry, $bankAccount, $customer);
 
-        $payout = $this->payoutCore->directPayout($payoutCreateInput, $this->merchant);
+        $payout = $this->payoutCore->createPayoutToCustomer($payoutCreateInput,
+                                                            $this->merchant);
 
         $entry[Header::PAYOUT_ID]          = $payout->getPublicId();
         $entry[Header::PAYOUT_FEE]         = $payout->getFee();
-        $entry[Header::PAYOUT_TAX] = $payout->getTax();
+        $entry[Header::PAYOUT_TAX]         = $payout->getTax();
 
         return $payout;
     }

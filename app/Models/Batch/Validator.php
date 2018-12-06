@@ -151,6 +151,16 @@ class Validator extends Base\Validator
     ];
 
     /**
+     * Defines the required keys to be present in instant activation batch file
+     * and the corresponding error message to be thrown when they are absent or empty
+     *
+     * @var array
+     */
+    protected static $instantActivationRequiredEntries = [
+        ME::MERCHANT_ID                  => 'merchant id must be present',
+    ];
+
+    /**
      * Defines the required keys to be present in emandate hdfc debit file
      * and the corresponding error message to be thrown when they are absent or empty
      *
@@ -632,6 +642,23 @@ class Validator extends Base\Validator
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
+        }
+    }
+
+    protected function validateInstantActivationEntries(array & $entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $entry = array_map('trim', $entry);
+
+            foreach (self::$instantActivationRequiredEntries as $attr => $errorMessage)
+            {
+                if (empty($attr) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        $errorMessage, $attr, $entry);
+                }
+            }
         }
     }
 }

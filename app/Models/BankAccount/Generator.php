@@ -2,7 +2,7 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -10,9 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
-use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\BadRequestException;
 
 class Generator extends Base\Core
 {
@@ -20,8 +17,8 @@ class Generator extends Base\Core
      * Constants
      */
     const NUMERIC    = 'numeric';
-
     const DESCRIPTOR = 'descriptor';
+    const BANKING    = 'banking';
 
     // No 0s and Os
     // No 1s and Is
@@ -44,6 +41,8 @@ class Generator extends Base\Core
     protected $options = [
         self::DESCRIPTOR => null,
         self::NUMERIC    => true,
+        // Banking option causes terminal selection to use one with corresponding type set.
+        self::BANKING    => false,
     ];
 
     public function __construct(Merchant\Entity $merchant, array $input)
@@ -68,11 +67,16 @@ class Generator extends Base\Core
         return $bankAccount;
     }
 
-    protected function updateBankAccountEntity(Entity $bankAccount, VirtualAccount\Entity $virtualAccount, Terminal\Entity $terminal): Entity
+    protected function updateBankAccountEntity(
+        Entity $bankAccount,
+        VirtualAccount\Entity $virtualAccount,
+        Terminal\Entity $terminal): Entity
     {
         $accountNumber = $this->generateBankAccountNumber($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $this->getProviderBank($terminal));
+        $providerBank = $this->getProviderBank($terminal);
+
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $providerBank);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -85,7 +89,7 @@ class Generator extends Base\Core
 
         if ($terminal === null)
         {
-            throw new LogicException(
+            throw new Exception\LogicException(
                 'No Terminal applicable.',
                 null,
                 [
@@ -100,6 +104,9 @@ class Generator extends Base\Core
 
     public function generate(VirtualAccount\Entity $virtualAccount): Entity
     {
+        // Sets this option at this stage because in __construct the balance relation doesn't exist
+        $this->options[self::BANKING] = $virtualAccount->isBalanceTypeBanking();
+
         $bankAccount = $this->buildBankAccountEntity($virtualAccount);
 
         $terminal = $this->getTerminalForBankAccount($bankAccount);
@@ -125,7 +132,7 @@ class Generator extends Base\Core
                  * But If Descriptor was passed by merchant then we throw
                  * bad request identical descriptor .
                  */
-                throw new BadRequestException(
+                throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
                     'descriptor',
                     [
@@ -147,7 +154,7 @@ class Generator extends Base\Core
             ]);
 
         // This should never happen
-        throw new BadRequestException(
+        throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
     }
 
@@ -255,7 +262,7 @@ class Generator extends Base\Core
 
         if (strlen($descriptor) > $availableLength)
         {
-            throw new BadRequestException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
                 'descriptor',
                 [
@@ -266,7 +273,7 @@ class Generator extends Base\Core
 
         if ($terminal->isShared() === true)
         {
-            throw new BadRequestValidationFailureException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Descriptor cannot be used with your account.',
                 null,
                 [
@@ -332,7 +339,7 @@ class Generator extends Base\Core
 
         if (strlen($accountNumber) > Entity::ACCOUNT_NUMBER_LENGTH)
         {
-            throw new LogicException(
+            throw new Exception\LogicException(
                 'Error in account number generation.',
                 null,
                 [

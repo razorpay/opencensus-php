@@ -139,7 +139,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $batch = $this->getDbLastEntityToArray('batch');
 
@@ -172,6 +174,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $batch = $this->getDbLastEntityToArray('batch');
 
@@ -364,6 +368,8 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
 
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
         $netbankingEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertNotNull($netbankingEntity['bank_payment_id']);
@@ -390,6 +396,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $netbankingEntity = $this->getLastEntity('netbanking', true);
 
@@ -423,6 +431,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $batch = $this->getLastEntity('batch', true);
 
@@ -494,7 +504,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -549,6 +561,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['reconciled_type']);
     }
 
     public function testIciciManualReconciliation()

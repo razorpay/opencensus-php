@@ -38,6 +38,7 @@ class Entity
     const PAYOUT                    = 'payout';
     const REFUND                    = 'refund';
     const REPORT                    = 'report';
+    const CONTACT                   = 'contact';
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
@@ -75,6 +76,7 @@ class Entity
     const FILE_HANDLER              = 'file_handler';
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
+    const FUND_ACCOUNT              = 'fund_account';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
@@ -168,6 +170,7 @@ class Entity
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -253,10 +256,21 @@ class Entity
         self::PAYMENT_LINK,
     ];
 
+    /**
+     * These entities have BALANCE_ID columns added recently. This is a temporary list to validate API operation to
+     * backfill balance_id column for old rows in batches.
+     * Refer: AdminController@updateEntityBalanceIdInBulk()
+     */
+    const ENTITIES_WITH_BALANCE_ID_COLUMN = [
+        Entity::TRANSACTION,
+        Entity::VIRTUAL_ACCOUNT,
+        Entity::PAYOUT,
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
-        self::VPA                       => \RZP\Models\Upi\Vpa::class,
+        self::VPA                       => \RZP\Models\Vpa::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::EBS                       => \RZP\Gateway\Ebs::class,
@@ -356,6 +370,7 @@ class Entity
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
@@ -427,6 +442,7 @@ class Entity
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
