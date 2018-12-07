@@ -51,6 +51,7 @@ class UpiYesbankGatewayTest extends TestCase
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
+            'fund_transfer_attempt' => [],
             'gateway_input' => [
                 'vpa'       => 'komal@yesb',
                 'amount'    => '100',
@@ -72,6 +73,7 @@ class UpiYesbankGatewayTest extends TestCase
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
+            'fund_transfer_attempt' => ['ref_id' => '12345'],
             'gateway_input' => [
             'vpa'       => 'komal@yesb',
             'amount'    => '100',
@@ -108,6 +110,8 @@ class UpiYesbankGatewayTest extends TestCase
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
+            'fund_transfer_attempt' => ['ref_id' => '12345'],
+            'fund_transfer_attempt' => [],
             'gateway_input' => [
                 'vpa'       => 'raj1@yesb',
                 'amount'    => '100',
@@ -308,6 +312,39 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('No payout exists for the given reference id', $response['error_message']);
 
         $this->assertFalse($response['success']);
+    }
+
+    public function testPayoutVpaVerifyWithAmountTampering()
+    {
+        $response = $this->testPayoutToVpa();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $attributes = [
+            'terminal'  => ['gateway_merchant_id' => '12445'],
+            'gateway_input' => [
+                'ref_id'    => $upi['merchant_reference'],
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $request = $this->getPayoutRequest($attributes, 'verify');
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'payout_verify')
+                {
+                    $content['amount']  = '900.00';
+                }
+            });
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['error_message']);
     }
 
     protected function getPayoutRequest(array $attributes, string $type)

@@ -77,10 +77,13 @@ class Fields
     const TIMED_OUT_TXN_STATUS   = 'timed_out_txn_status';
 
     // fields which FTA service will use to talk to gateway
-    const REF_ID                 = 'ref_id';
-    const GATEWAY_INPUT          = 'gateway_input';
-    const SUCCESS                = 'success';
-    const ERROR_MESSAGE          = 'error_message';
+    const REF_ID                    = 'ref_id';
+    const GATEWAY_INPUT             = 'gateway_input';
+    const SUCCESS                   = 'success';
+    const ERROR_MESSAGE             = 'error_message';
+    const REQUEST_REFERENCE_NUMBER  = 'requestReferenceNo';
+    const STATUS_CODE               = 'statusCode';
+    const SUB_STATUS_TEXT           = 'subStatusText';
 
     const PAYOUT = [
       self::YBLREFNO,

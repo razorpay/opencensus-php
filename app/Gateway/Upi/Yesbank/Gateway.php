@@ -128,9 +128,12 @@ class Gateway extends Mindgate\Gateway
         if ($gatewayEntity === null)
         {
             $response = [
-                Fields::SUCCESS        => false,
-                Fields::ERROR_MESSAGE  => ResponseMessage::NO_PAYOUT_FOR_REF_ID,
-                Fields::RRN            => $input[Fields::GATEWAY_INPUT][Fields::REF_ID]
+                Fields::SUCCESS                  => false,
+                Fields::ERROR_MESSAGE            => ResponseMessage::NO_PAYOUT_FOR_REF_ID,
+                Fields::RRN                      => null,
+                Fields::STATUS_CODE              => null,
+                Fields::SUB_STATUS_TEXT          => null,
+                Fields::REQUEST_REFERENCE_NUMBER => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
             ];
 
             return $response;
@@ -166,8 +169,8 @@ class Gateway extends Mindgate\Gateway
 
             if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
             {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+                throw new Exception\LogicException(
+                    ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
                     null,
                     null,
                     [
@@ -184,10 +187,15 @@ class Gateway extends Mindgate\Gateway
             $error = $e->getError()->getAttributes();
 
             $response = [
-                Fields::SUCCESS        => false,
-                Fields::ERROR_MESSAGE  => ResponseMessage::VALIDATION_ERROR,
-                Fields::RRN            => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
+                Fields::SUCCESS                     => false,
+                Fields::ERROR_MESSAGE               => $error['internal_error_code'],
+                Fields::RRN                         => $gatewayEntity[Entity::GATEWAY_PAYMENT_ID],
+                Fields::STATUS_CODE                 => null,
+                Fields::SUB_STATUS_TEXT             => null,
+                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayEntity[Entity::MERCHANT_REFERENCE],
             ];
+
+            return $response;
         }
 
         $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
@@ -355,16 +363,6 @@ class Gateway extends Mindgate\Gateway
 
                 $this->updateGatewayPaymentEntity($gatewayEntity, $attributes);
 
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
-                    null,
-                    null,
-                    [
-                        'gateway'  => $this->gateway,
-                        'response' => $responseArray,
-                    ]
-                );
-
             default:
                 $gatewayErrorCode = $responseArray[Fields::RESPCODE];
 
@@ -421,9 +419,12 @@ class Gateway extends Mindgate\Gateway
             $this->checkResponseForError($responseArray, $gatewayPayment);
 
             $response = [
-                Fields::SUCCESS         => true,
-                Fields::ERROR_MESSAGE   => null,
-                Fields::RRN             => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
+                Fields::SUCCESS                     => true,
+                Fields::ERROR_MESSAGE               => null,
+                Fields::RRN                         => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
+                Fields::STATUS_CODE                 => null,
+                Fields::SUB_STATUS_TEXT             => null,
+                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment[Entity::MERCHANT_REFERENCE],
             ];
         }
         catch (\Exception $exception)
@@ -433,9 +434,12 @@ class Gateway extends Mindgate\Gateway
             $error = $exception->getError()->getAttributes();
 
             $response = [
-                Fields::SUCCESS        => false,
-                Fields::ERROR_MESSAGE  => $error['gateway_error_desc'] ?? '',
-                Fields::RRN            => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID]
+                Fields::SUCCESS                     => false,
+                Fields::ERROR_MESSAGE               => $error['internal_error_code'],
+                Fields::RRN                         => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
+                Fields::STATUS_CODE                 => $error['gateway_error_desc'],
+                Fields::SUB_STATUS_TEXT             => $error['gateway_error_desc'],
+                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment[Entity::MERCHANT_REFERENCE],
             ];
         }
 

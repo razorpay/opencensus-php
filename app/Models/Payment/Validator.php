@@ -166,6 +166,7 @@ class Validator extends Base\Validator
     protected static $payoutRules = [
         'terminal'              => 'required|array',
         'merchant'              => 'required|array',
+        'fund_transfer_attempt' => 'sometimes|array',
         'gateway_input'         => 'required|array',
         'gateway_input.vpa'     => 'required|string|filled|max:100',
         'gateway_input.amount'  => 'required|integer',
@@ -174,6 +175,7 @@ class Validator extends Base\Validator
 
     protected static $payoutVerifyRules = [
         'terminal'              => 'required|array',
+        'fund_transfer_attempt' => 'sometimes|array',
         'gateway_input'         => 'required|array',
         'gateway_input.ref_id'  => 'required|string',
     ];
