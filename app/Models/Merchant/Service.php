@@ -79,6 +79,8 @@ class Service extends Base\Service
         /** @var Entity $merchant */
         $merchant = $this->core()->create($input);
 
+        $this->enableBusinessBankingIfApplicable($merchant);
+
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
         return $merchantData;
@@ -2655,10 +2657,60 @@ class Service extends Base\Service
         return false;
     }
 
+    /**
+     * Activates Business Banking for a merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    protected function activateBusinessBanking(Entity $merchant)
+    {
+        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
+
+        // If merchant is instantly activated or Activated this flow will kick in.
+        if ($merchant->isActivated() === true)
+        {
+            // Create Virtual Account if it doesn't exist.
+
+            // Create Banking Balance.
+
+            // Banking Pricing defaults if exists.
+        }
+
+        // This means that L2 form is also verified.
+        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+        {
+            // Enable Payouts.
+        }
+
+        return $merchant;
+    }
+
     protected function switchProductMerchant()
     {
         // Add Banking Role for the current merchant User.
         (new User\Service())->addProductSwitchRole();
 
+        $merchant = $this->auth->getMerchant();
+
+        $this->enableBusinessBankingIfApplicable($merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        if ($merchant->getBusinessBanking() === true)
+        {
+            $this->activateBusinessBanking($merchant);
+        }
+    }
+
+    protected function enableBusinessBankingIfApplicable(Entity $merchant)
+    {
+        $isBanking = $this->auth->isProductBanking();
+
+        if (($isBanking === true) and ($merchant->getBusinessBanking() === false))
+        {
+            $merchant->setBusinessBanking(true);
+        }
     }
 }

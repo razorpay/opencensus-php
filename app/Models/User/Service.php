@@ -135,8 +135,6 @@ class Service extends Base\Service
      */
     protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '')
     {
-        $merchantInputData[Merchant\Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
-
         $merchantData = (new Merchant\Service)->create($merchantInputData);
 
         if (empty($referrer) === false)

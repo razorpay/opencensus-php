@@ -476,6 +476,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
     }
 
+    public function setBusinessBanking(bool $businessBanking)
+    {
+        $this->setAttribute(self::BUSINESS_BANKING, $businessBanking);
+    }
+
     public function setHasKeyAccess(bool $hasKeyAccess)
     {
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
@@ -1321,6 +1326,16 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
+    }
+
+    /**
+     * Signifies weather a Merchant has business banking knowledge or not.
+     *
+     * @return bool
+     */
+    public function getBusinessBanking()
+    {
+        return $this->getAttribute(self::BUSINESS_BANKING);
     }
 
     public function getHoldFunds()
