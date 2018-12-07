@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::AMOUNT          => $input['refund']['amount'] / 100,
+            Base\Entity::AMOUNT          => $input['refund']['amount'],
             Base\Entity::REFUND_ID       => $input['refund']['id'],
         ];
 
