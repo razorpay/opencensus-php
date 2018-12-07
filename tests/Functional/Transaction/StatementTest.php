@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transaction;
 use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
@@ -13,12 +14,7 @@ class StatementTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
-
-    /**
-     * This is a instance member as is being re-used between method call.
-     * @var \RZP\Models\VirtualAccount\Entity
-     */
-    protected $virtualAccount;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -102,35 +98,6 @@ class StatementTest extends TestCase
         // Above transaction if accessed on banking balance should throw 400.
         $this->ba->proxyAuth();
         $this->startTest();
-    }
-
-    /**
-     * Todo: Duplicated in VirtualAccountTest, move to a common trait.
-     */
-    protected function setUpMerchantForBusinessBanking()
-    {
-        // Creates banking balance, a virtual account on bank account receiver and associates these all together. :)
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType();
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $bankAccount    = $this->fixtures->create(
-            'bank_account',
-            [
-                'type'           => 'virtual_account',
-                'entity_id'      => $virtualAccount->getId(),
-                'account_number' => '2224440041626905',
-                'ifsc_code'      => 'RAZRB000000',
-            ]);
-        $virtualAccount->bankAccount()->associate($bankAccount);
-        $virtualAccount->balance()->associate($bankingBalance);
-        $virtualAccount->save();
-
-        // Enables required features on merchant
-        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
-
-        // Additionally, creates a terminal for bank transfer on banking balance.
-        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
-
-        $this->virtualAccount = $virtualAccount;
     }
 
     protected function createBankTransferTransaction()
