@@ -195,6 +195,7 @@ export function copyPricingEntity(rules) {
       deleted_at,
       expired_at,
       payment_network_name,
+      product,
       ...data
     } = rule;
 
