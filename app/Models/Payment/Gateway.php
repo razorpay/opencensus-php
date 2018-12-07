@@ -1269,6 +1269,9 @@ class Gateway
             '9Q8w9weX9D1T27',
             'AK6NMmzbL6FPe4',
         ],
+        Mode::TEST => [
+            '1000SharpTrmnl',
+        ],
     ];
 
     public static $payoutVpaTerminals =[

@@ -65,11 +65,22 @@ trait Vpa
 
         $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
 
+        $response= [];
+
         foreach ($terminals as $terminal)
         {
-            $gateway = $terminal->getGateway();
+            try
+            {
+                $gateway = $terminal->getGateway();
 
-            $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
+                $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
+
+                break;
+            }
+            catch (Exception\GatewayErrorException $exception)
+            {
+                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
+            }
         }
 
         return $response;

@@ -45,7 +45,7 @@ trait RequestTrait
 
     protected function getClientCertificate()
     {
-        $this->getGatewayCertDirPath();
+        $gatewayCertPath = $this->getGatewayCertDirPath();
 
         $clientCertPath = $gatewayCertPath . '/' .
             $this->getClientCertificateName();
