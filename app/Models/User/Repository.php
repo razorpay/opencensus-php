@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive { saveOrFail as saveOrFailTestAndLive; }
 
     protected $entity = 'user';
 
@@ -46,6 +46,6 @@ class Repository extends Base\Repository
             $entity->setContactMobileVerified(false);
         }
 
-        return parent::saveOrFail($entity, $options);
+        return $this->saveOrFailTestAndLive($entity, $options);
     }
 }
