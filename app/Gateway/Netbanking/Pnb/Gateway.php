@@ -339,16 +339,6 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
 
-        if (isset($bankPaymentId) === false)
-        {
-            throw new Exception\LogicException(
-                'Bank Payment id not present',
-                null,
-                [
-                    'payment_id' => $input['payment']['id']
-                ]);
-        }
-
         $data = [
             RequestFields::API_KEY         => $this->getMerchantId(),
             RequestFields::BANK_PAYMENT_ID => $bankPaymentId,
@@ -615,10 +605,7 @@ class Gateway extends Base\Gateway
     {
         $secure_hash = null;
 
-        if (strlen($str) > 0)
-        {
-            $secure_hash = strtoupper(hash('sha512', $str));
-        }
+        $secure_hash = strtoupper(hash('sha512', $str));
 
         return $secure_hash;
     }
