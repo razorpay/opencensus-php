@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 
@@ -127,7 +128,7 @@ class Core extends Base\Core
             {
                 $merchantData[$merchant[Entity::ID]] = $merchant;
 
-                if ($merchant[Entity::PRODUCT] === 'banking')
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
                 {
                     $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
                     $merchantData[$merchant[Entity::ID]][Entity::ROLE] = null;
@@ -139,7 +140,7 @@ class Core extends Base\Core
             }
             else
             {
-                if ($merchant[Entity::PRODUCT] === 'banking')
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
                 {
                     $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
                 }
