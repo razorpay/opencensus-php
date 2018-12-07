@@ -71,6 +71,9 @@ class Entity extends Base\PublicEntity
 
     const RECONCILED        = 'reconciled';
 
+    // Relation names/attributes
+    const SOURCE            = 'source';
+
     protected static $sign = 'txn';
 
     protected $entity = 'transaction';
@@ -178,7 +181,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        'source',
+        self::SOURCE,
     ];
 
     public function merchant()

@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
     const TYPE                   = 'type';
 
     // Public attribute
+    const CUSTOMER               = 'customer';
     const DESTINATION            = 'destination';
 
     // These are used while creating merchant payouts.

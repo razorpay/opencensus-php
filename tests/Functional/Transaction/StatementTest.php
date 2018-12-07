@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class StatementTest extends TestCase
 {
@@ -13,66 +14,56 @@ class StatementTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/StatementData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/StatementTestData.php';
 
         parent::setUp();
 
-        $this->fixtures->merchant->createBankingBalance();
+        $this->fixtures->merchant->createBalanceOfBankingType();
 
         $this->ba->proxyAuth();
     }
 
     public function testFetchStatements()
     {
-        $btArray = $this->createMultipleBankTransfer();
+        $bankTransfers = $this->createMultipleBankTransfer();
+        $payouts       = $this->createMultiplePayouts();
 
-        $payoutArray = $this->createMultiplePayouts();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['response']['content']['items'] = array_merge($payoutArray, $btArray);
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['response']['content']['items'] = array_merge($payouts, $bankTransfers);
 
         $this->ba->proxyAuth();
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testFetchStatementPayout()
     {
-        $this->ba->proxyAuth();
+        $payouts = $this->createMultiplePayouts();
 
-        $payoutsArray = $this->createMultiplePayouts();
-
-        $payout = $payoutsArray[0];
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/transactions/' . $payout['id'];
+        $payout = current($payouts);
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url']      = '/transactions/' . $payout['id'];
         $testData['response']['content'] = $payout;
 
         $this->ba->proxyAuth();
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
 
     public function testFetchStatementBankTransfer()
     {
-        $this->ba->proxyAuth();
+        $bankTransfers = $this->createMultipleBankTransfer();
 
-        $bankTransferArray = $this->createMultipleBankTransfer();
-
-        $bankTransfer = $bankTransferArray[0];
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/transactions/' . $bankTransfer['id'];
+        $bankTransfer = current($bankTransfers);
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url']      = '/transactions/' . $bankTransfer['id'];
         $testData['response']['content'] = $bankTransfer;
 
         $this->ba->proxyAuth();
-
-        $this->startTest($testData);
+        $this->startTest();
     }
+
+
+    // ---------------- Not test/protected methods follows. -------------------
 
     protected function createMultiplePayouts()
     {

@@ -13,11 +13,12 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Preferences;
-use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait as ScheduleTrait;
-use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Settlement\Entity as SettlementEntity;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 
 class SettlementTest extends TestCase
 {
@@ -25,6 +26,7 @@ class SettlementTest extends TestCase
     use PaymentTrait;
     use HeimdallTrait;
     use ScheduleTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -829,9 +831,9 @@ class SettlementTest extends TestCase
 
         $this->initiateSettlements(Channel::AXIS);
 
-        $txns = $this->getEntities('transaction', ['count' => 2]);
+        $txns = $this->getDbEntities('transaction');
 
-        foreach ($txns['items'] as $txn)
+        foreach ($txns as $txn)
         {
             $this->assertEquals($txn['settled'], false);
         }

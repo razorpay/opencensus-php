@@ -2,9 +2,6 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
-use ApiResponse;
-
 use RZP\Models\Transaction;
 
 /**

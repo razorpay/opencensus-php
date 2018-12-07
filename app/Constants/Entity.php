@@ -59,6 +59,8 @@ class Entity
     const SCHEDULE                  = 'schedule';
     const TERMINAL                  = 'terminal';
     const TRANSFER                  = 'transfer';
+    // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
+    const STATEMENT                 = 'statement';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
@@ -103,7 +105,6 @@ class Entity
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
-    const STATEMENT                 = 'statement';
 
     // heimdall
     const ORG                   = 'org';
@@ -304,6 +305,7 @@ class Entity
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
+        self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,
@@ -336,7 +338,6 @@ class Entity
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
-        self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

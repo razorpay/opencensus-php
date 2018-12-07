@@ -2,113 +2,113 @@
 
 namespace RZP\Models\Transaction\Statement;
 
-use RZP\Constants;
-use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 
 /**
  * Class Entity
  *
  * @package RZP\Models\Transaction\Statement
  */
-class Entity extends Base\PublicEntity
+class Entity extends Transaction\Entity
 {
-
-    const ID         = 'id';
-    const AMOUNT     = 'amount';
-    const BALANCE    = 'balance';
-    const BALANCE_ID = 'balance_id';
-    const CREDIT     = 'credit';
-    const DEBIT      = 'debit';
-    const SOURCE     = 'source';
-    const CUSTOMER   = 'customer';
-    const TYPE       = 'type';
-    const UTR        = 'utr';
-    const SOURCE_ID  = 'source_id';
-    const ENTITY     = 'entity';
-
-    protected $entity = 'transaction';
-
-    protected static $sign = 'txn';
-
-    protected $embeddedRelations = [
-        self::SOURCE,
-    ];
+    protected $entity = 'statement';
 
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::SOURCE_ID,
         self::AMOUNT,
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
         self::SOURCE,
-        self::CUSTOMER,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $publicSetters = [
         self::ID,
-        self::SOURCE_ID,
-        self::SOURCE,
         self::ENTITY,
+        self::SOURCE,
     ];
 
-    public function source()
-    {
-        return $this->morphTo('source', 'type', 'entity_id');
-    }
 
-// ----------------------- Getters --------------------------------------------
+    // Public setters
 
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
-    }
-
-// ----------------------- Getters Ends--------------------------------------------
-
-// ----------------------- Public setters--------------------------------------------
-
+    /**
+     * Sets public attributes of source relation.
+     * @param $array
+     */
     public function setPublicSourceAttribute(array & $array)
     {
-        if ($this->getType() === Constants\Entity::PAYOUT)
+        switch ($this->getType())
         {
-            unset($array['source'][Payout\Entity::AMOUNT]);
-            unset($array['source'][Payout\Entity::FEES]);
-            unset($array['source'][Payout\Entity::TAX]);
-            unset($array['source'][Payout\Entity::UTR]);
-            unset($array['source'][Payout\Entity::STATUS]);
-            unset($array['source'][Payout\Entity::SETTLED_ON]);
-            unset($array['source'][Payout\Entity::CREATED_AT]);
-            unset($array['source'][Payout\Entity::UPDATED_AT]);
+            case E::PAYOUT:
+                return $this->setPublicSourceAttributeForPayout($array);
 
-            $array['source']['customer'] = $this->source->customer->toArrayPublic();
-            $array['source']['account']  = $this->source->destination->toArrayPublic();
+            case E::BANK_TRANSFER:
+                return $this->setPublicSourceAttributeForBankTransfer($array);
 
-            return;
+            default:
+                return $this->setPublicSourceAttributeForDefault($array);
         }
-
-        if ($this->getType() === Constants\Entity::BANK_TRANSFER)
-        {
-            unset($array['source'][BankTransfer\Entity::PAYMENT_ID]);
-            unset($array['source'][BankTransfer\Entity::VIRTUAL_ACCOUNT_ID]);
-            $array['source'][BankTransfer\Entity::PAYER_NAME] = $this->source->getPayerName();
-            $array['source'][BankTransfer\Entity::PAYER_ACCOUNT] = $this->source->getPayerAccount();
-            $array['source'][BankTransfer\Entity::PAYER_IFSC] = $this->source->getPayerIfsc();
-            return;
-        }
-
-        unset($array['source']);
     }
 
-    public function setPublicSourceIdAttribute(array & $array)
+    protected function setPublicSourceAttributeForPayout(array & $array)
     {
-        $array[self::SOURCE_ID] = $this->source->getPublicId();
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                Payout\Entity::ID,
+                Payout\Entity::ENTITY,
+                Payout\Entity::CUSTOMER_ID,
+                Payout\Entity::DESTINATION_ID,
+                Payout\Entity::METHOD,
+                Payout\Entity::NOTES,
+            ]);
+
+        $array[self::SOURCE][Payout\Entity::CUSTOMER]    = $this->source->customer->toArrayPublic();
+        $array[self::SOURCE][Payout\Entity::DESTINATION] = $this->source->destination->toArrayPublic();
     }
 
-// ----------------------- Public setters end --------------------------------------------
+    protected function setPublicSourceAttributeForBankTransfer(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                BankTransfer\Entity::ID,
+                BankTransfer\Entity::ENTITY,
+                BankTransfer\Entity::MODE,
+                BankTransfer\Entity::BANK_REFERENCE,
+                BankTransfer\Entity::AMOUNT,
+                BankTransfer\Entity::PAYER_BANK_ACCOUNT,
+            ]);
+
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $this->source->getPayerName();
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $this->source->getPayerAccount();
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $this->source->getPayerIfsc();
+    }
+
+    protected function setPublicSourceAttributeForDefault(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                PublicEntity::ID,
+                PublicEntity::ENTITY,
+            ]);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArrayPublic()
+    {
+        // Transaction\Entity's toArrayPublic() for some legacy reason unsets lot of attributes.
+        return PublicEntity::toArrayPublic();
+    }
 }
