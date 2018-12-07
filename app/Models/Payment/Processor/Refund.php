@@ -18,6 +18,7 @@ use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Jobs\ScroogeRefundRetry;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
@@ -228,13 +229,23 @@ trait Refund
             if ($callRefund === true)
             {
                 $scroogeResponse = $this->callRefundFunctionForScroogeWithData($refund, $input);
+
+                $scroogeResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] = $verifyResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] ?? '';
             }
         }
         catch (\Exception $ex)
         {
             $gatewayRefunded = false;
 
-            $scroogeResponse = $this->prepareScroogeRefundResponse([], $gatewayRefunded, $ex);
+            $gatewayResponse = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof Exception\BaseException)
+            {
+                $gatewayResponse = $ex->getData();
+            }
+
+            $scroogeResponse = $this->prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $ex);
         }
 
         $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_RESPONSE,
@@ -847,23 +858,35 @@ trait Refund
 
     protected function prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $exception = null)
     {
-        return [
-            Payment\Gateway::SUCCESS            => $gatewayRefunded,
-            Payment\Gateway::STATUS_CODE        => ($gatewayRefunded === true) ?
-                                                   'REFUND_SUCCESSFUL' :
-                                                   (
-                                                       (empty($exception) === false) ?
-                                                       (string) $exception->getCode() :
-                                                       ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
-                                                   ),
-            Payment\Gateway::GATEWAY_RESPONSE   => $gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ??
-                                                   (
-                                                       empty($exception) === false ?
-                                                       $exception->getMessage() :
-                                                       ''
-                                                   ),
-            Payment\Gateway::GATEWAY_KEYS       => $gatewayResponse[Payment\Gateway::GATEWAY_KEYS] ?? []
-        ];
+        $scroogeResponse = new ScroogeResponse();
+
+        $scroogeResponse->setSuccess($gatewayRefunded);
+
+        $scroogeResponse->setStatusCode(($gatewayRefunded === true) ?
+                                        'REFUND_SUCCESSFUL' :
+                                        (
+                                            (empty($exception) === false) ?
+                                            (string) $exception->getCode() :
+                                            ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
+                                        ));
+
+        $scroogeResponse->setGatewayResponse($gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ??
+                                                (
+                                                empty($exception) === false ?
+                                                    $exception->getMessage() :
+                                                    ''
+                                                ));
+
+        $scroogeResponse->setGatewayVerifyResponse($gatewayResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] ??
+                                                    (
+                                                    empty($exception) === false ?
+                                                        $exception->getMessage() :
+                                                        ''
+                                                    ));
+
+        $scroogeResponse->setGatewayKeys($gatewayResponse[Payment\Gateway::GATEWAY_KEYS] ?? []);
+
+        return $scroogeResponse->toArray();
     }
 
     protected function reverseOnGateway($data, $retry = false)

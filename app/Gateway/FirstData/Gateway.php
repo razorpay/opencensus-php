@@ -3,9 +3,9 @@
 namespace RZP\Gateway\FirstData;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Requests_Hooks;
 use SimpleXMLElement;
+use RZP\Constants\Timezone;
 
 use RZP\Error;
 use RZP\Constants;
@@ -21,6 +21,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\ScroogeResponse;
 
 class Gateway extends Base\Gateway
 {
@@ -399,6 +400,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
+        $scroogeResponse = new ScroogeResponse();
+
         if ($input['refund']['reverse'] === true)
         {
             parent::action($input, Action::VERIFY_REVERSE);
@@ -418,17 +421,22 @@ class Gateway extends Base\Gateway
                     'refund_id'  => $input['refund']['id'],
                 ]);
 
-            return $this->prepareScroogeResponse(false, ErrorCode::GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED);
+            return $scroogeResponse->setSuccess(false)
+                                    ->setStatusCode(ErrorCode::GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED)
+                                    ->toArray();
         }
 
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return $this->prepareScroogeResponse(false, ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED);
+            return $scroogeResponse->setSuccess(false)
+                                    ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                    ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return $this->prepareScroogeResponse(true);
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $this->validateVerifyRefundIsPossible($input);
@@ -444,11 +452,14 @@ class Gateway extends Base\Gateway
     {
         $refundTransactionValue = $this->getRefundTransactionValue($verify);
 
+        $scroogeResponse = new ScroogeResponse();
+
         if ($refundTransactionValue === null)
         {
-            return $this->prepareScroogeResponse(false,
-                                                 ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT,
-                                                 json_encode($verify->verifyResponseContent));
+            return $scroogeResponse->setSuccess(false)
+                                    ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                    ->setGatewayVerifyResponse($verify->verifyResponseContent)
+                                    ->toArray();
         }
 
         $xmlResponse  = $refundTransactionValue->children('ipgapi', true)
@@ -471,30 +482,10 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($refundEntity, $refundResponse, $refundFields);
 
-        return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
-    }
-
-    /**
-     * This returns the formatted response expected by Scrooge service.
-     * gatewayResponse key should be a string only, scrooge will save as it is in DB.
-     *
-     * @param bool $success
-     * @param string $statusCode
-     * @param string $gatewayResponse
-     * @param array $refundFields
-     * @return array
-     */
-    protected function prepareScroogeResponse(bool $success,
-                                              $statusCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
-                                              $gatewayResponse = '',
-                                              $refundFields = [])
-    {
-        return [
-            Payment\Gateway::SUCCESS          => $success,
-            Payment\Gateway::STATUS_CODE      => ($success === true) ? 'REFUND_SUCCESSFUL' : $statusCode,
-            Payment\Gateway::GATEWAY_RESPONSE => $gatewayResponse,
-            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($refundFields)
-        ];
+        return $scroogeResponse->setSuccess($refunded)
+                                ->setGatewayVerifyResponse($refundResponse)
+                                ->setGatewayKeys($refundFields)
+                                ->toArray();
     }
 
     protected function getRefundTransactionValue(Base\Verify $verify)

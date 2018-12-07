@@ -382,8 +382,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
+            $redirectUrl = null;
 
-            $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            if ($this->isRupayNetwork($payment) === false)
+            {
+                $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            }
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -414,7 +418,7 @@ trait Authorize
 
             $otpResend = 'otp_resend';
 
-            $resendUrl = '';
+            $resendUrl = null;
 
             if (in_array($otpResend, $next, true) === true)
             {
@@ -3198,6 +3202,16 @@ trait Authorize
                     'payment_link_id' => $payment->paymentLink->getId(),
                 ]);
 
+            return;
+        }
+
+        //
+        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
+        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
+        // primarily for demo payment pages created internally by Razorpay.
+        //
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
+        {
             return;
         }
 

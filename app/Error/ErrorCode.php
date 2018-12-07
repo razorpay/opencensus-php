@@ -1058,4 +1058,6 @@ class ErrorCode
 
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                        = 'BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE';
+
+    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
 }

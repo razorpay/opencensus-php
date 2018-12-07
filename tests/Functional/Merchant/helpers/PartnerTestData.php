@@ -227,6 +227,21 @@ return [
         ],
     ],
 
+    'testApprovingMarkAsPartnerWebsiteMissingMerchantRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
     'testMarkPartnerAsPartner' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\RequestConstants;
@@ -120,7 +121,7 @@ class Beneficiary extends Base
 
             if($data[Constants::ERROR] !== self::RECORD_EXIST)
             {
-                throw new LogicException($data[Constants::ERROR], TraceCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+                throw new LogicException($data[Constants::ERROR], ErrorCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
             }
             else
             {

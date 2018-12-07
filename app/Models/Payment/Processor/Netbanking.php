@@ -74,6 +74,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
+        IFSC::CNRB,
         IFSC::ESFB,
         IFSC::VIJB,
         self::PUNB_R,
@@ -351,6 +352,11 @@ class Netbanking
         Gateway::NETBANKING_CORPORATION => [
             'retail' => [
                 IFSC::CORP,
+            ]
+        ],
+        Gateway::NETBANKING_CANARA => [
+            'retail' => [
+                IFSC::CNRB,
             ]
         ],
         Gateway::NETBANKING_EQUITAS => [

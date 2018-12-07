@@ -86,11 +86,11 @@ class Validator extends Base\Validator
         'payment_id'            => 'required|unsigned_id',
         'currency'              => 'required|string|size:3',
         'gateway'               => 'required|string',
-        'amount'                => 'required|integer|min:100',
-        'base_amount'           => 'required|integer|min:100',
+        'amount'                => 'required|integer|min:0',
+        'base_amount'           => 'required|integer|min:0',
         'method'                => 'required|string',
-        'payment_amount'        => 'required|integer|min:100',
-        'payment_base_amount'   => 'required|integer|min:100',
+        'payment_amount'        => 'required|integer|min:0',
+        'payment_base_amount'   => 'required|integer|min:0',
         'payment_created_at'    => 'required|epoch',
         'attempts'              => 'sometimes|integer'
     ];

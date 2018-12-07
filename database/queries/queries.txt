@@ -4481,3 +4481,32 @@ ALTER TABLE virtual_accounts
 ALTER TABLE fund_accounts
     DROP FOREIGN KEY fund_accounts_beneficiary_id_foreign,
     DROP FOREIGN KEY fund_accounts_merchant_id_foreign;
+
+ALTER TABLE schedule_tasks
+    ADD COLUMN international TINYINT(1) DEFAULT 0 AFTER method,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+# this is to duplicate the schedule task for all the merchants for whom international is allowed
+# all the task (with method with value card, and if not available then method with value null) will be copied and marked as international
+INSERT INTO schedule_tasks
+    (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
+    (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
+    FROM schedule_tasks INNER JOIN (
+    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+    	) AS im ON im.id = schedule_tasks.merchant_id
+        WHERE type = 'settlement' and method = 'card' AND deleted_at is null
+    )
+
+INSERT INTO schedule_tasks
+    (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
+    (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
+    FROM schedule_tasks INNER JOIN (
+    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+    	) AS im ON im.id = schedule_tasks.merchant_id
+        WHERE type = 'settlement' AND method is null AND deleted_at is null AND merchant_id not in (
+        	SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
+        )
+    )
+
+ALTER TABLE pricing
+	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
