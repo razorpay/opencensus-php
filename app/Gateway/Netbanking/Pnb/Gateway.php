@@ -475,8 +475,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
-                $responseArray[ResponseFields::CODE],
-                $responseArray[ResponseFields::ERROR_MESSAGE],
+                $responseArray['error'][ResponseFields::CODE],
+                $responseArray['error'][ResponseFields::ERROR_MESSAGE],
                 [
                     'content' => $responseArray
                 ]
