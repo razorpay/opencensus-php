@@ -405,11 +405,12 @@ class Gateway extends Base\Gateway
 
         if (isset($content['error']) === true)
         {
+            $attributes[Base\Entity::STATUS]        = $responseArray[ResponseFields::CODE];
             $attributes[Base\Entity::ERROR_MESSAGE] = $responseArray[ResponseFields::ERROR_MESSAGE];
         }
         else
         {
-            //TODO should I store transaction_id or refund_reference_no here ?
+            $attributes[Base\Entity::REFERENCE1]      = $responseArray[ResponseFields::REFUND_ID];
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $responseArray[ResponseFields::REFUND_REFERENCE_NO];
         }
 
