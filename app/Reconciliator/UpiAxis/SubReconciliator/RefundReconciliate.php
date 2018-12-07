@@ -19,22 +19,22 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-       return $row[self::REFUND_ID] ?: null;
+       return $row[self::REFUND_ID] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[self::TXN_ID] ?: null;
+        return $row[self::TXN_ID] ?? null;
     }
 
     protected function getReferenceNumber(array $row)
     {
-        return $row[self::RRN] ?: null;
+        return $row[self::RRN] ?? null;
     }
 
     protected function getReconRefundStatus(array $row)
     {
-        $rowStatus = $row[self::RESPONSE] ?: null;
+        $rowStatus = $row[self::RESPONSE] ?? null;
 
         if ($rowStatus === self::SUCCESS)
         {

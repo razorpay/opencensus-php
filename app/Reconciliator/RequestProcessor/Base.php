@@ -133,7 +133,7 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
-        self::UPI_AXIS               => ['upisupport@axisbank.com'],
+        self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
