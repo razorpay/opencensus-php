@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
     const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
+    const BANKING_ROLE              = 'banking_role';
     const PIVOT                     = 'pivot';
 
     // Partner array keys
@@ -1744,6 +1745,7 @@ class Entity extends Base\PublicEntity
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+        $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
 
         return $attributes;
     }

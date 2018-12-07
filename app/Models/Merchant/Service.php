@@ -2649,5 +2649,6 @@ class Service extends Base\Service
     {
         // Add Banking Role for the current merchant User.
         (new User\Service())->addProductSwitchRole();
+
     }
 }

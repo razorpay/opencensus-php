@@ -119,6 +119,39 @@ class Core extends Base\Core
                           ->where(Merchant\Entity::SUSPENDED_AT, null)
                           ->callOnEveryItem('toArrayUser');
 
+        $merchantData = [];
+
+        // This looks like all if conditions, but it's ok.
+        array_walk($merchants, function ($merchant) use (&$merchantData) {
+            if (isset($merchantData[$merchant[Entity::ID]]) === false)
+            {
+                $merchantData[$merchant[Entity::ID]] = $merchant;
+
+                if ($merchant[Entity::PRODUCT] === 'banking')
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = null;
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = null;
+                }
+            }
+            else
+            {
+                if ($merchant[Entity::PRODUCT] === 'banking')
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = $merchant[Entity::ROLE];
+                }
+            }
+        });
+
+        $merchants = array_values($merchantData);
+
         $invitations = $user->invitations
                             ->callOnEveryItem('toArrayUser');
 

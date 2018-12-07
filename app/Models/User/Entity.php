@@ -32,10 +32,12 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const MERCHANTS             = 'merchants';
     const ROLE                  = 'role';
+    const BANKING_ROLE          = 'banking_role';
     const PIVOT                 = 'pivot';
     const OWNER                 = 'owner';
     const CONFIRMED             = 'confirmed';
     const INVITATIONS           = 'invitations';
+    const PRODUCT               = 'product';
 
     const PASSWORD_TOKEN_LENGTH = 50;
 
@@ -128,7 +130,7 @@ class Entity extends Base\PublicEntity
                      else 2 END";
 
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                    ->withPivot(self::ROLE)
+                    ->withPivot([self::ROLE, self::PRODUCT])
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
