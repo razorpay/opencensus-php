@@ -125,45 +125,6 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
-    public function testAuthFailedVerifyFailed()
-    {
-        $this->testAuthorizeFailed();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockFailedVerifyResponse();
-
-        $this->verifyPayment($payment['id']);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
-    }
-
-    /**
-     * When the payment is incorrectly marked as authorized
-     * and verify points out that it is not
-     */
-    public function testAuthSuccessVerifyFailed()
-    {
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->testPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockFailedVerifyResponse();
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
-    }
-
     /**
      * Authorization fails, but verify shows success
      * Results in a payment verification error
@@ -277,7 +238,8 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content['response_code'] = 1000;
+                unset($content['response_code']);
+                $content['code'] = 1000;
             }
         });
     }
