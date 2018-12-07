@@ -618,14 +618,6 @@ class Gateway extends Base\Gateway
         {
             return $this->config['live_salt'];
         }
-        else
-        {
-            throw new LogicException(
-                'Invalid mode. Should not have reached here.',
-                null,
-                $this->action
-            );
-        }
     }
 
     protected function getStringToHash($content, $glue = '|')
