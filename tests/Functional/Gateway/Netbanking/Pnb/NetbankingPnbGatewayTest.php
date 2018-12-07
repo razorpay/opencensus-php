@@ -77,6 +77,24 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->assertEquals(1, $content['payment']['verified']);
     }
 
+    public function testVerifyCallbackFailure()
+    {
+        $this->mockFailedVerifyResponse();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testAuthorizeFailed()
     {
         $data = $this->testData[__FUNCTION__];

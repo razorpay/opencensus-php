@@ -70,11 +70,13 @@ class Gateway extends Base\Gateway
         $this->assertAmount($this->formatAmount($input['payment']['amount']),
                             $content[ResponseFields::AMOUNT]);
 
-        $this->verifySecureHash($content);
-
         $this->checkCallbackStatus($content);
 
+        $this->verifySecureHash($content);
+
         $gatewayPayment = $this->saveCallbackResponse($content);
+
+        $this->verifyCallback($input, $gatewayPayment);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -108,6 +110,25 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->processRefundResponse($response, $input);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function sendPaymentVerifyRequest(Verify $verify)

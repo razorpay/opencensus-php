@@ -54,6 +54,22 @@ return [
         ],
     ],
 
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => Rzp\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        ],
+    ],
+
     'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
