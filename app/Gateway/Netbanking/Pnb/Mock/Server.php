@@ -2,9 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Pnb\Mock;
 
-use DOMDocument;
-
-use http\Env\Request;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Pnb\RequestFields;
 use RZP\Gateway\Netbanking\Pnb\ResponseFields;
@@ -28,7 +26,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($decryptedData);
 
-        //TODO verify hash
+        $this->verifyHash($decryptedData);
 
         $callbackDataArray = $this->getCallbackResponseData($decryptedData);
 
@@ -154,6 +152,20 @@ class Server extends Base\Mock\Server
             'AES-256-ECB',
             $decryption_key,
             OPENSSL_RAW_DATA);
+    }
+
+    protected function verifyHash($content)
+    {
+        $actual = $content['hash'];
+
+        unset($content['hash']);
+
+        $generated = $this->generateHash($content);
+
+        if (hash_equals($actual, $generated) === false)
+        {
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
     }
 
     protected function formatAmount($amount)
