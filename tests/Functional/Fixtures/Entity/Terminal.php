@@ -932,6 +932,21 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createBankAccountTerminalForBusinessBanking(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                  => 'BANKACC3DSN3DT',
+            'gateway_merchant_id' => '222444',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+    }
+
     public function createSharedBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [
