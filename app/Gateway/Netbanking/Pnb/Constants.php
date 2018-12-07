@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Pnb;
 
 class Constants
 {
-    const RZP_NAME            = 'Razorpay';  // TODO can i use this for description ?
+    const RZP_NAME            = 'Razorpay';
     const RZP_EMAIL           = 'support@razorpay.com';
     const RZP_ADDRESS_LINE_1  = '22 SJR Cyber, Laskar Hosur Road';
     const RZP_ADDRESS_LINE_2  = 'Adugodi, Bengaluru, Karnataka 560030';
