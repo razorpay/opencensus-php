@@ -51,7 +51,8 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY]);
+        $content = $this->getDataFromCallbackResponse($input[Payment\Entity::GATEWAY],
+                                                      $input['payment']['id']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -157,14 +158,36 @@ class Gateway extends Base\Gateway
         return $encrypted;
     }
 
-    public function decryptString(string $encryptedString): string
+    public function decryptString(string $encryptedString, $paymentId): string
     {
         $decryption_key = $this->getSecret();
 
-        return openssl_decrypt(base64_decode($encryptedString),
+        $decryptedString = openssl_decrypt(base64_decode($encryptedString),
                        'AES-256-ECB',
                                $decryption_key,
                        OPENSSL_RAW_DATA);
+
+        $this->checkDecryptionFailure($decryptedString, $encryptedString, $paymentId);
+
+        return $decryptedString;
+    }
+
+    protected function checkDecryptionFailure(
+        string $decryptedString, string $encryptedString, $paymentId)
+    {
+        if (empty($decryptedString) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                '',
+                '',
+                [
+                    'encrypted string' => $encryptedString,
+                    'gateway'          => $this->gateway,
+                    'payment_id'       => $paymentId
+                ]
+            );
+        }
     }
 
     protected function getNetbankingEntityAttributes(array $input): array
@@ -239,39 +262,18 @@ class Gateway extends Base\Gateway
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function getDataFromCallbackResponse(array $encryptedResponse): array
+    protected function getDataFromCallbackResponse(array $encryptedResponse, $paymentId): array
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_DATA];
 
-        $decryptedString = $this->decryptString($encryptedString);
-
-        $this->checkDecryptionFailure($decryptedString, $encryptedString);
+        $decryptedString = $this->decryptString($encryptedString, $paymentId);
 
         return $this->jsonToArray($decryptedString);
     }
 
-    protected function checkDecryptionFailure(
-        string $decryptedString, string $encryptedString)
-    {
-        if (empty($decryptedString) === true)
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [
-                    'encrypted_string' => $encryptedString,
-                    'gateway'          => $this->gateway,
-                ]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
-            );
-        }
-    }
-
     protected function saveCallbackResponse(array $content)
     {
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-                                      $content[ResponseFields::PAYMENT_ID], Action::AUTHORIZE);
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($content[ResponseFields::PAYMENT_ID], Action::AUTHORIZE);
 
         $attrs = [
             Base\Entity::RECEIVED        => true,
