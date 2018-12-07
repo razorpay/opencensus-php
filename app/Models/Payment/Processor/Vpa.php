@@ -61,27 +61,13 @@ trait Vpa
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
-        $terminalIds = Payment\Gateway::getTerminalsForPayoutVpaForMode($this->mode);
+        $terminals = $this->repo->terminal->getSharedTerminalForGateway('upi_yesbank');
 
-        $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
+        $terminal = $terminals[0];
 
-        $response= [];
+        $gateway = $terminal->getGateway();
 
-        foreach ($terminals as $terminal)
-        {
-            try
-            {
-                $gateway = $terminal->getGateway();
-
-                $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
-
-                break;
-            }
-            catch (Exception\GatewayErrorException $exception)
-            {
-                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
-            }
-        }
+        $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
 
         return $response;
     }
