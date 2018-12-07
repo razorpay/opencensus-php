@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-import { adminPut } from 'common/fetch';
+import { adminPost } from 'common/fetch';
 import { notifySuccess, closeModal } from 'common/modal';
 import { titleCase } from 'common/util';
 
@@ -38,7 +38,7 @@ export default function BeamNodalAction() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={({ mode, ...data }) => {
-          return adminPut({
+          return adminPost({
             url: `${mode}/nodal_file_upload/retry`,
             data,
           }).then(response => {
@@ -57,6 +57,7 @@ const options = {
   icici: 'ICICI',
   axis: 'Axis',
   hdfc: 'HDFC',
+  axis2: 'Power Access',
 };
 
-const fileTypes = ['settlement', 'beneficary'];
+const fileTypes = ['settlement', 'beneficiary'];
