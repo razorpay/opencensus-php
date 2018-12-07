@@ -539,9 +539,10 @@ class Gateway extends Base\Gateway
             else if ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !==
                      $content[ResponseFields::BANK_PAYMENT_ID])
             {
-                $this->trace->error(
+                $this->trace->critical(
                     TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
                     [
+                        'payment_id'    => $content[ResponseFields::PAYMENT_ID],
                         'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
                         'verify_bid'    => $content[ResponseFields::BANK_PAYMENT_ID]
                     ]
