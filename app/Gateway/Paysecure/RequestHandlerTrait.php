@@ -4,11 +4,9 @@ namespace RZP\Gateway\Paysecure;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Isg\Field;
 use SoapFault;
 use SoapHeader;
 use SoapVar;
-use SoapClient;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -46,7 +44,15 @@ trait RequestHandlerTrait
     //-------------- Initiate request ----------------------------------------
     protected function initiate()
     {
+        $requestArray = $this->getInitiateRequestArray();
 
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_INITIATE;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
     }
 
     protected function initiate2()
@@ -94,7 +100,6 @@ trait RequestHandlerTrait
             // todo: fetch this correctly from card BIN
             Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
             Fields::TID                               => $this->config['terminal_id'],
-            // todo: Identify what we should pass here
             Fields::STAN                              => $systemTraceAuditNumber,
             Fields::TRAN_TIME                         => $time,
             Fields::TRAN_DATE                         => $date,
@@ -104,7 +109,6 @@ trait RequestHandlerTrait
             // todo: Confirm this
             Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
-            // todo: Check if these values are okay
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
@@ -146,9 +150,41 @@ trait RequestHandlerTrait
         return $response;
     }
     //-------------- Authorize request end -----------------------------------
+    //------------------Verify request ---------------------------------------
+    protected function transactionStatus($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $requestArray = [Fields::TRAN_ID => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID]];
+
+        $contents = $this->getRequestContents($requestArray);
+
+        $command = Constants::COMMAND_TRANSACTION_STATUS;
+
+        $response = $this->sendRequest($command, $contents);
+
+        return $response;
+    }
+    //------------------Verify request end -----------------------------------
     //---------------- Soap Request related functions ------------------------
+    /**
+     * @param $command
+     * @param $params
+     * @return array
+     * @throws Exception\GatewayTimeoutException
+     * @throws SoapFault
+     */
     protected function sendRequest($command, $params)
     {
+        $this->traceGatewayPaymentRequest(
+            [
+                'command'    => $command,
+                'parameters' => $params,
+                'gateway'    => $this->gateway,
+            ],
+            $this->input
+        );
+
         $requestBody    = $this->getRequestBody($params, $command);
 
         try
@@ -157,10 +193,9 @@ trait RequestHandlerTrait
             $soapClientOptions = [
                 'trace'               => true,
                 'exceptions'          => true,
-                'connection_timeout'   => 30,
+                'connection_timeout'  => 30,
+//                'soap_version'        => SOAP_1_2,
             ];
-
-            ini_set('default_socket_timeout', 30);
 
             $request = [
                 'wsdl' => $this->wsdlDetails['wsdl_file'],
@@ -169,7 +204,11 @@ trait RequestHandlerTrait
 
             $soapClient = $this->getSoapClientObject($request);
 
-            $response = $soapClient->CallPaySecure($requestBody);
+            $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
+
+//            s($response);
+//            $this->printLastSoapXml($soapClient);
+
         }
         catch (SoapFault $sf)
         {
@@ -188,7 +227,9 @@ trait RequestHandlerTrait
         $this->app['trace']->info(
             TraceCode::GATEWAY_RESPONSE,
             [
-                'response' => $arrayResponse
+                'response'   => $arrayResponse,
+                'payment_id' => $this->input['payment']['id'],
+                'gateway'    => $this->gateway,
             ]
         );
 
@@ -265,4 +306,15 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
+
+    protected function printLastSoapXml($soapClient)
+    {
+        $xml = $soapClient->__getLastRequest();
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml);
+        echo '<pre>'.htmlentities($dom->saveXML()).'</pre>';
+        die;
+    }
 }

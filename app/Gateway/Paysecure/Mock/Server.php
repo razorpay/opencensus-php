@@ -12,18 +12,7 @@ class Server extends Base\Mock\Server
 
     const TRAN_ID = '100000000000000000000000025236';
 
-    protected function runCommandRequest($command, $contentArray)
-    {
-        switch ($command)
-        {
-            case Paysecure\Constants::COMMAND_CHECKBIN2:
-                return $this->getCheckBin2Response($contentArray);
-            case Paysecure\Constants::COMMAND_INITIATE_2:
-                return $this->getInitiate2Response($contentArray);
-            case Paysecure\Constants::COMMAND_AUTHORIZE:
-                return $this->getAuthorizeResponse($contentArray);
-        }
-    }
+    const APPRCODE = '183217';
 
     protected function getCheckbin2Response($data)
     {
@@ -62,16 +51,57 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    protected function getInitiateResponse($data)
+    {
+        $response = [
+            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE    => '0',
+            Paysecure\Fields::ERROR_MESSAGE => '',
+            Paysecure\Fields::TRAN_ID       => self::TRAN_ID,
+            Paysecure\Fields::GUID          => '07222ddf-5215-12d3-9309-da713843d30a',
+            Paysecure\Fields::MODULUS       => '99FE9064CD6CD3CBA87C0DF728B31E18B5',
+            Paysecure\Fields::EXPONENT      => '010001',
+        ];
+
+        $this->content($response, 'initiate');
+
+        return $response;
+    }
+
     protected function getAuthorizeResponse($data)
     {
         $response = [
             Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '00',
             Paysecure\Fields::ERROR_MESSAGE => '',
-            Paysecure\Fields::APPRCODE      => '183217',
+            Paysecure\Fields::APPRCODE      => self::APPRCODE,
         ];
 
         $this->content($response, 'authorize');
+
+        return $response;
+    }
+
+    protected function getTransactionstatusResponse($data)
+    {
+        $response = [
+            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::ERROR_CODE    => '00',
+            Paysecure\Fields::ERROR_MESSAGE => '',
+        ];
+
+        $transactionArray = [
+            Paysecure\Fields::STATUS    => Paysecure\Constants::TRANSACTION_STATUS_AUTHORIZED,
+            Paysecure\Fields::TRAN_ID   => self::TRAN_ID,
+            Paysecure\Fields::APPRCODE  => self::APPRCODE,
+            Paysecure\Fields::RECURRING => 'FALSE',
+            Paysecure\Fields::DATETIME  => '12/31/201219:09:51',
+            Paysecure\Fields::AMOUNT    => 5000,
+        ];
+
+        $response[Paysecure\Fields::HISTORY][Paysecure\Fields::TRANSACTION] = $transactionArray;
+
+        $this->content($response, 'transaction_status');
 
         return $response;
     }
@@ -92,25 +122,40 @@ class Server extends Base\Mock\Server
 
     protected function getAuthResponse($input)
     {
-        $content = [
-            Paysecure\Fields::ACCU_GUID          => $input[Paysecure\Fields::ACCU_GUID],
-            Paysecure\Fields::SESSION            => $input[Paysecure\Fields::SESSION],
-            Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
-        ];
+        // If redirect flow
+        if (isset($input[Paysecure\Fields::ACCU_GUID]) === true)
+        {
+            $content = [
+                Paysecure\Fields::ACCU_GUID          => $input[Paysecure\Fields::ACCU_GUID],
+                Paysecure\Fields::SESSION            => $input[Paysecure\Fields::SESSION],
+                Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            ];
 
-        $dataToHash = [
-            self::TRAN_ID,
-            $input[Paysecure\Fields::ACCU_GUID],
-            $input[Paysecure\Fields::SESSION],
-            $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
-        ];
+            $this->content($content, 'auth_response');
 
-        $hash = $this->generateHashOfData($dataToHash);
+            $dataToHash = [
+                self::TRAN_ID,
+                $input[Paysecure\Fields::ACCU_GUID],
+                $input[Paysecure\Fields::SESSION],
+                $content[Paysecure\Fields::ACCU_RESPONSE_CODE],
+            ];
 
-        $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+            $hash = $this->generateHashOfData($dataToHash);
+
+            $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+        }
+        // For Iframe flow
+        else
+        {
+            $content = [
+                Paysecure\Fields::ACCU_RESPONSE_CODE => 'ACCU000',
+            ];
+
+            $this->content($content, 'auth_response');
+        }
 
         return [
-            'url'     => $input[ Paysecure\Fields::ACCU_RETURN_URL ],
+            'url'     => $input[Paysecure\Fields::ACCU_RETURN_URL],
             'method'  => 'post',
             'content' => $content,
         ];

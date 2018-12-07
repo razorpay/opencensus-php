@@ -37,4 +37,9 @@ class Entity extends Base\Entity
     protected $entity = Constants\Entity::PAYSECURE;
 
     public $incrementing = true;
+
+    public function setFlow(string $flow)
+    {
+        $this->setAttribute(self::FLOW, $flow);
+    }
 }

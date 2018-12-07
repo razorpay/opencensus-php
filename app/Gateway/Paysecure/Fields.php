@@ -70,10 +70,20 @@ class Fields
     const REDIRECT_URL                = 'RedirectURL';
     const AUTHENTICATION_NOT_REQUIRED = 'AuthenticationNotRequired';
     const ACCU_HKEY                   = 'AccuHkey';
+    const GUID                        = 'guid';
+    const MODULUS                     = 'modulus';
+    const EXPONENT                    = 'exponent';
 
     // Callback attributes
     const ACCU_RESPONSE_CODE = 'AccuResponseCode';
 
     // Authorize response
     const APPRCODE = 'apprcode';
+
+    // Transaction status response
+    const HISTORY       = 'history';
+    const TRANSACTION   = 'transaction';
+    const RECURRING     = 'recurring';
+    const DATETIME      = 'datetime';
+    const AMOUNT        = 'amount';
 }

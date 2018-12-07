@@ -2,11 +2,15 @@
 
 namespace RZP\Gateway\Paysecure;
 
+use View;
+
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
@@ -20,6 +24,7 @@ class Gateway extends Base\Gateway
         Fields::ERROR_MESSAGE => Entity::ERROR_MESSAGE,
         Fields::STATUS        => Entity::STATUS,
         Fields::APPRCODE      => Entity::APPRCODE,
+        Fields::TRAN_ID       => Entity::GATEWAY_TRANSACTION_ID,
     ];
 
     public function __construct()
@@ -59,11 +64,12 @@ class Gateway extends Base\Gateway
 
         $this->handleFailure($checkBin2Response, 'checkbin2');
 
+        // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
             $response = $this->initiate2();
 
-            $this->handleFailure($response, 'initiate');
+            $this->handleFailure($response, 'initiate2');
 
             $content = $this->getGatewayPaymentAttributes($response);
 
@@ -71,11 +77,28 @@ class Gateway extends Base\Gateway
 
             return $this->getRedirectRequest($response);
         }
+        // Iframe flow
         else
         {
-            // $this->initiate();
+            $response = $this->initiate();
 
-            // $this->createGatewayPaymentEntity();
+            $this->handleFailure($response, 'initiate');
+
+            $attributes = $this->getMappedAttributes($response);
+
+            $this->createGatewayPaymentEntity($attributes, 'iframe');
+
+            $request = [
+                'method' => 'direct',
+            ];
+
+            $this->traceGatewayPaymentRequest($request, $input);
+
+            $request['content'] = View::make('gateway.paysecurePinpadForm')
+                                      ->with('data', $this->getPinpadData($response))
+                                      ->render();
+
+            return $request;
         }
     }
 
@@ -96,8 +119,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
-                $input['gateway'][Fields::ERROR_CODE],
-                $input['gateway'][Fields::ERROR_MESSAGE],
+                $input['gateway'][Fields::ACCU_RESPONSE_CODE],
+                ErrorCodes::getErrorDescription($input['gateway'][Fields::ACCU_RESPONSE_CODE]),
                 $traceData
             );
         }
@@ -105,8 +128,12 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        // Validates the request by checking hashe
-        $this->validateRequestId($gatewayPayment);
+        // Guid would be sent back only for the redirect flow and not for the iframe flow
+        if (isset($input['gateway'][Fields::ACCU_GUID]) === true)
+        {
+            // Validates the request by checking hash
+            $this->validateRequestId($gatewayPayment);
+        }
 
         $response = $this->authorizeTransaction($gatewayPayment);
 
@@ -114,7 +141,7 @@ class Gateway extends Base\Gateway
         {
             $traceData = [
                 'gateway'    => $this->gateway,
-                'response'   => $input['gateway'],
+                'response'   => $response,
                 'payment_id' => $input['payment']['id'],
             ];
 
@@ -123,8 +150,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
-                $input['gateway'][Fields::ERROR_CODE],
-                $input['gateway'][Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_CODE],
+                $response[Fields::ERROR_MESSAGE],
                 $traceData
             );
         }
@@ -138,6 +165,15 @@ class Gateway extends Base\Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $this->getCallbackResponseData($input);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     // ------------ Auth request helpers -----------------
@@ -203,6 +239,34 @@ class Gateway extends Base\Gateway
 
         return $redirectArray;
     }
+
+    protected function getPinpadData($response)
+    {
+        $cardNumber = $this->input['card']['number'];
+
+        $length = strlen($cardNumber);
+
+        $lastFourDigits = substr($cardNumber, ($length - 4), $length);
+
+        return [
+            'merchantJsScript' => $this->getJsFile(),
+            'guid'             => $response[ Fields::GUID ],
+            'modulus'          => $response[ Fields::MODULUS ],
+            'exponent'         => $response[ Fields::EXPONENT ],
+            'lastFourDigits'   => $lastFourDigits,
+            'callbackUrl'      => $this->input['callbackUrl'],
+        ];
+    }
+
+    protected function getJsFile()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return 'https://cert.mwsrec.npci.org.in/MWS/Scripts/MerchantScript_v1.0.js';
+        }
+
+        return 'https://mwsrec.npci.org.in/MWS/Scripts/MerchantScript_v1.0.js';
+    }
     // ------------ Auth request helpers end -----------------
 
     // ------------ Callback request helpers -----------------
@@ -225,11 +289,89 @@ class Gateway extends Base\Gateway
     }
     // ------------ Callback request helpers end -------------
 
+    // ------------ Verify request helpers -------------------
+    public function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        $response = $this->transactionStatus($verify);
+
+        $verify->setVerifyResponseContent($response);
+
+        $this->traceGatewayPaymentResponse(
+            $response,
+            $input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+    }
+    protected function verifyPayment(Base\Verify $verify)
+    {
+        $verify->status = $this->getVerifyMatchStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify);
+    }
+    protected function getVerifyMatchStatus(Base\Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    // @codingStandardsIgnoreStart
+    protected function checkGatewaySuccess(Base\Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ((isset($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === true) and
+            ($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS] === Constants::TRANSACTION_STATUS_AUTHORIZED))
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+    // @codingStandardsIgnoreEnd
+
+    protected function saveVerifyContentIfNeeded($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $response = $verify->verifyResponseContent;
+
+        // If gateway payment does not contain apprcode and if apprcode
+        // is present in verify response, update it.
+        if ((empty($gatewayPayment[Entity::APPRCODE]) === true) and
+            (empty($response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]) === false)
+        )
+        {
+            $attributes = [
+                Entity::APPRCODE => $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE]
+            ];
+
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        return $gatewayPayment;
+    }
+    // ------------ Verify request helpers end ---------------
+
     // ------------ General helpers --------------------------
 
     protected function getSoapClientObject($request)
     {
-        $soapClient = new \SoapClient($request['wsdl'], $request['options']);
+        $soapClient = new SoapClient($request['wsdl'], $request['options']);
 
         $headers = $this->getRequestHeaders();
 
@@ -238,11 +380,13 @@ class Gateway extends Base\Gateway
         return $soapClient;
     }
 
-    protected function createGatewayPaymentEntity(array $content)
+    protected function createGatewayPaymentEntity(array $content, $flow = 'redirect')
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $gatewayPayment->fill($content);
+
+        $gatewayPayment->setFlow($flow);
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
 

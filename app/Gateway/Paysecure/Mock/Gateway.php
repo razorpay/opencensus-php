@@ -11,7 +11,21 @@ class Gateway extends Paysecure\Gateway
 
     public function authorize(array $input)
     {
-        return $this->authorizeMock($input);
+        $request = $this->authorizeMock($input);
+
+        if ($request['method'] === 'direct')
+        {
+            // For Iframe flow, we use post redirect instead of passing a view
+            // thereby, treating it just like redirect flow for mocks
+            $request['method'] = 'post';
+
+            // Setting the return URL in the request.
+            $request['content'] = [
+                Paysecure\Fields::ACCU_RETURN_URL => $input['callbackUrl'],
+            ];
+        }
+
+        return $request;
     }
 
     protected function getSoapClientObject($request)

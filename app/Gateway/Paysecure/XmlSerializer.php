@@ -37,7 +37,7 @@ class XmlSerializer
             }
             else
             {
-                $arr[$child->getName()][] = self::xmlToArray($child);
+                $arr[$child->getName()] = self::xmlToArray($child);
             }
         }
 
@@ -46,9 +46,9 @@ class XmlSerializer
 
     public static function arrayToXml($arrayContent, &$xmlData)
     {
-        foreach($arrayContent as $key => $value)
+        foreach ($arrayContent as $key => $value)
         {
-            if(is_array($value))
+            if (is_array($value))
             {
                 $subNode = $xmlData->addChild($key);
 
