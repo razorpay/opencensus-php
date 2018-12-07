@@ -1,69 +1,149 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
-    'testFetchStatements' => [
+    'testFetchMultipleStatementsOnBankingBalance' => [
         'request' => [
-            'url' => '/transactions',
-            'method' => 'GET'
+            'url'    => '/transactions',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
-
-            ],
-        ],
-    ],
-
-    'testFetchStatementPayout' => [
-        'request' => [
-            'url' => '/statements',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-
-            ],
-        ],
-    ],
-
-    'testFetchStatementBankTransfer' => [
-        'request' => [
-            'url' => '/statements',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-
-            ],
-        ],
-    ],
-
-
-    'createVirtualAccount' => [
-        'url'     => '/virtual_accounts',
-        'method'  => 'post',
-        'content' => [
-            'receivers' => [
-                'types' => [
-                    'bank_account',
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        // 'id'         => '',
+                        'entity'     => 'statement',
+                        'amount'     => 2500,
+                        'credit'     => 2500,
+                        'debit'      => 0,
+                        'balance'    => 5000,
+                        'source'     => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at' => ,
+                        // 'updated_at' => ,
+                    ],
+                    [
+                        // 'id'         => '',
+                        'entity'     => 'statement',
+                        'amount'     => 2500,
+                        'credit'     => 2500,
+                        'debit'      => 0,
+                        'balance'    => 2500,
+                        'source'     => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at' => ,
+                        // 'updated_at' => ,
+                    ],
                 ],
             ],
         ],
     ],
 
-    'processBankTransfer' => [
-        'url'     => '/ecollect/validate',
-        'method'  => 'post',
-         'content' => [
-            'payee_account'  => null,
-            'payee_ifsc'     => null,
-            'payer_name'     => 'Name of account holder',
-            'payer_account'  => '9876543210123456789',
-            'payer_ifsc'     => 'HDFC0000001',
-            'mode'           => 'neft',
-            'transaction_id' => 'utr_thisisbestutr',
-            'time'           => 148415544000,
-            'amount'         => 50000,
-            'description'    => 'NEFT payment of 50,000 rupees',
+    'testFetchMultipleStatementsOnPrimaryBalance' => [
+        'request' => [
+            'url'    => '/transactions',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        // 'id'         => '',
+                        'entity'     => 'statement',
+                        'amount'     => 50000,
+                        'credit'     => 49000,
+                        'debit'      => 0,
+                        'balance'    => 1049000,
+                        // 'source'     => [
+                        //     // 'id'     => '',
+                        //     'entity' => 'payment',
+                        // ],
+                        // 'created_at' => ,
+                        // 'updated_at' => ,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchStatementOnBankingBalance'          => [
+        'request' => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'id'         => '',
+                'entity'     => 'statement',
+                'amount'     => 2500,
+                'credit'     => 2500,
+                'debit'      => 0,
+                'balance'    => 2500,
+                'source'     => [
+                    // 'id'             => '',
+                    'entity'         => 'bank_transfer',
+                    'mode'           => 'NEFT',
+                    // 'bank_reference' => '',
+                    'amount'         => 2500,
+                    'payer_name'     => null,
+                    'payer_account'  => '7654321234567',
+                    'payer_ifsc'     => 'HDFC0000001',
+                ],
+                // 'created_at' => ,
+                // 'updated_at' => ,
+            ],
+        ],
+    ],
+
+    'testFetchIncorrectStatementOnBankingBalance' => [
+        'request' => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 ];
