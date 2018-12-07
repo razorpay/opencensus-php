@@ -1030,7 +1030,7 @@ class Core extends Base\Core
         $name = $merchant->getName();
 
         // Default value is required because website is a required field to create oauth applications
-        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+        $website = $merchant->getWebsite() ?: 'https://www.razorpay.com';
 
         $appInput = [
             'name'     => $name,

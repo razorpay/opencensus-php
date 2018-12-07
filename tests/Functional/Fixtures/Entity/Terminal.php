@@ -61,6 +61,7 @@ class Terminal extends Base
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
+        $this->createSharedNetbankingCanaraTerminal();
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
@@ -69,6 +70,7 @@ class Terminal extends Base
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingIdfcTerminal();
+        $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingAllahabadTerminal();
         $this->createSharedNetbankingIndusindTerminal();
@@ -931,6 +933,21 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createBankAccountTerminalForBusinessBanking(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                  => 'BANKACC3DSN3DT',
+            'gateway_merchant_id' => '222444',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+    }
+
     public function createSharedBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [
@@ -1170,6 +1187,21 @@ class Terminal extends Base
             'card'                      => 0,
             'netbanking'                => 1,
             'gateway'                   => 'netbanking_corporation',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret'     => 'secure_secret'
+        ];
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingCanaraTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => Shared::NETBANKING_CANARA_TERMINAL,
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'netbanking_canara',
             'gateway_merchant_id'       => 'abcd',
             'gateway_secure_secret'     => 'secure_secret'
         ];
@@ -1717,6 +1749,25 @@ class Terminal extends Base
             'netbanking'                => 1,
             'shared'                    => 1,
             'corporate'                 => 2,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingVijayaTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_VIJAYA_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_vijaya',
+            'gateway_merchant_id'       => 'netbanking_vijaya_merchant_id',
+            'gateway_merchant_id2'      => 'netbanking_vijaya_merchant_id2',
+            'netbanking'                => 1,
+            'shared'                    => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

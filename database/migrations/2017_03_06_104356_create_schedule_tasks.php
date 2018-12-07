@@ -34,6 +34,9 @@ class CreateScheduleTasks extends Migration
             $table->char(ScheduleTask::METHOD, 20)
                   ->nullable();
 
+            $table->boolean(ScheduleTask::INTERNATIONAL)
+                  ->default(0);
+
             $table->char(ScheduleTask::SCHEDULE_ID, Schedule::ID_LENGTH);
 
             $table->integer(ScheduleTask::NEXT_RUN_AT);

@@ -1539,7 +1539,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isOpenWalletPayment()
@@ -2699,7 +2699,7 @@ class Entity extends Base\PublicEntity
             self::RECEIVER_ID,
             self::RECEIVER_TYPE,
             self::VERIFY_AT,
-            self::VERIFY_BUCKET
+            self::VERIFY_BUCKET,
         ];
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));

@@ -293,4 +293,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         return $row[self::COLUMN_ARN];
     }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            BaseReconciliate::AUTH_CODE => $this->getAuthCode($row)
+        ];
+    }
 }

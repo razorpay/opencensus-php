@@ -48,6 +48,39 @@ class UpiHdfcReconTest extends TestCase
         $this->assertEquals($entries[0]['Txn ref no. (RRN)'], $upiEntity['npci_reference_id']);
     }
 
+    public function testUpiHdfcForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $this->fixtures->payment->edit($upiEntity['payment_id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideUpiHdfcPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc', ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     protected function overrideUpiHdfcPayment(array $upiEntity)
     {
         $facade = $this->testData['upiHdfc'];

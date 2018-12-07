@@ -177,7 +177,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service(E::VPA)->create($customerId, $input);
+        $data = $this->service(E::VPA)->createForCustomer($customerId, $input);
 
         return ApiResponse::json($data);
     }

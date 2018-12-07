@@ -527,4 +527,35 @@ class Gateway extends Base\Gateway
     {
         return $this->config['hash_secret'];
     }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      Action::AUTHORIZE);
+
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if ($gatewayPayment[Base\Entity::STATUS_CODE] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        $attributes = [
+            Base\Entity::STATUS_CODE        => Status::SUCCESS,
+            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
 }
