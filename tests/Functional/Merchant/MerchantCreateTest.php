@@ -164,13 +164,19 @@ class MerchantCreateTest extends TestCase
     {
         $this->ba->appAuthTest();
 
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
-        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
+        $scheduledTasks = $this->getEntities('schedule_task', ['count' => 2 ], true);
 
-        $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
-        $this->assertEquals($schedule['period'], 'daily');
-        $this->assertEquals($schedule['delay'], 3);
+        foreach ($scheduledTasks['items'] as $scheduledTask)
+        {
+            $schedule = $this->getEntityById('schedule', $scheduledTask['schedule_id'], true);
+
+            $delay = $scheduledTask['international'] ? 7 : 3;
+
+            $this->assertEquals($merchant['id'], $scheduledTask['merchant_id']);
+            $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
+            $this->assertEquals($schedule['period'], 'daily');
+            $this->assertEquals($schedule['delay'], $delay);
+        }
     }
 
     protected function checkNetbankingBanksInMode($mode)

@@ -312,6 +312,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESTINATION_ID);
     }
 
+    public function getDestinationType()
+    {
+        return $this->getAttribute(self::DESTINATION_TYPE);
+    }
+
     public function getPayoutType()
     {
         return $this->getAttribute(self::TYPE);
@@ -391,7 +396,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicDestinationAttribute(array & $attributes)
     {
-        $type = $this->getAttribute(self::DESTINATION_TYPE);
+        $type = $this->getDestinationType();
 
         $entity = Constants\Entity::getEntityClass($type);
 

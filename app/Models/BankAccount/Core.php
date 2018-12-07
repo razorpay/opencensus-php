@@ -7,13 +7,13 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-
 
 class Core extends Base\Core
 {
@@ -69,6 +69,17 @@ class Core extends Base\Core
         $this->repo->saveOrFail($newBankAccount);
 
         return $newBankAccount;
+    }
+
+    public function createBankAccountForBankingContact(array $input, Contact\Entity $contact): Entity
+    {
+        $bankAccount = $this->buildBankAccount($input, $contact->merchant, $this->mode);
+
+        $bankAccount->associateSource($contact, Type::CONTACT);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
     }
 
     public function editBankAccount(Entity $bankAccount, array $input)
@@ -239,7 +250,7 @@ class Core extends Base\Core
     }
 
 
-    public function createBankAccountForSource($input, $merchant, $source, $sourceType, $addRule)
+    public function createBankAccountForSource(array $input, Merchant\Entity $merchant, Base\PublicEntity $source, string $addRule)
     {
         $ba = new BankAccount\Entity;
 
@@ -247,7 +258,7 @@ class Core extends Base\Core
 
         $ba->merchant()->associate($merchant);
 
-        $ba->associateSource($source, $sourceType);
+        $ba->associateSource($source);
 
         $this->repo->saveOrFail($ba);
 
@@ -258,7 +269,9 @@ class Core extends Base\Core
      * All bank account creation happens via this function
      *
      * @param  array  $input
+     * @param         $merchant
      * @param  string $mode
+     *
      * @return BankAccount\Entity
      */
     protected function createBankAccount($input, $merchant, $mode)
@@ -282,7 +295,7 @@ class Core extends Base\Core
 
         $ba = $ba->build($input);
 
-        $ba->getValidator()->validateIfscCode($mode);
+        $ba->getValidator()->validateIfscCode($input, $mode);
 
         $ba->merchant()->associate($merchant);
 

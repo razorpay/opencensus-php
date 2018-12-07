@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Constants\Product;
 
 class Entity extends Base\PublicEntity
 {
@@ -13,6 +16,7 @@ class Entity extends Base\PublicEntity
     const ID                   = 'id';
     const PLAN_ID              = 'plan_id';
     const PLAN_NAME            = 'plan_name';
+    const PRODUCT              = 'product';
     const FEATURE              = 'feature';
     const GATEWAY              = 'gateway';
     const PAYMENT_METHOD       = 'payment_method';
@@ -56,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PLAN_ID,
         self::PLAN_NAME,
+        self::PRODUCT,
         self::FEATURE,
         self::GATEWAY,
         self::PAYMENT_METHOD,
@@ -92,6 +97,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = ['plan_id', 'org_id'];
 
     protected $defaults = [
+        self::PRODUCT             => Product::PRIMARY,
         self::FEATURE             => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE => null,
         self::PAYMENT_NETWORK     => null,
@@ -338,14 +344,31 @@ class Entity extends Base\PublicEntity
 
     public function getFeature()
     {
-        return $this->attributes[self::FEATURE];
+        return $this->getAttribute(self::FEATURE);
     }
 
-    /*
-     * For adding plan id easily in queries
+    public function getProduct()
+    {
+        return $this->getAttribute(self::PRODUCT);
+    }
+
+    /**
+     * For adding plan_id filter in queries
+     *
+     * @param $query
+     * @param $planId
      */
     public function scopePlanId($query, $planId)
     {
         $query->where(self::PLAN_ID, '=', $planId);
+    }
+
+    /**
+     * @param        $query
+     * @param string $product
+     */
+    public function scopeProduct(Builder $query, string $product)
+    {
+        $query->where(self::PRODUCT, '=', $product);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
-use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Transaction;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
@@ -28,7 +28,10 @@ abstract class Base extends BaseCore
      */
     protected $merchant;
 
-    protected $customer = null;
+    /**
+     * @var Customer\Entity
+     */
+    protected $customer;
 
     /**
      * method by which the payout will be made for destination.
@@ -59,6 +62,7 @@ abstract class Base extends BaseCore
         $this->fees = 0;
 
         $this->merchant = $merchant;
+
         $this->setCustomerFromId($customerId);
     }
 
@@ -66,10 +70,8 @@ abstract class Base extends BaseCore
     {
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+            $this->customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
         }
-
-        $this->customer = $customer ?? null;
     }
 
     public function createPayout(array $input)
@@ -136,28 +138,24 @@ abstract class Base extends BaseCore
 
     protected function createFundTransferAttemptEntity(Payout\Entity $payout): FundTransferAttempt\Entity
     {
-        // TODO: move all this to FTA Core!
-
-        $fundTransferAttempt = new FundTransferAttempt\Entity;
-
-        $values = [
+        $fundTransferAttemptInput = [
             FundTransferAttempt\Entity::PURPOSE         => $payout->getPurpose(),
             FundTransferAttempt\Entity::CHANNEL         => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION       => 'RAZORPAY SETTLEMENT',
-            FundTransferAttempt\Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
-        $fundTransferAttempt->fillAndGenerateId($values);
-
-        $fundTransferAttempt->source()->associate($payout);
-
-        $fundTransferAttempt->merchant()->associate($payout->merchant);
-
-        $fundTransferAttempt->bankAccount()->associate($payout->destination);
-
-        $this->repo->saveOrFail($fundTransferAttempt);
+        if ($payout->getDestinationType() === Constants\Entity::BANK_ACCOUNT)
+        {
+            $fundTransferAttempt = (new FundTransferAttempt\Core)->createWithBankAccount($payout,
+                                                                                         $payout->destination,
+                                                                                         $fundTransferAttemptInput);
+        }
+        else
+        {
+            $fundTransferAttempt = (new FundTransferAttempt\Core)->createWithVpa($payout,
+                                                                                 $payout->destination,
+                                                                                 $fundTransferAttemptInput);
+        }
 
         return $fundTransferAttempt;
     }
@@ -212,19 +210,23 @@ abstract class Base extends BaseCore
         if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
         {
             $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destinationId, $this->merchant);
-
-            // Check if the bank account destination is linked to the typeEntity
-            if ($destination->getEntityId() !== $typeEntity->getId())
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Invalid destination_id: " . $destination->getPublicId());
-            }
+        }
+        else
+        {
+            $destination = $this->repo->vpa->findByPublicIdAndMerchant($destinationId, $this->merchant);
         }
 
         if (empty($destination) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Destination not valid for the method " . $input[Payout\Entity::METHOD]);
+                'Destination not valid for the method ' . $input[Payout\Entity::METHOD]);
+        }
+
+        // Check if the bank account / vpa destination is linked to the customer/merchant
+        if ($destination->getEntityId() !== $typeEntity->getId())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid destination_id: ' . $destination->getPublicId());
         }
 
         $this->destination = $destination;
@@ -235,7 +237,34 @@ abstract class Base extends BaseCore
         return $input[Payout\Entity::DESTINATION] ?? null;
     }
 
-    abstract protected function setChannel();
+    protected function createTxns(Payout\Entity $payout)
+    {
+        $txnCore = new Transaction\Core;
 
-    abstract protected function createTxns(Payout\Entity $payout);
+        $txn = $txnCore->createFromPayout($payout);
+
+        $payout->setFees($txn->getFee());
+        $payout->setTax($txn->getTax());
+
+        $this->validateMerchantBalance($payout);
+
+        $txnCore->updateBalances($txn, true);
+
+        $this->repo->saveOrFail($txn);
+    }
+
+    protected function validateMerchantBalance(Payout\Entity $payout)
+    {
+        $debitAmount = $payout->getAmount() + $payout->getFees();
+
+        $hasBalance = (new Merchant\Balance\Core)->checkMerchantBalance($payout->merchant, $debitAmount);
+
+        if ($hasBalance === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE);
+        }
+    }
+
+    abstract protected function setChannel();
 }

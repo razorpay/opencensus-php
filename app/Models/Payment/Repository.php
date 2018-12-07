@@ -1637,4 +1637,12 @@ class Repository extends Base\Repository
             ->where(Entity::GATEWAY, $gateway)
             ->first();
     }
+
+    public function fetchPaymentsCreatedBetween(string $gateway, int $from, int $to)
+    {
+        return $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
 }

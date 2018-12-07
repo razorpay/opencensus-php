@@ -2619,17 +2619,6 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
     }
 
-    protected function setEsMockSearchExpectations($callee, $esMock)
-    {
-        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
-        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
-
-        $esMock->expects($this->once())
-               ->method('search')
-               ->with($expectedSearchParams)
-               ->willReturn($expectedSearchRes);
-    }
-
     protected function createManyInvoicesForFetchTests()
     {
         $this->createDraftInvoice(

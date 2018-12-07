@@ -22,7 +22,11 @@ class InfoCode
 
     const UNEXPECTED_PAYMENT                = 'UNEXPECTED_PAYMENT';
 
+    const VPA_MISMATCH                      = 'VPA_MISMATCH';
+
     const RAZORPAY_FAILED_PAYMENT_RECON     = 'RAZORPAY_FAILED_PAYMENT_RECON';
 
     const FAILED_REFUND_ARN_ABSENT          = 'FAILED_REFUND_ARN_ABSENT';
+
+    const MIS_FILE_REFUND_FAILED            = 'MIS_FILE_REFUND_FAILED';
 }

@@ -121,7 +121,8 @@ class Entity extends Base\PublicEntity
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
-    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
