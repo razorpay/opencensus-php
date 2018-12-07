@@ -13,6 +13,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
         Entity::CUSTOMER_ID        => 'sometimes|string|max:19',
+        Entity::FUND_ACCOUNT_ID    => 'sometimes|string|max:17',
         Entity::DESTINATION        => 'sometimes|string|max:20',
         Entity::METHOD             => 'sometimes|string',
     ];

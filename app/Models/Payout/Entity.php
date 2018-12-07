@@ -10,6 +10,7 @@ use RZP\Models\User;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
@@ -29,6 +30,7 @@ class Entity extends Base\PublicEntity
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';
     const CUSTOMER_ID            = 'customer_id';
+    const FUND_ACCOUNT_ID        = 'fund_account_id';
     const METHOD                 = 'method';
     const BALANCE_ID             = 'balance_id';
     const DESTINATION_ID         = 'destination_id';
@@ -103,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
         self::DESTINATION,
         self::USER_ID,
         self::AMOUNT,
@@ -132,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
         self::DESTINATION,
         self::METHOD,
         self::AMOUNT,
@@ -155,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::DESTINATION,
         self::CUSTOMER_ID,
         self::USER_ID,
+        self::FUND_ACCOUNT_ID,
     ];
 
     protected $defaults = [
@@ -209,6 +214,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity');
     }
 
+    public function fundAccount()
+    {
+        return $this->belongsTo('RZP\Models\FundAccount\Entity');
+    }
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -257,6 +267,11 @@ class Entity extends Base\PublicEntity
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
     }
 
     // FeeCalculator calls `$entity->getFee()` for all the pricing entity
@@ -454,6 +469,13 @@ class Entity extends Base\PublicEntity
         {
             unset($attributes[self::USER_ID]);
         }
+    }
+
+    public function setPublicFundAccountIdAttribute(array & $attributes)
+    {
+        $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
+
+        $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
     }
 
     public function getPricingFeatures()

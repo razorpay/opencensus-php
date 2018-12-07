@@ -18,7 +18,7 @@ class Service extends Base\Service
         $this->core = new Payout\Core;
     }
 
-    public function customerPayout(array $input): array
+    public function contactPayout(array $input): array
     {
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
         if ($this->auth->isStrictPrivateAuth() === false)

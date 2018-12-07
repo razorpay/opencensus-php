@@ -7,11 +7,11 @@ use Request;
 
 class PayoutController extends Controller
 {
-    public function postCustomerPayout()
+    public function postContactPayout()
     {
         $input = Request::all();
 
-        $data = $this->service()->customerPayout($input);
+        $data = $this->service()->contactPayout($input);
 
         return ApiResponse::json($data);
     }

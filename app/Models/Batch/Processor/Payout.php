@@ -80,7 +80,7 @@ class Payout extends Base
     {
         $payoutCreateInput = Helper::getPayoutCreateInput($entry, $bankAccount, $customer);
 
-        $payout = $this->payoutCore->createPayoutToCustomer($payoutCreateInput,
+        $payout = $this->payoutCore->createPayoutToContact($payoutCreateInput,
                                                             $this->merchant);
 
         $entry[Header::PAYOUT_ID]          = $payout->getPublicId();

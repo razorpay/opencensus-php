@@ -81,13 +81,20 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
-    public function createPayoutToCustomer(array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutToContact(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
-            TraceCode::PAYOUT_CUSTOMER_CREATE_REQUEST,
+            TraceCode::PAYOUT_CONTACT_CREATE_REQUEST,
             [
                 'input' => $input
             ]);
+
+        $customerId = $input[Entity::CUSTOMER_ID] ?? null;
+
+        if (is_string($customerId) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('customer_id is mandatory for the payout');
+        }
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
@@ -95,7 +102,7 @@ class Core extends Base\Core
             $mutexResource,
             function() use ($input, $customerId, $merchant)
             {
-                return $this->getProcessor('customer_payout', $merchant)->createPayout($input);
+                return $this->getProcessor('contact_payout', $merchant, $customerId)->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
@@ -138,12 +145,12 @@ class Core extends Base\Core
             ]);
 
         //
-        // The mutex for this is handled in `createPayoutToCustomer`.
+        // The mutex for this is handled in `createPayoutToContact`.
         //
 
         (new Validator)->validatePaymentForPayout($input, $payment);
 
-        $payout = $this->createPayoutToCustomer($input, $merchant);
+        $payout = $this->createPayoutToContact($input, $merchant);
 
         $payout->payment()->associate($payment);
 
