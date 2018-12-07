@@ -4,11 +4,12 @@ namespace RZP\Models\Payout;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -29,7 +30,6 @@ class Validator extends Base\Validator
         Entity::DESTINATION     => 'sometimes|public_id',
         Entity::TYPE            => 'sometimes|string',
         Entity::BALANCE_ID      => 'sometimes|public_id',
-
     ];
 
     protected static $customerPayoutRules = [
@@ -38,9 +38,10 @@ class Validator extends Base\Validator
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
         Entity::BALANCE_ID      => 'sometimes|filled|public_id',
+        // Either (customer_id, destination) or fund_account_id is required
+        Entity::CUSTOMER_ID     => 'sometimes|public_id',
+        Entity::DESTINATION     => 'sometimes|public_id',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -85,9 +86,41 @@ class Validator extends Base\Validator
         Entity::METHOD
     ];
 
+    protected static $customerPayoutValidators = [
+        Entity::FUND_ACCOUNT_ID,
+    ];
+
     protected function validateMethod($input)
     {
         Method::validateMethod($input[Entity::METHOD]);
+    }
+
+    /**
+     * @param  array  $input
+     * @throws BadRequestValidationFailureException
+     */
+    protected function validateFundAccountId(array $input)
+    {
+        $hasCustomerId               = array_key_exists(Entity::CUSTOMER_ID, $input);
+        $hasDestination              = array_key_exists(Entity::DESTINATION, $input);
+        $hasCustomerIdAndDestination = $hasCustomerId and $hasDestination;
+        $hasFundAccountId            = array_key_exists(Entity::FUND_ACCOUNT_ID, $input);
+
+        if (($hasFundAccountId ^ $hasCustomerIdAndDestination) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Either of fund_account_id or (customer_id, destination) is required',
+                null,
+                compact('input'));
+        }
+
+        if ($hasCustomerIdAndDestination === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Both customer_id and destination are required',
+                null,
+                compact('input'));
+        }
     }
 
     public function validatePayoutAmount($input, $payment)

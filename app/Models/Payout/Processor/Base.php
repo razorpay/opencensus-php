@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Merchant\Balance;

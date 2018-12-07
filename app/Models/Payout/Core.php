@@ -89,20 +89,13 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        $customerId = $input[Entity::CUSTOMER_ID] ?? null;
-
-        if (is_string($customerId) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException('customer_id is mandatory for the payout');
-        }
-
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
             function() use ($input, $customerId, $merchant)
             {
-                return $this->getProcessor('customer_payout', $merchant, $customerId)->createPayout($input);
+                return $this->getProcessor('customer_payout', $merchant)->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
