@@ -916,6 +916,32 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBankAccountWithMerchantIdInURL()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccountWithMerchantIdInURL']['response']['content'];
+
+            $testDataURL = $this->testData['testAddBankAccountWithMerchantIdInURL']['request']['url'];
+
+            $testDataURLParts = explode("/",$testDataURL);
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertEquals($testData['merchant_id'],$mail->viewData['merchant_id']);
+
+            $this->assertNotEquals($testDataURLParts[2],$mail->viewData['merchant_id']);
+
+            return true;
+        });
+    }
+
     public function testAddBankAccountWithMerchantDetail()
     {
         Mail::fake();

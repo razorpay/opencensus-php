@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
 
 class Gateway extends Base\Gateway
@@ -932,7 +933,7 @@ class Gateway extends Base\Gateway
         $errorCode = UpiErrorCodes::getApiErrorCode($content[ResponseFields::RESPCODE]);
 
         $scroogeResponse->setStatusCode($errorCode)
-                        ->setGatewayResponse($content)
+                        ->setGatewayVerifyResponse($content)
                         ->setGatewayKeys($this->getGatewayData($content));
 
         if ($content[ResponseFields::STATUS] === Status::REFUND_SUCCESS)

@@ -217,4 +217,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postH2HSettlementNotifyErrors(string $channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->notifyH2HErrors($input, $channel);
+
+        return ApiResponse::json($data);
+    }
 }

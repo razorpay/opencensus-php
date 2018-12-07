@@ -56,6 +56,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -105,13 +106,14 @@ class Gateway
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
     //
     // Stores boolean value indicating refund was successful or not
-    const SUCCESS            = 'success';
+    const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
-    const STATUS_CODE        = 'status_code';
+    const STATUS_CODE               = 'status_code';
     // Stores array of gateway related keys such as refund_id, auth_code
-    const GATEWAY_KEYS       = 'gateway_keys';
+    const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
-    const GATEWAY_RESPONSE   = 'gateway_response';
+    const GATEWAY_RESPONSE          = 'gateway_response';
+    const GATEWAY_VERIFY_RESPONSE   = 'gateway_verify_response';
 
     //
     // If for a merchant, the esigner gateway is not assigned via config,
@@ -578,6 +580,7 @@ class Gateway
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
 
@@ -1147,6 +1150,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
@@ -1168,6 +1172,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::CNRB => Gateway::NETBANKING_CANARA,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB => Gateway::NETBANKING_VIJAYA,

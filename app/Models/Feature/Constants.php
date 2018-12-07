@@ -101,7 +101,17 @@ class Constants
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
+
+    /**
+     * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
+     */
     const INVOICE_NO_RECEIPT_UNIQUE       = 'invoice_no_receipt_unique';
+
+    /**
+     * Disables auto-capture of payments made on payment pages
+     * (used for auto refunds on demo payment pages)
+     */
+    const PAYMENT_PAGES_NO_CAPTURE        = 'payment_pages_no_capture';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -245,6 +255,7 @@ class Constants
         self::BLOCK_SETTLEMENTS               => true,
         self::SKIP_INTERNATIONAL_AUTH         => true,
         self::INVOICE_NO_RECEIPT_UNIQUE       => true,
+        self::PAYMENT_PAGES_NO_CAPTURE        => true,
     ];
 
     // Entity type constants

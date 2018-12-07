@@ -81,6 +81,18 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
+    protected function verifySettlementReconFileProcessForAxis2()
+    {
+        $channel = Channel::AXIS2;
+
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
     protected function verifySettlementReconProcessForRbl($failureTest = false)
     {
         $channel = Channel::RBL;
@@ -234,6 +246,13 @@ class AttemptReconcileTest extends TestCase
         $this->reconcileEntitiesForChannel(Channel::AXIS);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileEntitiesSuccessForAxis2()
+    {
+        $this->verifySettlementReconFileProcessForAxis2();
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
     }
 
     public function testSettlementReconcileEntitiesSuccessForRbl()

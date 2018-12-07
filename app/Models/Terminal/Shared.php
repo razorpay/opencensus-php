@@ -41,6 +41,7 @@ class Shared
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
     const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
+    const NETBANKING_CANARA_TERMINAL         = '100NbCnrbTrmnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
@@ -106,6 +107,7 @@ class Shared
         self::NETBANKING_FEDERAL_TERMINAL,
         self::NETBANKING_RBL_TERMINAL,
         self::NETBANKING_INDUSIND_TERMINAL,
+        self::NETBANKING_CANARA_TERMINAL,
         self::NETBANKING_PNB_TERMINAL,
         self::NETBANKING_ESFB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
@@ -152,6 +154,7 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
         self::NETBANKING_IDFC_TERMINAL           => Gateway::NETBANKING_IDFC,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_CANARA_TERMINAL         => Gateway::NETBANKING_CANARA,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_VIJAYA_TERMINAL         => Gateway::NETBANKING_VIJAYA,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,

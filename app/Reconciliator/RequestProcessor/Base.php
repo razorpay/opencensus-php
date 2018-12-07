@@ -58,6 +58,7 @@ class Base extends Core
     const EMANDATE_AXIS          = 'EmandateAxis';
     const NETBANKING_AXIS        = 'NetbankingAxis';
     const NETBANKING_ICICI       = 'NetbankingIcici';
+    const NETBANKING_CANARA      = 'NetbankingCanara';
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
@@ -110,6 +111,7 @@ class Base extends Core
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
+        self::NETBANKING_CANARA      => [],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
@@ -131,7 +133,7 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
-        self::UPI_AXIS               => ['upisupport@axisbank.com'],
+        self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
@@ -202,7 +204,6 @@ class Base extends Core
         string $fileLocationType = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
-
         // Goes through each file and gets the file details.
         foreach (range(1, $inputDetails[self::ATTACHMENT_COUNT]) as $attachmentNumber)
         {

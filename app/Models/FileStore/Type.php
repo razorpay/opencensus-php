@@ -23,6 +23,9 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+    const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
+    const CANARA_NETBANKING_CLAIMS          = 'canara_netbanking_claims';
+
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
     const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
@@ -163,6 +166,7 @@ class Type
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
+            self::CANARA_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
@@ -276,6 +280,7 @@ class Type
         self::RBL_ENACH_REGISTER,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
+        self::CANARA_NETBANKING_REFUND,
         self::IDFC_NETBANKING_REFUND,
         self::IDFC_NETBANKING_CLAIMS,
         self::IDFC_NETBANKING_SUMMARY,

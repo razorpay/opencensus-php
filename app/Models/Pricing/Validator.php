@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -18,6 +19,7 @@ use RZP\Models\Bank\IFSC;
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
+        Entity::PRODUCT             => 'sometimes|string|custom',
         Entity::FEATURE             => 'sometimes|alpha',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
@@ -346,6 +348,10 @@ class Validator extends Base\Validator
 
     /**
      * Check whether this new rule already exists
+     *
+     * @param Plan $plan
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateRuleDoesNotMatch(Plan $plan)
     {
@@ -438,6 +444,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
+    }
+
+    public function validateProduct($attribute, $value)
+    {
+        Product::validate($value);
     }
 
     protected function between($n, $min, $max)

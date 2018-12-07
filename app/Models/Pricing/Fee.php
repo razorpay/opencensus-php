@@ -38,6 +38,7 @@ class Fee extends Base\Core
     // delete this after 31st jan
     protected static $promotionalMethods = [
         'card',
+        'emi',
         'netbanking',
         'upi',
         'wallet',
@@ -101,7 +102,8 @@ class Fee extends Base\Core
      * Merges fallback pricing plans for methods that
      * do not have a pricing rule defined for them.
      *
-     * @param Plan $pricingPlan
+     * @param Plan            $pricingPlan
+     * @param Merchant\Entity $merchant
      *
      * @return Plan
      */
