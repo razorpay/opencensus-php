@@ -185,12 +185,9 @@ export default class PaymentPagesContainer extends ListContainer {
                 <tr>
                   <th>Title</th>
                   <th>Amount</th>
-                  <th>Payments Made</th>
-                  <th>
-                    {user.isPaymentPagesV2Enabled
-                      ? 'Total Quantity'
-                      : 'Times Payable'}
-                  </th>
+                  {!user.isPaymentPagesV2Enabled && <th>Payments Made</th>}
+                  {!user.isPaymentPagesV2Enabled && <th>Times Payable</th>}
+                  {user.isPaymentPagesV2Enabled && <th>Available Quantity</th>}
                   <th>Total Sales</th>
                   <th>Page Url</th>
                   <th>Created At</th>
@@ -222,8 +219,24 @@ export default class PaymentPagesContainer extends ListContainer {
                         '--'
                       )}
                     </td>
-                    <td>{item.times_paid}</td>
-                    <td>{item.times_payable || '--'}</td>
+                    {!user.isPaymentPagesV2Enabled && (
+                      <td>{item.times_paid}</td>
+                    )}
+                    {!user.isPaymentPagesV2Enabled && (
+                      <td>{item.times_payable || '--'}</td>
+                    )}
+
+                    {user.isPaymentPagesV2Enabled && (
+                      <td>
+                        {item.times_payable
+                          ? Number(item.times_payable) -
+                            Number(item.times_paid) +
+                            '/' +
+                            Number(item.times_payable)
+                          : 'No Limit'}
+                      </td>
+                    )}
+
                     <td>
                       <Amount
                         value={item.total_amount_paid}

@@ -162,7 +162,16 @@ export default class PaymentPagesV2Entity extends React.Component {
                       : '--'
                   }
                 />
-                {paymentPageEntity.amount && (
+
+                {!!paymentPageEntity.amount &&
+                  !paymentPageEntity.times_payable && (
+                    <EntityDetailRow
+                      label="Total Units Sold"
+                      value={paymentPageEntity.times_paid}
+                    />
+                  )}
+
+                {!!paymentPageEntity.amount && (
                   <EntityDetailRow
                     label="Available Quantity"
                     value={() => (

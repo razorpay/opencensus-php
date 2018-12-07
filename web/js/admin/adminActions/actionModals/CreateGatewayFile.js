@@ -27,6 +27,7 @@ const typeToTargetMap = {
     'obc',
     'idfc',
     'equitas',
+    'corporation',
   ],
   emandate_register: ['hdfc'],
   emandate_debit: ['hdfc', 'axis'],

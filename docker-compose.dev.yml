@@ -9,6 +9,7 @@ services:
      - .:/app
     networks:
      - api_default
+     - default
     links:
       - dashboard_db
       - dashboard_cache
@@ -33,7 +34,7 @@ services:
     ports:
       - 33306:3306
     networks:
-      - api_default
+      - default
     environment:
       MYSQL_ROOT_PASSWORD: 123
       MYSQL_DATABASE: dashboard
@@ -42,7 +43,7 @@ services:
   dashboard_cache:
     image: redis:2.8
     networks:
-     - api_default
+     - default
     ports:
       - 36379:6379
 networks:
