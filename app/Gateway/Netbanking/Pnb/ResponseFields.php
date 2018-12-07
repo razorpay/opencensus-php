@@ -13,7 +13,7 @@ class ResponseFields
     const BANK_PAYMENT_ID = 'transaction_id';
     const RESPONSE_DESC   = 'response_message';
     const ERROR_DESC      = 'error_desc';
-    const DESCRIPTION      = 'description';
+    const DESCRIPTION     = 'description';
     const AMOUNT          = 'amount';
     const CHECKSUM        = 'hash';
 
@@ -26,4 +26,7 @@ class ResponseFields
     const MERCHANT_REFUND_ID  = 'merchant_refund_id';
     const REFUND_REFERENCE_NO = 'refund_reference_no';
     const ERROR_MESSAGE       = 'message';
+
+    //error
+    const CODE = 'code';
 }
