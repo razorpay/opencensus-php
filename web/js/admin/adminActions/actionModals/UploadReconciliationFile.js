@@ -29,6 +29,7 @@ const gateWayOptions = [
   'Jiomoney',
   'Hitachi',
   'SBI Buddy',
+  'UpiAxis',
   'UpiSbi',
   'UpiIcici',
   'UpiHulk',
@@ -53,7 +54,7 @@ const gateWayOptions = [
   'Atom',
   'CardFssBob',
   'CardFssHdfc',
-  'UpiMindgate',
+  'UpiHdfc',
 ];
 
 const optionValueMap = {

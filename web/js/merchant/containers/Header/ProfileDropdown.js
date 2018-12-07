@@ -165,12 +165,6 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            <div className="media media-action">
-              <Link to="#request" className="media-body">
-                Raise a request
-              </Link>
-            </div>
-
             {mode === 'live' &&
               !showMobileNav && (
                 <div

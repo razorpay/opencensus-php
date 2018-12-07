@@ -6,14 +6,12 @@ import Header from 'rzp/ui/Header';
 import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
 import DateRangePicker from 'rzp/ui/DateRangePicker';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
-import FTXPassAnnouncement from 'merchant/components/Announcements/ftx';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
@@ -87,8 +85,6 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
-        {user.showFTXPassAnnouncement && <FTXPassAnnouncement />}
-
         <div
           ref={node => onExtraContentMount(node)}
           className={`extra-content${

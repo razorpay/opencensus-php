@@ -457,6 +457,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             paymentPageEntity={paymentPageEntity}
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
+            isTestMode={this.props.mode.toLowerCase() === 'test'}
           />
         )}
 

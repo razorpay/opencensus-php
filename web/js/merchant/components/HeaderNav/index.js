@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 
-import ShowWhen from 'merchant/components/ShowWhen';
 import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
+import NotificationsDropdown from 'rzp/ui/NotificationsDropdown';
 import { toggleMobileMenu } from 'merchant/modules/app';
 
 import NavFragment from './NavFragment';
@@ -99,6 +99,13 @@ export default class HeaderNav extends Component {
                   />
                 </li>
               )}
+              <li id="notifications-dropdown">
+                <NotificationsDropdown
+                  analytics={analytics}
+                  showMobileNav={showMobileNav}
+                  {...commonProps}
+                />
+              </li>
               <li id="profile-dropdown">
                 <ProfileDropdown
                   analytics={analytics}

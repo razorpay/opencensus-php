@@ -154,6 +154,7 @@ function _getSettlementScheduleFields() {
     ['Schedule Name', item => item.schedule_name],
     ['Type', item => item.type],
     ['Method', item => item.method || '-'],
+    ['International', item => (item.international == 1 ? 'Yes' : 'No')],
     ['Schedule Id', item => item.schedule_id],
     ['Next Run At', item => formatDate(item.next_run_at)],
   ];

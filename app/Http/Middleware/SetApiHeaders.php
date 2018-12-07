@@ -1,8 +1,9 @@
 <?php namespace App\Http\Middleware;
 
 use Auth;
-use Closure;
 use Gate;
+use Closure;
+use App\Http\ApiUrl;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -14,7 +15,6 @@ class SetApiHeaders {
 	 * @var Guard
 	 */
 	protected $auth;
-
 	/**
 	 * Create a new filter instance.
 	 *
@@ -35,9 +35,13 @@ class SetApiHeaders {
 	 */
 	public function handle($request, Closure $next)
 	{
+        $originDomain = ApiUrl::getRequestOriginUrl();
+
         $domain = \Request::server('SERVER_NAME');
 
         ApiRequest::addHeader('X-Org-Hostname', $domain);
+
+        ApiRequest::addHeader('X-Request-Origin', $originDomain);
 
         return $next($request);
 	}

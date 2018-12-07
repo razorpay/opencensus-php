@@ -253,10 +253,6 @@ export default class User {
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
-
-  get showFTXPassAnnouncement() {
-    return this.findTag('announcement_ftx_passes');
-  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

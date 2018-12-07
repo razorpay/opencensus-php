@@ -108,6 +108,7 @@ export const options = {
     fund_transfer: 'Payout: Fund Transfer',
     account: 'Transfer: Account (Marketplace)',
     customer: 'Transfer: Customer (Openwallet)',
+    cardless_emi: 'Cardless EMI'
   },
   payment_method_type: {
     '': 'All',
@@ -120,6 +121,8 @@ export const options = {
     '': 'All',
     HDFC: 'HDFC',
     ICIC: 'ICICI',
+    zestmoney:'ZESTMONEY',
+    earlysalary:'EARLYSALARY',
   },
   international: {
     0: 'No',

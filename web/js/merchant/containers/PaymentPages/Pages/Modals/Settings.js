@@ -33,7 +33,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { isNew, handleClose, handleAction } = this.props;
+    const { isNew, handleClose, handleAction, isTestMode } = this.props;
 
     const { slug, theme, expire_by, disableSubmit } = this.state;
 
@@ -54,6 +54,7 @@ export default class extends React.Component {
                   label="Choose custom URL for this page"
                   defaultValue={slug}
                   addonValueBefore="https://pages.razorpay.com/"
+                  disabled={isTestMode}
                   validator={val => {
                     if (val) {
                       if (!validateSlug(val.trim())) {
@@ -68,6 +69,11 @@ export default class extends React.Component {
                     }
                   }}
                 />
+                {isTestMode && (
+                  <div style={{ marginTop: 4, fontSize: 13 }}>
+                    Custom slug is only available in Live Mode
+                  </div>
+                )}
               </div>
               <div class="settings-section">
                 <Input.Radio

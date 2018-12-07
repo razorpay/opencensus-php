@@ -6,7 +6,7 @@ RUN apk add --update lsof && \
     apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
     chown -R nginx.nginx /app
 
-COPY ./dockerconf/entrypoint.sh /entrypoint.sh
+COPY ./dockerconf/entrypoint-dev.sh /entrypoint.sh
 
 WORKDIR /app
 
@@ -21,4 +21,4 @@ WORKDIR /app
 
 EXPOSE 80
 
-ENTRYPOINT ["/entrypoint-dev.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

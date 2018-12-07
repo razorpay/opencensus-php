@@ -18,7 +18,6 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
-import FTXPassAnnouncement from 'merchant/components/Announcements/ftx';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
 import { openModal } from 'rzp/modules/modals';
@@ -108,8 +107,6 @@ class AnalyticsDesktop extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
-
-          {user.showFTXPassAnnouncement && <FTXPassAnnouncement />}
 
           <div
             className={`v2-onboarding-card${

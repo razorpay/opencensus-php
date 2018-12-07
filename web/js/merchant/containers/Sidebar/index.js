@@ -32,7 +32,6 @@ const BASE_ROUTES = {
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
-  request: '#request',
 };
 
 @withRouter
@@ -360,12 +359,6 @@ export default class Sidebar extends Component {
                         'webhooks applications configuration api_keys'
                       )
                     }
-                  />
-                  <MainNavLink
-                    label="Contact Support"
-                    icon="i i-support text-warning"
-                    to={routes.request}
-                    id="nav-contact-support"
                   />
                 </div>;
               }
