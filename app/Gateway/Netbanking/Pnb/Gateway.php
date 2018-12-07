@@ -98,7 +98,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'request' => $request,
+                'gateway' => $this->gateway
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
 
@@ -273,7 +278,10 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content)
     {
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($content[ResponseFields::PAYMENT_ID], Action::AUTHORIZE);
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
+            $content[ResponseFields::PAYMENT_ID],
+            Action::AUTHORIZE
+        );
 
         $attrs = [
             Base\Entity::RECEIVED        => true,
@@ -302,7 +310,8 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
             $internalErrorCode,
             $content[ResponseFields::RESPONSE_CODE],
-            $gatewayErrorDesc
+            $gatewayErrorDesc,
+            $content
         );
     }
 
@@ -357,7 +366,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
-            ['response' => $content]);
+            [
+                'response' => $content,
+                 'gateway' => $this->gateway
+            ]);
 
         if (isset($content['error']) === true)
         {
