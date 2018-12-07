@@ -12,6 +12,7 @@ export default function DataDetails(props) {
       <Field
         name="template.file_meta.filename"
         label="File Download Name"
+        placeholder="(Optional)"
         helpMsg="Type as - Yourtext_{Merchant_ID}_{Merchant_name}_{date=d/m/Y H:i:s} - type the date/ time format you want"
       />
 
@@ -61,12 +62,23 @@ export default function DataDetails(props) {
 
       {!!partnerType && (
         <SwitchField
-          name="show_aggregate_data"
+          name="template.referred_accounts"
           label="Show aggregate data in report"
           enabledLabel="Yes"
           disabledLabel="No"
+          enabledValue="all"
+          disabledValue={0}
+          onChange={props.onChange}
         />
       )}
+
+      <SwitchField
+        name="template.attach_to_email"
+        label="Attach To Email"
+        enabledLabel="Yes"
+        disabledLabel="No"
+        onChange={props.onChange}
+      />
 
       <SelectField
         name="template.formats.date"
@@ -74,9 +86,9 @@ export default function DataDetails(props) {
         helpMsg="This will be applied across all date fields in the report"
         defaultValue="d-m-Y"
       >
-        {availableDateFormats.map(dateFormat => (
-          <option value={dateFormat} key={dateFormat}>
-            {dateFormat}
+        {availableDateFormats.map(({ value, label }) => (
+          <option value={value} key={value}>
+            {label}
           </option>
         ))}
       </SelectField>
@@ -84,7 +96,8 @@ export default function DataDetails(props) {
       <TextAreaField
         name="emails"
         label="Email ID(s)"
-        helpMsg="Write comma separated values"
+        placeholder="Write comma separated values"
+        helpMsg="This won't create the schedule, to create schedules please contact developers"
       />
 
       <SelectField

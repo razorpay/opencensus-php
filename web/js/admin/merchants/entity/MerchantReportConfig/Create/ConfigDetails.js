@@ -197,12 +197,9 @@ class ReportColumns extends Component {
   handleFilterOpChange = ({ target }) => {
     let { name, value } = target;
     name = name.replace('filters.', '');
-    this.setState({
-      filters: {
-        ...this.state.filters,
-        [name]: value,
-      },
-    });
+    let filters = { ...this.state.filters, [name]: value };
+    if (!value) delete filters[name];
+    this.setState({ filters });
   };
 
   moveUp = column => () => {
@@ -236,6 +233,23 @@ class ReportColumns extends Component {
               : 'Select Columns to be customized'}
           </strong>
         </div>
+
+        {/* column headers */}
+        <div class="ReportConfig--report-column">
+          <div class="label">
+            <strong>Entity.Column</strong>
+          </div>
+          <div class="input">
+            <strong>Column Name</strong>
+          </div>
+          <div class="filter-op">
+            <strong>Filter</strong>
+          </div>
+          <div class="filter-value">
+            <strong>Filter Values</strong>
+          </div>
+        </div>
+
         {outputFields.map((column, index) => {
           const [fieldName, columnName] = column.split('.');
           return (

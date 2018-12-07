@@ -88,9 +88,15 @@ export default class CreateMerchantReportConfig extends Component {
     const values = { ...this.state.values };
 
     let value = type === 'checkbox' ? target.checked : target.value;
-    if (name === 'template.file_meta.header') {
+    if (
+      name === 'template.file_meta.header' ||
+      name === 'template.attach_to_email'
+    ) {
       value = !!Number(value);
+    } else if (name === 'template.referred_accounts') {
+      value = value === 'all' ? value : undefined;
     }
+
     dotToString(name, value, values);
 
     this.setState({ values });
@@ -135,7 +141,7 @@ export default class CreateMerchantReportConfig extends Component {
                 onChange={this.handleChangeIn}
               >
                 <DataDetails
-                  partnerType={details.partner_type}
+                  partnerType={details.data.partner_type}
                   configOptions={this.state.configOptions}
                   onChange={this.handleChangeIn}
                   extension={

@@ -25,7 +25,7 @@ export default class AddCustomNote extends Component {
             <option value="">Select...</option>
             {this.props.fields.map(field => (
               <option key={field} value={field}>
-                {field}
+                {field}.notes
               </option>
             ))}
           </SelectField>

@@ -12,10 +12,10 @@ export const types = [
 ];
 
 export const availableDateFormats = [
-  'd-m-Y',
-  'd/m/Y H:i:s',
-  'YmdHis',
-  'd/m/Y',
-  'Y-m-d',
-  'Ymd',
+  { value: 'd-m-Y', label: 'DD-MM-YYYY' },
+  { value: 'd/m/Y H:i:s', label: 'DD/MM/YYYY H:M:s' },
+  { value: 'YmdHis', label: 'YYYYMMDDHMS' },
+  { value: 'd/m/Y', label: 'DD/MM/YYYY' },
+  { value: 'Y-m-d', label: 'YYYY-MM-DD' },
+  { value: 'Ymd', label: 'YYYYMMDD' },
 ];
