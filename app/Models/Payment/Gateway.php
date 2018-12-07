@@ -1269,16 +1269,13 @@ class Gateway
             '9Q8w9weX9D1T27',
             'AK6NMmzbL6FPe4',
         ],
-        Mode::TEST => [
-            '100UpiYesbankT',
-        ],
     ];
 
     public static $payoutVpaTerminals =[
         Mode::LIVE => [],
 
         Mode::TEST => [
-            '1000SharpTrmnl',
+            '100UpiYesbankT',
         ],
     ];
 

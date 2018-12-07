@@ -61,33 +61,15 @@ trait Vpa
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
-        $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
+        $terminalIds = Payment\Gateway::getTerminalsForPayoutVpaForMode($this->mode);
 
         $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
 
         foreach ($terminals as $terminal)
         {
-            try
-            {
-                $gateway = $terminal->getGateway();
+            $gateway = $terminal->getGateway();
 
-                $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
-
-                break;
-            }
-            catch (\Exception $exception)
-            {
-                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
-
-                $error = $exception->getError()->getAttributes();
-
-                $response = [
-                    Fields::SUCCESS        => false,
-                    Fields::ERROR_MESSAGE  => $error['gateway_error_desc'],
-                    Fields::RRN            => $input[Fields::GATEWAY_INPUT][Fields::REF_ID]
-                ];
-
-            }
+            $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
         }
 
         return $response;
