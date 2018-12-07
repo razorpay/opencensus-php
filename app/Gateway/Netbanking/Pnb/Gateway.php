@@ -473,7 +473,14 @@ class Gateway extends Base\Gateway
     {
         if (isset($responseArray['error']) === true)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+                $responseArray[ResponseFields::CODE],
+                $responseArray[ResponseFields::ERROR_MESSAGE],
+                [
+                    'content' => $responseArray
+                ]
+            );
         }
     }
 
