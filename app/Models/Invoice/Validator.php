@@ -475,6 +475,26 @@ class Validator extends Base\Validator
 
     function validateFirstPaymentMinAmount(array $input)
     {
+        $minAmountAllowed = $this->entity
+            ->merchant
+            ->isFeatureEnabled(Feature\Constants::INVOICE_NO_RECEIPT_UNIQUE);
+
+        if ($minAmountAllowed === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'First payment min amount is not requrired and should not be sent');
+        }
+
+        // 1. Allow `first_payment_min_amount` to be set only for ecod and link types
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        if (in_array($type, [Type::LINK, Type::INVOICE], true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'First payment min amount can be only sent for ecod or link types.');
+        }
+
+        // 2. Do not `first_payment_min_amount` if partial payment is not enabled
         $partialPaymentEnabled = array_key_exists(Entity::PARTIAL_PAYMENT, $input) ?
                                     $input[Entity::PARTIAL_PAYMENT] : $this->entity->isPartialPaymentAllowed();
 
@@ -487,6 +507,15 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 "First payment min amount cannot be set when partial payment is disabled");
+        }
+
+        // 3. `first_payment_min_amount` should be lesser than the amount`
+        $amount = array_key_exists(Entity::AMOUNT, $input) ? $input[Entity::AMOUNT] : $this->entity->getAmount();
+
+        if ($firstPaymentAmount >= $amount)
+        {
+            throw new BadRequestValidationFailureException(
+                "First payment min amount must be lesser than the amount");
         }
     }
 

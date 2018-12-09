@@ -116,6 +116,13 @@ class Constants
      */
     const PAYMENT_PAGES_NO_CAPTURE        = 'payment_pages_no_capture';
 
+    /**
+     * For Payment links:
+     * With partial payment enabled, allows the merchant to define a min amount
+     * to be paid for the first payment.
+     */
+    const PL_FIRST_MIN_AMOUNT             = 'pl_first_min_amount';
+
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
@@ -261,6 +268,7 @@ class Constants
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
         self::ES_AUTOMATIC_THREE_PM           => true,
         self::CALLBACK_URL_VALIDATION         => true,
+        self::PL_FIRST_MIN_AMOUNT             => true,
     ];
 
     // Entity type constants
