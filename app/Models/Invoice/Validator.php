@@ -475,12 +475,16 @@ class Validator extends Base\Validator
 
     function validateFirstPaymentMinAmount(array $input)
     {
+        if (isset($input[Entity::FIRST_PAYMENT_MIN_AMOUNT]) === false)
+        {
+            return;
+        }
+
         $minAmountAllowed = $this->entity
                                  ->merchant
                                  ->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT);
 
-        if (($minAmountAllowed === false) and
-            (isset($input[Entity::FIRST_PAYMENT_MIN_AMOUNT]) === true))
+        if ($minAmountAllowed === false)
         {
             throw new BadRequestValidationFailureException(
                 'First payment min amount is not required and should not be sent');
