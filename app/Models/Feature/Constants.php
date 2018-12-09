@@ -343,6 +343,11 @@ class Constants
             'display_name'  => 'On demand Payout',
             'documentation' => ''
         ],
+        self::PL_FIRST_MIN_AMOUNT => [
+            'feature'       => self::PL_FIRST_MIN_AMOUNT,
+            'display_name'  => 'Partial payments: minimum first amount',
+            'documentation' => ''
+        ],
     ];
 
     /**

@@ -476,13 +476,14 @@ class Validator extends Base\Validator
     function validateFirstPaymentMinAmount(array $input)
     {
         $minAmountAllowed = $this->entity
-            ->merchant
-            ->isFeatureEnabled(Feature\Constants::INVOICE_NO_RECEIPT_UNIQUE);
+                                 ->merchant
+                                 ->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT);
 
-        if ($minAmountAllowed === false)
+        if (($minAmountAllowed === false) and
+            (isset($input[Entity::FIRST_PAYMENT_MIN_AMOUNT]) === true))
         {
             throw new BadRequestValidationFailureException(
-                'First payment min amount is not requrired and should not be sent');
+                'First payment min amount is not required and should not be sent');
         }
 
         // 1. Allow `first_payment_min_amount` to be set only for ecod and link types
