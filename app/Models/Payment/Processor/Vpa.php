@@ -61,7 +61,7 @@ trait Vpa
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
-        $terminals = $this->repo->terminal->getSharedTerminalForGateway('upi_yesbank');
+        $terminals = $this->repo->terminal->getAllTerminalsForGateway('upi_yesbank');
 
         $terminal = $terminals[0];
 
