@@ -10,6 +10,8 @@ import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 import { keysToSentence } from 'common/util';
 
+import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
+
 @connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
@@ -189,9 +191,19 @@ export default class InvoiceDetailContainer extends Component {
         if (resp.data) {
           this.props.updatePLInReduxList(resp, false);
 
+          let successMsgKey,
+            d = data;
+          if (d.hasOwnProperty('first_payment_min_amount')) {
+            d = { ...data };
+
+            d[MIN_AMOUNT_TEXT.emi.split(' ').join('_')] =
+              d.first_payment_min_amount;
+            delete d.first_payment_min_amount;
+          }
+
           this.props.showNotification({
             type: 'success',
-            message: `${keysToSentence(data)} updated successfully`,
+            message: `${keysToSentence(d)} updated successfully`,
           });
 
           return resp;

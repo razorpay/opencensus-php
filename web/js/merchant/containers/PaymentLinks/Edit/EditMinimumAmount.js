@@ -3,6 +3,44 @@ import { isAmount } from 'rzp/utils/validators';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { titleCase } from 'rzp/utils/rzp-utils';
+
+export const MIN_AMOUNT_TEXT = {
+  emi: 'EMI amount',
+  general: 'Minimum payable amount',
+};
+
+export const PopoverBodyText = _ => (
+  <PopoverBody>
+    <div>
+      You can set a {MIN_AMOUNT_TEXT.emi} for the first payment made by your
+      customer
+    </div>
+  </PopoverBody>
+);
+
+export function validateMinAmount(val, maxAmount) {
+  if (!val) {
+    return;
+  }
+
+  if (!isAmount(val)) {
+    const decimal = val && val.split('.');
+
+    if (decimal.length == 2 && decimal[1].length > 2) {
+      return 'Enter upto 2 decimals';
+    } else {
+      return 'Invalid Amount';
+    }
+  }
+
+  if (Number(val) > 0 && Number(val) < 1) {
+    return `${MIN_AMOUNT_TEXT.emi} must be atleast ₹1`;
+  }
+  if (Number(val) >= maxAmount) {
+    return `${MIN_AMOUNT_TEXT.emi} must be less than Amount`;
+  }
+}
 
 export default class EditMinimumAmount extends React.Component {
   state = this.resetState();
@@ -23,29 +61,6 @@ export default class EditMinimumAmount extends React.Component {
       10
     );
     this.props.trackerFn('Edit Minimum Payable Amount');
-  };
-
-  validate = val => {
-    if (!val) {
-      return;
-    }
-
-    if (!isAmount(val)) {
-      const decimal = val && val.split('.');
-
-      if (decimal.length == 2 && decimal[1].length > 2) {
-        return 'Enter upto 2 decimals';
-      } else {
-        return 'Invalid Amount';
-      }
-    }
-
-    if (Number(val) > 0 && Number(val) < 1) {
-      return 'Minimum Payable amount should be atleast ₹1';
-    }
-    if (Number(val) >= this.props.maximum / 100) {
-      return 'Minimum Payable amount must be less than Amount';
-    }
   };
 
   handleSubmit = () => {
@@ -80,20 +95,13 @@ export default class EditMinimumAmount extends React.Component {
             value={this.state.first_payment_min_amount * 100}
             currency={currency}
           />{' '}
-          Minimum Payable Amount
+          {titleCase(MIN_AMOUNT_TEXT.emi)}
           <small className="help-content">
             <i
               class="i i-info-outline"
               style={{ verticalAlign: 'middle', marginLeft: 4 }}
             />
-            <Popover align="top">
-              <PopoverBody>
-                <div>
-                  You can set a minimum payable amount for the first payment
-                  made by your customer
-                </div>
-              </PopoverBody>
-            </Popover>
+            <Popover align="top">{PopoverBodyText}</Popover>
           </small>
         </span>
         {isRoleAllowedEdit && (
@@ -107,14 +115,14 @@ export default class EditMinimumAmount extends React.Component {
     if (this.state.isEditableMode) {
       content = (
         <div style={{ marginTop: 4 }}>
-          Minimum Payable Amount
+          {MIN_AMOUNT_TEXT.emi}
           <Input
             name="first_payment_min_amount"
-            placeholder="Minimum Payable Amount"
+            placeholder={titleCase(MIN_AMOUNT_TEXT.emi)}
             addonBefore="₹"
             class="Input--small"
             value={this.state.first_payment_min_amount}
-            validator={this.validate}
+            validator={val => validateMinAmount(val, this.props.maximum / 100)}
             onChange={e => {
               this.setState({
                 first_payment_min_amount: e.target.value,
@@ -138,7 +146,12 @@ export default class EditMinimumAmount extends React.Component {
             <AsyncBtn.Primary
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
-              disabled={!!this.validate(this.state.first_payment_min_amount)}
+              disabled={
+                !!validateMinAmount(
+                  this.state.first_payment_min_amount,
+                  this.props.maximum / 100
+                )
+              }
               onClick={this.handleSubmit}
               showLoader={false}
               pendingState="Saving..."

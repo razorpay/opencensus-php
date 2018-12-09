@@ -2,24 +2,25 @@ import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { titleCase } from 'rzp/utils/rzp-utils';
+import {
+  MIN_AMOUNT_TEXT,
+  PopoverBodyText,
+  validateMinAmount,
+} from '../../Edit/EditMinimumAmount';
 
 const CustomInput = props => {
   return (
     <div class="Input--custom">
       <div class="Input-label">
-        Minimum Payable Amount (Optional)
+        {titleCase(MIN_AMOUNT_TEXT.emi)} (Optional)
         <small className="help-content">
           <i class="i i-info-outline" style={{ marginLeft: 4 }} />
           <Popover
             align="top"
             parentQuerySelector={`.Modal-body .PaymentLinks--Create`}
           >
-            <PopoverBody>
-              <div>
-                You can set a minimum payable amount for the first payment made
-                by your customer
-              </div>
-            </PopoverBody>
+            {PopoverBodyText}
           </Popover>
         </small>
       </div>
@@ -77,24 +78,7 @@ export default [
       _autoRenderImpure: true,
       _cmp: CustomInput,
       validator: function(val) {
-        if (!val) {
-          return;
-        }
-
-        if (!isAmount(val)) {
-          const decimal = val && val.split('.');
-
-          if (decimal.length == 2 && decimal[1].length > 2) {
-            return 'Enter upto 2 decimals';
-          } else {
-            return 'Invalid Amount';
-          }
-        }
-
-        const filledAmount = this.state.dirty.amount;
-        if (Number(val) >= filledAmount) {
-          return 'Minimum Payable amount must be less than Amount';
-        }
+        return validateMinAmount(val, this.state.dirty.amount);
       },
       _when: function(form) {
         return (
