@@ -17,12 +17,11 @@ use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
 
 class Gateway extends Base\Gateway
 {
+    const ENCRYPTION_METHOD = 'aes-256-gcm';
+
     protected $gateway = Payment\Gateway::NETBANKING_SBI;
 
-    /**
-     * @var $aesCrypto AESCrypto
-     */
-    protected $aesCrypto;
+    protected $crypto;
 
     protected $map = [
         /**
@@ -176,6 +175,7 @@ class Gateway extends Base\Gateway
 
         return $requestArray;
     }
+
     protected function getAuthorizeRequest(array $input)
     {
         $request = $this->getStandardRequestArray();
@@ -392,16 +392,16 @@ class Gateway extends Base\Gateway
     {
         $gatewayResponse = trim($gatewayResponse);
 
-        try
-        {
+        //try
+        //{
             $decryptedString = trim($this->decrypt($gatewayResponse));
-        }
-        catch (\Exception $e)
+        //}
+        /*catch (\Exception $e)
         {
             throw new Exception\LogicException(
                 'Callback response decryption failed',
                 ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED);
-        }
+        }*/
 
         try
         {
@@ -453,35 +453,36 @@ class Gateway extends Base\Gateway
     {
         $this->createCryptoIfNotCreated();
 
-        return base64_encode($this->aesCrypto->encryptString($stringToEncrypt));
+        return $this->crypto->encrypt($stringToEncrypt);
     }
 
     private function decrypt($stringToDecrypt)
     {
         $this->createCryptoIfNotCreated();
 
-        return $this->aesCrypto->decryptString(base64_decode($stringToDecrypt));
+        return $this->crypto->decrypt($stringToDecrypt);
     }
 
     private function createCryptoIfNotCreated()
     {
-        if ($this->aesCrypto === null)
+        if ($this->crypto === null)
         {
-            $this->aesCrypto = new AESCrypto(
-                AES::MODE_CBC,
+            $this->crypto = new Crypto(
                 $this->getSecret(),
-                $this->getIv());
+                $this->getIv(),
+                self::ENCRYPTION_METHOD);
         }
     }
 
-    private function getIv()
+    public function getIv()
     {
+        // TODO: confirm if hex2bin conversion is required for live mode
         if ($this->isLiveMode() === true)
         {
-            return hex2bin($this->config['iv']);
+            return $this->config['iv'];
         }
 
-        return hex2bin($this->config['iv']);
+        return $this->config['iv'];
     }
 
     protected function getMerchantId()

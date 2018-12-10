@@ -2,16 +2,16 @@
 
 namespace RZP\Gateway\Netbanking\Sbi\Mock;
 
-use phpseclib\Crypt\AES;
-
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Netbanking\Sbi\Crypto;
 use RZP\Gateway\Netbanking\Sbi\RequestFields;
 use RZP\Gateway\Netbanking\Sbi\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    protected $aesCrypto;
+    const ENCRYPTION_METHOD = 'aes-256-gcm';
+
+    protected $crypto;
 
     public function authorize($input)
     {
@@ -113,29 +113,29 @@ class Server extends Base\Mock\Server
     {
         $this->createCryptoIfNotCreated();
 
-        return base64_encode($this->aesCrypto->encryptString($stringToEncrypt));
+        return $this->crypto->encrypt($stringToEncrypt);
     }
 
     private function decrypt($stringToDecrypt)
     {
         $this->createCryptoIfNotCreated();
 
-        return ($this->aesCrypto->decryptString(base64_decode($stringToDecrypt)));
+        return $this->crypto->decrypt($stringToDecrypt);
     }
 
     private function createCryptoIfNotCreated()
     {
-        if ($this->aesCrypto === null)
+        if ($this->crypto === null)
         {
-            $this->aesCrypto = new AESCrypto(
-                AES::MODE_CBC,
+            $this->crypto = new Crypto(
                 $this->getSecret(),
-                hex2bin($this->getIv()));
+                $this->getIv(),
+                self::ENCRYPTION_METHOD);
         }
     }
 
     private function getIv()
     {
-        return '343644ebb6c78272bce7e5417297e92b';
+        return $this->getGatewayInstance()->getIv();
     }
 }
