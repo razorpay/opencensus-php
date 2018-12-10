@@ -39,6 +39,9 @@ class Constants
             ],
             'filters'     => [
                 'tags' => ['announcement_early_settlements'],
+                'not_tags' => ['es_automatic'],
+                'activated' => 1,
+                'not_features' => ['es_on_demand']
             ]
         ],
         [
