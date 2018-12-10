@@ -102,6 +102,11 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            $this->activateBusinessBanking($merchant);
+        }
+
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
@@ -157,6 +162,11 @@ class Activate extends Base\Core
 
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            $this->activateBusinessBanking($merchant);
+        }
+
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
 
@@ -194,6 +204,11 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
         });
+
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            $this->activateBusinessBanking($merchant);
+        }
 
         //
         // Live transactions get disabled if the activation_status changes to 'rejected'.
@@ -604,7 +619,7 @@ class Activate extends Base\Core
             // Virtual Account.
             $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant);
 
-            // todo Banking Pricing defaults if exists.
+            // todo Banking Pricing defaults if exists. It doesn't exist we have a global pricing.
         }
 
         // This means that L2 form is also verified.
