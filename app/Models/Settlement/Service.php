@@ -336,4 +336,11 @@ class Service extends Base\Service
 
         return (new $reconNamepsace)->verify($input);
     }
+
+    public function notifyH2HErrors($input, string $channel)
+    {
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Processor';
+
+        return (new $reconNamepsace)->notifyH2HErrors($input);
+    }
 }

@@ -22,8 +22,6 @@ class EmandateDebitReconciliationTest extends TestCase
     const IFSC              = 'UTIB0002766';
     const NAME              = 'Test account';
 
-    protected $gateway = '';
-
     protected $bank;
 
     public function setUp()

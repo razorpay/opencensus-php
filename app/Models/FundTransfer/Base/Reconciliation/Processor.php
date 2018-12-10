@@ -224,4 +224,9 @@ abstract class Processor extends Base\Core
 
         return $summary;
     }
+
+    public function notifyH2HErrors(array $input)
+    {
+        return $input;
+    }
 }

@@ -180,6 +180,8 @@ class Entity
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
+    const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
+    const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_SBI         = 'netbanking_sbi';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
@@ -372,6 +374,7 @@ class Entity
         self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Allahabad::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
@@ -380,6 +383,7 @@ class Entity
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
+        self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Canara::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
@@ -433,6 +437,7 @@ class Entity
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
@@ -440,6 +445,7 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Base::class,
 

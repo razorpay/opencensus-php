@@ -14,6 +14,7 @@ class Channel
     const YESBANK   = 'yesbank';
     const HDFC      = 'hdfc';
     const RBL       = 'rbl';
+    const AXIS2     = 'axis2';
 
     public static $gateways = [
         self::KOTAK => [
@@ -56,7 +57,8 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
-            self::RBL
+            self::RBL,
+            self::AXIS2
         ];
     }
 

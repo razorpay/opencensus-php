@@ -350,7 +350,7 @@ class Processor extends Base\Core
                                 ->merchant
                                 ->findManyWithRelations(
                                     $mids,
-                                    ['balance', 'bankAccount'],
+                                    ['primaryBalance', 'bankAccount'],
                                     [
                                         MerchantModel\Entity::ID,
                                         MerchantModel\Entity::PARENT_ID
@@ -672,7 +672,7 @@ class Processor extends Base\Core
                                 ->merchant
                                 ->findManyWithRelations(
                                     [$merchantId],
-                                    ['balance', 'bankAccount'],
+                                    ['primaryBalance', 'bankAccount'],
                                     [
                                         MerchantModel\Entity::ID,
                                         MerchantModel\Entity::PARENT_ID

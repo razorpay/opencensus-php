@@ -157,6 +157,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_INVALID_EMAIL                                       = 'GATEWAY_ERROR_PAYMENT_INVALID_EMAIL';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
     const GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR                                    = 'GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR';
+    const GATEWAY_ERROR_BANK_OFFLINE                                                = 'GATEWAY_ERROR_BANK_OFFLINE';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';
@@ -249,7 +250,9 @@ class ErrorCode
     const GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS                              = 'GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS';
     const GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED                          = 'GATEWAY_ERROR_BANK_ACCOUNT_CREDIT_PROCESS_FAILED';
     const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND';
+    const GATEWAY_ERROR_REMITTER_DUPLICATE_RRN_FOUND                                = 'GATEWAY_ERROR_REMITTER_DUPLICATE_RRN_FOUND';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY';
+    const GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER                                      = 'GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER';
     const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER';
     const GATEWAY_ERROR_REVERSAL_FAILURE                                            = 'GATEWAY_ERROR_REVERSAL_FAILURE';
     const GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION                               = 'GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION';
@@ -263,6 +266,7 @@ class ErrorCode
     const GATEWAY_ERROR_DEBIT_TIMEOUT                                               = 'GATEWAY_ERROR_DEBIT_TIMEOUT';
     const GATEWAY_ERROR_VPA_RESOLUTION_FAILED                                       = 'GATEWAY_ERROR_VPA_RESOLUTION_FAILED';
     const GATEWAY_ERROR_REQAUTH_DECLINED                                            = 'GATEWAY_ERROR_REQAUTH_DECLINED';
+    const GATEWAY_ERROR_NPCI_RESPONSE_TIMEOUT                                       = 'GATEWAY_ERROR_NPCI_RESPONSE_TIMEOUT';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'BAD_REQUEST_UPI_MPIN_NOT_SET';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                           = 'BAD_REQUEST_UPI_INVALID_ATM_PIN';
@@ -273,8 +277,12 @@ class ErrorCode
     const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED';
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'BAD_REQUEST_PSP_DOESNT_EXIST';
+    const BAD_REQUEST_PSP_ERROR                                                     = 'BAD_REQUEST_PSP_ERROR';
     const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT';
     const BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA                                    = 'BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA';
+    const BAD_REQUEST_PAYMENT_UPI_DEVICE_MISSING                                    = 'BAD_REQUEST_PAYMENT_UPI_DEVICE_MISSING';
+    const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT';
+    const BAD_REQUEST_PAYMENT_UPI_MOBILE_NUMBER_MAPPED_TO_MULTIPLE_CUSTOMERS        = 'BAD_REQUEST_PAYMENT_UPI_MOBILE_NUMBER_MAPPED_TO_MULTIPLE_CUSTOMERS';
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -300,6 +308,8 @@ class ErrorCode
     const BAD_REQUEST_UNMAPPED_VPA                                                  = 'BAD_REQUEST_UNMAPPED_VPA';
     const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
+    const BAD_REQUEST_DUPLICATE_REQUEST                                             = 'BAD_REQUEST_DUPLICATE_REQUEST';
+    const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                                 = 'BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED';
 
     // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
@@ -1057,4 +1067,6 @@ class ErrorCode
 
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                        = 'BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE';
+
+    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
 }

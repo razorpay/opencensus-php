@@ -10,9 +10,13 @@ class Utility extends \RZP\Gateway\Utility
     {
         $dom = new DOMDocument();
 
-        libxml_use_internal_errors(true);
+        $oldValue = libxml_use_internal_errors(true);
 
         $dom->loadHTML($html);
+
+        libxml_clear_errors();
+
+        libxml_use_internal_errors($oldValue);
 
         $tags = [];
 

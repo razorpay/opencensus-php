@@ -67,6 +67,33 @@ class UpiAxisReconTest extends TestCase
         $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
     }
 
+    public function testUpiAxisNewPaymentFile()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $entries[] = $this->overrideNewUpiAxisPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiAxis');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
+
+        $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
+    }
+
     public function testRefundReconciliation()
     {
         // Disabled refund recon because bank is not sending unique refund identifiers in the refund recon file
@@ -113,6 +140,17 @@ class UpiAxisReconTest extends TestCase
         $facade = $this->testData['upiAxis'];
 
         $facade['ORDER_ID'] = $upiEntity['payment_id'];
+
+        $facade['RRN'] = $upiEntity['npci_reference_id'];
+
+        return $facade;
+    }
+
+    protected function overrideNewUpiAxisPayment(array $upiEntity)
+    {
+        $facade = $this->testData['upiAxisNew'];
+
+        $facade['ORDERID'] = $upiEntity['payment_id'];
 
         $facade['RRN'] = $upiEntity['npci_reference_id'];
 

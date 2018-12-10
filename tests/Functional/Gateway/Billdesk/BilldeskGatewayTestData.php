@@ -194,7 +194,7 @@ return [
         'amount'          => 50000,
         'fee'             => 0,
         'pricing_rule_id' => null,
-        'debit'           => 50000,
+        'debit'           => 0,
         'credit'          => 0,
         'currency'        => 'INR',
         'balance'         => 0,

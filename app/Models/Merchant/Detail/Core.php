@@ -70,7 +70,7 @@ class Core extends Base\Core
                 // generate/access keys.
                 $this->checkAndMarkHasKeyAccess($merchantDetails);
 
-                $this->markSubmitted($merchantDetails);
+                $this->markSubmittedAndLock($merchantDetails);
 
                 $activationStatusData = [
                     Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
@@ -508,13 +508,19 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchant);
     }
 
-    protected function markSubmitted(Entity $merchantDetails)
+    /**
+     * This submits and locks the form for user.
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function markSubmittedAndLock(Entity $merchantDetails)
     {
         $submittedAt = Carbon::now()->getTimestamp();
 
         $input = [
-            Entity::SUBMITTED     => 1,
-            Entity::SUBMITTED_AT  => $submittedAt
+            Entity::SUBMITTED    => 1,
+            Entity::SUBMITTED_AT => $submittedAt,
+            Entity::LOCKED       => true,
         ];
 
         $merchantDetails->fill($input);
@@ -770,8 +776,6 @@ class Core extends Base\Core
             ];
 
             $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
-
-            $merchantDetails->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetails);
 

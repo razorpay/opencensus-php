@@ -27,10 +27,16 @@ use Illuminate\Support\Facades\Redis;
 class Gateway
 {
     /**
-     * Default request timeout duration in seconds.
+     * Default request read timeout duration in seconds.
      * @var  integer
      */
     const TIMEOUT = 60;
+
+    /**
+     * Default request connect timeout duration in seconds.
+     * @var  integer
+     */
+    const CONNECT_TIMEOUT = 5;
 
     /**
      * Default payment timeout duration in mins.
@@ -607,6 +613,11 @@ class Gateway
         if (isset($request['options']['timeout']) === false)
         {
             $request['options']['timeout'] = static::TIMEOUT;
+        }
+
+        if (isset($request['options']['connect_timeout']) === false)
+        {
+            $request['options']['connect_timeout'] = static::CONNECT_TIMEOUT;
         }
 
         try

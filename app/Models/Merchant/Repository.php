@@ -126,7 +126,7 @@ class Repository extends Base\Repository
     public function fetchMerchantsWithPositiveBalance()
     {
         return $this->newQuery()
-                    ->whereHas('balance', function($q)
+                    ->whereHas('primaryBalance', function($q)
                     {
                         $q->where('balance', '>', 0);
                     })->get();
@@ -392,7 +392,7 @@ class Repository extends Base\Repository
             Entity::GROUPS                      => $groupSelector,
             Entity::ADMINS                      => $adminSelector,
             Entity::FEATURES                    => function () {},
-            Entity::BALANCE                     => $balanceSelector,
+            'primaryBalance'                    => $balanceSelector,
         ];
 
         //

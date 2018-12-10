@@ -169,6 +169,39 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals($merchant->getPartnerType(), Merchant\Constants::RESELLER);
     }
 
+    public function testApprovingMarkAsPartnerWebsiteMissingMerchantRequest()
+    {
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
+
+        $merchant = $merchantRequest->merchant;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), ['website' => '']);
+
+        $merchant->reload();
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        // Set the admin auth
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
+
+        $this->assertTrue($merchant->isPartner());
+
+        $this->assertEquals($merchant->getPartnerType(), Merchant\Constants::RESELLER);
+    }
+
     /**
      * Test approving the partner activation merchant request for a merchant who is already a partner.
      */
@@ -1229,7 +1262,7 @@ class PartnerTest extends OAuthTestCase
 
         $createParams = [
             'name'     => $merchant->getName(),
-            'website'  => $merchant->getWebsite(),
+            'website'  => $merchant->getWebsite() ?: 'https://www.razorpay.com',
             'type'     => self::PARTNER,
         ];
 

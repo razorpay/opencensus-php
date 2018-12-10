@@ -74,6 +74,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
+        Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
     ];
@@ -389,6 +390,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingCanaraTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+    ];
+
+    protected static $netbankingCanaraEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+    ];
+
     protected static $netbankingEquitasTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_equitas',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
@@ -547,6 +562,19 @@ class Validator extends Base\Validator
     protected static $netbankingSbiTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+
+    protected static $netbankingAllahabadTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingAllahabadEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
     protected static $cardFssTerminalRules = [
