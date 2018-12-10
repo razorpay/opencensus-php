@@ -72,6 +72,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIdfcTerminal();
         $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
+        $this->createSharedNetbankingAllahabadTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
@@ -1816,6 +1817,48 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
             'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
             'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingAllahabadTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ALLAHABAD_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_ALLAHABAD,
+            'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_alla_merchant_id2',
+            'gateway_secure_secret' => 'razorpay_password',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+
+    public function createAllahabadTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ALLA_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_allahabad',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
+            'gateway_access_code'   => 'netbanking_alla_merchant_id2',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

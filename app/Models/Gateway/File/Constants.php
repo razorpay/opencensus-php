@@ -30,10 +30,12 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
+    const ALLA             = 'allahabad';
     const CANARA           = 'canara';
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
+
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -43,6 +45,7 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::CSB,
+            self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
         ],
@@ -65,6 +68,7 @@ class Constants
             self::INDUSIND,
             self::OBC,
             self::CSB,
+            self::ALLA,
             self::CANARA,
             self::EQUITAS,
             self::IDFC,
@@ -124,6 +128,7 @@ class Constants
             self::CSB         => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
+            self::ALLA        => ['settlements@razorpay.com'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
             self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],

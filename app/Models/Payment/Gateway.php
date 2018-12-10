@@ -56,6 +56,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -579,6 +580,7 @@ class Gateway
             self::NETBANKING_PNB,
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
+            self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
@@ -885,6 +887,7 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_ALLAHABAD,
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
@@ -1150,6 +1153,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
@@ -1172,6 +1176,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB => Gateway::NETBANKING_CANARA,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
@@ -1380,6 +1385,7 @@ class Gateway
      *
      * @return bool
      */
+
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
@@ -1390,6 +1396,7 @@ class Gateway
      *
      * @return bool
      */
+
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);

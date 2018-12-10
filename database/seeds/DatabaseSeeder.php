@@ -337,6 +337,7 @@ class DatabaseSeeder extends Seeder
                     'contact_name'   => 'Test Account',
                     'contact_email'  => 'test@razorpay.com',
                     'contact_mobile' => '9876543210',
+
                     'created_at'     => 1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'     => $currentTime,
                     )
@@ -1159,6 +1160,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingCanaraTerminal();
         $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingAllahabadTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingEquitasTerminal();
@@ -1214,6 +1216,36 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingAllahabadTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQf0p',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_ALLAHABAD,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_allahabad',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_alla_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+         DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_ALLAHABAD_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_ALLAHABAD,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_allahabad',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_alla_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingIdfcTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1244,7 +1276,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
-
 
     protected function createNetbankingHdfcTerminals()
     {

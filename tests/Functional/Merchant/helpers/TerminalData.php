@@ -1477,4 +1477,27 @@ return [
             ],
         ],
     ],
+
+    'testCreateAllahabadTpvTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_allahabad',
+                'gateway_merchant_id'       => 'netbanking_alla_merchant_id',
+                'gateway_merchant_id2'      => 'netbanking_alla_merchant_id2',
+                'netbanking'                => '1',
+                'tpv'                       => '1',
+                'network_category'          => 'ecommerce',
+                'gateway_secure_secret'     => 'random_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => 'netbanking_alla_merchant_id',
+                'gateway_merchant_id2' => 'netbanking_alla_merchant_id2',
+                'enabled'              => true,
+                'tpv'                  => 1
+            ]
+        ]
+    ],
 ];

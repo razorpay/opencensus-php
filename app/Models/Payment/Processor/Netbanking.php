@@ -74,6 +74,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
+        IFSC::ALLA,
         IFSC::CNRB,
         IFSC::ESFB,
         IFSC::VIJB,
@@ -97,6 +98,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::CSBK,
+        IFSC::ALLA,
     ];
 
     protected static $gatewaySupportedBanks = [
@@ -427,6 +429,14 @@ class Netbanking
             'retail' => [
                 IFSC::ESFB,
             ]
+        ],
+        Gateway::NETBANKING_ALLAHABAD => [
+            'retail' => [
+                IFSC::ALLA,
+            ],
+            'tpv' => [
+                IFSC::ALLA,
+            ],
         ],
     ];
 
