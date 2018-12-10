@@ -575,4 +575,35 @@ class Activate extends Base\Core
 
         return $returnRules;
     }
+
+    /**
+     * Activates Business Banking for a merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function activateBusinessBanking(Entity $merchant)
+    {
+        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
+
+        // If merchant is instantly activated or Activated this flow will kick in.
+        if ($merchant->isActivated() === true)
+        {
+            // Virtual Account.
+
+            // Create Banking Balance.
+
+            // todo Banking Pricing defaults if exists.
+        }
+
+        // This means that L2 form is also verified.
+        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+        {
+            // Enable Payouts.
+        }
+
+        return $merchant;
+    }
+
 }

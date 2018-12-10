@@ -2640,7 +2640,6 @@ class Service extends Base\Service
      *
      * Else if there's a emi_sbi terminal which is enabled. return true.
      *
-     * @param string $merchantId
      * @return bool
      */
     public function isSbiEmiEnabled()
@@ -2657,36 +2656,6 @@ class Service extends Base\Service
         return false;
     }
 
-    /**
-     * Activates Business Banking for a merchant.
-     *
-     * @param Entity $merchant
-     *
-     * @return Entity
-     */
-    protected function activateBusinessBanking(Entity $merchant)
-    {
-        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
-
-        // If merchant is instantly activated or Activated this flow will kick in.
-        if ($merchant->isActivated() === true)
-        {
-            // Create Virtual Account if it doesn't exist.
-
-            // Create Banking Balance.
-
-            // Banking Pricing defaults if exists.
-        }
-
-        // This means that L2 form is also verified.
-        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
-        {
-            // Enable Payouts.
-        }
-
-        return $merchant;
-    }
-
     public function switchProductMerchant()
     {
         // Add Banking Role for the current merchant User.
@@ -2698,9 +2667,9 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        if ($merchant->getBusinessBanking() === true)
+        if ($merchant->isBusinessBankingEnabled() === true)
         {
-            $this->activateBusinessBanking($merchant);
+            (new Activate)->activateBusinessBanking($merchant);
         }
 
         return ['success' => true];
@@ -2710,7 +2679,7 @@ class Service extends Base\Service
     {
         $isBanking = $this->auth->isProductBanking();
 
-        if (($isBanking === true) and ($merchant->getBusinessBanking() === false))
+        if (($isBanking === true) and ($merchant->isBusinessBankingEnabled() === false))
         {
             $merchant->setBusinessBanking(true);
         }
