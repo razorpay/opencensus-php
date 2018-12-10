@@ -13,6 +13,7 @@ use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -594,9 +595,14 @@ class Activate extends Base\Core
             $liveMode = $this->app['basicauth']->getLiveConnection();
 
             // Create Banking Balance.
-            $balance = (new Balance\Service())->create($merchant, Product::BANKING, $liveMode);
+            $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+
+            $this->app['basicauth']->setModeAndDbConnection($liveMode);
+
+            $merchant->reload();
 
             // Virtual Account.
+            $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant);
 
             // todo Banking Pricing defaults if exists.
         }
