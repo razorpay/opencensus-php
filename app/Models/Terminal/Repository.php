@@ -224,12 +224,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    // TODO: needs to be removed. temporarily added for payout route
     public function getAllTerminalsForGateway($gateway)
     {
         return $this->newQuery()
-            ->where(Entity::GATEWAY, '=', $gateway)
-            ->enabled()
-            ->get();
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->enabled()
+                    ->get();
     }
 
     public function getSharedTerminalForGatewayWithCategory($gateway, $category)

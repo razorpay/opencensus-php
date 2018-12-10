@@ -163,6 +163,7 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    // TODO: needs to be removed
     protected static $payoutRules = [
         'terminal'              => 'required|array',
         'merchant'              => 'required|array',
@@ -173,6 +174,7 @@ class Validator extends Base\Validator
         'gateway_input.ref_id'  => 'required|string',
     ];
 
+    // TODO: needs to be removed
     protected static $payoutVerifyRules = [
         'terminal'              => 'required|array',
         'fund_transfer_attempt' => 'sometimes|array',

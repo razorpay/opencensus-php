@@ -493,8 +493,10 @@ class Validator extends Base\Validator
 
     protected static $upiYesbankTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_yesbank',
-        Entity::UPI                        => 'required|boolean|in:0',
+        Entity::UPI                        => 'required|boolean|in:1',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.pay'              => 'required|in:1',
     ];
 
     protected static $netbankingAirtelTerminalRules = [

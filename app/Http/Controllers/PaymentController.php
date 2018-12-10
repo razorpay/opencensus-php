@@ -429,6 +429,7 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    // TODO: Temporary method till FTA route is not available, needs to be removed
     public function postPayoutVpa($type)
     {
         $input = Request::all();

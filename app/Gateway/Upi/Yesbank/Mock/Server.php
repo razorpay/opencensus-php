@@ -2,12 +2,13 @@
 
 namespace RZP\Gateway\Upi\Yesbank\Mock;
 
-use App;
 use Carbon\Carbon;
-use RZP\Gateway\Upi\Yesbank;
 use phpseclib\Crypt\RSA;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Upi\Yesbank;
 use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Models\Payment\Entity as Payment;
@@ -69,7 +70,7 @@ class Server extends Base\Mock\Server
 
     public function payoutVerify(array $input)
     {
-        $requestArray = $this->parseInput($input, Yesbank\Action::PAYOUT_VERIFY);
+        $requestArray = $this->parseInput($input, Action::PAYOUT_VERIFY);
 
         $responseArray = [
             Fields::YBLREFNO                => $requestArray[2],
@@ -114,7 +115,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function parseInput($input, $action = Yesbank\Action::PAYOUT)
+    protected function parseInput($input, $action = Action::PAYOUT)
     {
         $encryptedInput = $input['requestMsg'];
 

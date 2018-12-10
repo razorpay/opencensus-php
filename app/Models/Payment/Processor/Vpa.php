@@ -54,6 +54,7 @@ trait Vpa
         return $response;
     }
 
+    // TODO: needs to be removed
     public function payoutVpa(array $input, $type)
     {
         $action = ($type === 'pay') ? Payment\Action::PAYOUT : Payment\Action::PAYOUT_VERIFY;

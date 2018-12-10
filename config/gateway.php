@@ -318,7 +318,6 @@ return [
         'test_merchant_id'            => env('UPI_YESBANK_TEST_MERCHANT_ID'),
         'live_merchant_id'            => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
         'test_mcc'                    => env('UPI_YESBANK_TEST_MCC'),
-        'live_mcc'                    => env('UPI_YESBANK_LIVE_MCC'),
         'test_merchant_key'           => env('UPI_YESBANK_TEST_MERCHANT_KEY'),
         'live_merchant_key'           => env('UPI_YESBANK_LIVE_MERCHANT_KEY'),
         'test_client_id'              => env('UPI_YESBANK_TEST_CLIENT_ID'),
