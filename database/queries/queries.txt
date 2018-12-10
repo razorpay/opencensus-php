@@ -4466,6 +4466,9 @@ ALTER TABLE payment_links
     ADD COLUMN support_email VARCHAR(255) DEFAULT NULL AFTER support_contact,
     ADD COLUMN terms TEXT AFTER support_email;
 
+ALTER TABLE transactions
+    ADD INDEX `transactions_reconciled_type_index` (reconciled_type);
+
 UPDATE migrations
     SET migration="2018_11_25_100031_create_contacts"
     WHERE migration="2018_11_25_100031_create_beneficiaries"

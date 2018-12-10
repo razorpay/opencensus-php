@@ -109,8 +109,18 @@ class Server extends Base\Mock\Server
             RefundResponseFields::TRANSACTION_ID => $input[RefundRequestFields::GATEWAY_TRANSACTION_ID],
             RefundResponseFields::AMOUNT         => $input[RefundRequestFields::REFUND_AMOUNT],
             RefundResponseFields::STATUS_CODE    => Status::REFUND_SUCCESS,
-            RefundResponseFields::STATUS_MESSAGE => 'Full Refund initiated successfully',
         ];
+
+        // this is a hack to ensure gateway returns invalid date for one scenario and successful
+        // for the other, to mimic the case when payment is between 12 to 12 10 AM.
+        if ($input[RefundRequestFields::TRANSACTION_DATE] === '2018-11-04')
+        {
+            $content[RefundResponseFields::STATUS_MESSAGE] = 'Invalid transaction date';
+        }
+        else
+        {
+            $content[RefundResponseFields::STATUS_MESSAGE] = 'Full Refund initiated successfully';
+        }
 
         $this->content($content, 'refund');
 

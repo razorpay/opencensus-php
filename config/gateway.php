@@ -41,6 +41,7 @@ return [
         'netbanking_federal',
         'netbanking_rbl',
         'netbanking_indusind',
+        'netbanking_allahabad',
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
@@ -102,6 +103,7 @@ return [
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
+    'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
@@ -478,6 +480,11 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_allahabad' => [
+        'test_merchant_id'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
     'netbanking_canara' => [
         'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
         //TODO add these values for live mode
@@ -593,8 +600,10 @@ return [
     ],
 
     'netbanking_pnb' => [
-        'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id'     => env('NETBANKING_PNB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_salt'            => env('NETBANKING_PNB_GATEWAY_TEST_SALT'),
+        'test_encryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_ENCRYPTION_KEY'),
+        'test_decryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_DECRYPTION_KEY')
     ],
 
     'netbanking_csb' => [

@@ -96,6 +96,7 @@ function disableEmptyInputs(form) {
                 <option value="BARB_R">Bank of Baroda - Retail</option>
                 <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
+                <option value="ALLA">Allahabad Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
@@ -108,13 +109,13 @@ function disableEmptyInputs(form) {
                 <option value="YESB">Yes Bank</option>
                 <option value="KKBK">Kotak Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
-                <option value="PUNB">Punjab Bank</option>
                 <option value="SBTR">State Bank of Travancore</option>
                 <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
                 <option value="INDB">Indusind Bank</option>
-                <option value="PUNB">Punjab National Bank</option>
+                <option value="PUNB_R">Punjab National Bank - Retail</option>
+                <option value="PUNB_C">Punjab National Bank - Corporate</option>
                 <option value="ESFB">Equitas Small Finance Bank</option>
                 <option value="CNRB">Canara Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
@@ -289,13 +290,12 @@ function disableEmptyInputs(form) {
     <option value="EUR">Euro</option>
     <option value="SGD">Singapore Dollar</option>
 </select>
-<input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
+    <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="100"/>
-<input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
+<input type="text" id="amount" name="amount" value="100"/><input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
 </div>

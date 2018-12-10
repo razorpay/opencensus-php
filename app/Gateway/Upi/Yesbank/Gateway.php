@@ -81,7 +81,7 @@ class Gateway extends Mindgate\Gateway
     {
         parent::action($input, Action::PAYOUT);
 
-        $request = $this->getPayOutRequest($input);
+        $request = $this->getPayoutRequest($input);
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
@@ -282,7 +282,6 @@ class Gateway extends Mindgate\Gateway
     protected function traceGatewayPaymentRequest(array $request, $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
-
         $this->trace->info(
             $traceCode,
             [

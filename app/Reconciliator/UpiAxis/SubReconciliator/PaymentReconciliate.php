@@ -12,17 +12,17 @@ use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const RRN                   = 'rrn';
-    const VPA                   = 'vpa';
-    const IFSC                  = 'ifsc';
-    const TXN_ID                = 'txnid';
-    const COLUMN_PAYMENT_AMOUNT = 'amount';
-    const ORDER_ID              = 'order_id';
-    const RESPCODE              = 'respcode';
-    const RESPONSE              = 'response';
-    const CREDITVPA             = 'creditvpa';
-    const TRANSACTION_DATE      = 'transaction_date';
-    const ACCOUNT_CUST_NAME     = 'account_cust_name';
+    const RRN                     = 'rrn';
+    const VPA                     = 'vpa';
+    const IFSC                    = 'ifsc';
+    const TXN_ID                  = 'txnid';
+    const COLUMN_PAYMENT_AMOUNT   = 'amount';
+    const RESPCODE                = 'respcode';
+    const RESPONSE                = 'response';
+    const CREDITVPA               = 'creditvpa';
+    const ACCOUNT_CUST_NAME       = 'account_cust_name';
+    const COLUMN_PAYMENT_ID       = ['order_id', 'orderid'];
+    const COLUMN_TRANSACTION_DATE = ['transaction_date', 'txn_date'];
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
@@ -32,22 +32,27 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::ORDER_ID] ?: null;
+        $paymentId = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
+        {
+            return (isset($row[$pid]) === true);
+        });
+
+        return $row[$paymentId] ?? null;
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::RRN] ?: null;
+        return $row[self::RRN] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[self::TXN_ID] ?: null;
+        return $row[self::TXN_ID] ?? null;
     }
 
     protected function getReconPaymentStatus(array $row)
     {
-        $rowStatus = $row[self::RESPONSE] ?: null;
+        $rowStatus = $row[self::RESPONSE] ?? null;
 
         if ($rowStatus === self::SUCCESS)
         {
@@ -153,7 +158,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $payerVpa = $gatewayPayment->getVpa();
 
-        $reconVpa = $rowDetails[Reconciliate::ACCOUNT_DETAILS]['vpa'] ?: null;
+        $reconVpa = $rowDetails[Reconciliate::ACCOUNT_DETAILS]['vpa'] ?? null;
 
         if (($payerVpa === null) and
             (empty($reconVpa) === false))

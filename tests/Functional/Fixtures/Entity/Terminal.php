@@ -72,6 +72,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIdfcTerminal();
         $this->createSharedNetbankingVijayaTerminal();
         $this->createSharedNetbankingRblTerminal();
+        $this->createSharedNetbankingAllahabadTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
@@ -932,6 +933,21 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createBankAccountTerminalForBusinessBanking(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                  => 'BANKACC3DSN3DT',
+            'gateway_merchant_id' => '222444',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+    }
+
     public function createSharedBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [
@@ -1674,6 +1690,18 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingPnbCorpTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                => Shared::NETBANKING_PNB_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingPnbTerminal($attributes);
+    }
+
     public function createSharedNetbankingFederalTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -1789,6 +1817,48 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
             'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
             'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingAllahabadTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ALLAHABAD_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_ALLAHABAD,
+            'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_alla_merchant_id2',
+            'gateway_secure_secret' => 'razorpay_password',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+
+    public function createAllahabadTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ALLA_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_allahabad',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
+            'gateway_access_code'   => 'netbanking_alla_merchant_id2',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

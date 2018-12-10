@@ -38,6 +38,7 @@ class Fee extends Base\Core
     // delete this after 31st jan
     protected static $promotionalMethods = [
         'card',
+        'emi',
         'netbanking',
         'upi',
         'wallet',
