@@ -30,6 +30,8 @@ class Gateway extends Base\Gateway
 
     const TIME_WINDOW = 600;
 
+    const REFUND_DATE_ERROR_MESSAGE = 'Invalid transaction date';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -115,17 +117,21 @@ class Gateway extends Base\Gateway
 
         $content = $this->getRefundRequestContent($gatewayPayment, $input);
 
-        $request = $this->getStandardRequestArray($content);
+        $responseArray = $this->getRefundResponse($content, $input);
 
-        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+        if ($this->checkRefundDateError($responseArray) == true)
+        {
+            $content[RefundRequestFields::TRANSACTION_DATE] = $this->getPreviousDate(
+                                                                    $content[RefundRequestFields::TRANSACTION_DATE]);
 
-        $response = $this->sendGatewayRequest($request);
+            $responseArray = $this->getRefundResponse($content, $input);
+        }
 
-        $this->traceGatewayPaymentResponse($response->body, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+        $date = $content[RefundRequestFields::TRANSACTION_DATE];
 
-        $responseArray = $this->xmlToArray($response->body);
+        $dateTimestamp = Carbon::createFromFormat('Y-m-d', $date , Timezone::IST)->timestamp;
 
-        $attributes = $this->getRefundAttributes($responseArray, $input);
+        $attributes = $this->getRefundAttributes($responseArray, $dateTimestamp);
 
         $this->createGatewayPaymentEntity($attributes);
 
@@ -194,57 +200,22 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify);
 
-        $request = $this->getStandardRequestArray($content, 'get');
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'gateway'     => $this->gateway,
-                'payment_id'  => $verify->input['payment']['id'],
-                'request'     => $request,
-            ]);
-
-        $request['url'] = $this->createRedirectUrl($request['content']);
-
-        $request['content'] = [];
-
-        $response = $this->sendGatewayRequest($request);
-
-        $responseArray = $this->verifyResponseXmlToArray($response->body);
+        $responseArray = $this->getVerifyResponse($content, $verify);
 
         $paymentCreatedAt = $verify->input['payment'][Payment\Entity::CREATED_AT];
 
         $gatewayPayment = $verify->payment;
 
-        if (($responseArray['VERIFIED'] === 'NODATA') and
-            ($this->isEarlyDayTransaction($paymentCreatedAt) === true) and
-            (isset($gatewayPayment['date']) === false))
+        if ($this->checkVerifyDateError($responseArray, $paymentCreatedAt))
         {
             $originalDate = $content[VerifyRequestFields::TRANSACTION_DATE];
 
             $content[VerifyRequestFields::TRANSACTION_DATE] = $this->getPreviousDate($originalDate);
 
-            $request = $this->getStandardRequestArray($content, 'get');
-
-            $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-                [
-                    'gateway'     => $this->gateway,
-                    'payment_id'  => $verify->input['payment']['id'],
-                    'request'     => $request,
-                ]);
-
-            $request['url'] = $this->createRedirectUrl($request['content']);
-
-            $request['content'] = [];
-
-            $response = $this->sendGatewayRequest($request);
-
-            $responseArray = $this->verifyResponseXmlToArray($response->body);
+            $responseArray = $this->getVerifyResponse($content, $verify);
         }
 
-        if (($responseArray['VERIFIED'] !== 'NODATA') and
-            (isset($gatewayPayment['date']) === false))
+        if ($responseArray['VERIFIED'] !== 'NODATA')
         {
             $date = $content[VerifyRequestFields::TRANSACTION_DATE];
 
@@ -258,14 +229,6 @@ class Gateway extends Base\Gateway
 
             $verify->payment->saveOrFail();
         }
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $responseArray,
-                'payment_id' => $verify->input['payment']['id'],
-            ]);
 
         $verify->verifyResponseContent = $responseArray;
     }
@@ -438,13 +401,14 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getRefundAttributes(array $content)
+    protected function getRefundAttributes(array $content, $dateTimestamp)
     {
         $attributes = [
             Entity::ERROR_CODE         => $content[RefundResponseFields::STATUS_CODE],
             Entity::ERROR_DESCRIPTION  => $content[RefundResponseFields::STATUS_MESSAGE],
             Entity::GATEWAY_PAYMENT_ID => $content[RefundResponseFields::TRANSACTION_ID],
             Entity::RECEIVED           => true,
+            Entity::DATE               => $dateTimestamp,
         ];
 
         $attributes[Entity::SUCCESS] = false;
@@ -566,14 +530,12 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $gatewayPayment['date'] = $gatewayPayment['date'] ?: $input['payment']['created_at'];
-
         $content = [
             RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
             RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),
             RefundRequestFields::GATEWAY_TRANSACTION_ID => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
             RefundRequestFields::REFUND_AMOUNT          => $this->getFormattedAmount($input['refund']['amount']),
-            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($gatewayPayment['date']),
+            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($input['payment']['created_at']),
             RefundRequestFields::REFUND_ID              => $input['refund']['id'],
         ];
 
@@ -634,7 +596,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $date = isset($gatewayPayment['date']) ? $gatewayPayment['date'] : $input['payment']['created_at'];
+        $date = $input['payment']['created_at'];
 
         $data = [
             VerifyRequestFields::MERCHANT_ID      => $this->getMerchantId(),
@@ -1027,5 +989,76 @@ class Gateway extends Base\Gateway
         }
 
         return constant($ns . '\Url::' . $type);
+    }
+
+    protected function getRefundResponse(array $content, $input)
+    {
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response->body, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        $responseArray = $this->xmlToArray($response->body);
+
+        return $responseArray;
+    }
+
+    protected function getVerifyResponse(array $content, $verify)
+    {
+        $request = $this->getStandardRequestArray($content, 'get');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'     => $this->gateway,
+                'payment_id'  => $verify->input['payment']['id'],
+                'request'     => $request,
+            ]);
+
+        $request['url'] = $this->createRedirectUrl($request['content']);
+
+        $request['content'] = [];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseArray = $this->verifyResponseXmlToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $responseArray,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        return $responseArray;
+    }
+
+    protected function checkRefundDateError($responseArray)
+    {
+        $originalDate = $this->input['payment']['created_at'];
+
+        if (isset($responseArray[RefundResponseFields::STATUS_MESSAGE]) and
+            ($responseArray[RefundResponseFields::STATUS_MESSAGE] === self::REFUND_DATE_ERROR_MESSAGE) and
+            ($this->isEarlyDayTransaction($originalDate) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function checkVerifyDateError($responseArray, $paymentCreatedAt)
+    {
+        if (($responseArray['VERIFIED'] === 'NODATA') and
+            ($this->isEarlyDayTransaction($paymentCreatedAt) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

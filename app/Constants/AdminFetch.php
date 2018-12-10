@@ -307,6 +307,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'beneficiary_code' => [
+                    Fetch::LABEL => 'Beneficiary Code',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'type' => [
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,

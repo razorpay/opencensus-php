@@ -47,6 +47,7 @@ class Shared
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
+    const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
