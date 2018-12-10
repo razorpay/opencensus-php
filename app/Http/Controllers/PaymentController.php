@@ -442,7 +442,7 @@ class PaymentController extends Controller
 
         $key = $headers['php-auth-user'][0];
 
-        if (in_array($key, $allowedMerchantKeys) === true)
+        if (in_array($key, $allowedMerchantKeys, true) === true)
         {
             $this->trace->info(
                 TraceCode::VPA_PAYOUT_REQUEST,
@@ -455,10 +455,8 @@ class PaymentController extends Controller
 
             return ApiResponse::json($data);
         }
-        else
-        {
-            return ApiResponse::routeNotFound();
-        }
+
+        return ApiResponse::routeNotFound();
     }
 
     public function getPaymentFlowsPrivate()
