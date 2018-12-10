@@ -169,6 +169,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';
+    const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                             = 'Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                          = 'VPA does not exist.';
     const BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED                             = 'Your UPI application is facing issues with handling collect requests. Please try again later';
     const BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED                        = 'The requested UPI function is not supported';
@@ -739,6 +740,11 @@ class PublicErrorDescription
 
     const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'Beneficiary registration failed due to error';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
+    const BAD_REQUEST_PSP_ERROR                                                     = 'Payment failed at PSP';
     const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';
     const BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA                                    = 'Invalid VPA. Please enter a valid Virtual Payment Address';
+    const BAD_REQUEST_PAYMENT_UPI_DEVICE_MISSING                                    = 'UPI device must be present';
+    const BAD_REQUEST_PAYMENT_UPI_MOBILE_NUMBER_MAPPED_TO_MULTIPLE_CUSTOMERS        = 'Mobile number registered with multiple customers';
+    const BAD_REQUEST_DUPLICATE_REQUEST                                             = 'The request is duplicate';
+    const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
 }
