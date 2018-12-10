@@ -14,23 +14,21 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
-use RZP\Models\NodalBeneficiary\Status;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
@@ -3683,5 +3681,23 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProduct()
+    {
+        $this->ba->proxyAuth();
+
+        $user = (new User())->createUserForMerchant();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Role'] = 'owner';
+
+        $this->startTest();
     }
 }

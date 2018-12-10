@@ -556,7 +556,7 @@ class Service extends Base\Service
 
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
-        $productRole = $dashboardHeaders['role'] ?? $dashboardHeaders['banking_role'];
+        $productRole = $dashboardHeaders['user_role'] ?? $dashboardHeaders['user_banking_role'];
 
         $userMerchantMappingInputData = [
             'action'      => 'attach',

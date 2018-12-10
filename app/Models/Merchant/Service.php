@@ -2687,7 +2687,7 @@ class Service extends Base\Service
         return $merchant;
     }
 
-    protected function switchProductMerchant()
+    public function switchProductMerchant()
     {
         // Add Banking Role for the current merchant User.
         (new User\Service())->addProductSwitchRole();
@@ -2702,6 +2702,8 @@ class Service extends Base\Service
         {
             $this->activateBusinessBanking($merchant);
         }
+
+        return ['success' => true];
     }
 
     protected function enableBusinessBankingIfApplicable(Entity $merchant)

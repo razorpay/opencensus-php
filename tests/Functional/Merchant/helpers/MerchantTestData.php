@@ -3743,5 +3743,16 @@ return [
                 ],
             ]
         ]
-    ]
+    ],
+
+    'testMerchantSwitchProduct' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => ['success' => true]
+        ],
+    ],
 ];
