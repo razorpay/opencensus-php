@@ -3688,16 +3688,22 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProduct()
     {
-        $this->ba->proxyAuth();
-
         $user = (new User())->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
-
-        $testData['request']['server']['HTTP_X-Dashboard-User-Role'] = 'owner';
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+
+        $merchants = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
     }
 }
