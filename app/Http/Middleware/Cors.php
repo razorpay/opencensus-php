@@ -44,7 +44,7 @@ class Cors
                 'Access-Control-Allow-Origin'       => $originDomain,
                 'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',
                 'Access-Control-Allow-Credentials'  => 'true',
-                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-XSRF-TOKEN, Content-Type'
+                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-CSRF-TOKEN, Content-Type'
             ];
 
             //
