@@ -1297,6 +1297,7 @@ final class Route
         'apspdcl_bridge',
         'billdesk_reconcile_cancelled',
         'setl_notify_h2h',
+        'entity_balance_id_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1808,7 +1809,6 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
-        'entity_balance_id_update',
         'merchant_balance_bulk_backfill_ids',
     ];
 
@@ -2361,6 +2361,7 @@ final class Route
             'merchant_post_beneficiary_api',
             'setl_verify',
             'billdesk_reconcile_cancelled',
+            'entity_balance_id_update',
         ],
 
         'subscriptions' => [
