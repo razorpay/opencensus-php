@@ -107,7 +107,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         // Check payment status
-        if ($input['gateway'][Fields::ACCU_RESPONSE_CODE] !== Constants::STATUS_CALLBACK_SUCCESS)
+        if ($input['gateway'][Fields::ACCU_RESPONSE_CODE] !== StatusCode::CALLBACK_SUCCESS)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->authorizeTransaction($gatewayPayment);
 
-        if ($response[Fields::STATUS] !== Constants::STATUS_SUCCESS)
+        if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
@@ -335,7 +335,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         if ((isset($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS]) === true) and
-            ($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS] === Constants::TRANSACTION_STATUS_AUTHORIZED))
+            ($content[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS] === StatusCode::TRANSACTION_STATUS_AUTHORIZED))
         {
             $verify->gatewaySuccess = true;
         }
@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
      */
     protected function handleFailure($response, $action)
     {
-        if ($response[Fields::STATUS] !== Constants::STATUS_SUCCESS)
+        if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
             $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 

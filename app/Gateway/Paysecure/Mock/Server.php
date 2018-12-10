@@ -16,9 +16,8 @@ class Server extends Base\Mock\Server
 
     protected function getCheckbin2Response($data)
     {
-        // todo: Use constants here
         $response = [
-            Paysecure\Fields::STATUS                => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::STATUS                => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE            => '0',
             Paysecure\Fields::ERROR_MESSAGE         => '',
             Paysecure\Fields::QUALIFIED_INTERNETPIN => 'TRUE',
@@ -38,7 +37,7 @@ class Server extends Base\Mock\Server
                       . '&AccuHkey=' . self::HKEY;
 
         $response = [
-            Paysecure\Fields::STATUS                      => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::STATUS                      => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE                  => '0',
             Paysecure\Fields::ERROR_MESSAGE               => '',
             Paysecure\Fields::TRAN_ID                     => self::TRAN_ID,
@@ -54,7 +53,7 @@ class Server extends Base\Mock\Server
     protected function getInitiateResponse($data)
     {
         $response = [
-            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::STATUS        => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '0',
             Paysecure\Fields::ERROR_MESSAGE => '',
             Paysecure\Fields::TRAN_ID       => self::TRAN_ID,
@@ -71,7 +70,7 @@ class Server extends Base\Mock\Server
     protected function getAuthorizeResponse($data)
     {
         $response = [
-            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::STATUS        => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '00',
             Paysecure\Fields::ERROR_MESSAGE => '',
             Paysecure\Fields::APPRCODE      => self::APPRCODE,
@@ -85,13 +84,13 @@ class Server extends Base\Mock\Server
     protected function getTransactionstatusResponse($data)
     {
         $response = [
-            Paysecure\Fields::STATUS        => Paysecure\Constants::STATUS_SUCCESS,
+            Paysecure\Fields::STATUS        => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '00',
             Paysecure\Fields::ERROR_MESSAGE => '',
         ];
 
         $transactionArray = [
-            Paysecure\Fields::STATUS    => Paysecure\Constants::TRANSACTION_STATUS_AUTHORIZED,
+            Paysecure\Fields::STATUS    => Paysecure\StatusCode::TRANSACTION_STATUS_AUTHORIZED,
             Paysecure\Fields::TRAN_ID   => self::TRAN_ID,
             Paysecure\Fields::APPRCODE  => self::APPRCODE,
             Paysecure\Fields::RECURRING => 'FALSE',

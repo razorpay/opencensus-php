@@ -20,7 +20,7 @@ trait RequestHandlerTrait
     {
         $requestArray = $this->getCheckBin2RequestArray();
 
-        $command = Constants::COMMAND_CHECKBIN2;
+        $command = Command::CHECKBIN2;
 
         $response = $this->sendRequest($command, $requestArray);
 
@@ -48,7 +48,7 @@ trait RequestHandlerTrait
 
         $contents = $this->getRequestContents($requestArray);
 
-        $command = Constants::COMMAND_INITIATE;
+        $command = Command::INITIATE;
 
         $response = $this->sendRequest($command, $contents);
 
@@ -70,7 +70,7 @@ trait RequestHandlerTrait
 
         $contents = $this->getRequestContents($requestArray);
 
-        $command = Constants::COMMAND_INITIATE_2;
+        $command = Command::INITIATE_2;
 
         $response = $this->sendRequest($command, $contents);
 
@@ -143,7 +143,7 @@ trait RequestHandlerTrait
 
         $contents = $this->getRequestContents($requestArray);
 
-        $command = Constants::COMMAND_AUTHORIZE;
+        $command = Command::AUTHORIZE;
 
         $response = $this->sendRequest($command, $contents);
 
@@ -159,7 +159,7 @@ trait RequestHandlerTrait
 
         $contents = $this->getRequestContents($requestArray);
 
-        $command = Constants::COMMAND_TRANSACTION_STATUS;
+        $command = Command::TRANSACTION_STATUS;
 
         $response = $this->sendRequest($command, $contents);
 
