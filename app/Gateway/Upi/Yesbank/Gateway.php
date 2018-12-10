@@ -119,12 +119,6 @@ class Gateway extends Mindgate\Gateway
 
         $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
-        if ($gatewayEntity === null)
-        {
-            throw new Exception\LogicException(
-                'no payout exists with given reference id');
-        }
-
         $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
 
         $decryptedContent = implode('|', $request);

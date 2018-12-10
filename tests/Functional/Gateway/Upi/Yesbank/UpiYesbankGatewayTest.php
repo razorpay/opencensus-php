@@ -294,25 +294,6 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('F', $gatewayEntity['status_code']);
     }
 
-    public function testPayoutVpaVerifyForIncorrectPayoutReference()
-    {
-        $attributes = [
-            'terminal'  => ['gateway_merchant_id' => '12445'],
-            'gateway_input' => [
-                'ref_id'    => 'merchant_reference',
-            ]
-        ];
-
-        $this->ba->privateAuth();
-
-        $request = $this->getPayoutRequest($attributes, 'verify');
-
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($request){
-
-            $this->makeRequestAndGetContent($request);
-        });
-    }
-
     public function testPayoutVpaVerifyWithAmountTampering()
     {
         $response = $this->testPayoutToVpa();
