@@ -108,13 +108,13 @@ function disableEmptyInputs(form) {
                 <option value="YESB">Yes Bank</option>
                 <option value="KKBK">Kotak Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
-                <option value="PUNB">Punjab Bank</option>
                 <option value="SBTR">State Bank of Travancore</option>
                 <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
                 <option value="INDB">Indusind Bank</option>
-                <option value="PUNB">Punjab National Bank</option>
+                <option value="PUNB_R">Punjab National Bank - Retail</option>
+                <option value="PUNB_C">Punjab National Bank - Corporate</option>
                 <option value="ESFB">Equitas Small Finance Bank</option>
                 <option value="CNRB">Canara Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
