@@ -11,9 +11,9 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::MERCHANT_ID     => 'sometimes|alpha_num',
             Entity::CUSTOMER_ID     => 'sometimes|string|max:19',
+            Entity::FUND_ACCOUNT_ID => 'sometimes|string|max:17',
             Entity::DESTINATION     => 'sometimes|string|max:20',
             Entity::METHOD          => 'sometimes|string',
-            Entity::FUND_ACCOUNT_ID => 'sometimes|string|max:17',
             self::EXPAND_EACH       => 'filled|string|in:user',
         ],
     ];

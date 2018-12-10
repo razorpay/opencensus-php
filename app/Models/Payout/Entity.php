@@ -7,11 +7,13 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -196,7 +198,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function destination()
@@ -211,17 +213,17 @@ class Entity extends Base\PublicEntity
 
     public function customer()
     {
-        return $this->belongsTo('RZP\Models\Customer\Entity');
+        return $this->belongsTo(Customer\Entity::class);
     }
 
     public function fundAccount()
     {
-        return $this->belongsTo('RZP\Models\FundAccount\Entity');
+        return $this->belongsTo(FundAccount\Entity::class);
     }
 
     public function payment()
     {
-        return $this->belongsTo('RZP\Models\Payment\Entity');
+        return $this->belongsTo(Payment\Entity::class);
     }
 
     /**
@@ -236,7 +238,7 @@ class Entity extends Base\PublicEntity
 
     public function batchFundTransfer()
     {
-        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+        return $this->belongsTo(FundTransfer\Batch\Entity::class);
     }
 
     public function user()
