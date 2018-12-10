@@ -2,7 +2,8 @@ import { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import { adminFetch, adminPost } from 'common/fetch';
-import { closeModal, notifySuccess } from 'common/modal';
+import { closeModal, notifySuccess, notifyError } from 'common/modal';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 import EntityRow from 'ui/EntityRow';
 import Form from 'ui/Form';
@@ -68,6 +69,19 @@ export default class CreateMerchantReportConfig extends Component {
     // hardcoded default values
     data.created_by = this.props.merchantId;
     data.scheduled = '0';
+
+    // checking for mandatory fields
+    if (
+      !data.name ||
+      !data.description ||
+      !data.type ||
+      isBlank(data.template.fields_map)
+    ) {
+      notifyError(
+        'Please fill all mandatory fields and select atleast one column to be present in report'
+      );
+      return;
+    }
 
     return adminPost({
       url: `live_${this.props.merchantId}/reporting/configs`,

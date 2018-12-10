@@ -34,7 +34,7 @@ export default class ConfigDetails extends Component {
   }
 
   getValue = () => {
-    return this.reportColumns.getValues();
+    return this.reportColumns ? this.reportColumns.getValues() : {};
   };
 
   toggleField = (field, status) => {
