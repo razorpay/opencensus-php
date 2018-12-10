@@ -3,21 +3,16 @@
 namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Merchant;
 
-/**
- * @property Customer\Entity     $customer
- */
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const ENTITY_ID         = 'entity_id';
-    const ENTITY_TYPE       = 'entity_type';
-    const USERNAME          = 'username';
-    const HANDLE            = 'handle';
-    const MERCHANT_ID       = 'merchant_id';
-    const CUSTOMER_ID       = 'customer_id';
+    const ID              = 'id';
+    const ENTITY_ID       = 'entity_id';
+    const ENTITY_TYPE     = 'entity_type';
+    const USERNAME        = 'username';
+    const HANDLE          = 'handle';
+    const MERCHANT_ID     = 'merchant_id';
 
     const ADDRESS               = 'address';
 
@@ -37,7 +32,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ADDRESS,
-        self::CUSTOMER_ID,
     ];
 
     protected $appends = [
@@ -51,6 +45,14 @@ class Entity extends Base\PublicEntity
     protected static $unsetCreateInput = [
         self::ADDRESS,
     ];
+
+    public function matches(array $input)
+    {
+        // We do a build so that validations and other things are run before checking for duplicate
+        $new = (new Entity)->build($input);
+
+        return ($this->getAddress() === $new->getAddress());
+    }
 
     // ----------------------- Generators ------------------
 
@@ -79,6 +81,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADDRESS);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setHandle($handle)
@@ -95,13 +102,13 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Relations -----------------------
 
-    public function customer()
-    {
-        return $this->belongsTo(Customer\Entity::class);
-    }
-
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function entity()
+    {
+        return $this->morphTo();
     }
 }

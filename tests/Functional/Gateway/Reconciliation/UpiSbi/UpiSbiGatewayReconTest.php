@@ -75,6 +75,38 @@ class UpiSbiGatewayReconTest extends TestCase
 
     }
 
+    public function testUpiSbiForceAuthorizePayment()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiPaymentsSince(1, $createdAt);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $this->fixtures->payment->edit($payments['items'][0]['id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiSbi', ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
+
     public function testFailedUpiSbiReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

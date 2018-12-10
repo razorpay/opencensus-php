@@ -81,6 +81,7 @@ final class FactoryData
             'merchant_id'               => '10000000000000',
             'type'                      => 'primary',
             'balance'                   => 0,
+            'currency'                  => 'INR',
         ]);
 
         $factory(\RZP\Models\BankAccount\Entity::class, [
@@ -672,7 +673,6 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
             'username'           => $faker->word,
             'handle'             => 'razorpay',
-            'customer_id'        => '100000customer',
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
@@ -907,6 +907,14 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\VirtualAccount\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'merchant_id'=> '10000000000000',
+            'status'     => 'active',
+            'name'       => 'Test Merchant',
+            'balance_id' => '10000000000000',
+            'notes'      => null,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [

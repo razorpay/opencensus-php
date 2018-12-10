@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 class Type
 {
-    /*
+    /**
      * PG balance types.
      */
     const PRIMARY        = 'primary';

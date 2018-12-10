@@ -270,6 +270,31 @@ return [
         ],
     ],
 
+    'testCreateTPVOrderWithNewFlow' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank_account'   => [
+                    'account_number' => '040304030403040',
+                    'ifsc_code'      => 'UTIB0003098',
+                    'beneficiary_name'  => 'ThisIsAwesome',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testCreateTPVOrderEmptyMethod' => [
         'request' => [
             'content' => [

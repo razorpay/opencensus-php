@@ -14,6 +14,7 @@ class Constants
     const EQUITAS          = 'equitas';
     const BOB              = 'bob';
     const IDFC             = 'idfc';
+    const VIJAYA           = 'vijaya';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -30,6 +31,7 @@ class Constants
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
     const ALLA             = 'allahabad';
+    const CANARA           = 'canara';
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
@@ -46,7 +48,6 @@ class Constants
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
-            self::CORPORATION
         ],
         Type::CLAIM => [
         ],
@@ -68,8 +69,11 @@ class Constants
             self::OBC,
             self::CSB,
             self::ALLA,
+            self::CANARA,
             self::EQUITAS,
             self::IDFC,
+            self::VIJAYA,
+            self::CORPORATION,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -110,21 +114,23 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
-            self::CORPORATION   => ['corporation.netbanking.refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [
-            self::AXIS     => ['axis.netbanking.refunds@razorpay.com'],
-            self::KOTAK    => ['settlements@razorpay.com'],
-            self::RBL      => ['rbl.netbanking.refunds@razorpay.com'],
-            self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
-            self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
-            self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
-            self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
-            self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
-            self::ALLA     => ['settlements@razorpay.com'],
-            self::EQUITAS  => ['equitas.netbanking.refunds@razorpay.com'],
-            self::IDFC     => ['idfc.netbanking.refunds@razorpay.com'],
+            self::CANARA      => ['canara.netbanking.refunds@razorpay.com'],
+            self::AXIS        => ['axis.netbanking.refunds@razorpay.com'],
+            self::KOTAK       => ['settlements@razorpay.com'],
+            self::RBL         => ['rbl.netbanking.refunds@razorpay.com'],
+            self::FEDERAL     => ['federal.netbanking.refunds@razorpay.com'],
+            self::BOB         => ['bob.netbanking.refunds@razorpay.com'],
+            self::INDUSIND    => ['indusind.netbanking.refunds@razorpay.com'],
+            self::OBC         => ['obc.netbanking.refunds@razorpay.com'],
+            self::CSB         => ['csb.netbanking.refunds@razorpay.com'],
+            self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
+            self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
+            self::ALLA        => ['settlements@razorpay.com'],
+            self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [

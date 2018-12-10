@@ -684,6 +684,7 @@ class Creator extends Base\Core
         switch($extension)
         {
             case Format::TXT:
+            case Format::IN:
             case Format::ENC:
             case Format::PDF:
             case Format::DAT:

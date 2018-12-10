@@ -398,4 +398,6 @@ return [
     E::PAYMENT_LINK => [],
 
     E::CONTACT => [],
+
+    E::FUND_ACCOUNT => [],
 ];

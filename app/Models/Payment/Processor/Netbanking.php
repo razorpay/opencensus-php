@@ -26,6 +26,12 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
+    public static $defaultInconsistentBankCodesMapping = [
+        IFSC::BARB => 'BARB_R',
+        IFSC::PUNB => 'PUNB_R',
+        IFSC::LAVB => 'LAVB_R',
+    ];
+
     public static $inconsistentIfsc = [
         self::BARB_R,
         self::PUNB_R,
@@ -69,7 +75,9 @@ class Netbanking
         IFSC::ORBC,
         IFSC::CSBK,
         IFSC::ALLA,
+        IFSC::CNRB,
         IFSC::ESFB,
+        IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -330,6 +338,11 @@ class Netbanking
                 IFSC::IDFB
             ]
         ],
+        Gateway::NETBANKING_VIJAYA => [
+            'retail' => [
+                IFSC::VIJB
+            ]
+        ],
         Gateway::NETBANKING_HDFC => [
             'retail' => [
                 IFSC::HDFC
@@ -341,6 +354,11 @@ class Netbanking
         Gateway::NETBANKING_CORPORATION => [
             'retail' => [
                 IFSC::CORP,
+            ]
+        ],
+        Gateway::NETBANKING_CANARA => [
+            'retail' => [
+                IFSC::CNRB,
             ]
         ],
         Gateway::NETBANKING_EQUITAS => [
