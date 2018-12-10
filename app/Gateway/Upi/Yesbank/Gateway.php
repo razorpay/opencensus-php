@@ -138,6 +138,8 @@ class Gateway extends Mindgate\Gateway
 
         $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
 
+        $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
+
         try
         {
             // we need to send the FTS service only the reason of failure, so catching
@@ -175,8 +177,6 @@ class Gateway extends Mindgate\Gateway
 
             return $response;
         }
-
-        $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
 
         return $this->generateResponse($responseArray, $gatewayEntity);
     }
