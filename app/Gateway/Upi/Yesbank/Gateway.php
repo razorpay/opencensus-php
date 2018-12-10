@@ -119,6 +119,13 @@ class Gateway extends Mindgate\Gateway
 
         $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
+        if ($gatewayEntity === null)
+        {
+            throw new Exception\LogicException(
+                'No recordds found for given reference id'
+            );
+        }
+
         $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
 
         $decryptedContent = implode('|', $request);
@@ -137,8 +144,6 @@ class Gateway extends Mindgate\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
-
-        $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
 
         try
         {
@@ -177,6 +182,8 @@ class Gateway extends Mindgate\Gateway
 
             return $response;
         }
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
 
         return $this->generateResponse($responseArray, $gatewayEntity);
     }
