@@ -187,9 +187,13 @@ const attemptsDataFields = [
   ['Status', item => item.status],
   ['Error Code', item => item.error_code],
   ['Request Status', item => item.request_status_code],
-  ['Created At', item => formatDate(item.created_at)],
+  [
+    'Gateway Verify Response',
+    item => <pre class="duplex-json">{item.gateway_verify_response}</pre>,
+  ],
   [
     'Gateway Response',
     item => <pre class="duplex-json">{item.gateway_response}</pre>,
   ],
+  ['Created At', item => formatDate(item.created_at)],
 ];
