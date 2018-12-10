@@ -34,8 +34,8 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
-                    ->firstOrFail();;
+                                      ->where(Entity::MERCHANT_ID, '=', $id)
+                                      ->firstOrFail();
     }
 
     // not in use
@@ -189,5 +189,13 @@ class Repository extends Base\Repository
                     ->whereRaw(Entity::ID. '=' . Entity::MERCHANT_ID)
                     ->limit($limit)
                     ->get();
+    }
+
+    public function getMerchantBalanceByType($merchant, $balanceType, $connection)
+    {
+        return $this->newQueryWithConnection($connection)
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', $balanceType)
+                    ->first();
     }
 }

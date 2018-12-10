@@ -9,6 +9,19 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
+    public function create(Merchant\Entity $merchant, $input, $mode)
+    {
+        $balance = (new Entity)->build($input);
+
+        $balance->setConnection($mode);
+
+        $balance->merchant()->associate($merchant);
+
+        $balance->saveOrFail();
+
+        return $balance;
+    }
+
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *

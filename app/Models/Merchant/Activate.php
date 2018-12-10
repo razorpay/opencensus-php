@@ -8,11 +8,11 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -590,9 +590,13 @@ class Activate extends Base\Core
         // If merchant is instantly activated or Activated this flow will kick in.
         if ($merchant->isActivated() === true)
         {
-            // Virtual Account.
+            // Business Banking logic is coupled only with the live mode.
+            $liveMode = $this->app['basicauth']->getLiveConnection();
 
             // Create Banking Balance.
+            $balance = (new Balance\Service())->create($merchant, Product::BANKING, $liveMode);
+
+            // Virtual Account.
 
             // todo Banking Pricing defaults if exists.
         }
