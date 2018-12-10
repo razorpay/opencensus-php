@@ -45,20 +45,21 @@ return [
     ],
 
     'testSubmit' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'submit' => true
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'submitted' => true,
+                'submitted'    => true,
                 'verification' => [
                     'status' => 'pending'
                 ],
-                'can_submit' => true,
+                'can_submit'   => true,
+                'locked'       => true,
             ],
         ],
     ],

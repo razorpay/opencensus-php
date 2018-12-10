@@ -19,12 +19,13 @@ class Reconciliate extends Base\Core
      * Reconciliation Types
      ***********************/
 
-    const NODAL    = 'nodal';
-    const PAYMENT  = 'payment';
-    const REFUND   = 'refund';
-    const COMBINED = 'combined';
+    const NODAL          = 'nodal';
+    const PAYMENT        = 'payment';
+    const REFUND         = 'refund';
+    const COMBINED       = 'combined';
+    const EMANDATE_DEBIT = 'emandate_debit';
 
-    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED];
+    const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
 
     //
     // Used to define start_row for the MIS files.
@@ -61,6 +62,11 @@ class Reconciliate extends Base\Core
     const AUTH_CODE              = 'auth_code';
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
     const GATEWAY_PAYMENT_ID     = 'gateway_payment_id';
+
+    const GATEWAY_TOKEN          = 'gateway_token';
+    const GATEWAY_ERROR_CODE     = 'gateway_error_code';
+    const GATEWAY_ERROR_DESC     = 'gateway_error_desc';
+    const GATEWAY_STATUS_CODE    = 'gateway_status_code';
 
     /*************************
      * Card types
@@ -303,7 +309,11 @@ class Reconciliate extends Base\Core
         string $reconciliationType,
         array $extraDetails)
     {
-        if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
+        if ($reconciliationType === self::EMANDATE_DEBIT)
+        {
+            $batch->setSubType($reconciliationType);
+        }
+        else if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
             ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_COUNT] > 0))
         {
             $batch->setSubType(self::COMBINED);
@@ -351,9 +361,8 @@ class Reconciliate extends Base\Core
         $parentNamespace = $this->getParentNamespace();
 
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
-
         $subReconciliatorClassName = $parentNamespace . '\\' . 'SubReconciliator' . '\\'
-                                    . ucfirst($reconciliationType)
+                                    . studly_case($reconciliationType)
                                     . 'Reconciliate';
 
         return $subReconciliatorClassName;

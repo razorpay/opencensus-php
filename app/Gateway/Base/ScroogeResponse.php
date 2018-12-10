@@ -14,12 +14,17 @@ class ScroogeResponse
     /**
      * @var string
      */
-    protected $statusCode;
+    protected $statusCode = '';
 
     /**
      * @var string
      */
     protected $gatewayResponse = '';
+
+    /**
+     * @var string
+     */
+    protected $gatewayVerifyResponse = '';
 
     /**
      * @var array
@@ -112,10 +117,32 @@ class ScroogeResponse
         $statusCode = ($this->isSuccess() === true) ? 'REFUND_SUCCESSFUL' : $this->getStatusCode();
 
         return [
-            Gateway::SUCCESS            => $this->isSuccess(),
-            Gateway::STATUS_CODE        => $statusCode,
-            Gateway::GATEWAY_RESPONSE   => $this->getGatewayResponse(),
-            Gateway::GATEWAY_KEYS       => $this->getGatewayKeys()
+            Gateway::SUCCESS                    => $this->isSuccess(),
+            Gateway::STATUS_CODE                => $statusCode,
+            Gateway::GATEWAY_VERIFY_RESPONSE    => $this->getGatewayVerifyResponse(),
+            Gateway::GATEWAY_RESPONSE           => $this->getGatewayResponse(),
+            Gateway::GATEWAY_KEYS               => $this->getGatewayKeys()
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function getGatewayVerifyResponse(): string
+    {
+        return $this->gatewayVerifyResponse;
+    }
+
+    /**
+     * @param  $gatewayVerifyResponse
+     * @return ScroogeResponse
+     */
+    public function setGatewayVerifyResponse($gatewayVerifyResponse): self
+    {
+        $this->gatewayVerifyResponse = (is_string($gatewayVerifyResponse) === false) ?
+                                        json_encode($gatewayVerifyResponse) :
+                                        $gatewayVerifyResponse;
+
+        return $this;
     }
 }

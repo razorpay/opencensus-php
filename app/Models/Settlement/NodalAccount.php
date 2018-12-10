@@ -15,6 +15,7 @@ class NodalAccount
             Channel::KOTAK   => '9KmHswlZnMMR7I',
             Channel::RBL     => '9KmPH3HU8XjHrq',
             Channel::YESBANK => '9KmMiCZ2rN1Bms',
+            Channel::AXIS2   => '9KmKJncCnrvko6',
         ],
 
         Mode::TEST => [
@@ -24,6 +25,7 @@ class NodalAccount
             Channel::KOTAK   => '10000000000000',
             Channel::RBL     => '10000000000000',
             Channel::YESBANK => '10000000000000',
+            Channel::AXIS2   => '10000000000000',
         ]
     ];
 }

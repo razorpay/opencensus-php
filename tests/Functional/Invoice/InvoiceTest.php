@@ -433,6 +433,38 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDuplicateReceiptSucceedsIfAllowed()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_no_receipt_unique']);
+
+        // Case 1: Issued invoice with same receipt already exists
+        $attributes = [
+            'receipt'  => '00000000000001',
+            'order_id' => $this->fixtures->create('order')->getId(),
+        ];
+        $this->fixtures->create('invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 2: Paid invoice with same receipt already exists
+        $attributes = ['status' => 'paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 3: Partially paid invoice with same receipt already exists
+        $attributes = ['status' => 'partially_paid', 'paid_at' => Carbon::now(Timezone::IST)->getTimestamp()];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+
+        // Case 4: Draft invoice with same receipt already exists
+        $attributes = ['status' => 'draft', 'issued_at' => null];
+        $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+    }
+
     public function testCreateInvoiceWithDuplicateReceiptSucceeds()
     {
         // Case 1: Issued invoice with same receipt doesn't exists
@@ -2585,17 +2617,6 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('item', ['id' => '1000000002item']);
         $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
-    }
-
-    protected function setEsMockSearchExpectations($callee, $esMock)
-    {
-        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
-        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
-
-        $esMock->expects($this->once())
-               ->method('search')
-               ->with($expectedSearchParams)
-               ->willReturn($expectedSearchRes);
     }
 
     protected function createManyInvoicesForFetchTests()

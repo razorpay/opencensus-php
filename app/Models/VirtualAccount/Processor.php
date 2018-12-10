@@ -120,7 +120,7 @@ abstract class Processor extends Base\Core
     protected function refundOrCapturePayment(Base\PublicEntity $entity)
     {
         // For business banking flow there exists no payment, hence no refund/capture.
-        if ($this->virtualAccount->balance->isTypeBanking() === true)
+        if ($this->virtualAccount->isBalanceTypeBanking() === true)
         {
             return;
         }

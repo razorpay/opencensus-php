@@ -24,7 +24,9 @@ class Base extends BaseProcessor
         Constants::KOTAK,
         Constants::RBL,
         Constants::OBC,
+        Constants::VIJAYA,
         Constants::IDFC,
+        Constants::CORPORATION
     ];
 
     public function fetchEntities(): PublicCollection
@@ -37,7 +39,6 @@ class Base extends BaseProcessor
 
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
-        $gateway = static::GATEWAY;
 
         if ($this->shouldFetchReconciledPayments() === true)
         {

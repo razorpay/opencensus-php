@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
 
 class Gateway extends Base\Gateway
@@ -67,6 +68,11 @@ class Gateway extends Base\Gateway
         ResponseFields::IFSC_CODE         => Entity::IFSC,
         Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
     ];
+
+    protected function getMaxRetryCount()
+    {
+        return 5;
+    }
 
     /**
      * Authorizes a payment using UPI Gateway
@@ -193,16 +199,24 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * @param string $status
+     * @param string $successStatus
+     * @param array $response
+     * @throws Exception\GatewayErrorException
+     */
     private function checkRefundResponseStatus(string $status, string $successStatus = Status::SUCCESS, array $response = [])
     {
         if ($status !== $successStatus)
         {
-            $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE]);
+            $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response);
+
+            $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[ResponseFields::RESPCODE],
-                UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]),
+                $errorMessage,
                 [
                     Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
                     Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
@@ -343,22 +357,18 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * @param $response
+     * @param string $successStatus
+     * @throws Exception\GatewayErrorException
+     */
     private function checkCallbackResponseStatus($response, string $successStatus = Status::SUCCESS)
     {
         if ($response[ResponseFields::STATUS] !== $successStatus)
         {
-            if (empty($response[ResponseFields::RESPCODE]) === false)
-            {
-                $errorCode = UpiErrorCodes::getApiErrorCode($response[ResponseFields::RESPCODE], Action::CALLBACK);
+            $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response, Action::CALLBACK);
 
-                $errorMessage =  UpiErrorCodes::getResponseCodeMessage($response[ResponseFields::RESPCODE]);
-            }
-            else
-            {
-                $errorCode = ResponseCodeMap::getApiErrorCode($response[ResponseFields::STATUS]);
-
-                $errorMessage = ResponseCode::getResponseMessage($response[ResponseFields::STATUS]);
-            }
+            $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -923,7 +933,7 @@ class Gateway extends Base\Gateway
         $errorCode = UpiErrorCodes::getApiErrorCode($content[ResponseFields::RESPCODE]);
 
         $scroogeResponse->setStatusCode($errorCode)
-                        ->setGatewayResponse($content)
+                        ->setGatewayVerifyResponse($content)
                         ->setGatewayKeys($this->getGatewayData($content));
 
         if ($content[ResponseFields::STATUS] === Status::REFUND_SUCCESS)
@@ -1072,5 +1082,37 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if ((($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) or
+            ($gatewayPayment[Entity::STATUS_CODE] === '00')) and
+            ($gatewayPayment[Entity::RECEIVED] === true))
+        {
+            return true;
+        }
+
+        $attributes = [
+            Base\Entity::STATUS_CODE        => Status::SUCCESS,
+            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

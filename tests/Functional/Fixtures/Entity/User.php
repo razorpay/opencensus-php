@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use Carbon\Carbon;
 use DB;
+use Carbon\Carbon;
 
 class User extends Base
 {
@@ -62,11 +62,21 @@ class User extends Base
         return $user;
     }
 
-    public function getMerchantUserMapping($merchantId, $userId)
+    /**
+     * @param string $merchantId
+     * @param string $userId
+     * @param string $product
+     *
+     * @return \RZP\Models\Base\PublicCollection
+     */
+    public function getMerchantUserMapping(string $merchantId,
+                                           string $userId,
+                                           string $product = 'primary')
     {
         return DB::table('merchant_users')
                     ->where('merchant_id', $merchantId)
                     ->where('user_id', $userId)
+                    ->where('product', $product)
                     ->get();
     }
 }

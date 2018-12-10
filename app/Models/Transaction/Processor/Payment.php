@@ -148,7 +148,10 @@ class Payment extends Base
 
         $merchant = $payment->merchant;
 
-        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
+            $merchant,
+            $payment->getMethod(),
+            $payment->isInternational());
 
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
@@ -161,7 +164,9 @@ class Payment extends Base
         }
         else
         {
-            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            $addDays = $payment->isInternational() === true ?
+                        Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                        Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
         }

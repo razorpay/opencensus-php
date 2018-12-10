@@ -23,6 +23,7 @@ class Shared
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL           = '100NbHdfcTrmnl';
     const NETBANKING_BOB_TERMINAL            = '100NbBbdaTrmnl';
+    const NETBANKING_VIJAYA_TERMINAL         = '100NbVijbTrmnl';
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';
     const NETBANKING_KOTAK_TERMINAL          = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL          = '100NbIciciTmnl';
@@ -40,10 +41,12 @@ class Shared
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
     const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
+    const NETBANKING_CANARA_TERMINAL         = '100NbCnrbTrmnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
+    const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
@@ -96,6 +99,7 @@ class Shared
         self::NETBANKING_IDFC_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_BOB_TERMINAL,
+        self::NETBANKING_VIJAYA_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
         self::NETBANKING_ICICI_TERMINAL,
         self::NETBANKING_AIRTEL_TERMINAL,
@@ -103,6 +107,7 @@ class Shared
         self::NETBANKING_FEDERAL_TERMINAL,
         self::NETBANKING_RBL_TERMINAL,
         self::NETBANKING_INDUSIND_TERMINAL,
+        self::NETBANKING_CANARA_TERMINAL,
         self::NETBANKING_PNB_TERMINAL,
         self::NETBANKING_ESFB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
@@ -149,7 +154,9 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
         self::NETBANKING_IDFC_TERMINAL           => Gateway::NETBANKING_IDFC,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_CANARA_TERMINAL         => Gateway::NETBANKING_CANARA,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
+        self::NETBANKING_VIJAYA_TERMINAL         => Gateway::NETBANKING_VIJAYA,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,
         self::NETBANKING_KOTAK_TERMINAL          => Gateway::NETBANKING_KOTAK,
         self::NETBANKING_ICICI_TERMINAL          => Gateway::NETBANKING_ICICI,

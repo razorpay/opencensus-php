@@ -32,6 +32,7 @@ return [
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
+        'netbanking_vijaya',
         'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
@@ -43,6 +44,7 @@ return [
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
+        'netbanking_canara',
         'netbanking_equitas',
         'paytm',
         'sharp',
@@ -85,6 +87,7 @@ return [
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
+    'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
@@ -99,6 +102,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
+    'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -457,6 +461,13 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_canara' => [
+        'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
+        //TODO add these values for live mode
+        'key'                    => env('NETBANKING_CANARA_GATEWAY_KEY'),
+        'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
+    ],
+
     'netbanking_obc' => [
         'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),
@@ -472,6 +483,11 @@ return [
         'test_merchant_id'       => env('NETBANKING_BOB_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_BOB_GATEWAY_TEST_HASH_SECRET'),
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
+    ],
+
+    'netbanking_vijaya' => [
+        'test_merchant_id'       => env('NETBANKING_VIJAYA_GATEWAY_TEST_MERCHANT_ID'),
+        'merchant_constant'      => env('NETBANKING_VIJAYA_GATEWAY_MERCHANT_CONSTANT')
     ],
 
     'netbanking_idfc' => [
@@ -560,8 +576,10 @@ return [
     ],
 
     'netbanking_pnb' => [
-        'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+        'test_merchant_id'     => env('NETBANKING_PNB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_salt'            => env('NETBANKING_PNB_GATEWAY_TEST_SALT'),
+        'test_encryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_ENCRYPTION_KEY'),
+        'test_decryption_key'  => env('NETBANKING_PNB_GATEWAY_TEST_DECRYPTION_KEY')
     ],
 
     'netbanking_csb' => [

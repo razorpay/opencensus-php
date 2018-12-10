@@ -579,71 +579,9 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $merchant = $refund->merchant;
+        $txnProcessor = (new TransactionProcessor\Refund($refund));
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_CREATED_USING_V2,
-                [
-                    'refund_id' => $refund->getId()
-                ]);
-
-            $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-            list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-            return $txn;
-        }
-
-        // create Transaction
-        $txn = new Transaction\Entity;
-
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-
-        $txn->merchant()->associate($merchant);
-
-        $settledAt = $this->getSettledAtTimestampForRefund($refund);
-
-        $txnData = [
-            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
-            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
-            Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
-            Transaction\Entity::SETTLED_AT      => $settledAt
-        ];
-
-        if ($merchant->getRefundSource() === RefundSource::CREDITS)
-        {
-            $txnData[Transaction\Entity::DEBIT] = 0;
-
-            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
-
-            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
-        }
-
-        $txn->fill($txnData);
-
-        if ($payment->getStatus() === Payment\Status::CAPTURED)
-        {
-            // TODO : merge all balance and credits update in updateBalances
-            if ($merchant->getRefundSource() === RefundSource::CREDITS)
-            {
-                // transaction has to be saved as we create associated credit log
-                // transaction inside the updateCredits method.
-                $this->repo->saveOrFail($txn);
-
-                $this->updateCredits($txn, $refund);
-            }
-
-            $this->updateBalances($txn);
-        }
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
         return $txn;
     }
@@ -957,7 +895,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
-            Transaction\Entity::CHANNEL             => $payout->merchant->getChannel(),
+            Transaction\Entity::CHANNEL             => $payout->getChannel(),
         ];
 
         $txn->fill($values);
@@ -1241,7 +1179,10 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
+            $merchant,
+            $payment->getMethod(),
+            $payment->isInternational());
 
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
@@ -1259,8 +1200,10 @@ class Core extends Base\Core
         else
         {
             // Unused as there wont be any merchant without schedule.
-            // TODO: fix test cases as this condition will run while runnig test. remove condition once tests fixed
-            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            // TODO: fix test cases as this condition will run while running test. remove condition once tests fixed
+            $addDays = $payment->isInternational() === true ?
+                       Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                       Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             //
             // Not handling 24x7 settlements for daily schedules.
@@ -1287,9 +1230,9 @@ class Core extends Base\Core
         return null;
     }
 
-    public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
+    public function calculateSettledAtTimestamp($capturedAtTimestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $capturedAt = Carbon::createFromTimestamp($capturedAtTimestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 

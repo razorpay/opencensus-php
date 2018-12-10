@@ -41,4 +41,7 @@ class RequestHeader
     // Generic
     const X_USER_AGENT                  = 'X-User-Agent';
     const X_IP_ADDRESS                  = 'X-IP-Address';
+
+    // Request origin sent by the dashboard to determine if a request is from banking or dashboard.
+    const X_REQUEST_ORIGIN              = 'X-Request-Origin';
 }

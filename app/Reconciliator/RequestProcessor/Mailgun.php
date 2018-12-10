@@ -49,6 +49,7 @@ class Mailgun extends Base
         self::NETBANKING_FEDERAL,
         self::VIRTUAL_ACC_KOTAK,
         self::NETBANKING_CORPORATION,
+        self::EMANDATE_AXIS,
     ];
 
     const LINK_BASED_GATEWAYS = [

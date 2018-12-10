@@ -2,16 +2,17 @@
 
 namespace RZP\Gateway\Netbanking\Pnb\Mock;
 
-use DOMDocument;
-
+use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Pnb\Status;
 use RZP\Gateway\Netbanking\Pnb\RequestFields;
 use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    const MOCK_TRANSACTION_ID = 99999999;
+    const MOCK_TRANSACTION_ID      = '99999999';
+    const MOCK_REFUND_ID           = '11111111';
+    const MOCK_MERCHANT_REFUND_ID  = '12345678';
+
 
     public function authorize($input)
     {
@@ -19,23 +20,23 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $decryptedString = $this->getGatewayInstance()
-                                ->decryptString($input[RequestFields::ENCDATA]);
+        $decryptedString = $this->decryptString($input[RequestFields::ENCRYPTED_DATA]);
 
         $decryptedData = $this->getDecryptedData($decryptedString);
 
         $this->validateActionInput($decryptedData);
 
+        $this->verifyHash($decryptedData);
+
         $callbackDataArray = $this->getCallbackResponseData($decryptedData);
 
-        $this->content($callbackDataArray, 'authorize');
-
-        $response = $this->getEncryptedData($callbackDataArray);
+        $encryptedData = $this->getEncryptedData($callbackDataArray);
 
         $request = [
             'url'     => $decryptedData[RequestFields::RETURN_URL],
             'content' => [
-                RequestFields::ENCDATA => $response
+                ResponseFields::API_KEY       => $input[ResponseFields::API_KEY],
+                RequestFields::ENCRYPTED_DATA => $encryptedData
             ],
             'method'  => 'post',
         ];
@@ -47,86 +48,128 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $decryptedString = $this->getGatewayInstance()
-                                ->decryptString($input[RequestFields::ENCDATA]);
+        $this->validateActionInput($input);
 
-        $decryptedData = $this->getDecryptedData($decryptedString);
+        $data = $this->getVerifyResponseData($input);
 
-        $this->validateActionInput($decryptedData);
+        return $this->makeResponse($data);
+    }
 
-        $callbackDataArray = $this->getVerifyResponseData($decryptedData);
+    public function refund($input)
+    {
+        parent::refund($input);
 
-        $this->content($callbackDataArray, 'verify');
+        $this->validateActionInput($input);
 
-        $encdata = $this->getEncryptedData($callbackDataArray);
+        $response = $this->getRefundResponseData($input);
 
-        $html = $this->prepareVerifyResponseHtml($encdata);
+        $this->content($response, 'refund');
 
-        return $this->prepareResponse($html);
+        return $this->makeResponse($response);
     }
 
     protected function getVerifyResponseData(array $input)
     {
+        $payment = $this->repo->payment->findOrFail($input[RequestFields::PAYMENT_ID]);
+
         $data = [
-            ResponseFields::BANK_PAYMENT_STATUS_VERIFY => Status::SUCCESS,
-            ResponseFields::BANK_TRANSACTION_ID_VERIFY => self::MOCK_TRANSACTION_ID,
-            ResponseFields::CHALLAN_NUMBER_VERIFY      => $input[RequestFields::CHALLAN_NUMBER],
-            ResponseFields::ITEM_CODE                  => $input[RequestFields::ITEM_CODE],
+            ResponseFields::BANK_PAYMENT_ID => self::MOCK_TRANSACTION_ID,
+            ResponseFields::PAYMENT_ID      => $input[ResponseFields::PAYMENT_ID],
+            ResponseFields::AMOUNT          => $this->formatAmount($payment->getAmount()),
+            ResponseFields::BANK_CODE       => $input[RequestFields::BANK_CODE],
+            ResponseFields::RESPONSE_CODE   => 0,
         ];
 
-        return $data;
+        $this->content($data, 'verify');
+
+        return [
+            'data'                   => [$data],
+            ResponseFields::CHECKSUM => $this->generateHash($data)
+        ];
+    }
+
+    protected function getRefundResponseData($request)
+    {
+        $bid = $request[RequestFields::BANK_PAYMENT_ID];
+
+        $netbankingEntity = $this->repo->netbanking->findByGatewayPaymentIdAndAction($bid, Base\Action::AUTHORIZE);
+
+        $data = [
+            ResponseFields::REFUND_ID           => '123',
+            ResponseFields::BANK_PAYMENT_ID     => $bid,
+            ResponseFields::MERCHANT_ORDER_ID   => $netbankingEntity['payment_id'],
+            ResponseFields::MERCHANT_REFUND_ID  => self::MOCK_MERCHANT_REFUND_ID,
+            ResponseFields::REFUND_REFERENCE_NO => self::MOCK_REFUND_ID,
+        ];
+
+        return [
+            'data'                   => $data,
+            ResponseFields::CHECKSUM => $this->generateHash($data)
+        ];
     }
 
     protected function getCallbackResponseData(array $input)
     {
         $data = [
-            ResponseFields::BANK_PAYMENT_STATUS => Status::SUCCESS,
-            ResponseFields::BANK_TRANSACTION_ID => self::MOCK_TRANSACTION_ID,
-            ResponseFields::CHALLAN_NUMBER      => $input[RequestFields::CHALLAN_NUMBER],
+            ResponseFields::RESPONSE_CODE   => 0,
+            ResponseFields::BANK_PAYMENT_ID => self::MOCK_TRANSACTION_ID,
+            ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT]
         ];
+
+        $this->content($data, 'authorize');
+
+        $data[ResponseFields::CHECKSUM] = $this->generateHash($data);
 
         return $data;
     }
 
     protected function getEncryptedData(array $data)
     {
-        $dataString = http_build_query($data, null, '|');
+        $encryption_key = $this->app['config']['gateway']['netbanking_pnb']['test_decryption_key'];
 
-        $encryptedString = $this->getGatewayInstance()
-                                ->encryptString($dataString);
+        $encryptedString = json_encode($data);
 
-        return $encryptedString;
+        return base64_encode(openssl_encrypt(
+                                              $encryptedString,
+                                      'AES-256-ECB',
+                                              $encryption_key,
+                                      OPENSSL_RAW_DATA
+            )
+        );
     }
 
     protected function getDecryptedData(string $decryptedString): array
     {
-        $decryptedString = str_replace('|', '&', $decryptedString);
-
-        parse_str($decryptedString, $decryptedData);
-
-        return $decryptedData;
+        return json_decode($decryptedString, true);
     }
 
-    protected function prepareVerifyResponseHtml($content)
+    protected function decryptString($encryptedString)
     {
-        ob_start();
+        $decryption_key = $this->app['config']['gateway']['netbanking_pnb']['test_encryption_key'];
 
-        require ('VerifyResponseHtml.php');
-
-        $html = ob_get_clean();
-
-        $html = str_replace("{{encdata}}", $content, $html);
-
-        return $html;
+        return openssl_decrypt(base64_decode($encryptedString),
+            'AES-256-ECB',
+            $decryption_key,
+            OPENSSL_RAW_DATA);
     }
 
-    protected function prepareResponse($html)
+    protected function verifyHash($content)
     {
-        $response = \Response::make($html);
+        $actual = $content['hash'];
 
-        $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
+        unset($content['hash']);
 
-        return $response;
+        $generated = $this->generateHash($content);
+
+        if (hash_equals($actual, $generated) === false)
+        {
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
+    protected function formatAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

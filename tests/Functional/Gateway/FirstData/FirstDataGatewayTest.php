@@ -678,11 +678,13 @@ class FirstDataGatewayTest extends TestCase
 
     public function testCaptureGatewayRequestExceptionRetry()
     {
+        $this->markTestSkipped('retry handler moved to upi_sbi');
+
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->getGatewayRequestExceptionInCapture();
+        $this->getGatewayRequestException();
 
         $this->capturePayment($payment['id'], $payment['amount']);
 

@@ -4,13 +4,12 @@ namespace RZP\Models\Customer;
 
 use Request;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\Payout\Processor as PayoutProcessor;
 
 class Service extends Base\Service
 {
@@ -610,15 +609,7 @@ class Service extends Base\Service
 
     public function processCustomerWalletPayout(string $customerId, array $input = []): array
     {
-        $input[PayoutEntity::CUSTOMER_ID] = $customerId;
-
-        Entity::verifyIdAndStripSign($customerId);
-
-        // Will eventually merge the direct payout also into this and create a factory.
-        // https://razorpay.atlassian.net/browse/ME-732
-        $payoutProcessor = new PayoutProcessor\CustomerWalletPayout();
-
-        $payout = $payoutProcessor->createPayout($input);
+        $payout = (new Payout\Core)->createPayoutToCustomerWallet($customerId, $input, $this->merchant);
 
         return $payout->toArrayPublic();
     }

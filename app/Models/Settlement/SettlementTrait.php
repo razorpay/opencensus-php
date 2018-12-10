@@ -641,7 +641,7 @@ trait SettlementTrait
                 {
                     return [$settlement, $bankTransferAtpt];
                 }
-                },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                },PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
