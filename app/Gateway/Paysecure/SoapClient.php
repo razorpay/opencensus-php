@@ -8,7 +8,6 @@ class SoapClient extends \SoapClient
     {
 
         $namespace = 'https://paysecure/merchant.soap/';
-        $newNamespace = 'https://PaySecure/merchant.soap/';
 
         $request = str_replace( 'SOAP-ENV:', 'soapenv:', $request );
         $request = str_replace( 'xmlns:SOAP-ENV', 'xmlns:soapenv', $request );
@@ -21,13 +20,11 @@ class SoapClient extends \SoapClient
 
         // The xmlns attribute must then be added to EVERY function called by this script.
         $request = str_replace( '<CallPaySecure', '<CallPaySecure xmlns="' . $namespace . '"', $request );
-
-//        $dom = new \DOMDocument("1.0");
-//        $dom->preserveWhiteSpace = false;
-//        $dom->formatOutput = true;
-//        $dom->loadXML($request);
-//        echo "<pre>".htmlentities($dom->saveXML())."</pre>";
-//        die;
+        $request = str_replace(
+            '<RequestorCredentials',
+            '<RequestorCredentials xmlns="https://paysecure/merchant.soap.header/"',
+            $request
+        );
 
         $this->__last_request = $request;
 

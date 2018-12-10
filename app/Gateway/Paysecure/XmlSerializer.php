@@ -17,7 +17,7 @@ class XmlSerializer
 
         $dom = dom_import_simplexml($xml);
 
-        $dom = htmlentities($dom->ownerDocument->saveXML($dom->ownerDocument->documentElement));
+        $dom = $dom->ownerDocument->saveXML($dom->ownerDocument->documentElement);
 
         return $dom;
     }
