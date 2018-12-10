@@ -6,12 +6,6 @@ export const track = setTrackData({
   eventCategory,
 });
 
-const bannerEvents = {
-  earlySettlementAppear: 'Early Settlement: Appear',
-  earlySettlementClickRequestAccess: 'Early Settlement: Click - Request Access',
-  earlySettlementClickCloseButton: 'Early Settlement: Click - Close Button',
-};
-
 const commonEvents = {
   trackESModalSubmit: [
     'Early Settlement: Modal Submit',
@@ -41,15 +35,6 @@ const commonEvents = {
 
 const trackESAnnouncements = () => {
   let trackers = {};
-
-  Object.keys(bannerEvents).forEach(elem => {
-    trackers[elem] = function(eventLabel) {
-      track({
-        eventAction: bannerEvents[elem],
-        eventLabel: eventLabel,
-      });
-    };
-  });
 
   /**
    * Creating different trackers for events triggered

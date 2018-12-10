@@ -5,6 +5,7 @@ import ErrorBoundary from 'common/ErrorBoundary';
 * @props
 *   - {Function} onClose,
 *   - {Boolean, optional} maskClosable, Whether to close modal on clicking outside the modal
+*   - {Boolean, optional} isBlur, To blur background
 * */
 export class ModalMask extends React.PureComponent {
   state = {};
@@ -15,6 +16,7 @@ export class ModalMask extends React.PureComponent {
 
   componentWillUnmount() {
     this.props.isBlur && this.toggleBlur(false);
+    document.body.classList.remove('noscroll');
   }
 
   toggleBlur(toAdd) {
@@ -89,6 +91,7 @@ export const Modal = ({
   className,
   onClose,
   onCloseCB,
+  ...rest
 }) => {
   let classArray = className
     ? className.split(' ').map(cls => 'Modal-container--' + cls)
@@ -100,7 +103,7 @@ export const Modal = ({
   }
 
   return (
-    <div class={classList('Modal-container', classArray)}>
+    <div class={classList('Modal-container', classArray)} {...rest}>
       {showCloseBtn && (
         <span
           class="Modal-close"

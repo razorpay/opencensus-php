@@ -9,7 +9,8 @@ import { trackFormSubmit } from './ga';
 *
 * */
 
-export function createPaymentLink(reqPayload) {
+export function createPaymentLink(payload) {
+  const reqPayload = { ...payload };
   reqPayload.type = 'link';
   reqPayload.currency = 'INR'; // TODO: Get is dynamically
 
@@ -57,11 +58,16 @@ export function createPaymentLink(reqPayload) {
   });
 }
 
-export function editPaymentLink(id, data) {
+export function editPaymentLink(id, payload) {
+  const reqPayload = { ...payload };
+
+  reqPayload.expire_by &&
+    (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
+
   return merchantFetch({
     url: `invoices/${id}`,
     method: 'patch',
-    data: data,
+    data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },

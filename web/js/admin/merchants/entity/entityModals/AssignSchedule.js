@@ -5,7 +5,7 @@ import { closeModal, notifyError, notifySuccess } from 'common/modal';
 
 import { isOrgHDFC } from 'admin/user';
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, SwitchField } from 'ui/Field';
 import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'common/util';
@@ -67,6 +67,7 @@ export default class ScheduleModal extends Component {
       method: body.method,
       schedule_id: body.schedule_id,
       type: body.type,
+      international: body.international,
     };
 
     return adminPost({
@@ -127,6 +128,12 @@ export default class ScheduleModal extends Component {
               </option>
             ))}
           </SelectField>
+
+          <SwitchField
+            label="International"
+            name="international"
+            defaultValue="0"
+          />
 
           {this.state.pending ? (
             <Field label="Schedules" defaultValue="Loading..." disabled />

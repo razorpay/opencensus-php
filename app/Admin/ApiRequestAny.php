@@ -80,11 +80,14 @@ class ApiRequestAny
 
         $domain = \Request::server('SERVER_NAME');
 
+        $originDomain = ApiUrl::getRequestOriginUrl();
+
         $defaultHeaders = [
             'X-Dashboard'       => 'true',
             'X-User-Agent'      => Request::header('User-Agent'),
             'X-IP-Address'      => Request::ip(),
             'X-Org-Hostname'    => $domain,
+            'X-Request-Origin'  => $originDomain,
         ];
 
         $headers = $options['headers'] ?? [];

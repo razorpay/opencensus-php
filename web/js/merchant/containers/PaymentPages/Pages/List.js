@@ -143,14 +143,16 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
 
-            <div class="form-group list-filter-item">
-              <label>Receipt No.</label>
-              <Field
-                name="receipt"
-                component="input"
-                class="form-control input-sm"
-              />
-            </div>
+            {!user.isPaymentPagesV2Enabled && (
+              <div class="form-group list-filter-item">
+                <label>Receipt No.</label>
+                <Field
+                  name="receipt"
+                  component="input"
+                  class="form-control input-sm"
+                />
+              </div>
+            )}
 
             <div class="form-group list-filter-item">
               <label>Status</label>
@@ -183,8 +185,9 @@ export default class PaymentPagesContainer extends ListContainer {
                 <tr>
                   <th>Title</th>
                   <th>Amount</th>
-                  <th>Payments Made</th>
-                  <th>Times Payable</th>
+                  {!user.isPaymentPagesV2Enabled && <th>Payments Made</th>}
+                  {!user.isPaymentPagesV2Enabled && <th>Times Payable</th>}
+                  {user.isPaymentPagesV2Enabled && <th>Available Quantity</th>}
                   <th>Total Sales</th>
                   <th>Page Url</th>
                   <th>Created At</th>
@@ -210,10 +213,30 @@ export default class PaymentPagesContainer extends ListContainer {
                       </NavLink>
                     </td>
                     <td>
-                      <Amount value={item.amount} currency={item.currency} />
+                      {item.amount ? (
+                        <Amount value={item.amount} currency={item.currency} />
+                      ) : (
+                        '--'
+                      )}
                     </td>
-                    <td>{item.times_paid}</td>
-                    <td>{item.times_payable || '--'}</td>
+                    {!user.isPaymentPagesV2Enabled && (
+                      <td>{item.times_paid}</td>
+                    )}
+                    {!user.isPaymentPagesV2Enabled && (
+                      <td>{item.times_payable || '--'}</td>
+                    )}
+
+                    {user.isPaymentPagesV2Enabled && (
+                      <td>
+                        {item.times_payable
+                          ? Number(item.times_payable) -
+                            Number(item.times_paid) +
+                            '/' +
+                            Number(item.times_payable)
+                          : 'No Limit'}
+                      </td>
+                    )}
+
                     <td>
                       <Amount
                         value={item.total_amount_paid}
@@ -263,6 +286,14 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link settlement-doc-btn"
+              href="https://razorpay.com/docs/payment-pages/"
+              target="_blank"
+            >
+              Documentation&nbsp;<span class="icon i-external-link" />
+            </a>
+
             {isRoleAllowedEdit && (
               <NavLink class="btn btn-primary" to="/paymentpages/new">
                 <i class="i i-plus" />

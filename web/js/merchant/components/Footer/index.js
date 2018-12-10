@@ -44,11 +44,6 @@ export default ({ user }) => {
           </a>
         </u>{' '}
         ·{' '}
-        <u>
-          <Link to="#request" onClick={trackLinkClick}>
-            Contact Us
-          </Link>
-        </u>
       </footer>
     </React.Fragment>
   );

@@ -13,7 +13,9 @@ const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
 export const fetchVirtualAccounts = params => {
-  params.receiver_type = 'bank_account';
+  if (!params.notes) {
+    params.receiver_type = 'bank_account';
+  }
   return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
 

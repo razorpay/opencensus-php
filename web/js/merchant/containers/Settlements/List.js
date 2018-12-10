@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -13,7 +14,6 @@ import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
 import {
   trackEarlySettlementRequests,
@@ -25,6 +25,7 @@ import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
 
+@withRouter
 @connect(
   state => ({
     user: state.session.user,
@@ -43,6 +44,15 @@ export default class SettlementsListContainer extends ListContainer {
     showRequestESButton: this.props.user.showEarlySettlementAnnouncement,
   };
 
+  componentWillReceiveProps(nextProps) {
+    if (
+      nextProps.location.hash !== this.props.location.hash &&
+      nextProps.location.hash === '#requestearlyaccess'
+    ) {
+      this.showRequestEarySettlementForm();
+    }
+  }
+
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlements',
@@ -56,6 +66,10 @@ export default class SettlementsListContainer extends ListContainer {
     );
 
     this.props.fetchCurrentBalance();
+
+    if (this.props.location.hash === '#requestearlyaccess') {
+      this.showRequestEarySettlementForm();
+    }
   }
 
   onSearchAnalytics = params => {
@@ -142,8 +156,6 @@ export default class SettlementsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        <EarlySettlementAnnouncement from="Settlements" />
-
         <tabbed-container>
           <header>
             <NavLink to="/settlements">Settlements</NavLink>
@@ -162,7 +174,7 @@ export default class SettlementsListContainer extends ListContainer {
                   {this.state.showRequestESButton ? (
                     <a
                       class="btn btn-link req-es-btn"
-                      onClick={this.showRequestEarySettlementForm}
+                      href="#requestearlyaccess"
                     >
                       Request Early Settlements{' '}
                       <i class="fa fa-circle interpunct" />

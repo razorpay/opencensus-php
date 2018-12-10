@@ -486,6 +486,42 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * It returns the merchant feature names.
+     *
+     * @param $merchantId
+     *
+     * @return array Merchant features
+     * @throws BadRequestError
+     */
+    public function getMerchantFeatures(): array
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->send("merchants/me/features", 'GET');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        $features = $data['features'];
+
+        $validFeatures = array_filter($features, function($feature) {
+            return ($feature['value'] === true);
+        });
+
+        $featureNames = array_map(function($val) {
+            return $val['feature'];
+        }, array_values($validFeatures));
+
+        return $featureNames;
+    }
+
     public function addMerchantTagsOnAPI($merchantId, $tags)
     {
         $body = [

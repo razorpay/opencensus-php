@@ -9,6 +9,10 @@ export function matchModal(store, entityModalsMap) {
   return pathname => matcher(store)(entityModalsMap, pathname);
 }
 
+export function matchFullPageView(store, fullPageViewMap) {
+  return pathname => matcher(store)(fullPageViewMap, pathname);
+}
+
 function matcher(store) {
   return function(routeMap, pathname) {
     for (let route in routeMap) {

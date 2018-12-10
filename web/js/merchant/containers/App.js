@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import Smooch from 'smooch';
 
+import ErrorBoundary from 'common/ErrorBoundary';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -25,7 +25,11 @@ import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
+import { matchFullPageView } from 'merchant/routes';
+import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+
+import initChat from 'merchant/chat';
 
 @withRouter
 @connect(
@@ -135,7 +139,7 @@ export default class App extends Component {
         this.redirectToRoute(role);
 
         setTimeout(() => {
-          this.initSmooch(user);
+          initChat(user);
         });
         return data;
       }),
@@ -166,6 +170,7 @@ export default class App extends Component {
           user.features = setFeatures(data.success ? data.data.features : []);
 
           this.props.updateSession({ user, mode: currentMode });
+          this.renderFPView = this.getFPView(this.props.location);
 
           let $splash = document.getElementById('splash');
           if ($splash) {
@@ -181,10 +186,12 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentWillReceiveProps({ user, history }) {
+  componentWillReceiveProps({ user, history, location }) {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
+
+      this.renderFPView = this.getFPView(location);
     }
   }
 
@@ -271,28 +278,6 @@ export default class App extends Component {
     }
   }
 
-  initSmooch(data) {
-    if (location.hostname === 'dashboard.razorpay.com') {
-      let role = data.userRole;
-      Smooch.init({ appId: '54d849a9c99af8250046dbf8' }).then(function() {
-        Smooch.updateUser({
-          givenName: data.name,
-          email: data.email,
-          properties: {
-            id: data.id,
-            activated: data.activated,
-            locked: data.locked,
-            submitted: data.submitted,
-            role: role,
-            userEmail: data.user.email,
-            dashboardLink:
-              location.origin + '/admin#/app/merchants/' + data.id + '/detail',
-          },
-        });
-      });
-    }
-  }
-
   switchMode = mode => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
@@ -360,6 +345,23 @@ export default class App extends Component {
     });
   };
 
+  getFPView = location => {
+    const matchView = matchFullPageView(location.pathname);
+    let FPView = null;
+
+    if (matchView && matchView.match) {
+      const FPComponent = matchView.component;
+
+      FPView = (
+        <ErrorBoundary resetOnProps location={location}>
+          <FPComponent {...matchView.match.params} />
+        </ErrorBoundary>
+      );
+    }
+
+    return FPView;
+  };
+
   render() {
     let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
@@ -371,24 +373,36 @@ export default class App extends Component {
     }
 
     return (
-      <div class={`layout ${this.orgCode}`}>
-        <HeaderNav
-          user={user}
-          mode={mode}
-          modeFormatted={modeFormatted}
-          showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
-          onSwitchMode={this.switchMode}
-          onSwitchMerchant={this.switchMerchant}
-          showMobileNav={this.props.windowWidth < 950}
-        />
-        <Sidebar
-          user={user}
-          logoURL={org.main_logo_url}
-          config={config.config}
-          org_custom_code={org.custom_code}
-        />
-        <Content user={user} modeFormatted={modeFormatted} />
-        <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+      <div
+        class={classList(
+          'layout',
+          this.orgCode,
+          this.renderFPView && 'layout--fp'
+        )}
+      >
+        {this.renderFPView ? (
+          this.renderFPView
+        ) : (
+          <React.Fragment>
+            <HeaderNav
+              user={user}
+              mode={mode}
+              modeFormatted={modeFormatted}
+              showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
+              onSwitchMode={this.switchMode}
+              onSwitchMerchant={this.switchMerchant}
+              showMobileNav={this.props.windowWidth < 950}
+            />
+            <Sidebar
+              user={user}
+              logoURL={org.main_logo_url}
+              config={config.config}
+              org_custom_code={org.custom_code}
+            />
+            <Content user={user} modeFormatted={modeFormatted} />
+            <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+          </React.Fragment>
+        )}
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

@@ -70,6 +70,12 @@ export default class ActivationContainer extends React.Component {
     this.activationFormName = user.showInstantActivation
       ? 'KYC Form'
       : 'Activation Form';
+
+    if (props.rpc && props.rpc.notifyOnKYCSuccess) {
+      props.rpc.notifyOnKYCSuccess(reply => {
+        this.onKYCSuccess = reply;
+      });
+    }
   }
 
   preloadWelcomeAsset() {

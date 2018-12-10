@@ -50,18 +50,12 @@ export default class ActivationContainer extends Component {
           {
             name: 'notifyFormValidity',
             hasReply: true,
-            callback: reply => {
-              this.handleIAFormValidityChange = reply;
-            },
           },
         ],
         kycActivationMethods = [
           {
             name: 'notifyOnKYCSuccess',
             hasReply: true,
-            callback: reply => {
-              this.handleKYCSuccess = reply;
-            },
           },
         ];
 

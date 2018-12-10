@@ -246,12 +246,12 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
-  get isDiwaliPromoEnabled() {
-    return this.findTag('diwali_promotional_plan');
+  get isPaymentPagesV2Enabled() {
+    return this.findTag('paymentpagesv2');
   }
 
-  get showFTXPassAnnouncement() {
-    return this.findTag('announcement_ftx_passes');
+  get isDiwaliPromoEnabled() {
+    return this.findTag('diwali_promotional_plan');
   }
 }
 

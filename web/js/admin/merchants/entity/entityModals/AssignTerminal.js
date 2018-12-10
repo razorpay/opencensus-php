@@ -15,6 +15,7 @@ const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
   atom: 'Atom',
+  cardless_emi: 'Cardless EMI',
   axis_migs: 'Axis MIGS',
   axis_genius: 'Axis Genius',
   ezeclick: 'Ezeclick',
@@ -76,6 +77,8 @@ const gatewayAcquirerMapping = {
   ratn: 'RBL',
   barb: 'Bank of Baroda',
   fss: 'FSS',
+  zestmoney: 'ZestMoney',
+  earlysalary: 'EarlySalary',
 };
 
 const HDFC_gatewayAcquirerMapping = {
@@ -326,6 +329,16 @@ export default class TerminalForm extends Component {
           </SelectField>
 
           <SelectField name="emandate" label="Emandate Allowed" defaultValue="">
+            <option value="" />
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </SelectField>
+
+          <SelectField
+            name="cardless_emi"
+            label="CardlessEMI Allowed"
+            defaultValue=""
+          >
             <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>

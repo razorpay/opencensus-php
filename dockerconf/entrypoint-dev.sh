@@ -3,7 +3,7 @@
 set -euo pipefail
 cd /app/
 
-cp environment/.env.docker environment/.env.dev
+cp environment/.env.dev_docker environment/.env.dev
   
 echo "$(TZ=Asia/Pacific date) copy nginx config"
 cp dockerconf/dashboard-dev.conf /etc/nginx/conf.d/default.conf
@@ -14,6 +14,7 @@ composer install
 echo "DB Migrate"
 echo "$(date) Seeding live db"
 php artisan migrate --seed
+php artisan key:generate
 
 export PATH=$PATH:/app/
 
