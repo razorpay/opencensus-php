@@ -257,6 +257,7 @@ class NetbankingReconciliationTest extends TestCase
 
     public function testPnbManualReconciliation()
     {
+        $this->markTestSkipped();
         $this->gateway = 'netbanking_pnb';
 
         $payment = $this->createPayment('netbanking_pnb');
@@ -284,6 +285,7 @@ class NetbankingReconciliationTest extends TestCase
 
     public function testPnbFailedPaymentReconciliation()
     {
+        $this->markTestSkipped();
         $this->gateway = 'netbanking_pnb';
 
         $this->setMockGatewayTrue();

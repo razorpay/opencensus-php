@@ -84,7 +84,8 @@ class Netbanking
     protected static $selfCorp = [
         self::ICIC_C,
         self::UTIB_C,
-        self::BARB_C
+        self::BARB_C,
+        self::PUNB_C,
     ];
 
     protected static $selfTPV = [
@@ -417,6 +418,9 @@ class Netbanking
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
+            ],
+            'corp' => [
+                self::PUNB_C
             ]
         ],
         Gateway::NETBANKING_EQUITAS => [

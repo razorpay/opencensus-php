@@ -35,22 +35,38 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S',
+        'status'          => '0',
     ],
 
     'testAuthorizeFailed' => [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        ],
+    ],
+
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => Rzp\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
 
@@ -113,22 +129,22 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S'
+        'status'          => '0'
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
         'received'        => false,
         'bank'            => 'PUNB_R',
-        'status'          => 'F'
+        'status'          => '1000'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'PUNB_R',
-        'status'          => 'S'
+        'status'          => '0'
     ],
 
-    'testRefundFailed' => [
+    'testRefundAmountGreaterThanPaymentAmount' => [
         'response'  => [
             'content'     => [
                 'error' => [
