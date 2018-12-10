@@ -4,15 +4,13 @@ namespace RZP\Gateway\Upi\Yesbank;
 
 use Request;
 use Carbon\Carbon;
-use Requests_Hooks;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Mindgate;
-use RZP\Constants\Mode;
-use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
@@ -26,7 +24,7 @@ class Gateway extends Mindgate\Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 20;
+    const TIMEOUT = 40;
 
     const ACQUIRER = 'yesb';
 
@@ -80,14 +78,11 @@ class Gateway extends Mindgate\Gateway
 
     public function payout(array $input)
     {
-        $request = $this->getPayOutRequest($input);
-
-        $input['payment']['id'] = $input[Fields::GATEWAY_INPUT][Fields::REF_ID];
-        $input['payment']['amount'] = $input[Fields::GATEWAY_INPUT][Fields::AMOUNT];
-
         parent::action($input, Action::PAYOUT);
 
-        $attributes = $this->getGatewayEntityAttributes($input, Action::PAYOUT, Base\Type::PAY);
+        $request = $this->getPayOutRequest($input);
+
+        $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
@@ -100,7 +95,7 @@ class Gateway extends Mindgate\Gateway
             Fields::REQUESTMSG      => $encrypted,
         ];
 
-        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'payout');
+        $traceRequest = $request = $this->getStandardRequestArray($content);
 
         $traceRequest['decryptedContent'] = $decryptedContent;
 
@@ -119,24 +114,14 @@ class Gateway extends Mindgate\Gateway
 
     public function payoutVerify(array $input)
     {
-        $input['payment']['id'] = $input[Fields::GATEWAY_INPUT][Fields::REF_ID];
-
         parent::action($input, Action::PAYOUT_VERIFY);
 
         $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
         if ($gatewayEntity === null)
         {
-            $response = [
-                Fields::SUCCESS                  => false,
-                Fields::ERROR_MESSAGE            => ResponseMessage::NO_PAYOUT_FOR_REF_ID,
-                Fields::RRN                      => null,
-                Fields::STATUS_CODE              => null,
-                Fields::SUB_STATUS_TEXT          => null,
-                Fields::REQUEST_REFERENCE_NUMBER => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-            ];
-
-            return $response;
+            throw new Exception\LogicException(
+                'no payout exists with given reference id');
         }
 
         $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
@@ -150,9 +135,7 @@ class Gateway extends Mindgate\Gateway
             Fields::REQUESTMSG      => $encrypted,
         ];
 
-        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', 'verify_payout');
-
-        $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
+        $traceRequest = $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
 
@@ -205,7 +188,7 @@ class Gateway extends Mindgate\Gateway
 
     protected function getGatewayEntityAttributes( array $input,
         string $action = Action::AUTHORIZE,
-        string $type = Base\Type::PAY): array
+        string $type = Type::PAY): array
     {
         return [
             Entity::VPA                 => $input[Fields::GATEWAY_INPUT][Entity::VPA],
@@ -298,10 +281,11 @@ class Gateway extends Mindgate\Gateway
     protected function traceGatewayPaymentRequest(array $request, $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
+
         $this->trace->info(
             $traceCode,
             [
-                'payment_id' => $input['payment']['id'],
+                'payment_id' => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
                 'request'    => $request,
                 'gateway'    => $this->gateway,
             ]);

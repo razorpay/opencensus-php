@@ -8,5 +8,5 @@ class Url
     const TEST_DOMAIN          = 'https://uatsky.yesbank.in:444/app/uat/upi/';
 
     const PAYOUT               = 'mePayServerReqImps';
-    const VERIFY_PAYOUT        = 'meTransStatusQuery';
+    const PAYOUT_VERIFY        = 'meTransStatusQuery';
 }

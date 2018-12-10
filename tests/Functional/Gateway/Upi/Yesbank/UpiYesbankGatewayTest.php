@@ -99,7 +99,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
-        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals('PAY', $gatewayEntity['type']);
         $this->assertEquals($gatewayEntity['action'], 'payout');
 
         return $response;
@@ -146,7 +146,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
-        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals('PAY', $gatewayEntity['type']);
         $this->assertEquals($gatewayEntity['action'], 'payout');
     }
 
@@ -180,7 +180,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
-        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals('PAY', $gatewayEntity['type']);
         $this->assertEquals($gatewayEntity['action'], 'payout');
     }
 
@@ -216,7 +216,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('SUCCESS', $gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
-        $this->assertEquals('pay', $gatewayEntity['type']);
+        $this->assertEquals('PAY', $gatewayEntity['type']);
         $this->assertEquals($gatewayEntity['action'], 'payout');
     }
 
@@ -307,11 +307,10 @@ class UpiYesbankGatewayTest extends TestCase
 
         $request = $this->getPayoutRequest($attributes, 'verify');
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($request){
 
-        $this->assertEquals('No payout exists for the given reference id', $response['error_message']);
-
-        $this->assertFalse($response['success']);
+            $this->makeRequestAndGetContent($request);
+        });
     }
 
     public function testPayoutVpaVerifyWithAmountTampering()
