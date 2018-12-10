@@ -117,14 +117,7 @@ class Gateway extends Mindgate\Gateway
     {
         parent::action($input, Action::PAYOUT_VERIFY);
 
-        $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
-
-        if ($gatewayEntity === null)
-        {
-            throw new Exception\LogicException(
-                'No recordds found for given reference id'
-            );
-        }
+        $gatewayEntity = $this->repo->findByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
         $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
 

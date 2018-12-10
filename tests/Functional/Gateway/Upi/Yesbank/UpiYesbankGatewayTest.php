@@ -25,12 +25,6 @@ class UpiYesbankGatewayTest extends TestCase
      */
     protected $sharedTerminal;
 
-    /**
-     * Payment array
-     * @var array
-     */
-    protected $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/UpiYesbankGatewayTestData.php';
@@ -40,10 +34,6 @@ class UpiYesbankGatewayTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
 
         $this->gateway = Gateway::UPI_YESBANK;
-
-        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
-
-        $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
     public function testPayoutRouteWithAccess()
@@ -260,7 +250,7 @@ class UpiYesbankGatewayTest extends TestCase
     {
         $this->testPayoutToVpaFailed();
 
-        $gatewayEntity = $this->getLastEntity('upi', true);
+            $gatewayEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals('F', $gatewayEntity['status_code']);
 
