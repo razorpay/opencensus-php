@@ -93,7 +93,7 @@ export default class ActivationWizard extends React.Component {
       });
 
       notifyFormValidity(reply => {
-        this.onFormUIUpdate = reply;
+        this.onFormValidityChange = reply;
       });
     }
   }
@@ -399,8 +399,8 @@ export default class ActivationWizard extends React.Component {
             : isFieldValid(c, this, data)
       );
 
-    if (this.props.onFormValidityChange) {
-      this.props.onFormValidityChange(isValid);
+    if (this.onFormValidityChange) {
+      this.onFormValidityChange(isValid);
     }
 
     return isValid;

@@ -50,18 +50,12 @@ export default class ActivationContainer extends Component {
           {
             name: 'notifyFormValidity',
             hasReply: true,
-            callback: reply => {
-              this.handleIAFormValidityChange = reply;
-            },
           },
         ],
         kycActivationMethods = [
           {
             name: 'notifyOnKYCSuccess',
             hasReply: true,
-            callback: reply => {
-              this.handleKYCSuccess = reply;
-            },
           },
         ];
 
@@ -160,19 +154,13 @@ export default class ActivationContainer extends Component {
           'Activation--wizard',
           'Activation--wizard--Instant',
         ]);
-        content = (
-          <InstantActivation
-            {...commonProps}
-            onFormValidityChange={this.handleIAFormValidityChange}
-          />
-        );
+        content = <InstantActivation {...commonProps} />;
       } else {
         content = (
           <KycForm
             {...commonProps}
             onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
-            onKYCSuccess={this.handleKYCSuccess}
           />
         );
       }
