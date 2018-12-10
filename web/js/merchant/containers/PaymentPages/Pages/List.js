@@ -286,6 +286,14 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link settlement-doc-btn"
+              href="https://razorpay.com/docs/payment-pages/"
+              target="_blank"
+            >
+              Documentation&nbsp;<span class="icon i-external-link" />
+            </a>
+
             {isRoleAllowedEdit && (
               <NavLink class="btn btn-primary" to="/paymentpages/new">
                 <i class="i i-plus" />

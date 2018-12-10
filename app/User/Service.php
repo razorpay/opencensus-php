@@ -409,6 +409,8 @@ class Service extends Base\Service
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
+
+                    $data['features'] = $merchantService->getMerchantFeatures();
                 }
 
                 if (((bool) $merchant['activated']) === true)
