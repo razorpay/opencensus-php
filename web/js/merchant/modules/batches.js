@@ -35,7 +35,10 @@ const BATCH_DETAILS = getFetchDetailAction(BATCH);
 const BATCH_LIST = getFetchActionName(BATCH);
 const PAYMENT_LINK_DETAILS = getFetchDetailAction(PAYMENT_LINK);
 
-const fetchBatchAjax = id => merchantFetch(`batches/${id}`);
+const fetchBatchAjax = id =>
+  merchantFetch(`batches/${id}`).then(response => ({
+    batch: response.data,
+  }));
 
 const fetchBatchesAjax = (params, type) => {
   params[Array.isArray(type) ? 'types' : 'type'] = type;
@@ -252,7 +255,7 @@ const onPaymentLinkDetails = (state, { payload }) =>
   merge(state, {
     loading: false,
     entity: {
-      batch: payload[0].data,
+      batch: payload[0].batch,
       stats: payload[1].data.stats,
       invoices: payload[2].data.items,
     },
