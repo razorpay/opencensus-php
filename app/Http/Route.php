@@ -2125,7 +2125,7 @@ final class Route
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
-        'reporting_config_create'                  => '*',
+        'reporting_config_create'                  => Permission::CREATE_SELF_SERVE_REPORT,
         'reporting_config_edit'                    => '*',
         'reporting_config_delete'                  => '*',
         'reporting_log_get'                        => '*',
