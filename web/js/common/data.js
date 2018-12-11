@@ -116,6 +116,7 @@ export const gateways = {
     billdesk: 'Billdesk',
     ebs: 'Ebs',
     sharp: 'Sharp',
+    atom: 'Atom',
   },
 
   wallet: {
