@@ -2,7 +2,7 @@
 
 namespace RZP\Models\User;
 
-use RZP\Models\Merchant\Balance\Type;
+use RZP\Constants\Product;
 
 class Role
 {
@@ -57,8 +57,8 @@ class Role
     ];
 
     const PRODUCT_ROLES = [
-        Type::PRIMARY => self::ALL_ROLES,
-        Type::BANKING => [
+        Product::PRIMARY => self::ALL_ROLES,
+        Product::BANKING => [
             self::OWNER,
             self::ADMIN
         ],
