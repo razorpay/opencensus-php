@@ -395,6 +395,7 @@ class Entity extends Base\PublicEntity
         'recurring',
         self::METADATA,
         self::VERIFY_AT,
+        self::WALLET,
     ];
 
     protected $dates = [
@@ -722,6 +723,14 @@ class Entity extends Base\PublicEntity
         // so that for payments with status = created
         // we can pick them after 2 min for verify.
         $this->setVerifyAt(time() + 120);
+    }
+
+    protected function generateWallet($input)
+    {
+        if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
+        {
+            $this->setAttribute(self::WALLET, $input['provider']);
+        }
     }
 
     // --------------------- Generators Ends ---------------------------------------
@@ -1470,6 +1479,11 @@ class Entity extends Base\PublicEntity
     public function isEmi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
+    }
+
+    public function isCardlessEmi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI);
     }
 
     public function isPinAuth()
@@ -2912,6 +2926,11 @@ class Entity extends Base\PublicEntity
         parent::verifyIdAndStripSign($id);
 
         return 'upi.polling.' . $id . '.status';
+    }
+
+    public static function getCardlessEmiOnetimeTokenCacheKey(string $token): string
+    {
+        return 'payment:cardlessemi.' . $token . '.token';
     }
 
     public function getCacheInputKey(): string

@@ -821,7 +821,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 18,
+                        'count' => 19,
                         'rules' => [
                             [],
                         ],
@@ -856,7 +856,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 18,
+                    'rules_count' => 19,
                 ],
             ],
         ],
