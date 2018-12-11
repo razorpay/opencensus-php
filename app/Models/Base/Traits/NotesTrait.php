@@ -33,6 +33,16 @@ trait NotesTrait
         $this->setAttribute(self::NOTES, $notes);
     }
 
+    public function appendNotes(array $newNotes)
+    {
+        $oldNotes = $this->getNotes();
+
+        // if the key is present in both $oldNotes and $newNotes, it will be overwritten with the new value.
+        $notes = array_merge($oldNotes, $newNotes);
+
+        $this->setAttribute(self::NOTES, $notes);
+    }
+
     // -------------------------------------- End Setters --------------------------------------
 
     // -------------------------------------- Getters --------------------------------------

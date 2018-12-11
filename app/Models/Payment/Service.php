@@ -1378,16 +1378,20 @@ class Service extends Base\Service
 
     /**
      * Marks the payment as acknowledged, if not already acknowledged.
+     * Also, updates payments.notes field with acknowledged data if any.
      *
      * @param string $paymentId
+     * @param array  $input
      *
      * @throws Exception\BadRequestException
      */
-    public function acknowledge(string $paymentId)
+    public function acknowledge(string $paymentId, array $input)
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $this->getNewProcessor()->acknowledge($payment);
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
+        $this->getNewProcessor()->acknowledge($payment, $notes);
     }
 
     public function updateReceiverData()

@@ -399,7 +399,9 @@ class PaymentController extends Controller
      */
     public function postAcknowledge(string $paymentId)
     {
-        $this->service()->acknowledge($paymentId);
+        $input = Request::all();
+
+        $this->service()->acknowledge($paymentId, $input);
 
         return ApiResponse::json([], 204);
     }
