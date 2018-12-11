@@ -84,6 +84,7 @@ function disableEmptyInputs(form) {
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
                 <option value="emandate">E-Mandate</option>
+                <option value="cardless_emi">Cardless Emi</option>
             </select>
         </td>
     </tr>
@@ -138,6 +139,15 @@ function disableEmptyInputs(form) {
                 <option value="sbibuddy">SBI Buddy</option>
                 <option value="openwallet">Openwallet (B2B)</option>
                 <option value="mpesa">Vodafone Mpesa</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Provider </td>
+        <td>
+            <select name="provider">
+                <option value="zestmoney">Zestmoney</option>
+                <option value="earlysalary">Earlysalary</option>
             </select>
         </td>
     </tr>

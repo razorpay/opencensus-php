@@ -421,6 +421,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emandate' => false]);
     }
 
+    public function enableCardlessEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cardless_emi' => true]);
+    }
+
+    public function disableCardlessEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cardless_emi' => false]);
+    }
+
     public function createBalanceOfBankingType(string $merchantId = '10000000000000')
     {
         return $this->fixtures->create('balance', ['type' => 'banking', 'merchant_id' => $merchantId]);

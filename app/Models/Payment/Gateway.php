@@ -16,6 +16,7 @@ use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway
 {
@@ -82,13 +83,15 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
 
-    const ACQUIRER_HDFC      = 'hdfc';
-    const ACQUIRER_ICIC      = 'icic';
-    const ACQUIRER_AXIS      = 'axis';
-    const ACQUIRER_AMEX      = 'amex';
-    const ACQUIRER_FSS       = 'fss';
-    const ACQUIRER_RATN      = 'ratn';
-    const ACQUIRER_BARB      = 'barb';
+    const CARDLESS_EMI       = 'cardless_emi';
+
+    const ACQUIRER_HDFC         = 'hdfc';
+    const ACQUIRER_ICIC         = 'icic';
+    const ACQUIRER_AXIS         = 'axis';
+    const ACQUIRER_AMEX         = 'amex';
+    const ACQUIRER_FSS          = 'fss';
+    const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -134,6 +137,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY],
     ];
 
     const POWER_WALLETS = [
@@ -203,6 +207,7 @@ class Gateway
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
+        self::CARDLESS_EMI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -636,6 +641,10 @@ class Gateway
         Method::AEPS => [
             self::AEPS_ICICI,
         ],
+
+        Method::CARDLESS_EMI => [
+            self::CARDLESS_EMI,
+        ]
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -885,6 +894,7 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
+        self::CARDLESS_EMI,
     ];
 
     public static $verifyDisabled = [

@@ -9,6 +9,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
@@ -43,7 +44,9 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
-        '_'                     => 'sometimes|array'
+        '_'                     => 'sometimes|array',
+        'method'                => 'sometimes|in:cardless_emi',
+        'provider'              => 'required_if:method,cardless_emi|custom',
     ];
 
     protected static $contactRules = [
@@ -180,5 +183,14 @@ class Validator extends Base\Validator
     public static function validateWalletAppCustomerCreateInput($input)
     {
         (new static)->validateInput('wallet_app_create', $input);
+    }
+
+    public function validateProvider($attribute, $provider)
+    {
+        if (CardlessEmi::exists($provider) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Provider entered is not valid for cardless emi');
+        }
     }
 }
