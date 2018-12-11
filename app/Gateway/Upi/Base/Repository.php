@@ -78,6 +78,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByMerchantReference(string $merchantReference)
+    {
+        return $this->newQuery()
+            ->where('merchant_reference', '=', $merchantReference)
+            ->firstOrFail();
+    }
+
     public function findAllByNpciTxnId(string $npciTxnId)
     {
         return $this->newQuery()

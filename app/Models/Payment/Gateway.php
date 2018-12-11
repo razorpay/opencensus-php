@@ -65,6 +65,7 @@ class Gateway
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
 
@@ -629,6 +630,7 @@ class Gateway
             self::UPI_AXIS,
             self::UPI_SBI,
             self::UPI_HULK,
+            self::UPI_YESBANK,
         ],
 
         Method::AEPS => [
@@ -719,6 +721,7 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_YESBANK,
     ];
 
     public static $headless = [
@@ -1084,6 +1087,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_YESBANK,
     ];
 
     /**

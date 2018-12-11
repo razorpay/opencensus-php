@@ -1500,4 +1500,22 @@ return [
             ]
         ]
     ],
+
+    'testAssignUpiYesbankTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_yesbank',
+                'upi'                       => '1',
+                'gateway_merchant_id'       => '1245',
+                'type'                      => ['pay' => '1'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '1245',
+                'enabled'             => true
+            ]
+        ]
+    ],
 ];

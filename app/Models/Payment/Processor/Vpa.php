@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Yesbank\Fields;
+use RZP\Gateway\Upi\Base\Entity;
 use Razorpay\Trace\Logger as Trace;
 
 trait Vpa
@@ -48,6 +50,25 @@ trait Vpa
         }
 
         $response['success'] = $success;
+
+        return $response;
+    }
+
+    // TODO: needs to be removed
+    public function payoutVpa(array $input, $type)
+    {
+        $action = ($type === 'pay') ? Payment\Action::PAYOUT : Payment\Action::PAYOUT_VERIFY;
+
+        // This will throw bad request validation error
+        (new Payment\Validator)->validateInput($action, $input);
+
+        $terminals = $this->repo->terminal->getAllTerminalsForGateway('upi_yesbank');
+
+        $terminal = $terminals[0];
+
+        $gateway = $terminal->getGateway();
+
+        $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
 
         return $response;
     }
