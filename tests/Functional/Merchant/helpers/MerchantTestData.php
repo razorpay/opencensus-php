@@ -3706,5 +3706,16 @@ return [
                 ],
             ]
         ]
-    ]
+    ],
+
+    'testGetCheckoutPreferencesForCardlessEmi' => [
+    'request' => [
+        'url' => '/preferences',
+        'method' => 'get',
+    ],
+    'response' => [
+        'content' => [
+        ],
+    ],
+    ],
 ];

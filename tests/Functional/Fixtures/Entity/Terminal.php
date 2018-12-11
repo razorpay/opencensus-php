@@ -86,6 +86,7 @@ class Terminal extends Base
         $this->createSharedBladeTerminal();
         $this->createSharedFssTerminal();
         $this->createSharedEmandateAxisTerminal();
+        $this->createSharedCardlessEmiTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -538,6 +539,26 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCardlessEmiTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                   => $termId,
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'cardless_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 1,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'earlysalary',
+            'mode'                 => 1,
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

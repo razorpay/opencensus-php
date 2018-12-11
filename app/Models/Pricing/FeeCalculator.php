@@ -279,6 +279,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForBankTransfer($rules);
         }
+        else if ($method === Payment\Method::CARDLESS_EMI)
+        {
+            $rule = $this->getRelevantPricingRuleForCardlessEmi($rules);
+        }
         // else if ($method === Payment\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -479,6 +483,22 @@ class FeeCalculator
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForCardlessEmi($rules)
+    {
+        $payment = $this->entity;
+
+        $provider = $payment->getWallet();
+
+        // @todo: Pricing structure to do discussed with product
+        $filters = [
+            [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->validateAndGetOnePricingRule($rules);
     }

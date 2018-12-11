@@ -759,6 +759,29 @@ return [
         ]
     ],
 
+    'testCreateCardlessEmiTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'cardless_emi',
+                'gateway_acquirer'          => 'zestmoney',
+                'category'                  => 1234,
+                'gateway_merchant_id'       => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id2'      => 'test merchant',
+                'mode'                      => 1,
+                'cardless_emi'              => 1,
+                'gateway_terminal_password' => 'aabbccdd'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id2' => 'test merchant',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [

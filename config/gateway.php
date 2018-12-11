@@ -18,6 +18,7 @@ return [
         'mpi_blade',
         'mpi_enstage',
         'card_fss',
+        'cardless_emi',
         'cybersource',
         'esigner_digio',
         'esigner_legaldesk',
@@ -130,6 +131,7 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
+    'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
 
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
 
