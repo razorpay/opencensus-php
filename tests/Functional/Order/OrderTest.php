@@ -163,6 +163,13 @@ class OrderTest extends TestCase
         return $orderResponse;
     }
 
+    public function testCreateTPVOrderWithoutAccountNumber()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+    }
+
     public function testCreateTPVOrderWithNewFlow()
     {
         $testData = $this->testData[__FUNCTION__];

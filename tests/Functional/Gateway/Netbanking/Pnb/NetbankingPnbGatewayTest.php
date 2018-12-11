@@ -46,6 +46,55 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    public function testPaymentCorporate()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_pnb_corp_terminal');
+
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('PUNB_C');
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->verifyPayment($payment['id']);
+
+        $testData                = $this->testData['testPayment'];
+        $testData['bank']        = 'PUNB_C';
+        $testData['terminal_id'] = '100NbPunbCrpTl';
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+
+        $testData['bank'] = 'PUNB_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
+
+        $this->assertEquals(1, $content['payment']['verified']);
+    }
+
+    public function testVerifyCallbackFailure()
+    {
+        $this->mockFailedVerifyResponse();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testAuthorizeFailed()
     {
         $data = $this->testData[__FUNCTION__];
@@ -76,45 +125,6 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
-    public function testAuthFailedVerifyFailed()
-    {
-        $this->testAuthorizeFailed();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockFailedVerifyResponse();
-
-        $this->verifyPayment($payment['id']);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
-    }
-
-    /**
-     * When the payment is incorrectly marked as authorized
-     * and verify points out that it is not
-     */
-    public function testAuthSuccessVerifyFailed()
-    {
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->testPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockFailedVerifyResponse();
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
-    }
-
     /**
      * Authorization fails, but verify shows success
      * Results in a payment verification error
@@ -127,8 +137,6 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->mockSetVerifyTransactionId();
-
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->verifyPayment($payment['id']);
@@ -139,25 +147,49 @@ class NetbankingPnbGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
 
-        $this->assertEquals($refund['amount'], 50000);
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $this->assertEquals(50000, $refund['amount']);
     }
 
     public function testRefundPartial()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $refund = $this->refundPayment($payment['id'], 10000);
-
-        $this->assertEquals($refund['amount'], 10000);
+        $this->refundPayment($payment['id'], 10000);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['amount_refunded'], 10000);
+        $this->assertEquals(10000, $payment['amount_refunded']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(10000, $refund['amount']);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testRefundFailed()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockFailedRefundResponse();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+
+        $this->assertEquals('GATEWAY_ERROR_PAYMENT_REFUND_FAILED', $refund['internal_error_code']);
+    }
+
+
+    public function testRefundAmountGreaterThanPaymentAmount()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -170,6 +202,7 @@ class NetbankingPnbGatewayTest extends TestCase
                 $refund = $this->refundPayment($payment['id'], 100000);
             });
     }
+    /*
 
     public function testPnbDailyFileGeneration()
     {
@@ -197,7 +230,7 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->checkEmptyRefundTextData($data);
 
         $this->checkEmptyRefundsMailQueue();
-    }
+    }*/
 
     protected function mockFailedVerifyResponse()
     {
@@ -205,7 +238,8 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content['BankStatus'] = 'F';
+                unset($content['response_code']);
+                $content['code'] = 1000;
             }
         });
     }
@@ -216,7 +250,26 @@ class NetbankingPnbGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content['bankstatus'] = 'F';
+                $content['response_code'] = 1000;
+            }
+        });
+    }
+
+    protected function mockFailedRefundResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                unset($content['data']);
+                unset($content['hash']);
+
+                $error = [
+                    'code'    => '1024',
+                    'message' => 'Invalid Parameters'
+                ];
+
+                $content['error'] = $error;
             }
         });
     }

@@ -1532,4 +1532,33 @@ class Service extends Base\Service
 
         return $payment;
     }
+
+    public function generateAndSaveOneTimeTokenWithContact($input)
+    {
+        $cacheTtl = 15;
+
+        $length = 14;
+
+        $bytes = random_bytes($length / 2);
+
+        $token = bin2hex($bytes);
+
+        $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($token);
+
+        $data = [
+            'contact'   => $input['contact'],
+            'provider'  => $input['provider']
+        ];
+
+        $this->app['cache']->put($key, $data, $cacheTtl);
+
+        return $token;
+    }
+
+    public function payoutVpa($input, $type)
+    {
+        $data = $this->getNewProcessor()->payoutVpa($input, $type);
+
+        return $data;
+    }
 }

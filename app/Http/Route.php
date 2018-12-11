@@ -113,6 +113,9 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
+        // This route is created for temporary testing and usage of payouts to a vpa, type in the route defines whether
+        // we are making a payout or verifying the payout
+        'vpa_payout'                               => ['post',     'payout/vpa/{type}',                              'PaymentController@postPayoutVpa'                                   ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_mark_processed_bulk'               => ['put',      'refunds/status/processed',                       'RefundController@putRefundMarkProcessedBulk'                       ],
@@ -777,7 +780,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-
+        'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
+      
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1174,6 +1178,7 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'vpa_payout',
         'contact_get',
         'contact_list',
         'contact_create',
@@ -1293,6 +1298,7 @@ final class Route
         'apspdcl_bridge',
         'billdesk_reconcile_cancelled',
         'setl_notify_h2h',
+        'entity_balance_id_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1783,6 +1789,7 @@ final class Route
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
         'scrooge_refunds_get_multiple',
+        'scrooge_refunds_download',
         'scrooge_refunds_get',
         'scrooge_refunds_update',
 
@@ -1804,7 +1811,6 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
-        'entity_balance_id_update',
         'merchant_balance_bulk_backfill_ids',
     ];
 
@@ -2075,6 +2081,7 @@ final class Route
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
+        'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'schedule_fetch'                           => '*',
@@ -2357,6 +2364,7 @@ final class Route
             'merchant_post_beneficiary_api',
             'setl_verify',
             'billdesk_reconcile_cancelled',
+            'entity_balance_id_update',
         ],
 
         'subscriptions' => [

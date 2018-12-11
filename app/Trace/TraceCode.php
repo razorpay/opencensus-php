@@ -204,6 +204,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED       = 'BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS              = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                        = 'GATEWAY_TOKEN_MISMATCH';
+    const CHECK_ACCOUNT_REQUEST                         = 'CHECK_ACCOUNT_REQUEST';
+    const CHECK_ACCOUNT_RESPONSE                        = 'CHECK_ACCOUNT_RESPONSE';
+    const FETCH_TOKEN_REQUEST                           = 'FETCH_TOKEN_REQUEST';
+    const FETCH_TOKEN_RESPONSE                          = 'FETCH_TOKEN_RESPONSE';
 
     const AUTO_CAPTURE_REFUND_DELAY                     = 'AUTO_CAPTURE_REFUND_DELAY';
 
@@ -644,7 +648,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_OTP_RESEND_REQUEST        = 'GATEWAY_PAYMENT_OTP_RESEND_REQUEST';
     const GATEWAY_PAYMENT_OTP_RESEND_RESPONSE       = 'GATEWAY_PAYMENT_OTP_RESEND_RESPONSE';
 
-
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
@@ -709,6 +712,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_CREATED                               = 'VPA_CREATED';
     const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
     const VPA_DELETED                               = 'VPA_DELETED';
+    const VPA_PAYOUT_REQUEST                        = 'VPA_PAYOUT_REQUEST';
+    const VPA_PAYOUT_VERIFY_REQUEST                 = 'VPA_PAYOUT_VERIFY_REQUEST';
     const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
