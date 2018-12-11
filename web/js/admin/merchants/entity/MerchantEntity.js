@@ -392,7 +392,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-comment" />
           </div>
         </ShowWhen>
-        <ShowWhen>
+        <ShowWhen permission="create_self_serve_report">
           <Link to={`/merchants/${merchantId}/report_config`}>
             Self Serve Report configs
           </Link>
