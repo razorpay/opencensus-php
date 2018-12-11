@@ -1139,16 +1139,25 @@ class VirtualAccountTest extends TestCase
      */
     public function testCreateForBankingBalance()
     {
-        // Case 1: Failure - Attempting to create virtual account when merchant is not setup for business banking.
-
-        // Todo: ^, waiting on on-boarding part to be done first.
-
         // Sets up test merchant for business banking
         $this->fixtures->merchant->createBalanceOfBankingType();
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Case 1: Failure - Attempting to create virtual account when merchant is not setup for business banking.
+
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
+        $this->expectException(\Rzp\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('The merchant has not been activated for X. This action can only be taken for X activated merchants');
+
+        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+
         // Case 2: Success
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
         $this->assertEquals($merchant->bankingBalance->getId(), $virtualAccount->getBalanceId());
