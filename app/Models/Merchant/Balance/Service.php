@@ -24,7 +24,7 @@ class Service extends Base\Service
     {
         $mode = $mode ?? $this->auth->getLiveConnection();
 
-        $balance = $this->repo->getMerchantBalanceByType($merchant, $balanceType, $mode);
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant, $balanceType, $mode);
 
         if ($balance === null)
         {

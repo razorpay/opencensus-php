@@ -1333,7 +1333,7 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isBusinessBankingEnabled()
+    public function isBusinessBankingEnabled(): bool
     {
         return $this->getAttribute(self::BUSINESS_BANKING);
     }

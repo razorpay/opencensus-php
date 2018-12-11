@@ -154,7 +154,7 @@ class MerchantTest extends TestCase
     public function testMerchantFetchCardEnabled()
     {
         $merchants = $this->getEntities(
-                'merchant', ['methods' => '{"card":true}'], true);
+                'merchant', ['methods' => "{'card':true}"], true);
 
         $this->assertEquals($merchants['entity'], 'collection');
     }
@@ -928,7 +928,7 @@ class MerchantTest extends TestCase
 
             $testDataURL = $this->testData['testAddBankAccountWithMerchantIdInURL']['request']['url'];
 
-            $testDataURLParts = explode("/",$testDataURL);
+            $testDataURLParts = explode('/',$testDataURL);
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -1101,7 +1101,6 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
         $this->fixtures->pricing->createStandardPlan();
         $this->fixtures->merchant->disableInternational();
-
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
 
@@ -3040,8 +3039,8 @@ class MerchantTest extends TestCase
             'email'  => 'test@razorpay.com',
         ]);
 
-        $merchant = Merchant\Entity::find("10000000000044");
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant = Merchant\Entity::find('10000000000044');
+        $merchant->reTag(['ref-10000000000000']);
         $merchant->saveOrFail();
 
         $admin = $this->ba->getAdmin();
@@ -3064,7 +3063,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3097,7 +3096,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
 
@@ -3155,7 +3154,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3183,7 +3182,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3391,9 +3390,9 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant = Merchant\Entity::find("10000000000040");
+        $merchant = Merchant\Entity::find('10000000000040');
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3693,7 +3692,6 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
-
     }
 
     /**
@@ -3702,6 +3700,11 @@ class MerchantTest extends TestCase
     public function testMerchantSwitchProduct()
     {
         $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 

@@ -4,8 +4,6 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {

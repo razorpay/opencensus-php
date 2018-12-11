@@ -114,9 +114,9 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
     }
 
-    public function createOrFetchBankingVirtualAccount(Merchant $merchant): Entity
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant, $balance): Entity
     {
-        $virtualAccount = $this->repo->getActiveVirtualAccountFromBankAccountId($merchant->bankingBalance->getId());
+        $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBankAccountId($balance->getId());
 
         if ($virtualAccount === null)
         {

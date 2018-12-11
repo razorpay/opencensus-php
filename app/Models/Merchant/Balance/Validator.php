@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Base;
 use RZP\Exception;
 
-class Validator
+class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::ID       => 'sometimes|alpha_num|size:14',

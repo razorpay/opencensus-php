@@ -609,15 +609,15 @@ class Activate extends Base\Core
             // Business Banking logic is coupled only with the live mode.
             $liveMode = $this->app['basicauth']->getLiveConnection();
 
+            $this->app['basicauth']->setModeAndDbConnection($liveMode);
+
             // Create Banking Balance.
             $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
 
-            $this->app['basicauth']->setModeAndDbConnection($liveMode);
-
-            $merchant->reload();
+            // We need to enable bank transfer before creating virtual account.
 
             // Virtual Account.
-            $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant);
+            $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
 
             // todo Banking Pricing defaults if exists. It doesn't exist we have a global pricing.
         }

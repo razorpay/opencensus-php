@@ -23,4 +23,9 @@ class Type
         self::REFUND_CREDITS,
         self::AMOUNT_CREDITS,
     ];
+
+    public static function exists(string $type): bool
+    {
+        return defined(get_class() . '::' . strtoupper($type));
+    }
 }
