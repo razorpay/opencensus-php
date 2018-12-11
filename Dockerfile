@@ -11,7 +11,7 @@ RUN apk add --allow-untrusted --no-cache \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ \
     libxrender libx11-dev fontconfig zlib-dev gnu-libiconv \
-    ca-certificates wkhtmltopdf ttf-freefont dbus p7zip php7-sockets && \
+    ca-certificates glib ttf-freefont dbus p7zip php7-sockets && \
     #https://github.com/gliderlabs/docker-alpine/issues/30#issuecomment-372020089
     update-ca-certificates 2>/dev/null && \
     cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
