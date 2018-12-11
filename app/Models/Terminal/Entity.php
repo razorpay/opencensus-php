@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
+    const CARDLESS_EMI                  = 'cardless_emi';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
@@ -137,6 +138,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::CARDLESS_EMI,
     ];
 
     protected $public = [
@@ -178,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::CARDLESS_EMI,
     ];
 
     protected $hidden = [
@@ -231,6 +234,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED                   => true,
         self::USED                      => false,
         self::EMI_SUBVENTION            => null,
+        self::CARDLESS_EMI              => 0,
     ];
 
     protected $casts = [
@@ -251,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
+        self::CARDLESS_EMI              => 'boolean',
     ];
 
     protected $appends = [
@@ -422,6 +427,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isCardlessEmiEnabled()
+    {
+        return $this->getAttribute(self::CARDLESS_EMI);
     }
 
     public function isShared(): bool

@@ -335,8 +335,7 @@ class Validator extends Base\Validator
         // TODO: Change this after creating bank account entities for all the previous TPV orders
         $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
 
-        if ((empty($payment) === false) and
-            (empty($accountNumber) === true))
+        if (empty($accountNumber) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);

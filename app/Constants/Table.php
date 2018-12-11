@@ -150,6 +150,7 @@ class Table
     const CYBERSOURCE           = 'cybersource';
     const CARD_FSS              = 'card_fss';
     const ISG                   = 'isg';
+    const CARDLESS_EMI          = 'cardless_emi';
 
     // Sessions table
     const SESSION               = 'sessions';
