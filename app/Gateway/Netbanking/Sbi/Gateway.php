@@ -392,16 +392,16 @@ class Gateway extends Base\Gateway
     {
         $gatewayResponse = trim($gatewayResponse);
 
-        //try
-        //{
+        try
+        {
             $decryptedString = trim($this->decrypt($gatewayResponse));
-        //}
-        /*catch (\Exception $e)
+        }
+        catch (\Exception $e)
         {
             throw new Exception\LogicException(
                 'Callback response decryption failed',
                 ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED);
-        }*/
+        }
 
         try
         {
@@ -427,7 +427,7 @@ class Gateway extends Base\Gateway
             throw new Exception\RuntimeException('Invalid gateway response');
         }
 
-        $this->compareHashes($response[RequestFields::CHECKSUM], md5($stringWithoutChecksum));
+        $this->compareHashes($response[RequestFields::CHECKSUM], hash('sha256', $stringWithoutChecksum));
 
         return $response;
     }

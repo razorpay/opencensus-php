@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
     {
         $requestWithoutChecksum = urldecode(http_build_query($requestArray, '', '|'));
 
-        $checksum = md5($requestWithoutChecksum);
+        $checksum = hash('sha256', $requestWithoutChecksum);
 
         // not actually callback, just using `callback` action to modify checksum in tests
         $this->content($checksum, 'callback');
