@@ -194,7 +194,7 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'checkbin2')
                 {
-                    $content['implements_redirect'] = 'FALSE';
+                    $content['Implements_Redirect'] = 'FALSE';
                 }
                 if ($action === 'initiate')
                 {
@@ -236,7 +236,7 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'checkbin2')
                 {
-                    $content['implements_redirect'] = 'FALSE';
+                    $content['Implements_Redirect'] = 'FALSE';
                 }
             }
         );

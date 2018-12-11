@@ -230,6 +230,7 @@ trait RequestHandlerTrait
                 'response'   => $arrayResponse,
                 'payment_id' => $this->input['payment']['id'],
                 'gateway'    => $this->gateway,
+                'command'    => $command,
             ]
         );
 

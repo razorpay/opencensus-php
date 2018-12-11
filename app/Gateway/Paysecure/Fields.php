@@ -63,7 +63,7 @@ class Fields
 
     // CheckBIN2 response
     const QUALIFIED_INTERNETPIN = 'qualified_internetpin';
-    const IMPLEMENTS_REDIRECT   = 'implements_redirect';
+    const IMPLEMENTS_REDIRECT   = 'Implements_Redirect';
 
     // Initiate response
     const TRAN_ID                     = 'tran_id';
