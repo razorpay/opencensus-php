@@ -1693,6 +1693,19 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
     }
 
+    public function testGetCheckoutPreferencesForCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:shared_cardless_emi_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();

@@ -363,4 +363,22 @@ class Repository extends Base\Repository
     {
         $terminal->merchants()->detach($merchant);
     }
+
+    public function getTerminalForProviderAndMerchant(string $provider, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->enabled()
+                    ->firstOrFail();
+    }
+
+    public function findByMerchantIdAndCardlessEmi(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CARDLESS_EMI, '=', 1)
+                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
+                    ->enabled()
+                    ->get();
+    }
 }
