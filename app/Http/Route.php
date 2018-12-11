@@ -781,7 +781,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-
+        'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
+      
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1790,6 +1791,7 @@ final class Route
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
         'scrooge_refunds_get_multiple',
+        'scrooge_refunds_download',
         'scrooge_refunds_get',
         'scrooge_refunds_update',
 
@@ -2081,6 +2083,7 @@ final class Route
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
+        'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'schedule_fetch'                           => '*',
