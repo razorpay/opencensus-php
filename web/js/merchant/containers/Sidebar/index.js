@@ -271,7 +271,6 @@ export default class Sidebar extends Component {
                     icon="i i-notes text-warning"
                     to={routes.invoices}
                     additionalCondition={user => user.isAllowedView('invoices')}
-                    isNew
                   />
                   <MainNavLink
                     label="Payment Links"
