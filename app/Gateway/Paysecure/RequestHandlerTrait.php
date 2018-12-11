@@ -300,6 +300,10 @@ trait RequestHandlerTrait
     {
         $response = $response->CallPaySecureResult;
 
+        // Since they do not escape the '&' characters in redirect URL, we're forced
+        // to manually replace them with the escaped character, so that xml can be loaded.
+        $response = str_replace('&', '&amp;', $response);
+
         $xmlResponse = simplexml_load_string(preg_replace('/(<\?xml[^?]+?)utf-16/i', '$1utf-8', $response));
 
         $xmlResponseArray = XmlSerializer::xmlToArray($xmlResponse);
