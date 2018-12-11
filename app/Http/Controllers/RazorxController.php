@@ -36,7 +36,7 @@ class RazorxController extends Controller
         Requests::HEAD,
     ];
 
-    const WORKFLOW_ROUTES_REGEX = '/experiments\/\w\/activate/';
+    const WORKFLOW_ROUTES_REGEX = '/experiments\/\w+\/activate/';
 
     public function __construct()
     {
