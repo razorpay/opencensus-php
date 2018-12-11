@@ -54,12 +54,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        // Todo: Don't trace card number and cvv
-        $this->app['trace']->info(
-            TraceCode::GATEWAY_REQUEST_INPUT_RECEIVED,
-            $input
-        );
-
         $checkBin2Response = $this->checkBin2();
 
         $this->handleFailure($checkBin2Response, 'checkbin2');

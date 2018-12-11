@@ -151,6 +151,7 @@ class Table
     const CARD_FSS              = 'card_fss';
     const ISG                   = 'isg';
     const PAYSECURE             = 'paysecure';
+    const CARDLESS_EMI          = 'cardless_emi';
 
     // Sessions table
     const SESSION               = 'sessions';

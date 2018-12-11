@@ -43,6 +43,7 @@ class BankCodes
     const IFSC_CSBK = 'CSBK0000095';
     const IFSC_DBSS = 'DBSS0IN0811';
     const IFSC_DCBL = 'DCBL0000001';
+    const IFSC_DEUT = 'DEUT0784PBC';
     const IFSC_DLXB = 'DLXB0000003';
     const IFSC_DNSB = 'DNSB00000CO';
     const IFSC_ESFB = 'ESFB0000002';
@@ -59,6 +60,7 @@ class BankCodes
     const IFSC_IDIB = 'IDIB0NEFTMU';
     const IFSC_INDB = 'INDB0000006';
     const IFSC_IOBA = 'IOBA0001548';
+    const IFSC_IPOS = 'IPOS0000001';
     const IFSC_JAKA = 'JAKA0FRABAD';
     const IFSC_JANA = 'JANA0000001';
     const IFSC_JPCB = 'JPCB0000001';
@@ -91,7 +93,10 @@ class BankCodes
     const IFSC_RATN = 'RATN0000999';
     const IFSC_RNSB = 'RNSB0000001';
     const IFSC_RSBL = 'RSBL0000002';
+    const IFSC_SBHY = 'SBIN0010411';
     const IFSC_SBIN = 'SBIN0010411';
+    const IFSC_SBMY = 'SBIN0010411';
+    const IFSC_SBTR = 'SBIN0010411';
     const IFSC_SCBL = 'SCBL0036001';
     const IFSC_SIBL = 'SIBL0000084';
     const IFSC_SPCB = 'SPCB0251022';
@@ -118,7 +123,7 @@ class BankCodes
     const IFSC_BARB_R = 'BARB0MAINOF';
     const IFSC_PUNB_R = 'PUNB0000100';
     const IFSC_LAVB_R = 'LAVB0000175';
-    
+
     //
     // Kotak sends us 3 digit bank codes for IMPS transactions.
     // These are the ones we've collected till date.

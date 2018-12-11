@@ -142,6 +142,7 @@
           <directory>./tests/Functional/Gateway/Wallet/</directory>
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
+          <directory>./tests/Functional/Gateway/CardlessEmi</directory>
       </testsuite>
   </testsuites>
   <listeners>
