@@ -45,6 +45,7 @@ class Workflow
         Permission::DELETE_ADMIN,
         Permission::EDIT_MERCHANT_REQUESTS,
         Permission::UPDATE_PRICING_PLAN,
+        Permission::MANAGE_RAZORX_OPERATIONS
     ];
 
     protected $app;
@@ -73,6 +74,7 @@ class Workflow
         // - The maker isn't an Admin or Merchant
         // - Auth is not apt for workflows
         // - No org ID found in the incoming request
+
         if (($this->config->get('heimdall.workflows.mock') === true) or
             (empty($maker) === true) or
             ($this->isAptAuthForWorkflows() === false) or

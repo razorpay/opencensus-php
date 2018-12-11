@@ -36,6 +36,8 @@ class RazorxController extends Controller
         Requests::HEAD,
     ];
 
+    const WORKFLOW_ROUTES_REGEX = '/experiments\/\w\/activate/';
+
     public function __construct()
     {
         parent::__construct();
@@ -48,6 +50,17 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
+
+        $path = $this->validateAndGetServicePathParam();
+
+        if(preg_match(self::WORKFLOW_ROUTES_REGEX, $path) === 1)
+        {
+            $this->app['workflow']
+                 ->setEntityAndId('razorx_experiment_activate',
+                                 substr($path, strlen('experiments/'), -strlen('/activate')))
+                 ->handle([], ['experiment_workflow_started']);
+        }
+
         $requestParams = $this->getRequestParams();
 
         try
