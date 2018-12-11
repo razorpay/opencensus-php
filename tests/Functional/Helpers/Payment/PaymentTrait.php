@@ -43,6 +43,7 @@ trait PaymentTrait
     use PaymentFreechargeTrait;
     use PaymentTraitMpiEnstage;
     use PaymentCybersourceTrait;
+    use PaymentCardlessEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -549,6 +550,21 @@ trait PaymentTrait
             'content'   => [
                 'otp'  => $this->getOtp(),
                 'type' => 'otp'
+            ],
+        ];
+
+        return $this->sendRequest($request);
+    }
+
+    protected function makeOtpVerifyCallback($url, $email, $contact)
+    {
+        $request = [
+            'url'       => $url,
+            'method'    => 'POST',
+            'content'   => [
+                'otp'   => $this->getOtp(),
+                'email'  => $email,
+                'contact' => $contact,
             ],
         ];
 
@@ -1360,6 +1376,18 @@ trait PaymentTrait
         $payment['amount'] = $amount ?? $payment['amount'];
 
         unset($payment['bank'], $payment['card']);
+
+        return $payment;
+    }
+
+    protected function getDefaultCardlessEmiPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'cardless_emi';
+        $payment['provider'] = $provider;
+        $payment['emi_duration'] = 3;
+
+        unset($payment['card'], $payment['bank']);
 
         return $payment;
     }

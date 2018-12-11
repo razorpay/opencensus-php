@@ -130,6 +130,7 @@ class ProviderCode
     const YBL                = 'ybl';
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
+    const YESB               = 'yesb';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -252,6 +253,7 @@ class ProviderCode
         self::YESBANK            => IFSC::YESB,
         self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
+        self::YESB               => IFSC::YESB,
     ];
 
     public static function getBankCode($provider)

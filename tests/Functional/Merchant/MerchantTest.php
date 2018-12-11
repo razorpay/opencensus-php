@@ -1228,7 +1228,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(32, $banks);
+        $this->assertCount(33, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1689,6 +1689,19 @@ class MerchantTest extends TestCase
         // Only one expected, since HDFC is forced
         $this->assertEquals(1, count($response['methods']['emi_options']));
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
+    public function testGetCheckoutPreferencesForCardlessEmi()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:shared_cardless_emi_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()

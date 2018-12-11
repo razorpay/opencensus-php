@@ -67,10 +67,20 @@ class Service extends Base\Service
             ]);
         }
 
+        $ifsc = BankCodes::getIfscForBankCode($input[Entity::BANK]);
+
+        if (empty($ifsc) === true)
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here.', null, [
+                Entity::BANK    => $input[Entity::BANK],
+            ]);
+        }
+
         $additionalInput = [
             Entity::BANK_ACCOUNT    => [
                 BankAccount\Entity::ACCOUNT_NUMBER      =>  $input[Entity::ACCOUNT_NUMBER],
-                BankAccount\Entity::IFSC_CODE           =>  BankCodes::getIfscForBankCode($input[Entity::BANK]),
+                BankAccount\Entity::IFSC_CODE           =>  $ifsc,
                 BankAccount\Entity::BENEFICIARY_NAME    =>  $input[Entity::PAYER_NAME] ?? '',
             ],
         ];

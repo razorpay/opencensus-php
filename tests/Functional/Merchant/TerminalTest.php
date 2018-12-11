@@ -317,6 +317,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCardlessEmiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -824,6 +833,25 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateAllahabadTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignUpiYesbankTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }

@@ -53,6 +53,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::CARDLESS_EMI                => 'sometimes|boolean',
     ];
 
     protected static $editTerminalGateways = [
@@ -491,6 +492,14 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
+    protected static $upiYesbankTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_yesbank',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.pay'              => 'required|in:1',
+    ];
+
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -557,6 +566,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+    ];
+
+    protected static $netbankingAllahabadTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingAllahabadEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
     protected static $cardFssTerminalRules = [
@@ -646,6 +669,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'required|boolean|in:1',
+    ];
+
+    protected static $cardlessEmiTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:cardless_emi',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::CARDLESS_EMI                => 'required|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
     public function validateType()

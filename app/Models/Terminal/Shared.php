@@ -40,6 +40,7 @@ class Shared
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
+    const NETBANKING_ALLAHABAD_TERMINAL      = '100NbAllaTrmnl';
     const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
     const NETBANKING_CANARA_TERMINAL         = '100NbCnrbTrmnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
@@ -70,6 +71,7 @@ class Shared
     const UPI_HULK_RAZORPAY_INTENT_TERMINAL  = '1UPIInHulkTrml';
     const UPI_HULK_RAZORPAY_TPV_TERMINAL     = '1UPITpvHulkTml';
     const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
+    const UPI_YESBANK_RAZORPAY_TERMINAL      = '100UpiYesbankT';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
     const AMAZONPAY_RAZORPAY_TERMINAL        = '100AmznpayTmnl';
@@ -81,6 +83,9 @@ class Shared
     const HITACHI_MOTO_TERMINAL              = '10hitachMotoTl';
     const ENSTAGE_TERMINAL                   = '100ensgageTrml';
     const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
+    const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
+    const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
+    const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -103,6 +108,7 @@ class Shared
         self::NETBANKING_KOTAK_TERMINAL,
         self::NETBANKING_ICICI_TERMINAL,
         self::NETBANKING_AIRTEL_TERMINAL,
+        self::NETBANKING_ALLAHABAD_TERMINAL,
         self::NETBANKING_AXIS_TERMINAL,
         self::NETBANKING_FEDERAL_TERMINAL,
         self::NETBANKING_RBL_TERMINAL,
@@ -134,6 +140,8 @@ class Shared
         self::MPESA_RAZORPAY_TERMINAL,
         self::HITACHI_MOTO_TERMINAL,
         self::ENSTAGE_TERMINAL,
+        self::CARDLESS_EMI_RAZORPAY_TERMINAL,
+
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -154,6 +162,7 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
         self::NETBANKING_IDFC_TERMINAL           => Gateway::NETBANKING_IDFC,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_ALLAHABAD_TERMINAL      => Gateway::NETBANKING_ALLAHABAD,
         self::NETBANKING_CANARA_TERMINAL         => Gateway::NETBANKING_CANARA,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_VIJAYA_TERMINAL         => Gateway::NETBANKING_VIJAYA,
@@ -189,6 +198,7 @@ class Shared
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
         self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,
         self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
+        self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
     ];
 
     public static function getSharedTerminalMapping()
