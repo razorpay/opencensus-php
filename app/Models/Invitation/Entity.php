@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const TOKEN        = 'token';
     const ROLE         = 'role';
     const DELETED_AT   = 'deleted_at';
+    const PRODUCT      = 'product';
 
     // Other constants
     const ACTION        = 'action';
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::ROLE,
         self::USER_ID,
+        self::PRODUCT,
         self::MERCHANT_ID,
     ];
 
@@ -103,6 +105,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN);
     }
 
+    public function getProduct()
+    {
+        return $this->getAttribute(self::PRODUCT);
+    }
+
     public function toArrayUser()
     {
         $attributes = [
@@ -111,6 +118,7 @@ class Entity extends Base\PublicEntity
             self::ROLE          => $this->getAttribute(self::ROLE),
             self::USER_ID       => $this->getAttribute(self::USER_ID),
             self::MERCHANT_ID   => $this->getAttribute(self::MERCHANT_ID),
+            self::PRODUCT       => $this->getAttribute(self::PRODUCT),
             self::MERCHANT_NAME => $this->merchant->getName(),
         ];
 

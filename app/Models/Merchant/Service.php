@@ -337,7 +337,9 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -496,6 +498,17 @@ class Service extends Base\Service
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
 
+        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
+        {
+            // removing diwali_promotional_plan
+            (new Feature\Service)->deleteEntityFeature(
+                'accounts',
+                $merchant->getId(),
+                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
+                [Feature\Entity::SHOULD_SYNC => true]
+            );
+        }
+
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
@@ -587,7 +600,7 @@ class Service extends Base\Service
         {
             try
             {
-                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+                $defaultDelay = Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
                 $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
@@ -764,9 +777,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    /**
+     * Todo : $id is Not used to fetch merchant. Kept to support Backward Compatible.
+     * @param $id
+     * @param $input
+     * @return array
+     */
     public function addBankAccount($id, $input)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = app('basicauth')->getMerchant();
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
@@ -1261,11 +1280,15 @@ class Service extends Base\Service
 
         $failedIds = [];
 
+        $bankAccountCore = new BankAccount\Core;
+
         foreach ($merchantIds as $merchantId)
         {
             try
             {
-                $this->addBankAccount($merchantId, $bankAccount);
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $bankAccountCore->createOrChangeBankAccount($bankAccount, $merchant);
 
                 $successCount++;
             }
@@ -2420,7 +2443,9 @@ class Service extends Base\Service
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $product);
 
         return $merchant->toArrayPublic();
     }

@@ -148,6 +148,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NPCI_REFERENCE_ID);
     }
 
+    public function getNpciTransactionId()
+    {
+        return $this->getAttribute(self::NPCI_TXN_ID);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -166,6 +171,11 @@ class Entity extends Base\Entity
     public function setNpciReferenceId(string $value)
     {
         $this->setAttribute(self::NPCI_REFERENCE_ID, $value);
+    }
+
+    public function setNpciTransactionId(string $value)
+    {
+        $this->setAttribute(self::NPCI_TXN_ID, $value);
     }
 
     public function getRefundId()

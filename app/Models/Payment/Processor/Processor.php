@@ -2393,7 +2393,10 @@ class Processor
             );
         }
 
-        $this->setCardNumberAndCvv($inputDetails);
+        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        {
+            $this->setCardNumberAndCvv($inputDetails);
+        }
 
         $resource = $this->getCallbackMutexResource($payment);
 

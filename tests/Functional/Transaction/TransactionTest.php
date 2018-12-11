@@ -143,13 +143,6 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
-    public function testTransactionAfterRefundUsingTransactionV2Feature()
-    {
-        $this->fixtures->merchant->addFeatures('transaction_v2');
-
-        return $this->testTransactionAfterRefund();
-    }
-
     public function testAuthOnlyTransactionAfterRefund()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
@@ -164,23 +157,6 @@ class TransactionTest extends TestCase
         $txn = $this->getLastTransaction(true);
 
         $testData = $this->testData['txnDataAfterRefundingAuthOnlyPayment'];
-        $testData['entity_id'] = $refund['id'];
-
-        $this->assertArraySelectiveEquals($testData, $txn);
-
-        // Now running the transaction V2 Flow for same
-        $this->fixtures->merchant->addFeatures('transaction_v2');
-
-        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
-
-        $payment = $this->doAuthPayment($payment);
-
-        // This time we do not capture the payment and refund it
-        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
-
-        $txn = $this->getLastTransaction(true);
-
-        $testData = $this->testData['txnDataAfterRefundingAuthOnlyPaymentUsingTransactionV2'];
         $testData['entity_id'] = $refund['id'];
 
         // Balance is set to Merchant Balance and
@@ -369,7 +345,7 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['response']['content']['count'] = 5;
+        $testData['response']['content']['totalUpdatedRowCounts'] = 5;
 
         $this->ba->adminAuth();
 
@@ -387,8 +363,8 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['merchant_ids'] = ['10000000000000'];
-        $testData['response']['content']['count'] = 5;
+        $testData['request']['content']['merchantIds'] = ['10000000000000'];
+        $testData['response']['content']['totalUpdatedRowCounts'] = 5;
 
         $this->ba->adminAuth();
 
@@ -415,7 +391,7 @@ class TransactionTest extends TestCase
         $testData = $this->testData['testTransactionsBulkUpdateBalanceId'];
 
         $testData['request']['content']['limit'] = 1;
-        $testData['response']['content']['count'] = 1;
+        $testData['response']['content']['totalUpdatedRowCounts'] = 1;
 
         $this->ba->adminAuth();
 

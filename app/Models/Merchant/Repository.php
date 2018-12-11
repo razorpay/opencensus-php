@@ -126,7 +126,7 @@ class Repository extends Base\Repository
     public function fetchMerchantsWithPositiveBalance()
     {
         return $this->newQuery()
-                    ->whereHas('balance', function($q)
+                    ->whereHas('primaryBalance', function($q)
                     {
                         $q->where('balance', '>', 0);
                     })->get();
@@ -392,7 +392,7 @@ class Repository extends Base\Repository
             Entity::GROUPS                      => $groupSelector,
             Entity::ADMINS                      => $adminSelector,
             Entity::FEATURES                    => function () {},
-            Entity::BALANCE                     => $balanceSelector,
+            'primaryBalance'                    => $balanceSelector,
         ];
 
         //
@@ -483,8 +483,13 @@ class Repository extends Base\Repository
         $model->__unset(Entity::MERCHANT_DETAIL);
     }
 
-    public function getMerchantUserMapping(string $merchantId, string $userId, string $role = null)
+    public function getMerchantUserMapping(string $merchantId,
+                                           string $userId,
+                                           string $role = null,
+                                           string $product = null)
     {
+        $product = $product ?? $this->auth->getRequestOriginProduct();
+
         $query = $this->newQuery()
                       ->find($merchantId)
                       ->users()
@@ -493,6 +498,11 @@ class Repository extends Base\Repository
         if (empty($role) === false)
         {
             $query->where(Entity::ROLE, $role);
+        }
+
+        if (empty($product) === false)
+        {
+            $query->where(Entity::PRODUCT, $product);
         }
 
         return $query->first();

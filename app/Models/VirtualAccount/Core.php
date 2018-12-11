@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Balance;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -29,7 +30,8 @@ class Core extends Base\Core
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
-        Order $order = null): Entity
+        Order $order = null,
+        Balance\Entity $balance = null): Entity
     {
         //
         // VA creation is a bit broken at the moment. Creation requires multiple entities (VA+receivers)
@@ -43,11 +45,12 @@ class Core extends Base\Core
         {
             $virtualAccount = $this->mutex->acquireAndRelease(
                 self::VA_BANK_ACCOUNT_GENERATION,
-                function() use ($input, $merchant, $customer, $order)
+                function() use ($input, $merchant, $customer, $order, $balance)
                 {
                     $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-                    return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                    return $this->buildVirtualAccountAndReceivers(
+                        $virtualAccount, $input, $customer, $order, $balance);
                 },
                 // The entire VA creation process inside this lock actually takes
                 // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
@@ -89,19 +92,47 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    /**
+     * Creates a virtual account with bank account type receiver
+     * on business banking type balance of given merchant.
+     *
+     * @param  Merchant $merchant
+     * @return Entity
+     */
+    public function createForBankingBalance(Merchant $merchant): Entity
+    {
+        $merchant->getValidator()->validateBusinessBankingActivated();
+
+        $input = [
+            Entity::RECEIVERS => [
+                Entity::TYPES => [
+                    Entity::BANK_ACCOUNT
+                ],
+            ],
+        ];
+
+        return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
+    }
+
     protected function buildVirtualAccountAndReceivers(
         Entity $virtualAccount,
         array $input,
         Customer\Entity $customer = null,
-        Order $order = null): Entity
+        Order $order = null,
+        Balance\Entity $balance = null): Entity
     {
-        $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
+        $virtualAccount = $this->repo->transaction(function() use (
+            $virtualAccount, $input, $customer, $order, $balance)
         {
             $virtualAccount->build($input);
 
             $virtualAccount->customer()->associate($customer);
 
             $virtualAccount->entity()->associate($order);
+
+            $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
+
+            $virtualAccount->balance()->associate($balance);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 

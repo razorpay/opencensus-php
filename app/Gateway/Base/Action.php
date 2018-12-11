@@ -15,7 +15,10 @@ class Action
     const REVERSE       = 'reverse';
     const OTP_RESEND    = 'otp_resend';
     const OTP_GENERATE  = 'otp_generate';
+    const VALIDATE_VPA  = 'validate_vpa';
     const VALIDATE_PUSH = 'validate_push';
+    const PAYOUT        = 'payout';
+    const PAYOUT_VERIFY = 'payout_verify';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE

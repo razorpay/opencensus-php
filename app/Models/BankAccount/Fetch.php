@@ -12,6 +12,7 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID      => 'sometimes|alpha_num',
             Entity::TYPE             => 'sometimes|in:customer,merchant',
             Entity::ENTITY_ID        => 'sometimes|alpha_num',
+            Entity::BENEFICIARY_CODE => 'sometimes|alpha_num',
         ],
     ];
 
@@ -20,6 +21,7 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID,
             Entity::TYPE,
             Entity::ENTITY_ID,
+            Entity::BENEFICIARY_CODE,
         ],
     ];
 }

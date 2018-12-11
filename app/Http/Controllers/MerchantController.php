@@ -249,7 +249,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postBankAccount($id)
+    public function postBankAccount($id = null)
     {
         $input = Request::all();
 

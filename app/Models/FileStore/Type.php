@@ -23,6 +23,11 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+
+    const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
+    const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
+    const CANARA_NETBANKING_CLAIMS          = 'canara_netbanking_claims';
+
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
     const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
@@ -56,6 +61,10 @@ class Type
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
+
+    const VIJAYA_NETBANKING_REFUND          = 'vijaya_netbanking_refund';
+
+    const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
@@ -159,12 +168,16 @@ class Type
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
+            self::ALLAHABAD_NETBANKING_REFUND,
+            self::CANARA_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
+            self::VIJAYA_NETBANKING_REFUND,
+            self::VIJAYA_NETBANKING_CLAIM,
             self::IDFC_NETBANKING_REFUND,
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
@@ -270,10 +283,12 @@ class Type
         self::RBL_ENACH_REGISTER,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
+        self::CANARA_NETBANKING_REFUND,
         self::IDFC_NETBANKING_REFUND,
         self::IDFC_NETBANKING_CLAIMS,
         self::IDFC_NETBANKING_SUMMARY,
         self::CORPORATION_NETBANKING_REFUND,
+        self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
@@ -281,6 +296,8 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
+        self::VIJAYA_NETBANKING_REFUND,
+        self::VIJAYA_NETBANKING_CLAIM,
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,

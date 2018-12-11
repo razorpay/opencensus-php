@@ -382,8 +382,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
+            $redirectUrl = null;
 
-            $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            if ($this->isRupayNetwork($payment) === false)
+            {
+                $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            }
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -392,7 +396,6 @@ trait Authorize
             ];
 
             $response['metadata'] = $metaData;
-            $response['redirect'] = $redirectUrl;
 
             $templateData = [
                'data' => $response,
@@ -413,6 +416,15 @@ trait Authorize
                 unset($request['content']['next']);
             }
 
+            $otpResend = 'otp_resend';
+
+            $resendUrl = null;
+
+            if (in_array($otpResend, $next, true) === true)
+            {
+                $resendUrl  = $this->getOtpResendUrl();
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -424,6 +436,9 @@ trait Authorize
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
                 'redirect'   => $redirectUrl,
+                'submit_url' => $request['url'],
+                'resend_url' => $resendUrl,
+                'metadata'   => $metaData,
             ];
         }
 
@@ -3188,6 +3203,16 @@ trait Authorize
             return;
         }
 
+        //
+        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
+        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
+        // primarily for demo payment pages created internally by Razorpay.
+        //
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
+        {
+            return;
+        }
+
         try
         {
             $this->autoCapturePayment($payment);
@@ -4629,6 +4654,17 @@ trait Authorize
         return $otpFallbackUrl;
     }
 
+    protected function getOtpResendUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
+
+        return $otpResendUrl;
+    }
+
     protected function getPaymentIdAndHashParams(): array
     {
         $publicId = $this->payment->getPublicId();
@@ -4724,11 +4760,13 @@ trait Authorize
 
         $key = $payment->getCacheInputKey();
 
-        // storing card details for fallback purpose
-        $this->persistCardDetailsTemporarily($input);
-
-        unset($input['card']['number']);
-        unset($input['card']['cvv']);
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            // storing card details for fallback purpose
+            $this->persistCardDetailsTemporarily($input);
+            unset($input['card']['number']);
+            unset($input['card']['cvv']);
+        }
 
         $this->cache->put($key, $input, static::CACHE_TTL);
     }

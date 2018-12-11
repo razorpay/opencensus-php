@@ -34,6 +34,7 @@ class MailTags
     const FTA_CRITICAL_ERROR               = 'fta_critical_error';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
+    const ALLAHABAD_NETBANKING_REFUNDS_MAIL     = 'allahabad_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
     const BOB_NETBANKING_REFUNDS_MAIL           = 'bob_netbanking_refunds_mail';
     const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
@@ -41,6 +42,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
     const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
     const IDFC_NETBANKING_REFUNDS_MAIL          = 'idfc_netbanking_refunds_mail';
     const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';

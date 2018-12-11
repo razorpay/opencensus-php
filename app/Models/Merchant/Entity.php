@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
@@ -16,12 +17,12 @@ use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
@@ -33,6 +34,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 /**
  * @property Detail\Entity $merchantDetail
  * @property Methods\Entity $methods
+ * @property BankAccount\Entity $bankAccount
  */
 class Entity extends Base\PublicEntity
 {
@@ -84,6 +86,12 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
+    const PRODUCT                  = 'product';
+
+    // Source denotes if a merchant activation request came from PG or business banking.
+    const ACTIVATION_SOURCE        = 'activation_source';
+
+    const BUSINESS_BANKING         = 'business_banking';
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
@@ -113,7 +121,8 @@ class Entity extends Base\PublicEntity
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
-    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
@@ -291,6 +300,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::ACTIVATION_SOURCE,
+        self::BUSINESS_BANKING,
      ];
 
     protected $defaults = [
@@ -673,7 +684,10 @@ class Entity extends Base\PublicEntity
      */
     public function balance()
     {
-        app('trace')->error(TraceCode::MERCHANT_DEPR_BALANCE_REFERRRED);
+        // Constructing new Exception instance and tracing gives stack trace helpful for debugging.
+        app('trace')->traceException(
+            new LogicException('Deprecated method balance() of Merchant referenced!'),
+            Logger::WARNING);
 
         return $this->hasOne(Balance\Entity::class);
     }
@@ -1549,10 +1563,13 @@ class Entity extends Base\PublicEntity
 
     /**
      * Get the owners of the merchant.
+     * This function is used in partners and primary product so filtering it by primary
+     *
+     * @param Balance/Type $product
      */
-    public function owners()
+    public function owners($product = Balance\Type::PRIMARY)
     {
-        return $this->users()->where('role','owner');
+        return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
 
     /**
@@ -1560,7 +1577,10 @@ class Entity extends Base\PublicEntity
      */
     public function primaryLinkedAccountOwner()
     {
-        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
+        return $this->users()
+                    ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
+                    ->where(self::PRODUCT, Balance\Type::PRIMARY)
+                    ->first();
     }
 
     /**

@@ -55,8 +55,10 @@ class Base extends Core
     const PAYTM                  = 'Paytm';
     const OLAMONEY               = 'Olamoney';
     const FREECHARGE             = 'Freecharge';
+    const EMANDATE_AXIS          = 'EmandateAxis';
     const NETBANKING_AXIS        = 'NetbankingAxis';
     const NETBANKING_ICICI       = 'NetbankingIcici';
+    const NETBANKING_CANARA      = 'NetbankingCanara';
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
@@ -68,6 +70,7 @@ class Base extends Core
     const NETBANKING_OBC         = 'NetbankingObc';
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
+    const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -83,6 +86,7 @@ class Base extends Core
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';
     const UPI_HULK               = 'UpiHulk';
+    const UPI_AXIS               = 'UpiAxis';
     const AMEX                   = 'Amex';
 
     /**
@@ -102,15 +106,18 @@ class Base extends Core
         self::KOTAK                  => ['bankalerts@kotak.com'],
         self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
+        self::EMANDATE_AXIS          => ['cmsdirect.debit@axisbank.com'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
+        self::NETBANKING_CANARA      => [],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
+        self::NETBANKING_ALLAHABAD   => [],
         self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
         self::NETBANKING_CORPORATION => ['ncbsfeba@corpbank.co.in'],
@@ -128,6 +135,7 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
+        self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
@@ -198,7 +206,6 @@ class Base extends Core
         string $fileLocationType = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
-
         // Goes through each file and gets the file details.
         foreach (range(1, $inputDetails[self::ATTACHMENT_COUNT]) as $attachmentNumber)
         {

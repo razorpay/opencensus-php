@@ -75,7 +75,9 @@ class Service
         $data = json_encode($data);
 
         $request = [
-            'options' => [],
+            'options' => [
+                'timeout' => 70
+            ],
             'content' => $data,
             'method'  => self::HTTP_POST,
             'headers' => [

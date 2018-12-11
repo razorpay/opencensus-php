@@ -530,7 +530,7 @@ abstract class Base extends BaseCore
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances($updateNodalBalance = true)
+    public function updateBalances(bool $updateNodalBalance = true)
     {
         $this->txn->associateBalance($this->merchantBalance);
 

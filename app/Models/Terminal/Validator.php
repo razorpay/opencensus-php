@@ -74,6 +74,8 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
+        Payment\Gateway::NETBANKING_CANARA,
+        Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
     ];
 
@@ -388,11 +390,35 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingCanaraTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+    ];
+
+    protected static $netbankingCanaraEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_canara',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+    ];
+
     protected static $netbankingEquitasTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_equitas',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingVijayaTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+    ];
+
+    protected static $netbankingVijayaEditTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
     ];
 
     protected static $walletJiomoneyTerminalRules = [
@@ -465,6 +491,14 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
+    protected static $upiYesbankTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_yesbank',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.pay'              => 'required|in:1',
+    ];
+
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -531,6 +565,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+    ];
+
+    protected static $netbankingAllahabadTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingAllahabadEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
     protected static $cardFssTerminalRules = [

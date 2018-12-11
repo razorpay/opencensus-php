@@ -712,7 +712,7 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail)
+    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail, string $product)
     {
         $merchantUsersCount = $merchant->users()->count();
 
@@ -732,13 +732,13 @@ class Core extends Base\Core
         if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
         {
             // Assign Manager role to the old owner.
-            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager');
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager', $product);
         }
 
         if (empty($teamUser) === false)
         {
             // Assign Owner role to the team user.
-            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner');
+            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner', $product);
         }
         elseif (empty($existingUser) === false)
         {
@@ -1030,7 +1030,7 @@ class Core extends Base\Core
         $name = $merchant->getName();
 
         // Default value is required because website is a required field to create oauth applications
-        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+        $website = $merchant->getWebsite() ?: 'https://www.razorpay.com';
 
         $appInput = [
             'name'     => $name,
@@ -1489,11 +1489,12 @@ class Core extends Base\Core
      * password reset link so that the user will generate a password and login to the LA dashboard.(this ensures that
      * email is also verified.) and promote the existing linked_account_owner role user to team member.
      *
-     * @param $merchant
+     * @param Merchant\Entity $merchant
+     * @param string          $product
      *
      * @return User\Entity
      */
-    public function handleLinkedAccountMerchantsUsers($merchant)
+    public function handleLinkedAccountMerchantsUsers(Merchant\Entity $merchant, string $product)
     {
         $newEmail = $merchant->getEmail();
 
@@ -1506,19 +1507,19 @@ class Core extends Base\Core
         if (empty($oldOwner) === false)
         {
             // Assign Linked Account Admin role to the old owner.
-            (new User\Core)->detachAndAttachMerchantUser(
-                                                        $oldOwner,
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner,
                                                         $merchant->getId(),
-                                                        Role::LINKED_ACCOUNT_ADMIN);
+                                                        Role::LINKED_ACCOUNT_ADMIN,
+                                                        $product);
         }
 
         if (empty($teamUser) === false)
         {
             // Assign Linked Account owner role to the team user.
-            (new User\Core)->detachAndAttachMerchantUser(
-                                                        $teamUser,
+            (new User\Core)->detachAndAttachMerchantUser($teamUser,
                                                         $merchant->getId(),
-                                                        Role::LINKED_ACCOUNT_OWNER);
+                                                        Role::LINKED_ACCOUNT_OWNER,
+                                                        $product);
         }
         elseif (empty($existingUser) === false)
         {

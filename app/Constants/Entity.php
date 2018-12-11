@@ -76,6 +76,7 @@ class Entity
     const FILE_HANDLER              = 'file_handler';
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
+    const FUND_ACCOUNT              = 'fund_account';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
@@ -161,6 +162,7 @@ class Entity
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_YESBANK            = 'upi_yesbank';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
@@ -168,6 +170,7 @@ class Entity
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -178,7 +181,10 @@ class Entity
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
+    const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
+    const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
+
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -253,10 +259,21 @@ class Entity
         self::PAYMENT_LINK,
     ];
 
+    /**
+     * These entities have BALANCE_ID columns added recently. This is a temporary list to validate API operation to
+     * backfill balance_id column for old rows in batches.
+     * Refer: AdminController@updateEntityBalanceIdInBulk()
+     */
+    const ENTITIES_WITH_BALANCE_ID_COLUMN = [
+        Entity::TRANSACTION,
+        Entity::VIRTUAL_ACCOUNT,
+        Entity::PAYOUT,
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
-        self::VPA                       => \RZP\Models\Upi\Vpa::class,
+        self::VPA                       => \RZP\Models\Vpa::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::EBS                       => \RZP\Gateway\Ebs::class,
@@ -335,6 +352,7 @@ class Entity
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
+        self::UPI_YESBANK            => \RZP\Gateway\Upi\Yesbank::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -355,8 +373,10 @@ class Entity
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Allahabad::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
@@ -365,6 +385,7 @@ class Entity
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
+        self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Canara::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
@@ -417,6 +438,7 @@ class Entity
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
@@ -424,8 +446,10 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
@@ -440,6 +464,7 @@ class Entity
         self::UPI_AXIS               => \RZP\Gateway\Upi\Base::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
+        self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

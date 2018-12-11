@@ -40,6 +40,8 @@ class Action
     const VALIDATE_PUSH                 = 'validate_push';
     const AUTHORIZE_PUSH                = 'authorize_push';
     const OTP_RESEND                    = 'otp_resend';
+    const PAYOUT                        = 'payout';
+    const PAYOUT_VERIFY                 = 'payout_verify';
 
     protected $merchant;
 

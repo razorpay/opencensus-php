@@ -104,16 +104,37 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    /**
-     * Assert the status of batch processed.
-     *
-     * @param string $status
-     */
-    protected function assertBatchStatus(string $status = Status::PROCESSED)
+    public function testFirstDataForceAuthorizePayment()
     {
-        $batch = $this->getDbLastEntityToArray('batch');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->assertEquals($batch['status'], $status);
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment, [], 'first_data');
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $updatedGatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
     }
 
     public function testHdfcFssReconPaymentFile()
@@ -431,7 +452,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
+        $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['reference1']);
         $this->assertNotNull($updatedTransaction['reconciled_at']);
         $this->assertNotNull($updatedTransaction['reconciled_type']);
 
@@ -615,7 +636,7 @@ class ReconciliationFileTest extends TestCase
         $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertNull($refund1['arn']);
+        $this->assertNull($refund1['reference1']);
 
         $entries[] = $this->overrideHdfcRefund($gatewayPayment1);
 
@@ -624,7 +645,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['reference1']);
 
         // Test for for update ARN
         $entries[0][HDFCPaymentRecon::COLUMN_ARN] .= str_random(2);
@@ -634,7 +655,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['reference1']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -650,7 +671,7 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('cybersource');
 
-        $this->assertNull($refund[Refund\Entity::ARN]);
+        $this->assertNull($refund[Refund\Entity::REFERENCE1]);
 
         $entries[] = $this->overrideHdfcCybersourceOnusRefund($gatewayRefund);
 
@@ -659,7 +680,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund = $this->getDbEntityById('refund', $refund['id'])->toArrayAdmin();
 
-        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::REFERENCE1]);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1248,7 +1269,7 @@ class ReconciliationFileTest extends TestCase
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
 
-        $this->assertNull($refund1['arn']);
+        $this->assertNull($refund1['reference1']);
 
         $entries[] = $this->overrideHitachiRefund($gatewayPayment1);
 
@@ -1257,7 +1278,7 @@ class ReconciliationFileTest extends TestCase
 
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['reference1']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1270,7 +1291,7 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertNull($refund[Refund\Entity::ARN]);
+        $this->assertNull($refund[Refund\Entity::REFERENCE1]);
 
         $entries[] = $this->overrideHdfcOnusRefund($gatewayRefund);
 
@@ -1281,9 +1302,9 @@ class ReconciliationFileTest extends TestCase
 
         $updatedGatewayRefund = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::REFERENCE1]);
 
-        $this->assertEquals($updatedRefund[Refund\Entity::ARN], $updatedGatewayRefund['arn_no']);
+        $this->assertEquals($updatedRefund[Refund\Entity::REFERENCE1], $updatedGatewayRefund['arn_no']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1622,5 +1643,17 @@ class ReconciliationFileTest extends TestCase
         $facade['Merchant Account Number'] = 'razorpay amex';
 
         return $facade;
+    }
+
+    /**
+     * Assert the status of batch processed.
+     *
+     * @param string $status
+     */
+    protected function assertBatchStatus(string $status = Status::PROCESSED)
+    {
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals($batch['status'], $status);
     }
 }

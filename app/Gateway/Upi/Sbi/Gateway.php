@@ -58,7 +58,14 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCollectRequestData($input);
 
-        $response = $this->sendGatewayRequest($request);
+        // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
+        // base/gateway's retry handler cannot be tested. so adding retry handler here to have
+        // atleast one gateway which can test this flow.
+        $response = $this->retryHandler(
+            [$this, 'sendGatewayRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
@@ -519,5 +526,36 @@ class Gateway extends Base\Gateway
     public function getSecret(): string
     {
         return $this->config['hash_secret'];
+    }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      Action::AUTHORIZE);
+
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if ($gatewayPayment[Base\Entity::STATUS_CODE] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        $attributes = [
+            Base\Entity::STATUS_CODE        => Status::SUCCESS,
+            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

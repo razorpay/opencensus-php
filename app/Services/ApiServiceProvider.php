@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -26,6 +28,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -445,7 +448,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
+            'bank_transfer'             => BankTransfer\Entity::class,
 
             'subscription'              => Subscription\Entity::class,
             'promotion'                 => Promotion\Entity::class,
@@ -457,6 +462,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant_request'          => MerchantRequest\Entity::class,
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
+
+            'contact'                   => Contact\Entity::class,
         ]);
     }
 
