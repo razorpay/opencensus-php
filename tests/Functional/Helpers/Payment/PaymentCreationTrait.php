@@ -109,6 +109,13 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isOtpVerifyUrl($uri)
+    {
+        $pattern = '/otp\/verify/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
         $content = $response->getContent();
@@ -243,6 +250,10 @@ trait PaymentCreationTrait
                     else if ($content['type'] === 'intent')
                     {
                         return $this->processAsyncPaymentForm($response);
+                    }
+                    else if ($content['type'] === 'respawn')
+                    {
+                        $gateway = $content['gateway'];
                     }
                 }
             }
@@ -380,6 +391,32 @@ trait PaymentCreationTrait
         {
             $start = 'var data = ';
             $end = '// Async Payment data //';
+
+            $data = getTextBetweenStrings($content, $start, $end);
+
+            // Remove ';' at the end to get proper json string
+            $data = trim($data);
+            $content = substr($data, 0, -1);
+
+            $response->setContent($content);
+
+            return $response;
+        }
+    }
+
+    protected function processCardlessPaymentForm($response)
+    {
+        $this->assertTrue($this->isResponseInstanceType($response, 'http'));
+        $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+        $content = $response->getContent();
+
+        $marker = '// input data //';
+
+        if (strpos($content, $marker) !== false)
+        {
+            $start = 'var data = ';
+            $end = '// input data //';
 
             $data = getTextBetweenStrings($content, $start, $end);
 

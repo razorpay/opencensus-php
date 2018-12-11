@@ -206,6 +206,12 @@ class Core extends Base\Core
         // Verify the otp with raven service
         $this->verifyRavenOtp($input, $merchant);
 
+        if ((empty($input['method']) === false) and
+            ($input['method'] === Payment\Method::CARDLESS_EMI))
+        {
+            return $this->fetchCardlessEmiPlansForCustomer($input, $merchant);
+        }
+
         // Get global customer from db or create one.
         $customer = $this->getOrCreateGlobalCustomer($input);
 
@@ -659,5 +665,23 @@ class Core extends Base\Core
         $gatewayInput['input'] = $input;
 
         return $gatewayInput;
+    }
+
+    protected function fetchCardlessEmiPlansForCustomer($input, $merchant)
+    {
+        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+
+        [$emiPlans, $loanUrl] = $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'get_emi_plans', $input, $this->mode, $terminal);
+
+        $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input);
+
+        $data = [
+            'success'   => 1,
+            'emi_plans' => $emiPlans,
+            'ott'       => $token,
+            'loan_url'  => $loanUrl
+        ];
+
+        return $data;
     }
 }

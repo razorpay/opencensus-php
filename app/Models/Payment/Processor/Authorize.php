@@ -618,6 +618,56 @@ trait Authorize
         $this->verifyFeesLessThanAmount($payment);
 
         $this->validateOfferIfApplicable($payment, $input);
+
+        $this->validateCardlessEmiIfApplicable($payment, $input);
+    }
+
+    protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
+    {
+        if ($payment->isCardlessEmi() === false)
+        {
+            return;
+        }
+
+        $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
+
+        $cardlessEmiData = $this->app['cache']->get($key);
+
+        if ($cardlessEmiData === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token provided is invalid for cardless emi',
+                null,
+                $cardlessEmiData);
+        }
+
+        $cardlessEmiData = Customer\Validator::validateAndParseContactInInput($cardlessEmiData);
+
+        if ((empty($cardlessEmiData['contact']) === true) or
+            ($cardlessEmiData['contact'] !== $input['contact']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'input_contact'     => $input['contact'],
+                    'contact'           => $cardlessEmiData['contact'] ?? null,
+                ]);
+        }
+
+        if ((empty($cardlessEmiData['provider']) === true) or
+            ($cardlessEmiData['provider'] !== $input['provider']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'input_provider'    => $input['provider'],
+                    'provider'          => $cardlessEmiData['provider'] ?? null,
+                ]);
+        }
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1347,6 +1397,7 @@ trait Authorize
         $gatewayInput['payment'] = $payment->toArrayGateway();
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+        $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
         if ($payment->hasOrder())
         {
@@ -1914,6 +1965,35 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isCardlessEmi() === true)
+        {
+            $gatewayInput['gateway'] = [
+                'emi_duration' => $input['emi_duration']
+            ];
+
+            $merchantId = $payment->getMerchantId();
+
+            $input = Customer\Validator::validateAndParseContactInInput($input);
+
+            $contact = $input['contact'];
+
+            $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
+
+            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+
+            $emiPlans = (array)$this->app['cache']->get($cacheKey, null);
+
+            $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
+
+            if ($key === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_EMI_DURATION_NOT_VALID,
+                    null,
+                    $input['emi_duration']);
+            }
         }
 
         if ($payment->isUpi() === true)
@@ -2663,6 +2743,10 @@ trait Authorize
 
             case Payment\Method::EMANDATE:
                 $this->verifyEmandateEnabled();
+                break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $this->verifyCardlessEmiEnabled();
                 break;
 
             default:
@@ -4301,8 +4385,19 @@ trait Authorize
             ($merchantMethods->isEmandateEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT
-            );
+                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyCardlessEmiEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isCardlessEmiEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

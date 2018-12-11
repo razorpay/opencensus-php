@@ -429,6 +429,37 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    // TODO: Temporary method till FTA route is not available, needs to be removed
+    public function postPayoutVpa($type)
+    {
+        $input = Request::all();
+
+        $headers = Request::header();
+
+        // since it is a private route, that should not be exposed to the merchant
+        // that is why to restrict the access we are hardcoding some keys, only
+        // which can call this route.
+        $allowedMerchantKeys = ['rzp_test_TheTestAuthKey', 'rzp_test_1DP5mmOlF5G5ag', 'rzp_test_xat695HK0hMa6V'];
+
+        $key = $headers['php-auth-user'][0];
+
+        if (in_array($key, $allowedMerchantKeys, true) === true)
+        {
+            $this->trace->info(
+                TraceCode::VPA_PAYOUT_REQUEST,
+                [
+                    'input' => $input,
+                    'type'  => $type,
+                ]);
+
+            $data = $this->service()->payoutVpa($input, $type);
+
+            return ApiResponse::json($data);
+        }
+
+        return ApiResponse::routeNotFound();
+    }
+
     public function getPaymentFlowsPrivate()
     {
         $input = Request::all();
