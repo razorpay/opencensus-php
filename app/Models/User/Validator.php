@@ -114,11 +114,12 @@ class Validator extends Base\Validator
     {
         if (empty($input['role']) === false)
         {
-            if (Role::validateProductRole($input['role'], $input['product']) === false)
+            $role = new Role();
+
+            if ($role->validateProductRole($input['role'], $input['product']) === false)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
             }
-
         }
     }
 
