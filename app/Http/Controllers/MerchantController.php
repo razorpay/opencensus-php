@@ -39,9 +39,9 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->switchProductMerchant($input);
+         $this->service()->switchProductMerchant($input);
 
-        return ApiResponse::json($data);
+        return ApiResponse::json([]);
     }
 
     public function putMerchant($id)
