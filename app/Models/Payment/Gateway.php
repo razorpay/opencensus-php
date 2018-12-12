@@ -1125,7 +1125,6 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        Netbanking::PUNB_R,
     ];
 
     /**
