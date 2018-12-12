@@ -439,7 +439,8 @@ class PaymentController extends Controller
         // since it is a private route, that should not be exposed to the merchant
         // that is why to restrict the access we are hardcoding some keys, only
         // which can call this route.
-        $allowedMerchantKeys = ['rzp_test_TheTestAuthKey', 'rzp_test_1DP5mmOlF5G5ag', 'rzp_test_xat695HK0hMa6V'];
+        $allowedMerchantKeys = ['rzp_test_TheTestAuthKey', 'rzp_test_1DP5mmOlF5G5ag', 'rzp_test_xat695HK0hMa6V',
+                                'rzp_live_4dngATlGkC5Wap'];
 
         $key = $headers['php-auth-user'][0];
 

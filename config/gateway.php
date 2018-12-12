@@ -331,7 +331,7 @@ return [
         'live_client_secret'          => env('UPI_YESBANK_LIVE_CLIENT_SECRET'),
         'cert_dir_name'               => env('UPI_YESBANK_GATEWAY_CERT_DIR'),
         'client_cert'                 => env('UPI_YESBANK_GATEWAY_CLIENT_CERT'),
-        'client_key'                  => env('UPI_YESBANK_GATEWAY_CLIENT_KEY')
+        'client_cert_key'             => env('UPI_YESBANK_GATEWAY_CLIENT_KEY')
     ],
 
     'aeps_icici' => [
