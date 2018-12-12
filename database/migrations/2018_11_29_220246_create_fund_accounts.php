@@ -5,6 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Payout\Entity as Payout;
+use RZP\Models\Contact\Entity as Contact;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 
@@ -65,6 +67,14 @@ class CreateFundAccounts extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->foreign(Payout::FUND_ACCOUNT_ID)
+                  ->references(FundAccount::ID)
+                  ->on(Table::PAYOUT)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -74,6 +84,11 @@ class CreateFundAccounts extends Migration
      */
     public function down()
     {
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::FUND_ACCOUNT_ID . '_foreign');
+        });
+
         Schema::table(Table::FUND_ACCOUNT, function($table)
         {
             $table->dropForeign(Table::FUND_ACCOUNT . '_' . FundAccount::MERCHANT_ID . '_foreign');

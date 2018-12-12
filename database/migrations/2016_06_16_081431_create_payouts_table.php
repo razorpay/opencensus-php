@@ -144,11 +144,6 @@ class CreatePayoutsTable extends Migration
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
 
-            $table->foreign(Payout::FUND_ACCOUNT_ID)
-                  ->references(FundAccount\Entity::ID)
-                  ->on(Table::FUND_ACCOUNT)
-                  ->on_delete('restrict');
-
             $table->foreign(Payout::PAYMENT_ID)
                   ->references(Payment\Entity::ID)
                   ->on(Table::PAYMENT)
