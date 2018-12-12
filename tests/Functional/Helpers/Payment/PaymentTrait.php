@@ -933,6 +933,11 @@ trait PaymentTrait
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
 
+        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        {
+            $input['reference_no'] = random_integer(12);
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
