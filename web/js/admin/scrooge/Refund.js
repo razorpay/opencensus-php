@@ -76,9 +76,11 @@ export default class RefundsList extends Component {
                     Retry Refund
                   </AsyncButton>
                 )}
-                <button class="btn btn-default" onClick={this.statusModal}>
-                  Update Status
-                </button>
+                {this.data.status !== 'processed' && (
+                  <button class="btn btn-default" onClick={this.statusModal}>
+                    Update Status
+                  </button>
+                )}
               </div>
             )}
         </aside>
