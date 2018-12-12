@@ -12,22 +12,22 @@ import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
-const mode = 'live';
-
 export default class RefundsList extends Component {
+  mode = this.props.match.params.mode || 'live';
+
   state = {
     loading: true,
   };
 
   componentWillMount() {
-    adminFetch(`${mode}/scrooge/refunds/` + this.props.match.params.id).then(
-      d => {
-        this.data = d;
-        this.setState({
-          loading: false,
-        });
-      }
-    );
+    adminFetch(
+      `${this.mode}/scrooge/refunds/` + this.props.match.params.id
+    ).then(d => {
+      this.data = d;
+      this.setState({
+        loading: false,
+      });
+    });
   }
 
   render() {
@@ -65,15 +65,17 @@ export default class RefundsList extends Component {
                 <div class="header">
                   <b>ACTIONS</b>
                 </div>
-                <AsyncButton
-                  confirm="Perform this action?"
-                  class="btn btn-default"
-                  pendingClass="btn btn-default btn-pending"
-                  onClick={this.retry}
-                >
-                  <span class="spin-btn" style={{ marginRight: -18 }} />
-                  Retry Refund
-                </AsyncButton>
+                {this.data.status !== 'processed' && (
+                  <AsyncButton
+                    confirm="Perform this action?"
+                    class="btn btn-default"
+                    pendingClass="btn btn-default btn-pending"
+                    onClick={this.retry}
+                  >
+                    <span class="spin-btn" style={{ marginRight: -18 }} />
+                    Retry Refund
+                  </AsyncButton>
+                )}
                 <button class="btn btn-default" onClick={this.statusModal}>
                   Update Status
                 </button>
@@ -85,7 +87,7 @@ export default class RefundsList extends Component {
   }
 
   retry = () => {
-    return adminPost(`${mode}/refunds/rfnd_${this.data.id}/retry`).then(
+    return adminPost(`${this.mode}/refunds/rfnd_${this.data.id}/retry`).then(
       data => {
         if (data) {
           notifySuccess('Refund retry request is successful');
@@ -118,7 +120,7 @@ export default class RefundsList extends Component {
 
   updateStatus = data => {
     return adminPost({
-      url: `${mode}/scrooge/refunds/${this.data.id}/status-update`,
+      url: `${this.mode}/scrooge/refunds/${this.data.id}/status-update`,
       data: {
         event: data.event,
         gateway_keys: {

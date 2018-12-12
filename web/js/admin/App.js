@@ -163,7 +163,10 @@ export default class App extends Component {
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
-                  <Route path="/scrooge/refund/:id" component={ScroogeRefund} />
+                  <Route
+                    path="/scrooge/refund/:mode(live|test)/:id"
+                    component={ScroogeRefund}
+                  />
                 </React.Fragment>
               )}
 

@@ -10,14 +10,27 @@ import { pluralize } from 'rzp/utils/rzp-utils';
 
 function refundLink(item, when) {
   let count = item.aging[when].count;
+
+  let query = {
+    status: ['file_init'],
+    attempts: {
+      gte: 1,
+    },
+    gateway: [item.gateway],
+    method: [item.method],
+    created_at: {
+      gte: item.aging[when].from,
+      lt: item.aging[when].to,
+    },
+  };
+
+  let queryString = Object.keys(query)
+    .map(key => key + '=' + JSON.stringify(query[key]))
+    .join('&');
+
   return (
     count && (
-      <Link
-        class="link"
-        to={`/scrooge/refunds?gateway=${item.gateway}&method=${
-          item.method
-        }&from=${item.aging[when].from}&to=${item.aging[when].to}`}
-      >
+      <Link class="link" to={`/scrooge/refunds?${queryString}`}>
         {count} {pluralize('Refund', count)}
       </Link>
     )
@@ -43,6 +56,10 @@ function RefundErrorsModal(data) {
 }
 
 function refundErrors(item, key) {
+  if (!item.hasOwnProperty(key)) {
+    return <div>-</div>;
+  }
+
   let count = item[key].length;
   let viewAllClick = () => {
     openModal(<RefundErrorsModal errors={item[key]} title={key} />);

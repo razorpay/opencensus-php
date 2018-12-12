@@ -243,3 +243,16 @@ export function splitAndFilter(string, separator = '') {
 
   return result;
 }
+
+/**
+ * @param {Array}
+ * @param {Array}
+ * Find unique intersecting values between 2 arrays
+ */
+export function intersect(a, b) {
+  let t;
+  if (b.length > a.length) (t = b), (b = a), (a = t); // indexOf to loop over shorter
+  return a.filter(function(e) {
+    return b.indexOf(e) > -1;
+  });
+}

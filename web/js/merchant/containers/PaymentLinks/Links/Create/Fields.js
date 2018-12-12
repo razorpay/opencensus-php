@@ -1,6 +1,33 @@
 import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { titleCase } from 'rzp/utils/rzp-utils';
+import {
+  MIN_AMOUNT_TEXT,
+  PopoverBodyText,
+  validateMinAmount,
+} from '../../Edit/EditMinimumAmount';
+
+const CustomInput = props => {
+  return (
+    <div class="Input--custom">
+      <div class="Input-label">
+        {titleCase(MIN_AMOUNT_TEXT.emi)} (Optional)
+        <small className="help-content">
+          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+          <Popover
+            align="top"
+            parentQuerySelector={`.Modal-body .PaymentLinks--Create`}
+          >
+            {PopoverBodyText}
+          </Popover>
+        </small>
+      </div>
+      <Input {...props} />
+    </div>
+  );
+};
 
 /* Form fields of Payment Links */
 export default [
@@ -42,6 +69,23 @@ export default [
       ),
       _cmp: Input.Check,
       _autoRenderImpure: true,
+    },
+    {
+      name: 'first_payment_min_amount',
+      addonBefore: '₹',
+      placeholder: '0.00',
+      size: 'half_big',
+      _autoRenderImpure: true,
+      _cmp: CustomInput,
+      validator: function(val) {
+        return validateMinAmount(val, this.state.dirty.amount);
+      },
+      _when: function(form) {
+        return (
+          form.state.dirty.partial_payment == '1' &&
+          form.props.user.isMinimumFirstPaymentEnabled
+        );
+      },
     },
   ],
   {
