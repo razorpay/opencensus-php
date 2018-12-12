@@ -189,7 +189,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getMerchantBalanceByType($merchant, $balanceType, $connection)
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string          $balanceType
+     * @param string          $connection
+     *
+     * @return mixed
+     */
+    public function getMerchantBalanceByType(Merchant\Entity $merchant, string $balanceType, string $connection)
     {
         return $this->newQueryWithConnection($connection)
                     ->where(Entity::MERCHANT_ID, '=', $merchant->getId())

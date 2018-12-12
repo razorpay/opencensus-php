@@ -52,6 +52,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
+                    ->first();
+    }
+
+
     public function findActiveVirtualAccountByOrder(Order\Entity $order)
     {
         return $this->newQuery()

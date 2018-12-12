@@ -26,6 +26,8 @@ class Type
 
     public static function exists(string $type): bool
     {
-        return defined(get_class() . '::' . strtoupper($type));
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        return ((defined($key) === true) and (constant($key) === $type));
     }
 }

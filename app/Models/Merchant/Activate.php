@@ -590,7 +590,7 @@ class Activate extends Base\Core
      *
      * @return Entity
      */
-    public function activateBusinessBankingIfApplicable(Entity $merchant)
+    public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
     {
         if ($merchant->isBusinessBankingEnabled() === true)
         {

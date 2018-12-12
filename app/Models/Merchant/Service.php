@@ -2671,9 +2671,6 @@ class Service extends Base\Service
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
         });
-
-
-        return ['success' => true];
     }
 
     protected function enableBusinessBankingIfApplicable(Entity $merchant)

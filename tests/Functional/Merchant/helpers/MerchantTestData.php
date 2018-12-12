@@ -3715,7 +3715,7 @@ return [
             'content' => [],
         ],
         'response' => [
-            'content' => ['success' => true]
+            'content' => []
         ],
     ],
   

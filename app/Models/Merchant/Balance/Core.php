@@ -9,7 +9,14 @@ use RZP\Exception;
 
 class Core extends Base\Core
 {
-    public function create(Merchant\Entity $merchant, $input, $mode)
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param string          $mode
+     *
+     * @return Entity
+     */
+    public function create(Merchant\Entity $merchant, array $input, string $mode): Entity
     {
         $balance = (new Entity)->build($input);
 
