@@ -10,6 +10,13 @@ use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\User
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';

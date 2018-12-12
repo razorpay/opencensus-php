@@ -309,6 +309,7 @@ class Core extends Base\Core
     public function sendOtpViaSms(array $input, Merchant\Entity $merchant, Entity $user): array
     {
         $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+
         // If the call to raven fails it is already rendered properly in final response.
         $this->app->raven->sendOtp(array_only($payload, ['context', 'receiver', 'source', 'template', 'params']));
 
@@ -322,10 +323,13 @@ class Core extends Base\Core
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
+     *
+     * @return array
      */
-    public function sendOtpViaEmail(array $input, Merchant\Entity $merchant, Entity $user)
+    public function sendOtpViaEmail(array $input, Merchant\Entity $merchant, Entity $user): array
     {
         $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+
         // If the call to raven fails it is already rendered properly in final response.
         $response = $this->app->raven->generateOtp(array_only($payload, ['context', 'receiver', 'source']));
 
@@ -353,6 +357,7 @@ class Core extends Base\Core
 
     /**
      * Verifies otp for given input(action, token & otp).
+     *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user
@@ -363,6 +368,7 @@ class Core extends Base\Core
 
         $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+
         // If the call to raven fails it is already rendered properly in final response.
         $this->app->raven->verifyOtp($payload);
     }
@@ -375,6 +381,7 @@ class Core extends Base\Core
         $receiver = $user->getContactMobile();
         $source   = 'api';
         $template = 'sms.user_action_otp';
+
         // Raven's template params
         $params   = [
             // Action must read as verb so can be used like to {action} in raven's generic template.

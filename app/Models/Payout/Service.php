@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -19,6 +20,12 @@ class Service extends Base\Service
 
     public function customerPayout(array $input): array
     {
+        // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
+        if ($this->auth->isStrictPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
         $payout = $this->core->createPayoutToCustomer($input, $this->merchant);
 
         return $payout->toArrayPublic();
@@ -26,15 +33,22 @@ class Service extends Base\Service
 
     /**
      * Business banking: Forwards request to customerPayout() after verifying user's otp for the action.
-     * @param  array  $input
+     *
+     * @param  array $input
+     *
      * @return array
      */
     public function customerPayoutWithOtp(array $input): array
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
         (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
 
-        return $this->customerPayout(array_except($input, ['otp', 'token']));
+        $payoutInput = array_except($input, ['otp', 'token']);
+
+        $payout = $this->core->createPayoutToCustomer($payoutInput, $this->merchant);
+
+        return $payout->toArrayPublic();
     }
 
     public function internalMerchantPayout(array $input): array

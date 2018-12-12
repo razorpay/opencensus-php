@@ -41,7 +41,7 @@ class Raven
         'send-sms'      => 'sms',
         'send-otp'      => 'sms/send-otp',
         'verify-otp'    => 'sms/verify-otp',
-        'generate-otp'  => 'sms/generate-otp',
+        'generate-otp'  => 'otp/generate',
     ];
 
     protected $validationErrors = [
