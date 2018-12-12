@@ -68,7 +68,7 @@ export default class CreateMerchantReportConfig extends Component {
 
     // hardcoded default values
     data.created_by = this.props.merchantId;
-    data.scheduled = '0';
+    data.scheduled = false;
 
     // checking for mandatory fields
     if (
@@ -138,7 +138,7 @@ export default class CreateMerchantReportConfig extends Component {
           <div class="heading">Merchant Id: {merchantId}</div>
           {!details.loading && details.data ? (
             <>
-              <EntityRow label="Merchant Name" value={details.data.name} />,
+              <EntityRow label="Merchant Name" value={details.data.name} />
               <EntityRow label="Registered Email" value={details.data.email} />
             </>
           ) : (
@@ -155,7 +155,11 @@ export default class CreateMerchantReportConfig extends Component {
                 onChange={this.handleChangeIn}
               >
                 <DataDetails
-                  partnerType={details.data.partner_type}
+                  isPartner={!!details.data.partner_type}
+                  isMarketplaceMerchant={
+                    details.data.merchant_details
+                      .marketplace_activation_status === 'approved'
+                  }
                   configOptions={this.state.configOptions}
                   onChange={this.handleChangeIn}
                   extension={

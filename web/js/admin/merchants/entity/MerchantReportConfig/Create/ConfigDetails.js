@@ -231,7 +231,9 @@ class ReportColumns extends Component {
             {!!outputFields.length
               ? 'Customized your selected Columns'
               : 'Select Columns to be customized'}
-          </strong>
+          </strong>&nbsp; (<em>
+            <small>Mention all amount fields in paise</small>
+          </em>)
         </div>
 
         {/* column headers */}
@@ -256,7 +258,7 @@ class ReportColumns extends Component {
             <div key={column} class="ReportConfig--report-column">
               <div class="label">
                 <span onClick={this.handleRemoveClick(column)}>
-                  <i class="i-no" />
+                  <i class="i-close" />
                 </span>
                 <span class="m-l">{column}</span>
                 <span class="reorder-icons pull-right">
@@ -372,6 +374,7 @@ class FilterValue extends Component {
     const name = `${this.props.column}.filter-value-`;
     switch (this.props.filterOp) {
       case 'IN':
+      case 'NOT IN':
         return this.props.values.filter(
           val => document.getElementById(`${name}${val}`).checked
         );

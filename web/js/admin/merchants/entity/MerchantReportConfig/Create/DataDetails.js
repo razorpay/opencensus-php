@@ -2,7 +2,7 @@ import Field, { SwitchField, SelectField, TextAreaField } from 'ui/Field';
 import { types, availableDateFormats } from '../data';
 
 export default function DataDetails(props) {
-  const { partnerType, reportEmails, configOptions } = props;
+  const { isPartner, isMarketplaceMerchant, configOptions } = props;
   return (
     <div class="row-item">
       <Field name="name" label="Report Name" required />
@@ -13,7 +13,7 @@ export default function DataDetails(props) {
         name="template.file_meta.filename"
         label="File Download Name"
         placeholder="(Optional)"
-        helpMsg="Type as - Yourtext_{Merchant_ID}_{Merchant_name}_{date=d/m/Y H:i:s} - type the date/ time format you want"
+        helpMsg="Type as - yourtext_{merchant_ID}_{merchant_name}_{date=d/m/Y H:i:s} - type the date/ time format you want"
       />
 
       {!configOptions.loading ? (
@@ -60,7 +60,7 @@ export default function DataDetails(props) {
         onChange={props.onChange}
       />
 
-      {!!partnerType && (
+      {(isPartner || isMarketplaceMerchant) && (
         <SwitchField
           name="template.referred_accounts"
           label="Show aggregate data in report"
@@ -72,13 +72,13 @@ export default function DataDetails(props) {
         />
       )}
 
-      <SwitchField
+      {/* <SwitchField
         name="template.attach_to_email"
         label="Attach To Email"
         enabledLabel="Yes"
         disabledLabel="No"
         onChange={props.onChange}
-      />
+      /> */}
 
       <SelectField
         name="template.formats.date"
