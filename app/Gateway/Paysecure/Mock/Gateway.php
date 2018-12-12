@@ -38,4 +38,15 @@ class Gateway extends Paysecure\Gateway
 
         return $soapClient;
     }
+
+    protected function convertToArray($response)
+    {
+        $response = $response->CallPaySecureResult;
+
+        $xmlResponse = simplexml_load_string(preg_replace('/(<\?xml[^?]+?)utf-16/i', '$1utf-8', $response));
+
+        $xmlResponseArray = Paysecure\XmlSerializer::xmlToArray($xmlResponse);
+
+        return $xmlResponseArray;
+    }
 }

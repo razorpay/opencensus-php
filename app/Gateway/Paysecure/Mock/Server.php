@@ -141,7 +141,7 @@ class Server extends Base\Mock\Server
 
             $hash = $this->generateHashOfData($dataToHash);
 
-            $content[Paysecure\Fields::ACCU_REQUEST_ID] = $hash;
+            $content[Paysecure\Fields::ACCU_REQUEST_ID] = base64_encode($hash);
         }
         // For Iframe flow
         else

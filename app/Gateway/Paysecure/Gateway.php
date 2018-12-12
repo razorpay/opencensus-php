@@ -279,6 +279,8 @@ class Gateway extends Base\Gateway
 
         $hash = $this->generateHashOfData($dataToHash, $gatewayPayment[Entity::HKEY]);
 
+        $hash = base64_encode($hash);
+
         $this->compareHashes($this->input['gateway'][Fields::ACCU_REQUEST_ID], $hash);
     }
     // ------------ Callback request helpers end -------------
