@@ -102,10 +102,7 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        if ($merchant->isBusinessBankingEnabled() === true)
-        {
-            $this->activateBusinessBanking($merchant);
-        }
+        $this->activateBusinessBankingIfApplicable($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
@@ -162,10 +159,7 @@ class Activate extends Base\Core
 
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
-        if ($merchant->isBusinessBankingEnabled() === true)
-        {
-            $this->activateBusinessBanking($merchant);
-        }
+        $this->activateBusinessBankingIfApplicable($merchant);
 
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
@@ -205,10 +199,7 @@ class Activate extends Base\Core
             $this->repo->saveOrFail($merchantDetail);
         });
 
-        if ($merchant->isBusinessBankingEnabled() === true)
-        {
-            $this->activateBusinessBanking($merchant);
-        }
+        $this->activateBusinessBankingIfApplicable($merchant);
 
         //
         // Live transactions get disabled if the activation_status changes to 'rejected'.
@@ -599,33 +590,36 @@ class Activate extends Base\Core
      *
      * @return Entity
      */
-    public function activateBusinessBanking(Entity $merchant)
+    public function activateBusinessBankingIfApplicable(Entity $merchant)
     {
-        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
-
-        // If merchant is instantly activated or Activated this flow will kick in.
-        if ($merchant->isActivated() === true)
+        if ($merchant->isBusinessBankingEnabled() === true)
         {
-            // Business Banking logic is coupled only with the live mode.
-            $liveMode = $this->app['basicauth']->getLiveConnection();
+            $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
 
-            $this->app['basicauth']->setModeAndDbConnection($liveMode);
+            // If merchant is instantly activated or Activated this flow will kick in.
+            if ($merchant->isActivated() === true)
+            {
+                // Business Banking logic is coupled only with the live mode.
+                $liveMode = $this->app['basicauth']->getLiveConnection();
 
-            // Create Banking Balance.
-            $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+                $this->app['basicauth']->setModeAndDbConnection($liveMode);
 
-            // We need to enable bank transfer before creating virtual account.
+                // Create Banking Balance.
+                $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
 
-            // Virtual Account.
-            $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
+                // We need to enable bank transfer before creating virtual account.
 
-            // todo Banking Pricing defaults if exists. It doesn't exist we have a global pricing.
-        }
+                // Virtual Account.
+                $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
 
-        // This means that L2 form is also verified.
-        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
-        {
-            // Enable Payouts.
+                // todo Banking Pricing defaults if exists. It doesn't exist we have a global pricing.
+            }
+
+            // This means that L2 form is also verified.
+            if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+            {
+                // Enable Payouts.
+            }
         }
 
         return $merchant;
