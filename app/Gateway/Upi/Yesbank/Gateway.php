@@ -270,7 +270,12 @@ class Gateway extends Mindgate\Gateway
      */
     protected function getEncryptionKey()
     {
-        return $this->config['test_merchant_key'];
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_key'];
+        }
+
+        return $this->config['live_merchant_key'];
     }
 
     protected function traceGatewayPaymentRequest(array $request, $input,
