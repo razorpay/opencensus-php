@@ -57,6 +57,12 @@ class Entity extends Base\PublicEntity
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
+    const RRN                    = 'rrn';
+
+    /**
+     * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
+     */
+    const BANK_REFERENCE_NO = 'reference_no';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const VPA_ID                 = 'vpa_id';
@@ -412,6 +418,12 @@ class Entity extends Base\PublicEntity
             case Payment\Method::CARD:
                 $acquirerData = [
                     self::ARN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::UPI:
+                $acquirerData = [
+                    self::RRN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
         }

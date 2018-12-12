@@ -77,6 +77,11 @@ class TransactionFilter extends Terminal\Filter
             case Method::BANK_TRANSFER:
                 return $terminal->isBankTransferEnabled();
 
+            case Method::CARDLESS_EMI:
+                // @todo: fix the getWallet() for cardless emi and move it to a separate function
+                return (($terminal->isCardlessEmiEnabled() === true) and
+                        ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',

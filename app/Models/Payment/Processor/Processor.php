@@ -354,7 +354,50 @@ class Processor
                 $coproto = $this->preProcessPaymentInputsForUpi($input, $payment);
                 break;
 
+            case Payment\Method::CARDLESS_EMI:
+                $coproto = $this->preProcessPaymentInputsForCardlessEmi($input, $payment);
+                break;
         }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForCardlessEmi($input, $payment)
+    {
+        $this->verifyCardlessEmiEnabled();
+
+        if (empty($input['ott']) === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        $gateway = Payment\Gateway::CARDLESS_EMI;
+
+        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+
+        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+
+        $coproto = [
+            'type' => 'respawn',
+            'method' => 'cardless_emi',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', ['method' => 'cardless_emi', 'provider' => $input['provider']]),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'      => $payment->merchant->getBrandColorElseDefault(),
+            'merchant'   => $merchant->getDbaName(),
+            'gateway'    => $this->getEncryptedGatewayText($gateway),
+            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
+            'key_id'     => $this->ba->getPublicKey(),
+            'version'    => '1',
+            'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
+        ];
 
         return $coproto;
     }

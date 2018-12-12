@@ -51,11 +51,11 @@ class Core extends Base\Core
             $order->allowPartialPayment();
         }
 
-        $order->getValidator()->validateMerchantSpecificData();
-
         $order = $this->repo->transaction(function() use ($order, $input)
         {
             $ba = $this->createAndAssociateBankAccount($order, $input);
+
+            $order->getValidator()->validateMerchantSpecificData();
 
             if (empty($ba) === false)
             {
@@ -200,16 +200,20 @@ class Core extends Base\Core
         {
             $ifscCode = BankCodes::getIfscForBankCode($order->getBank());
 
+            $beneficiaryName = $order->getPayerName();
+
             $input[BankAccount\Entity::IFSC_CODE] = $ifscCode;
             $input[BankAccount\Entity::ACCOUNT_NUMBER] = $order->getAccountNumber();
-            $input[BankAccount\Entity::BENEFICIARY_NAME] = $order->getPayerName();
+            $input[BankAccount\Entity::BENEFICIARY_NAME] = ($beneficiaryName === null) ? '' : $beneficiaryName;
         }
         else
         {
+            $beneficiaryName = $payerAccount->getBeneficiaryName();
+
             $input = [
                 BankAccount\Entity::IFSC_CODE        => $payerAccount->getIfscCode(),
                 BankAccount\Entity::ACCOUNT_NUMBER   => $payerAccount->getAccountNumber(),
-                BankAccount\Entity::BENEFICIARY_NAME => $payerAccount->getBeneficiaryName()
+                BankAccount\Entity::BENEFICIARY_NAME => ($beneficiaryName === null) ? '' : $beneficiaryName,
             ];
         }
 

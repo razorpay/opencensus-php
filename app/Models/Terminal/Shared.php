@@ -83,6 +83,8 @@ class Shared
     const HITACHI_MOTO_TERMINAL              = '10hitachMotoTl';
     const ENSTAGE_TERMINAL                   = '100ensgageTrml';
     const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
+    const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
+    const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
 
     protected static $shared = array(
@@ -138,6 +140,8 @@ class Shared
         self::MPESA_RAZORPAY_TERMINAL,
         self::HITACHI_MOTO_TERMINAL,
         self::ENSTAGE_TERMINAL,
+        self::CARDLESS_EMI_RAZORPAY_TERMINAL,
+
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -194,6 +198,7 @@ class Shared
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
         self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,
         self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
+        self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
     ];
 
     public static function getSharedTerminalMapping()

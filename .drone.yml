@@ -1,4 +1,10 @@
 pipeline:
+  # Run php 7.0 sanity tests till we are on PHP7.0 on old infrastructure
+  validate_php_7_0_syntax:
+    image: php:7.0-cli-alpine
+    commands:
+      - find -path ./vendor -prune -o -iname '*.php'|xargs -n1 php -l
+    group: A
   restore_cache:
     image: razorpay/containers:drone-s3-cache
     restore: true

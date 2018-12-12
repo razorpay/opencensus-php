@@ -4457,6 +4457,13 @@ ALTER TABLE invitations
 ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi;
+
+ALTER TABLE terminals
+    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
+    ADD INDEX `terminals_cardless_emi_index` (cardless_emi);
+
 # Drops foreign key on production on newly created table beneficiaries, leaving them on stage and local environment.
 ALTER TABLE beneficiaries
     DROP FOREIGN KEY beneficiaries_merchant_id_foreign;
@@ -4513,3 +4520,4 @@ INSERT INTO schedule_tasks
 
 ALTER TABLE pricing
 	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
+

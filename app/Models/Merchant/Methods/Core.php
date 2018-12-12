@@ -143,15 +143,16 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'                   => E::METHODS,
-            Payment\Method::CARD       => true,
-            Entity::DEBIT_CARD         => true,
-            Entity::CREDIT_CARD        => true,
-            Payment\Gateway::AMEX      => false,
-            Payment\Method::NETBANKING => [],
-            Payment\Method::WALLET     => [],
-            Payment\Method::EMI        => false,
-            Payment\Method::UPI        => false,
+            'entity'                     => E::METHODS,
+            Payment\Method::CARD         => true,
+            Entity::DEBIT_CARD           => true,
+            Entity::CREDIT_CARD          => true,
+            Payment\Gateway::AMEX        => false,
+            Payment\Method::NETBANKING   => [],
+            Payment\Method::WALLET       => [],
+            Payment\Method::EMI          => false,
+            Payment\Method::UPI          => false,
+            Payment\Method::CARDLESS_EMI => []
         ];
 
         $methods = $this->getMethods($merchant);
@@ -173,6 +174,7 @@ class Core extends Base\Core
 
         $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
         $data[Payment\Method::UPI] = $methods->isUpiEnabled();
+        $data[Payment\Method::CARDLESS_EMI] = $this->getCardlessEmiProviders($merchant);
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)
@@ -486,5 +488,23 @@ class Core extends Base\Core
     protected function getBankNames($banks)
     {
         return Netbanking::getNames($banks);
+    }
+
+    public function getCardlessEmiProviders($merchant)
+    {
+        $cardlessEmi = [];
+
+        $providers = $this->app['repo']->terminal->findByMerchantIdAndCardlessEmi($merchant['id']);
+
+        $providers = $providers->toArray();
+
+        $providers = (array_unique(array_column($providers, 'gateway_acquirer')));
+
+        foreach ($providers as $provider)
+        {
+            $cardlessEmi[$provider] = true;
+        }
+
+        return $cardlessEmi;
     }
 }
