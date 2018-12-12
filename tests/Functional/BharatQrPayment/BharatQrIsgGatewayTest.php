@@ -60,6 +60,10 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals($request['content'][Field::TRANSACTION_ID], $response[Field::TRANSACTION_ID]);
 
+        $gatewayPayment = $this->getLastEntity('isg', true);
+
+        $this->assertEquals($response[Field::NOTIFICATION_REF_NO], $gatewayPayment['payment_id']);
+
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
         // Payment is automatically captured
@@ -82,7 +86,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testQrPaymentBadVerifyCallback()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -104,6 +108,8 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
+        $this->assertNull($response[Field::NOTIFICATION_REF_NO]);
+
         $this->assertEquals('Amount mismatch in Verify response and callback response', $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
@@ -117,7 +123,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testVerifyQrPayment()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -156,7 +162,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testBharatQrFailedVerifyCallback()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -215,7 +221,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testDecryptionFailureInPaymentNotification()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -229,7 +235,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals("Input string cannot be decrypted", $response[Field::STATUS_DESC]);
+        $this->assertEquals('Input string cannot be decrypted', $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 

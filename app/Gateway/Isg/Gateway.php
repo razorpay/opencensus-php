@@ -499,14 +499,19 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
-            Field::NOTIFICATION_REF_NO => $input[Field::TRANSACTION_ID],
         ];
 
         if ($valid === true)
         {
+            $gatewayEntity = $this->repo->fetchByBankReferenceNumber(strval($input[Field::TRANSACTION_ID]));
+
+            $attributes[Field::NOTIFICATION_REF_NO] = $gatewayEntity[Entity::PAYMENT_ID];
+
             $attributes[Field::STATUS_CODE] = Status::APPROVED;
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;
+
+            return $attributes;
         }
         else if ((isset($ex) === true) and ($ex instanceOf Exception\GatewayErrorException))
         {
@@ -522,6 +527,8 @@ class Gateway extends Base\Gateway
 
             $attributes[Field::STATUS_DESC] = Status::FAILED;
         }
+
+        $attributes[Field::NOTIFICATION_REF_NO] = null;
 
         return $attributes;
     }
