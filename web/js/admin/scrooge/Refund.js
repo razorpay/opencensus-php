@@ -12,22 +12,22 @@ import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
-const mode = 'live';
-
 export default class RefundsList extends Component {
+  mode = this.props.match.params.mode || 'live';
+
   state = {
     loading: true,
   };
 
   componentWillMount() {
-    adminFetch(`${mode}/scrooge/refunds/` + this.props.match.params.id).then(
-      d => {
-        this.data = d;
-        this.setState({
-          loading: false,
-        });
-      }
-    );
+    adminFetch(
+      `${this.mode}/scrooge/refunds/` + this.props.match.params.id
+    ).then(d => {
+      this.data = d;
+      this.setState({
+        loading: false,
+      });
+    });
   }
 
   render() {
@@ -85,7 +85,7 @@ export default class RefundsList extends Component {
   }
 
   retry = () => {
-    return adminPost(`${mode}/refunds/rfnd_${this.data.id}/retry`).then(
+    return adminPost(`${this.mode}/refunds/rfnd_${this.data.id}/retry`).then(
       data => {
         if (data) {
           notifySuccess('Refund retry request is successful');
@@ -118,7 +118,7 @@ export default class RefundsList extends Component {
 
   updateStatus = data => {
     return adminPost({
-      url: `${mode}/scrooge/refunds/${this.data.id}/status-update`,
+      url: `${this.mode}/scrooge/refunds/${this.data.id}/status-update`,
       data: {
         event: data.event,
         gateway_keys: {
@@ -187,9 +187,13 @@ const attemptsDataFields = [
   ['Status', item => item.status],
   ['Error Code', item => item.error_code],
   ['Request Status', item => item.request_status_code],
-  ['Created At', item => formatDate(item.created_at)],
+  [
+    'Gateway Verify Response',
+    item => <pre class="duplex-json">{item.gateway_verify_response}</pre>,
+  ],
   [
     'Gateway Response',
     item => <pre class="duplex-json">{item.gateway_response}</pre>,
   ],
+  ['Created At', item => formatDate(item.created_at)],
 ];

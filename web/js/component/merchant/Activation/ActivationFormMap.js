@@ -511,6 +511,8 @@ const bankAccountFields = [
   {
     name: 'bank_account_name',
     label: 'Beneficiary Name',
+    maxLength: '120',
+    minLength: '4',
     info: function() {
       const currentBusinessType =
         this.state.dirty.business_type || this.props.data.business_type;
