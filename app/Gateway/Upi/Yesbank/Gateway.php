@@ -40,7 +40,6 @@ class Gateway extends Mindgate\Gateway
         Entity::BANK                    => Entity::BANK,
         Entity::TYPE                    => Entity::TYPE,
         Entity::RECEIVED                => Entity::RECEIVED,
-        Entity::AMOUNT                  => Entity::AMOUNT,
         Entity::PAYMENT_ID              => Entity::PAYMENT_ID,
         Entity::MERCHANT_REFERENCE      => Entity::MERCHANT_REFERENCE,
 
@@ -143,7 +142,7 @@ class Gateway extends Mindgate\Gateway
             // we need to send the FTS service only the reason of failure, so catching
             // the exception.
             $this->assertAmount($this->getIntegerFormattedAmount($responseArray[Fields::AMOUNT]),
-                $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT]));
+                $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT] / 100));
 
             if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
             {
