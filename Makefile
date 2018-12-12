@@ -77,5 +77,8 @@ down:
 test:
 	$(DOCKER_EXEC) --env $(PHPUNIT_ENV_FLAG) -it $(DOCKER_PS_API_IMG) $(PHPUNIT) $(AT)
 
+bash:
+	$(DOCKER_EXEC) -it $(DOCKER_PS_API_IMG) /bin/bash
+
 all: build
 

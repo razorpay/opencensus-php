@@ -1474,7 +1474,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
         self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
-        self::GATEWAY_REQUEST_INPUT_RECEIVED            => 'Input received to make request to gateway',
 
         self::QUEUE_INVALID_CONFIG                      => 'Invalid Config used for Queue name and connection fetching',
 
