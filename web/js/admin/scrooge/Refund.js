@@ -65,15 +65,17 @@ export default class RefundsList extends Component {
                 <div class="header">
                   <b>ACTIONS</b>
                 </div>
-                <AsyncButton
-                  confirm="Perform this action?"
-                  class="btn btn-default"
-                  pendingClass="btn btn-default btn-pending"
-                  onClick={this.retry}
-                >
-                  <span class="spin-btn" style={{ marginRight: -18 }} />
-                  Retry Refund
-                </AsyncButton>
+                {this.data.status !== 'processed' && (
+                  <AsyncButton
+                    confirm="Perform this action?"
+                    class="btn btn-default"
+                    pendingClass="btn btn-default btn-pending"
+                    onClick={this.retry}
+                  >
+                    <span class="spin-btn" style={{ marginRight: -18 }} />
+                    Retry Refund
+                  </AsyncButton>
+                )}
                 <button class="btn btn-default" onClick={this.statusModal}>
                   Update Status
                 </button>
