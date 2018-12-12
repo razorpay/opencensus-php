@@ -25,9 +25,9 @@ class Validator extends Base\Validator
         Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFERS          => 'sometimes|array',
         Entity::BANK_ACCOUNT    => 'sometimes|array',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::BENEFICIARY_NAME   => 'sometimes|max:40|string',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::IFSC_CODE          => 'required_with:bank_account|alpha_num|size:11',
-        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::ACCOUNT_NUMBER     => 'required_with:bank_account|alpha_num|between:5,20',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::NAME           => 'sometimes|max:40|string',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::IFSC           => 'required_with:bank_account|alpha_num|size:11',
+        Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::ACCOUNT_NUMBER => 'required_with:bank_account|alpha_num|between:5,20',
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
         Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
@@ -335,8 +335,7 @@ class Validator extends Base\Validator
         // TODO: Change this after creating bank account entities for all the previous TPV orders
         $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
 
-        if ((empty($payment) === false) and
-            (empty($accountNumber) === true))
+        if (empty($accountNumber) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);

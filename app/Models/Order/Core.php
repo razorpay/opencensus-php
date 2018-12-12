@@ -51,11 +51,11 @@ class Core extends Base\Core
             $order->allowPartialPayment();
         }
 
-        $order->getValidator()->validateMerchantSpecificData();
-
         $order = $this->repo->transaction(function() use ($order, $input)
         {
             $ba = $this->createAndAssociateBankAccount($order, $input);
+
+            $order->getValidator()->validateMerchantSpecificData();
 
             if (empty($ba) === false)
             {
