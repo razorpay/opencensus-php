@@ -164,7 +164,9 @@ class RefundController extends Controller
 
     public function markRefundProcessed(string $id)
     {
-        $data = $this->service()->markRefundProcessed($id);
+        $input = Request::all();
+
+        $data = $this->service()->markRefundProcessed($id, $input);
 
         return ApiResponse::json($data);
     }
