@@ -206,6 +206,8 @@ class Core extends Base\Core
 
     protected function buildReceivers(Entity $virtualAccount, array $receivers)
     {
+        $virtualAccount->getValidator()->validateReceiversForBanking($receivers);
+
         $receiverHelper = $virtualAccount->getReceiverBuilder();
 
         foreach ($receivers[Entity::TYPES] as $receiverType)
@@ -221,6 +223,25 @@ class Core extends Base\Core
             $association = camel_case($receiverType);
 
             $virtualAccount->$association()->associate($receiver);
+        }
+
+        $this->updateBalanceAccountNumberForBanking($virtualAccount);
+    }
+
+    /**
+     * Updates balance's account number if applicable per below condition.
+     * @param Entity $virtualAccount
+     */
+    protected function updateBalanceAccountNumberForBanking(Entity $virtualAccount)
+    {
+        if (($virtualAccount->isBalanceTypeBanking() === true) and
+            ($virtualAccount->hasBankAccount() === true))
+        {
+            $balance = $virtualAccount->balance;
+            $bankAccount = $virtualAccount->bankAccount;
+
+            $balance->setAccountNumber($bankAccount->getAccountNumber());
+            $this->repo->saveOrFail($balance);
         }
     }
 

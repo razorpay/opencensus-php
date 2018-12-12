@@ -13,6 +13,10 @@ class Repository extends Base\Repository
 
     const REFUND_ID = 'refund_id';
 
+    protected $expands = [
+        Entity::TRANSACTION,
+    ];
+
     protected $appFetchParamRules = [
         Entity::PAYMENT_ID         => 'sometimes|string|min:14|max:18',
         Entity::MERCHANT_ID        => 'sometimes|alpha_num|size:14',

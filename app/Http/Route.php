@@ -248,6 +248,8 @@ final class Route
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
+        'bank_transfer_list'                       => ['get',      'bank_transfers',                                 'BankTransferController@list'                                       ],
+        'bank_transfer_get'                        => ['get',      'bank_transfers/{id}',                            'BankTransferController@get'                                        ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'         => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
@@ -785,7 +787,7 @@ final class Route
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
         'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
-      
+
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1197,6 +1199,8 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         //'fund_account_delete',
+        'bank_transfer_list',
+        'bank_transfer_get',
     ];
 
     // Only routes defined in internalApps go here

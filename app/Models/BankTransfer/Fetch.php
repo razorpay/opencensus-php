@@ -19,11 +19,15 @@ class Fetch extends BaseFetch
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::MODE               => 'sometimes|string|max:4',
             Entity::UTR                => 'sometimes|alpha_num|max:22',
-            Entity::REFUND_ID      => 'sometimes|string|min:14|max:19',
+            Entity::REFUND_ID          => 'sometimes|string|min:14|max:19',
+            Entity::BALANCE_ID         => 'sometimes|unsigned_id',
         ],
     ];
 
     const ACCESSES = [
+        AuthType::PRIVATE_AUTH => [
+            Entity::BALANCE_ID,
+        ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PAYMENT_ID,
             Entity::MERCHANT_ID,

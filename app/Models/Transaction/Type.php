@@ -14,6 +14,7 @@ class Type
     const REVERSAL      = 'reversal';
     const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
+    const BANK_TRANSFER = 'bank_transfer';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
@@ -26,7 +27,8 @@ class Type
         self::DISPUTE,
         self::REVERSAL,
         self::SETTLEMENT,
-        self::ADJUSTMENT
+        self::ADJUSTMENT,
+        self::BANK_TRANSFER,
     ];
 
     public static function validateType($type)
@@ -40,10 +42,12 @@ class Type
 
     public static function getEntityClass($type)
     {
-        $entity = 'RZP\\Models\\' . ucfirst($type) . '\Entity';
+        $studlyType = studly_case($type);
+
+        $entity = 'RZP\\Models\\' . $studlyType . '\Entity';
 
         if ($type === self::REFUND)
-            $entity = 'RZP\\Models\\Payment\\' . ucfirst($type) . '\Entity';
+            $entity = 'RZP\\Models\\Payment\\' . $studlyType . '\Entity';
 
         return $entity;
     }

@@ -14,6 +14,7 @@ use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
+use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * @property Payment\Entity        $payment
@@ -23,6 +24,8 @@ use Razorpay\Trace\Facades\Trace;
  */
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
+
     const ID                 = 'id';
     const PAYMENT_ID         = 'payment_id';
     const MERCHANT_ID        = 'merchant_id';
@@ -43,7 +46,9 @@ class Entity extends Base\PublicEntity
     const PAYEE_IFSC         = 'payee_ifsc';
 
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
+    const BALANCE_ID         = 'balance_id';
     const VIRTUAL_ACCOUNT    = 'virtual_account';
+    const TRANSACTION        = 'transaction';
 
     const AMOUNT             = 'amount';
 
@@ -104,10 +109,18 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::PAYMENT_ID,
+        self::ID,
+        self::PAYER_NAME,
         self::MODE,
-        self::BANK_REFERENCE,
         self::AMOUNT,
+        self::DESCRIPTION,
+        self::TRANSACTION,
+        self::BANK_REFERENCE,
+        self::TIME,
+        self::CREATED_AT,
+
+        // Todo: Why/where are these attributes exposed? Check and fix!
+        self::PAYMENT_ID,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
         self::VIRTUAL_ACCOUNT,
@@ -168,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MODE,
         self::BANK_REFERENCE,
+        self::TRANSACTION,
     ];
 
     protected static $sign = 'bt';
@@ -205,7 +219,7 @@ class Entity extends Base\PublicEntity
      */
     public function transaction()
     {
-        return $this->morphOne(Transaction\Entity::class, 'source');
+        return $this->morphOne(Transaction\Entity::class, 'source', 'type', 'entity_id');
     }
 
     // ----------------------- Generators --------------------------------------
@@ -474,5 +488,19 @@ class Entity extends Base\PublicEntity
         }
 
         return $label . '-' . $utr;
+    }
+
+    protected function setPublicTransactionAttribute(array & $array)
+    {
+        if (array_key_exists(self::TRANSACTION, $array) === true)
+        {
+            $array[self::TRANSACTION] = array_only(
+                $array[self::TRANSACTION],
+                [
+                    Transaction\Entity::AMOUNT,
+                    Transaction\ENTITY::FEE,
+                    Transaction\ENTITY::TAX,
+                ]);
+        }
     }
 }
