@@ -305,9 +305,9 @@ return [
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
                 'bank_account'   => [
-                    'account_number' => '040304030403040',
-                    'ifsc_code'      => 'UTIB0003098',
-                    'beneficiary_name'  => 'ThisIsAwesome',
+                    'account_number'    => '040304030403040',
+                    'ifsc'              => 'UTIB0003098',
+                    'name'              => 'ThisIsAwesome',
                 ],
             ],
             'method'    => 'POST',
