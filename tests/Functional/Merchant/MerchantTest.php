@@ -3703,6 +3703,8 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
 
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking', ['merchant_id' => '100000Razorpay']);
+
         // To create a virtual account we need to enable bank transfer
         $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
 

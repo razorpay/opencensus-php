@@ -82,8 +82,6 @@ class Fixtures
             'auth_token' => 'authentication_token',
         ]);
 
-        $this->create('terminal:bank_account_terminal_for_business_banking', ['merchant_id' => '100000Razorpay']);
-
         $this->create('vpa:default');
 
         $this->workflow->setUp();
