@@ -69,7 +69,11 @@ class Gateway extends Base\Gateway
 
             $this->createGatewayPaymentEntity($content);
 
-            return $this->getRedirectRequest($response);
+            $request = $this->getRedirectRequest($response);
+
+            $this->traceGatewayPaymentRequest($request, $input);
+
+            return $request;
         }
         // Iframe flow
         else
