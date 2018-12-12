@@ -87,11 +87,6 @@ class Role
         return (in_array($role, $productRoles, true) === true);
     }
 
-    public static function allProductRoles()
-    {
-        return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES);
-    }
-
     public static function allExceptPaymentLinkRoles()
     {
         return array_diff(self::ALL_ROLES, self::PL_ROLES);

@@ -2665,9 +2665,13 @@ class Service extends Base\Service
 
         $this->enableBusinessBankingIfApplicable($merchant);
 
-        $this->repo->saveOrFail($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
 
-        (new Activate)->activateBusinessBankingIfApplicable($merchant);
+            (new Activate)->activateBusinessBankingIfApplicable($merchant);
+        });
+
 
         return ['success' => true];
     }

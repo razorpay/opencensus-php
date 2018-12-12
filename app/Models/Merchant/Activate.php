@@ -100,9 +100,9 @@ class Activate extends Base\Core
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
-        });
 
-        $this->activateBusinessBankingIfApplicable($merchant);
+            $this->activateBusinessBankingIfApplicable($merchant);
+        });
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
@@ -607,12 +607,8 @@ class Activate extends Base\Core
                 // Create Banking Balance.
                 $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
 
-                // We need to enable bank transfer before creating virtual account.
-
                 // Virtual Account.
                 $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
-
-                // todo Banking Pricing defaults if exists. It doesn't exist we have a global pricing.
             }
 
             // This means that L2 form is also verified.

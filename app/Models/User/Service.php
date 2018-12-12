@@ -275,6 +275,7 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
+        // using user context from header to avoid IDOR.
         $user = $this->auth->getUser();
 
         $response = (new Core)->get($user);
@@ -531,6 +532,12 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * This will assign applicable role to the product by checking it's origin.
+     * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
+     * @return null|\RZP\Models\User\Entity
+     * @throws \RZP\Exception\BadRequestException
+     */
     public function addProductSwitchRole()
     {
         $user = $this->auth->getUser();

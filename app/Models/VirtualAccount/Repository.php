@@ -44,11 +44,11 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
+    public function getActiveVirtualAccountFromBalanceId(string $balanceId)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
                     ->first();
     }
 
