@@ -11,8 +11,10 @@ use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateGatewayTest extends TestCase
@@ -569,6 +571,10 @@ class UpiMindgateGatewayTest extends TestCase
 
         // Attempt a partial refund
         $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNotNull($refund[PaymentEntity::ACQUIRER_DATA][RefundEntity::RRN]);
     }
 
     public function testRefundFailure()
