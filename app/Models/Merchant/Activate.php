@@ -10,6 +10,7 @@ use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -605,7 +606,7 @@ class Activate extends Base\Core
                 $this->app['basicauth']->setModeAndDbConnection($liveMode);
 
                 // Create Banking Balance.
-                $balance = (new Balance\Service())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+                $balance = (new Balance\Core())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
 
                 // Virtual Account.
                 $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
@@ -614,7 +615,14 @@ class Activate extends Base\Core
             // This means that L2 form is also verified.
             if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
             {
-                // Enable Payouts.
+                $featureParams = [
+                    Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                    Feature\Entity::ENTITY_TYPE  => 'merchant',
+                    Feature\Entity::NAMES        => [Feature\Constants::PAYOUT],
+                    Feature\Entity::SHOULD_SYNC  => true,
+                ];
+
+                (new Feature\Service)->addFeatures($featureParams);
             }
         }
 

@@ -191,7 +191,7 @@ class Validator extends Base\Validator
 
             $captchaQuery = http_build_query($input);
 
-            $url = "https://www.google.com/recaptcha/api/siteverify?". $captchaQuery;
+            $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
 
             $response = \Requests::get($url);
 
