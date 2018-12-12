@@ -444,4 +444,132 @@ return [
         'bank_name'       => 'SBIN',
         'status'          => 'Ok',
     ],
+
+    'testGetBankTransferById' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/bank_transfers',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'id'          => 'bt_BWwTw9MV0hJnKY',
+                'entity'      => 'bank_transfer',
+                'payer_name'  => null,
+                'mode'        => 'NEFT',
+                'amount'      => 2500,
+                'description' => 'Test bank transfer',
+                'transaction' => [
+                    'amount' => 2500,
+                    'fee'    => 0,
+                    'tax'    => 0,
+                ],
+                // 'bank_reference'     => 'FZMH370AWG69VQPKXRTSD4',
+                // 'time'               => 1544635189,
+                // 'created_at'         => 1544635189,
+                // 'payment_id'         => null,
+                // 'virtual_account_id' => 'va_BWwTw0PTcJ8oiL',
+            ],
+        ],
+    ],
+
+    'testListBankTransfer' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/bank_transfers',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        // 'id'          => 'bt_BWwTw9MV0hJnKY',
+                        'entity'      => 'bank_transfer',
+                        'payer_name'  => null,
+                        'mode'        => 'NEFT',
+                        'amount'      => 5000,
+                        'description' => 'Test bank transfer',
+                        'transaction' => [
+                            'amount' => 5000,
+                            'fee'    => 0,
+                            'tax'    => 0,
+                        ],
+                        // 'bank_reference'     => 'FZMH370AWG69VQPKXRTSD4',
+                        // 'time'               => 1544635189,
+                        // 'created_at'         => 1544635189,
+                        // 'payment_id'         => null,
+                        // 'virtual_account_id' => 'va_BWwTw0PTcJ8oiL',
+                    ],
+                    [
+                        // 'id'          => 'bt_BWwTw9MV0hJnKY',
+                        'entity'      => 'bank_transfer',
+                        'payer_name'  => null,
+                        'mode'        => 'NEFT',
+                        'amount'      => 2500,
+                        'description' => 'Test bank transfer',
+                        'transaction' => [
+                            'amount' => 2500,
+                            'fee'    => 0,
+                            'tax'    => 0,
+                        ],
+                        // 'bank_reference'     => 'FZMH370AWG69VQPKXRTSD4',
+                        // 'time'               => 1544635189,
+                        // 'created_at'         => 1544635189,
+                        // 'payment_id'         => null,
+                        // 'virtual_account_id' => 'va_BWwTw0PTcJ8oiL',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testListBankTransferWithIncorrectAccountNumberParameter' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/bank_transfers',
+            'content' => [
+                'account_number' => '2224440041626900',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testListBankTransferWithoutAccountNumberParameter' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/bank_transfers',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

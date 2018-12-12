@@ -6,18 +6,24 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
-use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Payment\Status;
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class BankTransferTest extends TestCase
 {
     use AttemptTrait;
+    use DbEntityFetchTrait;
+    use VirtualAccountTrait;
+    use TestsBusinessBanking;
     use AttemptReconcileTrait;
 
     public function setUp()
@@ -1880,5 +1886,52 @@ class BankTransferTest extends TestCase
         // virtual account did not have any associated order.
         $this->assertNotNull($payment['fee']);
         $this->assertNull($payment['order_id']);
+    }
+
+    public function testGetBankTransferById()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
+
+        $bankTransferId = $this->getDbLastEntity('bank_transfer')->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = "/bank_transfers/{$bankTransferId}";
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['bank_reference']);
+        $this->assertNotEmpty($response['time']);
+        $this->assertNotEmpty($response['created_at']);
+        $this->assertArrayHasKey('payment_id', $response);
+        $this->assertEquals($this->virtualAccount->getPublicId(), $response['virtual_account_id']);
+    }
+
+    public function testListBankTransfer()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
+        $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 50]);
+
+        // Following line initiates HTTP request where repository's merchant member would generally be set.
+        // Without this it does not exist because we use repository somewhere in above lines in tests itself.
+        app()->forgetInstance('repo');
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testListBankTransferWithIncorrectAccountNumberParameter()
+    {
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testListBankTransferWithoutAccountNumberParameter()
+    {
+        $this->ba->privateAuth();
+        $this->startTest();
     }
 }

@@ -110,6 +110,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::PAYER_NAME,
         self::MODE,
         self::AMOUNT,
