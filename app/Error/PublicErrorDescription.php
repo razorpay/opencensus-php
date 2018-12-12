@@ -92,6 +92,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_NOT_ENABLED_FOR_MERCHANT                   = 'Wallet is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT                     = 'Card transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENABLED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT             = 'Cardless Emi transactions are not supported for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not available for the card used in the transaction';
     const BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT                     = 'Aeps transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT                 = 'E-Mandate transactions are not enabled for the merchant';
@@ -729,6 +730,14 @@ class PublicErrorDescription
     const GATEWAY_ERROR_BENEFICIARY_DUPLICATE_RRN_FOUND                             = 'Duplicate reference number found for the transaction on bank side.';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
     const GATEWAY_ERROR_DEBIT_FAILED                                                = 'Payment failed. Please try again with another bank account.';
+
+    // cardless emi error codes
+    const BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH                         = 'Contact given is invalid';
+    const BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER                         = 'Cardless Emi provider is not supported';
+    const BAD_REQUEST_EMI_DURATION_NOT_VALID                                        = 'Emi duration is not valid';
+    const BAD_REQUEST_EMI_PLANS_DO_NOT_EXIST                                        = 'Emi plans do not exist';
+    const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'User does not have an account with the selected provider';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN                                    = 'Invalid token set for cardless emi';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';

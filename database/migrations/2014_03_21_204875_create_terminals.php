@@ -105,6 +105,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::CARDLESS_EMI)
+                  ->default(0);
+
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 
@@ -180,6 +183,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::VISA_MPAN);
             $table->index(Terminal::RUPAY_MPAN);
             $table->index(Terminal::VPA);
+            $table->index(Terminal::CARDLESS_EMI);
         });
     }
 

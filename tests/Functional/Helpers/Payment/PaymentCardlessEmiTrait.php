@@ -1,0 +1,41 @@
+<?php
+
+namespace RZP\Tests\Functional\Helpers\Payment;
+
+trait PaymentCardlessEmiTrait
+{
+    public function runPaymentCallbackFlowCardlessEmi($response, & $callback = null, $gateway)
+    {
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+
+        if ($this->isOtpVerifyUrl($url) === true)
+        {
+            $responseData = $this->processCardlessPaymentForm($response);
+
+            $responseInput = json_decode($responseData->getContent(), true);
+
+            $contact = $responseInput['request']['content']['contact'];
+            $email   = $responseInput['request']['content']['email'];
+
+            $this->callbackUrl = $url;
+
+            $this->otpFlow = true;
+
+            $response = $this->makeOtpVerifyCallback($url, $email, $contact);
+            $responseContent =  json_decode($response->getContent(), true);
+
+            $responseInput['request']['content']['ott'] = $responseContent['ott'];
+            $responseInput['request']['content']['emi_duration'] = head($responseContent['emi_plans'])['duration'];
+
+            $payment = $responseInput['request']['content'];
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => $responseInput['payment_create_url'],
+                'content' => $payment
+            ];
+
+            return $this->makeRequestParent($request);
+        }
+    }
+}

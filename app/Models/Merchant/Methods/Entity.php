@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
+    const CARDLESS_EMI      = 'cardless_emi';
 
     const METHODS           = 'methods';
 
@@ -66,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
+        self::CARDLESS_EMI,
     ];
 
     protected $visible = [
@@ -93,6 +95,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
+        self::CARDLESS_EMI,
     ];
 
     protected $public = [
@@ -121,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::BANK_TRANSFER,
         self::AMAZONPAY,
+        self::CARDLESS_EMI,
     ];
 
     protected $defaults = array(
@@ -147,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD     => true,
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
+        self::CARDLESS_EMI   => false,
     );
 
     protected $wallets = array(
@@ -182,6 +187,7 @@ class Entity extends Base\PublicEntity
         self::AMAZONPAY,
         self::FREECHARGE,
         self::MPESA,
+        self::CARDLESS_EMI,
     ];
 
     // Casts the attributes to native types
@@ -207,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
         self::EMANDATE      => 'bool',
+        self::CARDLESS_EMI  => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -351,6 +358,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isCardlessEmiEnabled()
+    {
+        return $this->getAttribute(self::CARDLESS_EMI);
     }
 
     public function isTransferEnabled()

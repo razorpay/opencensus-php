@@ -68,8 +68,10 @@ class Base extends Core
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_VIJAYA      = 'NetbankingVijaya';
     const NETBANKING_EQUITAS     = 'NetbankingEquitas';
     const NETBANKING_HDFC        = 'NetbankingHdfc';
+    const NETBANKING_ALLAHABAD   = 'NetbankingAllahabad';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -116,9 +118,11 @@ class Base extends Core
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
+        self::NETBANKING_ALLAHABAD   => [],
         self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
         self::NETBANKING_CORPORATION => ['ncbsfeba@corpbank.co.in'],
+        self::NETBANKING_VIJAYA      => [], //TODO: add this value when shared post UAT
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_HDFC        => [],
         self::JIOMONEY               => [],

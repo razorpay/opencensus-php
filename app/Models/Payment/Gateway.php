@@ -16,6 +16,7 @@ use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway
 {
@@ -56,6 +57,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -64,6 +66,7 @@ class Gateway
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
 
@@ -80,13 +83,15 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
 
-    const ACQUIRER_HDFC      = 'hdfc';
-    const ACQUIRER_ICIC      = 'icic';
-    const ACQUIRER_AXIS      = 'axis';
-    const ACQUIRER_AMEX      = 'amex';
-    const ACQUIRER_FSS       = 'fss';
-    const ACQUIRER_RATN      = 'ratn';
-    const ACQUIRER_BARB      = 'barb';
+    const CARDLESS_EMI       = 'cardless_emi';
+
+    const ACQUIRER_HDFC         = 'hdfc';
+    const ACQUIRER_ICIC         = 'icic';
+    const ACQUIRER_AXIS         = 'axis';
+    const ACQUIRER_AMEX         = 'amex';
+    const ACQUIRER_FSS          = 'fss';
+    const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -132,6 +137,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY],
     ];
 
     const POWER_WALLETS = [
@@ -201,6 +207,7 @@ class Gateway
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
+        self::CARDLESS_EMI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -579,6 +586,7 @@ class Gateway
             self::NETBANKING_PNB,
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
+            self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
@@ -627,11 +635,16 @@ class Gateway
             self::UPI_AXIS,
             self::UPI_SBI,
             self::UPI_HULK,
+            self::UPI_YESBANK,
         ],
 
         Method::AEPS => [
             self::AEPS_ICICI,
         ],
+
+        Method::CARDLESS_EMI => [
+            self::CARDLESS_EMI,
+        ]
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -717,6 +730,7 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_YESBANK,
     ];
 
     public static $headless = [
@@ -880,11 +894,13 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
+        self::CARDLESS_EMI,
     ];
 
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::NETBANKING_ALLAHABAD,
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
@@ -1081,6 +1097,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_YESBANK,
     ];
 
     /**
@@ -1108,7 +1125,6 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        Netbanking::PUNB_R,
     ];
 
     /**
@@ -1150,6 +1166,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
@@ -1172,6 +1189,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB => Gateway::NETBANKING_CANARA,
         IFSC::IDFB => Gateway::NETBANKING_IDFC,
         IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
@@ -1380,6 +1398,7 @@ class Gateway
      *
      * @return bool
      */
+
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
@@ -1390,6 +1409,7 @@ class Gateway
      *
      * @return bool
      */
+
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
