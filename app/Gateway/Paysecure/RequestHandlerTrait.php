@@ -90,6 +90,9 @@ trait RequestHandlerTrait
         // Random 6 digit number
         $systemTraceAuditNumber = sprintf('%06d', mt_rand(1, 999999));
 
+        // In UAT they want us to pass 6012
+        $mcc = $this->mode == Mode::TEST ? '6012' : $this->input['merchant']['category'];
+
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
             Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
@@ -103,7 +106,7 @@ trait RequestHandlerTrait
             Fields::STAN                              => $systemTraceAuditNumber,
             Fields::TRAN_TIME                         => $time,
             Fields::TRAN_DATE                         => $date,
-            Fields::MCC                               => $this->input['merchant']['category'],
+            Fields::MCC                               => $mcc,
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
             Fields::RETRIEVAL_REF_NUMBER              => $this->generateRrn($systemTraceAuditNumber),
             // todo: Confirm this
