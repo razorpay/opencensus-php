@@ -1410,6 +1410,10 @@ class BasicAuth
         if ($merchant !== null)
         {
             $this->setOrgId($merchant->org->getPublicId());
+
+            // basic auth is scattered across the code in core and services  for avoiding duplicate code setting merchant here
+
+            $this->merchant = $merchant;
         }
 
         $authCreds = $this->authCreds;
@@ -1417,8 +1421,6 @@ class BasicAuth
         if ((empty($authCreds) === false))
         {
             $this->authCreds->setMerchant($merchant);
-
-            $this->merchant = $this->authCreds->getMerchant();
         }
     }
 
