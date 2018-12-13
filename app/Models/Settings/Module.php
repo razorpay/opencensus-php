@@ -14,6 +14,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Module
 {
+    const USER          = 'user';
     const BATCH         = 'batch';
     const PARTNER       = 'partner';
     const ONBOARDING    = 'onboarding';

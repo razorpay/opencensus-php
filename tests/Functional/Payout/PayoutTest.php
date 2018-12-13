@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -51,6 +53,34 @@ class PayoutTest extends TestCase
         $this->assertEquals('10000000000000', $txn['balance_id']);
 
         return $payout;
+    }
+
+    public function testCreatePayoutWithOtp()
+    {
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithInvalidOtp()
+    {
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '1234';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+
+        $this->startTest();
     }
 
     public function testRetryPayout(): array

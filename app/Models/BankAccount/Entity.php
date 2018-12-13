@@ -68,8 +68,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
+        self::IFSC,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
+        self::NAME,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
@@ -340,6 +342,16 @@ class Entity extends Base\PublicEntity
     public function setBeneficiaryName(string $name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    protected function setNameAttribute($name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    protected function setIfscAttribute($code)
+    {
+        $this->setIfscCodeAttribute($code);
     }
 
     protected function setIfscCodeAttribute($code)

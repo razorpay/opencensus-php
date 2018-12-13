@@ -210,6 +210,19 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
+    /**
+     * Edit user action for logged in user (via Dashboard headers).
+     *
+     * @param  array  $input
+     * @return array
+     */
+    public function editSelf(array $input): array
+    {
+        $this->core()->edit($this->user, $input);
+
+        return $this->user->toArrayPublic();
+    }
+
     public function confirm(string $id): array
     {
         $user = $this->repo->user->findOrFailPublic($id);
@@ -548,12 +561,11 @@ class Service extends Base\Service
 
         // Check if a role for this user already exists with the existing product merchant user mapping.
         $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
-                                                                     $user->getId(),
-                                                                    null,
-                                                                     $product);
+            $user->getId(),
+            null,
+            $product);
 
-        if (empty($userMapping) === false)
-        {
+        if (empty($userMapping) === false) {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
         }
 
@@ -575,5 +587,21 @@ class Service extends Base\Service
         $user = (new User\Core())->updateUserMerchantMapping($user, $userMerchantMappingInputData);
 
         return $user;
+    }
+
+    public function sendOtp(array $input)
+    {
+        $this->user->getValidator()->validateSendOtpOperation($input);
+
+        return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function verifyContactWithOtp(array $input): array
+    {
+        $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
+
+        $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
+
+        return $this->user->toArrayPublic();
     }
 }

@@ -101,6 +101,7 @@ class Constants
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
+    const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -256,6 +257,7 @@ class Constants
         self::SKIP_INTERNATIONAL_AUTH         => true,
         self::INVOICE_NO_RECEIPT_UNIQUE       => true,
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
+        self::ES_AUTOMATIC_THREE_PM           => true,
     ];
 
     // Entity type constants

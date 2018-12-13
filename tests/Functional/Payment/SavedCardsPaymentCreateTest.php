@@ -789,7 +789,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         $content = [
             'contact' => $contact,
             'email' => $email,
-            'otp' => $otp
+            'otp' => '0007',
         ];
 
         if ($deviceToken !== null)

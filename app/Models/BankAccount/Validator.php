@@ -67,9 +67,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $addTpvBankAccountRules = [
-        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
-        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
+        Entity::IFSC            => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER  => 'required|alpha_num|between:5,20',
+        Entity::NAME            => 'sometimes|max:40|string',
     ];
 
     protected static $addBankAccountValidators = [
@@ -129,7 +129,7 @@ class Validator extends Base\Validator
 
     public function validateIfscCode(array $input, $mode = 'test')
     {
-        $ifsc = $input[Entity::IFSC_CODE] ?? '';
+        $ifsc = $input[Entity::IFSC_CODE] ?? ($input[Entity::IFSC] ?? '');
 
         $ifsc = strtoupper($ifsc);
 

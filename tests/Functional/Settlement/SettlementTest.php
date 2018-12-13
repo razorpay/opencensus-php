@@ -1743,4 +1743,78 @@ class SettlementTest extends TestCase
         $this->assertEquals(1, $setlResponse[$channel]['count']);
         $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
     }
+
+
+    public function testMerchantOnEarlySettlementThreePm()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2018, 12, 6, 8, 50, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('ZmReTNPu1KFKBn');
+
+        $this->fixtures->merchant->createAccount('BwLHhFePbpsfSZ');
+
+        $this->fixtures->edit('merchant', 'BwLHhFePbpsfSZ',['parent_id' => 'ZmReTNPu1KFKBn']);
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC, Constants::ES_AUTOMATIC_THREE_PM], 'BwLHhFePbpsfSZ');
+
+        $input = [
+            'name'        => 'Hourly Early Settlement',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'hour'        => 0,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'BwLHhFePbpsfSZ');
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 9, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2018, 12, 6, 14, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 15, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2018, 12, 6, 16, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 17, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+    }
 }

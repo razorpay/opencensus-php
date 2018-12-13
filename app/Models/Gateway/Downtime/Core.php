@@ -72,6 +72,24 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches downtime information at the current time and Future for displaying at Dashboard
+     *
+     *
+     * @return Collection      Collection of downtimes
+     */
+    public function getCurrentAndFutureGatewayDowntimeData(): Base\PublicCollection
+    {
+        // Currently we are fetching only downtimes with null terminal id
+        // as only a particular gateway terminal having a systemic downtime hasn't
+        // been encountered yet. Will need to modify this later when we deal with
+        // such downtimes
+        $downtimes = $this->repo->gateway_downtime
+                                ->fetchCurrentAndFutureDowntimesWithoutTerminal();
+
+        return $downtimes;
+    }
+
+    /**
      * Fetches downtime information at the current time
      * @param  array  $methods Array of methods for which to fetch downtime
      *                         If empty, then downtime for all methods are returned

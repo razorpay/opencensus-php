@@ -595,6 +595,10 @@ return [
                 'assignable'  => false,
             ],
         ],
+
+        PermissionCategory::REPORTING => [
+            Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
+        ],
     ],
 
     'workflows' => [

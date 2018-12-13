@@ -102,8 +102,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $response[Entity::RECEIVED] = 1;
-
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
         $this->checkResponseStatus($response[ResponseFields::STATUS]);
@@ -294,8 +292,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->decrypt($responseBody);
 
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
         $type = strtoupper($type);
 
         $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
@@ -336,6 +332,11 @@ class Gateway extends Base\Gateway
         {
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'parsed'            => $content,
+            'type'              => $gatewayPayment->getType()
+        ]);
 
         assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
@@ -408,7 +409,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getMappedAttributes($response);
 
-        // To mark that we have received a response for this request
+        // To mark that we have received a callback for this payment/refund
         $attributes[Entity::RECEIVED] = 1;
 
         $payment->fill($attributes);
@@ -903,8 +904,6 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
-
-        $content[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($verify->payment, $content);
     }
