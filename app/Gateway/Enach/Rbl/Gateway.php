@@ -756,7 +756,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $sponsor = $this->config['test_emandate_npci_sponser_ifsc'];
+            $sponsor = $this->config['live_emandate_npci_sponser_ifsc'];
         }
 
         return $sponsor;
