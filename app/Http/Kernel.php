@@ -8,6 +8,7 @@ class Kernel extends HttpKernel
 {
     /**
      * The application's global HTTP middleware stack.
+     * Removed \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode cause it's useless.
      *
      * @var array
      */
