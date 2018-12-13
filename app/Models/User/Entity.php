@@ -5,8 +5,9 @@ namespace RZP\Models\User;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Invitation;
+use RZP\Models\Settings;
 use RZP\Constants\Table;
+use RZP\Models\Invitation;
 
 class Entity extends Base\PublicEntity
 {
@@ -39,6 +40,18 @@ class Entity extends Base\PublicEntity
 
     const PASSWORD_TOKEN_LENGTH = 50;
 
+    // Boolean attribute is true if contact mobile is verified via OTP
+    const CONTACT_MOBILE_VERIFIED = 'contact_mobile_verified';
+    // Additional input keys
+    const MEDIUM                 = 'medium';
+    const OTP                    = 'otp';
+    const MEDIUM_SMS             = 'sms';
+    const MEDIUM_EMAIL           = 'email';
+    const SETTINGS               = 'settings';
+
+    // Settings keys
+    const SETTINGS_SKIP_CONTACT_MOBILE_VERIFY = 'skip_contact_mobile_verify';
+
     protected $entity = 'user';
 
     protected $fillable = [
@@ -58,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::CONTACT_MOBILE,
+        self::CONTACT_MOBILE_VERIFIED,
         self::CONFIRMED,
         self::CREATED_AT,
     ];
@@ -76,6 +90,14 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::EMAIL,
+    ];
+
+    protected $defaults = [
+        self::CONTACT_MOBILE_VERIFIED => 0,
+    ];
+
+    protected $casts = [
+        self::CONTACT_MOBILE_VERIFIED => 'bool',
     ];
 
     protected $generateIdOnCreate = true;
@@ -168,6 +190,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::PASSWORD] = Hash::make($password);
     }
 
+    public function getContactMobile()
+    {
+        return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
@@ -186,6 +213,30 @@ class Entity extends Base\PublicEntity
     public function getConfirmedAttribute()
     {
         return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
+    }
+
+    public function isContactMobileVerified(): bool
+    {
+        return ($this->getAttribute(self::CONTACT_MOBILE_VERIFIED) === true);
+    }
+
+    public function setContactMobileVerified(bool $verified)
+    {
+        $this->setAttribute(self::CONTACT_MOBILE_VERIFIED, $verified);
+    }
+
+    public function getSettingsAccessor(): Settings\Accessor
+    {
+        return Settings\Accessor::for($this, Settings\Module::USER);
+    }
+
+    public function getAllSettings(): array
+    {
+        $settings = $this->getSettingsAccessor()->all()->toArray();
+        // Merges defaults
+        $settings += [Entity::SETTINGS_SKIP_CONTACT_MOBILE_VERIFY => '0'];
+
+        return $settings;
     }
 
     public function toArrayMerchant()

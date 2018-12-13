@@ -210,6 +210,19 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
+    /**
+     * Edit user action for logged in user (via Dashboard headers).
+     *
+     * @param  array  $input
+     * @return array
+     */
+    public function editSelf(array $input): array
+    {
+        $this->core()->edit($this->user, $input);
+
+        return $this->user->toArrayPublic();
+    }
+
     public function confirm(string $id): array
     {
         $user = $this->repo->user->findOrFailPublic($id);
@@ -529,5 +542,21 @@ class Service extends Base\Service
         {
             $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
+    }
+
+    public function sendOtp(array $input)
+    {
+        $this->user->getValidator()->validateSendOtpOperation($input);
+
+        return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function verifyContactWithOtp(array $input): array
+    {
+        $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
+
+        $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
+
+        return $this->user->toArrayPublic();
     }
 }
