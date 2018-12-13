@@ -1188,6 +1188,9 @@ final class Route
         'fund_account_list',
         'fund_account_create',
         'fund_account_update',
+        'subscription_registration_list_links',
+        'subscription_registration_create_links',
+        'subscription_registration_fetch_link',
         //'fund_account_delete',
     ];
 
