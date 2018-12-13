@@ -76,3 +76,15 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
 // hide hotjar feedback button
 div[class$="feedback_minimized_label"]
   display: none
+
+@media(max-width: 424px)
+  .support
+    width: 100%
+    right: 0
+    .support-header, .support-body
+      width: 90%
+      margin: 0 auto
+    .support-body
+      border: 1px solid rgba(179, 179, 179, 0.3)
+    .support-feedback button
+      padding: 0
