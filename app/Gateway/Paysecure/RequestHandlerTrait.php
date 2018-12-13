@@ -119,8 +119,6 @@ trait RequestHandlerTrait
             Fields::MERCHANT_POSTAL_CODE              => '560030',
             Fields::MERCHANT_TELEPHONE                => '9999999999',
             Fields::ORDER_ID                          => $this->input['payment']['id'],
-            Fields::CUSTOM1                           => $this->input['callbackUrl'],
-            Fields::CUSTOM2                           => $this->input['payment']['id'],
         ];
 
         return $requestArray;
