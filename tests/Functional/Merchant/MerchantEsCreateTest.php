@@ -59,7 +59,7 @@ class MerchantEsCreateTest extends TestCase
         string $callee,
         string $id = '10000000000016'): array
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth();
 
         $testData = $this->testData[$callee];
         $response = $this->startTest($testData);
