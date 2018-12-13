@@ -294,8 +294,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->decrypt($responseBody);
 
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
         $type = strtoupper($type);
 
         $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
@@ -336,6 +334,11 @@ class Gateway extends Base\Gateway
         {
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'parsed'            => $content,
+            'type'              => $gatewayPayment->getType()
+        ]);
 
         assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
