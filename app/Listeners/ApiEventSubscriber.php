@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -390,6 +391,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransactionCreated(Transaction\Entity $txn)
+    {
+        $payload = $this->getTransactionPayload($txn);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -555,6 +563,18 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::SETTLEMENT => [
                 'entity' => $settlement->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getTransactionPayload(Transaction\Entity $txn): array
+    {
+        $payload = [
+            Constants\Entity::TRANSACTION => [
+                // Todo: Do $txn->toStatement()->toArrayPublic() instead.
+                'entity' => $txn->toArrayPublic(),
             ],
         ];
 

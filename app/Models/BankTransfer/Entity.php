@@ -480,4 +480,20 @@ class Entity extends Base\PublicEntity
 
         return $label . '-' . $utr;
     }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return $this->shouldNotifyTxn();
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return $this->shouldNotifyTxn();
+    }
+
+    public function shouldNotifyTxn(): bool
+    {
+        // Todo
+        return true;
+    }
 }

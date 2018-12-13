@@ -67,7 +67,7 @@ abstract class Base extends BaseCore
      */
     protected $fundTransferDestination;
 
-    public function createPayout(array $input)
+    public function createPayout(array $input): Payout\Entity
     {
         $this->preValidations();
 

@@ -115,6 +115,11 @@ class Processor extends VirtualAccount\Processor
             }
         });
 
+        if (($txn = $bankTransfer->transaction) !== null)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+        }
+
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
