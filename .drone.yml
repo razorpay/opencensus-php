@@ -495,21 +495,6 @@ pipeline:
     auth_mode: client-cert
     deployment:
       - api-canary-web
-      - api-canary-sqs-es-sync
-      - api-canary-sqs-gen-test
-      - api-canary-sqs-invoice-email
-      - api-canary-sqs-invoice-reports
-      - api-canary-sqs-batch
-      - api-canary-sqs-emails
-      - api-canary-sqs-gen-live
-      - api-canary-sqs-shield
-      - api-canary-sqs-main
-      - api-canary-sqs-subscription-charge
-      - api-canary-sqs-webhooks-failure
-      - api-canary-sqs-webhooks-live
-      - api-canary-sqs-webhooks-test
-      - api-sqs-settlements-test
-      - api-sqs-settlements-live
     repo: razorpay/api
     namespace: beta
     tag:
@@ -708,6 +693,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-prod-api:
+    group: PROD_DEPLOY
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
@@ -734,6 +720,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-deployments-prod-api:
+    group: PROD_DEPLOY
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
@@ -773,6 +760,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-deployments-prod-api-canary:
+    group: PROD_DEPLOY
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
