@@ -37,7 +37,6 @@ class RecurringCharge
 
         $receipt = empty($receipt) === true ? null : (string) $receipt;
 
-
         $request = [
             Order\Entity::AMOUNT          => $entry[Header::RECURRING_CHARGE_AMOUNT],
             Order\Entity::CURRENCY        => $entry[Header::RECURRING_CHARGE_CURRENCY],
