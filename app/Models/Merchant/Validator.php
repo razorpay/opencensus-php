@@ -1012,14 +1012,13 @@ class Validator extends Base\Validator
     }
 
     /**
-     * There are service method (only list/fetch for now) for few models which
-     * expect mandatory ACCOUNT_NUMBER in query parameter to work. These models
-     * include transactions, bank_transfers & payouts. This method is called
-     * from those service methods to translate ACCOUNT_NUMBER to BALANCE_ID in
-     * input because beyond service layer repository fetch etc only understands
-     * BALANCE_ID as expected.
+     * There are service methods (list & fetch) for few models which expect
+     * mandatory ACCOUNT_NUMBER in query parameter. Such models include
+     * transactions, bank_transfers & payouts. This method is called from those
+     * service methods to translate ACCOUNT_NUMBER to BALANCE_ID because beyond
+     * service layer repository's fetch etc only understands BALANCE_ID.
      *
-     * @param  array $input
+     * @param array $input
      */
     public function validateAndTranslateAccountNumberForBanking(array & $input)
     {

@@ -1897,7 +1897,7 @@ class BankTransferTest extends TestCase
         $bankTransferId = $this->getDbLastEntity('bank_transfer')->getPublicId();
         $this->testData[__FUNCTION__]['request']['url'] = "/bank_transfers/{$bankTransferId}";
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -1919,19 +1919,19 @@ class BankTransferTest extends TestCase
         // Without this it does not exist because we use repository somewhere in above lines in tests itself.
         app()->forgetInstance('repo');
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 
     public function testListBankTransferWithIncorrectAccountNumberParameter()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 
     public function testListBankTransferWithoutAccountNumberParameter()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 }

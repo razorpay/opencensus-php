@@ -44,8 +44,9 @@ class BankTransfer extends Base
      */
     protected function setMerchantBalance()
     {
-        // I.e. Bank transfer's balance.
-        $this->merchantBalance = $this->source->balance;
+        $this->merchantBalance = $this->txn->merchant->bankingBalance;
+        // Todo: Use below and remove above line once bank_transfer.balance_id is backfilled.
+        // $this->merchantBalance = $this->source->balance;
     }
 
     /**

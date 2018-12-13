@@ -2,7 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Exception;
+use RZP\Constants\Entity as E;
+use RZP\Exception\InvalidArgumentException;
 
 class Type
 {
@@ -31,24 +32,18 @@ class Type
         self::BANK_TRANSFER,
     ];
 
-    public static function validateType($type)
+    public static function validateType(string $type)
     {
         if (defined(__CLASS__.'::'.strtoupper($type)) === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid Transaction type: ' . $type);
+            throw new InvalidArgumentException("Not a valid Transaction type: {$type}");
         }
     }
 
-    public static function getEntityClass($type)
+    public static function getEntityClass(string $type): string
     {
-        $studlyType = studly_case($type);
+        self::validateType($type);
 
-        $entity = 'RZP\\Models\\' . $studlyType . '\Entity';
-
-        if ($type === self::REFUND)
-            $entity = 'RZP\\Models\\Payment\\' . $studlyType . '\Entity';
-
-        return $entity;
+        return E::getEntityClass($type);
     }
 }

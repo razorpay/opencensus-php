@@ -1199,8 +1199,6 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         //'fund_account_delete',
-        'bank_transfer_list',
-        'bank_transfer_get',
     ];
 
     // Only routes defined in internalApps go here
@@ -1511,6 +1509,8 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
+        'bank_transfer_list',
+        'bank_transfer_get',
     ];
 
     // These will run on internal auth with the assurance

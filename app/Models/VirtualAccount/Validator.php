@@ -71,6 +71,7 @@ class Validator extends Base\Validator
 
         // Must no other virtual account exists against this banking balance
         $exists = app('repo')->virtual_account->existsByBalanceId($virtualAccount->getBalanceId());
+
         if ($exists === true)
         {
             throw new Exception\BadRequestValidationFailureException(

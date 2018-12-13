@@ -25,7 +25,7 @@ class Fetch extends BaseFetch
     ];
 
     const ACCESSES = [
-        AuthType::PRIVATE_AUTH => [
+        AuthType::PROXY_AUTH => [
             Entity::BALANCE_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
