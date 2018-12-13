@@ -111,7 +111,7 @@ class RecurringChargeTest extends TestCase
 
         $this->assertEquals('processed', $batch['status']);
 
-        $this->assertEquals(20000, $batch['processed_amount']);
+        $this->assertEquals(200, $batch['processed_amount']);
 
         $order = $this->getLastEntity('order', true);
 
