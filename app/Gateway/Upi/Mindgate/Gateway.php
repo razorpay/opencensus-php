@@ -102,8 +102,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $response[Entity::RECEIVED] = 1;
-
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
         $this->checkResponseStatus($response[ResponseFields::STATUS]);
@@ -411,7 +409,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getMappedAttributes($response);
 
-        // To mark that we have received a response for this request
+        // To mark that we have received a callback for this payment/refund
         $attributes[Entity::RECEIVED] = 1;
 
         $payment->fill($attributes);
@@ -906,8 +904,6 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
-
-        $content[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($verify->payment, $content);
     }
