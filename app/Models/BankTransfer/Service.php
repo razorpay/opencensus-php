@@ -45,24 +45,6 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function fetch(string $id, array $input = []): array
-    {
-        $this->merchant->getValidator()->validateBusinessBankingActivated();
-
-        $bankTransfer = $this->repo->bank_transfer->findByPublicIdAndMerchant($id, $this->merchant, $input);
-
-        return $bankTransfer->toArrayPublic();
-    }
-
-    public function fetchMultiple(array $input): array
-    {
-        $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($input);
-
-        $bankTransfers = $this->repo->bank_transfer->fetch($input, $this->merchant->getId());
-
-        return $bankTransfers->toArrayPublic();
-    }
-
     /**
      * Entry point for Kotak or other providers. Response contains
      * UTR because it was requested, no idea how it's useful.

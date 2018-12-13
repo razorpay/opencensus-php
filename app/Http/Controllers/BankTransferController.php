@@ -7,20 +7,6 @@ use ApiResponse;
 
 class BankTransferController extends Controller
 {
-    public function get(string $id)
-    {
-        $response = $this->service()->fetch($id, $this->input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function list()
-    {
-        $response = $this->service()->fetchMultiple($this->input);
-
-        return ApiResponse::json($response);
-    }
-
     public function processBankTransfer()
     {
         $input = Request::all();

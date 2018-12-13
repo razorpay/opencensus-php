@@ -48,7 +48,6 @@ class Entity extends Base\PublicEntity
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
     const BALANCE_ID         = 'balance_id';
     const VIRTUAL_ACCOUNT    = 'virtual_account';
-    const TRANSACTION        = 'transaction';
 
     const AMOUNT             = 'amount';
 
@@ -109,19 +108,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::ID,
-        self::ENTITY,
-        self::PAYER_NAME,
-        self::MODE,
-        self::AMOUNT,
-        self::DESCRIPTION,
-        self::TRANSACTION,
-        self::BANK_REFERENCE,
-        self::TIME,
-        self::CREATED_AT,
-
-        // Todo: Why/where are these attributes exposed? Check and fix!
         self::PAYMENT_ID,
+        self::MODE,
+        self::BANK_REFERENCE,
+        self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
         self::VIRTUAL_ACCOUNT,
@@ -182,7 +172,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MODE,
         self::BANK_REFERENCE,
-        self::TRANSACTION,
     ];
 
     protected static $sign = 'bt';
@@ -489,19 +478,5 @@ class Entity extends Base\PublicEntity
         }
 
         return $label . '-' . $utr;
-    }
-
-    protected function setPublicTransactionAttribute(array & $array)
-    {
-        if (array_key_exists(self::TRANSACTION, $array) === true)
-        {
-            $array[self::TRANSACTION] = array_only(
-                $array[self::TRANSACTION],
-                [
-                    Transaction\Entity::AMOUNT,
-                    Transaction\ENTITY::FEE,
-                    Transaction\ENTITY::TAX,
-                ]);
-        }
     }
 }

@@ -248,8 +248,6 @@ final class Route
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
-        'bank_transfer_list'                       => ['get',      'bank_transfers',                                 'BankTransferController@list'                                       ],
-        'bank_transfer_get'                        => ['get',      'bank_transfers/{id}',                            'BankTransferController@get'                                        ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'         => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
@@ -1509,8 +1507,6 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
-        'bank_transfer_list',
-        'bank_transfer_get',
     ];
 
     // These will run on internal auth with the assurance
