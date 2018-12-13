@@ -81,6 +81,10 @@ class Validator extends Base\Validator
         Entity::TOKEN                 => 'required|string|size:50',
     ];
 
+    protected static $actionValidators = [
+        'product_role'
+    ];
+
     protected static $createOtpRules = [
         Entity::MEDIUM => 'required|filled|in:sms,email',
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
@@ -124,6 +128,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateProductRole(array $input)
+    {
+        if (empty($input['role']) === false)
+        {
+            $role = new Role();
+
+            if ($role->validateProductRole($input['role'], $input['product']) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            }
+        }
+    }
+
     protected function validateOldPassword(array $input)
     {
         $user = $this->entity;
@@ -152,7 +169,8 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (Role::exists($role) === false) {
+        if (Role::exists($role) === false)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }
     }
@@ -190,7 +208,7 @@ class Validator extends Base\Validator
 
             $captchaQuery = http_build_query($input);
 
-            $url = "https://www.google.com/recaptcha/api/siteverify?". $captchaQuery;
+            $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
 
             $response = \Requests::get($url);
 

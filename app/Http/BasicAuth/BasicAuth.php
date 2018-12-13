@@ -1926,7 +1926,7 @@ class BasicAuth
      * Denotes if a request came from banking source or primary dashbaord
      * @return bool
      */
-    public function isBanking(): bool
+    public function isProductBanking(): bool
     {
         return ($this->getRequestOriginProduct() === Merchant\Balance\Type::BANKING);
     }

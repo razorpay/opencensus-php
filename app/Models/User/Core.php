@@ -13,6 +13,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
@@ -124,11 +125,47 @@ class Core extends Base\Core
     public function get(Entity $user)
     {
         $response    = $user->toArrayPublic();
+
         $merchants   = $user->merchants
                             ->where(Merchant\Entity::SUSPENDED_AT, null)
                             ->callOnEveryItem('toArrayUser');
+
+        $merchantData = [];
+
+        // This looks like all if conditions, but it's ok.
+        array_walk($merchants, function ($merchant) use (&$merchantData) {
+            if (isset($merchantData[$merchant[Entity::ID]]) === false)
+            {
+                $merchantData[$merchant[Entity::ID]] = $merchant;
+
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = null;
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = null;
+                }
+            }
+            else
+            {
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = $merchant[Entity::ROLE];
+                }
+            }
+        });
+
+        $merchants = array_values($merchantData);
+
         $invitations = $user->invitations
                             ->callOnEveryItem('toArrayUser');
+
         $settings    = $user->getAllSettings();
 
         $response[Entity::MERCHANTS]   = $merchants;

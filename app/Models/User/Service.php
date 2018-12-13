@@ -288,7 +288,8 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        // using user context from header to avoid IDOR.
+        $user = $this->auth->getUser();
 
         $response = (new Core)->get($user);
 
@@ -542,6 +543,50 @@ class Service extends Base\Service
         {
             $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
+    }
+
+    /**
+     * This will assign applicable role to the product by checking it's origin.
+     * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
+     * @return null|\RZP\Models\User\Entity
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function addProductSwitchRole()
+    {
+        $user = $this->auth->getUser();
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $merchantId = $this->auth->getMerchantId();
+
+        // Check if a role for this user already exists with the existing product merchant user mapping.
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+            $user->getId(),
+            null,
+            $product);
+
+        if (empty($userMapping) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
+        }
+
+        // Since we have user roles in headers we can get the opposite product easily.
+        // In switch we have to assign the role for merchants with only the opposite product side role.
+        // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
+
+        $dashboardHeaders = $this->auth->getDashboardHeaders();
+
+        $productRole = $dashboardHeaders['user_role'] ?? $dashboardHeaders['user_banking_role'];
+
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => $productRole,
+            'merchant_id' => $merchantId,
+            'product'     => $product,
+        ];
+
+        $user = (new User\Core())->updateUserMerchantMapping($user, $userMerchantMappingInputData);
+
+        return $user;
     }
 
     public function sendOtp(array $input)

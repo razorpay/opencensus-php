@@ -190,7 +190,14 @@ class UserAccess
 
         $dashboardHeaders = $this->ba->getDashboardHeaders();
 
-        $userRole = $dashboardHeaders['user_role'] ?? null;
+        if ($this->ba->isProductBanking() === true)
+        {
+            $userRole = $dashboardHeaders['user_banking_role'] ?? null;
+        }
+        else
+        {
+            $userRole = $dashboardHeaders['user_role'] ?? null;
+        }
 
         return $userRole;
     }
