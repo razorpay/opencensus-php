@@ -374,15 +374,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_REFUND_FAILED,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED,
             'gateway_error_code'  => '3',
         ],
     ],
@@ -487,14 +487,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'internal_error_code' => ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
             'description' => 'Unable to verify migs refund'
         ],
     ],

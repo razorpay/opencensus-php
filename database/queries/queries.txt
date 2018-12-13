@@ -4382,6 +4382,10 @@ ALTER TABLE pricing
     ADD INDEX `pricing_org_id_plan_id_index`   (`org_id`, `plan_id`),
     ADD INDEX `pricing_org_id_plan_name_index` (`org_id`, `plan_name`);
 
+ALTER TABLE transactions
+    CHANGE reference1 reconciled_type VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
 ALTER TABLE orgs
     ADD COLUMN default_pricing_plan_id VARCHAR (14) DEFAULT NULL AFTER signature_email,
     ALGORITHM=INPLACE, LOCK=NONE;
@@ -4397,3 +4401,18 @@ ALTER TABLE bank_accounts
 ALTER TABLE invoices
     ADD COLUMN entity_type VARCHAR(255) AFTER customer_id,
     ADD COLUMN entity_id CHAR(14) AFTER entity_type;
+
+ALTER TABLE customer_transactions ADD COLUMN reconciled_at BIGINT DEFAULT NULL after description;
+
+ALTER TABLE balance
+    ADD COLUMN merchant_id CHAR(14) AFTER id,
+    ADD COLUMN type VARCHAR(255) DEFAULT 'primary' AFTER merchant_id ,
+    ADD COLUMN currency CHAR(3) DEFAULT NULL AFTER type ,
+    ADD COLUMN name VARCHAR(255) DEFAULT NULL AFTER currency,
+    ADD INDEX `balance_merchant_id_index` (`merchant_id`),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE subscription_registrations
+    ADD COLUMN notes TEXT AFTER expire_at,
+    ADD COLUMN token_id CHAR(14) AFTER customer_id,
+    ADD INDEX subscription_registrations_token_id_merchant_id_index (token_id,merchant_id);

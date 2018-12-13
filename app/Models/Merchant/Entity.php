@@ -659,7 +659,7 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Balance\Entity', self::ID, 'id');
+            'RZP\Models\Merchant\Balance\Entity', self::MERCHANT_ID, 'id');
     }
 
     public function bankAccount()
@@ -1816,6 +1816,12 @@ class Entity extends Base\PublicEntity
     // delete this after 31st
     protected function setDiwaliPromotionalFeatureIfApplicable()
     {
+        // Linked accounts don't have Diwali
+        if ($this->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         if (($currentTimeStamp >= Pricing\Fee::DIWALI_END_TIMESTAMP) or

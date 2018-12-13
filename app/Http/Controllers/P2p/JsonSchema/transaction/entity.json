@@ -1,0 +1,165 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/transaction/entity.json",
+    "type": "object",
+    "required": [],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "string",
+            "pattern": "^ctxn_[\\w]{14}$",
+            "maxLength" : 14
+        },
+        "merchant_id": {
+            "$id": "#/properties/merchant_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "customer_id": {
+            "$id": "#/properties/customer_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "payer_type": {
+            "$id": "#/properties/payer_type",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "payer_id": {
+            "$id": "#/properties/payer_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "payee_type": {
+            "$id": "#/properties/payee_type",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "payee_id": {
+            "$id": "#/properties/payee_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "bank_account_id": {
+            "$id": "#/properties/bank_account_id",
+            "type": ["string", "null"],
+            "maxLength" : 14
+        },
+        "method": {
+            "$id": "#/properties/method",
+            "type": "string",
+            "maxLength" : 50,
+            "enum": ["upi", "card"]
+        },
+        "type": {
+            "$id": "#/properties/type",
+            "type": "string",
+            "maxLength" : 10,
+            "enum": ["pay", "collect"]
+        },
+        "flow": {
+            "$id": "#/properties/flow",
+            "type": "string",
+            "maxLength" : 10,
+            "enum": ["debit", "credit"]
+        },
+        "mode": {
+            "$id": "#/properties/mode",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "amount": {
+            "$id": "#/properties/amount",
+            "type": "integer"
+        },
+        "currency": {
+            "$id": "#/properties/currency",
+            "type": "string",
+            "maxLength" : 10
+        },
+        "description": {
+            "$id": "#/properties/description",
+            "type": ["string", "null"],
+            "maxLength" : 100
+        },
+        "gateway": {
+            "$id": "#/properties/gateway",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "status": {
+            "$id": "#/properties/status",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "internal_status": {
+            "$id": "#/properties/internal_status",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "error_code": {
+            "$id": "#/properties/error_code",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "error_description": {
+            "$id": "#/properties/error_description",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "internal_error_code": {
+            "$id": "#/properties/internal_error_code",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "payer_approval_code": {
+            "$id": "#/properties/payer_approval_code",
+            "type": ["string", "null"],
+            "maxLength" : 50
+        },
+        "payee_approval_code": {
+            "$id": "#/properties/payee_approval_code",
+            "type": ["string", "null"],
+            "maxLength" : 50
+        },
+        "initiated_at": {
+            "$id": "#/properties/initiated_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "expire_at": {
+            "$id": "#/properties/expire_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "completed_at": {
+            "$id": "#/properties/completed_at",
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer"
+        },
+        "updated_at": {
+            "$id": "#/properties/updated_at",
+            "type": "integer"
+        }
+    },
+    "actions": [
+        "initiatePay",
+        "initiateCollect",
+        "fetchAll",
+        "fetch",
+        "initiateAuthorize",
+        "authorize",
+        "reject"
+    ]
+}

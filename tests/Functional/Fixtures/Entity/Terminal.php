@@ -2,16 +2,55 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Processor\Upi;
-use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\Shared;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\TpvType;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Terminal extends Base
 {
+    public function create(array $attributes = [])
+    {
+        $this->addEnabledBanksIfApplicable($attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createEntityInTestAndLive($entity, $attributes = [])
+    {
+        $this->addEnabledBanksIfApplicable($attributes);
+
+        return parent::createEntityInTestAndLive($entity, $attributes);
+    }
+
+    protected function addEnabledBanksIfApplicable(array & $attributes)
+    {
+        $netbanking = intval($attributes['netbanking'] ?? 0);
+        $gateway = $attributes['gateway'] ?? null;
+
+        if (($netbanking !== 1) or
+            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false) or
+            (isset($attributes['enabled_banks']) === true))
+        {
+            return;
+        }
+
+        $corporate = $attributes['corporate'] ?? BankingType::RETAIL_ONLY;
+
+        $tpv = $attributes['tpv'] ?? TpvType::NON_TPV_ONLY;
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+
+        $attributes['enabled_banks'] = $supportedBanks;
+    }
+
     public function createAllSharedTerminals()
     {
         $this->createSharedHdfcTerminal();
@@ -62,7 +101,7 @@ class Terminal extends Base
             ],
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createBharatQrTerminal()
@@ -84,7 +123,7 @@ class Terminal extends Base
             ],
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
 
     }
 
@@ -105,7 +144,7 @@ class Terminal extends Base
             ],
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
 
     }
 
@@ -153,7 +192,7 @@ class Terminal extends Base
             'network_category'          => 'ecommerce',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createDisableDefaultHdfcTerminal()
@@ -185,7 +224,7 @@ class Terminal extends Base
             'netbanking'            => 1,
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createBilldeskTerminal(array $attributes = [])
@@ -200,7 +239,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createAxisGeniusTerminal(array $attributes = [])
@@ -555,7 +594,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedAmazonpayTerminal(array $attributes = [])
@@ -571,7 +610,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'amazonpay_secure_secret',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedJiomoneyTerminal(array $attributes = [])
@@ -589,7 +628,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedSbibuddyTerminal(array $attributes = [])
@@ -606,7 +645,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedCybersourceHdfcTerminal(array $attributes = [])
@@ -911,7 +950,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedBankAccountTerminalAlphaNum(array $attributes = [])
@@ -934,7 +973,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
@@ -993,7 +1032,7 @@ class Terminal extends Base
             'netbanking'            => 1,
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createDirectBilldeskTerminal(array $attributes = [])
@@ -1009,7 +1048,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedBilldeskTerminal(array $attributes = [])
@@ -1029,7 +1068,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedBilldeskTpvTerminal(array $attributes = [])
@@ -1102,7 +1141,7 @@ class Terminal extends Base
             'card'                      => 1
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingHdfcTerminal(array $attributes = [])
@@ -1120,7 +1159,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultAttributes, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createNetbankingCorporationTerminal(array $attributes = [])
@@ -1134,7 +1173,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secure_secret'
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingCorporationTerminal(array $attributes = [])
@@ -1149,7 +1188,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secure_secret'
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedSharpTerminal(array $attributes = [])
@@ -1173,7 +1212,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedHitachiMotoTerminal()
@@ -1196,7 +1235,7 @@ class Terminal extends Base
             ],
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedHdfcMotoTerminal()
@@ -1219,7 +1258,7 @@ class Terminal extends Base
             ],
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedHdfcEmiTerminal()
@@ -1240,7 +1279,7 @@ class Terminal extends Base
             'emi_subvention'            => 'customer',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedHdfcEmiMerchantSubventionTerminal()
@@ -1261,7 +1300,7 @@ class Terminal extends Base
             'emi_subvention'            => 'merchant',
         ];
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedMobikwikTerminal()
@@ -1332,7 +1371,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingKotakTerminal(array $attributes = [])
@@ -1350,7 +1389,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
@@ -1369,7 +1408,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingIciciCorpTerminal(array $attributes = [])
@@ -1484,7 +1523,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingObcTerminal(array $attributes = [])
@@ -1501,7 +1540,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingAxisTerminal(array $attributes = [])
@@ -1519,7 +1558,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedEmandateAxisTerminal(array $attributes = [])
@@ -1585,7 +1624,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingIndusindTpvTerminal(array $attributes = [])
@@ -1612,7 +1651,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingFederalTerminal(array $attributes = [])
@@ -1630,7 +1669,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingFederalTpvTerminal(array $attributes = [])
@@ -1659,7 +1698,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingBobTerminal(array $attributes = [])
@@ -1678,7 +1717,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingRblTerminal(array $attributes = [])
@@ -1697,7 +1736,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingCsbTerminal(array $attributes = [])
@@ -1715,7 +1754,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
@@ -1744,7 +1783,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
@@ -1825,6 +1864,16 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAxisTpvTerminal(array $attributes)
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiAxisTerminal($attributes);
+    }
+
     public function createSharedUpiIciciIntentTerminal(array $attributes)
     {
         $attributes = [
@@ -1880,6 +1929,16 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiHulkIntentTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiAxisIntentTpvTerminal(array $override = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiAxisIntentTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedAepsIciciTerminal(array $attributes)
@@ -1949,6 +2008,20 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
     }
 
+    public function createSharedUpiAxisIntentTerminal(array $override)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_AXIS_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ],
+            'vpa'                       => 'test@vpa'
+        ];
+
+        return $this->createSharedUpiAxisTerminal(array_merge($attributes, $override));
+    }
+
     public function createSharedUpiMindgateSignedIntentTerminal(array $override)
     {
         $privateKey = 'MHQCAQEEIPk6R12xwmvV/JJDehGHSrQpNZxE3jmNXHcmgNUY2858oAcGBSuBBAAK' .
@@ -2008,7 +2081,7 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 
     public function createDirectFreechargeTerminal(array $attributes)
@@ -2095,6 +2168,6 @@ class Terminal extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return parent::create($attributes);
+        return $this->create($attributes);
     }
 }

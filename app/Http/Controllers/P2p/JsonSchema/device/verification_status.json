@@ -1,0 +1,33 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "title": "The Root Schema",
+    "required": [
+        "status",
+        "status_url",
+        "auth_token",
+        "expire_at"
+    ],
+    "properties": {
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "completed"
+            ],
+            "title": "The Status Schema"
+        },
+        "auth_token" : {
+            "type" : ["string", "null"]
+        },
+        "status_url": {
+            "type": "string",
+            "format": "uri"
+        },
+        "expire_at": {
+            "type": "integer"
+        }
+    }
+}

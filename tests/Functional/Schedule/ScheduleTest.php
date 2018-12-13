@@ -27,6 +27,13 @@ class ScheduleTest extends TestCase
 
     public function testFetchSettlementSchedules()
     {
+        $this->createSchedule([
+            'name'       => 'Basic T60',
+            'period'     => 'daily',
+            'interval'   => 1,
+            'delay'      => 60,
+        ]);
+
         $this->ba->adminAuth();
 
         $this->startTest();

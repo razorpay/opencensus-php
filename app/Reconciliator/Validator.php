@@ -53,13 +53,19 @@ class Validator extends Base\Core
                                                         "/^MIS Report File Dated "
                                                         . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/"
                                                      ],
+
+        RequestProcessor\Base::NETBANKING_CORPORATION => [
+                                                            "/^Corporation Bank - FEBA - RazorPay Recon File "
+                                                            . "(0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}/"
+                                                         ],
+
         RequestProcessor\Base::AXIS               => [
                                                         "/^Axis Estatement [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
                                                      ],
         RequestProcessor\Base::FIRST_DATA         => ["/Statement for Merchant MID No. razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/^RAZOR_VA_REPORT$/"],
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["Confidential | Cash Management MIS Report E-Collect"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Confidential \| Cash Management MIS Report E-Collect/"],
         RequestProcessor\Base::HITACHI            => ["/RAZORPAY RBL SETTLED REPORT for the date of [0-9]{2}-"
                                                      . "[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::UPI_ICICI          => [
@@ -104,7 +110,7 @@ class Validator extends Base\Core
                                                             ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached RECON file for RazorPay/"],
         RequestProcessor\Base::PAYZAPP                 => [
                                                              "/Please find Merchant payout report attached for Date "
                                                              ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
@@ -430,6 +436,10 @@ class Validator extends Base\Core
 
     public function validateNetbankingCorporationEmail(array $emailDetails)
     {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_CORPORATION);
+
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
             RequestProcessor\Base::NETBANKING_CORPORATION);

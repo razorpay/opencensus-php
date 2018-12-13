@@ -51,7 +51,8 @@
         "justinrainbow/json-schema": "^5.2",
         "phpoffice/phpspreadsheet": "^1.4",
         "mdanter/ecc": "^0.5.0",
-        "razorpay/trace": "~2.2"
+        "razorpay/trace": "~2.2",
+        "maclof/kubernetes-client": "^0.11.0"
     },
     "repositories": [
         {

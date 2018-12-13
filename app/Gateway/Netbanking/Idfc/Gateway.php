@@ -55,6 +55,15 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'          => $this->gateway,
+                'gateway_response' => $content,
+                'payment_id'       => $input['payment']['id']
+            ]
+        );
+
         $this->assertPaymentId(
             $input['payment']['id'],
             $content[Fields::PAYMENT_ID]
@@ -133,6 +142,15 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
         $verify->verifyResponseContent = json_decode($response->body, true);
 
         $checksumContent = $this->getContentArrayForChecksumCalculation($verify->verifyResponseContent);
@@ -150,7 +168,7 @@ class Gateway extends Base\Gateway
                                                     ),
             Fields::ACCOUNT_NUMBER          => '',
             Fields::TRANSACTION_TYPE        => TransactionDetails::TYPE_VERIFICATION,
-            Fields::BANK_REFERENCE_NUMBER   => $verify->payment['bank_payment_id'],
+            Fields::BANK_REFERENCE_NUMBER   => $verify->payment['bank_payment_id'] ?: '',
             Fields::MERCHANT_CODE           => $verify->input['terminal']['category'] ?: '3020',
         ];
 
@@ -181,6 +199,12 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $verify->verifyResponseContent = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($verify->verifyResponseContent);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function getVerifyAttributesToSave(array $content, $gatewayPayment): array
@@ -251,30 +275,6 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayEntity);
     }
 
-    public function forceAuthorizeFailed($input)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                                        $input['payment']['id'],
-                                        Payment\Action::AUTHORIZE);
-
-        // If it's already authorized on gateway side, We just return.
-        if (($gatewayPayment->getReceived() === true) and
-            ($gatewayPayment->getStatus() === StatusCode::SUCCESS_CODE))
-        {
-            return true;
-        }
-
-        $attrs = [
-            Base\Entity::STATUS => StatusCode::SUCCESS_CODE,
-        ];
-
-        $gatewayPayment->fill($attrs);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return true;
-    }
-
     protected function getContentArrayForChecksumCalculation($input)
     {
         $content[Fields::MERCHANT_ID]           = $input[Fields::MERCHANT_ID];
@@ -333,6 +333,14 @@ class Gateway extends Base\Gateway
     protected function getStandardIdfcRequestArray($content)
     {
         $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $this->input['payment']['id'],
+                'gateway' => $this->gateway,
+            ]);
 
         if ($this->mock === true)
         {

@@ -755,6 +755,10 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
 
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
         $this->refundPayment($payment['public_id']);
 
         $payment = $this->getDbLastEntity('payment')->toArray();
@@ -803,6 +807,16 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getDbLastEntityToArray('payment');
 
         $this->assertEquals('refunded', $payment['status']);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(0, $refund['amount']);
+        $this->assertEquals(0, $payment['amount_refunded']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
     }
 
     public function testDebitFileGeneration()
@@ -913,6 +927,10 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 

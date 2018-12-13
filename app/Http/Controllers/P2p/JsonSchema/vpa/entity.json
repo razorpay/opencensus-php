@@ -1,0 +1,95 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/vpa/entity.json",
+    "type": "object",
+    "required": [],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "string",
+            "pattern": "^vpa_[\\w]{14}$"
+        },
+        "device_id": {
+            "$id": "#/properties/device_id",
+            "type": "string",
+            "maxLength" : 14
+        },
+        "handle": {
+            "$id": "#/properties/handle",
+            "type": "string",
+            "maxLength" : 50
+        },
+        "gateway_data": {
+            "$id": "#/properties/gateway_data",
+            "type": "object"
+        },
+        "username": {
+            "$id": "#/properties/username",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9\\.\\-]*$",
+            "maxLength" : 200
+        },
+        "bank_account_id": {
+            "$id": "#/properties/bank_account_id",
+            "type": ["string", "null"],
+            "maxLength" : 14
+        },
+        "beneficiary_name": {
+            "$id": "#/properties/beneficiary_name",
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "permissions": {
+            "$id": "#/properties/permissions",
+            "type": ["integer", "null"]
+        },
+        "frequency": {
+            "$id": "#/properties/frequency",
+            "type": "string",
+            "enum": ["single", "multiple"],
+            "maxLength" : 50
+        },
+        "active": {
+            "$id": "#/properties/active",
+            "type": "boolean",
+            "default" : true
+        },
+        "validated": {
+            "$id": "#/properties/validated",
+            "type": "boolean",
+            "default" : false
+        },
+        "verified": {
+            "$id": "#/properties/active",
+            "type": "boolean",
+            "default" : false
+        },
+        "default": {
+            "$id": "#/properties/default",
+            "type": "boolean",
+            "default" : false
+        },
+        "deleted_at": {
+            "$id": "#/properties/deleted_at",
+            "type": ["integer", "null"]
+        },
+        "created_at": {
+            "$id": "#/properties/created_at",
+            "type": "integer"
+        },
+        "updated_at": {
+            "$id": "#/properties/updated_at",
+            "type": "integer"
+        }
+    },
+    "actions": [
+        "fetchHandles",
+        "add",
+        "fetchAll",
+        "fetch",
+        "assignBankAccount",
+        "checkAvailability",
+        "delete"
+    ]
+}

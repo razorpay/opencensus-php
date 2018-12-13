@@ -12,18 +12,6 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 
-    public function getColumnHeadersForType($type)
-    {
-        return Constants::COLUMN_HEADERS;
-    }
-
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 1,
-        ];
-    }
-
     public function getDelimiter()
     {
         return ',';
