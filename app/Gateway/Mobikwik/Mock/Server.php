@@ -40,14 +40,16 @@ class Server extends Base\Mock\Server
         parse_str($input, $inputArray);
         $input = $inputArray;
         $id = $input['orderid'];
-//        $merchantId = $input['mid'];
+
         $payment = (new Payment\Repository)->findOrFailPublic($id);
+
+        $amount = (string) number_format($payment['amount'] / 100, 2, '.', '');
 
         $content = array(
             'statuscode'    => '0',
             'orderid'       => $input['orderid'],
             'refid'         => '12345',
-            'amount'        => $payment['amount'],
+            'amount'        => $amount,
             'statusmessage' => 'success',
             'ordertype'     => 'payment'
         );
