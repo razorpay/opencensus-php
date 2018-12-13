@@ -4458,7 +4458,7 @@ ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
 
 ALTER TABLE merchant_banks
-    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
+    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi;
 
 ALTER TABLE terminals
     ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
