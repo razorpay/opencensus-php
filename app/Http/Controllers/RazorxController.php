@@ -36,7 +36,10 @@ class RazorxController extends Controller
         Requests::HEAD,
     ];
 
-    const WORKFLOW_ROUTES_REGEX = '/experiments\/\w+\/activate/';
+    const EXPERIMENT_ACTIVATE_ROUTE = 'EXPERIMENT_ACTIVATE_ROUTE';
+
+
+    const WORKFLOW_REGEX_ROUTES = [self::EXPERIMENT_ACTIVATE_ROUTE => '/experiments\/\w+\/activate/'];
 
     public function __construct()
     {
@@ -52,16 +55,32 @@ class RazorxController extends Controller
     {
 
         $path = $this->validateAndGetServicePathParam();
+        $method = null;
 
-        if(preg_match(self::WORKFLOW_ROUTES_REGEX, $path) === 1)
+        foreach(self::WORKFLOW_REGEX_ROUTES as $route => $regex)
         {
-            $this->app['workflow']
-                 ->setEntityAndId('razorx_experiment_activate',
-                                 substr($path, strlen('experiments/'), -strlen('/activate')))
-                 ->handle([], ['experiment_workflow_started']);
+            if(preg_match($regex, $path) === 1)
+            {
+                switch($route)
+                {
+                    case self::EXPERIMENT_ACTIVATE_ROUTE :
+                        $this->app['workflow']
+                             ->setEntityAndId('razorx_experiment_activate',
+                                            substr($path, strlen('experiments/'), -strlen('/activate')))
+                             ->handle([], ['razorx_experiment_workflow_started']);
+                        $method = 'PATCH';
+                        break;
+                }
+                break;
+            }
         }
 
         $requestParams = $this->getRequestParams();
+
+        if(method != null)
+        {
+            $requestParams['method'] = $method;
+        }
 
         try
         {
