@@ -91,6 +91,8 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
+            $bankTransfer->balance()->associate($this->virtualAccount->balance);
+
             $this->repo->saveOrFail($bankTransfer);
 
             $balanceType = $this->virtualAccount->getBalanceType();

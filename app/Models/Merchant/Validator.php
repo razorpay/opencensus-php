@@ -1010,4 +1010,30 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_X_NOT_ACTIVATED);
         }
     }
+
+    /**
+     * There are service methods (list & fetch) for few models which expect
+     * mandatory ACCOUNT_NUMBER in query parameter. Such models include
+     * transactions, bank_transfers & payouts. This method is called from those
+     * service methods to translate ACCOUNT_NUMBER to BALANCE_ID because beyond
+     * service layer repository's fetch etc only understands BALANCE_ID.
+     *
+     * @param array $input
+     */
+    public function validateAndTranslateAccountNumberForBanking(array & $input)
+    {
+        $this->validateBusinessBankingActivated();
+
+        // Validates input has valid ACCOUNT_NUMBER.
+        (new Base\JitValidator)
+            ->rules([Balance\Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,22'])
+            ->strict(false)
+            ->input($input)
+            ->validate();
+
+        // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
+        $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+        $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+        $input[Balance\Entity::BALANCE_ID] = $balanceId;
+    }
 }

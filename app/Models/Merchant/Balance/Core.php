@@ -29,6 +29,15 @@ class Core extends Base\Core
         return $balance;
     }
 
+    public function updateBalanceAccountNumber(Entity $balance, string $accountNumber)
+    {
+        assertTrue($balance->getAccountNumber() === null, 'Attempting to re-update balance\'s account_number!');
+
+        $balance->setAccountNumber($accountNumber);
+
+        $this->repo->saveOrFail($balance);
+    }
+
     /**
      * @param Merchant\Entity $merchant
      * @param string          $balanceType
