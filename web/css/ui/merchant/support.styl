@@ -61,17 +61,23 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         &:hover:not(.disabled)
           background-color: #f6fcfd
         &.disabled
-          background-color: #efefef
+          background-color: #f6f6f6
+          .help-block
+            color:rgba(240, 81, 80, 0.7)
         .help-content
           color: #A3B0B7
         &:not(:last-child)
           border-bottom: 1px solid rgba(158, 157, 157, 0.4)
         &.ticket
           background-image: url($ticketSystemCdn/icon-paper.png)
-        &.chat
+        &.chat:not(.disabled)
           background-image: url($ticketSystemCdn/icon-chat.png)
-        &.call
+        &.call:not(.disabled)
           background-image: url($ticketSystemCdn/icon-support-call.svg)
+        &.chat.disabled
+          background-image: url(assets/support_widget/chat_disabled.svg)
+        &.call.disabled
+          background-image: url(assets/support_widget/call_disabled.svg)          
 
 // hide hotjar feedback button
 div[class$="feedback_minimized_label"]

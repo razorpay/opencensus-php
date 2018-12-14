@@ -50,22 +50,6 @@ export default class SupportBody extends Component {
 
     return (
       <div class={`support-body ${isOpened ? ' open' : ''}`}>
-        {shouldDisable && (
-          <Banner>
-            <span>
-              Our chat and call support are currently offline, kindly{' '}
-              <span
-                class="btn-link"
-                onClick={() => {
-                  handleClick('ticket');
-                }}
-              >
-                Raise a Request
-              </span>{' '}
-              to get in touch with us
-            </span>
-          </Banner>
-        )}
         <div class="p-all">
           <h4>Reach out to us</h4>
           <ul class="support-list">
@@ -94,7 +78,9 @@ export default class SupportBody extends Component {
                     <span class="support-notify m-l">{notifyCount}</span>
                   )}
                   <small class="help-block">
-                    For quick questions or help on dashboard
+                    {shouldDisable && notifyCount < 1
+                      ? 'Currently unavailable'
+                      : 'For quick questions or help on dashboard'}
                   </small>
                 </li>
               ) : null
@@ -112,7 +98,9 @@ export default class SupportBody extends Component {
                 Call Support{' '}
                 <small class="help-content">(9am-6pm, working days)</small>
                 <small class="help-block">
-                  For queries and help on the dashboard
+                  {shouldDisable
+                    ? 'Currenlty unavailable'
+                    : 'For queries and help on the dashboard'}
                 </small>
               </li>
             ) : null}
