@@ -194,4 +194,44 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testFetchContactsByPhone' => [
+        'request'  => [
+            'url'    => '/contacts?contact=8888888888',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000004contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test4.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactsByName' => [
+        'request'  => [
+            'url'    => '/contacts?name=testContact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test4.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
 ];
