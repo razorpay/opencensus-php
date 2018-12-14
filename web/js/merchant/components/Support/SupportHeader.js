@@ -1,11 +1,19 @@
 import { Component } from 'react';
 
+import { classList } from 'common/util';
+
 export default class SupportHeader extends Component {
   render() {
     const { notifyCount, isOpened, onToggle } = this.props;
 
     return (
-      <button class="btn-primary btn-block support-header" onClick={onToggle}>
+      <button
+        class={classList(
+          'btn-primary btn-block support-header',
+          notifyCount && 'notify'
+        )}
+        onClick={onToggle}
+      >
         <span class="pull-left">
           <i class="i i-headset m-r" />
           Help and Support

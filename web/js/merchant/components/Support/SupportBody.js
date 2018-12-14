@@ -107,11 +107,11 @@ export default class SupportBody extends Component {
           </ul>
 
           <div class="support-feedback">
-            <button class="btn-default" onClick={this.handleFeedback}>
+            <button class="btn-default pull-left" onClick={this.handleFeedback}>
               <i class="i i-voice-record m-r" />
               Share Feedback
             </button>
-            <button class="btn-default" onClick={this.handleFaqs}>
+            <button class="btn-default pull-right" onClick={this.handleFaqs}>
               <i class="i i-help  m-r" />
               FAQs
             </button>

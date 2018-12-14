@@ -19,6 +19,18 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
   .support-header
     padding: 10px
     border-radius: 5px 5px 0 0;
+    border: none !important;
+    background-color: $sidebar-bg-color
+    &:focus
+      background-color: $sidebar-bg-color
+    &:active, &:active:focus, &:hover
+      background-color: $sidebar-active-color
+    &.notify
+      background-color: $prime
+      &:focus
+        background-color: $prime
+      &:active, &:active:focus, &:hover
+        background-color: $secondary-color-hover
     .support-toggle
       font-size: 16px
       margin-top: 4px
@@ -34,11 +46,11 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       margin-bottom: 16px
       margin-top: 4px
     .support-feedback
+      overflow: hidden
       button 
         display: inline-block
-        width: 50%
-        padding: 4px 16px
-        height: 40px
+        width: 49%
+        padding: 4px 8px
     .rzp-banner
       margin: 0
       font-size: 13px
@@ -62,10 +74,12 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
           background-color: #f6fcfd
         &.disabled
           background-color: #f6f6f6
+          cursor: auto
           .help-block
             color:rgba(240, 81, 80, 0.7)
         .help-content
           color: #A3B0B7
+          cursor: auto
         &:not(:last-child)
           border-bottom: 1px solid rgba(158, 157, 157, 0.4)
         &.ticket
