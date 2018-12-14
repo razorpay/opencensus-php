@@ -4522,7 +4522,7 @@ ALTER TABLE pricing
     ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
 
 ALTER TABLE payouts
-    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id;
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
 
 ALTER TABLE fund_accounts
@@ -4536,9 +4536,9 @@ ALTER TABLE users
     ADD COLUMN contact_mobile_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_reset_expiry;
 
 ALTER TABLE balance
-    ADD COLUMN account_number VARCHAR(255) DEFAULT NULL AFTER refund_credits
+    ADD COLUMN account_number VARCHAR(255) DEFAULT NULL AFTER refund_credits,
     ADD INDEX balance_account_number_index (account_number);
 
 ALTER TABLE bank_transfers
-    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id,
     ADD INDEX bank_transfers_balance_id_index (balance_id);
