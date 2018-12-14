@@ -4546,3 +4546,8 @@ ALTER TABLE bank_transfers
 ALTER TABLE payouts
     ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,
     ADD INDEX payouts_user_id_index (user_id);
+
+ALTER TABLE contacts
+    ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER email,
+    ADD INDEX contacts_type_merchant_id_index (type, merchant_id);
+
