@@ -7,22 +7,23 @@ use Request;
 
 class PayoutController extends Controller
 {
-    public function postContactPayout()
+    public function postFundAccountPayout()
     {
         $input = Request::all();
 
-        $data = $this->service()->contactPayout($input);
+        $data = $this->service()->fundAccountPayout($input);
 
         return ApiResponse::json($data);
     }
 
     /**
-     * Logged in business banking user creates payout with otp.
+     * Logged in business banking user creates payout with OTP (proxy auth)
+     *
      * @return \Illuminate\Http\Response
      */
-    public function postCustomerPayoutWithOtp()
+    public function postFundAccountPayoutWithOtp()
     {
-        $response = $this->service()->customerPayoutWithOtp($this->input);
+        $response = $this->service()->fundAccountPayoutWithOtp($this->input);
 
         return ApiResponse::json($response);
     }

@@ -4,7 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Settlement;
 
-class ContactPayout extends Base
+class FundAccountPayout extends Base
 {
     protected function setChannel()
     {

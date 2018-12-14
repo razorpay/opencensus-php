@@ -624,7 +624,7 @@ class Service extends Base\Service
 
     public function processCustomerWalletPayout(string $customerId, array $input = []): array
     {
-        $payout = (new Payout\Core)->createPayoutToCustomerWallet($customerId, $input, $this->merchant);
+        $payout = (new Payout\Core)->createPayoutFromCustomerWallet($customerId, $input, $this->merchant);
 
         return $payout->toArrayPublic();
     }

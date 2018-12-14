@@ -42,6 +42,9 @@ class Core extends Base\Core
      * Here, onDemand is used to do payout calculation for
      * merchant with es_on_demand feature enabled
      *
+     * SOURCE: Merchant PG balance
+     * TO: Merchant linked bank account
+     *
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
@@ -81,10 +84,21 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
-    public function createPayoutToContact(array $input, Merchant\Entity $merchant): Entity
+    /**
+     * Payouts to a fund account
+     *
+     * SOURCE: Merchant Balance (PG/Banking)
+     * TO: Fund Account (BankAccount/VPA/Card etc)
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createPayoutToFundAccount(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
-            TraceCode::PAYOUT_CONTACT_CREATE_REQUEST,
+            TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
             [
                 'input' => $input
             ]);
@@ -95,26 +109,39 @@ class Core extends Base\Core
             $mutexResource,
             function() use ($input, $merchant)
             {
-                return $this->getProcessor('contact_payout', $merchant)->createPayout($input);
+                return $this->getProcessor('fund_account_payout', $merchant)->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
-
     }
 
-    public function createPayoutToCustomerWallet(string $customerId, array $input, Merchant\Entity $merchant): Entity
+    /**
+     * IMPS payout from a customer wallet to a func account
+     *
+     * SOURCE: Customer Wallet Balance
+     * TO: Fund Account (BankAccount/VPA/Card etc)
+     *
+     * @param string          $customerId
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createPayoutFromCustomerWallet(string $customerId, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
-            TraceCode::PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST,
+            TraceCode::PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST,
             [
-                'input' => $input,
+                'input'       => $input,
                 'customer_id' => $customerId
             ]);
 
+        //
         // We are doing this so that validations do not fail in createPayout.
         // We don't want to remove it from the input validation to ensure that
         // customer wallet payout always has a customer_id.
         // (instead of relying on function params)
+        //
         $input[Entity::CUSTOMER_ID] = $customerId;
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
@@ -129,6 +156,18 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
+    /**
+     * Makes a payout from merchant primary balance, but link the Payout to a payment ID
+     *
+     * SOURCE: Merchant Balance (PG/Banking) - Payment ID
+     * TO: Fund Account (BankAccount/VPA/Card etc)
+     *
+     * @param Payment\Entity  $payment
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function createPayoutFromPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
@@ -140,10 +179,9 @@ class Core extends Base\Core
         //
         // The mutex for this is handled in `createPayoutToContact`.
         //
-
         (new Validator)->validatePaymentForPayout($input, $payment);
 
-        $payout = $this->createPayoutToContact($input, $merchant);
+        $payout = $this->createPayoutToFundAccount($input, $merchant);
 
         $payout->payment()->associate($payment);
 

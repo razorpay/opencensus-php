@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_ID => 'sometimes|public_id'
     ];
 
-    protected static $contactPayoutRules = [
+    protected static $fundAccountPayoutRules = [
         Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
