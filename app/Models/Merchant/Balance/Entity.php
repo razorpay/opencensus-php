@@ -42,7 +42,8 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::AMOUNT_CREDITS,
         self::FEE_CREDITS,
-        self::REFUND_CREDITS
+        self::REFUND_CREDITS,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $entity = 'balance';
