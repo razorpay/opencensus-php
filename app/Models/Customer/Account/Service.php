@@ -624,8 +624,10 @@ class Service extends Base\Service
 
     public function processCustomerWalletPayout(string $customerId, array $input = []): array
     {
+        Entity::verifyIdAndStripSign($customerId);
+
         /** @var Customer\Balance\Entity $customerBalance */
-        $customerBalance = $this->repo->customer_balance->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $customerBalance = $this->repo->customer_balance->findByIdAndMerchant($customerId, $this->merchant);
 
         $customer = $customerBalance->customer;
 

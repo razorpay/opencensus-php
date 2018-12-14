@@ -198,7 +198,6 @@ abstract class Base extends BaseCore
 
             default:
                 // Throw exception
-
         }
     }
 

@@ -747,25 +747,25 @@ return [
     ],
 
     'testCustomerWalletPayout' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'  => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 800,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 800,
+                'method'          => 'fund_transfer',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
             ],
         ],
         'response' => [
             'content' => [
-                'entity'      => 'payout',
-                'customer_id' => 'cust_100000customer',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
-                'amount'      => 800,
-                'status'      => 'created',
+                'entity'          => 'payout',
+                'customer_id'     => 'cust_100000customer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
+                'amount'          => 800,
+                'status'          => 'created',
             ]
         ],
 

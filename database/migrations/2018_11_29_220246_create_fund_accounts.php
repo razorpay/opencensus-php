@@ -72,7 +72,7 @@ class CreateFundAccounts extends Migration
         {
             $table->foreign(Payout::FUND_ACCOUNT_ID)
                   ->references(FundAccount::ID)
-                  ->on(Table::PAYOUT)
+                  ->on(Table::FUND_ACCOUNT)
                   ->on_delete('restrict');
         });
     }

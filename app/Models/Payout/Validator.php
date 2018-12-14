@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID     => 'required|public_id',
         Entity::DESTINATION     => 'required|public_id',
         Entity::BALANCE_ID      => 'sometimes|filled|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $merchantPayoutRules = [

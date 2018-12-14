@@ -423,6 +423,8 @@ class CustomerTest extends TestCase
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
         $this->fixtures->edit('balance', '10000000000000', ['balance' => 1000]);
 
+        $this->fixtures->create('fund_account', ['id' => '100000000000fa', 'account_type' => 'bank_account', 'account_id' => '1000000lcustba']);
+
         $payout = $this->startTest();
 
         $payout = $this->getDbEntityById('payout', $payout['id']);
