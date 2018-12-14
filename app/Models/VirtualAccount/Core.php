@@ -237,11 +237,9 @@ class Core extends Base\Core
         if (($virtualAccount->isBalanceTypeBanking() === true) and
             ($virtualAccount->hasBankAccount() === true))
         {
-            $balance = $virtualAccount->balance;
-            $bankAccount = $virtualAccount->bankAccount;
+            $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 
-            $balance->setAccountNumber($bankAccount->getAccountNumber());
-            $this->repo->saveOrFail($balance);
+            (new Balance\Core)->updateBalanceAccountNumber($accountNumber);
         }
     }
 
