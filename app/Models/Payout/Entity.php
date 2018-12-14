@@ -5,7 +5,9 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -17,6 +19,7 @@ use RZP\Models\FundTransfer\Attempt\Purpose;
 /**
  * @property Customer\Entity    $customer
  * @property Merchant\Entity    $merchant
+ * @property User\Entity        $user
  */
 class Entity extends Base\PublicEntity
 {
@@ -66,6 +69,9 @@ class Entity extends Base\PublicEntity
     // Constants for payout types
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
+
+    // Relations
+    const USER = 'user';
 
     protected $entity = 'payout';
 
@@ -126,7 +132,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::DESTINATION,
-        self::USER_ID,
         self::METHOD,
         self::AMOUNT,
         self::CURRENCY,
@@ -135,6 +140,8 @@ class Entity extends Base\PublicEntity
         self::TAX,
         self::STATUS,
         self::UTR,
+        self::USER_ID,
+        self::USER,
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -146,6 +153,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
+        self::USER_ID,
     ];
 
     protected $defaults = [
@@ -218,6 +226,11 @@ class Entity extends Base\PublicEntity
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function getPurpose()
@@ -434,6 +447,17 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
+    }
+
+    public function setPublicUserIdAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::USER_ID]);
+        }
     }
 
     public function getPricingFeatures()
