@@ -75,6 +75,28 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchContactByAccountNumber()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888']);
+
+        $this->createFundAccount($contact->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testFetchContactByFundAccountId()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888']);
+
+        $fundAccount = $this->createFundAccount($contact->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/contacts?fund_account_id=' . $fundAccount['id'];
+
+        $this->startTest($data);
+    }
+
     public function testUpdateContact()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self']);
@@ -87,5 +109,30 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
+    }
+
+    protected function createFundAccount($contactId)
+    {
+        $testdata = [
+            'request' => [
+                'url' => '/fund_accounts',
+                'method' => 'post',
+                'content' => [
+                    'account_type' => "bank_account",
+                    'contact_id'   => $contactId,
+                    'details' => [
+                        'beneficiary_name' => "test",
+                        'ifsc_code' => 'SBIN0007105',
+                        'account_number' => '111000',
+                    ],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                ],
+            ],
+        ];
+
+        return $this->runRequestResponseFlow($testdata);
     }
 }

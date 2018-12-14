@@ -20,6 +20,7 @@ class Fetch extends Base\Fetch
             Entity::CONTACT           => 'sometimes|contact_syntax',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            Entity::FUND_ACCOUNT_ID   => 'sometimes|string|min:14|max:19',
             BankAccount\Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num|between:5,22',
         ],
     ];
@@ -32,6 +33,7 @@ class Fetch extends Base\Fetch
             Entity::CONTACT,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+            Entity::FUND_ACCOUNT_ID,
             BankAccount\Entity::ACCOUNT_NUMBER,
         ],
     ];

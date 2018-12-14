@@ -54,4 +54,29 @@ class Repository extends Base\Repository
 
        $query->select($query->getModel()->getTable().'.*');
     }
+
+    public function addQueryParamFundAccountId($query, $params)
+    {
+      $query->join(
+            $this->repo->fund_account->getTableName(),
+            function ($join) use ($params)
+            {
+                $fundAccountIDParam =  Entity::stripSign($params[Entity::FUND_ACCOUNT_ID]);
+
+                $fundAccountTableName = $this->repo->fund_account->getTableName();
+
+                $contactId = $this->repo->contact->dbColumn(Entity::ID);
+
+                $fundAccountId = $this->repo->fund_account->dbColumn(Entity::ID);
+
+                $fundAccountContactId = $this->repo->fund_account->dbColumn(FundAccount\Entity::CONTACT_ID);
+
+                $join->on($fundAccountContactId, '=', $contactId);
+
+                $join->where($fundAccountId, '=', $fundAccountIDParam);
+            }
+       );
+
+      $query->select($query->getModel()->getTable().'.*');
+    }
 }

@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const NOTES   = 'notes';
     const ACTIVE  = 'active';
 
+    // search attributes
+    const FUND_ACCOUNT_ID = 'fund_account_id';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
