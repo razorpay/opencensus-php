@@ -8,31 +8,29 @@ use RZP\Models\Payout\Status as PayoutStatus;
 
 return [
     'testCreatePayout' => [
-        'request' => [
+        'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'notes'       => [
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'method'          => 'fund_transfer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'entity'      => 'payout',
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'tax'         => 92,
-                'fees'        => 602,
-                'notes'       => [
+                'entity'          => 'payout',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'method'          => 'fund_transfer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'tax'             => 92,
+                'fees'            => 602,
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -148,9 +146,8 @@ return [
             'content' => [
                 'amount'      => 1000000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
+                'fund_account_id' => 'fa_100000000000fa',
                 'notes'       => [
                     'abc' => 'xyz',
                 ],
@@ -204,9 +201,8 @@ return [
             'content' => [
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
+                'fund_account_id' => 'fa_100000000000fa',
                 'notes'       => [
                     'abc' => 'xyz',
                 ],
@@ -217,9 +213,7 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'destination' => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
+                'fund_account_id' => 'fa_100000000000fa',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => [
@@ -260,31 +254,28 @@ return [
     ],
 
     'testPaymentPayoutPartial' => [
-        'request' => [
+        'request'  => [
             'method'  => 'POST',
             'url'     => '/payments/{id}/payout',
             'content' => [
-                'amount'      => 2000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'notes'       => [
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'method'          => 'fund_transfer',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'entity'      => 'payout',
-                'amount'      => 2000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'destination' => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'tax'         => 94,
-                'fees'        => 614,
-                'notes'       => [
+                'entity'          => 'payout',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'tax'             => 94,
+                'fees'            => 614,
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -292,22 +283,21 @@ return [
     ],
 
     'testCreatePaymentPayoutNotSettledLiveMode' => [
-        'request' => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payments/{id}/payout',
             'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'notes'       => [
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'method'          => 'fund_transfer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,

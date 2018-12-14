@@ -81,7 +81,9 @@ class Core extends Base\Core
                     Entity::TYPE      => $onDemand,
                 ];
 
-                return $this->getProcessor('merchant_payout', $merchant)->createPayout($payoutInput);
+                return $this->getProcessor('merchant_payout')
+                            ->setMerchant($merchant)
+                            ->createPayout($payoutInput);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
@@ -112,7 +114,9 @@ class Core extends Base\Core
             $mutexResource,
             function() use ($input, $merchant)
             {
-                return $this->getProcessor('fund_account_payout', $merchant)->createPayout($input);
+                return $this->getProcessor('fund_account_payout')
+                            ->setMerchant($merchant)
+                            ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);

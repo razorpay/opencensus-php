@@ -13,16 +13,7 @@ class MerchantPayout extends Base
 
     public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
-        $destinationId = $input[Payout\Entity::DESTINATION];
-
-        if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
-        {
-            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destinationId, $this->merchant);
-        }
-        else
-        {
-            $destination = $this->repo->vpa->findByPublicIdAndMerchant($destinationId, $this->merchant);
-        }
+        $destination = $this->merchant->bankAccount;
 
         $payout->destination()->associate($destination);
 

@@ -693,19 +693,20 @@ return [
     ],
 
     'testCustomerWalletPayoutInsufficientWalletBalance' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'   => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 300,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 300,
+                'method'          => 'fund_transfer',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+
+                'currency' => 'INR',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payout failed due to insufficient balance in wallet',
@@ -720,19 +721,20 @@ return [
     ],
 
     'testCustomerWalletPayoutInsufficientMerchantBalance' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'   => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 800,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 800,
+                'method'          => 'fund_transfer',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+
+                'currency' => 'INR',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Merchant does not have enough balance for negative adjustment',

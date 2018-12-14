@@ -43,8 +43,10 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
+                  ->nullable();
 
-            $table->char(Payout::DESTINATION_TYPE, 20);
+            $table->char(Payout::DESTINATION_TYPE, 20)
+                  ->nullable();
 
             $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
                   ->nullable();
