@@ -136,6 +136,14 @@ trait HeadlessOtp
                 $traceInput['disable_iin'] = true;
                 $traceCode = TraceCode::HEADLESS_OTP_ELF_FAILURE;
             }
+
+            if ($response['error']['reason'] === OtpElf::ERROR_TIMEOUT)
+            {
+                throw new Exception\GatewayTimeoutException(
+                    ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                    null,
+                    true);
+            }
         }
 
         $this->trace->critical($traceCode, $traceInput);

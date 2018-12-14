@@ -19,9 +19,9 @@ class Validator extends Base\Validator
     const MAXIMAGESIZE = 1024 * 1024;
 
     const EXTENSIONMIMEMAP = [
-        "jpeg"  => "image/jpeg",
-        "jpg"   => "image/jpeg",
-        "png"   => "image/png",
+        'jpeg'  => 'image/jpeg',
+        'jpg'   => 'image/jpeg',
+        'png'   => 'image/png',
     ];
 
     protected static $createRules = [
@@ -1002,6 +1002,12 @@ class Validator extends Base\Validator
 
     public function validateBusinessBankingActivated()
     {
-        // Todo - If validated assumes banking type balance exists and allows virtual account creation
+        $merchant = $this->entity;
+
+        if (($merchant->isBusinessBankingEnabled() === false) or ($merchant->isActivated() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_X_NOT_ACTIVATED);
+        }
     }
 }

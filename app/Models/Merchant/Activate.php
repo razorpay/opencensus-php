@@ -8,11 +8,13 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
+use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -99,6 +101,8 @@ class Activate extends Base\Core
             $merchantDetail->setLocked(true);
 
             $this->repo->saveOrFail($merchantDetail);
+
+            $this->activateBusinessBankingIfApplicable($merchant);
         });
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
@@ -156,6 +160,8 @@ class Activate extends Base\Core
 
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
+        $this->activateBusinessBankingIfApplicable($merchant);
+
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
 
@@ -193,6 +199,8 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
         });
+
+        $this->activateBusinessBankingIfApplicable($merchant);
 
         //
         // Live transactions get disabled if the activation_status changes to 'rejected'.
@@ -575,4 +583,50 @@ class Activate extends Base\Core
 
         return $returnRules;
     }
+
+    /**
+     * Activates Business Banking for a merchant.
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
+    {
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
+
+            // If merchant is instantly activated or Activated this flow will kick in.
+            if ($merchant->isActivated() === true)
+            {
+                // Business Banking logic is coupled only with the live mode.
+                $liveMode = $this->app['basicauth']->getLiveConnection();
+
+                $this->app['basicauth']->setModeAndDbConnection($liveMode);
+
+                // Create Banking Balance.
+                $balance = (new Balance\Core())->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+
+                // Virtual Account.
+                $virtualAccount = (new VirtualAccount\Core())->createOrFetchBankingVirtualAccount($merchant, $balance);
+            }
+
+            // This means that L2 form is also verified.
+            if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+            {
+                $featureParams = [
+                    Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                    Feature\Entity::ENTITY_TYPE  => 'merchant',
+                    Feature\Entity::NAMES        => [Feature\Constants::PAYOUT],
+                    Feature\Entity::SHOULD_SYNC  => true,
+                ];
+
+                (new Feature\Service)->addFeatures($featureParams);
+            }
+        }
+
+        return $merchant;
+    }
+
 }

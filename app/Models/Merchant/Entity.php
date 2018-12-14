@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
     const BALANCE                   = 'balance';
 
     const ROLE                      = 'role';
+    const BANKING_ROLE              = 'banking_role';
     const PIVOT                     = 'pivot';
 
     // Partner array keys
@@ -473,6 +474,11 @@ class Entity extends Base\PublicEntity
     public function getHasKeyAccess(): bool
     {
         return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
+    }
+
+    public function setBusinessBanking(bool $businessBanking)
+    {
+        $this->setAttribute(self::BUSINESS_BANKING, $businessBanking);
     }
 
     public function setHasKeyAccess(bool $hasKeyAccess)
@@ -1322,6 +1328,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * Signifies weather a Merchant has business banking knowledge or not.
+     *
+     * @return bool
+     */
+    public function isBusinessBankingEnabled(): bool
+    {
+        return $this->getAttribute(self::BUSINESS_BANKING);
+    }
+
     public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);
@@ -1745,6 +1761,7 @@ class Entity extends Base\PublicEntity
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+        $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
 
         return $attributes;
     }

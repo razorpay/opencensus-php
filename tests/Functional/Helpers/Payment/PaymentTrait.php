@@ -563,7 +563,7 @@ trait PaymentTrait
             'url'       => $url,
             'method'    => 'POST',
             'content'   => [
-                'otp'   => $this->getOtp(),
+                'otp'   => '0007',
                 'email'  => $email,
                 'contact' => $contact,
             ],

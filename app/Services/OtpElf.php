@@ -13,6 +13,7 @@ class OtpElf
     const ERROR_PAGE_TYPE_UNKNOWN   = 'PAGE_TYPE_UNKNOWN';
     const ERROR_TYPE_NOT_RECOGNIZED = 'TYPE_NOT_RECOGNIZED';
     const ERROR_INVALID_OTP         = 'INVALID_OTP';
+    const ERROR_TIMEOUT             = 'PAYMENT_TIMEOUT';
 
     public static $otpElfErrors = [
         self::ERROR_PAGE_UNKNOWN,

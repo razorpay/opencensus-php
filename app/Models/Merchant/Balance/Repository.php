@@ -4,8 +4,6 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
@@ -34,8 +32,8 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
-                    ->firstOrFail();;
+                                      ->where(Entity::MERCHANT_ID, '=', $id)
+                                      ->firstOrFail();
     }
 
     // not in use
@@ -189,5 +187,20 @@ class Repository extends Base\Repository
                     ->whereRaw(Entity::ID. '=' . Entity::MERCHANT_ID)
                     ->limit($limit)
                     ->get();
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string          $balanceType
+     * @param string          $connection
+     *
+     * @return mixed
+     */
+    public function getMerchantBalanceByType(Merchant\Entity $merchant, string $balanceType, string $connection)
+    {
+        return $this->newQueryWithConnection($connection)
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', $balanceType)
+                    ->first();
     }
 }

@@ -5,10 +5,56 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Exception;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param string          $mode
+     *
+     * @return Entity
+     */
+    public function create(Merchant\Entity $merchant, array $input, string $mode): Entity
+    {
+        $balance = (new Entity)->build($input);
+
+        $balance->setConnection($mode);
+
+        $balance->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($balance);
+
+        return $balance;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string          $balanceType
+     * @param null            $mode
+     *
+     * @return Entity
+     */
+    public function createOrFetchBalance(Merchant\Entity $merchant, string $balanceType, $mode = null): Entity
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant, $balanceType, $mode);
+
+        if ($balance === null)
+        {
+            // Evey balance we create will start with 0 balance. if needed we can extend this.
+            $input = [
+                Entity::TYPE     => $balanceType,
+                Entity::BALANCE  => 0,
+                Entity::CURRENCY => Currency::INR,
+            ];
+
+            $balance = $this->create($merchant, $input, $mode);
+        }
+
+        return $balance;
+    }
+
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *
