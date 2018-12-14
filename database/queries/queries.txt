@@ -4542,3 +4542,7 @@ ALTER TABLE balance
 ALTER TABLE bank_transfers
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id,
     ADD INDEX bank_transfers_balance_id_index (balance_id);
+
+ALTER TABLE payouts
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,
+    ADD INDEX payouts_user_id_index (user_id);

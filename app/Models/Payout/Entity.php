@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID             = 'balance_id';
     const DESTINATION_ID         = 'destination_id';
     const DESTINATION_TYPE       = 'destination_type';
+    const USER_ID                = 'user_id';
     const PURPOSE                = 'purpose';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
@@ -124,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::DESTINATION,
+        self::USER_ID,
         self::METHOD,
         self::AMOUNT,
         self::CURRENCY,
@@ -146,6 +148,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::USER_ID           => null,
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
@@ -332,9 +335,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setUserId(string $userId)
+    {
+        $this->setAttribute(self::USER_ID, $userId);
     }
 
     public function setTax($tax)
