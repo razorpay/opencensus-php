@@ -42,19 +42,10 @@ class BankTransfer extends Base
     /**
      * {@inheritDoc}
      */
-    protected function setMerchantBalance()
-    {
-        $this->merchantBalance = $this->txn->merchant->bankingBalance;
-        // Todo: Use below and remove above line once bank_transfer.balance_id is backfilled.
-        // $this->merchantBalance = $this->source->balance;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     protected function setMerchantBalanceLockForUpdate()
     {
-        $this->setMerchantBalance();
+        $this->merchantBalance = $this->txn->merchant->bankingBalance;
+
         $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
 

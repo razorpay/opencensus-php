@@ -32,9 +32,10 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
- * @property Detail\Entity $merchantDetail
- * @property Methods\Entity $methods
+ * @property Detail\Entity      $merchantDetail
+ * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
+ * @property Balance\Entity     $primaryBalance
  */
 class Entity extends Base\PublicEntity
 {

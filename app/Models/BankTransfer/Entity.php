@@ -205,6 +205,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * For business banking there would be a transaction created per transfer.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\MorphOne
      */
     public function transaction()
