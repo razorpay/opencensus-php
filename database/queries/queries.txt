@@ -4521,5 +4521,12 @@ INSERT INTO schedule_tasks
 ALTER TABLE pricing
 	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
 
+ALTER TABLE fund_accounts
+	ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
+	ADD COLUMN source_id CHAR(14) AFTER source_type,
+	ADD INDEX `fund_accounts_source_id_index` (source_id),
+	DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
+    DROP COLUMN contact_id;
+
 ALTER TABLE users
     ADD COLUMN contact_mobile_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_reset_expiry;
