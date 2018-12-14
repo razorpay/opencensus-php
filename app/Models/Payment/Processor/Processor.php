@@ -2343,15 +2343,17 @@ class Processor
      * Marks the payment as acknowledged.
      *
      * @param Payment\Entity $payment
-     * @param array          $notes
+     * @param array          $input
      */
-    public function acknowledge(Payment\Entity $payment, array $notes)
+    public function acknowledge(Payment\Entity $payment, array $input)
     {
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
             [
-                Payment\Entity::ID    => $payment->getId(),
-                Payment\Entity::NOTES => $notes,
+                'input'            => $input,
+                Payment\Entity::ID => $payment->getId(),
             ]);
 
         $this->mutex->acquireAndRelease($payment->getId(),

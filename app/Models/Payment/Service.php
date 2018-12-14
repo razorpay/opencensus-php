@@ -1387,11 +1387,11 @@ class Service extends Base\Service
      */
     public function acknowledge(string $paymentId, array $input)
     {
+        (new Payment\Validator)->validateInput('acknowledge', $input);
+
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $notes = $input[Payment\Entity::NOTES] ?? [];
-
-        $this->getNewProcessor()->acknowledge($payment, $notes);
+        $this->getNewProcessor()->acknowledge($payment, $input);
     }
 
     public function updateReceiverData()
