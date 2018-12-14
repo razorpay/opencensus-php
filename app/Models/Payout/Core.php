@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
+use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -19,6 +20,8 @@ class Core extends Base\Core
     const PAYOUT_RETRY          = 'payout_retry_%s';
 
     const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING_%s_%s';
+
+    const CUSTOMER_WALLET_MUTEX_RESOURCE = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
 
     const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
 
@@ -43,7 +46,7 @@ class Core extends Base\Core
      * merchant with es_on_demand feature enabled
      *
      * SOURCE: Merchant PG balance
-     * TO: Merchant linked bank account
+     * TO: Merchant linked bank account (destination_id)
      *
      * @param Merchant\Entity $merchant
      * @param array           $input
@@ -88,7 +91,7 @@ class Core extends Base\Core
      * Payouts to a fund account
      *
      * SOURCE: Merchant Balance (PG/Banking)
-     * TO: Fund Account (BankAccount/VPA/Card etc)
+     * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
      * @param array           $input
      * @param Merchant\Entity $merchant
@@ -119,16 +122,21 @@ class Core extends Base\Core
      * IMPS payout from a customer wallet to a func account
      *
      * SOURCE: Customer Wallet Balance
-     * TO: Fund Account (BankAccount/VPA/Card etc)
+     * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
-     * @param string          $customerId
+     * @param Customer\Entity $customer
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
      * @return Entity
      */
-    public function createPayoutFromCustomerWallet(string $customerId, array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutFromCustomerWallet(
+        array $input,
+        Customer\Entity $customer,
+        Merchant\Entity $merchant): Entity
     {
+        $customerId = $customer->getId();
+
         $this->trace->info(
             TraceCode::PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST,
             [
@@ -136,21 +144,19 @@ class Core extends Base\Core
                 'customer_id' => $customerId
             ]);
 
-        //
-        // We are doing this so that validations do not fail in createPayout.
-        // We don't want to remove it from the input validation to ensure that
-        // customer wallet payout always has a customer_id.
-        // (instead of relying on function params)
-        //
-        $input[Entity::CUSTOMER_ID] = $customerId;
-
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
+        $mutexResource = sprintf(
+            self::CUSTOMER_WALLET_MUTEX_RESOURCE,
+            $merchant->getId(),
+            $customerId,
+            $this->mode);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $customerId, $merchant)
+            function() use ($input, $customer, $merchant)
             {
-                return $this->getProcessor('customer_wallet_payout', $merchant, $customerId)->createPayout($input);
+                return $this->getProcessor('customer_wallet_payout')
+                            ->setCustomer($customer)
+                            ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
@@ -176,9 +182,7 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        //
-        // The mutex for this is handled in `createPayoutToContact`.
-        //
+        // The mutex for this is handled in `createPayoutToFundAccount()`.
         (new Validator)->validatePaymentForPayout($input, $payment);
 
         $payout = $this->createPayoutToFundAccount($input, $merchant);
@@ -192,9 +196,7 @@ class Core extends Base\Core
 
     public function retryFailedPayouts(array $input): array
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST,
-            $input);
+        $this->trace->info(TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST, $input);
 
         (new Validator)->validateInput('payout_retry', $input);
 
@@ -342,12 +344,12 @@ class Core extends Base\Core
         return ($input[Entity::TYPE] ?? Entity::DEFAULT);
     }
 
-    protected function getProcessor(string $type, Merchant\Entity $merchant, ...$args): Processor\Base
+    protected function getProcessor(string $type): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 
         $processor .= '\\' . studly_case($type);
 
-        return new $processor($merchant, ...$args);
+        return new $processor();
     }
 }

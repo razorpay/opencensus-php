@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout\Processor;
 
+use RZP\Models\Payout;
+
 class MerchantPayout extends Base
 {
     protected function setChannel()
@@ -9,8 +11,21 @@ class MerchantPayout extends Base
         $this->channel = $this->merchant->getChannel();
     }
 
-    protected function getDestinationId(array $input)
+    public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
-        return $this->merchant->bankAccount->getPublicId();
+        $destinationId = $input[Payout\Entity::DESTINATION];
+
+        if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
+        {
+            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destinationId, $this->merchant);
+        }
+        else
+        {
+            $destination = $this->repo->vpa->findByPublicIdAndMerchant($destinationId, $this->merchant);
+        }
+
+        $payout->destination()->associate($destination);
+
+        $this->fundTransferDestination = $destination;
     }
 }

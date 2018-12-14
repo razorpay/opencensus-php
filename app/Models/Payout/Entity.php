@@ -168,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID           => null,
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
+        self::FUND_ACCOUNT_ID   => null,
         self::NOTES             => [],
         self::ATTEMPTS          => 1,
         self::TYPE              => self::DEFAULT
@@ -447,6 +448,11 @@ class Entity extends Base\PublicEntity
     public function setPublicDestinationAttribute(array & $attributes)
     {
         $type = $this->getDestinationType();
+
+        if ($type === null)
+        {
+            return;
+        }
 
         $entity = Constants\Entity::getEntityClass($type);
 
