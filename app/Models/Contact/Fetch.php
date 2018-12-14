@@ -14,16 +14,13 @@ class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
-            //
+            Entity::EMAIL => 'sometimes|email',
         ],
     ];
 
     const ACCESSES = [
-        AuthType::PRIVATE_AUTH => [
-            //
-        ],
-        AuthType::PROXY_AUTH   => [
-            //
+        self::DEFAULTS => [
+            Entity::EMAIL,
         ],
     ];
 

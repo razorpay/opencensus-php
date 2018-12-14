@@ -16,6 +16,16 @@ final class Type
     const VENDOR   = 'vendor';
     const SELF     = 'self';
 
+    public static function getAll(): array
+    {
+        return [
+            self::CUSTOMER,
+            self::EMPLOYEE,
+            self::VENDOR,
+            self::SELF,
+        ];
+    }
+
     public static function isValid(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);
