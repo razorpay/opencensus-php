@@ -117,7 +117,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <tr>
             <td colspan='40'>Email:</td>
             <td><input type="text" name="email" size="25" value="test@razorpay.com"></td>
-            <td><input type="text" name="contact" size="25" value="9876543210"></td>
+            <td><input type="text" name="contact" size="25" value="9976543210"></td>
         </tr>
         <tr>
             <td colspan="100" align="center">
