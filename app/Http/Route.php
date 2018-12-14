@@ -320,9 +320,6 @@ final class Route
         'schedule_migration'                       => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                          => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
         'schedule_process_tasks'                   => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
-        // 'transaction_fetch_by_id'                  => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
-        // 'transaction_fetch_multiple'               => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
-        'transaction_monthly_report'               => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
@@ -1197,7 +1194,12 @@ final class Route
         'fund_account_list',
         'fund_account_create',
         'fund_account_update',
+        'subscription_registration_list_links',
+        'subscription_registration_create_links',
+        'subscription_registration_fetch_link',
         //'fund_account_delete',
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple',
     ];
 
     // Only routes defined in internalApps go here
@@ -1340,11 +1342,6 @@ final class Route
         'get_es_pricing_merchant',
         'merchant_dashboard_access_la',
         'merchant_fetch_users',
-        'transaction_monthly_report',
-        // 'transaction_fetch_by_id',
-        // 'transaction_fetch_multiple',
-        'transaction_statement_fetch',
-        'transaction_statement_fetch_multiple',
         'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',
@@ -1510,8 +1507,6 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
-        'transaction_statement_fetch',
-        'transaction_statement_fetch_multiple',
     ];
 
     // These will run on internal auth with the assurance

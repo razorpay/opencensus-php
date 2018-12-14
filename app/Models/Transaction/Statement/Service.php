@@ -15,6 +15,8 @@ class Service extends Transaction\Service
 {
     public function fetchMultiple(array $input): array
     {
+        $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($input);
+
         $statements = $this->repo->statement->fetch($input, $this->merchant->getId());
 
         return $statements->toArrayPublic();
@@ -22,14 +24,9 @@ class Service extends Transaction\Service
 
     public function fetch(string $id): array
     {
-        $statement = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
+        $this->merchant->getValidator()->validateBusinessBankingActivated();
 
-        // Asserts that requested transaction id is in correct context!
-        $balance = $this->repo->balance->getBalanceForRequestContext();
-        if ($statement->getBalanceId() !== $balance->getId())
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
+        $statement = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $statement->toArrayPublic();
     }

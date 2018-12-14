@@ -25,7 +25,7 @@ class StatementTest extends TestCase
         $this->setUpMerchantForBusinessBanking();
     }
 
-    public function testFetchMultipleStatementsOnBankingBalance()
+    public function testFetchMultipleStatements()
     {
         // Creates two bank transfer transaction on banking balance.
         $this->createBankTransferTransaction();
@@ -37,7 +37,7 @@ class StatementTest extends TestCase
         $this->doAuthAndCapturePayment(null, 50000);
 
         // One the first two transactions should appear in response.
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
         $response = $this->startTest();
 
         // Asserts other keys existence in items.
@@ -49,35 +49,14 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($statement['source']['bank_reference']);
     }
 
-    public function testFetchMultipleStatementsOnPrimaryBalance()
-    {
-        // Creates one bank transfer transaction on banking balance.
-        $this->createBankTransferTransaction();
-
-        // Creates one normal payment transaction on primary balance.
-        $this->doAuthAndCapturePayment(null, 50000);
-
-        // Only the second transaction should appear in response.
-        $this->ba->proxyAuth();
-        $response = $this->startTest();
-
-        // Asserts other keys existence in items.
-        $statement = current($response['items']);
-        $this->assertNotEmpty($statement['id']);
-        $this->assertNotEmpty($statement['created_at']);
-        $this->assertNotEmpty($statement['updated_at']);
-        $this->assertNotEmpty($statement['source']['id']);
-        $this->assertEquals('payment', $statement['source']['entity']);
-    }
-
-    public function testFetchStatementOnBankingBalance()
+    public function testFetchStatement()
     {
         $this->createBankTransferTransaction();
 
         $transaction = $this->getDbLastEntity('transaction');
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
         $response = $this->startTest();
 
         // Asserts other keys existence in response.
@@ -88,15 +67,15 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($response['source']['bank_reference']);
     }
 
-    public function testFetchIncorrectStatementOnBankingBalance()
+    public function testFetchMultipleStatementsWithIncorrectAccountNumberParameter()
     {
-        $this->doAuthAndCapturePayment(null, 50000);
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
 
-        $transaction = $this->getDbLastEntity('transaction');
-        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
-
-        // Above transaction if accessed on banking balance should throw 400.
-        $this->ba->proxyAuth();
+    public function testFetchMultipleStatementsWithoutAccountNumberParameter()
+    {
+        $this->ba->privateAuth();
         $this->startTest();
     }
 

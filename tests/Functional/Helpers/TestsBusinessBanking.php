@@ -29,6 +29,10 @@ trait TestsBusinessBanking
      */
     protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false)
     {
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
+        $this->fixtures->merchant->activate();
+
         // Creates banking balance
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType();
 

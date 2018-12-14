@@ -16,7 +16,7 @@ class Repository extends Transaction\Repository
     /**
      * {@inheritDoc}
      */
-    protected $entity  = 'statement';
+    protected $entity = 'statement';
 
     /**
      * {@inheritDoc}
@@ -25,7 +25,7 @@ class Repository extends Transaction\Repository
         Entity::SOURCE,
     ];
 
-    /**
+     /**
      * {@inheritDoc}
      */
     public function fetch(array $input, string $merchantId = null): PublicCollection
@@ -40,16 +40,6 @@ class Repository extends Transaction\Repository
                             'source.destination',
                         ]);
 
-        return $statements;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function buildFetchQueryAdditional($params, $query)
-    {
-        // Applies balance_id filter implicitly basis current context's product type
-        $balanceId = $this->repo->balance->getBalanceForRequestContext()->getId();
-        $query->where(Entity::BALANCE_ID, $balanceId);
+         return $statements;
     }
 }

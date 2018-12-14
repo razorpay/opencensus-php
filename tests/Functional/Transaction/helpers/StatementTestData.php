@@ -5,12 +5,12 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testFetchMultipleStatementsOnBankingBalance' => [
+    'testFetchMultipleStatements' => [
         'request' => [
             'url'    => '/transactions',
             'method' => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            'content' => [
+                'account_number' => '2224440041626905',
             ],
         ],
         'response' => [
@@ -63,42 +63,10 @@ return [
         ],
     ],
 
-    'testFetchMultipleStatementsOnPrimaryBalance' => [
-        'request' => [
-            'url'    => '/transactions',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        // 'id'         => '',
-                        'entity'     => 'statement',
-                        'amount'     => 50000,
-                        'credit'     => 49000,
-                        'debit'      => 0,
-                        'balance'    => 1049000,
-                        // 'source'     => [
-                        //     // 'id'     => '',
-                        //     'entity' => 'payment',
-                        // ],
-                        // 'created_at' => ,
-                        // 'updated_at' => ,
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testFetchStatementOnBankingBalance'          => [
+    'testFetchStatement'          => [
         'request' => [
             'url'    => '/transactions/txn_00000000000001',
             'method' => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
         ],
         'response' => [
             'content' => [
@@ -124,26 +92,46 @@ return [
         ],
     ],
 
-    'testFetchIncorrectStatementOnBankingBalance' => [
+    'testFetchMultipleStatementsWithIncorrectAccountNumberParameter' => [
         'request' => [
-            'url'    => '/transactions/txn_00000000000001',
+            'url'    => '/transactions',
             'method' => 'get',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            'content' => [
+                'account_number' => '1234567890',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testFetchMultipleStatementsWithoutAccountNumberParameter' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

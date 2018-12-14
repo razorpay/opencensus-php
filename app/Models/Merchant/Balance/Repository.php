@@ -217,15 +217,4 @@ class Repository extends Base\Repository
                     ->merchantId($this->merchant->getId())
                     ->firstOrFailPublic();
     }
-
-    /**
-     * Returns current merchant's balance, either primary or banking basic current basic authentication.
-     * @return Entity
-     */
-    public function getBalanceForRequestContext(): Entity
-    {
-        $ba = $this->app->basicauth;
-
-        return $ba->isBanking() ? $ba->getMerchant()->bankingBalance : $ba->getMerchant()->primaryBalance;
-    }
 }
