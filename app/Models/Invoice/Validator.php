@@ -6,6 +6,7 @@ use Lib\Gstin;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -486,8 +487,7 @@ class Validator extends Base\Validator
 
         if ($minAmountAllowed === false)
         {
-            throw new BadRequestValidationFailureException(
-                'First payment min amount is not required and should not be sent');
+            throw new ExtraFieldsException(Entity::FIRST_PAYMENT_MIN_AMOUNT);
         }
 
         // 1. Allow `first_payment_min_amount` to be set only for ecod and link types
