@@ -14,9 +14,11 @@ class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::EMAIL   => 'sometimes|email',
-            Entity::NAME    => 'sometimes|string|max:50',
-            Entity::CONTACT => 'sometimes|contact_syntax',
+            Entity::EMAIL             => 'sometimes|email',
+            Entity::NAME              => 'sometimes|string|max:50',
+            Entity::CONTACT           => 'sometimes|contact_syntax',
+            EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
+            EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
     ];
 
@@ -26,13 +28,17 @@ class Fetch extends Base\Fetch
             Entity::NAME,
             Entity::EMAIL,
             Entity::CONTACT,
-        ]
+            EsRepository::QUERY,
+            EsRepository::SEARCH_HITS,
+        ],
     ];
 
     const ES_FIELDS = [
         Entity::ID,
         Entity::NAME,
         Entity::EMAIL,
+        EsRepository::QUERY,
+        EsRepository::SEARCH_HITS,
     ];
 
     const COMMON_FIELDS = [

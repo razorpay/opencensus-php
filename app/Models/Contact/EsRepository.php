@@ -12,6 +12,10 @@ use RZP\Models\Base;
 class EsRepository extends Base\EsRepository
 {
     protected $indexedFields = [
-        //
+        Entity::ID,
+        Entity::NAME,
+        Entity::EMAIL,
+        Entity::CREATED_AT,
     ];
 }
+
