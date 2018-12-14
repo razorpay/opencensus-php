@@ -3,6 +3,7 @@
 namespace RZP\Models\Contact;
 
 use RZP\Base;
+use RZP\Models\BankAccount;
 use RZP\Http\BasicAuth\Type as AuthType;
 
 /**
@@ -19,6 +20,7 @@ class Fetch extends Base\Fetch
             Entity::CONTACT           => 'sometimes|contact_syntax',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            BankAccount\Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num|between:5,22',
         ],
     ];
 
@@ -30,6 +32,7 @@ class Fetch extends Base\Fetch
             Entity::CONTACT,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+            BankAccount\Entity::ACCOUNT_NUMBER,
         ],
     ];
 
