@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
         self::DESTINATION,
+        self::USER_ID,
         self::AMOUNT,
         self::BALANCE_ID,
         self::CURRENCY,
