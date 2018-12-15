@@ -381,7 +381,7 @@ class Merchant
 
     protected function createPayoutAttemptEntity(int $initiateAt = null)
     {
-        $bankAccount = $this->payout->destination;
+        $bankAccount = $this->payout->destination ?? $this->payout->fundAccount->account;
 
         $this->createFundTransferAttempt($this->payout, $bankAccount, $initiateAt);
     }

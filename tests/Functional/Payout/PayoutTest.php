@@ -155,7 +155,7 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['attempts'], 2);
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['fund_account_id'], 'fa_100000000000fa');
         $this->assertNull($payout['batch_fund_transfer_id']);
         $this->assertNull($payoutAttempt['batch_fund_transfer_id']);
 

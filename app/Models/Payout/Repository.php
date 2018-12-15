@@ -82,6 +82,7 @@ class Repository extends Base\Repository
     public function fetchFailedPayouts(array $ids)
     {
         return $this->newQuery()
+                    ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
                     ->where(Entity::STATUS, Status::FAILED)
                     ->get();
