@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 
@@ -19,12 +20,14 @@ use RZP\Models\FundTransfer\Attempt\Purpose;
  */
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
     use NotesTrait;
 
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';
     const CUSTOMER_ID            = 'customer_id';
     const METHOD                 = 'method';
+    const BALANCE_ID             = 'balance_id';
     const DESTINATION_ID         = 'destination_id';
     const DESTINATION_TYPE       = 'destination_type';
     const PURPOSE                = 'purpose';
@@ -94,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::DESTINATION,
         self::AMOUNT,
+        self::BALANCE_ID,
         self::CURRENCY,
         self::NOTES,
         self::METHOD,
@@ -136,6 +140,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
     ];
@@ -196,6 +201,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
+    /**
+     * Can be customer_transaction (used for customer wallets) or just transaction
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
     public function transaction()
     {
         return $this->morphTo();

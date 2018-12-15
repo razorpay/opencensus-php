@@ -30,6 +30,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Vpa\Repository                  $vpa
  * @property Models\Contact\Repository              $contact
  * @property Models\FundAccount\Repository          $fund_account
+ * @property Models\Merchant\Balance\Repository     $balance
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

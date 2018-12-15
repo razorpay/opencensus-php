@@ -270,6 +270,7 @@ class Entity
         Entity::TRANSACTION,
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
+        Entity::BANK_TRANSFER,
     ];
 
     public static $namespace = [

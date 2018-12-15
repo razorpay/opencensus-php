@@ -509,6 +509,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE, $fee);
     }
 
+    public function setApiFee($apiFee)
+    {
+        $this->setAttribute(self::API_FEE, $apiFee);
+    }
+
     public function setMdr(int $mdr)
     {
         $this->setAttribute(self::MDR, $mdr);

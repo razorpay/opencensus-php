@@ -4,8 +4,10 @@ namespace RZP\Models\FundAccount;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Customer;
 use RZP\Models\Merchant;
 
 /**
@@ -18,10 +20,15 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     // Attributes
-    const CONTACT_ID   = 'contact_id';
-    const ACCOUNT_TYPE = 'account_type';
-    const ACCOUNT_ID   = 'account_id';
-    const ACTIVE       = 'active';
+    const ACCOUNT_TYPE  = 'account_type';
+    const ACCOUNT_ID    = 'account_id';
+    const SOURCE_TYPE   = 'source_type';
+    const SOURCE_ID     = 'source_id';
+    const ACTIVE        = 'active';
+
+    const CONTACT_ID    = 'contact_id';
+    const CUSTOMER_ID   = 'customer_id';
+    const SOURCE        = 'source';
 
     const ACCOUNT = 'account';
     const DETAILS = 'details';
@@ -36,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CONTACT_ID,
+        self::CUSTOMER_ID,
         self::ACCOUNT_TYPE,
         self::DETAILS,
         self::ACTIVE,
@@ -45,7 +53,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::CONTACT_ID,
+        self::SOURCE,
         self::DETAILS,
     ];
 
@@ -72,9 +80,14 @@ class Entity extends Base\PublicEntity
 
     // --------------- Getters ---------------
 
-    public function getContactId()
+    public function getSourceId()
     {
-        return $this->getAttribute(self::CONTACT_ID);
+        return $this->getAttribute(self::SOURCE_ID);
+    }
+
+    public function getSourceType()
+    {
+        return $this->getAttribute(self::SOURCE_TYPE);
     }
 
     public function getAccountType()
@@ -96,11 +109,24 @@ class Entity extends Base\PublicEntity
 
     // --------------- Setters ---------------
 
-    public function setPublicContactIdAttribute(array & $array)
+    public function setPublicSourceAttribute(array & $array)
     {
-        $contactId = $this->getAttribute(self::CONTACT_ID);
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
 
-        $array[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($contactId);
+        $sourceType = $this->getAttribute(self::SOURCE_TYPE);
+
+        //
+        // The `source` relation is polymorphic internally. Externally, we
+        // want to show it separately as `contact_id` and `customer_id`
+        //
+        if ($sourceType === Constants\Entity::CONTACT)
+        {
+            $array[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($sourceId);
+        }
+        else if ($sourceType === Constants\Entity::CUSTOMER)
+        {
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($sourceId);
+        }
     }
 
     public function setPublicDetailsAttribute(array & $array)
@@ -132,12 +158,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
-    public function contact()
+    public function account()
     {
-        return $this->belongsTo(Contact\Entity::class);
+        return $this->morphTo();
     }
 
-    public function account()
+    public function source()
     {
         return $this->morphTo();
     }
