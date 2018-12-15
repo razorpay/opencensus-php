@@ -121,6 +121,21 @@ trait RequestHandlerTrait
             Fields::ORDER_ID                          => $this->input['payment']['id'],
         ];
 
+        // todo: This needs to be removed  when going live.
+        // Added here just for certifications
+        if ($card['number'] === '6073849700004947' or
+            $card['number'] === '6074819900004939')
+        {
+            $requestArray[Fields::CUSTOM4] = 'S';
+        }
+
+        // todo: This needs to be removed  when going live.
+        // Added here just for certifications
+        if (in_array($card['number'], Constants::$dmsCards) === true)
+        {
+            $requestArray[Fields::TRANSACTION_TYPE_INDICATOR] = 'DMS';
+        }
+
         return $requestArray;
     }
 
