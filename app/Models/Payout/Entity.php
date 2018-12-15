@@ -277,7 +277,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FUND_ACCOUNT_ID);
     }
 
-    // FeeCalculator calls `$entity->getFee()` for all the pricing entity
+    public function hasFundAccount()
+    {
+        return ($this->isAttributeNotNull(self::FUND_ACCOUNT_ID) === true);
+    }
+
+    /**
+     * FeeCalculator calls `$entity->getFee()` for all the pricing entity
+     *
+     * @return mixed
+     */
     public function getFee()
     {
         return $this->getFees();
@@ -449,6 +458,8 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->getDestinationType();
 
+        // Type (destination) will be null in case of Business Banking payouts.
+        // We will be deprecating this soon, in favor of fund accounts.
         if ($type === null)
         {
             return;

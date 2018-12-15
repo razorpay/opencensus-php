@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Payout;
@@ -16,7 +15,6 @@ use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -77,7 +75,7 @@ abstract class Base extends BaseCore
 
         $this->setChannel();
 
-        return $this->repo->transaction(function () use ($input, $typeEntity)
+        return $this->repo->transaction(function () use ($input)
         {
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);

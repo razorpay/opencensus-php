@@ -136,6 +136,13 @@ class CreatePayoutsTable extends Migration
                   ->on(Table::BALANCE)
                   ->on_delete('restrict');
 
+            // TODO: Should keep this in the fund account table
+            // since that table is created after this table.
+            // $table->foreign(Payout::FUND_ACCOUNT_ID)
+            //       ->references(FundAccount\Entity::ID)
+            //       ->on(Table::FUND_ACCOUNT)
+            //       ->on_delete('restrict');
+
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
@@ -175,7 +182,7 @@ class CreatePayoutsTable extends Migration
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
-            $table->dropForeign(Table::PAYOUT . '_' . Payout::FUND_ACCOUNT_ID . '_foreign');
+            // $table->dropForeign(Table::PAYOUT . '_' . Payout::FUND_ACCOUNT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
         });

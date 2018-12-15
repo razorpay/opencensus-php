@@ -6,7 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Payout\Entity as Payout;
-use RZP\Models\Contact\Entity as Contact;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 
