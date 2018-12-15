@@ -47,7 +47,7 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array $input
-     * @return array|void
+     * @return array
      * @throws Exception\GatewayErrorException
      */
     public function authorize(array $input)

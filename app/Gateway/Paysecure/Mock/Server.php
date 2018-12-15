@@ -24,6 +24,12 @@ class Server extends Base\Mock\Server
             Paysecure\Fields::IMPLEMENTS_REDIRECT   => 'TRUE',
         ];
 
+        // For iFrame flow for this BIN
+        if ($data[Paysecure\Fields::CARD_BIN] === '607484990')
+        {
+            $response[Paysecure\Fields::IMPLEMENTS_REDIRECT] = 'FALSE';
+        }
+
         $this->content($response, 'checkbin2');
 
         return $response;
