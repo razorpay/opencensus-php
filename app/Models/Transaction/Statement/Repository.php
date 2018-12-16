@@ -3,7 +3,6 @@
 namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Transaction;
-use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 
 /**
@@ -25,7 +24,7 @@ class Repository extends Transaction\Repository
         Entity::SOURCE,
     ];
 
-     /**
+    /**
      * {@inheritDoc}
      */
     public function fetch(array $input, string $merchantId = null): PublicCollection
@@ -41,6 +40,6 @@ class Repository extends Transaction\Repository
         //                     'source.destination',
         //                 ]);
 
-         return $statements;
+        return $statements;
     }
 }

@@ -152,8 +152,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::BALANCE_ID,
-        //self::DESTINATION,
-        //self::CUSTOMER_ID,
+        self::DESTINATION,
+        self::CUSTOMER_ID,
         self::USER_ID,
     ];
 

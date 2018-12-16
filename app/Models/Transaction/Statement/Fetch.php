@@ -20,7 +20,7 @@ class Fetch extends Transaction\Fetch
     ];
 
     const ACCESSES = [
-         AuthType::PRIVATE_AUTH => [
+        AuthType::PRIVATE_AUTH => [
             Entity::BALANCE_ID,
             self::EXPAND_EACH,
         ],

@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Transaction\Statement;
 
-use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Exception\BadRequestException;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * Class Service
@@ -15,8 +15,12 @@ class Service extends Transaction\Service
 {
     public function fetchMultiple(array $input): array
     {
-        $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($input);
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
 
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
+
+        /** @var PublicCollection $transactions */
         $transactions = $this->repo->statement->fetch($input, $this->merchant->getId());
 
         return $transactions->toArrayPublic();
@@ -24,8 +28,12 @@ class Service extends Transaction\Service
 
     public function fetch(string $id): array
     {
-        $this->merchant->getValidator()->validateBusinessBankingActivated();
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
 
+        $merchantValidator->validateBusinessBankingActivated();
+
+        /** @var Entity $transaction */
         $transaction = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $transaction->toArrayPublic();
