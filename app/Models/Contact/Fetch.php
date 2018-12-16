@@ -18,28 +18,27 @@ class Fetch extends Base\Fetch
             Entity::EMAIL             => 'sometimes|email',
             Entity::NAME              => 'sometimes|string|max:50',
             Entity::CONTACT           => 'sometimes|contact_syntax',
+            Entity::FUND_ACCOUNT_ID   => 'sometimes|string|min:14|max:19',
+            Entity::ACCOUNT_NUMBER    => 'sometimes|alpha_num|between:5,22',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
-            Entity::FUND_ACCOUNT_ID   => 'sometimes|string|min:14|max:19',
-            BankAccount\Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num|between:5,22',
+
         ],
     ];
 
     const ACCESSES = [
-        self::DEFAULTS => [
-            Entity::ID,
+        AuthType::PRIVATE_AUTH => [
             Entity::NAME,
             Entity::EMAIL,
             Entity::CONTACT,
+            Entity::FUND_ACCOUNT_ID,
+            Entity::ACCOUNT_NUMBER,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
-            Entity::FUND_ACCOUNT_ID,
-            BankAccount\Entity::ACCOUNT_NUMBER,
         ],
     ];
 
     const ES_FIELDS = [
-        Entity::ID,
         Entity::NAME,
         Entity::EMAIL,
         EsRepository::QUERY,
@@ -47,7 +46,6 @@ class Fetch extends Base\Fetch
     ];
 
     const COMMON_FIELDS = [
-        Entity::ID,
         Entity::NAME,
         Entity::EMAIL,
     ];

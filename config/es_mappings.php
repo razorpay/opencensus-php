@@ -367,14 +367,26 @@ return [
     ],
 
     'contact_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
         'properties' => [
-            'contact_name' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'active' => [
+                'type' => 'boolean',
+            ],
+            'name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
-            'contact_email' => [
+            'email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',

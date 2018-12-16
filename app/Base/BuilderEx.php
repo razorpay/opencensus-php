@@ -87,4 +87,19 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_IDS, null, $extra);
     }
+
+    public function hasJoin(string $table): bool
+    {
+        $joins = $this->getQuery()->joins ?? [];
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $table)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

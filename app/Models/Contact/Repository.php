@@ -3,9 +3,9 @@
 namespace RZP\Models\Contact;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
-use RZP\Models\Payout;
 
 /**
  * Class Repository
@@ -16,67 +16,104 @@ class Repository extends Base\Repository
 {
     protected $entity = 'contact';
 
-    public function isMerchantIdRequiredForFetch()
+    /**
+     *
+     * SELECT contacts.*
+     * FROM   contacts
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.source_id = contacts.id
+     *                   AND fund_accounts.account_type = 'bank_account'
+     *        INNER JOIN bank_accounts
+     *                ON bank_accounts.id = fund_accounts.account_id
+     * WHERE  contacts.merchant_id = '10000000000000'
+     *        AND bank_accounts.account_number = '00000000000001'
+     *        AND contacts.deleted_at IS NULL
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    public function addQueryParamAccountNumber(BuilderEx $query, array $params)
     {
-        return false;
+        $this->joinQueryBankAccount($query);
+
+        $baAccountNumberAttr = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+        $baAccountNumber = $params[Entity::ACCOUNT_NUMBER];
+
+        $query->select($this->getTableName() . '.*');
+        $query->where($baAccountNumberAttr, $baAccountNumber);
     }
 
-    public function addQueryParamAccountNumber($query, $params)
+    /**
+     *
+     * SELECT contacts.*
+     * FROM   contacts
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.source_id = contacts.id
+     *                   AND fund_accounts.account_type = 'bank_account'
+     * WHERE  contacts.merchant_id = '10000000000000'
+     *        AND fund_accounts.id = '10000000000001'
+     *        AND contacts.deleted_at IS NULL
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    public function addQueryParamFundAccountId(BuilderEx $query, array $params)
     {
-       $query->join(
-            $this->repo->fund_account->getTableName(),
-            function ($join)
-            {
-                $contactId = $this->repo->contact->dbColumn(Entity::ID);
+        $this->joinQueryFundAccount($query);
 
-                $fundAccountContactId = $this->repo->fund_account->dbColumn(FundAccount\Entity::CONTACT_ID);
+        $faIdAttr = $this->repo->fund_account->dbColumn(Entity::ID);
+        $faId = $params[Entity::FUND_ACCOUNT_ID];
+        // Todo: Check why stripSignOrFail will not work!
+        $faId = FundAccount\Entity::stripDefaultSign($faId);
 
-                $fundAccountAccountType = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
-
-                $join->on($fundAccountContactId, '=', $contactId);
-
-                $join->where($fundAccountAccountType, '=', FundAccount\Type::BANK_ACCOUNT);
-            }
-       );
-
-       $query->join(
-          $this->repo->bank_account->getTableName(),
-          function ($join) use ($params)
-          {
-            $bankAccountTable = $this->repo->bank_account->getTableName();
-            $fundAccountTable = $this->repo->fund_account->getTableName();
-
-            $join->on($bankAccountTable . '.' . BankAccount\Entity::ID, '=', $fundAccountTable . '.' . FundAccount\Entity::ACCOUNT_ID);
-
-            $join->where($bankAccountTable . '.' . BankAccount\Entity::ACCOUNT_NUMBER, '=', $params['account_number']);
-          }
-       );
-
-       $query->select($query->getModel()->getTable().'.*');
+        $query->select($this->getTableName() . '.*');
+        $query->where($faIdAttr, $faId);
     }
 
-    public function addQueryParamFundAccountId($query, $params)
+    protected function joinQueryFundAccount(BuilderEx $query)
     {
-      $query->join(
-            $this->repo->fund_account->getTableName(),
-            function ($join) use ($params)
-            {
-                $fundAccountIDParam =  Entity::stripSign($params[Entity::FUND_ACCOUNT_ID]);
+        $faTable = $this->repo->fund_account->getTableName();
 
-                $fundAccountTableName = $this->repo->fund_account->getTableName();
+        if ($query->hasJoin($faTable) === false)
+        {
+            $query->join(
+                $faTable,
+                function ($join)
+                {
+                    $contactIdAttr = $this->dbColumn(Entity::ID);
+                    $faSourceIdAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                    $faAccountTypeAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
 
-                $contactId = $this->repo->contact->dbColumn(Entity::ID);
+                    $join->on($faSourceIdAttr, $contactIdAttr);
+                    $join->where($faAccountTypeAttr, FundAccount\Type::BANK_ACCOUNT);
+                });
+        }
+    }
 
-                $fundAccountId = $this->repo->fund_account->dbColumn(Entity::ID);
+    protected function joinQueryBankAccount(BuilderEx $query)
+    {
+        $baTable = $this->repo->bank_account->getTableName();
 
-                $fundAccountContactId = $this->repo->fund_account->dbColumn(FundAccount\Entity::CONTACT_ID);
+        if ($query->hasJoin($baTable) === false)
+        {
+            // Must join with fund_account table first!
+            $this->joinQueryFundAccount($query);
 
-                $join->on($fundAccountContactId, '=', $contactId);
+            $query->join(
+                $baTable,
+                function ($join)
+                {
+                    $baIdAttr = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+                    $faAccountIdAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_ID);
 
-                $join->where($fundAccountId, '=', $fundAccountIDParam);
-            }
-       );
-
-      $query->select($query->getModel()->getTable().'.*');
+                    $join->on($baIdAttr, $faAccountIdAttr);
+                });
+        }
     }
 }
