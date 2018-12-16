@@ -27,10 +27,9 @@ export default class EditBankAccountDetails extends Component {
     }
 
     return adminPost({
-      url: `live_${this.props.merchantId}/merchants/${
-        this.props.merchantId
-      }/bank_account`,
+      url: `live_${this.props.merchantId}/merchants/bank_account`,
       data: body,
+      headers: { ['X-Razorpay-Account']: this.props.merchantId },
     })
       .then(response => {
         if (response) {

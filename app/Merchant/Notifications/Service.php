@@ -34,11 +34,9 @@ class Service extends Base\Service
 
         array_walk($notifications, function(&$value, $key) use ($user, &$filteredNotifications) {
 
-            $filters = ['tags', 'features', 'activated', 'role'];
-
             if ((isset($value['filters']) === false) or
                 (empty($value['filters']) === true) or
-                ($this->userEligibleForNotification($filters, $value['filters'], $user) === true))
+                ($this->userEligibleForNotification($value['filters'], $user) === true))
             {
                 unset($value['filters']);
 
@@ -52,65 +50,74 @@ class Service extends Base\Service
     /**
      * Checks if the user is eligible for a given notification.
      *
-     * @param array $filters             Filters used for checking the user eligibility.
      * @param array $notificationFilters Filter values inside notification.
      * @param array $user                User details.
      *
      * @return bool
      */
-    private function userEligibleForNotification(array $filters, array $notificationFilters, array $user): bool
+    private function userEligibleForNotification(array $notificationFilters, array $user): bool
     {
         $isUserEligible = true;
 
-        foreach ($filters as $filter)
+        foreach ($notificationFilters as $key => $value)
         {
-            //
-            // If notification doesn't have this filter, then this filter will
-            // not be a deciding factor for showing/hiding the notification.
-            //
-            if (isset($notificationFilters[$filter]) === false)
-            {
-                continue;
-            }
-
-            //
-            // If the user does not contain this filter and notification contains it,
-            // do not show the notification to user.
-            //
-            if (isset($user[$filter]) === false)
-            {
-                return false;
-            }
-
-            $notificationFilterValue = $notificationFilters[$filter];
-
-            $userFilterValue = $user[$filter];
-
-            // Based on type of filter, check if user is eligible for a given notification.
-            switch ($filter)
+            switch ($key)
             {
                 case 'tags':
                 case 'features':
 
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
+
+                    $userFilterValue = $user[$key];
+
                     $userFilterValue = array_map('strtolower', $userFilterValue);
 
-                    $notificationFilterValue = array_map('strtolower', $notificationFilterValue);
+                    $value = array_map('strtolower', $value);
 
-                    $isUserEligible = (empty(array_intersect($userFilterValue, $notificationFilterValue)) === false);
+                    $isUserEligible = (empty(array_intersect($userFilterValue, $value)) === false);
+
+                    break;
+
+                case 'not_tags':
+                case 'not_features':
+
+                    $actualKey = explode("_", $key)[1];
+
+                    if (isset($user[$actualKey]) === true)
+                    {
+                        $isUserEligible = (empty(array_intersect($user[$actualKey], $value)) === true);
+                    }
 
                     break;
 
                 case 'activated':
 
-                    $isUserEligible = ($notificationFilterValue === $userFilterValue);
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
+
+                    $userFilterValue = $user[$key];
+
+                    $isUserEligible = ($value === $userFilterValue);
 
                     break;
 
                 case 'role':
 
-                    $notificationFilterValue = array_map('strtolower', $notificationFilterValue);
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
 
-                    $isUserEligible = in_array(strtolower($userFilterValue), $notificationFilterValue, true);
+                    $userFilterValue = $user[$key];
+
+                    $value = array_map('strtolower', $value);
+
+                    $isUserEligible = in_array(strtolower($userFilterValue), $value, true);
 
                     break;
             }

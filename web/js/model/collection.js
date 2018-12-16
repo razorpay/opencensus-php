@@ -105,7 +105,7 @@ export default class Collection extends BaseModel {
       'fetch',
       this.fetchFn({
         ...this.data,
-        params: this.filters,
+        params: { ...this.filters },
       })
     ).then(data => {
       if (data) {

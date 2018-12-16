@@ -30,6 +30,7 @@ import GenericEntity from 'admin/entities/Entity';
 
 import MerchantActivationForm from 'admin/merchants/entity/MerchantActivationForm';
 import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
+import MerchantReportConfig from 'admin/merchants/entity/MerchantReportConfig/List';
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
@@ -111,6 +112,10 @@ export default class App extends Component {
                 path="/merchants/:id/stats"
                 component={MerchantAnalyticStats}
               />
+              <Route
+                path="/merchants/:id/report_config"
+                component={MerchantReportConfig}
+              />
               <Route path="/merchants/:id" component={MerchantEntity} />
               <Route path="/merchants" component={MerchantList} />
               <Route path="/pricing-plans" component={PlanList} />
@@ -158,7 +163,10 @@ export default class App extends Component {
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
-                  <Route path="/scrooge/refund/:id" component={ScroogeRefund} />
+                  <Route
+                    path="/scrooge/refund/:mode(live|test)/:id"
+                    component={ScroogeRefund}
+                  />
                 </React.Fragment>
               )}
 

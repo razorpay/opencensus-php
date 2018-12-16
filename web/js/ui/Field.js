@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { methods } from 'common/data';
-import { prevent } from 'common/util';
+import { prevent, classList } from 'common/util';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 import CalendarPicker from 'ui/Calendar';
@@ -106,9 +106,9 @@ export function RadioField({ label, value, defaultValue, ...props }) {
   );
 }
 
-export function CheckField({ label, children, ...props }) {
+export function CheckField({ label, children, fieldClass, ...props }) {
   return (
-    <div class="field">
+    <div class={classList('field', fieldClass)}>
       <label
         class={props.required ? 'required' : ''}
         for={'id-' + props.name}

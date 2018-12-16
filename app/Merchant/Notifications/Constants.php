@@ -6,24 +6,6 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
-            'title'       => 'Razorpay FTX',
-            'description' =>
-                'Join us for the largest Indian FinTech Conference happening in Bengaluru on the 7th of December',
-            'start_ts'    => 1543465800,
-            'end_ts'      => 1544166000,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/ftx.png',
-            'buttons'     => [
-                [
-                    'type'  => 'link',
-                    'label' => 'Speakers & Agenda',
-                    'url'   => 'https://razorpay.typeform.com/to/SWOXx5',
-                ]
-            ],
-            'filters'     => [
-                'tags' => ['announcement_ftx_passes'],
-            ]
-        ],
-        [
             'title'       => 'Early Settlements',
             'description' =>
                 'Get your payments settled within a few hours and never have a shortfall of working capital. ',
@@ -39,6 +21,9 @@ class Constants
             ],
             'filters'     => [
                 'tags' => ['announcement_early_settlements'],
+                'not_tags' => ['es_automatic'],
+                'activated' => 1,
+                'not_features' => ['es_on_demand']
             ]
         ],
         [

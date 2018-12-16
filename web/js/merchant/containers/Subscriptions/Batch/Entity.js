@@ -14,25 +14,25 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-const renderBatchDetails = ({ data }) => (
+const renderBatchDetails = ({ batch }) => (
   <Fragment>
     <div class="equal-margin">
       <BatchStats
         stats={getStatsTable({
-          totalCount: data.total_count,
-          failureCount: data.failure_count,
-          successCount: data.success_count,
+          totalCount: batch.total_count,
+          failureCount: batch.failure_count,
+          successCount: batch.success_count,
         })}
       />
     </div>
     <div class="equal-margin">
-      <EntityDetailRow label="Batch Type" value={titleCase(data.type)} />
-      <EntityDetailRow label="Batch Name" value={data.name} />
+      <EntityDetailRow label="Batch Type" value={titleCase(batch.type)} />
+      <EntityDetailRow label="Batch Name" value={batch.name} />
       <EntityDetailRow label="Status">
-        <BatchUploadStatusLabel status={data.status} />
+        <BatchUploadStatusLabel status={batch.status} />
       </EntityDetailRow>
       <EntityDetailRow label="Status">
-        <Time value={data.created_at} />
+        <Time value={batch.created_at} />
       </EntityDetailRow>
     </div>
   </Fragment>

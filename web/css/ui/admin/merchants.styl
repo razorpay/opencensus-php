@@ -196,3 +196,56 @@
 .merchant-banks-modal{
   min-width: 500px;
 }
+
+// merchant report config
+.ReportConfig
+  &--inline-fields
+    display: flex
+    margin-top: 5px
+    flex-wrap: wrap
+
+    label
+      display: initial
+
+    & > div
+      width: 33%
+
+  &--report-column
+    display: flex
+    margin-top: 10px
+
+    .label
+      flex: 1.5 0
+      .reorder-icons
+        margin-right: 5px
+        cursor: pointer
+        i:hover
+          color: $prime
+    .input
+      flex: 1 0
+    .filter
+      &-op
+        select
+          width: 95%
+      &-value
+        input[type="text"]
+          width: 95%
+      &-op,
+      &-value
+        flex: 1 0
+        &--type-in
+          label
+            display: initial
+        &--type-between
+          input[type="text"]
+            width: 45%
+            &:last-child
+              margin-left: 5px
+
+  .collapsible
+    &--body
+      overflow: hidden
+      &.close
+        height: 0
+      &.open
+        height: initial

@@ -23,6 +23,15 @@ export function createPaymentLink(payload) {
     reqPayload.description = reqPayload.description.trim();
   }
 
+  if (
+    reqPayload.first_payment_min_amount &&
+    Number(reqPayload.first_payment_min_amount) !== 0
+  ) {
+    reqPayload.first_payment_min_amount *= 100;
+  } else {
+    delete reqPayload.first_payment_min_amount;
+  }
+
   /* Customer details */
   const customer = {};
   if (reqPayload.contact) {

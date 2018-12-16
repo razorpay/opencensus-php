@@ -50,7 +50,7 @@ export default ({ entity, mode, updateEntity }) => {
     <div class="refund-actions">
       {entity.is_scrooge ? (
         <Link
-          to={'/scrooge/refund/' + scroogeRefundID}
+          to={`/scrooge/refund/${mode}/${scroogeRefundID}`}
           class="btn"
           target={'_blank'}
         >

@@ -400,13 +400,13 @@ class Service extends Base\Service
                     if (((bool) $merchant['activated']) === true)
                     {
                         $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
-                        $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
                     }
                     else
                     {
                         $data['experiments']['support_call'] = ['result' => 'off'];
-                        $data['experiments']['new_chat'] = ['result' => 'off'];
                     }
+
+                    $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
 
                     $data['current'] = $currentMerchantId;
 
