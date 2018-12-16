@@ -68,11 +68,11 @@ class Repository extends Base\Repository
     {
         $this->joinQueryFundAccount($query);
 
-        $faIdAttr = $this->repo->fund_account->dbColumn(Entity::ID);
-        $faId     = $params[Entity::FUND_ACCOUNT_ID];
+        $faIdColumn = $this->repo->fund_account->dbColumn(Entity::ID);
+        $faId       = $params[Entity::FUND_ACCOUNT_ID];
 
         $query->select($this->getTableName() . '.*');
-        $query->where($faIdAttr, $faId);
+        $query->where($faIdColumn, $faId);
     }
 
     protected function joinQueryFundAccount(BuilderEx $query)
@@ -88,12 +88,12 @@ class Repository extends Base\Repository
             $faTable,
             function(JoinClause $join)
             {
-                $contactIdAttr     = $this->dbColumn(Entity::ID);
-                $faSourceIdAttr    = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
-                $faAccountTypeAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
+                $contactIdColumn     = $this->dbColumn(Entity::ID);
+                $faSourceIdColumn    = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faAccountTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
 
-                $join->on($faSourceIdAttr, $contactIdAttr);
-                $join->where($faAccountTypeAttr, FundAccount\Type::BANK_ACCOUNT);
+                $join->on($faSourceIdColumn, $contactIdColumn);
+                $join->where($faAccountTypeColumn, FundAccount\Type::BANK_ACCOUNT);
             });
     }
 
