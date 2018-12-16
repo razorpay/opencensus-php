@@ -32,13 +32,14 @@ class Repository extends Transaction\Repository
     {
         $statements = parent::fetch($input, $merchantId);
 
+        // Todo: Update these after 'payout-on-fa' branch is merged.
         // After fetching settlement collection, we lazy load source relations for payout.
-        $statements->where(Entity::TYPE, E::PAYOUT)
-                   ->load(
-                        [
-                            'source.customer',
-                            'source.destination',
-                        ]);
+        // $statements->where(Entity::TYPE, E::PAYOUT)
+        //            ->load(
+        //                 [
+        //                     'source.customer',
+        //                     'source.destination',
+        //                 ]);
 
          return $statements;
     }

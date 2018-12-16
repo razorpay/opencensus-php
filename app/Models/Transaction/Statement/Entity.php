@@ -65,14 +65,16 @@ class Entity extends Transaction\Entity
             [
                 Payout\Entity::ID,
                 Payout\Entity::ENTITY,
-                Payout\Entity::CUSTOMER_ID,
-                Payout\Entity::DESTINATION_ID,
+                // Todo: Update these after 'payout-on-fa' branch is merged.
+                // Payout\Entity::CUSTOMER_ID,
+                // Payout\Entity::DESTINATION_ID,
                 Payout\Entity::METHOD,
                 Payout\Entity::NOTES,
             ]);
 
-        $array[self::SOURCE][Payout\Entity::CUSTOMER]    = $this->source->customer->toArrayPublic();
-        $array[self::SOURCE][Payout\Entity::DESTINATION] = $this->source->destination->toArrayPublic();
+        // Todo: Update these after 'payout-on-fa' branch is merged.
+        // $array[self::SOURCE][Payout\Entity::CUSTOMER]    = $this->source->customer->toArrayPublic();
+        // $array[self::SOURCE][Payout\Entity::DESTINATION] = $this->source->destination->toArrayPublic();
     }
 
     protected function setPublicSourceAttributeForBankTransfer(array & $array)
@@ -80,13 +82,17 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
-                BankTransfer\Entity::ID,
-                BankTransfer\Entity::ENTITY,
                 BankTransfer\Entity::MODE,
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
                 BankTransfer\Entity::PAYER_BANK_ACCOUNT,
             ]);
+
+        // Prepends id & entity as they are not exposed in bank_transfer entity, for now.
+        $array[self::SOURCE] = [
+            BankTransfer\Entity::ID     => $this->source->getPublicId(),
+            BankTransfer\Entity::ENTITY => $this->source->getEntity(),
+        ] + $array[self::SOURCE];
 
         $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $this->source->getPayerName();
         $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $this->source->getPayerAccount();

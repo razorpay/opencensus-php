@@ -17,17 +17,17 @@ class Service extends Transaction\Service
     {
         $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($input);
 
-        $statements = $this->repo->statement->fetch($input, $this->merchant->getId());
+        $transactions = $this->repo->statement->fetch($input, $this->merchant->getId());
 
-        return $statements->toArrayPublic();
+        return $transactions->toArrayPublic();
     }
 
     public function fetch(string $id): array
     {
         $this->merchant->getValidator()->validateBusinessBankingActivated();
 
-        $statement = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
+        $transaction = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $statement->toArrayPublic();
+        return $transaction->toArrayPublic();
     }
 }
