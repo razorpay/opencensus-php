@@ -7,7 +7,6 @@ use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
-use RZP\Exception\LogicException;
 
 /**
  * Class Entity
@@ -88,15 +87,18 @@ class Entity extends Transaction\Entity
                 BankTransfer\Entity::PAYER_BANK_ACCOUNT,
             ]);
 
+        /** @var BankTransfer\Entity $bankTransfer */
+        $bankTransfer = $this->source;
+
         // Prepends id & entity as they are not exposed in bank_transfer entity, for now.
         $array[self::SOURCE] = [
-            BankTransfer\Entity::ID     => $this->source->getPublicId(),
-            BankTransfer\Entity::ENTITY => $this->source->getEntity(),
-        ] + $array[self::SOURCE];
+                                   BankTransfer\Entity::ID     => $bankTransfer->getPublicId(),
+                                   BankTransfer\Entity::ENTITY => $bankTransfer->getEntity(),
+                               ] + $array[self::SOURCE];
 
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $this->source->getPayerName();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $this->source->getPayerAccount();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $this->source->getPayerIfsc();
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $bankTransfer->getPayerName();
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
+        $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $bankTransfer->getPayerIfsc();
     }
 
     protected function setPublicSourceAttributeForDefault(array & $array)

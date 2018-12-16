@@ -1138,7 +1138,7 @@ class VirtualAccountTest extends TestCase
 
         $this->expectException(\Rzp\Exception\BadRequestException::class);
 
-        $this->expectExceptionMessage('The merchant has not been activated for X. This action can only be taken for X activated merchants');
+        $this->expectExceptionMessage('Access forbidden for requested resource');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
 

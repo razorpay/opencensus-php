@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
     const ON_DEMAND = 'on_demand';
 
     // Relations
-    const USER = 'user';
+    const USER     = 'user';
     const CUSTOMER = 'customer';
 
     protected $entity = 'payout';
@@ -152,8 +152,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::BALANCE_ID,
-        self::DESTINATION,
-        self::CUSTOMER_ID,
+        //self::DESTINATION,
+        //self::CUSTOMER_ID,
         self::USER_ID,
     ];
 

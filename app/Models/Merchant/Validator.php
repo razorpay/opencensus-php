@@ -1004,9 +1004,9 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
-        if (($merchant->isBusinessBankingEnabled() === false) or ($merchant->isActivated() === false))
+        if ($merchant->isBusinessBankingEnabled() === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_X_NOT_ACTIVATED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
     }
 
