@@ -3,7 +3,6 @@
 namespace RZP\Models\Contact;
 
 use RZP\Base;
-use RZP\Models\BankAccount;
 use RZP\Http\BasicAuth\Type as AuthType;
 
 /**
@@ -22,7 +21,6 @@ class Fetch extends Base\Fetch
             Entity::ACCOUNT_NUMBER    => 'sometimes|alpha_num|between:5,22',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
-
         ],
     ];
 
@@ -48,5 +46,9 @@ class Fetch extends Base\Fetch
     const COMMON_FIELDS = [
         Entity::NAME,
         Entity::EMAIL,
+    ];
+
+    const SIGNED_IDS = [
+        Entity::FUND_ACCOUNT_ID,
     ];
 }

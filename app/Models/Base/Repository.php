@@ -2,8 +2,16 @@
 
 namespace RZP\Models\Base;
 
+use RZP\Base\RepositoryManager;
 use RZP\Base\Repository as BaseRepository;
 
+/**
+ * Class Repository
+ *
+ * @package RZP\Models\Base
+ *
+ * @property RepositoryManager $repo
+ */
 class Repository extends BaseRepository
 {
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])

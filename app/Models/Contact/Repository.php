@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Contact;
 
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\FundAccount;
@@ -17,7 +19,6 @@ class Repository extends Base\Repository
     protected $entity = 'contact';
 
     /**
-     *
      * SELECT contacts.*
      * FROM   contacts
      *        INNER JOIN fund_accounts
@@ -40,7 +41,7 @@ class Repository extends Base\Repository
         $this->joinQueryBankAccount($query);
 
         $baAccountNumberAttr = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
-        $baAccountNumber = $params[Entity::ACCOUNT_NUMBER];
+        $baAccountNumber     = $params[Entity::ACCOUNT_NUMBER];
 
         $query->select($this->getTableName() . '.*');
         $query->where($baAccountNumberAttr, $baAccountNumber);
@@ -68,9 +69,7 @@ class Repository extends Base\Repository
         $this->joinQueryFundAccount($query);
 
         $faIdAttr = $this->repo->fund_account->dbColumn(Entity::ID);
-        $faId = $params[Entity::FUND_ACCOUNT_ID];
-        // Todo: Check why stripSignOrFail will not work!
-        $faId = FundAccount\Entity::stripDefaultSign($faId);
+        $faId     = $params[Entity::FUND_ACCOUNT_ID];
 
         $query->select($this->getTableName() . '.*');
         $query->where($faIdAttr, $faId);
@@ -80,40 +79,44 @@ class Repository extends Base\Repository
     {
         $faTable = $this->repo->fund_account->getTableName();
 
-        if ($query->hasJoin($faTable) === false)
+        if ($query->hasJoin($faTable) === true)
         {
-            $query->join(
-                $faTable,
-                function ($join)
-                {
-                    $contactIdAttr = $this->dbColumn(Entity::ID);
-                    $faSourceIdAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
-                    $faAccountTypeAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
-
-                    $join->on($faSourceIdAttr, $contactIdAttr);
-                    $join->where($faAccountTypeAttr, FundAccount\Type::BANK_ACCOUNT);
-                });
+            return;
         }
+
+        $query->join(
+            $faTable,
+            function(JoinClause $join)
+            {
+                $contactIdAttr     = $this->dbColumn(Entity::ID);
+                $faSourceIdAttr    = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faAccountTypeAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
+
+                $join->on($faSourceIdAttr, $contactIdAttr);
+                $join->where($faAccountTypeAttr, FundAccount\Type::BANK_ACCOUNT);
+            });
     }
 
     protected function joinQueryBankAccount(BuilderEx $query)
     {
         $baTable = $this->repo->bank_account->getTableName();
 
-        if ($query->hasJoin($baTable) === false)
+        if ($query->hasJoin($baTable) === true)
         {
-            // Must join with fund_account table first!
-            $this->joinQueryFundAccount($query);
-
-            $query->join(
-                $baTable,
-                function ($join)
-                {
-                    $baIdAttr = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
-                    $faAccountIdAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_ID);
-
-                    $join->on($baIdAttr, $faAccountIdAttr);
-                });
+            return;
         }
+
+        // Must join with fund_account table first!
+        $this->joinQueryFundAccount($query);
+
+        $query->join(
+            $baTable,
+            function(JoinClause $join)
+            {
+                $baIdAttr        = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+                $faAccountIdAttr = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_ID);
+
+                $join->on($baIdAttr, $faAccountIdAttr);
+            });
     }
 }

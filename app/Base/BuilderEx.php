@@ -2,8 +2,10 @@
 
 namespace RZP\Base;
 
-use RZP\Error\ErrorCode;
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class BuilderEx extends \Razorpay\Spine\BuilderEx
 {
@@ -92,6 +94,7 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
     {
         $joins = $this->getQuery()->joins ?? [];
 
+        /** @var JoinClause $join */
         foreach ($joins as $join)
         {
             if ($join->table === $table)
