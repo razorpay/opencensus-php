@@ -19,7 +19,7 @@ class Fetch extends BaseFetch
 
     const ACCESSES = [
         AuthType::PROXY_AUTH     => [
-            self::EXPAND_EACH
+            self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,

@@ -5,13 +5,13 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\FundTransfer\Attempt\Purpose;
@@ -357,11 +357,6 @@ class Entity extends Base\PublicEntity
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
-    }
-
-    public function setUserId(string $userId)
-    {
-        $this->setAttribute(self::USER_ID, $userId);
     }
 
     public function setTax($tax)

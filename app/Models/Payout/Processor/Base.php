@@ -143,7 +143,7 @@ abstract class Base extends BaseCore
 
         $payout->balance()->associate($this->balance);
 
-        $this->setUserIdIfApplicable($payout);
+        $this->associateUserIfApplicable($payout);
 
         return $payout;
     }
@@ -307,36 +307,18 @@ abstract class Base extends BaseCore
         $this->repo->saveOrFail($txn);
     }
 
-
-    protected function validateMerchantBalance(Payout\Entity $payout)
-    {
-        $debitAmount = $payout->getAmount() + $payout->getFees();
-
-        $hasBalance = (new Merchant\Balance\Core)->checkMerchantBalance($payout->merchant, $debitAmount);
-
-        if ($hasBalance === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE);
-        }
-    }
-
     /**
      * Naive audit logging.
-     * Sets user_id for requests from dashboard (proxy_auth)
+     * Sets the user for requests from dashboard (proxy_auth)
      * On private auth, user_id is unset.
      *
      * @param Payout\Entity $payout
      */
-    protected function setUserIdIfApplicable(Payout\Entity $payout)
+    protected function associateUserIfApplicable(Payout\Entity $payout)
     {
-        // Headers we trust
-        $headers = app('basicauth')->getDashboardHeaders();
+        $user = app('basicauth')->getUser();
 
-        if (array_key_exists(Payout\Entity::USER_ID, $headers) === true)
-        {
-            $payout->setUserId($headers[Payout\Entity::USER_ID]);
-        }
+        $payout->user()->associate($user);
     }
 
     abstract protected function setChannel();
