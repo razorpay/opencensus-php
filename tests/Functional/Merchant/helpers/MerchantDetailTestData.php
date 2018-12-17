@@ -788,7 +788,7 @@ return [
     ],
 
     'testCategoryDetailsSetForOthersCategory' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'business_category'    => 'others',
                 'business_subcategory' => null,
@@ -864,6 +864,23 @@ return [
             'content' => [
                 "business_category"    => "financial_services",
                 "business_subcategory" => "mutual_fund",
+            ],
+        ],
+    ],
+
+    'testWebsiteDetailsShouldBeInSync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://example.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://example.com',
             ],
         ],
     ],

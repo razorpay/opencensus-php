@@ -152,7 +152,7 @@ class Activate extends Base\Core
         // should be set to true only if one submits website details, there by will be able to
         // generate/access keys.
         //
-        $detailCore->checkAndMarkHasKeyAccess($merchantDetails);
+        $detailCore->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
         $activationStatusData = [
             Detail\Entity::ACTIVATION_STATUS => Detail\Status::INSTANTLY_ACTIVATED,
