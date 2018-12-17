@@ -315,6 +315,8 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertFalse($response['success']);
 
         $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['error_message']);
+
+        $this->assertEquals('RZP_AMOUNT_MISMATCH', $response['statusCode']);
     }
 
     public function testDuplicatePayoutRequest()
@@ -335,15 +337,12 @@ class UpiYesbankGatewayTest extends TestCase
         $this->ba->privateAuth();
 
         $response = $this->makeRequestAndGetContent($request);
+
         $response = $this->makeRequestAndGetContent($request);
 
+        $this->assertFalse($response['success']);
 
-
-    }
-
-    public function testForDecryptionFailure()
-    {
-
+        $this->assertEquals('RZP_DUPLICATE_PAYOUT', $response['statusCode']);
     }
 
     protected function getPayoutRequest(array $attributes, string $type)

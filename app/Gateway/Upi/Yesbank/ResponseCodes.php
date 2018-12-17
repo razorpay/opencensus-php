@@ -181,8 +181,11 @@ class ResponseCodes
         'OD'  => 'Original Debit Not Found',
         'NC ' => 'Credit Not Done',
         'ND ' => 'Debit Not Done',
-        'RZP_AMOUNT_MISMATCH' => '',
-        'RZP_DUPLICATE_PAYOUT' => 'A payout with given reference Id already exists',
+
+        // razorpay custom error codes for sending response to FTA
+        'RZP_DUPLICATE_PAYOUT' => 'RZP: A payout with given reference Id already exists',
+        'RZP_REF_ID_MISMATCH'  => 'RZP: Validation error, ref id mismatch',
+        'RZP_AMOUNT_MISMATCH'  => 'RZP: amount mismatch',
     ];
 
     public static function getResponseMessage($code)

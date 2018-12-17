@@ -83,7 +83,11 @@ class ResponseCodeMap
         'U67' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U68' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U69' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
+
+        // razropay custom error codes
         'RZP_DUPLICATE_PAYOUT' => ErrorCode::BAD_REQUEST_ERROR,
+        'RZP_REF_ID_MISMATCH'  => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+        'RZP_AMOUNT_MISMATCH'  => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
     ];
 
     public static function getApiErrorCode($code)
