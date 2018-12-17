@@ -36,6 +36,11 @@ trait NotesTrait
 
     public function appendNotes(array $newNotes)
     {
+        if (empty($newNotes) === true)
+        {
+            return;
+        }
+
         $oldNotes = $this->getNotes()->toArray();
 
         // If the key is present in both $oldNotes and $newNotes, it will be overwritten with the new value.
