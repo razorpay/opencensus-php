@@ -647,6 +647,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DEBIT_PIN_CALLBACK                = 'GATEWAY_DEBIT_PIN_CALLBACK';
     const GATEWAY_PAYMENT_OTP_RESEND_REQUEST        = 'GATEWAY_PAYMENT_OTP_RESEND_REQUEST';
     const GATEWAY_PAYMENT_OTP_RESEND_RESPONSE       = 'GATEWAY_PAYMENT_OTP_RESEND_RESPONSE';
+    const GATEWAY_FATAL_ERROR                       = 'GATEWAY_FATAL_ERROR';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
@@ -714,6 +715,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_DELETED                               = 'VPA_DELETED';
     const VPA_PAYOUT_REQUEST                        = 'VPA_PAYOUT_REQUEST';
     const VPA_PAYOUT_VERIFY_REQUEST                 = 'VPA_PAYOUT_VERIFY_REQUEST';
+    const DUPLICATE_PAYOUT_REQUEST                  = 'DUPLICATE_PAYOUT_REQUEST';
     const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
