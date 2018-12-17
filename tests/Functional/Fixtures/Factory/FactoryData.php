@@ -961,6 +961,7 @@ final class FactoryData
 
         $factory(\RZP\Models\FundAccount\Entity::class, [
             'id'          => $faker->uniqueid,
+            'active'      => 1,
             'merchant_id' => '10000000000000',
         ]);
     }
