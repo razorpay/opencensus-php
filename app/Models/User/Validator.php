@@ -90,8 +90,8 @@ class Validator extends Base\Validator
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
 
         // Temporary: Need to send these payloads for raven's sms content.
-        'amount'         => 'sometimes|integer|min:100',
-        'account_number' => 'sometimes|alpha_num|between:5,22',
+        'amount'         => 'sometimes|integer|min:100|required_if:action,create_payout',
+        'account_number' => 'sometimes|alpha_num|between:5,22|required_if:action,create_payout',
     ];
 
     protected static $verifyOtpRules = [
@@ -272,14 +272,6 @@ class Validator extends Base\Validator
             ($user->isContactMobileVerified() === false))
         {
             throw new BadRequestValidationFailureException('Contact mobile is not verified');
-        }
-
-        // Temporary: Need to send these payloads for raven's sms content.
-        if (($action === 'create_payout') and
-            ((isset($input['amount']) === false) or
-             (isset($input['account_number']) === false)))
-        {
-            throw new BadRequestValidationFailureException('Invalid input');
         }
     }
 

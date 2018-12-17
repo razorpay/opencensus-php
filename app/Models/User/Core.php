@@ -426,7 +426,8 @@ class Core extends Base\Core
         ];
 
         // Temporary: Need to send these payloads for raven's sms content.
-        if ($action === 'create_payout')
+        if (($action === 'create_payout') and
+            (isset($input['amount'], $input['account_number']) === true))
         {
             $params += [
                 'amount' => amount_format_IN($input['amount']),
