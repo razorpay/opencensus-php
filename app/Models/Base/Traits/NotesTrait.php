@@ -43,7 +43,7 @@ trait NotesTrait
 
         // Performs validations over the new notes array generated
         (new JitValidator)->rules(['notes' => 'sometimes|notes'])
-                          ->input($notes)
+                          ->input(compact('notes'))
                           ->validate();
 
         $this->setAttribute(self::NOTES, $notes);
