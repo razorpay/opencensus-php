@@ -129,7 +129,7 @@ class Gateway extends Mindgate\Gateway
     {
         parent::action($input, Action::PAYOUT_VERIFY);
 
-        $gatewayEntity = $this->repo->findByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
+        $gatewayEntity = $this->repo->fetchByMerchantReference($input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
         $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
 
