@@ -2576,6 +2576,11 @@ class Service extends Base\Service
         return $this->app->myoperator->submitSupportCallRequest($input);
     }
 
+    public function syncMerchantsToEs(array $input)
+    {
+        return $this->core()->syncMerchantsToEs($input);
+    }
+
     public function bulkRegenerateBalanceIds(array $input)
     {
         $limit = (int) ($input['limit'] ?? 1000);

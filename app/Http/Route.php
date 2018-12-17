@@ -947,7 +947,9 @@ final class Route
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
-        // Banking contact routes
+        'merchant_es_sync_cron'                    => ['post',     'merchant/sync_es/bulk',                          'MerchantController@syncMerchantsToEs'                              ],
+
+        // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
@@ -1309,6 +1311,7 @@ final class Route
         'billdesk_reconcile_cancelled',
         'setl_notify_h2h',
         'entity_balance_id_update',
+        'merchant_es_sync_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2382,6 +2385,7 @@ final class Route
             'merchant_post_beneficiary_api',
             'setl_verify',
             'billdesk_reconcile_cancelled',
+            'merchant_es_sync_cron',
             'entity_balance_id_update',
         ],
 

@@ -181,6 +181,29 @@ class Repository extends Base\Repository
         return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
     }
 
+    /**
+     * Returns merchant ids where updated at > $minUpdatedAtTimeStamp
+     *
+     * @param int $minUpdatedAtTimeStamp
+     *
+     * @return array
+     */
+    public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
+    {
+        $merchantIds = $this->newQuery()
+                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
+                            ->where(Entity::TYPE, '=', Type::PRIMARY)
+                            ->groupBy(Entity::MERCHANT_ID)
+                            ->select(Entity::MERCHANT_ID)
+                            ->get();
+
+        $merchantIds = isset($merchantIds) ? $merchantIds->toArray() : [];
+
+        $merchantIds = array_pluck($merchantIds, Entity::MERCHANT_ID);
+
+        return $merchantIds;
+    }
+
     public function getBalances($limit)
     {
         return $this->newQuery()

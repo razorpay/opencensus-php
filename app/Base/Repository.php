@@ -526,6 +526,29 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * Find entities with given ids for indexing.
+     *
+     * @param array $ids
+     *
+     * @return array
+     */
+    public function findManyForIndexingByIds(array $ids): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->findOrFail($ids);
+
+        return array_map(
+            function($v)
+            {
+                return $this->serializeForIndexing($v);
+            },
+            $collection->all());
+    }
+
+    /**
      * Finds many entities for indexing.
      *
      * @param int      $skip

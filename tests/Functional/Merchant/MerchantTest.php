@@ -15,17 +15,20 @@ use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
+use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Queue;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
@@ -3695,6 +3698,65 @@ class MerchantTest extends TestCase
     }
 
     /**
+     * Verifies queue entries merchant_sync_es_balance_bulk call
+     */
+    public function testQueueEntriesAfterBalanceSync()
+    {
+        Queue::fake();
+
+        $this->CreateBalanceEntities();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        // Asserting entries are being pushed on merchant_sync_es_balance_bulk api call .
+        Queue::assertPushed(EsSync::class, 1);
+    }
+
+    /**
+     * Verifies ES bulkupdate method is called during merchant_sync_es_balance_bulk call
+     */
+    public function testESQueryAfterSync()
+    {
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock, 'bulkUpdate');
+
+        $this->CreateBalanceEntities();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Creates balance entities
+     *
+     * @return array
+     */
+    private function CreateBalanceEntities(): array
+    {
+        Carbon::setTestNow(Carbon::now()->addHours(25));
+
+        $merchant1  = $this->fixtures->create('merchant');
+        $merchant2  = $this->fixtures->create('merchant');
+        $updated_at = Carbon::now()->subMinutes(10)->getTimestamp();
+
+        $entity1 = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => $merchant1[Merchant\Entity::ID],
+            Balance::UPDATED_AT  => $updated_at,
+        ]);
+
+        $entity2 = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => $merchant2[Merchant\Entity::ID],
+            Balance::UPDATED_AT  => $updated_at,
+        ]);
+
+        return array($entity1, $entity2);
+    }
+
+    /**
      * Switches product of merchant from PG to BB.
      */
     public function testMerchantSwitchProduct()
@@ -3710,15 +3772,15 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
 
         $merchants = DB::connection('test')->table('merchant_users')
-            ->where('user_id', '=', $user['id'])
-            ->pluck('merchant_id', 'product');
+                                           ->where('user_id', '=', $user['id'])
+                                           ->pluck('merchant_id', 'product');
 
         $this->assertEquals(count($merchants), 2);
 
