@@ -181,6 +181,8 @@ class ResponseCodes
         'OD'  => 'Original Debit Not Found',
         'NC ' => 'Credit Not Done',
         'ND ' => 'Debit Not Done',
+        'RZP_AMOUNT_MISMATCH' => '',
+        'RZP_DUPLICATE_PAYOUT' => 'A payout with given reference Id already exists',
     ];
 
     public static function getResponseMessage($code)

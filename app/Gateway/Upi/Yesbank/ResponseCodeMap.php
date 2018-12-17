@@ -83,6 +83,7 @@ class ResponseCodeMap
         'U67' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U68' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U69' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
+        'RZP_DUPLICATE_PAYOUT' => ErrorCode::BAD_REQUEST_ERROR,
     ];
 
     public static function getApiErrorCode($code)
