@@ -4,7 +4,11 @@ import { connect } from 'react-redux';
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
-import AcceptPaymentsModal from './AcceptPaymentsModal';
+
+import {
+  showAcceptPaymentsModal,
+  hideAcceptPaymentsModal,
+} from 'merchant/modules/home';
 
 import {
   trackTestModeCard,
@@ -14,17 +18,22 @@ import {
   trackClose,
 } from './ga';
 
-@connect(state => ({
-  ...state.session,
-  config: state.config.config,
-  windowWidth: state.app.windowWidth,
-}))
+@connect(
+  state => ({
+    ...state.session,
+    config: state.config.config,
+    windowWidth: state.app.windowWidth,
+  }),
+  {
+    showAcceptPaymentsModal,
+    hideAcceptPaymentsModal,
+  }
+)
 export default class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      shouldShowAcceptPaymentsModal: false,
       contentWidth: null,
       activeStep: 0,
     };
@@ -58,15 +67,11 @@ export default class OnboardingCardInstant extends Component {
   }
 
   showAcceptPaymentsModal() {
-    this.setState({
-      shouldShowAcceptPaymentsModal: true,
-    });
+    this.props.showAcceptPaymentsModal();
   }
 
   hideAcceptPaymentsModal() {
-    this.setState({
-      shouldShowAcceptPaymentsModal: false,
-    });
+    this.props.hideAcceptPaymentsModal();
   }
 
   onClose(e) {
@@ -108,11 +113,6 @@ export default class OnboardingCardInstant extends Component {
 
     return (
       <div className="onboarding-card-instant">
-        <AcceptPaymentsModal
-          isKLA={user.has_key_access}
-          shouldShow={this.state.shouldShowAcceptPaymentsModal}
-          onClose={this.hideAcceptPaymentsModal}
-        />
         <div
           className="onboarding-card-instant-content"
           ref={node => (this.content = node)}

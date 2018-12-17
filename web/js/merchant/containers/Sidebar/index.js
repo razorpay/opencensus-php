@@ -3,13 +3,17 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
 import ProgressBar from 'rzp/ui/ProgressBar';
-import { classList } from 'common/util';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
+import { classList } from 'common/util';
 
 import { toggleMobileMenu } from 'merchant/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { areReportsStillDownloading } from 'merchant/modules/reports';
+import {
+  showAcceptPaymentsModal,
+  hideAcceptPaymentsModal,
+} from 'merchant/modules/home';
 
 import { trackGoToActivation, trackGoToConfig } from './ga';
 
@@ -38,11 +42,11 @@ const BASE_ROUTES = {
 @withRouter
 @connect(
   state => ({
-    shouldShowAcceptPaymentsModal: false,
     showMobileMenu: state.app.showMobileMenu,
     currentReportList: state.reports.currentReportList,
+    showAcceptPayments: state.home.instantActivations.showAcceptPayments,
   }),
-  { toggleMobileMenu }
+  { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal }
 )
 export default class Sidebar extends Component {
   constructor(props) {
@@ -125,7 +129,7 @@ export default class Sidebar extends Component {
       user.isActivated
     ) {
       e.preventDefault();
-      this.showAcceptPaymentsModal();
+      this.props.showAcceptPaymentsModal();
     }
 
     return this.props.user.isSubmitted
@@ -139,18 +143,6 @@ export default class Sidebar extends Component {
   hideSidebar() {
     return this.props.showMobileMenu && this.props.toggleMobileMenu();
   }
-
-  showAcceptPaymentsModal = () => {
-    this.setState({
-      shouldShowAcceptPaymentsModal: true,
-    });
-  };
-
-  hideAcceptPaymentsModal = () => {
-    this.setState({
-      shouldShowAcceptPaymentsModal: false,
-    });
-  };
 
   render() {
     const { isReportsPending } = this.state;
@@ -402,10 +394,11 @@ export default class Sidebar extends Component {
         {showMobileMenu && (
           <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />
         )}
+        {/* `Accept modal` for universal access */}
         <AcceptPaymentsModal
           isKLA={user.has_key_access}
-          shouldShow={this.state.shouldShowAcceptPaymentsModal}
-          onClose={this.hideAcceptPaymentsModal}
+          shouldShow={this.props.showAcceptPayments}
+          onClose={this.props.hideAcceptPaymentsModal}
         />
       </React.Fragment>
     );
