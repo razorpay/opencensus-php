@@ -879,4 +879,22 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::BALANCE_ID);
     }
+
+    /**
+     * Constructs & returns corresponding Statement\Entity.
+     * Statement entity is the publicly exposed entity on /transactions/* apis. :(
+     *
+     * @return Statement\Entity
+     */
+    public function toStatement(): Statement\Entity
+    {
+        $statement = new Statement\Entity;
+
+        $statement->exists     = $this->exists;
+        $statement->attributes = $this->attributes;
+        $statement->relations  = $this->relations;
+        $statement->original   = $this->original;
+
+        return $statement;
+    }
 }

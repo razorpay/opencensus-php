@@ -36,6 +36,8 @@ class Transaction extends Mailable
         $this->txn      = $txn;
         $this->source   = $source;
         $this->merchant = $merchant;
+
+        $this->modifyAttributes();
     }
 
     protected function addSender()
@@ -75,5 +77,15 @@ class Transaction extends Mailable
     protected function addSubject()
     {
         return $this->subject($this->getSubject());
+    }
+
+    /**
+     * Modifies/appends attributes for easy use in views etcetera.
+     */
+    protected function modifyAttributes()
+    {
+        $this->balance['account_number_masked'] = mask_except_last4($this->balance['account_number']);
+
+        $this->txn['amount_formatted'] = amount_format_IN($this->txn['amount']);
     }
 }

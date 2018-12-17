@@ -573,8 +573,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = [
             Constants\Entity::TRANSACTION => [
-                // Todo: Do $txn->toStatement()->toArrayPublic() instead.
-                'entity' => $txn->toArrayPublic(),
+                'entity' => $txn->toStatement()->toArrayPublic(),
             ],
         ];
 

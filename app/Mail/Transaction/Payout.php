@@ -8,8 +8,8 @@ class Payout extends Transaction
     {
         return sprintf(
             'RazorpayX | Your A/c %s has been debited by INR %s',
-            $this->balance['account_number'],
-            amount_format_IN($this->txn['amount']));
+            $this->balance['account_number_masked'],
+            $this->txn['amount_formatted']);
     }
 
     protected function addHtmlView()

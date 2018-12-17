@@ -483,17 +483,11 @@ class Entity extends Base\PublicEntity
 
     public function shouldNotifyTxnViaSms(): bool
     {
-        return $this->shouldNotifyTxn();
+        return false;
     }
 
     public function shouldNotifyTxnViaEmail(): bool
     {
-        return $this->shouldNotifyTxn();
-    }
-
-    public function shouldNotifyTxn(): bool
-    {
-        // Todo
         return true;
     }
 }

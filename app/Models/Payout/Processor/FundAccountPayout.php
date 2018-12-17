@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout\Processor;
 
+use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 
@@ -16,6 +17,8 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+
+        return $payout;
     }
 
     /**

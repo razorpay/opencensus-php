@@ -93,7 +93,7 @@ class Notifier extends Base\Core
         $source   = "api.{$this->mode}.transaction";
         $template = 'sms.transaction.' . $this->source->getEntity();
         $params   =  [
-            'account_number' => $this->txn->balance()->first()->getAccountNumber(),
+            'account_number' => mask_except_last4($this->txn->balance()->first()->getAccountNumber()),
             'amount'         => amount_format_IN($this->txn->getAmount()),
             'created_at'     => epoch_format($this->txn->getCreatedAt()),
             'balance'        => amount_format_IN($this->txn->getBalance()),
