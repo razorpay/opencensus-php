@@ -115,6 +115,32 @@ return [
         ],
     ],
 
+    'testCreateWithoutContactOrCustomer' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'details'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact id field is required when customer id is not present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateFundAccountInvalidVpa' => [
         'request'   => [
             'content' => [

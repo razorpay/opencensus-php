@@ -72,6 +72,11 @@ class FundAccountsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
     }
 
+    public function testCreateWithoutContactOrCustomer()
+    {
+        $this->startTest();
+    }
+
     public function testCreateFundAccountInvalidVpa()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
