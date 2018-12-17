@@ -79,8 +79,9 @@ export default class SupportBody extends Component {
               </small>
             </li>
             {window.rzp_user ? (
-              window.rzp_user.activation_status === 'activated' ||
-              window.rzp_user.activation_status === 'under_review' ? (
+              ['activated', 'under_review', 'instantly_activated'].indexOf(
+                window.rzp_user.activation_status
+              ) > -1 ? (
                 <li
                   class={`support-item p-all chat ${
                     shouldDisable && notifyCount < 1 ? 'disabled' : ''
