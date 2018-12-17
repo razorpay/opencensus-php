@@ -342,7 +342,6 @@ class Core extends Base\Core
 
     public function updateStateInEs(string $actionId, string $state)
     {
-
         $searchTerms = [
             'action_id' => $actionId
         ];
@@ -373,11 +372,11 @@ class Core extends Base\Core
         $mainEntity,
         $relations)
     {
-        if(E::isValidEntity($mainEntity) === false)
+        if (E::isValidEntity($mainEntity) === false)
         {
             return;
         }
-        
+
         $entityOb = ConstantsEntity::getEntityObject($mainEntity);
 
         if (empty($relations) === false)
