@@ -12,25 +12,26 @@ use RZP\Constants\Entity;
 use RZP\Base\Database\MySqlConnection;
 
 /**
- * @property Models\Plan\Subscription\Repository    $subscription
- * @property Models\Terminal\Repository             $terminal
- * @property Models\Invoice\Repository              $invoice
- * @property Models\Tax\Repository                  $tax
- * @property Models\Payment\Repository              $payment
- * @property Models\Payment\Refund\Repository       $refund
- * @property Models\Merchant\Repository             $merchant
- * @property Models\Batch\Repository                $batch
- * @property Models\BankAccount\Repository          $bank_account
- * @property Models\Merchant\Account\Repository     $account
- * @property Models\PaymentLink\Repository          $payment_link
- * @property Models\Feature\Repository              $feature
- * @property Models\Order\Repository                $order
- * @property Models\Payment\Analytics\Repository    $payment_analytics
- * @property Models\Transaction\Repository          $transaction
- * @property Models\Vpa\Repository                  $vpa
- * @property Models\Contact\Repository              $contact
- * @property Models\FundAccount\Repository          $fund_account
- * @property Models\Merchant\Balance\Repository     $balance
+ * @property Models\Plan\Subscription\Repository     $subscription
+ * @property Models\Terminal\Repository              $terminal
+ * @property Models\Invoice\Repository               $invoice
+ * @property Models\Tax\Repository                   $tax
+ * @property Models\Payment\Repository               $payment
+ * @property Models\Payment\Refund\Repository        $refund
+ * @property Models\Merchant\Repository              $merchant
+ * @property Models\Batch\Repository                 $batch
+ * @property Models\BankAccount\Repository           $bank_account
+ * @property Models\Merchant\Account\Repository      $account
+ * @property Models\PaymentLink\Repository           $payment_link
+ * @property Models\Feature\Repository               $feature
+ * @property Models\Order\Repository                 $order
+ * @property Models\Payment\Analytics\Repository     $payment_analytics
+ * @property Models\Transaction\Repository           $transaction
+ * @property Models\Vpa\Repository                   $vpa
+ * @property Models\Contact\Repository               $contact
+ * @property Models\FundAccount\Repository           $fund_account
+ * @property Models\Merchant\Balance\Repository      $balance
+ * @property Models\Transaction\Statement\Repository $statement
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

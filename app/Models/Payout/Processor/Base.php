@@ -82,19 +82,19 @@ abstract class Base extends BaseCore
 
     public function createPayout(array $input)
     {
-        return $this->repo->transaction(function () use ($input)
+        $this->preValidations();
+
+        // TODO: Figure out something better for `typeEntity` concept
+        $typeEntity = $this->customer ?? $this->merchant;
+
+        $this->setPayoutDestination($input, $typeEntity);
+
+        $this->setPayoutBalance($input);
+
+        $this->setChannel();
+
+        return $this->repo->transaction(function () use ($input, $typeEntity)
         {
-            $this->preValidations();
-
-            // TODO: Figure out something better for `typeEntity` concept
-            $typeEntity = $this->customer ?? $this->merchant;
-
-            $this->setPayoutDestination($input, $typeEntity);
-
-            $this->setPayoutBalance($input);
-
-            $this->setChannel();
-
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
@@ -142,6 +142,8 @@ abstract class Base extends BaseCore
         $payout->destination()->associate($this->destination);
 
         $payout->balance()->associate($this->balance);
+
+        $this->associateUserIfApplicable($payout);
 
         return $payout;
     }
@@ -303,6 +305,20 @@ abstract class Base extends BaseCore
         $payout->setTax($txn->getTax());
 
         $this->repo->saveOrFail($txn);
+    }
+
+    /**
+     * Naive audit logging.
+     * Sets the user for requests from dashboard (proxy_auth)
+     * On private auth, user_id is unset.
+     *
+     * @param Payout\Entity $payout
+     */
+    protected function associateUserIfApplicable(Payout\Entity $payout)
+    {
+        $user = app('basicauth')->getUser();
+
+        $payout->user()->associate($user);
     }
 
     abstract protected function setChannel();

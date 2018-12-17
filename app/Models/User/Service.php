@@ -288,8 +288,15 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        // using user context from header to avoid IDOR.
-        $user = $this->auth->getUser();
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findOrFailPublic($id);
+        }
+        else
+        {
+            // using user context from header to avoid IDOR.
+            $user = $this->auth->getUser();
+        }
 
         $response = (new Core)->get($user);
 

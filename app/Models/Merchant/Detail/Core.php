@@ -24,11 +24,8 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
-use RZP\Models\Merchant\Detail\ActivationFlow\Whitelist as WhitelistActivationFlow;
-use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
 {
@@ -68,7 +65,7 @@ class Core extends Base\Core
                 // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
                 // should be set to true only if one submits website details, there by will be able to
                 // generate/access keys.
-                $this->checkAndMarkHasKeyAccess($merchantDetails);
+                $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
                 $this->markSubmittedAndLock($merchantDetails);
 
@@ -80,6 +77,9 @@ class Core extends Base\Core
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
+
+            // Sync few input fields to merchant entity
+            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -178,7 +178,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchantDetails);
 
             // Sync few input fields to merchant entity
-            (new Merchant\Core)->editPreSignupFields($merchant, $input);
+            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
@@ -461,19 +461,6 @@ class Core extends Base\Core
         Mail::queue($notifyAdminMail);
     }
 
-    /**
-     * This function is used to notify admins through email about merchant's website details update
-     * @param Entity $merchantDetails
-     */
-    protected function adminNotifyWebsiteDetailsUpdate(Entity $merchantDetails)
-    {
-        $data = $merchantDetails->toArray();
-
-        $notifyAdminWebsiteDetailSubmissionMail = new NotifyAdminWebsiteDetailSubmission($data);
-
-        Mail::queue($notifyAdminWebsiteDetailSubmissionMail);
-    }
-
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
@@ -485,11 +472,11 @@ class Core extends Base\Core
      * This function checks and sets has_key_access to true if merchant has submitted
      * wesbite details
      *
-     * @param Entity $merchantDetails
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
      */
-    public function checkAndMarkHasKeyAccess(Entity $merchantDetails)
+    public function checkAndMarkHasKeyAccess(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        $merchant = $merchantDetails->merchant;
 
         $this->trace->info(
             TraceCode::MERCHANT_MARK_HAS_KEY_ACCESS,
@@ -725,22 +712,12 @@ class Core extends Base\Core
 
             $merchant = $merchantDetails->merchant;
 
-            // Website is being synced to merchant entity as well
-            $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
+            // Sync few input fields to merchant entity
+            $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
-            $this->repo->saveOrFail($merchant);
+            $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
+
         });
-
-        //
-        // If the merchant is activated, admins must be notified via email about the website
-        // details update, so they can review the change.
-        // However, for a merchant who is not activated yet, this change is reviewed during
-        // merchant activation
-        //
-        if ($merchantDetails->merchant->isActivated() === true)
-        {
-            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
-        }
 
         return $merchantDetails;
     }

@@ -40,6 +40,9 @@ class PayoutTest extends TestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
@@ -65,6 +68,9 @@ class PayoutTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
         $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
     }
 
     public function testCreatePayoutWithInvalidOtp()

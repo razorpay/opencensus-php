@@ -320,9 +320,6 @@ final class Route
         'schedule_migration'                       => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                          => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
         'schedule_process_tasks'                   => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
-        'transaction_fetch_by_id'                  => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
-        'transaction_fetch_multiple'               => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
-        'transaction_monthly_report'               => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
@@ -951,7 +948,7 @@ final class Route
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
-        // Banking Contact Routes
+        // Banking contact routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
@@ -963,6 +960,10 @@ final class Route
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
+
+        // Banking statement routes
+        'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
+        'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
     ];
 
     public static $public = [
@@ -1199,6 +1200,8 @@ final class Route
         'subscription_registration_create_links',
         'subscription_registration_fetch_link',
         //'fund_account_delete',
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple',
     ];
 
     // Only routes defined in internalApps go here
@@ -1341,9 +1344,6 @@ final class Route
         'get_es_pricing_merchant',
         'merchant_dashboard_access_la',
         'merchant_fetch_users',
-        'transaction_monthly_report',
-        'transaction_fetch_by_id',
-        'transaction_fetch_multiple',
         'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',

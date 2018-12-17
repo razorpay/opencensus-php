@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::NAME    => 'required|string|max:50|nullable|custom',
         Entity::CONTACT => 'sometimes|nullable|contact_syntax',
         Entity::EMAIL   => 'sometimes|nullable|email',
+        Entity::TYPE    => 'sometimes|nullable|custom',
         Entity::NOTES   => 'sometimes|notes',
     ];
 
@@ -31,12 +32,9 @@ class Validator extends Base\Validator
         Entity::NAME    => 'sometimes|string|max:50|custom',
         Entity::CONTACT => 'sometimes|nullable|contact_syntax',
         Entity::EMAIL   => 'sometimes|nullable|email',
+        Entity::TYPE    => 'sometimes|nullable|custom',
         Entity::ACTIVE  => 'sometimes|boolean',
         Entity::NOTES   => 'sometimes|notes',
-    ];
-
-    protected static $createValidators = [
-        //
     ];
 
     protected function validateName($attribute, $value)
@@ -49,5 +47,10 @@ class Validator extends Base\Validator
                 'The name field is invalid.',
                 Entity::NAME);
         }
+    }
+
+    protected function validateType($attribute, $value)
+    {
+        Type::validateType($value);
     }
 }

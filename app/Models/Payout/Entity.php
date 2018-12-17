@@ -6,10 +6,12 @@ use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\FundTransfer\Attempt\Purpose;
@@ -17,6 +19,7 @@ use RZP\Models\FundTransfer\Attempt\Purpose;
 /**
  * @property Customer\Entity    $customer
  * @property Merchant\Entity    $merchant
+ * @property User\Entity        $user
  */
 class Entity extends Base\PublicEntity
 {
@@ -30,6 +33,7 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID             = 'balance_id';
     const DESTINATION_ID         = 'destination_id';
     const DESTINATION_TYPE       = 'destination_type';
+    const USER_ID                = 'user_id';
     const PURPOSE                = 'purpose';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
@@ -66,6 +70,10 @@ class Entity extends Base\PublicEntity
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 
+    // Relations
+    const USER     = 'user';
+    const CUSTOMER = 'customer';
+
     protected $entity = 'payout';
 
     protected $table  = Table::PAYOUT;
@@ -96,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
         self::DESTINATION,
+        self::USER_ID,
         self::AMOUNT,
         self::BALANCE_ID,
         self::CURRENCY,
@@ -132,6 +141,8 @@ class Entity extends Base\PublicEntity
         self::TAX,
         self::STATUS,
         self::UTR,
+        self::USER_ID,
+        self::USER,
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -143,9 +154,11 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
+        self::USER_ID,
     ];
 
     protected $defaults = [
+        self::USER_ID           => null,
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
@@ -214,6 +227,11 @@ class Entity extends Base\PublicEntity
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function getPurpose()
@@ -332,6 +350,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
@@ -420,6 +443,17 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
+    }
+
+    public function setPublicUserIdAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::USER_ID]);
+        }
     }
 
     public function getPricingFeatures()

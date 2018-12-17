@@ -189,6 +189,10 @@ class Validator extends Base\Validator
         'callback_url' => 'sometimes|url',
     ];
 
+    protected static $acknowledgeRules = [
+        Entity::NOTES => 'sometimes|notes',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

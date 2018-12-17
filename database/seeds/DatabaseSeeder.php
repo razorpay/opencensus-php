@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call('WorkflowSeeder');
         $this->call('TaxGroupAndTaxSeeder');
         $this->call('DisputeReasonSeeder');
+        $this->call('BusinessBankingSeeder');
     }
 
     private function seed()

@@ -2343,17 +2343,21 @@ class Processor
      * Marks the payment as acknowledged.
      *
      * @param Payment\Entity $payment
+     * @param array          $input
      */
-    public function acknowledge(Payment\Entity $payment)
+    public function acknowledge(Payment\Entity $payment, array $input)
     {
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
             [
+                'input'            => $input,
                 Payment\Entity::ID => $payment->getId(),
             ]);
 
         $this->mutex->acquireAndRelease($payment->getId(),
-            function() use ($payment)
+            function() use ($payment, $notes)
             {
                 $this->repo->reload($payment);
 
@@ -2362,6 +2366,8 @@ class Processor
                 $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $payment->setAcknowledgedAt($currentTime);
+
+                $payment->appendNotes($notes);
 
                 $this->repo->saveOrFail($payment);
             },

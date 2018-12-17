@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -40,6 +41,9 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
 
             $table->char(Payout::DESTINATION_TYPE, 20);
+
+            $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Payout::PURPOSE, 30);
 
@@ -116,6 +120,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
 
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
+
+            $table->index(Payout::USER_ID);
 
             $table->foreign(Payout::BALANCE_ID)
                   ->references(Balance\Entity::ID)
