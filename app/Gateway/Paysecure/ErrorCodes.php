@@ -113,7 +113,6 @@ class ErrorCodes
         self::ACCU600 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::ACCU700 => ErrorCode::BAD_REQUEST_CARD_ISSUER_AUTHENTICATION_ERROR,
         self::ACCU800 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ACCU999 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
         // Authorize error code mappings
         self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,

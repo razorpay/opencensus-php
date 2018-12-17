@@ -22,7 +22,6 @@
     window.onload = function(e) {
         // Checks browser
         Acculynk.browserCheck();
-        alert("Browser check complete");
 
         // Create the PINPad form passing the data from input
         Acculynk.createForm("{{$data['guid']}}", "{{$data['lastFourDigits']}}", "{{$data['modulus']}}", "{{$data['exponent']}}");
