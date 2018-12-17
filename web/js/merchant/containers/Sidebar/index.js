@@ -4,6 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 
 import ProgressBar from 'rzp/ui/ProgressBar';
 import { classList } from 'common/util';
+import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
 
 import { toggleMobileMenu } from 'merchant/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
@@ -37,6 +38,7 @@ const BASE_ROUTES = {
 @withRouter
 @connect(
   state => ({
+    shouldShowAcceptPaymentsModal: false,
     showMobileMenu: state.app.showMobileMenu,
     currentReportList: state.reports.currentReportList,
   }),
@@ -108,12 +110,22 @@ export default class Sidebar extends Component {
     }
   }
 
-  onSidebarBannerClick() {
+  onSidebarBannerClick(e) {
     const { user } = this.props,
       { showInstantActivation } = user;
 
     if (this.props.showMobileMenu) {
       this.props.toggleMobileMenu();
+    }
+
+    // if instantly activated, open accept payments modal
+    if (
+      user.activation_progress < 100 &&
+      user.instantActivation.isL1Submitted &&
+      user.isActivated
+    ) {
+      e.preventDefault();
+      this.showAcceptPaymentsModal();
     }
 
     return this.props.user.isSubmitted
@@ -127,6 +139,18 @@ export default class Sidebar extends Component {
   hideSidebar() {
     return this.props.showMobileMenu && this.props.toggleMobileMenu();
   }
+
+  showAcceptPaymentsModal = () => {
+    this.setState({
+      shouldShowAcceptPaymentsModal: true,
+    });
+  };
+
+  hideAcceptPaymentsModal = () => {
+    this.setState({
+      shouldShowAcceptPaymentsModal: false,
+    });
+  };
 
   render() {
     const { isReportsPending } = this.state;
@@ -158,7 +182,8 @@ export default class Sidebar extends Component {
                   actionCopy = 'Activate your account';
 
                   if (isL1Submitted) {
-                    actionCopy = 'Submit KYC';
+                    if (user.isActivated) actionCopy = 'Accept Payments';
+                    else actionCopy = 'Submit KYC';
                   }
                 } else if (user.isSubmitted) {
                   actionCopy = 'Form submitted';
@@ -207,16 +232,26 @@ export default class Sidebar extends Component {
                             } else {
                               actionContent = !user.isSubmitted ? (
                                 <div className="activation-bar-content activation-status-secondary">
-                                  <div className="activation-bar-text">
-                                    {user.activation_progress}% Complete
-                                  </div>
-                                  <div className="activation-bar">
-                                    <ProgressBar
-                                      type="success"
-                                      max={100}
-                                      value={user.activation_progress}
-                                    />
-                                  </div>
+                                  {user.activation_progress < 100 &&
+                                  isL1Submitted &&
+                                  user.isActivated ? (
+                                    <div className="activation-bar-text">
+                                      Click here to know more
+                                    </div>
+                                  ) : (
+                                    <React.Fragment>
+                                      <div className="activation-bar-text">
+                                        {user.activation_progress}% Complete
+                                      </div>
+                                      <div className="activation-bar">
+                                        <ProgressBar
+                                          type="success"
+                                          max={100}
+                                          value={user.activation_progress}
+                                        />
+                                      </div>
+                                    </React.Fragment>
+                                  )}
                                 </div>
                               ) : (
                                 <div className="activation-status-secondary">
@@ -367,6 +402,11 @@ export default class Sidebar extends Component {
         {showMobileMenu && (
           <div className="sidebar-bg-overlay" onClick={this.hideSidebar} />
         )}
+        <AcceptPaymentsModal
+          isKLA={user.has_key_access}
+          shouldShow={this.state.shouldShowAcceptPaymentsModal}
+          onClose={this.hideAcceptPaymentsModal}
+        />
       </React.Fragment>
     );
   }

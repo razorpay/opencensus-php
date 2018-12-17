@@ -30,6 +30,7 @@ export default class OnboardingCardInstant extends Component {
     };
 
     this.showAcceptPaymentsModal = this.showAcceptPaymentsModal.bind(this);
+    this.hideAcceptPaymentsModal = this.hideAcceptPaymentsModal.bind(this);
   }
 
   setActiveStep(activeStep = 0) {
@@ -57,9 +58,14 @@ export default class OnboardingCardInstant extends Component {
   }
 
   showAcceptPaymentsModal() {
-    console.log(this);
     this.setState({
       shouldShowAcceptPaymentsModal: true,
+    });
+  }
+
+  hideAcceptPaymentsModal() {
+    this.setState({
+      shouldShowAcceptPaymentsModal: false,
     });
   }
 
@@ -103,8 +109,9 @@ export default class OnboardingCardInstant extends Component {
     return (
       <div className="onboarding-card-instant">
         <AcceptPaymentsModal
-          isKLA={isKLA}
+          isKLA={user.has_key_access}
           shouldShow={this.state.shouldShowAcceptPaymentsModal}
+          onClose={this.hideAcceptPaymentsModal}
         />
         <div
           className="onboarding-card-instant-content"

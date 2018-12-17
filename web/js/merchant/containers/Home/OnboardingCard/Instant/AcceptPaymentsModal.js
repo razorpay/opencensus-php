@@ -66,7 +66,7 @@ export default class AcceptPayments extends Component {
 
   handleProductsModalBack() {
     trackProductsModal.trackProductsBack();
-
+    this.props.onClose();
     this.hideProductsModal(
       () => (
         this.onCloseProductsModal && this.onCloseProductsModal(),
@@ -75,24 +75,24 @@ export default class AcceptPayments extends Component {
     );
   }
 
-  showTransactionsModal(isKLA) {
+  showTransactionsModal() {
     this.setState({
       showTransactionsHelper: true,
-      isKLA,
     });
   }
 
   hideTransactionsModal() {
     trackTransactionsHelper.trackClose();
+    this.props.onClose();
 
     this.setState({
       showTransactionsHelper: false,
-      isKLA: false,
     });
   }
 
   render() {
-    const { showProducts, showTransactionsHelper, isKLA } = this.state;
+    const { showProducts, showTransactionsHelper } = this.state;
+    const { isKLA } = this.props;
 
     return (
       <div class="accept-payments-modal">
@@ -103,7 +103,6 @@ export default class AcceptPayments extends Component {
             track={trackProductsModal}
           />
         )}
-        {/* TODO: pass isKLA prop from parent component */}
         {showTransactionsHelper && (
           <TransactionsModal
             onClose={this.hideTransactionsModal}
