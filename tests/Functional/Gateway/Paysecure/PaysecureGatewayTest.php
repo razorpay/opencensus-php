@@ -377,6 +377,8 @@ class PaysecureGatewayTest extends TestCase
             ],
             $gatewayPayment
         );
+
+        $this->assertNotNull($gatewayPayment['rrn']);
     }
 
     protected function getDefaultPaymentArray()
