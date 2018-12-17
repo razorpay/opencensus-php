@@ -8,6 +8,8 @@ app.controller('ResetPasswordCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   'organization',
+  'isHostedInBB',
+  'appHost',
   function(
     $scope,
     $http,
@@ -16,7 +18,9 @@ app.controller('ResetPasswordCtrl', [
     $stateParams,
     alertsFactory,
     transformRequestAsFormPost,
-    organization
+    organization,
+    isHostedInBB,
+    appHost
   ) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -26,26 +30,23 @@ app.controller('ResetPasswordCtrl', [
       expiryTime: $location.search().expiry_time,
       email: $location.search().email,
     };
+
     if (!$scope.data.token) {
       $state.go('access.signin');
     }
-    $scope.submit = function($valid) {
-      if (!$valid) {
-        $scope.alerts.addAlert(
-          'danger',
-          'Please fill all the fields correctly',
-          true
-        );
-        return true;
-      }
-      $scope.alerts.resetAlerts();
+
+    function submitData(data, cb) {
       var request = $http({
         method: 'post',
         url: '/user/api/live/users/reset-password-token',
-        data: $scope.data,
+        data: data,
       });
       request
         .success(function(data) {
+          if (cb) {
+            return cb(data);
+          }
+
           $scope.alerts.resetAlerts();
           if (data.success) {
             $scope.success = true;
@@ -56,13 +57,51 @@ app.controller('ResetPasswordCtrl', [
           }
         })
         .error(function() {
+          if (cb) {
+            return cb({ success: false });
+          }
+
           $scope.alerts.addAlert('danger');
         });
+    }
+
+    $scope.submit = function($valid) {
+      if (!$valid) {
+        $scope.alerts.addAlert(
+          'danger',
+          'Please fill all the fields correctly',
+          true
+        );
+        return true;
+      }
+      $scope.alerts.resetAlerts();
+      submitData($scope.data);
     };
 
     // Change logo
     organization.fetchCurrentOrg().then(function(data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
     });
+
+    if (isHostedInBB) {
+      window.RZP &&
+        window.RZP.rpcServer &&
+        window.RZP.rpcServer(
+          appHost,
+          [
+            {
+              name: 'submitForm',
+              hasReply: true,
+              callback: function(password, passwordConfirmation, reply) {
+                $scope.data.password = password;
+                $scope.data.password_confirmation = passwordConfirmation;
+
+                submitData($scope.data, reply);
+              },
+            },
+          ],
+          'reset-pwd'
+        );
+    }
   },
 ]);
