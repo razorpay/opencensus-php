@@ -1,0 +1,464 @@
+{
+    "data": [
+        {
+            "currency": 784,
+            "code": "AED",
+            "exponent": 2
+        },
+        {
+            "currency": 8,
+            "code": "ALL",
+            "exponent": 2
+        },
+        {
+            "currency": 51,
+            "code": "AMD",
+            "exponent": 2
+        },
+        {
+            "currency": 32,
+            "code": "ARS",
+            "exponent": 2
+        },
+        {
+            "currency": 36,
+            "code": "AUD",
+            "exponent": 2
+        },
+        {
+            "currency": 533,
+            "code": "AWG",
+            "exponent": 2
+        },
+        {
+            "currency": 52,
+            "code": "BBD",
+            "exponent": 2
+        },
+        {
+            "currency": 50,
+            "code": "BDT",
+            "exponent": 2
+        },
+        {
+            "currency": 60,
+            "code": "BMD",
+            "exponent": 2
+        },
+        {
+            "currency": 96,
+            "code": "BND",
+            "exponent": 2
+        },
+        {
+            "currency": 68,
+            "code": "BOB",
+            "exponent": 2
+        },
+        {
+            "currency": 44,
+            "code": "BSD",
+            "exponent": 2
+        },
+        {
+            "currency": 72,
+            "code": "BWP",
+            "exponent": 2
+        },
+        {
+            "currency": 84,
+            "code": "BZD",
+            "exponent": 2
+        },
+        {
+            "currency": 124,
+            "code": "CAD",
+            "exponent": 2
+        },
+        {
+            "currency": 756,
+            "code": "CHF",
+            "exponent": 2
+        },
+        {
+            "currency": 156,
+            "code": "CNY",
+            "exponent": 2
+        },
+        {
+            "currency": 170,
+            "code": "COP",
+            "exponent": 2
+        },
+        {
+            "currency": 188,
+            "code": "CRC",
+            "exponent": 2
+        },
+        {
+            "currency": 192,
+            "code": "CUP",
+            "exponent": 2
+        },
+        {
+            "currency": 203,
+            "code": "CZK",
+            "exponent": 2
+        },
+        {
+            "currency": 208,
+            "code": "DKK",
+            "exponent": 2
+        },
+        {
+            "currency": 214,
+            "code": "DOP",
+            "exponent": 2
+        },
+        {
+            "currency": 12,
+            "code": "DZD",
+            "exponent": 2
+        },
+        {
+            "currency": 818,
+            "code": "EGP",
+            "exponent": 2
+        },
+        {
+            "currency": 230,
+            "code": "ETB",
+            "exponent": 2
+        },
+        {
+            "currency": 978,
+            "code": "EUR",
+            "exponent": 2
+        },
+        {
+            "currency": 242,
+            "code": "FJD",
+            "exponent": 2
+        },
+        {
+            "currency": 826,
+            "code": "GBP",
+            "exponent": 2
+        },
+        {
+            "currency": 292,
+            "code": "GIP",
+            "exponent": 2
+        },
+        {
+            "currency": 270,
+            "code": "GMD",
+            "exponent": 2
+        },
+        {
+            "currency": 320,
+            "code": "GTQ",
+            "exponent": 2
+        },
+        {
+            "currency": 328,
+            "code": "GYD",
+            "exponent": 2
+        },
+        {
+            "currency": 344,
+            "code": "HKD",
+            "exponent": 2
+        },
+        {
+            "currency": 340,
+            "code": "HNL",
+            "exponent": 2
+        },
+        {
+            "currency": 191,
+            "code": "HRK",
+            "exponent": 2
+        },
+        {
+            "currency": 332,
+            "code": "HTG",
+            "exponent": 2
+        },
+        {
+            "currency": 348,
+            "code": "HUF",
+            "exponent": 2
+        },
+        {
+            "currency": 360,
+            "code": "IDR",
+            "exponent": 2
+        },
+        {
+            "currency": 376,
+            "code": "ILS",
+            "exponent": 2
+        },
+        {
+            "currency": 356,
+            "code": "INR",
+            "exponent": 2
+        },
+        {
+            "currency": 388,
+            "code": "JMD",
+            "exponent": 2
+        },
+        {
+            "currency": 404,
+            "code": "KES",
+            "exponent": 2
+        },
+        {
+            "currency": 417,
+            "code": "KGS",
+            "exponent": 2
+        },
+        {
+            "currency": 116,
+            "code": "KHR",
+            "exponent": 2
+        },
+        {
+            "currency": 136,
+            "code": "KYD",
+            "exponent": 2
+        },
+        {
+            "currency": 398,
+            "code": "KZT",
+            "exponent": 2
+        },
+        {
+            "currency": 418,
+            "code": "LAK",
+            "exponent": 2
+        },
+        {
+            "currency": 422,
+            "code": "LBP",
+            "exponent": 2
+        },
+        {
+            "currency": 144,
+            "code": "LKR",
+            "exponent": 2
+        },
+        {
+            "currency": 430,
+            "code": "LRD",
+            "exponent": 2
+        },
+        {
+            "currency": 426,
+            "code": "LSL",
+            "exponent": 2
+        },
+        {
+            "currency": 504,
+            "code": "MAD",
+            "exponent": 2
+        },
+        {
+            "currency": 498,
+            "code": "MDL",
+            "exponent": 2
+        },
+        {
+            "currency": 807,
+            "code": "MKD",
+            "exponent": 2
+        },
+        {
+            "currency": 104,
+            "code": "MMK",
+            "exponent": 2
+        },
+        {
+            "currency": 496,
+            "code": "MNT",
+            "exponent": 2
+        },
+        {
+            "currency": 446,
+            "code": "MOP",
+            "exponent": 2
+        },
+        {
+            "currency": 480,
+            "code": "MUR",
+            "exponent": 2
+        },
+        {
+            "currency": 462,
+            "code": "MVR",
+            "exponent": 2
+        },
+        {
+            "currency": 454,
+            "code": "MWK",
+            "exponent": 2
+        },
+        {
+            "currency": 484,
+            "code": "MXN",
+            "exponent": 2
+        },
+        {
+            "currency": 458,
+            "code": "MYR",
+            "exponent": 2
+        },
+        {
+            "currency": 516,
+            "code": "NAD",
+            "exponent": 2
+        },
+        {
+            "currency": 566,
+            "code": "NGN",
+            "exponent": 2
+        },
+        {
+            "currency": 558,
+            "code": "NIO",
+            "exponent": 2
+        },
+        {
+            "currency": 578,
+            "code": "NOK",
+            "exponent": 2
+        },
+        {
+            "currency": 524,
+            "code": "NPR",
+            "exponent": 2
+        },
+        {
+            "currency": 554,
+            "code": "NZD",
+            "exponent": 2
+        },
+        {
+            "currency": 604,
+            "code": "PEN",
+            "exponent": 2
+        },
+        {
+            "currency": 598,
+            "code": "PGK",
+            "exponent": 2
+        },
+        {
+            "currency": 608,
+            "code": "PHP",
+            "exponent": 2
+        },
+        {
+            "currency": 586,
+            "code": "PKR",
+            "exponent": 2
+        },
+        {
+            "currency": 634,
+            "code": "QAR",
+            "exponent": 2
+        },
+        {
+            "currency": 643,
+            "code": "RUB",
+            "exponent": 2
+        },
+        {
+            "currency": 682,
+            "code": "SAR",
+            "exponent": 2
+        },
+        {
+            "currency": 690,
+            "code": "SCR",
+            "exponent": 2
+        },
+        {
+            "currency": 752,
+            "code": "SEK",
+            "exponent": 2
+        },
+        {
+            "currency": 702,
+            "code": "SGD",
+            "exponent": 2
+        },
+        {
+            "currency": 694,
+            "code": "SLL",
+            "exponent": 2
+        },
+        {
+            "currency": 706,
+            "code": "SOS",
+            "exponent": 2
+        },
+        {
+            "currency": 728,
+            "code": "SSP",
+            "exponent": 2
+        },
+        {
+            "currency": 222,
+            "code": "SVC",
+            "exponent": 2
+        },
+        {
+            "currency": 748,
+            "code": "SZL",
+            "exponent": 2
+        },
+        {
+            "currency": 764,
+            "code": "THB",
+            "exponent": 2
+        },
+        {
+            "currency": 780,
+            "code": "TTD",
+            "exponent": 2
+        },
+        {
+            "currency": 834,
+            "code": "TZS",
+            "exponent": 2
+        },
+        {
+            "currency": 840,
+            "code": "USD",
+            "exponent": 2
+        },
+        {
+            "currency": 858,
+            "code": "UYU",
+            "exponent": 2
+        },
+        {
+            "currency": 860,
+            "code": "UZS",
+            "exponent": 2
+        },
+        {
+            "currency": 886,
+            "code": "YER",
+            "exponent": 2
+        },
+        {
+            "currency": 710,
+            "code": "ZAR",
+            "exponent": 2
+        }
+    ]
+}
