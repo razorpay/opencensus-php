@@ -409,6 +409,8 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'];
 
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertEquals(count($response['invitations']), 1);

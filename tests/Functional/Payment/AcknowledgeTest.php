@@ -26,7 +26,11 @@ class AcknowledgeTest extends TestCase
      */
     public function testAcknowledgeCapturedPayment()
     {
-        $payment = $this->fixtures->create('payment:captured');
+        $payment = $this->fixtures->create('payment:captured', [
+            'notes' => [
+                'merchant_order_id' => 'order_5176',
+            ],
+        ]);
 
         $this->ba->privateAuth();
 
@@ -43,6 +47,13 @@ class AcknowledgeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNotNull( $payment['acknowledged_at']);
+
+        $expectedPaymentNotes = [
+            'merchant_order_id'  => 'order_5176',
+            'success_payment_id' => 'randomSuccessfulPaymentId',
+        ];
+
+        $this->assertEquals($expectedPaymentNotes, $payment['notes']);
 
         $this->ba->privateAuth();
 

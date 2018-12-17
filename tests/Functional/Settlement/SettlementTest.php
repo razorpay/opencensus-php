@@ -13,11 +13,12 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Preferences;
-use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait as ScheduleTrait;
-use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Settlement\Entity as SettlementEntity;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 
 class SettlementTest extends TestCase
 {
@@ -25,6 +26,7 @@ class SettlementTest extends TestCase
     use PaymentTrait;
     use HeimdallTrait;
     use ScheduleTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -829,9 +831,9 @@ class SettlementTest extends TestCase
 
         $this->initiateSettlements(Channel::AXIS);
 
-        $txns = $this->getEntities('transaction', ['count' => 2]);
+        $txns = $this->getDbEntities('transaction');
 
-        foreach ($txns['items'] as $txn)
+        foreach ($txns as $txn)
         {
             $this->assertEquals($txn['settled'], false);
         }
@@ -1734,6 +1736,80 @@ class SettlementTest extends TestCase
         $this->createPaymentEntities(2, 'AwLHhFePbpsfSZ', $dt);
 
         $dt = Carbon::create(2017, 12, 14, 10, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+    }
+
+
+    public function testMerchantOnEarlySettlementThreePm()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $dt = Carbon::create(2018, 12, 6, 8, 50, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->fixtures->merchant->createAccount('ZmReTNPu1KFKBn');
+
+        $this->fixtures->merchant->createAccount('BwLHhFePbpsfSZ');
+
+        $this->fixtures->edit('merchant', 'BwLHhFePbpsfSZ',['parent_id' => 'ZmReTNPu1KFKBn']);
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC, Constants::ES_AUTOMATIC_THREE_PM], 'BwLHhFePbpsfSZ');
+
+        $input = [
+            'name'        => 'Hourly Early Settlement',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'hour'        => 0,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'BwLHhFePbpsfSZ');
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 9, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2018, 12, 6, 14, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 15, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+        $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $dt = Carbon::create(2018, 12, 6, 16, 59, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->createPaymentEntities(2, 'BwLHhFePbpsfSZ', $dt);
+
+        $dt = Carbon::create(2018, 12, 6, 17, 1, 0, Timezone::IST);
 
         Carbon::setTestNow($dt);
 

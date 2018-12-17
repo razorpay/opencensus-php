@@ -29,6 +29,7 @@ trait HasBalance
     /**
      * Returns balance type.
      * Handles old entities where balance_id is not back filled yet by defaulting to type 'primary'.
+     *
      * @return string
      */
     public function getBalanceType(): string
@@ -44,5 +45,12 @@ trait HasBalance
     public function isBalanceTypeBanking(): bool
     {
         return $this->getBalanceType() === Balance\Type::BANKING;
+    }
+
+    public function setPublicBalanceIdAttribute(array & $attributes)
+    {
+        $balanceId = $this->getAttribute(self::BALANCE_ID);
+
+        $attributes[self::BALANCE_ID] = Balance\Entity::getSignedIdOrNull($balanceId);
     }
 }

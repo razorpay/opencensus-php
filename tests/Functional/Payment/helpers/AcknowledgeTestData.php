@@ -9,7 +9,11 @@ return [
         'request' => [
             'method' => 'POST',
             'url' => '/payments/pay_100000RandomId/acknowledge',
-            'content' => [],
+            'content' => [
+                'notes' => [
+                    'success_payment_id' => 'randomSuccessfulPaymentId',
+                ],
+            ],
         ],
         'response' => [
             'content' => [

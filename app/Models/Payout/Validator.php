@@ -27,7 +27,9 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'sometimes|public_id',
         Entity::DESTINATION     => 'sometimes|public_id',
-        Entity::TYPE            => 'sometimes|string'
+        Entity::TYPE            => 'sometimes|string',
+        Entity::BALANCE_ID      => 'sometimes|public_id',
+
     ];
 
     protected static $customerPayoutRules = [
@@ -38,6 +40,7 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'required|public_id',
         Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -48,6 +51,7 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'required|public_id',
         Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
     ];
 
     protected static $merchantPayoutRules = [
@@ -55,7 +59,8 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
-        Entity::TYPE            => 'required|string|max:30|in:default,on_demand'
+        Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
     ];
 
     protected static $merchantRules = [

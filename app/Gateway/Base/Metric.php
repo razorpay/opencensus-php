@@ -70,14 +70,12 @@ class Metric
         $this->trace = $this->app['trace'];
     }
 
-    public function getDimensions($action, $input, $gateway)
+    public function getDimensions($action, $input, $gateway = 'none')
     {
         if ($action === Payment\Action::VALIDATE_VPA)
         {
             return $this->getValidateVpaDimensions($action, $input, $gateway);
         }
-
-        $gateway = $this->getGateway($input);
 
         $method = $this->getMethod($input);
 
@@ -258,11 +256,6 @@ class Metric
         $authType = $input[Entity::PAYMENT][Payment\Entity::AUTH_TYPE];
 
         return $authType ?: 'none';
-    }
-
-    protected function getGateway($input)
-    {
-        return $input[Entity::PAYMENT][Payment\Entity::GATEWAY];
     }
 
     protected function getMethod($input)

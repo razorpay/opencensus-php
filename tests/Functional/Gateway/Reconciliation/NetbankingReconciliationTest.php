@@ -883,6 +883,95 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
+    public function testVijayaSuccessRecon()
+    {
+        $this->gateway = 'netbanking_vijaya';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'vijaya', 'Y');
+
+        $fileContents = $this->generateFile('vijaya', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $data = $this->reconcile('NetbankingVijaya', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testVijayaBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_vijaya';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'vijaya', 'Y');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[0][1] = '1.00';
+            });
+
+        $fileContents = $this->generateFile('vijaya', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingVijaya', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testVijayaReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_vijaya';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'vijaya', 'N');
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNull($netbankingEntity['date']);
+
+        $fileContents = $this->generateFile('vijaya', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingVijaya', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($netbankingEntity['date']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $this->ba->appAuth();

@@ -16,6 +16,8 @@ trait RequestResponseFlowTrait
      */
     public function runRequestResponseFlow($data, Closure $closure = null)
     {
+        $this->resetSingletons();
+
         $response = null;
 
         try
@@ -433,5 +435,11 @@ trait RequestResponseFlowTrait
         $httpStatusCode = $ex->getHttpStatusCode();
 
         return response()->json($ex->toPublicArray(), $httpStatusCode);
+    }
+
+    protected function resetSingletons()
+    {
+        // Per HTTP request we expect fresh $this->merchant to be set in repository manager instead of keeping last one.
+        $this->app->forgetInstance('repo');
     }
 }

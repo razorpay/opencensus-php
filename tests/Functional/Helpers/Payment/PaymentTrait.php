@@ -562,7 +562,7 @@ trait PaymentTrait
             'url'       => $url,
             'method'    => 'POST',
             'content'   => [
-                'otp'   => $this->getOtp(),
+                'otp'   => '0007',
                 'email'  => $email,
                 'contact' => $contact,
             ],
@@ -932,6 +932,11 @@ trait PaymentTrait
         $input = $this->getDefaultScroogeInputArray();
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        {
+            $input['reference_no'] = random_integer(12);
+        }
 
         $this->ba->scroogeAuth();
 

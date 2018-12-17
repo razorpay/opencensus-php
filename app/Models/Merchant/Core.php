@@ -1681,4 +1681,44 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    /**
+     * Syncs merchant and merchant details website and business name
+     *
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantInput = [];
+
+        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
+        {
+            $merchantInput[Entity::WEBSITE] = $input[Detail\Entity::BUSINESS_WEBSITE];
+        }
+
+        if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
+        {
+            $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+        }
+
+        if (empty($merchantInput) === true)
+        {
+            return $merchant;
+        }
+
+        $merchant->setAuditAction(Action::EDIT_MERCHANT);
+
+        $merchant->edit($merchantInput);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->saveAndNotify($merchant);
+        });
+
+        return $merchant;
+    }
 }
