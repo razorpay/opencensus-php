@@ -124,7 +124,7 @@ abstract class Base extends BaseCore
      *
      * @return self
      */
-    public function setCustomer(Customer\Entity $customer): self
+    public function setSourceCustomer(Customer\Entity $customer): self
     {
         $this->customer = $customer;
 

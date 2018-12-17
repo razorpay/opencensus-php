@@ -159,7 +159,8 @@ class Core extends Base\Core
             function() use ($input, $customer, $merchant)
             {
                 return $this->getProcessor('customer_wallet_payout')
-                            ->setCustomer($customer)
+                            ->setSourceCustomer($customer)
+                            ->setMerchant($merchant)
                             ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
