@@ -30,7 +30,6 @@ export default class AcceptPayments extends Component {
     if (showProductsModalOnLoad) {
       this.hideProductsModal = () => {
         hideProductsModal(() => {
-          this.props.history.replace('/dashboard');
           this.hideProductsModal = hideProductsModal;
         });
       };
