@@ -61,11 +61,13 @@ class Gateway extends Base\Gateway
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
-            $response = $this->initiate2();
+            list($rrn, $response) = $this->initiate2();
 
             $this->handleFailure($response, 'initiate2');
 
             $content = $this->getGatewayPaymentAttributes($response);
+
+            $content[Entity::RRN] = $rrn;
 
             $this->createGatewayPaymentEntity($content);
 
@@ -78,11 +80,13 @@ class Gateway extends Base\Gateway
         // Iframe flow
         else
         {
-            $response = $this->initiate();
+            list($rrn, $response) = $this->initiate2();
 
             $this->handleFailure($response, 'initiate');
 
             $attributes = $this->getMappedAttributes($response);
+
+            $attributes[Entity::RRN] = $rrn;
 
             $this->createGatewayPaymentEntity($attributes, 'iframe');
 

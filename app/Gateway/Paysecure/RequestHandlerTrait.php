@@ -45,7 +45,7 @@ trait RequestHandlerTrait
     //-------------- Initiate request ----------------------------------------
     protected function initiate()
     {
-        $requestArray = $this->getInitiateRequestArray();
+        list($rrn, $requestArray) = $this->getInitiateRequestArray();
 
         $contents = $this->getRequestContents($requestArray);
 
@@ -53,12 +53,12 @@ trait RequestHandlerTrait
 
         $response = $this->sendRequest($command, $contents);
 
-        return $response;
+        return [$rrn, $response];
     }
 
     protected function initiate2()
     {
-        $requestArray = $this->getInitiateRequestArray();
+        list($rrn, $requestArray) = $this->getInitiateRequestArray();
 
         //todo: Check what value to pass in http_accept
         $extraParameters = [
@@ -75,7 +75,7 @@ trait RequestHandlerTrait
 
         $response = $this->sendRequest($command, $contents);
 
-        return $response;
+        return [$rrn, $response];
     }
 
     protected function getInitiateRequestArray(): array
@@ -94,6 +94,8 @@ trait RequestHandlerTrait
         // In UAT they want us to pass 6012
         $mcc = $this->mode == Mode::TEST ? '6012' : $this->input['merchant']['category'];
 
+        $rrn = $this->generateRrn($systemTraceAuditNumber);
+
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
             Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
@@ -109,7 +111,7 @@ trait RequestHandlerTrait
             Fields::TRAN_DATE                         => $date,
             Fields::MCC                               => $mcc,
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
-            Fields::RETRIEVAL_REF_NUMBER              => $this->generateRrn($systemTraceAuditNumber),
+            Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             // todo: Confirm this
             Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
@@ -136,7 +138,7 @@ trait RequestHandlerTrait
             $requestArray[Fields::TRANSACTION_TYPE_INDICATOR] = 'DMS';
         }
 
-        return $requestArray;
+        return [$rrn, $requestArray];
     }
 
     protected function generateRrn($stan)

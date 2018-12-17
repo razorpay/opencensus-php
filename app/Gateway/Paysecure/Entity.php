@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const HKEY                    = 'hkey';
     const AUTH_NOT_REQUIRED       = 'auth_not_required';
     const APPRCODE                = 'apprcode';
+    const RRN                     = 'rrn';
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -29,7 +30,8 @@ class Entity extends Base\Entity
         self::FLOW,
         self::HKEY,
         self::AUTH_NOT_REQUIRED,
-        self::APPRCODE
+        self::APPRCODE,
+        self::RRN,
     ];
 
     protected $primaryKey = self::ID;
