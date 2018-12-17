@@ -462,6 +462,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::SUBSCRIPTION_STATUS,
         self::SUPPLY_STATE_CODE,
+        self::USER_ID,
     ];
 
     protected $casts = [
@@ -1308,6 +1309,17 @@ class Entity extends Base\PublicEntity
         if ($basicAuth->isStrictPrivateAuth() === true)
         {
             unset($array[self::SUPPLY_STATE_CODE]);
+        }
+    }
+
+    public function setPublicUserIdAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::USER_ID]);
         }
     }
 
