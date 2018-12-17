@@ -7,7 +7,9 @@
 </head>
 <script language="javascript" src="{{$data['merchantJsScript']}}" type="text/javascript">
 </script>
-<script language="javascript" type="text/javascript"> //reads the response back from PaySecure
+<script language="javascript" type="text/javascript">
+
+    //reads the response back from PaySecure
     function accu_FunctionResponse(strResponse) {
         // We receive only the response code in this case, which gets forwarded to the callback URL in the input
         // If the response code is ACCU999, it simply means that the PINPad lock was opened by the user, hence we
@@ -16,17 +18,22 @@
             location.href = "{{$data['callbackUrl']}}" + "?AccuResponseCode=" + strResponse;
         }
     }
-    // Checks browser
-    Acculynk.browserCheck();
 
-    // Create the PINPad form passing the data from input
-    Acculynk.createForm("{{$data['guid']}}", "{{$data['lastFourDigits']}}", "{{$data['modulus']}}", "{{$data['exponent']}}");
+    window.onload = function(e) {
+        // Checks browser
+        Acculynk.browserCheck();
+        alert("Browser check complete");
 
-    // Opens the PIN Pad
-    Acculynk.PINPadLoad();
+        // Create the PINPad form passing the data from input
+        Acculynk.createForm("{{$data['guid']}}", "{{$data['lastFourDigits']}}", "{{$data['modulus']}}", "{{$data['exponent']}}");
 
-    // Closes the PIN Pad
-    Acculynk._modalHide();
+        // Opens the PIN Pad
+        Acculynk.PINPadLoad();
+
+        // Closes the PIN Pad
+        Acculynk._modalHide();
+    }
+
 </script>
 <body>
 @include('partials.loader')
@@ -40,8 +47,3 @@
     <div id="accu_issuer" style="display: none;"></div>
 </center>
 </body>
-<script src='{{$data['merchantJsScript']}}'></script>
-
-<script type="text/javascript">
-
-</script>
