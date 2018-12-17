@@ -452,11 +452,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
 
-    public function associateSource(Base\Entity $entity)
-    {
-        $this->source()->associate($entity);
-    }
-
     public function getRedactedAccountNumber()
     {
         $ac = $this->getAccountNumber();

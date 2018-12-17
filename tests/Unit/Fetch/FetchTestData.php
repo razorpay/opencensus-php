@@ -400,4 +400,6 @@ return [
     E::CONTACT => [],
 
     E::FUND_ACCOUNT => [],
+
+    E::STATEMENT => [],
 ];

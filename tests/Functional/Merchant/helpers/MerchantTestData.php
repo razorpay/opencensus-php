@@ -3708,14 +3708,25 @@ return [
         ]
     ],
 
-    'testGetCheckoutPreferencesForCardlessEmi' => [
-    'request' => [
-        'url' => '/preferences',
-        'method' => 'get',
-    ],
-    'response' => [
-        'content' => [
+    'testMerchantSwitchProduct' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
         ],
     ],
+  
+    'testGetCheckoutPreferencesForCardlessEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
     ],
 ];

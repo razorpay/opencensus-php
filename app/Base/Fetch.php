@@ -347,8 +347,6 @@ class Fetch
 
     /**
      * Build cascaded rules and accesses
-     *
-     * @return array
      */
     protected function setCascadedRulesForCurrentAuth()
     {

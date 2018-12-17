@@ -6,12 +6,12 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
-use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Payment\Status;
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 

@@ -16,6 +16,17 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Logged in business banking user creates payout with otp.
+     * @return \Illuminate\Http\Response
+     */
+    public function postCustomerPayoutWithOtp()
+    {
+        $response = $this->service()->customerPayoutWithOtp($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPayoutOnDemand()
     {
         $input = Request::all();

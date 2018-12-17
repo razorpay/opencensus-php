@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const NAME    = 'name';
     const CONTACT = 'contact';
     const EMAIL   = 'email';
+    const TYPE    = 'type';
     const NOTES   = 'notes';
     const ACTIVE  = 'active';
 
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::CONTACT,
         self::EMAIL,
+        self::TYPE,
         self::ACTIVE,
         self::NOTES,
     ];
@@ -41,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::CONTACT,
         self::EMAIL,
+        self::TYPE,
         self::ACTIVE,
         self::NOTES,
         self::CREATED_AT,
@@ -49,6 +52,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::CONTACT => null,
         self::EMAIL   => null,
+        self::TYPE    => null,
         self::NOTES   => [],
         self::ACTIVE  => true,
     ];
@@ -57,12 +61,10 @@ class Entity extends Base\PublicEntity
         self::ACTIVE => 'bool',
     ];
 
-    protected static $generators = [
-        //
-    ];
-
     protected $dates = [
         self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     protected static $sign = 'cont';
@@ -84,6 +86,11 @@ class Entity extends Base\PublicEntity
     public function getEmail()
     {
         return $this->getAttribute(self::EMAIL);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getActive()
