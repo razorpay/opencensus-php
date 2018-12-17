@@ -2,8 +2,16 @@
 
 namespace RZP\Models\User;
 
+use RZP\Constants\Product;
+
 class Role
 {
+    protected $productRoles = [];
+
+    public function __construct()
+    {
+        $this->setProductRoles();
+    }
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
@@ -54,9 +62,29 @@ class Role
         self::LINKED_ACCOUNT_OWNER
     ];
 
+    const BANKING_ROLES = [
+        self::OWNER,
+        self::ADMIN
+    ];
+
+    public function setProductRoles()
+    {
+        $this->productRoles = [
+            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES),
+            Product::BANKING => self::BANKING_ROLES
+        ];
+    }
+
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
+    }
+
+    public function validateProductRole(string $role, string $product): bool
+    {
+        $productRoles = $this->productRoles[$product];
+
+        return (in_array($role, $productRoles, true) === true);
     }
 
     public static function allExceptPaymentLinkRoles()

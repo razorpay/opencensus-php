@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Hash;
 use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -705,7 +706,7 @@ class Merchant extends Base
 
             $attributes = [
                 'admin_id'   => "100000000000{$i}",
-                'token'      => "100000000000{$i}",
+                'token'      => Hash::make("100000000000{$i}"),
                 'created_at' => $createdAt,
                 'expires_at' => $expiresAt,
             ];
@@ -758,6 +759,9 @@ class Merchant extends Base
                                         'email'         => 'email.ojha@test.com',
                                         'website'       => 'www.ojha.test',
                                         'billing_label' => 'Ojha Label',
+                                    ],
+                                    [
+                                        'activation_status' => 'activated',
                                     ]);
 
         $merchants[11]->groups()->sync(['10000000000027']);
@@ -773,6 +777,9 @@ class Merchant extends Base
                                         'email'         => 'email.selva@test.com',
                                         'website'       => 'www.selva.test',
                                         'billing_label' => 'Selva Label',
+                                    ],
+                                    [
+                                        'activation_status' => 'activated',
                                     ]);
 
         $merchants[12]->groups()->sync(['10000000000021']);
@@ -783,6 +790,9 @@ class Merchant extends Base
                                     '10000000000013',
                                     [
                                         'name'        => 'jitendra amit',
+                                        'archived_at' => $now,
+                                    ],
+                                    [
                                         'archived_at' => $now,
                                     ]);
 

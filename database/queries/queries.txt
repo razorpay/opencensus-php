@@ -4458,7 +4458,7 @@ ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
 
 ALTER TABLE merchant_banks
-    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
+    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi;
 
 ALTER TABLE terminals
     ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
@@ -4502,8 +4502,8 @@ INSERT INTO schedule_tasks
     (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
     (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
     FROM schedule_tasks INNER JOIN (
-    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
-    	) AS im ON im.id = schedule_tasks.merchant_id
+        SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+        ) AS im ON im.id = schedule_tasks.merchant_id
         WHERE type = 'settlement' and method = 'card' AND deleted_at is null
     )
 
@@ -4511,13 +4511,43 @@ INSERT INTO schedule_tasks
     (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
     (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
     FROM schedule_tasks INNER JOIN (
-    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
-    	) AS im ON im.id = schedule_tasks.merchant_id
+        SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+        ) AS im ON im.id = schedule_tasks.merchant_id
         WHERE type = 'settlement' AND method is null AND deleted_at is null AND merchant_id not in (
-        	SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
+            SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
         )
     )
 
 ALTER TABLE pricing
-	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
+    ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
+
+ALTER TABLE payouts
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
+
+ALTER TABLE fund_accounts
+	ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
+	ADD COLUMN source_id CHAR(14) AFTER source_type,
+	ADD INDEX `fund_accounts_source_id_index` (source_id),
+	DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
+    DROP COLUMN contact_id;
+
+ALTER TABLE users
+    ADD COLUMN contact_mobile_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_reset_expiry;
+
+ALTER TABLE balance
+    ADD COLUMN account_number VARCHAR(255) DEFAULT NULL AFTER refund_credits,
+    ADD INDEX balance_account_number_index (account_number);
+
+ALTER TABLE bank_transfers
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id,
+    ADD INDEX bank_transfers_balance_id_index (balance_id);
+
+ALTER TABLE payouts
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,
+    ADD INDEX payouts_user_id_index (user_id);
+
+ALTER TABLE contacts
+    ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER email,
+    ADD INDEX contacts_type_merchant_id_index (type, merchant_id);
 

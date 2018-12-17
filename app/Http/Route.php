@@ -159,6 +159,7 @@ final class Route
         'merchant_set_banks'                       => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
         'merchant_daily_report'                    => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
+        'merchant_product_switch'                  => ['post',     'merchants/product-switch',                       'MerchantController@postSwitchProductMerchant'                      ],
         'merchant_fetch'                           => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
         'merchant_edit'                            => ['put',      'merchants/{id}',                                 'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                     => ['put',      'account/config',                                 'MerchantController@putMerchantConfig'                              ],
@@ -319,9 +320,6 @@ final class Route
         'schedule_migration'                       => ['post',     'merchants/schedules/migrate',                    'MerchantController@migrateToSchedules'                             ],
         'schedule_assign'                          => ['post',     'merchants/{id}/schedules',                       'MerchantController@assignSettlementSchedule'                       ],
         'schedule_process_tasks'                   => ['post',     'schedules/process_tasks',                        'ScheduleController@processTasks'                                   ],
-        'transaction_fetch_by_id'                  => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
-        'transaction_fetch_multiple'               => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
-        'transaction_monthly_report'               => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
@@ -680,6 +678,7 @@ final class Route
         'upi_psp_allow'                            => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postCustomerPayout'                               ],
+        'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postCustomerPayoutWithOtp'                        ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
@@ -715,11 +714,13 @@ final class Route
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
-        'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
+        'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
+        'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
+        'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
@@ -781,7 +782,7 @@ final class Route
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
         'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
-      
+
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                             => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -865,6 +866,7 @@ final class Route
         'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                         ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
+        'reporting_config_edit_admin'              => ['patch',    'admin-reporting/configs/{id}',                   'ReportingController@updateConfig'                                  ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
         'reporting_log_get_admin'                  => ['get',      'admin-reporting/logs/{id}',                      'ReportingController@getLog'                                        ],
         'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
@@ -945,7 +947,7 @@ final class Route
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
-        // Banking Contact Routes
+        // Banking contact routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
@@ -957,6 +959,10 @@ final class Route
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
+
+        // Banking statement routes
+        'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
+        'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
     ];
 
     public static $public = [
@@ -1188,7 +1194,12 @@ final class Route
         'fund_account_list',
         'fund_account_create',
         'fund_account_update',
+        'subscription_registration_list_links',
+        'subscription_registration_create_links',
+        'subscription_registration_fetch_link',
         //'fund_account_delete',
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple',
     ];
 
     // Only routes defined in internalApps go here
@@ -1309,6 +1320,10 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'user_edit_self',
+        'user_otp_create',
+        'user_verify_contact',
+        'payout_create_with_otp',
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
@@ -1327,9 +1342,6 @@ final class Route
         'get_es_pricing_merchant',
         'merchant_dashboard_access_la',
         'merchant_fetch_users',
-        'transaction_monthly_report',
-        'transaction_fetch_by_id',
-        'transaction_fetch_multiple',
         'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',
@@ -1480,6 +1492,7 @@ final class Route
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
 
+        'merchant_product_switch',
         'merchant_instant_activation_post',
         'subscription_registration_list_tokens',
         'subscription_registration_list_links',
@@ -1490,6 +1503,10 @@ final class Route
         'subscription_registration_charge_token',
         'merchant_submit_support_call_request',
         'token_fetch_card',
+        'user_edit_self',
+        'user_otp_create',
+        'user_verify_contact',
+        'payout_create_with_otp',
     ];
 
     // These will run on internal auth with the assurance
@@ -1797,6 +1814,7 @@ final class Route
         'reporting_log_create_admin',
         'reporting_config_get_admin',
         'reporting_config_list_admin',
+        'reporting_config_edit_admin',
         'reporting_log_get_admin',
         'reporting_log_list_admin',
         'reporting_schedule_get_admin',
@@ -2125,9 +2143,9 @@ final class Route
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
-        'reporting_config_create'                  => '*',
-        'reporting_config_edit'                    => '*',
-        'reporting_config_delete'                  => '*',
+        'reporting_config_create'                  => Permission::CREATE_SELF_SERVE_REPORT,
+        'reporting_config_edit'                    => Permission::CREATE_SELF_SERVE_REPORT,
+        'reporting_config_delete'                  => Permission::CREATE_SELF_SERVE_REPORT,
         'reporting_log_get'                        => '*',
         'reporting_log_list'                       => '*',
         'reporting_log_update'                     => '*',
@@ -2139,6 +2157,7 @@ final class Route
         'reporting_log_create_admin'               => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'reporting_config_get_admin'               => '*',
         'reporting_config_list_admin'              => '*',
+        'reporting_config_edit_admin'              => '*',
         'reporting_log_get_admin'                  => '*',
         'reporting_log_list_admin'                 => '*',
         'reporting_schedule_get_admin'             => '*',
@@ -2479,6 +2498,7 @@ final class Route
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
         'payment_payout'                       => [Feature::PAYOUT],
         'payout_create'                        => [Feature::PAYOUT],
+        'payout_create_with_otp'               => [Feature::PAYOUT],
         'payout_fetch_by_id'                   => [Feature::PAYOUT],
         'payout_fetch_multiple'                => [Feature::PAYOUT],
         'customer_get_wallet_balance'          => [Feature::OPENWALLET],

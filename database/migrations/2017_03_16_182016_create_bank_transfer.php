@@ -46,6 +46,10 @@ class CreateBankTransfer extends Migration
             $table->char(BankTransfer::VIRTUAL_ACCOUNT_ID, BankTransfer::ID_LENGTH)
                   ->nullable();
 
+            // Todo: Remove null-able after code deploy and backfilling
+            $table->string(BankTransfer::BALANCE_ID, BankTransfer::ID_LENGTH)
+                  ->nullable();
+
             $table->string(BankTransfer::GATEWAY)
                   ->nullable(false);
 

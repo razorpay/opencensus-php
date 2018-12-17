@@ -1589,6 +1589,7 @@ trait Refund
             'amount' => $refundAmount
         ];
 
+        /** @var RefundEntity $refund */
         $refund = $this->buildRefundEntity($payment, $input);
 
         $this->setPaymentAndRefundInfo($refund, $payment);

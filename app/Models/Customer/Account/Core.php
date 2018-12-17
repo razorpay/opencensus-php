@@ -671,7 +671,8 @@ class Core extends Base\Core
     {
         $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
 
-        [$emiPlans, $loanUrl] = $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'get_emi_plans', $input, $this->mode, $terminal);
+        list($emiPlans, $loanUrl) =
+            $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'get_emi_plans', $input, $this->mode, $terminal);
 
         $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input);
 

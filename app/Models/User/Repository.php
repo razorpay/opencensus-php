@@ -6,7 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive { saveOrFail as saveOrFailTestAndLive; }
 
     protected $entity = 'user';
 
@@ -33,5 +33,19 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function saveOrFail($entity, array $options = [])
+    {
+        // If contact has been modified mark verified as false
+        if ($entity->isDirty(Entity::CONTACT_MOBILE) === true)
+        {
+            $entity->setContactMobileVerified(false);
+        }
+
+        return $this->saveOrFailTestAndLive($entity, $options);
     }
 }

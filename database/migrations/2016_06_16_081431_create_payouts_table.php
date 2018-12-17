@@ -3,13 +3,14 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\User;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
-use RZP\Models\Transaction;
 
 class CreatePayoutsTable extends Migration
 {
@@ -34,9 +35,15 @@ class CreatePayoutsTable extends Migration
 
             $table->string(Payout::METHOD);
 
+            $table->char(Payout::BALANCE_ID, Balance\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
 
             $table->char(Payout::DESTINATION_TYPE, 20);
+
+            $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Payout::PURPOSE, 30);
 
@@ -110,7 +117,16 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::STATUS);
 
+            $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
+
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
+
+            $table->index(Payout::USER_ID);
+
+            $table->foreign(Payout::BALANCE_ID)
+                  ->references(Balance\Entity::ID)
+                  ->on(Table::BALANCE)
+                  ->on_delete('restrict');
 
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -147,12 +163,13 @@ class CreatePayoutsTable extends Migration
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::MERCHANT_ID . '_foreign');
 
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::BALANCE_ID . '_foreign');
+
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
         });
 
         Schema::drop(Table::PAYOUT);
-
     }
 }

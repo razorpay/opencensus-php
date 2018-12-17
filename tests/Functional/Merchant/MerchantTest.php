@@ -14,23 +14,21 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
-use RZP\Models\NodalBeneficiary\Status;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
@@ -930,7 +928,7 @@ class MerchantTest extends TestCase
 
             $testDataURL = $this->testData['testAddBankAccountWithMerchantIdInURL']['request']['url'];
 
-            $testDataURLParts = explode("/",$testDataURL);
+            $testDataURLParts = explode('/',$testDataURL);
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -1103,7 +1101,6 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
         $this->fixtures->pricing->createStandardPlan();
         $this->fixtures->merchant->disableInternational();
-
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000', true);
 
@@ -3042,8 +3039,8 @@ class MerchantTest extends TestCase
             'email'  => 'test@razorpay.com',
         ]);
 
-        $merchant = Merchant\Entity::find("10000000000044");
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant = Merchant\Entity::find('10000000000044');
+        $merchant->reTag(['ref-10000000000000']);
         $merchant->saveOrFail();
 
         $admin = $this->ba->getAdmin();
@@ -3066,7 +3063,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3099,7 +3096,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
 
@@ -3157,7 +3154,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3185,7 +3182,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3393,9 +3390,9 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $merchant = Merchant\Entity::find("10000000000040");
+        $merchant = Merchant\Entity::find('10000000000040');
 
-        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->reTag(['ref-10000000000000']);
 
         $this->ba->proxyAuth();
 
@@ -3695,6 +3692,36 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
 
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProduct()
+    {
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking', ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        $merchants = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
     }
 }
