@@ -150,12 +150,19 @@ class Gateway extends Mindgate\Gateway
 
         $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
 
-        if ($this->getIntegerFormattedAmount($responseArray[Fields::AMOUNT]) !==
-            $this->getIntegerFormattedAmount($gatewayEntity[Entity::AMOUNT] / 100))
+        $expectedAmount = number_format($gatewayEntity[Entity::AMOUNT] / 100, 2,
+                                '.', '');
+
+        $actualAmount = number_format($responseArray[Fields::AMOUNT], 2, '.', '');
+
+        if ($expectedAmount !== $actualAmount)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_FATAL_ERROR,
-                $input
+                [
+                    'input'     => $input,
+                    'response'  => $responseArray,
+                ]
             );
 
             return $this->getFailedResponse($gatewayEntity, 'RZP_AMOUNT_MISMATCH');
@@ -165,7 +172,10 @@ class Gateway extends Mindgate\Gateway
         {
             $this->trace->error(
                 TraceCode::GATEWAY_FATAL_ERROR,
-                $input
+                [
+                    'input'     => $input,
+                    'response'  => $responseArray,
+                ]
             );
 
             return $this->getFailedResponse($gatewayEntity, 'RZP_REF_ID_MISMATCH');
