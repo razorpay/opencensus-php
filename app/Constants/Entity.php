@@ -59,6 +59,8 @@ class Entity
     const SCHEDULE                  = 'schedule';
     const TERMINAL                  = 'terminal';
     const TRANSFER                  = 'transfer';
+    // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
+    const STATEMENT                 = 'statement';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
@@ -269,6 +271,7 @@ class Entity
         Entity::TRANSACTION,
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
+        Entity::BANK_TRANSFER,
     ];
 
     public static $namespace = [
@@ -302,6 +305,7 @@ class Entity
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
+        self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,

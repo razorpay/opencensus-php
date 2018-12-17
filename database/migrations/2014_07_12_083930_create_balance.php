@@ -51,6 +51,9 @@ class CreateBalance extends Migration
             $table->bigInteger(Balance::REFUND_CREDITS)
                   ->default(0);
 
+            $table->string(Balance::ACCOUNT_NUMBER, 255)
+                  ->nullable();
+
             $table->integer(Balance::CREATED_AT);
             $table->integer(Balance::UPDATED_AT);
 
@@ -61,6 +64,7 @@ class CreateBalance extends Migration
 
             $table->index(Balance::CREATED_AT);
             $table->index(Balance::MERCHANT_ID);
+            $table->index(Balance::ACCOUNT_NUMBER);
         });
     }
 

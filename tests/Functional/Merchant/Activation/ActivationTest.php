@@ -2,18 +2,21 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
+/**
+ * @group dns-sensitive
+ */
 class ActivationTest extends TestCase
 {
+    use MocksDnsTrait;
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -25,6 +28,8 @@ class ActivationTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 
         parent::setUp();
+
+        $this->setupMockDns();
     }
 
     public function testMerchantActivationCategoriesResponseForAdminAuth()

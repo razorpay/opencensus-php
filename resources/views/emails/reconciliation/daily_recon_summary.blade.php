@@ -16,7 +16,14 @@
                     <th>{{$param}}</th>
                 @endforeach
                 @foreach ($gatewayWiseData as $date => $gatewayData)
-                    <tr>
+                    @if ($gatewayData['recon_count_percentage'] >= 100)
+                        <tr bgcolor="#A1FF9E">
+                    @elseif ($gatewayData['recon_count_percentage'] < 75)
+                        <tr bgcolor="#FF9090">
+                    @else
+                        <tr>
+                    @endif
+
                     @foreach ($params as $param)
                         <td> {{($gatewayData[$param] ?? 0)}}</td>
                     @endforeach

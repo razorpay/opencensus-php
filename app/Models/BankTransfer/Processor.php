@@ -91,6 +91,8 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
+            $bankTransfer->balance()->associate($this->virtualAccount->balance);
+
             $this->repo->saveOrFail($bankTransfer);
 
             $balanceType = $this->virtualAccount->getBalanceType();
@@ -160,6 +162,8 @@ class Processor extends VirtualAccount\Processor
 
         // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
         list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
+
+        $this->repo->saveOrFail($txn);
 
         // Updates virtual account's stats.
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);

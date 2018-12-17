@@ -866,10 +866,10 @@ class Core extends Base\Core
             $debitAmount = $amount;
 
             // Here, payout amount is the amount requested by merchant for payout and fees is
-            // levied over it.Also, this fees is deducted from merchant balance.This happens for
-            // merchants which do not have 'es_on_demand' feature enabled.In case of 'es_on_demand'
+            // levied over it. Also, this fees is deducted from merchant balance. This happens for
+            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
             // merchants, payout fees will be deducted from payout amount requested by the merchant.
-            // This is done allow a merchant to do a payout on requested amount , rather then
+            // This is done to allow a merchant to do a payout on requested amount, rather than
             // calculating fees over it and failing a transaction if merchant does not have enough balance.
             $payout->setAmount($payoutAmount);
         }
