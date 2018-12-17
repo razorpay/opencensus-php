@@ -476,6 +476,17 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
+        //
+        // customer_id is used only in the openwallet payout flow. We do not want
+        // to expose this field in general
+        //
+        if ($customerId === null)
+        {
+            unset($attributes[self::CUSTOMER_ID]);
+
+            return;
+        }
+
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 

@@ -52,8 +52,6 @@ class Validator extends Base\Validator
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
         Entity::BALANCE_ID      => 'sometimes|filled|public_id',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
