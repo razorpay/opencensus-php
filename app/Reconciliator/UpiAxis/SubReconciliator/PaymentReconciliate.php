@@ -117,7 +117,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $this->trace->info(TraceCode::RECON_INFO_ALERT, [
                 'message'           => 'Npci Reference id is not same as in recon',
-                'info_code'         => 'DATA_MISMATCH',
+                'info_code'         => Base\InfoCode::DATA_MISMATCH,
                 'payment_id'        => $this->payment->getId(),
                 'payment_status'    => $this->payment->getStatus(),
                 'api_reference1'    => $npciRefId,
