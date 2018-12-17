@@ -497,41 +497,23 @@ class Service extends Base\Service
     }
 
     /**
+     * check and update that instant activation behaviour should be enable for a merchant or not.
+     *
      * @param array $data
      *
-     * @return mixed
-     * @throws \Razorpay\Api\Errors\BadRequestError
+     * @return array
      */
-    public function updateInstantActivationExperiment(array $data)
+    public function updateInstantActivationExperiment(array $data): array
     {
         $enableInstantActivations = true;
 
-        if ((isset($data['created_at']) === false)
-            or ($data['activation_flow'] !== null))
-        {
-            $enableInstantActivations = true;
-        }
-        else if ($data['created_at'] > self::INSTANT_ACTIVATION_TIMESTAMP)
-        {
-            //
-            // with activation_flow set always return result on
-            // merchants who  submitted L2 form, before 100% instant activation launch and after instant activation launch date
-            // should not be shown instant activation.
-            //
-            if ($data['activation_flow'] !== null)
-            {
-                $enableInstantActivations = true;
-            }
-            else if (((bool) $data['submitted']) === true)
-            {
-                $enableInstantActivations = false;
-            }
-            else
-            {
-                $enableInstantActivations = true;
-            }
-        }
-        else
+        //
+        // For merchants who are in older activation flow and have already submitted L2 form ,
+        // activation_flow will be null and submitted flag will be true. instant activation should be disabled for them.
+        // merchant who have already submitted(L2) and got activated() should have older experience only.
+        //
+        if (($data['activation_flow'] === null)
+            and (((bool) $data['submitted']) === true))
         {
             $enableInstantActivations = false;
         }
