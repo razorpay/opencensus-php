@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
 import user from 'admin/user';
@@ -299,7 +299,13 @@ export default class MerchantList extends Component {
               defaultValue={defaultFilters.account_status}
             >
               {this.props.instantActivation && (
-                <option value="instantly_activated">Instantly Activated</option>
+                <Fragment>
+                  <option value="instantly_activated">
+                    Instantly Activated
+                  </option>
+                  <option value="activated">Activated</option>
+                  <option value="rejected">Rejected</option>
+                </Fragment>
               )}
               <option value="pending_under_review">Under Review</option>
               <option value="pending_needs_clarification">
