@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
@@ -12,6 +12,8 @@ import { isSuperAdmin } from 'admin/user';
 export default class RequestList extends Component {
   state = {
     selectedType: 'checker-requested',
+    workflows: null,
+    admins: null,
   };
 
   collection = new Collection({
@@ -25,30 +27,50 @@ export default class RequestList extends Component {
     },
   });
 
-  onSubmit = filters => this.collection.applyFilters(filters);
+  onSubmit = filters => {
+    let selectedType = this.state.selectedType;
+
+    selectedType = selectedType.split('-');
+    filters = { ...filters, duty: selectedType[0], type: selectedType[1] };
+
+    this.collection.applyFilters(filters);
+  };
 
   selectType = e => {
     let value = e.target.value;
 
     this.setState({ selectedType: value });
-    value = value.split('-');
-    let filters = {
-      duty: value[0],
-      type: value[1],
-    };
-
-    this.collection.applyFilters(filters);
   };
 
+  componentWillMount() {
+    let requests = ['live/workflows', 'live/admins'];
+
+    Promise.all(requests.map(url => adminFetch(url))).then(
+      ([workflows, admins]) => {
+        this.setState({
+          workflows: workflows.items,
+          admins: admins.items,
+        });
+      }
+    );
+  }
+
   render() {
+    const { workflows, selectedType, admins } = this.state;
+
     return (
       <div class="list-container">
         <div class="box">
           <header>Workflow Requests</header>
           <Form onSubmit={this.onSubmit} class="filters">
+            <Field
+              label="Search Entity Id"
+              onChange={this.selectId}
+              name="entity_id"
+            />
             <SelectField
-              label="Workflow Request Type"
-              value={this.state.selectedType}
+              label="Request Type"
+              value={selectedType}
               onChange={this.selectType}
             >
               <option value="maker-created">Made by You</option>
@@ -62,6 +84,30 @@ export default class RequestList extends Component {
                 <option value="super-all">View all Actions</option>
               )}
             </SelectField>
+            {workflows && (
+              <SearchableSelectField
+                label="Workflow Type"
+                name="workflow_id"
+                placeholder="Search"
+                options={workflows.map(w => ({
+                  name: w.name,
+                  value: w.id.replace('workflow_', ''),
+                }))}
+              />
+            )}
+            {admins &&
+              selectedType !== 'maker-created' && (
+                <SearchableSelectField
+                  label="Maker Id"
+                  name="maker_id"
+                  placeholder="Search"
+                  options={admins.map(a => ({
+                    name: a.name,
+                    value: a.id.replace('admin_', ''),
+                  }))}
+                />
+              )}
+            <button class="pull-right">Search</button>
           </Form>
         </div>
         <PageTable model={this.collection} fields={fields} href={href} />
@@ -74,7 +120,14 @@ export default class RequestList extends Component {
 const fields = [
   ['Action', item => item.permission_description],
   ['Title', item => item.title],
-  ['Created By', item => (item.maker ? item.maker.name + (item.maker_type ? ' (' + item.maker_type + ')' : '') : '--')],
+  [
+    'Created By',
+    item =>
+      item.maker
+        ? item.maker.name +
+          (item.maker_type ? ' (' + item.maker_type + ')' : '')
+        : '--',
+  ],
   ['Created At', item => formatDate(item.created_at)],
   [
     'State',
