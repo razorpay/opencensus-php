@@ -182,6 +182,8 @@ class Gateway extends Base\Gateway
         $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
 
         $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
+
+        return $this->returnValidateVpaResponse($response);
     }
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
@@ -1113,5 +1115,13 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    protected function returnValidateVpaResponse($response)
+    {
+        if (isset($response[ResponseFields::PAYER_NAME]) === true)
+        {
+            return $response[ResponseFields::PAYER_NAME];
+        }
     }
 }
