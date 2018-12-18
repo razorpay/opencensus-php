@@ -13,6 +13,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action;
 
 class PaymentCreateController extends Controller
 {
@@ -572,6 +573,32 @@ class PaymentCreateController extends Controller
      */
     protected function returnCheckoutCallbackView($data)
     {
+        if (isset($data['razorpay_payment_id']) === true)
+        {
+
+            $paymentId = substr($data['razorpay_payment_id'],4);
+
+            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            if ($payment['gateway'] === Payment\Gateway::PAYSECURE)
+            {
+                $gatewayPayment = $this->repo->paysecure->findByPaymentIdAndActionOrFail(
+                    $paymentId,
+                    Action::AUTHORIZE
+                );
+
+                $data['rrn'] = $gatewayPayment['rrn'];
+
+                $data['status'] = $payment['status'];
+
+                return View::make('gateway.callbackPaysecure')->with('data', $data);
+            }
+        }
+
         return View::make('gateway.callback')->with('data', $data);
     }
 

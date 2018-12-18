@@ -74,9 +74,14 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 <form method="post" id="paymentform" action="//<?=$public_url?>/payments" onsubmit="disableEmptyInputs(this)">
     <div style="background: brown; color: #fff; text-align: center; padding: 8px 0">Enter Parameters</div>
     <table>
+
         <tr>
             <input type="hidden" value="card" name="method">
 
+        </tr>
+        <tr>
+            <td colspan="40">Sponsor bank:</td>
+            <td><strong>RBL Bank</strong></td>
         </tr>
         <tr>
             <td colspan="40">Razorpay Key:</td>
@@ -91,7 +96,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <td><input type="hidden" value="INR" name="currency"></td>
         </tr>
         <tr>
-            <td colspan="40"><b>Card No: </b> </td>
+            <td colspan="40">Card No:</td>
             <td><input type="text" name="card[number]" value="6074819900004939" size="25"></td>
         </tr>
         <tr>

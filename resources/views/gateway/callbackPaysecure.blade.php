@@ -1,0 +1,56 @@
+<html>
+    <style>
+        div#container {
+            margin: auto;
+            width: 50%;
+            border: 3px solid green;
+            padding: 10px;
+        }
+
+        table {
+            margin: auto;
+            width: 80%;
+            padding: 10px;
+        }
+
+        thead td {
+            margin: 0px auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+    </style>
+    <body>
+        <div id="container">
+            <table>
+                <thead>
+                    <td colspan="2">TRANSACTION DETAILS</td>
+                </thead>
+                <tr>
+                    <td>Razorpay Reference number</td>
+                    <td>{{{ $data['razorpay_payment_id'] }}}</td>
+                </tr>
+                <tr>
+                    <td>RRN</td>
+                    <td>{{{ $data['rrn'] }}}</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>{{{ date('Y/m/d') }}}</td>
+                </tr>
+                <tr>
+                    <td>Transaction Status</td>
+                    <td>
+                        @if ($data['status'] === 'failed')
+                            Failed
+                        @else
+                            Success
+                        @endif
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    You may safely close this tab.
+    </body>
+</html>
