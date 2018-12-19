@@ -729,7 +729,7 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionForViewTest()
     {
-        $this->testCreateSubscriptionWithNoStartAt();
+        $this->testCreateSubscriptionWithoutCustomerId();
 
         $subscription = $this->getLastEntity('subscription', true);
 
