@@ -532,7 +532,7 @@ abstract class Base extends BaseCore
 
     public function updateBalances(bool $updateNodalBalance = true)
     {
-        $this->txn->associateBalance($this->merchantBalance);
+        $this->txn->accountBalance()->associate($this->merchantBalance);
 
         $this->updateMerchantBalance();
 

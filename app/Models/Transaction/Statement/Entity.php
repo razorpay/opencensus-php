@@ -126,6 +126,13 @@ class Entity extends Transaction\Entity
         $array[self::ENTITY] = 'transaction';
     }
 
+    // Appends
+
+    public function getAccountNumberAttribute()
+    {
+        return $this->accountBalance->getAccountNumber();
+    }
+
     /**
      * {@inheritDoc}
      */

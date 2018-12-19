@@ -62,6 +62,6 @@ trait HasBalance
      */
     public function getAccountNumberAttribute()
     {
-        return $this->getRelation(self::BALANCE)->getAccountNumber();
+        return optional($this->balance)->getAccountNumber();
     }
 }
