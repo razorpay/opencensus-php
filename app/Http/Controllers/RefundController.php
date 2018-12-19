@@ -194,6 +194,15 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function scroogeRefundCreateBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createScroogeRefundBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putRefundStatus($id)
     {
         $input = Request::all();

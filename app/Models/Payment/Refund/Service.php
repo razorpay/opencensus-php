@@ -365,6 +365,57 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function createScroogeRefundBulk(array $input)
+    {
+        (new Validator)->validateInput('create_scrooge_refund_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_SCROOGE_CREATE_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $successes = $failures = 0;
+
+        $failureRefunds = [];
+
+        $total = count($refundIds);
+
+        Entity::verifyIdAndStripSignMultiple($refundIds);
+
+        foreach ($refundIds as $refundId)
+        {
+            try
+            {
+                $this->createScroogeRefund($refundId);
+
+                $successes++;
+            }
+            catch (\Exception $ex)
+            {
+                $failures++;
+
+                $failureRefunds[] = $refundId;
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::REFUND_SCROOGE_CREATE_BULK_DISPATCHED,
+            [
+                'total_count'       => $total,
+                'success_count'     => $successes,
+                'failures_count'    => $failures,
+                'failed_refunds'    => $failureRefunds
+            ]);
+
+        return [
+            'total_count'       => $total,
+            'success_count'     => $successes,
+            'failures_count'    => $failures,
+            'failed_refunds'    => $failureRefunds
+        ];
+    }
+
     /**
      * USE WITH EXTREME CAUTION
      * This calls the gateway for refund and does nothing on the api side.

@@ -136,6 +136,7 @@ final class Route
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['get',      'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
+        'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                              ],
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
@@ -1272,7 +1273,6 @@ final class Route
         'refund_mark_processed',
         'refund_gateway_call',
         'refund_verify_call',
-        'scrooge_refund_create',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1812,6 +1812,9 @@ final class Route
         'scrooge_refunds_get',
         'scrooge_refunds_update',
 
+        'scrooge_refund_create',
+        'scrooge_refund_create_bulk',
+
         // Reporting
         'reporting_log_create_admin',
         'reporting_config_get_admin',
@@ -2104,6 +2107,8 @@ final class Route
         'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
+        'scrooge_refund_create'                    => Permission::RETRY_REFUND,
+        'scrooge_refund_create_bulk'               => Permission::RETRY_REFUND,
         'schedule_fetch'                           => '*',
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
@@ -2434,6 +2439,7 @@ final class Route
             'refund_mark_processed',
             'refund_gateway_call',
             'scrooge_refund_create',
+            'scrooge_refund_create_bulk',
             'refund_verify_call'
         ],
 
