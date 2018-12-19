@@ -1,464 +1,280 @@
 {
     "data": [
         {
-            "currency": 784,
-            "code": "AED",
-            "exponent": 2
+            "code": "AED"
         },
         {
-            "currency": 8,
-            "code": "ALL",
-            "exponent": 2
+            "code": "ALL"
         },
         {
-            "currency": 51,
-            "code": "AMD",
-            "exponent": 2
+            "code": "AMD"
         },
         {
-            "currency": 32,
-            "code": "ARS",
-            "exponent": 2
+            "code": "ARS"
         },
         {
-            "currency": 36,
-            "code": "AUD",
-            "exponent": 2
+            "code": "AUD"
         },
         {
-            "currency": 533,
-            "code": "AWG",
-            "exponent": 2
+            "code": "AWG"
         },
         {
-            "currency": 52,
-            "code": "BBD",
-            "exponent": 2
+            "code": "BBD"
         },
         {
-            "currency": 50,
-            "code": "BDT",
-            "exponent": 2
+            "code": "BDT"
         },
         {
-            "currency": 60,
-            "code": "BMD",
-            "exponent": 2
+            "code": "BMD"
         },
         {
-            "currency": 96,
-            "code": "BND",
-            "exponent": 2
+            "code": "BND"
         },
         {
-            "currency": 68,
-            "code": "BOB",
-            "exponent": 2
+            "code": "BOB"
         },
         {
-            "currency": 44,
-            "code": "BSD",
-            "exponent": 2
+            "code": "BSD"
         },
         {
-            "currency": 72,
-            "code": "BWP",
-            "exponent": 2
+            "code": "BWP"
         },
         {
-            "currency": 84,
-            "code": "BZD",
-            "exponent": 2
+            "code": "BZD"
         },
         {
-            "currency": 124,
-            "code": "CAD",
-            "exponent": 2
+            "code": "CAD"
         },
         {
-            "currency": 756,
-            "code": "CHF",
-            "exponent": 2
+            "code": "CHF"
         },
         {
-            "currency": 156,
-            "code": "CNY",
-            "exponent": 2
+            "code": "CNY"
         },
         {
-            "currency": 170,
-            "code": "COP",
-            "exponent": 2
+            "code": "COP"
         },
         {
-            "currency": 188,
-            "code": "CRC",
-            "exponent": 2
+            "code": "CRC"
         },
         {
-            "currency": 192,
-            "code": "CUP",
-            "exponent": 2
+            "code": "CUP"
         },
         {
-            "currency": 203,
-            "code": "CZK",
-            "exponent": 2
+            "code": "CZK"
         },
         {
-            "currency": 208,
-            "code": "DKK",
-            "exponent": 2
+            "code": "DKK"
         },
         {
-            "currency": 214,
-            "code": "DOP",
-            "exponent": 2
+            "code": "DOP"
         },
         {
-            "currency": 12,
-            "code": "DZD",
-            "exponent": 2
+            "code": "DZD"
         },
         {
-            "currency": 818,
-            "code": "EGP",
-            "exponent": 2
+            "code": "EGP"
         },
         {
-            "currency": 230,
-            "code": "ETB",
-            "exponent": 2
+            "code": "ETB"
         },
         {
-            "currency": 978,
-            "code": "EUR",
-            "exponent": 2
+            "code": "EUR"
         },
         {
-            "currency": 242,
-            "code": "FJD",
-            "exponent": 2
+            "code": "FJD"
         },
         {
-            "currency": 826,
-            "code": "GBP",
-            "exponent": 2
+            "code": "GBP"
         },
         {
-            "currency": 292,
-            "code": "GIP",
-            "exponent": 2
+            "code": "GIP"
         },
         {
-            "currency": 270,
-            "code": "GMD",
-            "exponent": 2
+            "code": "GMD"
         },
         {
-            "currency": 320,
-            "code": "GTQ",
-            "exponent": 2
+            "code": "GTQ"
         },
         {
-            "currency": 328,
-            "code": "GYD",
-            "exponent": 2
+            "code": "GYD"
         },
         {
-            "currency": 344,
-            "code": "HKD",
-            "exponent": 2
+            "code": "HKD"
         },
         {
-            "currency": 340,
-            "code": "HNL",
-            "exponent": 2
+            "code": "HNL"
         },
         {
-            "currency": 191,
-            "code": "HRK",
-            "exponent": 2
+            "code": "HRK"
         },
         {
-            "currency": 332,
-            "code": "HTG",
-            "exponent": 2
+            "code": "HTG"
         },
         {
-            "currency": 348,
-            "code": "HUF",
-            "exponent": 2
+            "code": "HUF"
         },
         {
-            "currency": 360,
-            "code": "IDR",
-            "exponent": 2
+            "code": "IDR"
         },
         {
-            "currency": 376,
-            "code": "ILS",
-            "exponent": 2
+            "code": "ILS"
         },
         {
-            "currency": 356,
-            "code": "INR",
-            "exponent": 2
+            "code": "INR"
         },
         {
-            "currency": 388,
-            "code": "JMD",
-            "exponent": 2
+            "code": "JMD"
         },
         {
-            "currency": 404,
-            "code": "KES",
-            "exponent": 2
+            "code": "KES"
         },
         {
-            "currency": 417,
-            "code": "KGS",
-            "exponent": 2
+            "code": "KGS"
         },
         {
-            "currency": 116,
-            "code": "KHR",
-            "exponent": 2
+            "code": "KHR"
         },
         {
-            "currency": 136,
-            "code": "KYD",
-            "exponent": 2
+            "code": "KYD"
         },
         {
-            "currency": 398,
-            "code": "KZT",
-            "exponent": 2
+            "code": "KZT"
         },
         {
-            "currency": 418,
-            "code": "LAK",
-            "exponent": 2
+            "code": "LAK"
         },
         {
-            "currency": 422,
-            "code": "LBP",
-            "exponent": 2
+            "code": "LBP"
         },
         {
-            "currency": 144,
-            "code": "LKR",
-            "exponent": 2
+            "code": "LKR"
         },
         {
-            "currency": 430,
-            "code": "LRD",
-            "exponent": 2
+            "code": "LRD"
         },
         {
-            "currency": 426,
-            "code": "LSL",
-            "exponent": 2
+            "code": "LSL"
         },
         {
-            "currency": 504,
-            "code": "MAD",
-            "exponent": 2
+            "code": "MAD"
         },
         {
-            "currency": 498,
-            "code": "MDL",
-            "exponent": 2
+            "code": "MDL"
         },
         {
-            "currency": 807,
-            "code": "MKD",
-            "exponent": 2
+            "code": "MKD"
         },
         {
-            "currency": 104,
-            "code": "MMK",
-            "exponent": 2
+            "code": "MMK"
         },
         {
-            "currency": 496,
-            "code": "MNT",
-            "exponent": 2
+            "code": "MNT"
         },
         {
-            "currency": 446,
-            "code": "MOP",
-            "exponent": 2
+            "code": "MOP"
         },
         {
-            "currency": 480,
-            "code": "MUR",
-            "exponent": 2
+            "code": "MUR"
         },
         {
-            "currency": 462,
-            "code": "MVR",
-            "exponent": 2
+            "code": "MVR"
         },
         {
-            "currency": 454,
-            "code": "MWK",
-            "exponent": 2
+            "code": "MWK"
         },
         {
-            "currency": 484,
-            "code": "MXN",
-            "exponent": 2
+            "code": "MXN"
         },
         {
-            "currency": 458,
-            "code": "MYR",
-            "exponent": 2
+            "code": "MYR"
         },
         {
-            "currency": 516,
-            "code": "NAD",
-            "exponent": 2
+            "code": "NAD"
         },
         {
-            "currency": 566,
-            "code": "NGN",
-            "exponent": 2
+            "code": "NGN"
         },
         {
-            "currency": 558,
-            "code": "NIO",
-            "exponent": 2
+            "code": "NIO"
         },
         {
-            "currency": 578,
-            "code": "NOK",
-            "exponent": 2
+            "code": "NOK"
         },
         {
-            "currency": 524,
-            "code": "NPR",
-            "exponent": 2
+            "code": "NPR"
         },
         {
-            "currency": 554,
-            "code": "NZD",
-            "exponent": 2
+            "code": "NZD"
         },
         {
-            "currency": 604,
-            "code": "PEN",
-            "exponent": 2
+            "code": "PEN"
         },
         {
-            "currency": 598,
-            "code": "PGK",
-            "exponent": 2
+            "code": "PGK"
         },
         {
-            "currency": 608,
-            "code": "PHP",
-            "exponent": 2
+            "code": "PHP"
         },
         {
-            "currency": 586,
-            "code": "PKR",
-            "exponent": 2
+            "code": "PKR"
         },
         {
-            "currency": 634,
-            "code": "QAR",
-            "exponent": 2
+            "code": "QAR"
         },
         {
-            "currency": 643,
-            "code": "RUB",
-            "exponent": 2
+            "code": "RUB"
         },
         {
-            "currency": 682,
-            "code": "SAR",
-            "exponent": 2
+            "code": "SAR"
         },
         {
-            "currency": 690,
-            "code": "SCR",
-            "exponent": 2
+            "code": "SCR"
         },
         {
-            "currency": 752,
-            "code": "SEK",
-            "exponent": 2
+            "code": "SEK"
         },
         {
-            "currency": 702,
-            "code": "SGD",
-            "exponent": 2
+            "code": "SGD"
         },
         {
-            "currency": 694,
-            "code": "SLL",
-            "exponent": 2
+            "code": "SLL"
         },
         {
-            "currency": 706,
-            "code": "SOS",
-            "exponent": 2
+            "code": "SOS"
         },
         {
-            "currency": 728,
-            "code": "SSP",
-            "exponent": 2
+            "code": "SSP"
         },
         {
-            "currency": 222,
-            "code": "SVC",
-            "exponent": 2
+            "code": "SVC"
         },
         {
-            "currency": 748,
-            "code": "SZL",
-            "exponent": 2
+            "code": "SZL"
         },
         {
-            "currency": 764,
-            "code": "THB",
-            "exponent": 2
+            "code": "THB"
         },
         {
-            "currency": 780,
-            "code": "TTD",
-            "exponent": 2
+            "code": "TTD"
         },
         {
-            "currency": 834,
-            "code": "TZS",
-            "exponent": 2
+            "code": "TZS"
         },
         {
-            "currency": 840,
-            "code": "USD",
-            "exponent": 2
+            "code": "USD"
         },
         {
-            "currency": 858,
-            "code": "UYU",
-            "exponent": 2
+            "code": "UYU"
         },
         {
-            "currency": 860,
-            "code": "UZS",
-            "exponent": 2
+            "code": "UZS"
         },
         {
-            "currency": 886,
-            "code": "YER",
-            "exponent": 2
+            "code": "YER"
         },
         {
-            "currency": 710,
-            "code": "ZAR",
-            "exponent": 2
+            "code": "ZAR"
         }
     ]
 }
