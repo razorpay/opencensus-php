@@ -22,6 +22,7 @@ class Repository extends Transaction\Repository
      */
     protected $expands = [
         Entity::SOURCE,
+        Entity::BALANCE,
     ];
 
     /**

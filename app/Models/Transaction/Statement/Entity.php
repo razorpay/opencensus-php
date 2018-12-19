@@ -7,6 +7,7 @@ use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 
 /**
  * Class Entity
@@ -15,24 +16,32 @@ use RZP\Models\Base\PublicEntity;
  */
 class Entity extends Transaction\Entity
 {
+    // Derived attributes
+    const ACCOUNT_NUMBER = 'account_number';
+
     protected $entity = 'statement';
 
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::ACCOUNT_NUMBER,
         self::AMOUNT,
+        self::CURRENCY,
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
         self::SOURCE,
         self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::SOURCE,
+    ];
+
+    protected $appends = [
+        self::ACCOUNT_NUMBER,
     ];
 
 
@@ -44,7 +53,9 @@ class Entity extends Transaction\Entity
      */
     public function setPublicSourceAttribute(array & $array)
     {
-        switch ($this->getType())
+        $type = $this->getType();
+
+        switch ($type)
         {
             case E::PAYOUT:
                 return $this->setPublicSourceAttributeForPayout($array);
@@ -53,7 +64,11 @@ class Entity extends Transaction\Entity
                 return $this->setPublicSourceAttributeForBankTransfer($array);
 
             default:
-                return $this->setPublicSourceAttributeForDefault($array);
+                throw new LogicException(
+                    'Transaction of unexpected type is being exposed to public!',
+                    null,
+                    compact('type'));
+
         }
     }
 
@@ -99,16 +114,6 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $bankTransfer->getPayerName();
         $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
         $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $bankTransfer->getPayerIfsc();
-    }
-
-    protected function setPublicSourceAttributeForDefault(array & $array)
-    {
-        $array[self::SOURCE] = array_only(
-            $array[self::SOURCE],
-            [
-                PublicEntity::ID,
-                PublicEntity::ENTITY,
-            ]);
     }
 
     /**

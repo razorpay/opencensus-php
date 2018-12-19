@@ -53,4 +53,15 @@ trait HasBalance
 
         $attributes[self::BALANCE_ID] = Balance\Entity::getSignedIdOrNull($balanceId);
     }
+
+    /**
+     * Appends balance.account_number attribute in used-by entity's toArray() if
+     * ACCOUNT_NUMBER exists in $appends.
+     *
+     * @return string|null
+     */
+    public function getAccountNumberAttribute()
+    {
+        return $this->getRelation(self::BALANCE)->getAccountNumber();
+    }
 }
