@@ -130,11 +130,18 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeCustomerForHosted(): array
     {
-        return [
-            'name'    => $this->customer->getName(),
-            'email'   => $this->customer->getEmail(),
-            'contact' => $this->customer->getContact()
-        ];
+        if ($this->customer !== null)
+        {
+            return [
+                'name'    => $this->customer->getName(),
+                'email'   => $this->customer->getEmail(),
+                'contact' => $this->customer->getContact()
+            ];
+        }
+        else {
+            return [];
+        }
+
     }
 
     protected function serializePlanForHosted(): array

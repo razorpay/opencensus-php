@@ -752,27 +752,4 @@ class SubscriptionCreateTest extends TestCase
 
         return $requestContent;
     }
-
-    protected function callViewUrlAndMakeAssertions(
-        string $id,
-        int $code = 200,
-        string $errorMessage = null)
-    {
-        $this->ba->publicAuth();
-
-        $response = $this->call('GET', "/v1/t/subscriptions/$id", ['key_id' => $this->ba->getKey()]);
-
-        $response->assertStatus($code);
-
-        if (empty($errorMessage) === false)
-        {
-            $this->assertContains($errorMessage, $response->getContent());
-        }
-        else
-        {
-            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
-
-            $this->assertContains($id, $response->getContent());
-        }
-    }
 }

@@ -62,8 +62,10 @@ var options = {
     },
     callback_url: location.href,
     "prefill": {
+        <?php if (empty($data['customer']) === false): ?>
         "name": {!! json_encode($data['customer']['name']) !!},
         "email": {!! json_encode($data['customer']['email']) !!}
+        <?php endif; ?>
     }
 };
 
