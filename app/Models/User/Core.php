@@ -24,7 +24,7 @@ class Core extends Base\Core
     {
         $user = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
@@ -37,7 +37,7 @@ class Core extends Base\Core
     {
         $user->edit($input, $operation);
 
-        $this->repo->transaction(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
