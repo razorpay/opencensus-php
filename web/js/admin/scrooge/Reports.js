@@ -9,7 +9,11 @@ import { snakeToTitleCase } from 'common/util';
 import { pluralize } from 'rzp/utils/rzp-utils';
 
 function refundLink(item, when) {
-  let count = item.aging[when].count;
+  let count = 0;
+
+  if (item.aging[when] !== null) {
+    count = item.aging[when].count;
+  }
 
   let query = {
     status: ['file_init'],
@@ -123,7 +127,7 @@ export default class RefundsList extends Component {
 const fields = [
   ['Gateway', item => item.gateway],
   ['Method', item => item.method],
-  ['Total', item => refundLink(item, 'total')],
+  // ['Total', item => refundLink(item, 'total')],
   ['Today', item => refundLink(item, 'today')],
   ['Yesterday', item => refundLink(item, 'yesterday')],
   ['Last 7 Days', item => refundLink(item, 'last_7days')],
