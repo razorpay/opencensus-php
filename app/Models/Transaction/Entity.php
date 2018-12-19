@@ -874,4 +874,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant\Balance\Entity::class, Entity::BALANCE_ID);
     }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
 }

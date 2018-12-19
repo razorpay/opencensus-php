@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction\Statement;
 
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Base\PublicCollection;
 
@@ -24,6 +25,22 @@ class Repository extends Transaction\Repository
         Entity::SOURCE,
         Entity::ACCOUNT_BALANCE,
     ];
+
+    /**
+     * {@inheritDoc}
+     */
+    public function findByPublicIdAndMerchantForBankingBalance(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = []): Entity
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->getQueryForFindWithParams($params)
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
+                    ->findOrFailPublic($id);
+    }
 
     /**
      * {@inheritDoc}

@@ -26,7 +26,7 @@ class Service extends Transaction\Service
         return $transactions->toArrayPublic();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input): array
     {
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
@@ -34,7 +34,10 @@ class Service extends Transaction\Service
         $merchantValidator->validateBusinessBankingActivated();
 
         /** @var Entity $transaction */
-        $transaction = $this->repo->statement->findByPublicIdAndMerchant($id, $this->merchant);
+        $transaction = $this->repo
+                            ->statement
+                            ->findByPublicIdAndMerchantForBankingBalance(
+                                $id, $this->merchant, $input);
 
         return $transaction->toArrayPublic();
     }

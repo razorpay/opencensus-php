@@ -53,9 +53,7 @@ class Entity extends Transaction\Entity
      */
     public function setPublicSourceAttribute(array & $array)
     {
-        $type = $this->getType();
-
-        switch ($type)
+        switch ($this->getType())
         {
             case E::PAYOUT:
                 return $this->setPublicSourceAttributeForPayout($array);
@@ -67,8 +65,7 @@ class Entity extends Transaction\Entity
                 throw new LogicException(
                     'Transaction of unexpected type is being exposed to public!',
                     null,
-                    compact('type'));
-
+                    array_only($array[self::SOURCE], [self::ID, self::ENTITY]));
         }
     }
 
