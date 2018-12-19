@@ -76,8 +76,10 @@ class Notifier extends Base\Core
 
         $mailableClass = 'RZP\\Mail\\Transaction\\' . studly_case($this->source->getEntity());
 
+        // Using getAttributes() on entity(s) here to avoid getting repeating relations(e.g. merchant exists in all)
+        // and surpassing SQS message content length limit.
         $mailable = new $mailableClass(
-            $this->txn->balance()->first()->getAttributes(),
+            $this->txn->accountBalance->getAttributes(),
             $this->txn->getAttributes(),
             $this->source->getAttributes(),
             $this->txn->merchant->getAttributes());
@@ -93,7 +95,7 @@ class Notifier extends Base\Core
         $source   = "api.{$this->mode}.transaction";
         $template = 'sms.transaction.' . $this->source->getEntity();
         $params   =  [
-            'account_number' => mask_except_last4($this->txn->balance()->first()->getAccountNumber()),
+            'account_number' => mask_except_last4($this->txn->accountBalance->getAccountNumber()),
             'amount'         => amount_format_IN($this->txn->getAmount()),
             'created_at'     => epoch_format($this->txn->getCreatedAt()),
             'balance'        => amount_format_IN($this->txn->getBalance()),

@@ -7,7 +7,7 @@ class BankTransfer extends Transaction
     protected function getSubject(): string
     {
         return sprintf(
-            'RazorpayX | Your A/c %s has been credited by INR %s',
+            'RazorpayX | Your A/c %s has been credited with INR %s',
             $this->balance['account_number_masked'],
             $this->txn['amount_formatted']);
     }

@@ -548,6 +548,6 @@ class Entity extends Base\PublicEntity
 
     public function shouldNotifyTxnViaEmail(): bool
     {
-        return true;
+        return $this->isBalanceTypeBanking();
     }
 }

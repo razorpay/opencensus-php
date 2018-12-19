@@ -115,8 +115,8 @@ class Processor extends VirtualAccount\Processor
             }
         });
 
-        // Currently we only create transaction when processing payment for banking.
-        if (($txn = $bankTransfer->transaction) !== null)
+        // Currently dispatches transaction.created only for bank transfer on banking balance.
+        if ($bankTransfer->isBalanceTypeBanking() === true)
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
         }

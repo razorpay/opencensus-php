@@ -891,6 +891,7 @@ class Entity extends Base\PublicEntity
         $statement = new Statement\Entity;
 
         $statement->exists     = $this->exists;
+        $statement->connection = $this->connection;
         $statement->attributes = $this->attributes;
         $statement->relations  = $this->relations;
         $statement->original   = $this->original;
