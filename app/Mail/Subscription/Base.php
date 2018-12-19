@@ -20,6 +20,16 @@ class Base extends Payment\Base
         return $this;
     }
 
+    protected function addCc()
+    {
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        return $this;
+    }
+
     protected function addSubject()
     {
         $action = $this->getAction();
