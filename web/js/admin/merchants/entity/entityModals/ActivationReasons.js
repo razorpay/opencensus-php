@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 
 import { ModalContent } from 'component/Modal';
 import fetch, { adminFetch } from 'common/fetch';
-import { SelectField, SwitchField } from 'ui/Field';
+import { SelectField, SwitchField, SearchableSelectField } from 'ui/Field';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
@@ -56,7 +56,7 @@ export class RejectActivation extends Component {
   };
 
   handleCodeChange = e => {
-    this.setState({ selectedCode: e.target.value });
+    this.setState({ selectedCode: e.option.value });
   };
 
   handleReasonAdd = () => {
@@ -112,6 +112,13 @@ export class RejectActivation extends Component {
       pending,
     } = this.state;
 
+    let selectedCategories =
+      selectedCategory &&
+      this.allReasons[selectedCategory].map(reason => ({
+        value: reason.code,
+        name: reason.description,
+      }));
+
     return (
       <ModalContent
         header={
@@ -144,18 +151,13 @@ export class RejectActivation extends Component {
                   </option>
                 ))}
               </SelectField>
-              <SelectField
+              <SearchableSelectField
                 label="Select Code:"
                 name="code"
-                value={selectedCode}
+                defaultValue={selectedCode}
+                options={selectedCategories}
                 onChange={this.handleCodeChange}
-              >
-                {this.allReasons[selectedCategory].map(reason => (
-                  <option value={reason.code} key={reason.code}>
-                    {reason.description}
-                  </option>
-                ))}
-              </SelectField>
+              />
               <div class="btn" onClick={this.handleReasonAdd}>
                 + Add Reason
               </div>
