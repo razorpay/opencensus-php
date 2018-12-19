@@ -26,6 +26,7 @@ export default function BulkTransaction() {
         <option value="yesbank">yesbank</option>
         <option value="hdfc">hdfc</option>
         <option value="rbl">rbl</option>
+        <option value="axis2">Power Access</option>
       </SelectField>
       <AsyncButton
         text="Generate"
