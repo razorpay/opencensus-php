@@ -59,6 +59,42 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             padding: 10px 20px;
             white-space: nowrap;
         }
+
+        .cardtype::before {
+            content: '';
+            background: no-repeat url('data:image/png;base64,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');
+            height: 11px;
+            width: 35px;
+            -webkit-background-size: 600% 600%;
+            background-size: 600%;
+            margin: 5px 0 0 -2px;
+            background-position: -20%;
+            display: block;
+        }
+
+        [cardtype=visa]::before, .networkicon.visa {
+            background-position: 0;
+        }
+
+        [cardtype=amex]::before, .networkicon.amex {
+            background-position: 100%;
+        }
+
+        [cardtype=diners]::before, .networkicon.diners {
+            background-position: 60%;
+        }
+
+        [cardtype=maestro]::before, .networkicon.maestro {
+            background-position: 40%;
+        }
+
+        [cardtype=mastercard]::before, .networkicon.mastercard {
+            background-position: 20%;
+        }
+
+        [cardtype=rupay]::before, .networkicon.rupay {
+            background-position: 80%;
+        }
     </style>
     <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
     <script>
@@ -71,7 +107,8 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
               .on('network', function(o) {
 
                 var type = this.type;
-                console.log(type);
+                typeEle = getEl('cardtype');
+                typeEle.setAttribute("cardtype", type);
 
                 // set length of cvv element based on amex card
                 var cvvlen = type === 'amex' ? 4 : 3;
@@ -133,7 +170,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </tr>
         <tr>
             <td colspan="40">Card No:</td>
-            <td><input id="card_number" type="text" name="card[number]" value="6074819900004939" size="25"></td>
+            <td>
+                <input id="card_number" type="text" name="card[number]" value="6074819900004939" size="25">
+                <div class="cardtype" id="cardtype" cardtype=""></div>
+            </td>
         </tr>
         <tr>
             <td colspan="40">CVV:</td>
