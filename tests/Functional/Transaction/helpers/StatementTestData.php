@@ -20,7 +20,7 @@ return [
                 'items'  => [
                     [
                         // 'id'         => '',
-                        'entity'     => 'statement',
+                        'entity'     => 'transaction',
                         'amount'     => 2500,
                         'credit'     => 2500,
                         'debit'      => 0,
@@ -40,7 +40,7 @@ return [
                     ],
                     [
                         // 'id'         => '',
-                        'entity'     => 'statement',
+                        'entity'     => 'transaction',
                         'amount'     => 2500,
                         'credit'     => 2500,
                         'debit'      => 0,
@@ -71,7 +71,7 @@ return [
         'response' => [
             'content' => [
                 // 'id'         => '',
-                'entity'     => 'statement',
+                'entity'     => 'transaction',
                 'amount'     => 2500,
                 'credit'     => 2500,
                 'debit'      => 0,

@@ -113,6 +113,16 @@ class Entity extends Transaction\Entity
 
     /**
      * {@inheritDoc}
+     * Transaction/Statement/* is internal code organization for exposing transaction.
+     * Exposed APIs and entity names etc are 'transaction' only.
+     */
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $array[self::ENTITY] = 'transaction';
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function toArrayPublic()
     {
