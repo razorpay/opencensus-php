@@ -19,6 +19,8 @@ use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
 {
+    use FiresWebhook;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -172,6 +174,8 @@ abstract class EntityProcessor extends Base\Core
         $this->source->setFailureReason($this->fta->getFailureReason());
 
         $this->repo->saveOrFail($this->source);
+
+        $this->fireWebhookForSourceAfterRecon($this->source);
     }
 
     protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)

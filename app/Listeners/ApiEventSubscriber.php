@@ -8,6 +8,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -398,6 +399,28 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPayoutCreated(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutSucceeded(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutFailed(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -574,6 +597,17 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::TRANSACTION => [
                 'entity' => $txn->toStatement()->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getPayoutPayload(Payout\Entity $payout): array
+    {
+        $payload = [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayPublic(),
             ],
         ];
 
