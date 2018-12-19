@@ -112,12 +112,12 @@ export class RejectActivation extends Component {
       pending,
     } = this.state;
 
-    let selectedCategories =
-      selectedCategory &&
-      this.allReasons[selectedCategory].map(reason => ({
-        value: reason.code,
-        name: reason.description,
-      }));
+    let selectedCategories = selectedCategory
+      ? this.allReasons[selectedCategory].map(reason => ({
+          value: reason.code,
+          name: reason.description,
+        }))
+      : [];
 
     return (
       <ModalContent

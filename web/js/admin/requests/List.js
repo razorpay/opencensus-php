@@ -89,9 +89,9 @@ export default class RequestList extends Component {
                 label="Workflow Type"
                 name="workflow_id"
                 placeholder="Search"
-                options={workflows.map(w => ({
-                  name: w.name,
-                  value: w.id.replace('workflow_', ''),
+                options={workflows.map(workflow => ({
+                  name: workflow.name,
+                  value: workflow.id.replace('workflow_', ''),
                 }))}
               />
             )}
@@ -101,9 +101,9 @@ export default class RequestList extends Component {
                   label="Maker Id"
                   name="maker_id"
                   placeholder="Search"
-                  options={admins.map(a => ({
-                    name: a.name,
-                    value: a.id.replace('admin_', ''),
+                  options={admins.map(admin => ({
+                    name: admin.name,
+                    value: admin.id.replace('admin_', ''),
                   }))}
                 />
               )}
