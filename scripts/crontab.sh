@@ -138,7 +138,10 @@ add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/rep
 add_cron "0 1 * * *"        "dsp_report_yesterday"           GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=yesterday"  $LIVE_AUTH
 
 # Daily Recon Summary
-add_cron "30 22 * * *"        "daily_recon_summary"            GET "$BASE_URL/daily_recon_summary"                         ""                              $LIVE_AUTH
+add_cron "30 22 * * *"      "daily_recon_summary"            GET "$BASE_URL/daily_recon_summary"                         ""                              $LIVE_AUTH
+
+# Merchant Es Sync
+add_cron "*/15 * * * *"      "merchant_es_sync_live"         POST "$BASE_URL/merchant/sync_es/bulk"                         ""                           $LIVE_AUTH
 
 # Daily: Dynamic netbanking URL update in status cake
 # add_cron "0 0 * * *"        "dynamic_netbanking_url_update"  POST "$BASE_URL/payment/netbanking/statuscake/urlsync"      "driver=statuscake"             $LIVE_AUTH

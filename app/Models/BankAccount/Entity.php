@@ -68,8 +68,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
+        self::IFSC,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
+        self::NAME,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
@@ -342,6 +344,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
+    protected function setNameAttribute($name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    protected function setIfscAttribute($code)
+    {
+        $this->setIfscCodeAttribute($code);
+    }
+
     protected function setIfscCodeAttribute($code)
     {
         if ($code !== null)
@@ -438,11 +450,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
-    }
-
-    public function associateSource(Base\Entity $entity)
-    {
-        $this->source()->associate($entity);
     }
 
     public function getRedactedAccountNumber()

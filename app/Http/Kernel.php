@@ -8,13 +8,13 @@ class Kernel extends HttpKernel
 {
     /**
      * The application's global HTTP middleware stack.
+     * Removed \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode cause it's useless.
      *
      * @var array
      */
     protected $middleware = [
         Middleware\InspectorAccess::class,
         Middleware\TrustedProxy::class,
-        \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         Middleware\VerifyHttps::class,
     ];
 

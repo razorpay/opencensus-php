@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 
@@ -92,6 +94,29 @@ class Repository extends Base\Repository
                      ->latest()
                      ->first();
     }
+
+    /**
+     * Fetch all current and future down times. This means any down time which has a future end time or null end time
+     * qualify for this case
+     *
+     * @return PublicCollection
+     *
+     */
+
+    public function fetchCurrentAndFutureDowntimesWithoutTerminal(): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(function ($query)
+        {
+            $query->whereNull(Entity::END)
+                ->orWhere(Entity::END, '>=', Carbon::now()->getTimestamp());
+        });
+
+        return $query->whereNull(Entity::TERMINAL_ID)
+            ->get();
+    }
+
 
     public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection
     {

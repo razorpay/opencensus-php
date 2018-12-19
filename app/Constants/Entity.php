@@ -59,6 +59,8 @@ class Entity
     const SCHEDULE                  = 'schedule';
     const TERMINAL                  = 'terminal';
     const TRANSFER                  = 'transfer';
+    // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
+    const STATEMENT                 = 'statement';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
@@ -195,6 +197,7 @@ class Entity
     const WALLET_AIRTELMONEY     = 'wallet_airtelmoney';
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
+    const CARDLESS_EMI           = 'cardless_emi';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -268,6 +271,7 @@ class Entity
         Entity::TRANSACTION,
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
+        Entity::BANK_TRANSFER,
     ];
 
     public static $namespace = [
@@ -301,6 +305,7 @@ class Entity
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
+        self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,
@@ -396,6 +401,7 @@ class Entity
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
+        self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -477,6 +483,8 @@ class Entity
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
+
+        self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
 
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
     ];

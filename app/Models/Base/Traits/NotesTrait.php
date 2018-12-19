@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Traits;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Base\JitValidator;
 use RZP\Models\Base\Notes;
 
 trait NotesTrait
@@ -30,6 +31,21 @@ trait NotesTrait
 
     public function setNotes(array $notes)
     {
+        $this->setAttribute(self::NOTES, $notes);
+    }
+
+    public function appendNotes(array $newNotes)
+    {
+        $oldNotes = $this->getNotes()->toArray();
+
+        // If the key is present in both $oldNotes and $newNotes, it will be overwritten with the new value.
+        $notes = array_merge($oldNotes, $newNotes);
+
+        // Performs validations over the new notes array generated
+        (new JitValidator)->rules(['notes' => 'sometimes|notes'])
+                          ->input(compact('notes'))
+                          ->validate();
+
         $this->setAttribute(self::NOTES, $notes);
     }
 

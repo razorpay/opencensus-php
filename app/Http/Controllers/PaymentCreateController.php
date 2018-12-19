@@ -456,17 +456,17 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'respawn')
             {
-                if ($data['method'] === 'wallet')
+                if ($data['method'] === Payment\Method::WALLET)
                 {
                     return View::make('gateway.gatewayWalletForm')
                                ->with('data', $data);
                 }
-                else if ($data['method'] === 'emandate')
+                else if ($data['method'] === Payment\Method::EMANDATE)
                 {
                     return View::make('emandate.form')
                                ->with('data', $data);
                 }
-                else if ($data['method'] === 'upi')
+                else if ($data['method'] === Payment\Method::UPI)
                 {
                     return View::make('gateway.gatewayUpiForm')
                                ->with('data', [
@@ -474,6 +474,16 @@ class PaymentCreateController extends Controller
                                     'data' => $data,
                                     'cdn'  => $this->config->get('url.cdn.production')
                                ]);
+                }
+                else if ($data['method'] === Payment\Method::CARDLESS_EMI)
+                {
+                    $templateData = [
+                       'data' => $data,
+                       'cdn'  => $this->config->get('url.cdn.production')
+                    ];
+
+                    return View::make('gateway.gatewayOtpPostForm')
+                               ->with('data', $templateData);
                 }
             }
             else

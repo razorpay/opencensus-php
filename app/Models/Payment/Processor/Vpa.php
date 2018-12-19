@@ -31,6 +31,8 @@ trait Vpa
 
         $success = false;
 
+        $gatewayResponse = null;
+
         foreach ($terminals as $terminal)
         {
             try
@@ -38,7 +40,7 @@ trait Vpa
                 $gateway = $terminal->getGateway();
 
                 // Invalid vpa on MindGate and SBI thrown back with GatewayError
-                $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+                $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
 
                 $success = true;
                 break;
@@ -50,6 +52,7 @@ trait Vpa
         }
 
         $response['success'] = $success;
+        $response['customer_name'] = $gatewayResponse;
 
         return $response;
     }

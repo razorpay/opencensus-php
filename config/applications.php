@@ -229,6 +229,7 @@ return [
         'iam_role'          => env('KUBERNETES_IAM_ROLE') ?: env('APP_ENV') . '-api',
         'image_path'        => env('KUBERNETES_IMAGE_PATH'),
         'node_selector'     => env('KUBERNETES_NODE_SELECTOR'),
+        'log_path'          => env('KUBERNETES_LOG_PATH'),
         'git_commit_hash'   => env('GIT_COMMIT_HASH', false),
         'app_mode'          => env('APP_MODE'),
         'app_env'           => env('APP_ENV'),

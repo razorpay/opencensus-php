@@ -28,7 +28,7 @@ class Service extends Base\Service
 
     public function getGatewayDowntimeDataForDashboard(): array
     {
-        $downtimes = $this->core()->getPublicGatewayDowntimeData();
+        $downtimes = $this->core()->getCurrentAndFutureGatewayDowntimeData();
 
         return $downtimes->toArrayAdmin();
     }

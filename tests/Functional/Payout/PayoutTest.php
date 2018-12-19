@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -26,6 +28,14 @@ class PayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
     }
 
     public function testCreatePayout(): array
@@ -38,10 +48,13 @@ class PayoutTest extends TestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
 
         // Verify transaction entity
@@ -51,6 +64,37 @@ class PayoutTest extends TestCase
         $this->assertEquals('10000000000000', $txn['balance_id']);
 
         return $payout;
+    }
+
+    public function testCreatePayoutWithOtp()
+    {
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+    }
+
+    public function testCreatePayoutWithInvalidOtp()
+    {
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '1234';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+
+        $this->startTest();
     }
 
     public function testRetryPayout(): array
@@ -72,7 +116,7 @@ class PayoutTest extends TestCase
         $this->assertEquals($payoutAfterRetry['attempts'], 1);
         $this->assertEquals($payoutAfterRetry['id'], $payoutAttempt['source']);
         $this->assertEquals($payoutAfterRetry['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payoutAfterRetry['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payoutAfterRetry['batch_fund_transfer_id'], $payoutAttempt['batch_fund_transfer_id']);
 
         // ----- End of testing payout retry for non failed payouts ------ //
@@ -111,7 +155,7 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['attempts'], 2);
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['fund_account_id'], 'fa_100000000000fa');
         $this->assertNull($payout['batch_fund_transfer_id']);
         $this->assertNull($payoutAttempt['batch_fund_transfer_id']);
 
@@ -236,7 +280,7 @@ class PayoutTest extends TestCase
         // Verify attempt entity
         $this->assertEquals($payout2['id'], $payoutAttempt['source']);
         $this->assertEquals($payout2['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payout2['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
 
         return $payout;
     }
