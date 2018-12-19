@@ -11,11 +11,14 @@ import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import MultiSelectField from 'ui/MultiSelectField';
 
+// TODO: import currency data in a better way
+import CurrencyData from './currency.json';
+
 const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
   atom: 'Atom',
-  cardless_emi:'Cardless EMI',
+  cardless_emi: 'Cardless EMI',
   axis_migs: 'Axis MIGS',
   axis_genius: 'Axis Genius',
   ezeclick: 'Ezeclick',
@@ -77,8 +80,8 @@ const gatewayAcquirerMapping = {
   ratn: 'RBL',
   barb: 'Bank of Baroda',
   fss: 'FSS',
-  zestmoney : 'ZestMoney',
-  earlysalary :'EarlySalary',
+  zestmoney: 'ZestMoney',
+  earlysalary: 'EarlySalary',
 };
 
 const HDFC_gatewayAcquirerMapping = {
@@ -334,11 +337,15 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
-        <SelectField name="cardless_emi" label="CardlessEMI Allowed" defaultValue="">
-        <option value="" />
-        <option value="1">Yes</option>
-        <option value="0">No</option>
-        </SelectField>
+          <SelectField
+            name="cardless_emi"
+            label="CardlessEMI Allowed"
+            defaultValue=""
+          >
+            <option value="" />
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </SelectField>
 
           <SelectField
             name="bank_transfer"
@@ -368,10 +375,9 @@ export default class TerminalForm extends Component {
 
           <SelectField name="currency" label="Currency" defaultValue="">
             <option value="" />
-            <option value="INR">INR</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="SGD">SGD</option>
+            {CurrencyData.data.map(({ code }) => (
+              <option value={code}>{code}</option>
+            ))}
           </SelectField>
 
           <SelectField name="emi" label="Emi" defaultValue="">
