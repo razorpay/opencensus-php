@@ -63,3 +63,5 @@ export BeamNodalAction from './BeamNodalAction';
 export SetEmandateGateway from './SetEmandateGateway';
 
 export RazorxActions from './RazorxActions';
+
+export ScroogeRefundCreateBulk from './ScroogeRefundCreateBulk';
