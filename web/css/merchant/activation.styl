@@ -40,10 +40,10 @@ $side-width = 240px
     margin-top: 28px
   
   &.Wizard
-    li.active::after
-      top: auto
-      transform: rotate(-90deg)
-      transition: none;
+    li.active
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
   main
     left: 0
