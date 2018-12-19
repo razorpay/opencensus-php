@@ -225,8 +225,7 @@ trait RequestHandlerTrait
 
             $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
 
-//            s($response);
-//            $this->printLastSoapXml($soapClient);
+            $this->logSoapRequestAndResponse($response, $soapClient, $command);
 
         }
         catch (SoapFault $sf)
@@ -331,14 +330,23 @@ trait RequestHandlerTrait
     }
     //---------------- Soap Request related functions end --------------------
 
-    protected function printLastSoapXml($soapClient)
+    protected function logSoapRequestAndResponse($response, $soapClient, $command)
     {
         $xml = $soapClient->__getLastRequest();
         $dom = new \DOMDocument('1.0');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
         $dom->loadXML($xml);
-        echo '<pre>'.htmlentities($dom->saveXML()).'</pre>';
-        die;
+        $request = $dom->saveXML();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_SOAP_REQUEST,
+            [
+                'request'    => $request,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input['payment']['id'],
+                'command'    => $command,
+            ]);
     }
 }
