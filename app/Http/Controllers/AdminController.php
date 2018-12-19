@@ -112,6 +112,12 @@ class AdminController extends Controller
         ]);
     }
 
+    public function putAction($merchantId)
+    {
+        list($error, $data) = (new Admin\Service)->action($merchantId);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     protected function getGoogleOAuthUrl()
     {
         $googleService = OAuthFacade::consumer('Google');

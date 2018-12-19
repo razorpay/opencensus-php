@@ -84,6 +84,34 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function action($merchantId)
+    {
+        try
+        {
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
+
+            $input = Request::all();
+            $action = $input['action'];
+
+            list($error, $data) = $request->send("merchants/{$merchantId}/action", Request::method());
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+        catch (\Razorpay\Api\Errors\ServerError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        if((empty($error) === true) and ($action === 'suspend'))
+        {
+            $this->clearMerchantUserSessions($merchantId);
+        }
+
+        return [$error, $data];
+    }
+
     public function oAuthLogin($input)
     {
         $error = $data = null;
