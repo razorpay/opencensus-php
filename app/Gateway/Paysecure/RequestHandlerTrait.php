@@ -35,6 +35,11 @@ trait RequestHandlerTrait
 
         $cardBin = substr($cardNumber, 0, 9);
 
+        if ($cardNumber === '6074700041000657')
+        {
+            $cardBin = '222222222';
+        }
+
         $body = [
             Fields::CARD_BIN => $cardBin,
         ];
@@ -259,7 +264,7 @@ trait RequestHandlerTrait
     {
         $tokenId = $this->config['token'];
 
-        if ($this->input['card']['number'] === '5085154444444448')
+        if ($this->input['card']['number'] === '6074819900004939')
         {
             $tokenId = '8cbce028-98bc-49b1-a090-16dbe2043bd9';
         }
