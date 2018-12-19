@@ -177,7 +177,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </tr>
         <tr>
             <td colspan="40">CVV:</td>
-            <td><input size="3" id="card_cvv" type="text" name="card[cvv]" value="123" maxlength=4></td>
+            <td><input size="3" id="card_cvv" type="password" name="card[cvv]" value="123" maxlength=4></td>
         </tr>
         <tr>
             <td colspan ='40'>Exp Date:</td>
