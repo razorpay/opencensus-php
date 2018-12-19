@@ -59,7 +59,7 @@ export default class RequestList extends Component {
     const { workflows, selectedType, admins } = this.state;
 
     return (
-      <div class="list-container">
+      <div class="list-container requests-list-container">
         <div class="box">
           <header>Workflow Requests</header>
           <Form onSubmit={this.onSubmit} class="filters">
