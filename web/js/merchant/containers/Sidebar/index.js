@@ -174,8 +174,9 @@ export default class Sidebar extends Component {
                   actionCopy = 'Activate your account';
 
                   if (isL1Submitted) {
-                    if (user.isActivated) actionCopy = 'Accept Payments';
-                    else actionCopy = 'Submit KYC';
+                    actionCopy = user.isActivated
+                      ? 'Accept Payments'
+                      : 'Submit KYC';
                   }
                 } else if (user.isSubmitted) {
                   actionCopy = 'Form submitted';
