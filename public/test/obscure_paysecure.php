@@ -1,7 +1,6 @@
 <!doctype html>
 <html>
 <?php
-
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
 $key_id = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
@@ -62,6 +61,36 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         }
     </style>
     <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
+    <script>
+        window.onload = function(e) {
+            var getEl = document.getElementById.bind(document);
+            window.formatter = Razorpay.setFormatter(getEl('paymentform'));
+            var cvvField = getEl('card_cvv');
+
+            formatter.add('card', getEl('card_number'))
+              .on('network', function(o) {
+
+                var type = this.type;
+                console.log(type);
+
+                // set length of cvv element based on amex card
+                var cvvlen = type === 'amex' ? 4 : 3;
+                cvvField.maxLength = cvvlen;
+                cvvField.pattern = '^[0-9]{' + cvvlen + '}$';
+
+                getEl('card_type').innerHTML = type;
+              })
+              .on('change', function() {
+                var isValid = this.isValid();
+                getEl('card_valid').innerHTML = isValid ? 'valid' : 'invalid';
+
+                // automatically focus next field if card number is valid and filled
+                if (isValid && this.el.value.length === this.caretPosition) {
+                  getEl('card_expiry').focus();
+                }
+              })
+        };
+    </script>
 </head>
 <body>
 <script type="application/javascript">
@@ -75,14 +104,20 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 <form method="post" id="paymentform" action="//<?=$public_url?>/payments" onsubmit="disableEmptyInputs(this)">
     <div style="background: brown; color: #fff; text-align: center; padding: 8px 0">Enter Parameters</div>
     <table>
-
         <tr>
             <input type="hidden" value="card" name="method">
 
         </tr>
         <tr>
             <td colspan="40">Sponsor bank:</td>
-            <td><strong>RBL Bank</strong></td>
+            <td style="display: flex;">
+                <div>
+                    <strong>RBL Bank&nbsp;&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div>
+                    <img style="width: 80px; height: auto;" src="/test/images/rbl_logo.png"/>
+                </div>
+            </td>
         </tr>
         <tr>
             <td colspan="40">Razorpay Key:</td>
@@ -98,11 +133,11 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </tr>
         <tr>
             <td colspan="40">Card No:</td>
-            <td><input type="text" name="card[number]" value="6074819900004939" size="25"></td>
+            <td><input id="card_number" type="text" name="card[number]" value="6074819900004939" size="25"></td>
         </tr>
         <tr>
             <td colspan="40">CVV:</td>
-            <td><input size="3" type="text" name="card[cvv]" value="123" maxlength=4></td>
+            <td><input size="3" id="card_cvv" type="text" name="card[cvv]" value="123" maxlength=4></td>
         </tr>
         <tr>
             <td colspan ='40'>Exp Date:</td>
