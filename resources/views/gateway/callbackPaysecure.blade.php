@@ -19,8 +19,13 @@
             font-weight: bold;
             font-size: 1.1em;
         }
+
+        .footer {
+            margin: 0px auto;
+            text-align: center;
+        }
     </style>
-    <body>
+    <br>
         <div id="container">
             <table>
                 <thead>
@@ -50,7 +55,7 @@
                 </tr>
             </table>
         </div>
-
-    You may safely close this tab.
+        <br/>
+    <div class="footer"><b>You may safely close this tab.</b></div>
     </body>
 </html>

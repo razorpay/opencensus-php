@@ -61,6 +61,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             white-space: nowrap;
         }
     </style>
+    <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
 </head>
 <body>
 <script type="application/javascript">
