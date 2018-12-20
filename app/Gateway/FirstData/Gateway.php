@@ -123,6 +123,12 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getPurchaseRequestArray($input);
 
+        $gatewayPayment = [
+            'amount' => $input['payment'][Payment\Entity::AMOUNT],
+        ];
+
+        $defaultEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
+
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
         $response = $this->getSoapResponse($requestContent);
@@ -139,7 +145,7 @@ class Gateway extends Base\Gateway
 
         $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
-        $purchaseEntity = $this->createGatewayPaymentEntity($purchaseFields, $input);
+        $purchaseEntity = $this->updateGatewayPaymentEntity($defaultEntity, $purchaseFields, false);
 
         $this->checkApprovalCode($purchaseEntity);
     }

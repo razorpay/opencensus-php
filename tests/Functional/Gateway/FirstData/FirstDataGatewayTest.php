@@ -135,6 +135,55 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
+    public function testFailedRecurringPayment()
+    {
+        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayErrorException(\RZP\Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        });
+
+        // Set payment for second recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        // Switch to private auth for second recurring payment
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doS2sRecurringPayment($payment);
+        });
+
+        $lastPayment = $this->getLastEntity('Payment', true);
+        $this->assertEquals($lastPayment['status'], 'failed');
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+        $this->assertNull($gatewayEntity['transaction_result']);
+    }
+
     public function testPaymentAuthAndCapture()
     {
         $authResponse = $this->doAuthPayment($this->payment);
