@@ -205,7 +205,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected function getPaymentType($amount, BankAccount\Entity $ba)
     {
-        $ifsc          = $ba->getIfscCode();
+        $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
@@ -294,16 +294,6 @@ class NodalAccount extends NodalBase\FileProcessor
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
-        }
-
-        //
-        // Need this only for Piggy merchants currently. Hence
-        // the check against parentId and not the merchantId.
-        // Temporary solution. Proper solution coming soon.
-        //
-        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
-        {
-            $mode = Mode::NEFT;
         }
 
         return $mode;

@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -25,6 +25,8 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
+
+        $this->processAccountNumber($input);
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
@@ -45,6 +47,8 @@ class Service extends Base\Service
         (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
 
         $payoutInput = array_except($input, ['otp', 'token']);
+
+        $this->processAccountNumber($input);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
@@ -100,5 +104,27 @@ class Service extends Base\Service
         $data = (new Core)->retryFailedPayouts($input);
 
         return $data;
+    }
+
+    protected function processAccountNumber(array & $input)
+    {
+        //
+        // If the account number is not present, we don't care about anything.
+        // The payout would happen from the merchant's primary balance.
+        //
+        if (isset($input[Entity::ACCOUNT_NUMBER]) === false)
+        {
+            return;
+        }
+
+        //
+        // If an account number is present, it means that the merchant
+        // should be enabled on business banking and we have to convert
+        // to balance_id.
+        //
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 }

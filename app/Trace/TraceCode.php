@@ -655,6 +655,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
+    const INVALID_ATTEMPT_ID                        = 'INVALID_ATTEMPT_ID';
     const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
     const FTA_FETCHED                               = 'FTA_FETCHED';
     const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';

@@ -23,25 +23,19 @@ abstract class NodalAccount extends Base\Core
     const FAILED                 = 'failed';
 
     const MIN_RTGS_AMOUNT        = 200000;
-
     const MAX_IMPS_AMOUNT        = 200000;
 
     const RTGS_CUTOFF_HOUR_MIN   = 8;
-
     const RTGS_CUTOFF_HOUR_MAX   = 15;
-
     const RTGS_CUTOFF_MINUTE_MAX = 45;
 
     protected $batchFundTransfer = null;
 
     protected $amount = 0;
-
     protected $fees = 0;
-
     protected $tax = 0;
 
     protected $count = 0;
-
     protected $txnsCount = 0;
 
     protected $channel = null;
@@ -57,8 +51,9 @@ abstract class NodalAccount extends Base\Core
     protected $isWorkingDay;
 
     protected $bankingStartTime;
-
     protected $bankingEndTime;
+    protected $bankingStartTimeRtgs;
+    protected $bankingEndTimeRtgs;
 
     public function __construct(string $purpose = null)
     {
@@ -71,6 +66,16 @@ abstract class NodalAccount extends Base\Core
         $this->bankingStartTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
 
         $this->bankingEndTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+
+        $this->bankingStartTimeRtgs = Carbon::createFromTime(self::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+                                            ->getTimestamp();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime(
+                                                self::RTGS_CUTOFF_HOUR_MAX,
+                                                self::RTGS_CUTOFF_MINUTE_MAX,
+                                                0,
+                                                Timezone::IST)
+                                          ->getTimestamp();
 
         $this->initSummary();
 
@@ -98,25 +103,12 @@ abstract class NodalAccount extends Base\Core
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
-        $rtgsMinCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MIN,
-            0,
-            0,
-            Timezone::IST
-        )->getTimestamp();
-
-        $rtgsMaxCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MAX,
-            self::RTGS_CUTOFF_MINUTE_MAX,
-            0,
-            Timezone::IST)->getTimestamp();
-
-
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mode = Mode::NEFT;
 
-        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
+        if ((($now >= $this->bankingStartTimeRtgs) and
+             ($now <= $this->bankingEndTimeRtgs)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;

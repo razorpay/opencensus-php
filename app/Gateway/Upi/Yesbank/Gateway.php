@@ -155,6 +155,8 @@ class Gateway extends Mindgate\Gateway
 
         $actualAmount = number_format($responseArray[Fields::AMOUNT], 2, '.', '');
 
+        $this->trace->info(TraceCode::GATEWAY_FATAL_ERROR,['expected' => $expectedAmount, 'actual' => $actualAmount]);
+
         if ($expectedAmount !== $actualAmount)
         {
             $this->trace->error(

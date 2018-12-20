@@ -13,6 +13,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Error\PublicErrorDescription;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Merchant
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
@@ -1010,7 +1017,14 @@ class Validator extends Base\Validator
 
         if ($merchant->isBusinessBankingEnabled() === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                null,
+                [
+                    'merchant_id'      => $merchant->getId(),
+                    'merchant_name'    => $merchant->getName(),
+                    'business_banking' => $merchant->isBusinessBankingEnabled()
+                ]);
         }
     }
 
@@ -1036,7 +1050,9 @@ class Validator extends Base\Validator
 
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
         $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+
         $input[Balance\Entity::BALANCE_ID] = $balanceId;
     }
 }

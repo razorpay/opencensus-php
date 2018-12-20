@@ -64,6 +64,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
+    const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given mode cannot be used for the payout amount specified';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
@@ -746,6 +747,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED                          = 'Payment failed because Transaction frequency limit has exceeded';
     const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'Payment failed because Transaction amount limit has exceeded';
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
+    const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'Access to requested resource not available';
 
     const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'Beneficiary registration failed due to error';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
@@ -756,4 +758,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_MOBILE_NUMBER_MAPPED_TO_MULTIPLE_CUSTOMERS        = 'Mobile number registered with multiple customers';
     const BAD_REQUEST_DUPLICATE_REQUEST                                             = 'The request is duplicate';
     const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
+    const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'The mode is not valid for the given account type';
 }

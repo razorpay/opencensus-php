@@ -1138,7 +1138,7 @@ class VirtualAccountTest extends TestCase
 
         $this->expectException(\Rzp\Exception\BadRequestException::class);
 
-        $this->expectExceptionMessage('Access forbidden for requested resource');
+        $this->expectExceptionMessage('Access to requested resource not available');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
 

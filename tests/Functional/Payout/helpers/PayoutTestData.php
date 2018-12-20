@@ -14,7 +14,6 @@ return [
             'content' => [
                 'amount'          => 1000,
                 'currency'        => 'INR',
-                'method'          => 'fund_transfer',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -26,7 +25,6 @@ return [
                 'entity'          => 'payout',
                 'amount'          => 1000,
                 'currency'        => 'INR',
-                'method'          => 'fund_transfer',
                 'fund_account_id' => 'fa_100000000000fa',
                 'tax'             => 92,
                 'fees'            => 602,
@@ -51,7 +49,6 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -74,7 +71,6 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -115,7 +111,6 @@ return [
             'content' => [
                 'amount'      => 1000000,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'destination' => 'ba_9LfZofLRJIpwrH',
                 'customer_id' => 'cust_100000customer',
                 'notes'       => [
@@ -146,7 +141,6 @@ return [
             'content' => [
                 'amount'      => 1000000,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'       => [
                     'abc' => 'xyz',
@@ -201,7 +195,6 @@ return [
             'content' => [
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'       => [
                     'abc' => 'xyz',
@@ -231,7 +224,6 @@ return [
                 'amount'      => 3000,
                 'currency'    => 'INR',
                 'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
                 'notes'       => [
                     'abc' => 'xyz',
@@ -261,7 +253,6 @@ return [
                 'amount'          => 2000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
-                'method'          => 'fund_transfer',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -289,7 +280,6 @@ return [
             'content' => [
                 'amount'          => 1000,
                 'currency'        => 'INR',
-                'method'          => 'fund_transfer',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -308,36 +298,6 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,
-        ],
-    ],
-
-    'testCreateBankAccountPayoutOnCardPayment' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/payments/{id}/payout',
-            'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
-                'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
-                'notes'       => [
-                    'abc' => 'xyz',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
         ],
     ],
 
@@ -381,7 +341,6 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 398,
                 'currency'    => 'INR',
-                'method'      => 'fund_transfer',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []

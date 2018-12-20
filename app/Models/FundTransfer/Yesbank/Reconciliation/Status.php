@@ -5,9 +5,9 @@ namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus

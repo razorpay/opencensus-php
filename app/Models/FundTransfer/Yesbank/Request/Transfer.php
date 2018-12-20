@@ -7,9 +7,11 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 
@@ -90,7 +92,7 @@ class Transfer extends Base
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
-                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity->bankAccount, $amount),
+                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
                 Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
@@ -124,7 +126,7 @@ class Transfer extends Base
             'merchant' => $source->merchant->toArrayPublic(),
             'gateway_input' => [
                 'amount'    => $amount,
-                'vpa'       => $fta->getVpa(),
+                'vpa'       => $fta->vpa->getAddress(),
                 'ref_id'    => $fta->getId(),
             ]
         ];
@@ -135,25 +137,11 @@ class Transfer extends Base
         return Action::PAYOUT;
     }
 
-    protected function getPaymentType(BankAccount\Entity $ba, $amount)
+    protected function getPaymentType(Attempt\Entity $attempt, $amount)
     {
-        // NOTE: Any change here needs to be made in `getPaymentMethod` also in
-        // FundTransfer\YesBank\NodalAccount.php
+        $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
 
-        $ifsc = $ba->getIfscCode();
-
-        $ifscFirstFour = substr($ifsc, 0, 4);
-
-        if ($ifscFirstFour === IFSC::YESB)
-        {
-            return Constants::FT;
-        }
-        else if ($amount < self::MAX_IMPS_AMOUNT)
-        {
-            return Mode::IMPS;
-        }
-
-        return $this->getTransferMode($amount, $ba->merchant);
+        return Mode::getExternalModeFromInternalMode($mode);
     }
 
     protected function getPurposeSpecificData(): array
@@ -245,6 +233,11 @@ class Transfer extends Base
         //     self::REFERENCE_NUMBER,
         //     self::MODE
 
+        //
+        // We have null checks everywhere since it's possible that the
+        // third-party is down and we don't get any data at all.
+        //
+
         // FTA ID
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
         $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
@@ -313,5 +306,6 @@ class Transfer extends Base
     protected function mockGenerateFailedResponseForGateway(): array
     {
         // TODO: Return stuff
+        return [];
     }
 }

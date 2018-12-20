@@ -205,7 +205,6 @@ class BankTransferTest extends TestCase
             Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('NEFT', $attempt['mode']);
         $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
 
         $channel = Channel::YESBANK;
@@ -358,7 +357,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
-        $this->assertEquals($bankTransfer['mode'], $attempt['mode']);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);

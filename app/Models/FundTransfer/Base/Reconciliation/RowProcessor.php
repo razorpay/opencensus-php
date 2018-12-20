@@ -5,10 +5,10 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt\Metric;
-use RZP\Models\FundTransfer\Attempt\Entity as AttemptEntity;
 
 abstract class RowProcessor extends Base\Core
 {
@@ -135,17 +135,29 @@ abstract class RowProcessor extends Base\Core
 
         $remarks = $this->reconEntity->getRemarks();
 
-        $this->reconEntity->source->setUtr($utr);
+        $mode = $this->reconEntity->getMode();
 
-        $this->reconEntity->source->setRemarks($remarks);
+        $source = $this->reconEntity->source;
 
-        $this->repo->saveOrFail($this->reconEntity->source);
+        $source->setUtr($utr);
+
+        $source->setRemarks($remarks);
+
+        if ($this->reconEntity->getSourceType() === Type::PAYOUT)
+        {
+            $source->setMode($mode);
+        }
 
         $this->trace->info(
             TraceCode::FTA_RECON_SOURCE_UPDATED,
             [
-                'source_id' => $this->reconEntity->source->getId()
+                'source_id'         => $source->getId(),
+                'fta_id'            => $this->reconEntityId,
+                'source_original'   => $source->getOriginalAttributesAgainstDirty(),
+                'source_dirty'      => $source->getDirty(),
             ]);
+
+        $this->repo->saveOrFail($source);
     }
 
     /**

@@ -58,9 +58,11 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
+    const MODE                   = 'mode';
 
     // Public attribute
     const DESTINATION            = 'destination';
+
 
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be
@@ -73,6 +75,9 @@ class Entity extends Base\PublicEntity
     // Constants for payout types
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
+
+    // Input keys
+    const ACCOUNT_NUMBER = 'account_number';
 
     // Relations
     const USER     = 'user';
@@ -100,7 +105,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::PROCESSED_AT,
         self::SETTLED_ON,
-        self::TYPE
+        self::TYPE,
+        self::MODE,
     ];
 
     protected $visible = [
@@ -129,8 +135,9 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::SETTLED_ON,
         self::TYPE,
+        self::MODE,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -150,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::SETTLED_ON,
+        self::MODE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -250,6 +258,11 @@ class Entity extends Base\PublicEntity
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
     }
 
     public function getAmount()
@@ -400,6 +413,16 @@ class Entity extends Base\PublicEntity
     public function setMethod($method)
     {
         $this->setAttribute(self::METHOD, $method);
+    }
+
+    public function setMode($mode)
+    {
+        if ($mode !== null)
+        {
+            FundTransfer\Mode::validateMode($mode);
+        }
+
+        $this->setAttribute(self::MODE, $mode);
     }
 
     public function setStatus($status)
