@@ -4564,3 +4564,7 @@ ALTER TABLE payouts
 ALTER TABLE vpas
     DROP INDEX vpas_username_handle_unique,
     ADD INDEX vpas_username_handle_index (username, handle);
+
+ALTER TABLE contacts
+    ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX contacts_reference_id_merchant_id_index (reference_id, merchant_id);
