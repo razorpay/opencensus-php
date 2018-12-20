@@ -52,6 +52,8 @@ class Table
     const TERMINAL                  = 'terminals';
     const CUSTOMER                  = 'customers';
     const TRANSFER                  = 'transfers';
+    // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
+    const STATEMENT                 = 'transactions';
     const REVERSAL                  = 'reversals';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotions';
@@ -150,6 +152,7 @@ class Table
     const CYBERSOURCE           = 'cybersource';
     const CARD_FSS              = 'card_fss';
     const ISG                   = 'isg';
+    const CARDLESS_EMI          = 'cardless_emi';
 
     // Sessions table
     const SESSION               = 'sessions';

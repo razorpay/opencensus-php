@@ -143,7 +143,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Send Oto to customer
+     * Send Otp to customer
      *
      * @param  details of customer for otp send
      * @return success/failure
@@ -217,6 +217,21 @@ class Service extends Base\Service
 
         if ($sendOtp === true)
         {
+            if (isset($input['provider']) === true)
+            {
+                $contact = Customer\Validator::validateAndParseContact($contact);
+
+                $input['contact'] = $contact;
+
+                $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $this->merchant['id']);
+
+                $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'check_account', $input, $this->mode, $terminal);
+
+                $this->sendOtp(['contact' => $contact]);
+
+                return ['saved' => true];
+            }
+
             $sessionData = $this->app['request']->session()->all();
 
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
@@ -609,7 +624,14 @@ class Service extends Base\Service
 
     public function processCustomerWalletPayout(string $customerId, array $input = []): array
     {
-        $payout = (new Payout\Core)->createPayoutToCustomerWallet($customerId, $input, $this->merchant);
+        Entity::verifyIdAndStripSign($customerId);
+
+        /** @var Customer\Balance\Entity $customerBalance */
+        $customerBalance = $this->repo->customer_balance->findByIdAndMerchant($customerId, $this->merchant);
+
+        $customer = $customerBalance->customer;
+
+        $payout = (new Payout\Core)->createPayoutFromCustomerWallet($input, $customer, $this->merchant);
 
         return $payout->toArrayPublic();
     }

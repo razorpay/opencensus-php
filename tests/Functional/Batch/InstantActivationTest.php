@@ -8,7 +8,7 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
-class InstantActivation extends TestCase
+class InstantActivationTest extends TestCase
 {
     use BatchTestTrait;
 

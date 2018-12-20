@@ -4,11 +4,12 @@ namespace RZP\Models\Payout;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -27,17 +28,22 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'sometimes|public_id',
         Entity::DESTINATION     => 'sometimes|public_id',
-        Entity::TYPE            => 'sometimes|string'
+        Entity::TYPE            => 'sometimes|string',
+        Entity::BALANCE_ID      => 'sometimes|public_id',
+        Entity::FUND_ACCOUNT_ID => 'sometimes|public_id'
     ];
 
-    protected static $customerPayoutRules = [
+    protected static $fundAccountPayoutRules = [
         Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
+        // Either (customer_id, destination) or fund_account_id is required
+        Entity::CUSTOMER_ID     => 'sometimes|public_id',
+        Entity::DESTINATION     => 'sometimes|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -46,8 +52,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $merchantPayoutRules = [
@@ -55,7 +61,8 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
-        Entity::TYPE            => 'required|string|max:30|in:default,on_demand'
+        Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
+        Entity::BALANCE_ID      => 'sometimes|filled|public_id',
     ];
 
     protected static $merchantRules = [

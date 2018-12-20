@@ -67,11 +67,21 @@ class Service extends Base\Service
             ]);
         }
 
+        $ifsc = BankCodes::getIfscForBankCode($input[Entity::BANK]);
+
+        if (empty($ifsc) === true)
+        {
+            throw new Exception\LogicException(
+                'Should not have reached here.', null, [
+                Entity::BANK    => $input[Entity::BANK],
+            ]);
+        }
+
         $additionalInput = [
             Entity::BANK_ACCOUNT    => [
-                BankAccount\Entity::ACCOUNT_NUMBER      =>  $input[Entity::ACCOUNT_NUMBER],
-                BankAccount\Entity::IFSC_CODE           =>  BankCodes::getIfscForBankCode($input[Entity::BANK]),
-                BankAccount\Entity::BENEFICIARY_NAME    =>  $input[Entity::PAYER_NAME] ?? '',
+                BankAccount\Entity::ACCOUNT_NUMBER          =>  $input[Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::IFSC                    =>  $ifsc,
+                BankAccount\Entity::NAME                    =>  $input[Entity::PAYER_NAME] ?? '',
             ],
         ];
 
@@ -113,18 +123,18 @@ class Service extends Base\Service
             return;
         }
 
-        if (isset($input[Entity::BANK_ACCOUNT][BankAccount\Entity::BENEFICIARY_NAME]) === false)
+        if (isset($input[Entity::BANK_ACCOUNT][BankAccount\Entity::NAME]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The bank account.beneficiary name field is required when bank account is present.',
-                Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::BENEFICIARY_NAME
+                'The bank account.name field is required when bank account is present.',
+                Entity::BANK_ACCOUNT . '.' . BankAccount\Entity::NAME
             );
         }
 
         (new BankAccount\Validator())->validateIfscCode($input[Entity::BANK_ACCOUNT], $this->mode);
 
         // Get Bank Code from IFSC here.
-        $bankCode   = strtoupper(substr($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC_CODE], 0, 4));
+        $bankCode   = strtoupper(substr($input[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC], 0, 4));
 
         if (array_key_exists($bankCode, Netbanking::$defaultInconsistentBankCodesMapping) === true)
         {

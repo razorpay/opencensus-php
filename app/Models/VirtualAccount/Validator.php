@@ -45,4 +45,39 @@ class Validator extends Base\Validator
                 $data);
         }
     }
+
+    /**
+     * @param array $receivers
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateReceiversForBanking(array $receivers)
+    {
+        $virtualAccount = $this->entity;
+
+        if ($virtualAccount->isBalanceTypeBanking() === false)
+        {
+            return;
+        }
+
+        // Must only have types as [bank_account] for banking balance case.
+        if ((count($receivers[Entity::TYPES]) !== 1) or
+            ($receivers[Entity::TYPES][0] !== Receiver::BANK_ACCOUNT))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Receiver of type bank_account must only exist',
+                Entity::RECEIVERS,
+                compact('receivers'));
+        }
+
+        // Must no other virtual account exists against this banking balance
+        $exists = app('repo')->virtual_account->existsByBalanceId($virtualAccount->getBalanceId());
+
+        if ($exists === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Only one virtual account per banking balance must exist',
+                Entity::RECEIVERS,
+                compact('receivers'));
+        }
+    }
 }

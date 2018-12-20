@@ -43,6 +43,7 @@ trait PaymentTrait
     use PaymentFreechargeTrait;
     use PaymentTraitMpiEnstage;
     use PaymentCybersourceTrait;
+    use PaymentCardlessEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -555,6 +556,21 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
+    protected function makeOtpVerifyCallback($url, $email, $contact)
+    {
+        $request = [
+            'url'       => $url,
+            'method'    => 'POST',
+            'content'   => [
+                'otp'   => '0007',
+                'email'  => $email,
+                'contact' => $contact,
+            ],
+        ];
+
+        return $this->sendRequest($request);
+    }
+
     protected function makeRedirectTo3ds($url)
     {
         $request = [
@@ -916,6 +932,11 @@ trait PaymentTrait
         $input = $this->getDefaultScroogeInputArray();
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
+
+        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        {
+            $input['reference_no'] = random_integer(12);
+        }
 
         $this->ba->scroogeAuth();
 
@@ -1360,6 +1381,18 @@ trait PaymentTrait
         $payment['amount'] = $amount ?? $payment['amount'];
 
         unset($payment['bank'], $payment['card']);
+
+        return $payment;
+    }
+
+    protected function getDefaultCardlessEmiPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'cardless_emi';
+        $payment['provider'] = $provider;
+        $payment['emi_duration'] = 3;
+
+        unset($payment['card'], $payment['bank']);
 
         return $payment;
     }

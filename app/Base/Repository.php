@@ -436,8 +436,6 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
-     *
-     * @throws Exception\LogicException
      */
     public function lockForUpdateAndReload(
         Models\Base\PublicEntity $entity,
@@ -525,6 +523,29 @@ class Repository extends \Razorpay\Spine\Repository
         $entity = $query->findOrFail($id);
 
         return $this->serializeForIndexing($entity);
+    }
+
+    /**
+     * Find entities with given ids for indexing.
+     *
+     * @param array $ids
+     *
+     * @return array
+     */
+    public function findManyForIndexingByIds(array $ids): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->findOrFail($ids);
+
+        return array_map(
+            function($v)
+            {
+                return $this->serializeForIndexing($v);
+            },
+            $collection->all());
     }
 
     /**
@@ -851,10 +872,16 @@ class Repository extends \Razorpay\Spine\Repository
             in_array($this->entity, E::ENTITIES_WITH_BALANCE_ID_COLUMN),
             "Entity not whitelisted for this query - $this->entity");
 
-        return $this->newQuery()
-                    ->select(PublicEntity::MERCHANT_ID)
-                    ->whereNull('balance_id')
-                    ->limit($limit)
+        $mids = $this->newQuery()
+                     ->select(PublicEntity::MERCHANT_ID)
+                     ->whereNull('balance_id');
+
+        if ($this->entity === E::TRANSACTION)
+        {
+            $mids->whereNotNull('balance');
+        }
+
+        return $mids->limit($limit)
                     ->distinct()
                     ->get()
                     ->pluck(PublicEntity::MERCHANT_ID)
@@ -867,10 +894,15 @@ class Repository extends \Razorpay\Spine\Repository
             in_array($this->entity, E::ENTITIES_WITH_BALANCE_ID_COLUMN),
             "Entity not whitelisted for this query - $this->entity");
 
-        return $this->newQueryWithoutTimestamps()
-                    ->where(PublicEntity::MERCHANT_ID, $merchantId)
-                    ->whereNull('balance_id')
-                    ->limit($limit)
-                    ->update(['balance_id' => $balanceId]);
+        $data = $this->newQueryWithoutTimestamps()
+                     ->where(PublicEntity::MERCHANT_ID, $merchantId)
+                     ->whereNull('balance_id');
+
+        if ($this->entity === E::TRANSACTION)
+        {
+            $data->whereNotNull('balance');
+        }
+
+        return $data->limit($limit)->update(['balance_id' => $balanceId]);
     }
 }

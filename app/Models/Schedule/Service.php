@@ -9,7 +9,6 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Services\Reporting;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Schedule\Task as ScheduleTask;
 

@@ -20,6 +20,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Service extends Base\Service
 {
@@ -94,6 +95,9 @@ class Service extends Base\Service
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::ESFB]);
                 unset($gateways[IFSC::CSBK]);
+                unset($gateways[IFSC::VIJB]);
+                unset($gateways[IFSC::CNRB]);
+                unset($gateways[Netbanking::PUNB_R]);
                 unset($gateways[Netbanking::BARB_R]);
                 unset($gateways[IFSC::ALLA]);
 
@@ -359,6 +363,57 @@ class Service extends Base\Service
         $response = $this->getNewProcessor($merchant)->callRefundFunctionOnScrooge($refund);
 
         return $response;
+    }
+
+    public function createScroogeRefundBulk(array $input)
+    {
+        (new Validator)->validateInput('create_scrooge_refund_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_SCROOGE_CREATE_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $successes = $failures = 0;
+
+        $failureRefunds = [];
+
+        $total = count($refundIds);
+
+        Entity::verifyIdAndStripSignMultiple($refundIds);
+
+        foreach ($refundIds as $refundId)
+        {
+            try
+            {
+                $this->createScroogeRefund($refundId);
+
+                $successes++;
+            }
+            catch (\Exception $ex)
+            {
+                $failures++;
+
+                $failureRefunds[] = $refundId;
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::REFUND_SCROOGE_CREATE_BULK_DISPATCHED,
+            [
+                'total_count'       => $total,
+                'success_count'     => $successes,
+                'failures_count'    => $failures,
+                'failed_refunds'    => $failureRefunds
+            ]);
+
+        return [
+            'total_count'       => $total,
+            'success_count'     => $successes,
+            'failures_count'    => $failures,
+            'failed_refunds'    => $failureRefunds
+        ];
     }
 
     /**
@@ -914,7 +969,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function markRefundProcessed(string $refundId)
+    public function markRefundProcessed(string $refundId, array $input)
     {
         $this->trace->info(
             TraceCode::REFUND_MARK_PROCESSED_REQUEST,
@@ -932,6 +987,8 @@ class Service extends Base\Service
             if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
             {
                 $refund->getValidator()->validateMarkProcessed();
+
+                $this->UpdateRefund($refund, $input);
 
                 $refund->setStatusProcessed();
                 $refund->setGatewayRefunded(true);
@@ -1168,6 +1225,15 @@ class Service extends Base\Service
         }
 
         return $refund;
+    }
+
+    protected function updateRefund($refund, $input)
+    {
+        if ((empty($input[RefundEntity::BANK_REFERENCE_NO]) === false) and
+            (empty($refund->getReference1()) === true))
+        {
+            $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
+        }
     }
 
     public function updateProcessedAt(array $input)

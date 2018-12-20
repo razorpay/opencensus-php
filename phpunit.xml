@@ -68,12 +68,6 @@
       </testsuite>
       <testsuite name = "Features-2 Test Suite">
           <directory>./tests/Functional/Merchant/</directory>
-          <!--
-          Following ES related tests are failing on wercker.
-          To be removed asap after debug.
-        -->
-          <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
-          <exclude>./tests/Functional/Merchant/MerchantEsFetchTest.php</exclude>
           <!--The long running test is added in a different suite-->
           <exclude>./tests/Functional/Merchant/MerchantTest.php</exclude>
           <!--Partner test using file utils to run in base suite-->
@@ -141,6 +135,7 @@
           <directory>./tests/Functional/Gateway/Wallet/</directory>
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
+          <directory>./tests/Functional/Gateway/CardlessEmi</directory>
       </testsuite>
   </testsuites>
   <listeners>

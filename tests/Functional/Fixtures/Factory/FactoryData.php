@@ -6,6 +6,7 @@ use Config;
 use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 
@@ -944,6 +945,24 @@ final class FactoryData
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
+        ]);
+
+        $factory(\RZP\Models\Contact\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'name'        => $faker->word,
+            'email'       => $faker->email,
+            'contact'     => '9123456789',
+            'type'        => $faker->randomElement(Contact\Type::getAll()),
+            'notes'       => null,
+            'merchant_id' => '10000000000000',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\FundAccount\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'active'      => 1,
+            'merchant_id' => '10000000000000',
         ]);
     }
 }

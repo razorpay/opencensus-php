@@ -7,7 +7,6 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -71,11 +70,19 @@ class Core extends Base\Core
         return $newBankAccount;
     }
 
-    public function createBankAccountForBankingContact(array $input, Contact\Entity $contact): Entity
+    /**
+     * `source` entity can be customer|contact
+     *
+     * @param array             $input
+     * @param Base\PublicEntity $source
+     *
+     * @return Entity
+     */
+    public function createBankAccountForBankingSource(array $input, Base\PublicEntity $source): Entity
     {
-        $bankAccount = $this->buildBankAccount($input, $contact->merchant, $this->mode);
+        $bankAccount = $this->buildBankAccount($input, $source->merchant, $this->mode);
 
-        $bankAccount->associateSource($contact, Type::CONTACT);
+        $bankAccount->source()->associate($source);
 
         $this->repo->saveOrFail($bankAccount);
 
@@ -250,7 +257,11 @@ class Core extends Base\Core
     }
 
 
-    public function createBankAccountForSource(array $input, Merchant\Entity $merchant, Base\PublicEntity $source, string $addRule)
+    public function createBankAccountForSource(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $source,
+        string $addRule): Entity
     {
         $ba = new BankAccount\Entity;
 
@@ -258,7 +269,7 @@ class Core extends Base\Core
 
         $ba->merchant()->associate($merchant);
 
-        $ba->associateSource($source);
+        $ba->source()->associate($source);
 
         $this->repo->saveOrFail($ba);
 

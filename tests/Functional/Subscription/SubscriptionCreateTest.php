@@ -680,7 +680,7 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->testCreateSubscriptionWithNoStartAt();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -689,7 +689,7 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->testCreateSubscriptionWithNoStartAt();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

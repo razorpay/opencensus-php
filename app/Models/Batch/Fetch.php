@@ -10,6 +10,8 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::TYPE        => 'sometimes|string|custom',
+            Entity::SUB_TYPE    => 'sometimes|string',
+            Entity::GATEWAY     => 'sometimes|string|required_with:sub_type',
             Entity::TYPES       => 'sometimes|sequential_array|custom',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
             Entity::STATUS      => 'sometimes|in:created,processing,processed',
@@ -24,6 +26,10 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::STATUS,
+        ],
+        AuthType::ADMIN_AUTH => [
+            Entity::SUB_TYPE,
+            Entity::GATEWAY,
         ],
     ];
 

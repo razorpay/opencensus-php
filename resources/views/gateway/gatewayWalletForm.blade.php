@@ -94,7 +94,7 @@
   </head>
   <body>
     <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="35px" style="margin:30px auto 10px; display:block">
-    <form action="<?= $data['request']['url'] ?>" method="<?= $data['request']['method'] ?>" class="container main">
+    <form action="{{ $data['request']['url'] }}" method="{{ $data['request']['method'] }}" class="container main">
       @foreach ($data['request']['content'] as $key => $value)
         @if (is_array($value))
           @foreach ($value as $key2=>$value2)

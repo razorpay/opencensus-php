@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
@@ -12,8 +13,10 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
+use RZP\Mail\User\Otp as OtpMail;
 
 class Core extends Base\Core
 {
@@ -21,7 +24,11 @@ class Core extends Base\Core
     {
         $user = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($user);
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
+        {
+            $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
+            $this->repo->saveOrFail($user);
+        });
 
         return $user;
     }
@@ -30,15 +37,19 @@ class Core extends Base\Core
     {
         $user->edit($input, $operation);
 
-        $this->repo->saveOrFail($user);
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
+        {
+            $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
+            $this->repo->saveOrFail($user);
+        });
 
         if ($operation === 'edit')
         {
             $this->trace->info(
                 TraceCode::USER_EDIT,
                 [
-                    'user_id'     => $user->getId(),
-                    'input'       => $input
+                    'user_id' => $user->getId(),
+                    'input'   => $input
                 ]);
         }
 
@@ -113,20 +124,55 @@ class Core extends Base\Core
 
     public function get(Entity $user)
     {
-        $userArray = $user->toArrayPublic();
+        $response    = $user->toArrayPublic();
 
-        $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, null)
-                          ->callOnEveryItem('toArrayUser');
+        $merchants   = $user->merchants
+                            ->where(Merchant\Entity::SUSPENDED_AT, null)
+                            ->callOnEveryItem('toArrayUser');
+
+        $merchantData = [];
+
+        // This looks like all if conditions, but it's ok.
+        array_walk($merchants, function ($merchant) use (&$merchantData) {
+            if (isset($merchantData[$merchant[Entity::ID]]) === false)
+            {
+                $merchantData[$merchant[Entity::ID]] = $merchant;
+
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = null;
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = null;
+                }
+            }
+            else
+            {
+                if ($merchant[Entity::PRODUCT] === Product::BANKING)
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
+                }
+                else
+                {
+                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = $merchant[Entity::ROLE];
+                }
+            }
+        });
+
+        $merchants = array_values($merchantData);
 
         $invitations = $user->invitations
                             ->callOnEveryItem('toArrayUser');
 
-        $userArray[Entity::MERCHANTS] = $merchants;
+        $settings    = $user->getAllSettings();
 
-        $userArray[Entity::INVITATIONS] = $invitations;
+        $response[Entity::MERCHANTS]   = $merchants;
+        $response[Entity::INVITATIONS] = $invitations;
+        $response[Entity::SETTINGS]    = $settings;
 
-        return $userArray;
+        return $response;
     }
 
     /**
@@ -259,5 +305,151 @@ class Core extends Base\Core
         $userMerchantMappingData['product'] = $product;
 
         return $this->updateUserMerchantMapping($user, $userMerchantMappingData);
+    }
+
+    /**
+     * Sends OTP to user's contact/email basis specified medium and action.
+     * Input format:
+     *     - action - E.g. create_payout, verify_contact
+     *     - medium - sms|email
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     */
+
+    /**
+     * Sends otp to user's contact/email basis input medium and action.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     * @return array
+     */
+    public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION, compact('input'));
+
+        $func = 'sendOtpVia' . studly_case($input[Entity::MEDIUM]);
+
+        return $this->$func($input, $merchant, $user);
+    }
+
+    /**
+     * Ref: sendOtp()
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     * @return array
+     */
+    public function sendOtpViaSms(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+
+        // If the call to raven fails it is already rendered properly in final response.
+        $this->app->raven->sendOtp(array_only($payload, ['context', 'receiver', 'source', 'template', 'params']));
+
+        return array_only($payload, 'token');
+    }
+
+    /**
+     * Ref: `sendOtp()`
+     * Sends OTP to user's email.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     *
+     * @return array
+     */
+    public function sendOtpViaEmail(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+
+        // If the call to raven fails it is already rendered properly in final response.
+        $response = $this->app->raven->generateOtp(array_only($payload, ['context', 'receiver', 'source']));
+
+        $mailable = new OtpMail($input[Entity::ACTION], $user, $response);
+        Mail::queue($mailable);
+
+        return array_only($payload, 'token');
+    }
+
+    /**
+     * Verifies input otp against specific action(hence raven's context) i.e. verify_contact.
+     * Additionally marks users.contact_mobile_verified flag as true if success.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     */
+    public function verifyContactWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    {
+        $this->verifyOtp($input + ['action' => 'verify_contact'], $merchant, $user);
+
+        $user->setContactMobileVerified(true);
+        $this->repo->saveOrFail($user);
+    }
+
+    /**
+     * Verifies otp for given input(action, token & otp).
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     */
+    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    {
+        $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
+
+        $payload = $this->getRavenOtpRequestPayload($input, $merchant, $user);
+        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+
+        // If the call to raven fails it is already rendered properly in final response.
+        $this->app->raven->verifyOtp($payload);
+    }
+
+    protected function getRavenOtpRequestPayload(array $input, Merchant\Entity $merchant, Entity $user): array
+    {
+        $action   = $input[Entity::ACTION];
+        $token    = $input['token'] ?? Entity::generateUniqueId();
+        $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $action, $token);
+        $receiver = $user->getContactMobile();
+        $source   = 'api';
+        $template = "sms.user.{$action}";
+
+        // Raven's template params
+        $params   = [
+            // Action must read as verb so can be used like to {action} in raven's generic template.
+            Entity::ACTION => str_replace('_', ' ', $action),
+        ];
+
+        // Temporary: Need to send these payloads for raven's sms content.
+        if (($action === 'create_payout') and
+            (isset($input['amount'], $input['account_number']) === true))
+        {
+            $params += [
+                'amount' => amount_format_IN($input['amount']),
+                'account_number' => $input['account_number'],
+            ];
+        }
+
+        return compact(
+            'action',
+            'token',
+            'context',
+            'receiver',
+            'source',
+            'template',
+            'params');
+    }
+
+    protected function upsertSettings(Entity $user, array $settings)
+    {
+        if (empty($settings) === false)
+        {
+            $user->getSettingsAccessor()->upsert($settings)->save();
+        }
     }
 }

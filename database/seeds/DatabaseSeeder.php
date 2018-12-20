@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call('WorkflowSeeder');
         $this->call('TaxGroupAndTaxSeeder');
         $this->call('DisputeReasonSeeder');
+        $this->call('BusinessBankingSeeder');
     }
 
     private function seed()
@@ -535,29 +536,29 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::METHODS)->insert(
                 array(
-                    'merchant_id'    => Account::TEST_ACCOUNT,
-                    'banks'          => '[]',
-                    'disabled_banks' => '[]',
-                    'paytm'          => '1',
-                    'aeps'           => '1',
-                    'mobikwik'       => '1',
-                    'olamoney'       => '1',
-                    'freecharge'     => '1',
-                    'emandate'       => '1',
-                    'payzapp'        => '1',
-                    'payumoney'      => '1',
-                    'airtelmoney'    => '1',
-                    'amazonpay'      => '1',
-                    'openwallet'     => '1',
-                    'jiomoney'       => '1',
-                    'sbibuddy'       => '1',
-                    'card'           => '1',
-                    'emi'            => '1',
-                    'upi'            => '1',
-                    'bank_transfer'  => '1',
-                    'emandate'       => '1',
-                    'created_at'     => $currentTime,
-                    'updated_at'     => $currentTime
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
+                    'paytm'         => '1',
+                    'aeps'          => '1',
+                    'mobikwik'      => '1',
+                    'olamoney'      => '1',
+                    'freecharge'    => '1',
+                    'emandate'      => '1',
+                    'payzapp'       => '1',
+                    'payumoney'     => '1',
+                    'airtelmoney'   => '1',
+                    'amazonpay'     => '1',
+                    'openwallet'    => '1',
+                    'jiomoney'      => '1',
+                    'sbibuddy'      => '1',
+                    'card'          => '1',
+                    'emi'           => '1',
+                    'upi'           => '1',
+                    'bank_transfer' => '1',
+                    'cardless_emi'  => '1',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
                 )
             );
 
@@ -1183,6 +1184,7 @@ class DatabaseSeeder extends Seeder
         $this->createAepsTerminal();
         $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
+        $this->createCardlessEmiTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2263,6 +2265,39 @@ class DatabaseSeeder extends Seeder
             'card'                      => 1,
             'created_at'                => time(),
             'updated_at'                => time()
+        ]);
+    }
+
+    protected function createCardlessEmiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                          => Terminal\Shared::CARDLESS_EMI_RAZORPAY_TERMINAL,
+            'merchant_id'                 => Account::TEST_ACCOUNT,
+            'category'                    => 123,
+            'gateway'                     => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'         => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+            'gateway_merchant_id2'        => 'test merchant',
+            'gateway_acquirer'            => 'zestmoney',
+            'gateway_terminal_password'   => 'cmF6b3JwYXk6d3JOMzREZEZJUjJk',
+            'cardless_emi'                => 1,
+            'mode'                        => 1,
+            'created_at'                  => time(),
+            'updated_at'                  => time()
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_RAZORPAY_TERMINAL2,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => '35',
+            'gateway_merchant_id2'       => 'NMIMS',
+            'gateway_acquirer'           => 'earlysalary',
+            'gateway_terminal_password'  => 'aabbccdd',
+            'cardless_emi'               => 1,
+            'mode'                       => 1,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
         ]);
     }
 }

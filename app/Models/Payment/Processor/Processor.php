@@ -354,7 +354,50 @@ class Processor
                 $coproto = $this->preProcessPaymentInputsForUpi($input, $payment);
                 break;
 
+            case Payment\Method::CARDLESS_EMI:
+                $coproto = $this->preProcessPaymentInputsForCardlessEmi($input, $payment);
+                break;
         }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForCardlessEmi($input, $payment)
+    {
+        $this->verifyCardlessEmiEnabled();
+
+        if (empty($input['ott']) === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        $gateway = Payment\Gateway::CARDLESS_EMI;
+
+        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+
+        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+
+        $coproto = [
+            'type' => 'respawn',
+            'method' => 'cardless_emi',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', ['method' => 'cardless_emi', 'provider' => $input['provider']]),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'      => $payment->merchant->getBrandColorElseDefault(),
+            'merchant'   => $merchant->getDbaName(),
+            'gateway'    => $this->getEncryptedGatewayText($gateway),
+            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
+            'key_id'     => $this->ba->getPublicKey(),
+            'version'    => '1',
+            'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
+        ];
 
         return $coproto;
     }
@@ -2300,17 +2343,21 @@ class Processor
      * Marks the payment as acknowledged.
      *
      * @param Payment\Entity $payment
+     * @param array          $input
      */
-    public function acknowledge(Payment\Entity $payment)
+    public function acknowledge(Payment\Entity $payment, array $input)
     {
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
             [
+                'input'            => $input,
                 Payment\Entity::ID => $payment->getId(),
             ]);
 
         $this->mutex->acquireAndRelease($payment->getId(),
-            function() use ($payment)
+            function() use ($payment, $notes)
             {
                 $this->repo->reload($payment);
 
@@ -2319,6 +2366,8 @@ class Processor
                 $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $payment->setAcknowledgedAt($currentTime);
+
+                $payment->appendNotes($notes);
 
                 $this->repo->saveOrFail($payment);
             },

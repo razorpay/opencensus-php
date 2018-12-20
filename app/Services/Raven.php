@@ -3,18 +3,25 @@
 namespace RZP\Services;
 
 use Requests;
+use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
+
 
 class Raven
 {
     const SMS_ID          = 'sms_id';
+    const OTP             = 'otp';
+    const EXPIRES_AT      = 'expires_at';
 
     const REQUEST_TIMEOUT = 60;
 
     const TEST_SMS_ID     = '10000000000sms';
+    // If raven service is mock, this OTP only is evaluated as true in verify.
+    const MOCK_VALID_OTP = '0007';
 
     protected $baseUrl;
 
@@ -34,6 +41,7 @@ class Raven
         'send-sms'      => 'sms',
         'send-otp'      => 'sms/send-otp',
         'verify-otp'    => 'sms/verify-otp',
+        'generate-otp'  => 'otp/generate',
     ];
 
     protected $validationErrors = [
@@ -75,6 +83,19 @@ class Raven
         return $response;
     }
 
+    public function generateOtp(array $input): array
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return [
+                self::OTP        => self::MOCK_VALID_OTP,
+                self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
+            ];
+        }
+
+        return $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
+    }
+
     /**
      * Makes call to raven service to send an SMS. By default if it's test mode
      * we return mock success response. But conditionally callee can specify
@@ -105,7 +126,14 @@ class Raven
 
         if ($this->mode === Mode::TEST)
         {
-            $response['success'] = true;
+            if ($input['otp'] !== self::MOCK_VALID_OTP)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+            }
+            else
+            {
+                $response['success'] = true;
+            }
         }
         else
         {

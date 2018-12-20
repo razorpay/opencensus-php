@@ -35,6 +35,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSwitchProductMerchant()
+    {
+        $input = Request::all();
+
+         $this->service()->switchProductMerchant($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function putMerchant($id)
     {
         $input = Request::all();
@@ -1160,6 +1169,22 @@ class MerchantController extends Controller
     public function submitSupportCallRequest()
     {
         $response = $this->service()->submitSupportCallRequest($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Syncs merchant entity between mysql and elastic search
+     *
+     * This api sync only frequently changing attributes.
+     *
+     * @return mixed
+     */
+    public function syncMerchantsToEs()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->syncMerchantsToEs($input);
 
         return ApiResponse::json($response);
     }
