@@ -327,25 +327,6 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateBankAccountPayoutOnCardPayment()
-    {
-        $card = $this->fixtures->on('live')->create('card', ['type' => 'credit']);
-
-        $payment = $this->fixtures->on('live')->create('payment:captured');
-        $this->fixtures->on('live')->edit('payment', $payment['id'], ['card_id' => $card['id']]);
-
-        $this->fixtures->on('live')->edit('transaction', $payment->getTransactionId(), ['settled' => 1]);
-
-        $data['request']['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
-
-        // Merchant needs to be activated to make live requests
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest($data);
-    }
-
     public function setPaymentPayoutUrl($payment, & $request)
     {
         $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';

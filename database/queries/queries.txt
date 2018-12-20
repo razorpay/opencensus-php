@@ -4526,10 +4526,10 @@ ALTER TABLE payouts
     ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
 
 ALTER TABLE fund_accounts
-	ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
-	ADD COLUMN source_id CHAR(14) AFTER source_type,
-	ADD INDEX `fund_accounts_source_id_index` (source_id),
-	DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
+    ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
+    ADD COLUMN source_id CHAR(14) AFTER source_type,
+    ADD INDEX `fund_accounts_source_id_index` (source_id),
+    DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
     DROP COLUMN contact_id;
 
 ALTER TABLE users
@@ -4542,6 +4542,10 @@ ALTER TABLE balance
 ALTER TABLE bank_transfers
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id,
     ADD INDEX bank_transfers_balance_id_index (balance_id);
+
+ALTER TABLE payouts
+    ADD COLUMN mode VARCHAR(30) DEFAULT NULL AFTER method,
+    ADD INDEX payouts_mode_index (mode);
 
 ALTER TABLE payouts
     ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,

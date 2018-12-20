@@ -152,6 +152,11 @@ class Status extends Base
         //     self::REFERENCE_NUMBER,
         //     self::MODE
 
+        //
+        // We have null checks everywhere since it's possible that the
+        // third-party is down and we don't get any data at all.
+        //
+
         // FTA ID
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
         $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
@@ -224,7 +229,7 @@ class Status extends Base
     protected function mockGenerateSuccessResponseForGateway(): array
     {
         return [
-            Constants::REQUEST_REFERENCE_NO => PublicEntity::generateUniqueId(),
+            Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
             Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
             Constants::STATUS_CODE          => GatewayStatus::COMPLETED,
         ];
@@ -233,5 +238,6 @@ class Status extends Base
     protected function mockGenerateFailedResponseForGateway(): array
     {
         // TODO: return stuff
+        return [];
     }
 }

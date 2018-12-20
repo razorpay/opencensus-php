@@ -80,7 +80,7 @@ class Beneficiary extends Base
                                 'Monthly'   => '300000000'
                             ]
                         ],
-                        Mode::DD => [
+                        RequestConstants::DD => [
                             'YN'    => 'Y',
                             'Limit' => [
                                 'Daily'     => '100',
@@ -88,7 +88,7 @@ class Beneficiary extends Base
                                 'Monthly'   => '10000'
                             ]
                         ],
-                        Mode::FT => [
+                        RequestConstants::FT => [
                             'YN'    => 'Y',
                             'Limit' => [
                                 'Daily'     => '100',

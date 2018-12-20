@@ -79,7 +79,6 @@ class Core extends Base\Core
                     Entity::PURPOSE   => FundTransferAttempt\Purpose::SETTLEMENT,
                     Entity::AMOUNT    => $amount,
                     Entity::CURRENCY  => $currency,
-                    Entity::METHOD    => Method::FUND_TRANSFER,
                     Entity::TYPE      => $onDemand,
                 ];
 

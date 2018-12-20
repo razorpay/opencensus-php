@@ -154,8 +154,6 @@ abstract class Base extends BaseCore
     {
         $payout = (new Payout\Entity)->build($input);
 
-        $this->runInputValidations($payout, $input);
-
         $payout->merchant()->associate($this->merchant);
 
         $payout->customer()->associate($this->customer);
@@ -164,9 +162,15 @@ abstract class Base extends BaseCore
 
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
+        $this->setMethod($payout);
+
         $payout->balance()->associate($this->balance);
 
         $this->associateUserIfApplicable($payout);
+
+        // Doing this after all the associations since
+        // some validations run on the relations' data
+        $this->runInputValidations($payout, $input);
 
         return $payout;
     }
@@ -176,6 +180,7 @@ abstract class Base extends BaseCore
         $ftaInput = [
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
             FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
         ];
 
@@ -294,5 +299,14 @@ abstract class Base extends BaseCore
         $payout->user()->associate($user);
     }
 
-    abstract protected function setChannel($input = array());
+    protected function setMethod(Payout\Entity $payout)
+    {
+        $destinationType = $this->fundTransferDestination->getEntity();
+
+        $method = Payout\Method::$destinationMethodMap[$destinationType];
+
+        $payout->setMethod($method);
+    }
+
+    abstract protected function setChannel($input = []);
 }

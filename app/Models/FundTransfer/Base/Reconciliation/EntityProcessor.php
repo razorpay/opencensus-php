@@ -255,6 +255,7 @@ abstract class EntityProcessor extends Base\Core
             case Entity::SETTLEMENT:
             case Entity::PAYOUT:
             case Entity::REFUND:
+                // TODO: Make changes here for status related stuff
                 return $this->getStatusForEntity($sourceEntityName);
 
             default:

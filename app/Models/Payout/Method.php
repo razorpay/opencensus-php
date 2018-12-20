@@ -3,12 +3,17 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
-use RZP\Constants;
+use RZP\Constants\Entity as E;
 
 class Method
 {
     const FUND_TRANSFER     = 'fund_transfer';
     const UPI               = 'upi';
+
+    public static $destinationMethodMap = [
+        E::BANK_ACCOUNT => self::FUND_TRANSFER,
+        E::VPA          => self::UPI,
+    ];
 
     public static function validateMethod($method)
     {

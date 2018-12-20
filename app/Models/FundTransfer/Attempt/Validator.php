@@ -3,8 +3,13 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {
@@ -72,6 +77,66 @@ class Validator extends Base\Validator
         if (in_array($value, $fileType, true) !== true)
         {
             throw new BadRequestValidationFailureException('Invalid file type : ' . $value);
+        }
+    }
+
+    public function validateModeIfSet()
+    {
+        $attempt = $this->entity;
+
+        if ($attempt->hasMode() === false)
+        {
+            return;
+        }
+
+        if ($attempt->hasVpa() === true)
+        {
+            throw new LogicException(
+                'Mode should not be sent in input for VPA FTA',
+                ErrorCode::SERVER_ERROR_FTA_MODE_SENT_FOR_VPA,
+                [
+                    'attempt_id'    => $attempt->getId(),
+                    'mode'          => $attempt->getMode(),
+                ]);
+        }
+
+        $mode = $attempt->getMode();
+
+        Mode::validateMode($mode);
+
+        $channel = $attempt->getChannel();
+
+        // If we want to support for other channels, we need to make changes in the channel specific classes
+        // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
+        if ($channel !== Channel::YESBANK)
+        {
+            throw new LogicException(
+                'Mode should be sent only for Yesbank',
+                ErrorCode::SERVER_ERROR_FTA_MODE_SENT_NON_YESBANK,
+                [
+                    'attempt_id'    => $attempt->getId(),
+                    'mode'          => $mode,
+                    'channel'       => $channel,
+                ]);
+        }
+
+        $amount = $attempt->source->getAmount();
+
+        $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
+        $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
+
+        if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
+            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+                null,
+                [
+                    'amount'            => $amount,
+                    'mode'              => $mode,
+                    'min_rtgs_amount'   => $minRtgsAmount,
+                    'max_imps_amount'   => $maxImpsAmount,
+                ]);
         }
     }
 }

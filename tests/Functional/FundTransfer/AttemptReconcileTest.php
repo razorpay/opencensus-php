@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -288,6 +289,12 @@ class AttemptReconcileTest extends TestCase
 
     public function testPayoutReconcileEntitiesSuccessForYesbankVpa()
     {
+        $this->fixtures->create(
+            'terminal',
+            [
+                'gateway' => Gateway::UPI_YESBANK,
+            ]);
+
         $this->verifyPayoutReconProcessForYesbankVpa();
 
         $this->reconcileEntitiesForChannel(Channel::YESBANK);

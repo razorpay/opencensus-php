@@ -55,7 +55,7 @@ class GatewayStatus extends BaseStatus
     {
         if (in_array($bankStatusCode, self::getSuccessfulStatus(), true) === false)
         {
-            return $bankStatusCode;
+            return [$bankStatusCode];
         }
 
         return [];
