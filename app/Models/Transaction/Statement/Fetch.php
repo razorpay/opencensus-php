@@ -15,14 +15,12 @@ class Fetch extends Transaction\Fetch
     const RULES = [
         self::DEFAULTS => [
             Entity::BALANCE_ID => 'sometimes|unsigned_id',
-            self::EXPAND_EACH  => 'filled|string|in:source',
         ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
             Entity::BALANCE_ID,
-            self::EXPAND_EACH,
         ],
     ];
 }
