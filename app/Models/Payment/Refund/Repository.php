@@ -890,6 +890,7 @@ class Repository extends Base\Repository
                          ->select(UpiEntity::NPCI_REFERENCE_ID, UpiEntity::REFUND_ID)
                          ->from(Table::UPI)
                          ->whereNotNull(UpiEntity::NPCI_REFERENCE_ID)
+                         ->whereNotNull(UpiEntity::REFUND_ID)
                          ->where(UpiEntity::CREATED_AT, '<=', $to)
                          ->where(UpiEntity::CREATED_AT, '>=', $from)
                          ->where(UpiEntity::STATUS_CODE, '00')
