@@ -436,8 +436,6 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
-     *
-     * @throws Exception\LogicException
      */
     public function lockForUpdateAndReload(
         Models\Base\PublicEntity $entity,
@@ -525,6 +523,29 @@ class Repository extends \Razorpay\Spine\Repository
         $entity = $query->findOrFail($id);
 
         return $this->serializeForIndexing($entity);
+    }
+
+    /**
+     * Find entities with given ids for indexing.
+     *
+     * @param array $ids
+     *
+     * @return array
+     */
+    public function findManyForIndexingByIds(array $ids): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->findOrFail($ids);
+
+        return array_map(
+            function($v)
+            {
+                return $this->serializeForIndexing($v);
+            },
+            $collection->all());
     }
 
     /**

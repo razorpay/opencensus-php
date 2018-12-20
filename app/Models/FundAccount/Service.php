@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 /**
@@ -40,10 +41,20 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
-        /** @var Contact\Entity $contact */
-        $contact = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        $source = null;
 
-        $entity = $this->core->create($input, $this->merchant, $contact);
+        if (isset($input[Entity::CONTACT_ID]) === true)
+        {
+            /** @var Contact\Entity $source */
+            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        }
+        else if (isset($input[Entity::CUSTOMER_ID]) === true)
+        {
+            /** @var Customer\Entity $source */
+            $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+        }
+
+        $entity = $this->core->create($input, $this->merchant, $source);
 
         return $entity->toArrayPublic();
     }

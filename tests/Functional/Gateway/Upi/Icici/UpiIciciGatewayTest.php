@@ -424,6 +424,10 @@ EOT;
 
         $this->refundPayment($payment['id']);
 
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNotNull($refund['reference1']);
+
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');

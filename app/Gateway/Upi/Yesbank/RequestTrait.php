@@ -78,7 +78,7 @@ trait RequestTrait
 
         if (file_exists($clientCertPath) === false)
         {
-            $cert = $this->config['cert_key'];
+            $cert = $this->config['client_cert_key'];
 
             $cert = str_replace('\n', "\n", $cert);
 

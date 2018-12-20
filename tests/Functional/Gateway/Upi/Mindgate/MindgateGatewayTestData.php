@@ -189,8 +189,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'success@hdfcbank',
-                'success'   => true,
+                'vpa'           => 'success@hdfcbank',
+                'success'       => true,
+                'customer_name' => 'User Name',
             ],
         ]
     ],
@@ -205,8 +206,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'invalidvpa@hdfcbank',
-                'success'   => false,
+                'vpa'           => 'invalidvpa@hdfcbank',
+                'success'       => false,
+                'customer_name' => null,
             ],
         ]
     ],

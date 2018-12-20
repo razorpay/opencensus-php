@@ -3,7 +3,6 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Order;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;

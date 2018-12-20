@@ -29,4 +29,6 @@ class InfoCode
     const FAILED_REFUND_ARN_ABSENT          = 'FAILED_REFUND_ARN_ABSENT';
 
     const MIS_FILE_REFUND_FAILED            = 'MIS_FILE_REFUND_FAILED';
+
+    const INCORRECT_DATE_FORMAT             = 'INCORRECT_DATE_FORMAT';
 }

@@ -2,8 +2,10 @@
 
 namespace RZP\Base;
 
-use RZP\Error\ErrorCode;
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class BuilderEx extends \Razorpay\Spine\BuilderEx
 {
@@ -86,5 +88,21 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_IDS, null, $extra);
+    }
+
+    public function hasJoin(string $table): bool
+    {
+        $joins = $this->getQuery()->joins ?? [];
+
+        /** @var JoinClause $join */
+        foreach ($joins as $join)
+        {
+            if ($join->table === $table)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

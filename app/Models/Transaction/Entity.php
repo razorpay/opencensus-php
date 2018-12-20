@@ -71,6 +71,9 @@ class Entity extends Base\PublicEntity
 
     const RECONCILED        = 'reconciled';
 
+    // Relation names/attributes
+    const SOURCE            = 'source';
+
     protected static $sign = 'txn';
 
     protected $entity = 'transaction';
@@ -178,7 +181,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        'source',
+        self::SOURCE,
     ];
 
     public function merchant()
@@ -507,6 +510,11 @@ class Entity extends Base\PublicEntity
         assert ($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setApiFee($apiFee)
+    {
+        $this->setAttribute(self::API_FEE, $apiFee);
     }
 
     public function setMdr(int $mdr)

@@ -38,7 +38,8 @@ class Scrooge
         'get_reports'           => 'reports',
         'bulk_status_update'    => 'bulk-status-update',
         'get_refunds'           => 'refunds',
-        'status_update'         => 'status-update'
+        'status_update'         => 'status-update',
+        'download_refunds'      => 'refunds/download'
     ];
 
     // Headers
@@ -144,6 +145,11 @@ class Scrooge
     public function getRefunds(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], 'POST', $input);
+    }
+
+    public function downloadRefunds(array $input): array
+    {
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], 'POST', $input);
     }
 
     /**

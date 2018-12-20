@@ -18,6 +18,7 @@ class Category
     const PRICING          = 'pricing';
     const MERCHANT         = 'merchant';
     const WORKFLOW         = 'workflow';
+    const REPORTING        = 'reporting';
     const AUDIT_LOG        = 'audit_log';
     const PERMISSION       = 'permission';
     const INVITATION       = 'invitation';

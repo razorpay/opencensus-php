@@ -123,7 +123,7 @@ class Service extends Base\Service
     {
         $netbankingBanks = Processor\Netbanking::getSupportedBanks();
 
-        $netbankingBankNamesMap = Bank\Name::getNames($netbankingBanks);
+        $netbankingBankNamesMap = Processor\Netbanking::getNames($netbankingBanks);
 
         $cards = Card\Network::getSupportedNetworksNamesMap();
 

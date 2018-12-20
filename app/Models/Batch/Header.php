@@ -401,6 +401,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
@@ -412,6 +413,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
                 self::STATUS,
                 self::PAYMENT_LINK_ID,
                 self::SHORT_URL,

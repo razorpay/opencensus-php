@@ -3610,6 +3610,36 @@ return [
         ],
     ],
 
+    'testQueueEntriesAfterBalanceSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testESQueryAfterSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
@@ -3708,14 +3738,25 @@ return [
         ]
     ],
 
-    'testGetCheckoutPreferencesForCardlessEmi' => [
-    'request' => [
-        'url' => '/preferences',
-        'method' => 'get',
-    ],
-    'response' => [
-        'content' => [
+    'testMerchantSwitchProduct' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
         ],
     ],
+  
+    'testGetCheckoutPreferencesForCardlessEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
     ],
 ];

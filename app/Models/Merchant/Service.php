@@ -79,6 +79,8 @@ class Service extends Base\Service
         /** @var Entity $merchant */
         $merchant = $this->core()->create($input);
 
+        $this->enableBusinessBankingIfApplicable($merchant);
+
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
         return $merchantData;
@@ -2574,6 +2576,11 @@ class Service extends Base\Service
         return $this->app->myoperator->submitSupportCallRequest($input);
     }
 
+    public function syncMerchantsToEs(array $input)
+    {
+        return $this->core()->syncMerchantsToEs($input);
+    }
+
     public function bulkRegenerateBalanceIds(array $input)
     {
         $limit = (int) ($input['limit'] ?? 1000);
@@ -2638,7 +2645,6 @@ class Service extends Base\Service
      *
      * Else if there's a emi_sbi terminal which is enabled. return true.
      *
-     * @param string $merchantId
      * @return bool
      */
     public function isSbiEmiEnabled()
@@ -2653,5 +2659,32 @@ class Service extends Base\Service
             return true;
         }
         return false;
+    }
+
+    public function switchProductMerchant()
+    {
+        // Add Banking Role for the current merchant User.
+        (new User\Service())->addProductSwitchRole();
+
+        $merchant = $this->auth->getMerchant();
+
+        $this->enableBusinessBankingIfApplicable($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            (new Activate)->activateBusinessBankingIfApplicable($merchant);
+        });
+    }
+
+    protected function enableBusinessBankingIfApplicable(Entity $merchant)
+    {
+        $isBanking = $this->auth->isProductBanking();
+
+        if (($isBanking === true) and ($merchant->isBusinessBankingEnabled() === false))
+        {
+            $merchant->setBusinessBanking(true);
+        }
     }
 }

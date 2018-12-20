@@ -168,6 +168,39 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals(500, $invoice['amount']);
     }
 
+    public function testCreateBatchOfPaymentLinkTypeWithNotes()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Asserts batch entity's attributes
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $entity['success_count']);
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Asserts files existence
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        // Assert invoice entity's attributes
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $expected = [
+            'receipt' => '#1',
+            'amount'  => 500,
+            'notes'   => [
+                'key1' => 'Notes Value 1',
+                'key2' => 'Notes Value 2',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $invoice);
+    }
+
     /**
      * File's header is invalid
      */
@@ -486,6 +519,8 @@ class PaymentLinkTest extends TestCase
                 Header::DESCRIPTION      => 'test payment link',
                 Header::EXPIRE_BY        => null,
                 Header::PARTIAL_PAYMENT  => 'YES',
+                'notes[key1]'            => 'Notes Value 1',
+                'notes[key2]'            => 'Notes Value 2',
             ],
             // Following one should fail
             [
@@ -497,6 +532,8 @@ class PaymentLinkTest extends TestCase
                 Header::DESCRIPTION      => 'test payment link - 2',
                 Header::EXPIRE_BY        => null,
                 Header::PARTIAL_PAYMENT  => 'NO',
+                'notes[key1]'            => null,
+                'notes[key2]'            => null,
             ],
             [
                 Header::INVOICE_NUMBER   => '#3',
@@ -507,6 +544,8 @@ class PaymentLinkTest extends TestCase
                 Header::DESCRIPTION      => 'test payment link - 3',
                 Header::EXPIRE_BY        => null,
                 Header::PARTIAL_PAYMENT  => null,
+                'notes[key1]'            => 'Notes Value 1 - second',
+                'notes[key2]'            => 'Notes Value 2 - second',
             ],
         ];
     }

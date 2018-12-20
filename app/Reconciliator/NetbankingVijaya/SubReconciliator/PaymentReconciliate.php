@@ -1,0 +1,56 @@
+<?php
+
+namespace RZP\Reconciliator\NetbankingVijaya\SubReconciliator;
+
+use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Netbanking\Vijaya\ReconFields;
+
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+{
+    protected function getPaymentId(array $row)
+    {
+        return $row[ReconFields::PAYMENT_ID];
+    }
+
+    protected function getGatewayPayment($paymentId)
+    {
+        return $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[ReconFields::BANK_REF_NO] ?? null;
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconFields::PAYMENT_AMOUNT]);
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[ReconFields::DATE] ?? null;
+    }
+}

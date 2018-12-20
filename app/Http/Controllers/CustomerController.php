@@ -173,15 +173,6 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createVpa(string $customerId)
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::VPA)->createForCustomer($customerId, $input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getBankAccounts($id)
     {
         $data = $this->service()->getBankAccounts($id);

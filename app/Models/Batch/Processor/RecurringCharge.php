@@ -42,6 +42,8 @@ class RecurringCharge extends Base
 
         $this->processPayment($entry, $order);
 
+        $this->processCurrencyAndRevertAmountIfNecessary($entry);
+
         $entry[Header::STATUS] = Status::SUCCESS;
     }
 
@@ -121,6 +123,29 @@ class RecurringCharge extends Base
             $amount = (int) $amount;
 
             $amount = $amount * 100;
+
+            $entry[Header::RECURRING_CHARGE_AMOUNT] = $amount;
+        }
+    }
+
+    public function processCurrencyAndRevertAmountIfNecessary(array & $entry)
+    {
+        $config = Settings\Accessor::for($this->merchant, Settings\Module::BATCH)
+                                   ->get(Type::RECURRING_CHARGE);
+
+        if (empty($config))
+        {
+            return;
+        }
+
+        if ((isset($config[self::AMOUNT_AS_RUPEE_CONFIG]) === true) and
+            ($config[self::AMOUNT_AS_RUPEE_CONFIG] === '1'))
+        {
+            $amount = $entry[Header::RECURRING_CHARGE_AMOUNT];
+
+            $amount = (int) $amount;
+
+            $amount = $amount / 100;
 
             $entry[Header::RECURRING_CHARGE_AMOUNT] = $amount;
         }

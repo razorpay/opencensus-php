@@ -1547,6 +1547,67 @@ class HeadlessOtpTest extends TestCase
         self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
     }
 
+    public function testHeadlessOtpTimeoutException()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockTokenEx();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => false,
+                    'error'   => [
+                        'reason' => 'PAYMENT_TIMEOUT'
+                    ],
+                ];
+            });
+
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        GatewayRequestException::class,
+        'Gateway request timed out');
+    }
+
     // @codingStandardsIgnoreLine
     protected function doS2SOtpSubmitCallback(array $content, string $otp)
     {
