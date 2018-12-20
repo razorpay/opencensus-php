@@ -63,18 +63,22 @@ class Gateway extends Base\Gateway
         {
             return $return;
         }
+
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
-            list($rrn, $response) = $this->initiate2();
+            list($gatewayPayment, $response) = $this->initiate2();
 
-            $this->handleFailure($response, 'initiate2');
+            $return = $this->handleFailure($response, 'initiate2', $gatewayPayment);
+
+            if ($return)
+            {
+                return $return;
+            }
 
             $content = $this->getGatewayPaymentAttributes($response);
 
-            $content[Entity::RRN] = $rrn;
-
-            $this->createGatewayPaymentEntity($content);
+            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
 
             $request = $this->getRedirectRequest($response);
 
@@ -85,15 +89,18 @@ class Gateway extends Base\Gateway
         // Iframe flow
         else
         {
-            list($rrn, $response) = $this->initiate2();
+            list($gatewayPayment, $response) = $this->initiate();
 
-            $this->handleFailure($response, 'initiate');
+            $return = $this->handleFailure($response, 'initiate', $gatewayPayment);
+
+            if ($return)
+            {
+                return $return;
+            }
 
             $attributes = $this->getMappedAttributes($response);
 
-            $attributes[Entity::RRN] = $rrn;
-
-            $this->createGatewayPaymentEntity($attributes, 'iframe');
+            $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, 'false');
 
             $request = [
                 'method' => 'direct',
@@ -418,16 +425,21 @@ class Gateway extends Base\Gateway
      * @param $action
      * @throws Exception\GatewayErrorException
      */
-    protected function handleFailure($response, $action)
+    protected function handleFailure($response, $action, $gatewayPayment = null)
     {
         if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
             $request = ['method' => 'direct'];
 
             $data = [
-                'status' => 'Failed',
+                'status' => 'failed',
                 'razorpay_payment_id' => $this->input['payment']['id'],
             ];
+
+            if ($gatewayPayment !== null)
+            {
+                $data['rrn'] = $gatewayPayment[Entity::RRN];
+            }
 
             $request['content'] = View::make('gateway.callbackPaysecure')
                 ->with(

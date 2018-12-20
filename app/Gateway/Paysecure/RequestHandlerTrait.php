@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Paysecure;
 
+use RZP\Gateway\Base\Action;
 use SoapVar;
 use SoapFault;
 use SoapHeader;
@@ -35,7 +36,8 @@ trait RequestHandlerTrait
 
         $cardBin = substr($cardNumber, 0, 9);
 
-        if ($cardNumber === '6074700041000657')
+        // todo: Remove this after certification
+        if ($cardNumber === '6074811617117849')
         {
             $cardBin = '222222222';
         }
@@ -52,18 +54,32 @@ trait RequestHandlerTrait
     {
         list($rrn, $requestArray) = $this->getInitiateRequestArray();
 
+        $content = [
+            Entity::RRN  => $rrn,
+            Entity::FLOW => 'iframe',
+        ];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+
         $contents = $this->getRequestContents($requestArray);
 
         $command = Command::INITIATE;
 
         $response = $this->sendRequest($command, $contents);
 
-        return [$rrn, $response];
+        return [$gatewayPayment, $response];
     }
 
     protected function initiate2()
     {
         list($rrn, $requestArray) = $this->getInitiateRequestArray();
+
+        $content = [
+            Entity::RRN  => $rrn,
+            Entity::FLOW => 'redirect',
+        ];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         //todo: Check what value to pass in http_accept
         $extraParameters = [
@@ -80,7 +96,7 @@ trait RequestHandlerTrait
 
         $response = $this->sendRequest($command, $contents);
 
-        return [$rrn, $response];
+        return [$gatewayPayment, $response];
     }
 
     protected function getInitiateRequestArray(): array
@@ -264,10 +280,12 @@ trait RequestHandlerTrait
     {
         $tokenId = $this->config['token'];
 
-        if ($this->input['card']['number'] === '6074819900004939')
+        if (($this->action === Action::AUTHORIZE) and
+            ($this->input['card']['number'] === '6074819602229586'))
         {
             $tokenId = '8cbce028-98bc-49b1-a090-16dbe2043bd9';
         }
+
         $token = new SoapVar($tokenId, XSD_STRING, null, null, Fields::TOKEN, '');
         $version = new SoapVar(Constants::VERSION, XSD_STRING, null, null, Fields::VERSION, '');
         $callerId = new SoapVar($this->config['caller_id'], XSD_STRING, null, null, Fields::CALLER_ID, '');
