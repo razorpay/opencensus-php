@@ -60,12 +60,12 @@ class RazorxController extends Controller
 
         foreach(self::WORKFLOW_REGEX_ROUTES as $route => $regex)
         {
-            if (preg_match($regex, $path) === 1)
+            if (preg_match($regex, $path, $experimentId) === 1)
             {
                 switch ($route)
                 {
                     case self::EXPERIMENT_ACTIVATE_ROUTE:
-                        $experimentId = substr($path, strlen('experiments/'), -strlen('/activate'));
+                        //$experimentId = substr($path, strlen('experiments/'), -strlen('/activate'));
 
                         $url = $this->baseUrl . "validate/experiment/$experimentId/activate";
 
