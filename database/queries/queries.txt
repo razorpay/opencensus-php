@@ -4564,6 +4564,3 @@ ALTER TABLE payouts
 ALTER TABLE vpas
     DROP INDEX vpas_username_handle_unique,
     ADD INDEX vpas_username_handle_index (username, handle);
-
-ALTER TABLE webhooks
-    MODIFY COLUMN events BIGINT NOT NULL;

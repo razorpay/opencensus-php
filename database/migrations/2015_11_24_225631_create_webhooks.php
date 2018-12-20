@@ -33,7 +33,7 @@ class CreateWebhooks extends Migration
 
             $table->string(Webhook::URL);
 
-            $table->bigInteger(Webhook::EVENTS);
+            $table->integer(Webhook::EVENTS);
 
             $table->string(Webhook::ENTITY_TYPE, 100)
                   ->nullable();
