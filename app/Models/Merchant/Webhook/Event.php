@@ -40,6 +40,9 @@ class Event
     const PAYMENT_DISPUTE_LOST      = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED    = 'payment.dispute.closed';
     const TRANSACTION_CREATED       = 'transaction.created';
+    const PAYOUT_CREATED            = 'payout.created';
+    const PAYOUT_PROCESSED          = 'payout.processed';
+    const PAYOUT_REVERSED           = 'payout.reversed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -70,6 +73,9 @@ class Event
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
         self::TRANSACTION_CREATED,
+        self::PAYOUT_CREATED,
+        self::PAYOUT_PROCESSED,
+        self::PAYOUT_REVERSED,
     ];
 
     /**
@@ -106,6 +112,9 @@ class Event
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
         self::TRANSACTION_CREATED,
+        self::PAYOUT_CREATED,
+        self::PAYOUT_PROCESSED,
+        self::PAYOUT_REVERSED,
     ];
 
     protected static $bitPosition = [
@@ -137,6 +146,9 @@ class Event
         self::PAYMENT_DISPUTE_LOST      => 26,
         self::PAYMENT_DISPUTE_CLOSED    => 27,
         self::TRANSACTION_CREATED       => 28,
+        self::PAYOUT_CREATED            => 29,
+        self::PAYOUT_PROCESSED          => 30,
+        self::PAYOUT_REVERSED           => 31,
     ];
 
     /**
@@ -201,6 +213,9 @@ class Event
         self::PAYMENT_DISPUTE_LOST      => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_CLOSED    => Entity::DISPUTE,
         self::TRANSACTION_CREATED       => Entity::TRANSACTION,
+        self::PAYOUT_CREATED            => Entity::PAYOUT,
+        self::PAYOUT_PROCESSED          => Entity::PAYOUT,
+        self::PAYOUT_REVERSED           => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [

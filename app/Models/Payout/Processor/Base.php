@@ -75,7 +75,7 @@ abstract class Base extends BaseCore
 
         $this->setChannel($input);
 
-        return $this->repo->transaction(function () use ($input)
+        $payout = $this->repo->transaction(function () use ($input)
         {
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
@@ -99,6 +99,10 @@ abstract class Base extends BaseCore
 
             return $payout;
         });
+
+        $this->app->events->fire('api.payout.created', [$payout]);
+
+        return $payout;
     }
 
     /**

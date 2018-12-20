@@ -12,6 +12,8 @@ use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class RowProcessor extends Base\Core
 {
+    use DispatchesEvents;
+
     protected $row;
 
     protected $version;
@@ -158,6 +160,8 @@ abstract class RowProcessor extends Base\Core
             ]);
 
         $this->repo->saveOrFail($source);
+
+        $this->dispatchEventsForSourceAfterRecon($source);
     }
 
     /**
