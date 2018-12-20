@@ -67,32 +67,9 @@ class RazorxController extends Controller
                     case self::EXPERIMENT_ACTIVATE_ROUTE:
                         $experimentId = substr($path, strlen('experiments/'), -strlen('/activate'));
 
-                        $url = $this->baseUrl . "validate/experiment/$experimentId/activate";
+                        $this->validateActivateRequest($experimentId, $requestParams);
+                        $this->startWorkflow($experimentId);
 
-                        $method = 'POST';
-
-                        $validateResponse = Requests::request(
-                            $url,
-                            null,
-                            $requestParams['data'],
-                            $method,
-                            $requestParams['options']
-                        );
-
-                        $razorxResponse = $this->parseAndReturnResponse($validateResponse);
-
-                        if ($razorxResponse['status_code'] !== 200)
-                        {
-                            throw new Exception\BadRequestValidationFailureException(
-                                $razorxResponse['response'],
-                                null,
-                                null
-                            );
-                        }
-
-                        $this->app['workflow']
-                             ->setEntityAndId('razorx_experiment_activate', $experimentId)
-                             ->handle([], ['razorx_experiment_workflow_started']);
                         $method = 'PATCH';
                         break;
                     default:
@@ -129,6 +106,49 @@ class RazorxController extends Controller
                 $e
             );
         }
+    }
+
+    protected function startWorkflow($experimentId)
+    {
+        $this->app['workflow']
+             ->setEntityAndId('razorx_experiment_activate', $experimentId)
+             ->handle([], ['razorx_experiment_workflow_started']);
+    }
+
+    protected function validateActivateRequest($experimentId, $requestParams)
+    {
+        if ($requestParams['method'] !== 'PATCH')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ['error' => 'invalid request method'],
+                null,
+                null
+            );
+        }
+
+        $url = $this->baseUrl . "validate/experiment/$experimentId/activate";
+
+        $method = 'POST';
+
+        $validateResponse = Requests::request(
+            $url,
+            null,
+            $requestParams['data'],
+            $method,
+            $requestParams['options']
+        );
+
+        $razorxResponse = $this->parseAndReturnResponse($validateResponse);
+
+        if ($razorxResponse['status_code'] !== 200)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $razorxResponse['response'],
+                null,
+                null
+            );
+        }
+
     }
 
     protected function parseAndReturnResponse($res)
