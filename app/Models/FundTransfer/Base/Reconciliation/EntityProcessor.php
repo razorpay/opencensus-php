@@ -19,7 +19,7 @@ use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
 {
-    use FiresWebhook;
+    use DispatchesEvents;
 
     /**
      * All payments in the current mpr
@@ -175,7 +175,7 @@ abstract class EntityProcessor extends Base\Core
 
         $this->repo->saveOrFail($this->source);
 
-        $this->fireWebhookForSourceAfterRecon($this->source);
+        $this->dispatchEventsForSourceAfterRecon($this->source);
     }
 
     protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)

@@ -12,7 +12,7 @@ use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class RowProcessor extends Base\Core
 {
-    use FiresWebhook;
+    use DispatchesEvents;
 
     protected $row;
 
@@ -161,7 +161,7 @@ abstract class RowProcessor extends Base\Core
 
         $this->repo->saveOrFail($source);
 
-        $this->fireWebhookForSourceAfterRecon($source);
+        $this->dispatchEventsForSourceAfterRecon($source);
     }
 
     /**

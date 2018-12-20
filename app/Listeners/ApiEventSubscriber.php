@@ -406,14 +406,14 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onPayoutSucceeded(Payout\Entity $payout)
+    protected function onPayoutProcessed(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
 
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onPayoutFailed(Payout\Entity $payout)
+    protected function onPayoutReversed(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
 
