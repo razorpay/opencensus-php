@@ -1064,6 +1064,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SCHEDULE_BULK_REQUEST                = 'MERCHANT_SCHEDULE_BULK_REQUEST';
     const MERCHANT_SCHEDULE_BULK_EXCEPTION              = 'MERCHANT_SCHEDULE_BULK_EXCEPTION';
 
+    const MERCHANT_PRICING_BULK_REQUEST                 = 'MERCHANT_PRICING_BULK_REQUEST';
+    const MERCHANT_PRICING_BULK_EXCEPTION               = 'MERCHANT_PRICING_BULK_EXCEPTION';
+    const MERCHANT_PRICING_BULK_ALL_FAILED_IDS          = 'MERCHANT_PRICING_BULK_ALL_FAILED_IDS';
+
 // Trace codes for Heimdall
     const HEIMDALL_EVENT_RECORD                         = 'HEIMDALL_EVENT_RECORD';
     const HEIMDALL_AUDIT_LOG                            = 'HEIMDALL_AUDIT_LOG';
