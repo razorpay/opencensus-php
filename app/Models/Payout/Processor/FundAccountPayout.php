@@ -6,7 +6,7 @@ use RZP\Models\Settlement;
 
 class FundAccountPayout extends Base
 {
-    protected function setChannel()
+    protected function setChannel($input = [])
     {
         $this->channel = Settlement\Channel::YESBANK;
     }

@@ -50,4 +50,17 @@ class Repository extends Base\Repository
                     ->withTrashed()
                     ->pluck(Entity::BANK_ACCOUNT_ID)->toArray();
     }
+
+    /**
+     * @param string $bankAccountId
+     * @param string $channel
+     * @return Entity
+     */
+    public function fetchActivatedBeneficiaryDetailsForChannel(string $bankAccountId, string $channel): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->first();
+    }
 }

@@ -28,4 +28,11 @@ class Type
 
         return $entity;
     }
+
+    public static function getBeneficiaryRegistrationTypes()
+    {
+        return [
+          self::MERCHANT
+        ];
+    }
 }

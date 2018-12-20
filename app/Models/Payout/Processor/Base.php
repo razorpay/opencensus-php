@@ -73,7 +73,7 @@ abstract class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
-        $this->setChannel();
+        $this->setChannel($input);
 
         return $this->repo->transaction(function () use ($input)
         {
@@ -294,5 +294,5 @@ abstract class Base extends BaseCore
         $payout->user()->associate($user);
     }
 
-    abstract protected function setChannel();
+    abstract protected function setChannel($input = array());
 }

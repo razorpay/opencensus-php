@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
+use RZP\Jobs\FundTransfer;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
@@ -10,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
@@ -63,7 +65,7 @@ class Core extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        return $this->mutex->acquireAndRelease(
+        $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use ($input, $merchant)
             {
@@ -87,6 +89,44 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+        $ftaId = $payout->fundTransferAttempts->first()->getId();
+
+        try
+        {
+            $info = [
+                'fta_id'    => $ftaId,
+                'payout_id' => $payout->getId()
+            ];
+
+            if ((isset($input[Entity::TYPE])) and
+                ($input[Entity::TYPE] === Entity::ON_DEMAND))
+            {
+                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_INIT, $info);
+
+                FundTransfer::dispatch($this->mode, $ftaId);
+
+                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_COMPLETE, $info);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $data = $info + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_DISPATCH_FOR_MERCHANT_FAILED,
+                $data);
+
+            (new Settlement\SlackNotification)->send(
+                'FundTransfer dispatch for merchant failed',
+                $data,
+                $e,
+                1);
+        }
+
+        return $payout;
     }
 
     /**
@@ -338,7 +378,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::CURRENCY]) === true)
         {
-             return $input[Entity::CURRENCY];
+            return $input[Entity::CURRENCY];
         }
 
         return Currency::INR;

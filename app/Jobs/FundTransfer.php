@@ -1,0 +1,124 @@
+<?php
+
+namespace RZP\Jobs;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Settlement;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankAccount\Beneficiary;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt\Initiator;
+
+class FundTransfer extends Job
+{
+    const MAX_ALLOWED_ATTEMPTS = 10;
+
+    const RELEASE_WAIT_SECS    = 60;
+
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'instant_fund_transfer';
+
+    /**
+     * @var string
+     */
+    protected $ftaId;
+
+    public function __construct(string $mode, string $ftaId)
+    {
+        parent::__construct($mode);
+
+        $this->ftaId = $ftaId;
+    }
+
+    public function handle()
+    {
+        try
+        {
+            parent::handle();
+
+            $fta = $this->repoManager->fund_transfer_attempt->findCreatedFtaById($this->ftaId);
+
+            if ($fta === null)
+            {
+                $this->logAndDelete(['fta_id' => $this->ftaId]);
+
+                return;
+            }
+
+            $channel     = $fta->getChannel();
+
+            $bankAccount = $fta->bankAccount;
+
+            $data = [
+                'fta_id'  => $fta->getId(),
+                'source'  => $fta->getSourceId(),
+                'channel' => $channel,
+            ];
+
+            $allowedChannels = Settlement\Channel::getInstantPayoutChannels();
+
+            if (in_array($channel, $allowedChannels, true) === false)
+            {
+                (new SlackNotification)->send('Unsupported channel for Fund transfer', $data, null, 1);
+
+                $this->logAndDelete($data);
+
+                return;
+            }
+
+            $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
+
+            if ($beneficiaryRegistered === false)
+            {
+                $this->checkRetryOrDelete($data);
+            }
+            else
+            {
+                (new Initiator)->initFundTransferOnChannel($fta, $channel);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::FTA_PROCESSING_FOR_MERCHANT_FAILED,
+                [
+                    'fta_id' => $this->ftaId
+                ]);
+
+            (new SlackNotification)->send('FundTransfer processing failed', $data, $e);
+
+            $this->logAndDelete($data);
+
+            return;
+        }
+    }
+
+    /**
+     * @param array $data
+     */
+    public function checkRetryOrDelete(array $data)
+    {
+        if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
+        {
+            $this->release(self::RELEASE_WAIT_SECS);
+
+            return;
+        }
+        else
+        {
+            (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure', $data, null, 1);
+
+            $this->delete();
+        }
+    }
+
+    protected function logAndDelete(array $data)
+    {
+        $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_DELETED, $data);
+
+        $this->delete();
+    }
+}
