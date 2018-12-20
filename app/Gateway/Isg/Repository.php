@@ -11,7 +11,7 @@ class Repository extends Base\Repository
     public function fetchByBankReferenceNumber($transactionId)
     {
         return $this->newQuery()
-            ->where('bank_reference_no',  '=', $transactionId)
-            ->firstOrFail();
+                    ->where('bank_reference_no',  '=', $transactionId)
+                    ->firstOrFail();
     }
 }
