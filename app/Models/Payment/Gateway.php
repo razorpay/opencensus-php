@@ -214,6 +214,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_ICICI,
         self::UPI_MINDGATE,
+        self::UPI_AXIS,
     ];
 
     /**

@@ -4560,3 +4560,7 @@ ALTER TABLE payouts
     MODIFY COLUMN destination_type VARCHAR(255) DEFAULT NULL,
     MODIFY COLUMN destination_id CHAR(14) DEFAULT NULL,
     ADD INDEX payouts_fund_account_id_index (fund_account_id);
+
+ALTER TABLE vpas
+    DROP INDEX vpas_username_handle_unique,
+    ADD INDEX vpas_username_handle_index (username, handle);

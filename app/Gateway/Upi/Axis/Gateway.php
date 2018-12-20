@@ -864,4 +864,31 @@ class Gateway extends Base\Gateway
 
         return ['data' => ['intent_url' => $this->generateIntentString($content)]];
     }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        /**
+         * We do not update the upi status code on callback, thus we are going to
+         * use success as status code to make sure we do not force auth already auth txns.
+         */
+        if (($gatewayPayment[Entity::STATUS_CODE] === Status::COLLECT_SUCCESS) and
+            ($gatewayPayment[Entity::RECEIVED]) === true)
+        {
+            return true;
+        }
+
+        $attr = [
+            Entity::VPA                 =>  $input['gateway'][Entity::VPA],
+            Entity::NPCI_REFERENCE_ID   =>  $input['gateway'][Fields::RRN],
+            Entity::STATUS_CODE         =>  Status::COLLECT_SUCCESS,
+        ];
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return true;
+    }
 }

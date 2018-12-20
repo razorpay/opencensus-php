@@ -44,7 +44,6 @@ class StatementTest extends TestCase
         $statement = current($response['items']);
         $this->assertNotEmpty($statement['id']);
         $this->assertNotEmpty($statement['created_at']);
-        $this->assertNotEmpty($statement['updated_at']);
         $this->assertNotEmpty($statement['source']['id']);
         $this->assertNotEmpty($statement['source']['bank_reference']);
     }
@@ -62,7 +61,6 @@ class StatementTest extends TestCase
         // Asserts other keys existence in response.
         $this->assertNotEmpty($response['id']);
         $this->assertNotEmpty($response['created_at']);
-        $this->assertNotEmpty($response['updated_at']);
         $this->assertNotEmpty($response['source']['id']);
         $this->assertNotEmpty($response['source']['bank_reference']);
     }
