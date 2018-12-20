@@ -859,9 +859,9 @@ class Entity extends Base\PublicEntity
      *
      * Few examples of issues:
      * 1. Having a $transaction object outside this class you cannot access balance relation as normal.
-     *    Doing $transaction->balance will always get the integer attribute. Workaround(s) exit but are not
+      *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
      *    expressive. I.e. $transaction->getRelation('balance') etcetera.
-     * 2. For lists API, if having balance relation laze loaded and existing balance integer attribute in $public,
+      * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
      *    it'll always get overridden with balance relation because how the base serialization happens. Again,
      *    workaround for this also exists but not worth repeating.
      *
