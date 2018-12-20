@@ -41,9 +41,11 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $response = (new StatusRequest())->init()
-                                         ->setEntity($this->row)
-                                         ->makeRequest();
+        $gateway = ($this->row->hasVpa() === true);
+
+        $response = (new StatusRequest)->init()
+                                       ->setEntity($this->row)
+                                       ->makeRequest($gateway);
 
         if (empty($response) === false)
         {

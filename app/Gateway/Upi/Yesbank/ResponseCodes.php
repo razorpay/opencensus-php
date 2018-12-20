@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Upi\Yesbank;
 
-use RZP\Error\ErrorCode;
-
 class ResponseCodes
 {
     const CODES = [
@@ -97,7 +95,7 @@ class ResponseCodes
         'AM' => 'UPI PIN not set by customer',
         'B1' => 'Registered Mobile number linked to the account has been changed/removed',
         'B3' => 'Transaction not permitted to the account',
-        '0 ' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+        '0'  =>  'APPROVED OR COMPLETED SUCCESSFULLY',
         'ZA' => 'TRANSACTION DECLINED BY CUSTOMER',
         'ZH' => 'INVALID VIRTUAL ADDRESS',
         'UX' => 'EXPIRED VIRTUAL ADDRESS',
@@ -109,13 +107,9 @@ class ResponseCodes
         'UT' => 'REMITTER/ISSUER UNAVAILABLE (TIMEOUT)',
         'BT' => 'ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)',
         'RB' => 'CREDIT REVERSAL TIMEOUT(REVERSAL)',
-        'AM' => 'UPI PIN not set by customer',
-        'B1' => 'Registered Mobile number linked to the account has been changed/removed',
-        'B3' => 'Transaction not permitted to the account',
-        '0 ' => 'APPROVED OR COMPLETED SUCCESSFULLY',
-        'RP ' => 'PARTIAL DEBIT REVERSAL TIMEOUT',
-        '32 ' => 'PARTIAL REVERSAL',
-        '21 ' => 'NO ACTION TAKEN (FULL REVERSAL)',
+        'RP' => 'PARTIAL DEBIT REVERSAL TIMEOUT',
+        '32' => 'PARTIAL REVERSAL',
+        '21' => 'NO ACTION TAKEN (FULL REVERSAL)',
         'U01' => 'The request is duplicate',
         'U02' => 'Amount CAP is exceeded',
         'U03' => 'Net debit CAP is exceeded',
@@ -179,8 +173,8 @@ class ResponseCodes
         'U78' => 'Beneficiary bank offline',
         'OC'  => 'Original Credit Not Found',
         'OD'  => 'Original Debit Not Found',
-        'NC ' => 'Credit Not Done',
-        'ND ' => 'Debit Not Done',
+        'NC'  => 'Credit Not Done',
+        'ND'  => 'Debit Not Done',
 
         // razorpay custom error codes for sending response to FTA
         'RZP_DUPLICATE_PAYOUT' => 'RZP: A payout with given reference Id already exists',

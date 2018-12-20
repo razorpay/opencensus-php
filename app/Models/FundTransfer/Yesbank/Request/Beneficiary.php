@@ -168,6 +168,21 @@ class Beneficiary extends Base
         return $response;
     }
 
+    protected function extractGatewayData(array $response): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    public function getRequestInputForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    public function getActionForGateway(): string
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
     /**
      * Extract the error data from the failed bene addition response
      *
@@ -301,5 +316,15 @@ class Beneficiary extends Base
                 . '</NS1:maintainBeneResponse>'
                 . '</soapenv:Body>'
                 . '</soapenv:Envelope>';
+    }
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
     }
 }

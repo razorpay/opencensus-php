@@ -11,7 +11,14 @@ class EntityProcessor extends BaseEntityProcessor
     {
         $bankStatusCode = $this->fta->getBankStatusCode();
 
-        $merchantFailures = Status::getMerchantFailures();
+        if ($this->fta->hasVpa() === true)
+        {
+            $merchantFailures = GatewayStatus::getMerchantFailures();
+        }
+        else
+        {
+            $merchantFailures = Status::getMerchantFailures();
+        }
 
         if (in_array($bankStatusCode, $merchantFailures, true) === true)
         {

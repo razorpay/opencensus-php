@@ -72,7 +72,7 @@ class ResponseCodeMap
         'UT'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'BT'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'RB'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        'RP ' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        'RP'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U01' => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         'U07' => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
         'U08' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,

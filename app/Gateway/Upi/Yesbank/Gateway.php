@@ -186,7 +186,8 @@ class Gateway extends Mindgate\Gateway
         return $this->generateResponse($responseArray, $gatewayEntity);
     }
 
-    protected function getGatewayEntityAttributes( array $input,
+    protected function getGatewayEntityAttributes(
+        array $input,
         string $action = Action::AUTHORIZE,
         string $type = Type::PAY): array
     {
@@ -283,7 +284,9 @@ class Gateway extends Mindgate\Gateway
         return $this->config['live_merchant_key'];
     }
 
-    protected function traceGatewayPaymentRequest(array $request, $input,
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
@@ -335,7 +338,6 @@ class Gateway extends Mindgate\Gateway
     protected function checkResponseForError(array $responseArray, $gatewayEntity)
     {
         switch ($responseArray[Fields::STATUSCODE])
-
         {
             case Status::SUCCESS:
                 break;
@@ -371,8 +373,7 @@ class Gateway extends Mindgate\Gateway
                     [
                         'gateway'  => $this->gateway,
                         'response' => $responseArray,
-                    ]
-                );
+                    ]);
         }
     }
 

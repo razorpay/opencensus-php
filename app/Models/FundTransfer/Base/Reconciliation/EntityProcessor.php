@@ -207,11 +207,16 @@ abstract class EntityProcessor extends Base\Core
 
         $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
 
+        if ($this->fta->hasVpa() === true)
+        {
+            $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         $statusClass = new $statusNamespace;
 
         $successStatuses = $statusClass::getSuccessfulStatus();
 
-        $failureStatuses = $statusClass::getFailureStatus();
+        $failureStatuses = $statusClass::getFailureStatus($bankStatusCode);
 
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))

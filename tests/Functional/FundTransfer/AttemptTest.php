@@ -236,12 +236,15 @@ class AttemptTest extends TestCase
 
         Carbon::setTestNow($now);
 
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 40000000]);
+
         $payout = $this->fixtures->create(
             'payout',
             [
                 'channel' => $channel,
                 'amount' => 30000000,
             ]);
+
 
         $this->fixtures->create(
             'fund_transfer_attempt',
@@ -254,8 +257,7 @@ class AttemptTest extends TestCase
                 'status'                    => Attempt\Status::CREATED,
                 'source_type'               => Attempt\Type::PAYOUT,
                 'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
-            ]
-        );
+            ]);
 
         $content = $this->initiateTransfer($channel, $purpose, false);
 

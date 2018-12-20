@@ -8,7 +8,7 @@ abstract class Status
 {
     abstract public static function getSuccessfulStatus(): array;
 
-    abstract public static function getFailureStatus(): array;
+    abstract public static function getFailureStatus($bankStatusCode = null): array;
 
     /**
      * Should be implemented to return all critical error which has to be notified.

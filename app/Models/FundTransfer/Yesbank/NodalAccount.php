@@ -62,6 +62,7 @@ class NodalAccount extends NodalBase\NodalAccount
             // Also, for other banks, settlements itself won't be even
             // initiated on non-working days/hours
             //
+
             $isTransferAllowedToday = $this->isTransferAllowedToday($entity);
 
             if ($isTransferAllowedToday === false)
@@ -69,12 +70,14 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
+            $gateway = ($entity->hasVpa() === true);
+
             try
             {
                 // Calling init will reset all the data of previous request
                 $response = $transfer->init()
                                      ->setEntity($entity)
-                                     ->makeRequest();
+                                     ->makeRequest($gateway);
 
                 $this->repo->saveOrFail($entity);
 
@@ -140,6 +143,11 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $amount = $attempt->source->getAmount() / 100;
 
+        if ($attempt->hasVpa() === true)
+        {
+            return true;
+        }
+
         $mode = $this->getPaymentMode($attempt->bankAccount, $amount);
 
         $allowedModes = Mode::get24x7TransferModes();
@@ -180,6 +188,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getPaymentMode(BankAccount\Entity $ba, $amount): string
     {
+        // NOTE: Any change here needs to be made in `getPaymentType` also in
+        // FundTransfer\YesBank\Request\Transfer.php
+
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);

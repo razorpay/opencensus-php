@@ -299,6 +299,8 @@ abstract class NodalAccount extends Base\Core
 
     /**
      * This is used to update the response status for the API based nodal accounts
+     *
+     * @param int $initiated
      */
     protected function updateTransferStatus(int $initiated)
     {
