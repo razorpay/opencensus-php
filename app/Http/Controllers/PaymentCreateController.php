@@ -137,7 +137,7 @@ class PaymentCreateController extends Controller
     public function postAJAX()
     {
         $input = Request::all();
-        //s($input);sd($input);sddb(100);
+
         unset($input['callback']);
 
         $data = $this->service(E::PAYMENT)->process($input);
