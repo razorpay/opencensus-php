@@ -15,33 +15,33 @@ use Config;
 use Request;
 use Session;
 use Requests;
+use Exception;
 
 use App\Base;
 use App\User;
-use Exception;
 use App\Admin;
 use App\Generic;
 use App\Merchant;
 use App\Schedules;
 use App\Providers;
-use Carbon\Carbon;
-use App\User\Helper;
 use App\Transaction;
-use UAParser\Parser;
-use App\Http\ApiUrl;
 use App\MerchantDetails;
+use App\Session as SessionTable;
+use App\User\Helper;
+use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Mailers\MiscMailer;
 use App\Providers\ApiGuard;
 use App\Admin\ApiRequestAny;
-use App\Session as SessionTable;
+use App\Transaction\Service as TransactionService;
+use Carbon\Carbon;
+use UAParser\Parser;
 use Aws\Laravel\AwsFacade as AWS;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
-use Illuminate\Support\Facades\App as App;
-use App\Transaction\Service as TransactionService;
-use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Razorpay\Api\Errors\ServerError as ServerError;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
@@ -91,7 +91,7 @@ class Service extends Base\Service
     * @param  string  $id   Merchant Id
     * @return merchant obj
     **/
-    public function action($merchantId)
+    public function action(string $merchantId) : array
     {
         try
         {
@@ -112,7 +112,9 @@ class Service extends Base\Service
         }
 
         // for suspend action, clear all sessions of users for that merchant
-        if((empty($error) === true) and ($action === 'suspend'))
+        if((empty($error) === true) and
+           (($action === Constants::ACTION_SUSPEND) or
+           ($action === Constants::ACTION_UNSUSPEND)))
         {
             $this->clearMerchantUserSessions($merchantId);
         }
