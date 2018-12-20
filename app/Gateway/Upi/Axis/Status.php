@@ -45,5 +45,4 @@ class Status
     const CALLBACK_FAILED           = 'U30';
 
     const CALLBACK_REJECTED         = 'ZA';
-
 }
