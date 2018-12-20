@@ -39,7 +39,7 @@ class RazorxController extends Controller
     const EXPERIMENT_ACTIVATE_ROUTE = 'EXPERIMENT_ACTIVATE_ROUTE';
 
     const WORKFLOW_REGEX_ROUTES = [
-        self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/\w+\/activate$/',
+        self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
     ];
 
     public function __construct()
@@ -54,24 +54,25 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
-        $path = $this->validateAndGetServicePathParam();
-        $method = null;
-        $requestParams = $this->getRequestParams();
+        $path           = $this->validateAndGetServicePathParam();
+        $method         = null;
+        $requestParams  = $this->getRequestParams();
 
-        foreach(self::WORKFLOW_REGEX_ROUTES as $route => $regex)
+        foreach (self::WORKFLOW_REGEX_ROUTES as $route => $regex)
         {
-            if (preg_match($regex, $path) === 1)
+            if (preg_match($regex, $path, $matches) === 1)
             {
                 switch ($route)
                 {
                     case self::EXPERIMENT_ACTIVATE_ROUTE:
-                        $experimentId = substr($path, strlen('experiments/'), -strlen('/activate'));
+                        $experimentId = $matches[1];
 
                         $this->validateActivateRequest($experimentId, $requestParams);
                         $this->startWorkflow($experimentId);
 
                         $method = 'PATCH';
                         break;
+
                     default:
                         break;
                 }
@@ -117,17 +118,7 @@ class RazorxController extends Controller
 
     protected function validateActivateRequest($experimentId, $requestParams)
     {
-        if ($requestParams['method'] !== 'PATCH')
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                ['error' => 'invalid request method'],
-                null,
-                null
-            );
-        }
-
-        $url = $this->baseUrl . "validate/experiment/$experimentId/activate";
-
+        $url    = $this->baseUrl . "validate/experiment/$experimentId/activate";
         $method = 'POST';
 
         $validateResponse = Requests::request(
