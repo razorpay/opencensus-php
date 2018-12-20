@@ -37,7 +37,7 @@
                 </tr>
                 <tr>
                     <td>RRN</td>
-                    <td>{{{ $data['rrn'] }}}</td>
+                    <td>{{{ $data['rrn'] ?? "Not generated" }}}</td>
                 </tr>
                 <tr>
                     <td>Date</td>

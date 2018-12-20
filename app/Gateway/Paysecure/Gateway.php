@@ -56,8 +56,13 @@ class Gateway extends Base\Gateway
 
         $checkBin2Response = $this->checkBin2();
 
-        $this->handleFailure($checkBin2Response, 'checkbin2');
+        // Todo: Revert once done with certification
+        $return = $this->handleFailure($checkBin2Response, 'checkbin2');
 
+        if ($return)
+        {
+            return $return;
+        }
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
@@ -417,19 +422,37 @@ class Gateway extends Base\Gateway
     {
         if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
-            $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
+            $request = ['method' => 'direct'];
 
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
-                [
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $this->input['payment']['id'],
-                    'command'    => $action,
-                ]
-            );
+            $data = [
+                'status' => 'Failed',
+                'razorpay_payment_id' => $this->input['payment']['id'],
+            ];
+
+            $request['content'] = View::make('gateway.callbackPaysecure')
+                ->with(
+                    'data',
+                    $data
+                )
+                ->render();
+            return $request;
+
+//            Todo: Uncomment below once done with certification
+//            $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
+//
+//            throw new Exception\GatewayErrorException(
+//                $errorCode,
+//                $response[Fields::ERROR_CODE],
+//                $response[Fields::ERROR_MESSAGE],
+//                [
+//                    'gateway'    => $this->gateway,
+//                    'payment_id' => $this->input['payment']['id'],
+//                    'command'    => $action,
+//                ]
+//            );
         }
+
+        return false;
     }
 
     protected function getRepository()
