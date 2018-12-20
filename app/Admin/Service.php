@@ -86,6 +86,11 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    /**
+    * Called when admin performs merchant actions like suspend
+    * @param  string  $id   Merchant Id
+    * @return merchant obj
+    **/
     public function action($merchantId)
     {
         try
@@ -93,7 +98,7 @@ class Service extends Base\Service
             $request = new ApiRequestAny(['client_type' => 'admin']);
 
             $input = Request::all();
-            $action = $input['action'];
+            $action = $input[Constants::ACTION];
 
             list($error, $data) = $request->send("merchants/{$merchantId}/action", Request::method());
         }
