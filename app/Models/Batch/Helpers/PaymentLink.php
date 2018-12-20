@@ -74,6 +74,7 @@ class PaymentLink
             Invoice\Entity::EXPIRE_BY       => $expireBy,
             Invoice\Entity::PARTIAL_PAYMENT => $partialPayment,
             Invoice\Entity::CUSTOMER        => $customer,
+            Invoice\Entity::NOTES           => $entry[Batch\Header::NOTES] ?? [],
         ];
 
         return $input;

@@ -113,6 +113,15 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
     }
 
+    protected function verifyPayoutReconProcessForYesbankVpa($failureTest = false)
+    {
+        $channel = Channel::YESBANK;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccessForVpa($channel, 1, Attempt\Type::PAYOUT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannelVpa($channel, Attempt\Type::PAYOUT, $failureTest);
+    }
+
     protected function verifySettlementReconFileProcessFailureKotak()
     {
         $this->markTestSkipped('Kotak is not live.');
@@ -277,6 +286,15 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testPayoutReconcileEntitiesSuccessForYesbankVpa()
+    {
+        $this->verifyPayoutReconProcessForYesbankVpa();
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
+    }
+
     public function testSettlementReconcileEntitiesFailureForRbl()
     {
         $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
@@ -419,6 +437,7 @@ class AttemptReconcileTest extends TestCase
 
         $sources = $this->getEntities($sourceType, [], true);
         $sourceTestData = 'fetchAndMatchReconSuccessFor' . ucfirst($sourceType);
+
         foreach ($sources['items'] as $source)
         {
             $this->assertTestResponse($source, $sourceTestData);
@@ -432,6 +451,7 @@ class AttemptReconcileTest extends TestCase
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
         $batchTestData = 'matchBatchReconcileDataFor' . ucfirst($sourceType);
+
         $this->assertTestResponse($batch, $batchTestData);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -674,5 +694,4 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('FAILED', $fta['bank_status_code']);
     }
-
 }

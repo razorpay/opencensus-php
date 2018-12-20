@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
@@ -33,14 +34,19 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::FUND_ACCOUNT_ID, FundAccount\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::METHOD);
 
             $table->char(Payout::BALANCE_ID, Balance\Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
+            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(Payout::DESTINATION_TYPE, 20);
+            $table->char(Payout::DESTINATION_TYPE, 20)
+                  ->nullable();
 
             $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
                   ->nullable();
@@ -118,6 +124,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::STATUS);
 
             $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
+
+            $table->index(Payout::FUND_ACCOUNT_ID);
 
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
 

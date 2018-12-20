@@ -13,6 +13,8 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\NodalBeneficiary\Status;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -77,7 +79,7 @@ class Beneficiary extends Base\Core
         return $result;
     }
 
-    protected function registerBeneficiary(
+    public function registerBeneficiary(
         Base\PublicCollection $bankAccounts,
         string $channel,
         array $input = []): array
@@ -178,5 +180,75 @@ class Beneficiary extends Base\Core
         }
 
         return $this->repo->bank_account->findMany($bankAccount);
+    }
+
+    /**
+     * @param string $channel
+     * @param Entity $bankAccount
+     * @return bool
+     */
+    public function registerBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
+    {
+        $data = [
+            'bank_account_id'  => $bankAccount->getId(),
+            'channel'          => $channel,
+        ];
+
+        $isBeneRegRequired = $this->checkIfBeneRegRequired($bankAccount);
+
+        if ($isBeneRegRequired === false)
+        {
+            return true;
+        }
+
+        $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_REG_INIT, $data);
+
+        $bankAccounts = (new PublicCollection)->push($bankAccount);
+
+        $beneResponse = (new $beneClass)->registerBeneficiary($bankAccounts);
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_REG_COMPLETE, $data + $beneResponse);
+
+        return $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
+    }
+
+    /**
+     * @param $bankAccount
+     * @param $channel
+     * @return bool
+     */
+    protected function checkBeneficiaryRegistrationStatus($bankAccount, $channel): bool
+    {
+        $nodalBeneficiary = $this->repo
+                                 ->nodal_beneficiary
+                                 ->fetchActivatedBeneficiaryDetailsForChannel(
+                                     $bankAccount->getId(),
+                                     $channel
+                                 );
+
+        $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
+
+        if ($registrationStatus === Status::REGISTERED)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Entity $bankAccount
+     * @return bool
+     */
+    protected function checkIfBeneRegRequired(Entity $bankAccount): bool
+    {
+        if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(),true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

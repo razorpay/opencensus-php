@@ -1771,7 +1771,7 @@ class Gateway
 
     public static function getTerminalsForValidateVpaForMode(string $mode)
     {
-        // Currently we are only using MindGate for live and Sharp for test, later when
+        // Currently we are only using MindGate and SBI for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }

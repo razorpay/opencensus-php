@@ -42,7 +42,7 @@ abstract class RowProcessor extends Base\Core
     {
         $this->processRow();
 
-        if(empty($this->reconEntityId) === false)
+        if (empty($this->reconEntityId) === false)
         {
             $this->fetchEntities();
         }
@@ -85,8 +85,8 @@ abstract class RowProcessor extends Base\Core
                 [
                     'source_batch_id'       => $sourceBatchId,
                     'recon_entity_batch_id' => $reconEntityBatchId
-                ]
-            );
+                ]);
+
             return;
         }
 
@@ -143,7 +143,9 @@ abstract class RowProcessor extends Base\Core
 
         $this->trace->info(
             TraceCode::FTA_RECON_SOURCE_UPDATED,
-            ['source_id' => $this->reconEntity->source->getId()]);
+            [
+                'source_id' => $this->reconEntity->source->getId()
+            ]);
     }
 
     /**

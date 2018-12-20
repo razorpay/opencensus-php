@@ -404,25 +404,6 @@ class Validator extends Base\Validator
                     $input
                 ]);
         }
-
-        $bank = $input[Entity::BANK];
-
-        $accountNumber = $input[Entity::BANK_ACCOUNT][Entity::ACCOUNT_NUMBER];
-
-        if (isset($accountNumberLengths[$bank]) === false)
-        {
-            return;
-        }
-
-        if ($accountNumberLengths[$bank] !== strlen($accountNumber))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH,
-                Entity::ACCOUNT_NUMBER,
-                [
-                    $input
-                ]);
-        };
     }
 
     protected function validateOrderMethod(string $method = null)

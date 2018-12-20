@@ -7,10 +7,13 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -29,6 +32,7 @@ class Entity extends Base\PublicEntity
     const ID                     = 'id';
     const MERCHANT_ID            = 'merchant_id';
     const CUSTOMER_ID            = 'customer_id';
+    const FUND_ACCOUNT_ID        = 'fund_account_id';
     const METHOD                 = 'method';
     const BALANCE_ID             = 'balance_id';
     const DESTINATION_ID         = 'destination_id';
@@ -103,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
         self::DESTINATION,
         self::USER_ID,
         self::AMOUNT,
@@ -132,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::FUND_ACCOUNT_ID,
         self::DESTINATION,
         self::METHOD,
         self::AMOUNT,
@@ -155,12 +161,14 @@ class Entity extends Base\PublicEntity
         self::DESTINATION,
         self::CUSTOMER_ID,
         self::USER_ID,
+        self::FUND_ACCOUNT_ID,
     ];
 
     protected $defaults = [
         self::USER_ID           => null,
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
+        self::FUND_ACCOUNT_ID   => null,
         self::NOTES             => [],
         self::ATTEMPTS          => 1,
         self::TYPE              => self::DEFAULT
@@ -191,7 +199,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function destination()
@@ -206,12 +214,17 @@ class Entity extends Base\PublicEntity
 
     public function customer()
     {
-        return $this->belongsTo('RZP\Models\Customer\Entity');
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function fundAccount()
+    {
+        return $this->belongsTo(FundAccount\Entity::class);
     }
 
     public function payment()
     {
-        return $this->belongsTo('RZP\Models\Payment\Entity');
+        return $this->belongsTo(Payment\Entity::class);
     }
 
     /**
@@ -226,7 +239,7 @@ class Entity extends Base\PublicEntity
 
     public function batchFundTransfer()
     {
-        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+        return $this->belongsTo(FundTransfer\Batch\Entity::class);
     }
 
     public function user()
@@ -259,7 +272,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
-    // FeeCalculator calls `$entity->getFee()` for all the pricing entity
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
+    public function hasFundAccount()
+    {
+        return ($this->isAttributeNotNull(self::FUND_ACCOUNT_ID) === true);
+    }
+
+    /**
+     * FeeCalculator calls `$entity->getFee()` for all the pricing entity
+     *
+     * @return mixed
+     */
     public function getFee()
     {
         return $this->getFees();
@@ -431,6 +458,13 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->getDestinationType();
 
+        // Type (destination) will be null in case of Business Banking payouts.
+        // We will be deprecating this soon, in favor of fund accounts.
+        if ($type === null)
+        {
+            return;
+        }
+
         $entity = Constants\Entity::getEntityClass($type);
 
         $id = $this->getDestinationId();
@@ -441,6 +475,17 @@ class Entity extends Base\PublicEntity
     public function setPublicCustomerIdAttribute(array & $attributes)
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+        //
+        // customer_id is used only in the openwallet payout flow. We do not want
+        // to expose this field in general
+        //
+        if ($customerId === null)
+        {
+            unset($attributes[self::CUSTOMER_ID]);
+
+            return;
+        }
 
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
@@ -454,6 +499,13 @@ class Entity extends Base\PublicEntity
         {
             unset($attributes[self::USER_ID]);
         }
+    }
+
+    public function setPublicFundAccountIdAttribute(array & $attributes)
+    {
+        $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
+
+        $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
     }
 
     public function getPricingFeatures()

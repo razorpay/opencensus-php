@@ -4,9 +4,9 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Settlement;
 
-class CustomerPayout extends Base
+class FundAccountPayout extends Base
 {
-    protected function setChannel()
+    protected function setChannel($input = [])
     {
         $this->channel = Settlement\Channel::YESBANK;
     }

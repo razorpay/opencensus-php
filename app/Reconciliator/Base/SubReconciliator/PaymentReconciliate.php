@@ -237,17 +237,22 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     protected function validatePaymentDetails(array $row)
     {
-        $validPaymentStatus = $this->validatePaymentStatus($row);
-
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
         $validCurrencyCode  = $this->validatePaymentCurrencyEqualsReconCurrency($row);
 
-        $validPaymentDetails = (($validPaymentStatus === true) and
-                                ($validPaymentAmount === true) and
-                                ($validCurrencyCode === true));
+        if (($validPaymentAmount === false) or ($validCurrencyCode === false))
+        {
+            return false;
+        }
 
-        return $validPaymentDetails;
+        //
+        // As validatePaymentStatus() may end up force-authorizing the failed payment,
+        // we keep it after payment amount and currency match check.
+        //
+        $validPaymentStatus = $this->validatePaymentStatus($row);
+
+        return ($validPaymentStatus === true);
     }
 
     /**

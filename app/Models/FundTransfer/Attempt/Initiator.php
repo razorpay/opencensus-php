@@ -12,12 +12,15 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 
 class Initiator extends Base\Core
 {
     const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s';
     const MUTEX_LOCK_TIMEOUT    = 900;
+
+    const FTA_PURPOSE = 'settlement';
 
     protected $mutex;
 
@@ -114,7 +117,7 @@ class Initiator extends Base\Core
         });
     }
 
-    protected function processFundTransferAttempts(
+    public function processFundTransferAttempts(
         string $purpose, string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
@@ -263,5 +266,22 @@ class Initiator extends Base\Core
                 'memory_peak_usage'              => $memoryPeakUsage,
                 'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
+    }
+
+    public function initFundTransferOnChannel($fta, $channel)
+    {
+        $data = [
+            'fta_id'  => $fta->getId(),
+            'source'  => $fta->getSourceId(),
+            'channel' => $channel,
+        ];
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT, $data);
+
+        $attempts = (new PublicCollection)->push($fta);
+
+        $response = $this->processFundTransferAttempts(self::FTA_PURPOSE, $channel, $attempts);
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
 }

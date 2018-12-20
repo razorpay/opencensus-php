@@ -24,7 +24,7 @@ class Core extends Base\Core
     {
         $user = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
@@ -37,7 +37,7 @@ class Core extends Base\Core
     {
         $user->edit($input, $operation);
 
-        $this->repo->transaction(function() use ($user, $input)
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
             $this->repo->saveOrFail($user);
@@ -417,13 +417,23 @@ class Core extends Base\Core
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $action, $token);
         $receiver = $user->getContactMobile();
         $source   = 'api';
-        $template = 'sms.user_action_otp';
+        $template = "sms.user.{$action}";
 
         // Raven's template params
         $params   = [
             // Action must read as verb so can be used like to {action} in raven's generic template.
             Entity::ACTION => str_replace('_', ' ', $action),
         ];
+
+        // Temporary: Need to send these payloads for raven's sms content.
+        if (($action === 'create_payout') and
+            (isset($input['amount'], $input['account_number']) === true))
+        {
+            $params += [
+                'amount' => amount_format_IN($input['amount']),
+                'account_number' => $input['account_number'],
+            ];
+        }
 
         return compact(
             'action',

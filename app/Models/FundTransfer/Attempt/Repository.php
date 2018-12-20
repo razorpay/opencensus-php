@@ -273,4 +273,12 @@ class Repository extends Base\Repository
                     ->skip($offset)
                     ->get();
     }
+
+    public function findCreatedFtaById(string $id)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, Status::CREATED)
+                    ->where(Entity::ID, $id)
+                    ->first();
+    }
 }

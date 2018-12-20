@@ -2070,6 +2070,25 @@ class SubscriptionChargeTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateSubscriptionForViewTestWithCustomer()
+    {
+        $subscription = $this->createSubscription(true, [], [], false, false, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $this->mockSession();
+
+        $response = $this->doAuthPayment($paymentRequest);
+
+        $this->flushSession();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('authenticated', $subscription['status']);
+
+        $this->callViewUrlAndMakeAssertions($subscription['id'], 200, null, $subscription['customer_email']);
+    }
+
     protected function failSubscriptionFirstCharge()
     {
         $this->doAuthTxnForNewSubscription();

@@ -6,7 +6,10 @@ use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as ValidStatus;
 
 class Status extends Base
@@ -56,6 +59,30 @@ class Status extends Base
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
             ],
         ]);
+    }
+
+    public function getRequestInputForGateway(): array
+    {
+        //
+        // For now, we would be hardcoding the terminal. Later, have to
+        // figure out how to do terminal selection for this, since each
+        // merchant might have a different terminal. Use-case being merchant
+        // wants the payout/refund to happen from their custom vpa handle
+        // instead of from razorpay handle
+        //
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
+
+        return [
+            'terminal' => $terminal->toArray(),
+            'gateway_input' => [
+                'ref_id'    => $this->entity->getId(),
+            ]
+        ];
+    }
+
+    public function getActionForGateway(): string
+    {
+        return Action::PAYOUT_VERIFY;
     }
 
     /**
@@ -114,6 +141,38 @@ class Status extends Base
         ];
     }
 
+    protected function extractGatewayData(array $response): array
+    {
+        // Required data:
+        //     self::PAYMENT_REF_NO,
+        //     self::UTR,
+        //     self::BANK_STATUS_CODE,
+        //     self::REMARK,
+        //     self::PAYMENT_DATE,
+        //     self::REFERENCE_NUMBER,
+        //     self::MODE
+
+        // FTA ID
+        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
+        $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
+        $bankReferenceNo =  $response[Constants::BANK_REFERENCE_NO] ?? null;
+
+        $statusCode = $response[Constants::STATUS_CODE] ?? null;
+        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
+        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+
+        return [
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            self::UTR                   => $this->getNullOnEmpty($utr),
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            self::MODE                  => null,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -160,5 +219,19 @@ class Status extends Base
                 ],
             ],
         ]);
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        return [
+            Constants::REQUEST_REFERENCE_NO => PublicEntity::generateUniqueId(),
+            Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
+            Constants::STATUS_CODE          => GatewayStatus::COMPLETED,
+        ];
+    }
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        // TODO: return stuff
     }
 }

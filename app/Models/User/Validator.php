@@ -88,6 +88,10 @@ class Validator extends Base\Validator
     protected static $createOtpRules = [
         Entity::MEDIUM => 'required|filled|in:sms,email',
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
+
+        // Temporary: Need to send these payloads for raven's sms content.
+        'amount'         => 'sometimes|integer|min:100|required_if:action,create_payout',
+        'account_number' => 'sometimes|alpha_num|between:5,22|required_if:action,create_payout',
     ];
 
     protected static $verifyOtpRules = [

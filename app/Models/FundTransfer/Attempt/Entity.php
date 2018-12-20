@@ -230,6 +230,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DATE_TIME);
     }
 
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setRemarks($remarks)

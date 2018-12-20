@@ -80,7 +80,7 @@ class Helpers
             $formattedSummary[$entry['date']][] =  $entry;
         }
 
-        sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY, SORT_ASC);
+        sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY, SORT_DESC);
 
         $metadataEntryDateWise = self::setDateWiseStats($formattedSummary);
 

@@ -958,5 +958,11 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\FundAccount\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'active'      => 1,
+            'merchant_id' => '10000000000000',
+        ]);
     }
 }

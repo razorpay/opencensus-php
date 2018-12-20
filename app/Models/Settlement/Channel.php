@@ -129,6 +129,18 @@ class Channel
         ];
     }
 
+    /**
+     * Gives list of channels which support instant payouts
+     *
+     * @return array
+     */
+    public static function getInstantPayoutChannels()
+    {
+        return [
+            self::YESBANK,
+        ];
+    }
+
     public static function getGateways($channel)
     {
         return self::$gateways[$channel];

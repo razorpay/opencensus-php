@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -49,7 +50,8 @@ class Core extends Base\Core
                 break;
 
             case Type::VPA:
-                // TODO
+                $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                break;
 
             default:
                 throw new LogicException('Creation logic not defined for fund account type: ' . $accountType);

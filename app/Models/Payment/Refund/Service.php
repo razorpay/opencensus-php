@@ -365,6 +365,57 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function createScroogeRefundBulk(array $input)
+    {
+        (new Validator)->validateInput('create_scrooge_refund_bulk', $input);
+
+        $this->trace->info(TraceCode::REFUND_SCROOGE_CREATE_BULK_INITIATED, $input);
+
+        $refundIds = $input['refund_ids'];
+
+        $successes = $failures = 0;
+
+        $failureRefunds = [];
+
+        $total = count($refundIds);
+
+        Entity::verifyIdAndStripSignMultiple($refundIds);
+
+        foreach ($refundIds as $refundId)
+        {
+            try
+            {
+                $this->createScroogeRefund($refundId);
+
+                $successes++;
+            }
+            catch (\Exception $ex)
+            {
+                $failures++;
+
+                $failureRefunds[] = $refundId;
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::REFUND_SCROOGE_CREATE_BULK_DISPATCHED,
+            [
+                'total_count'       => $total,
+                'success_count'     => $successes,
+                'failures_count'    => $failures,
+                'failed_refunds'    => $failureRefunds
+            ]);
+
+        return [
+            'total_count'       => $total,
+            'success_count'     => $successes,
+            'failures_count'    => $failures,
+            'failed_refunds'    => $failureRefunds
+        ];
+    }
+
     /**
      * USE WITH EXTREME CAUTION
      * This calls the gateway for refund and does nothing on the api side.
@@ -1233,6 +1284,70 @@ class Service extends Base\Service
         return [
                 'success_count' => $successCount,
                 'time_taken'    => $processingTime,
+        ];
+    }
+
+    public function backfillUpiMindgateReference1(array $input)
+    {
+        if (isset($input['limit']) === true)
+        {
+            $limit = intval($input['limit']);
+        }
+        else
+        {
+            $limit = 5000;
+        }
+
+        if (isset($input['from']) === true)
+        {
+            $from = $input['from'];
+        }
+        else
+        {
+            // Hard coding it to 25th June - this is the first Upi Mindgate refund
+            $from = 1529865000;
+        }
+
+        if (isset($input['to']) === true)
+        {
+            $to = $input['to'];
+        }
+        else
+        {
+            // Hard coding it to 13th December 3:00 pm - this is when scrooge started sending RRN for Upi Mindgate
+            // in the mark processed route - to fill the reference1
+            $to = 1544693490;
+        }
+
+        $start = microtime(true);
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_RRN_INITIATED,
+            [
+                'start_time' => $start,
+                'limit'      => $limit,
+                'from'       => $from,
+                'to'         => $to
+            ]);
+
+        $successCount  = $this->repo->refund->backfillUpiMindgateReference1($limit, $from, $to);
+
+        $end = microtime(true);
+
+        $processingTime = $end - $start;
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_RRN_SUMMARY,
+            [
+                'end_time'      => $end,
+                'time_taken'    => $processingTime,
+                'success_count' => $successCount
+            ]
+        );
+
+        return [
+            'success_count' => $successCount,
+            'time_taken'    => $processingTime,
         ];
     }
 }

@@ -4551,3 +4551,8 @@ ALTER TABLE contacts
     ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER email,
     ADD INDEX contacts_type_merchant_id_index (type, merchant_id);
 
+ALTER TABLE payouts
+    ADD COLUMN fund_account_id CHAR(14) DEFAULT NULL AFTER destination_type,
+    MODIFY COLUMN destination_type VARCHAR(255) DEFAULT NULL,
+    MODIFY COLUMN destination_id CHAR(14) DEFAULT NULL,
+    ADD INDEX payouts_fund_account_id_index (fund_account_id);

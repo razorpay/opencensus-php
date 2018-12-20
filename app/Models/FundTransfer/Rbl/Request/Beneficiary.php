@@ -196,22 +196,22 @@ class Beneficiary extends Base
     /**
      * Generates successful response for given request
      *
-     * @return array
+     * @return string
      */
-    protected function mockGenerateFailedResponse(): array
+    protected function mockGenerateFailedResponse(): string
     {
         // TODO: Implement mockGenerateFailedResponse() method.
-        return [];
+        return "";
     }
 
     /**
      * Generates failed response for given request
      *
-     * @return array
+     * @return string
      */
-    protected function mockGenerateSuccessResponse(): array
+    protected function mockGenerateSuccessResponse(): string
     {
         // TODO: Implement mockGenerateSuccessResponse() method.
-        return [];
+        return "";
     }
 }

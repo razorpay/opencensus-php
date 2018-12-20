@@ -194,6 +194,15 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function scroogeRefundCreateBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createScroogeRefundBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putRefundStatus($id)
     {
         $input = Request::all();
@@ -226,6 +235,15 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->updateProcessedAt($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function backfillUpiMindgateReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->backfillUpiMindgateReference1($input);
 
         return ApiResponse::json($data);
     }

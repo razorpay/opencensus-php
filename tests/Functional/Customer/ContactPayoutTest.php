@@ -7,13 +7,13 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class CustomerPayoutTest extends TestCase
+class ContactPayoutTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/CustomerPayoutTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/ContactPayoutTestData.php';
 
         parent::setUp();
     }

@@ -18,7 +18,7 @@ class Service extends Base\Service
         $this->core = new Payout\Core;
     }
 
-    public function customerPayout(array $input): array
+    public function fundAccountPayout(array $input): array
     {
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
         if ($this->auth->isStrictPrivateAuth() === false)
@@ -26,19 +26,19 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
-        $payout = $this->core->createPayoutToCustomer($input, $this->merchant);
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
         return $payout->toArrayPublic();
     }
 
     /**
-     * Business banking: Forwards request to customerPayout() after verifying user's otp for the action.
+     * Business banking: Forwards request to `fundAccountPayout()` after verifying user's otp for the action.
      *
      * @param  array $input
      *
      * @return array
      */
-    public function customerPayoutWithOtp(array $input): array
+    public function fundAccountPayoutWithOtp(array $input): array
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
@@ -46,7 +46,7 @@ class Service extends Base\Service
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
-        $payout = $this->core->createPayoutToCustomer($payoutInput, $this->merchant);
+        $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
         return $payout->toArrayPublic();
     }
@@ -81,14 +81,14 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    public function fetch(string $id, array $input) : array
+    public function fetch(string $id, array $input): array
     {
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $payout->toArrayPublic();
     }
 
-    public function fetchMultiple(array $input) : array
+    public function fetchMultiple(array $input): array
     {
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
