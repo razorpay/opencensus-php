@@ -17,7 +17,7 @@ export default class InstantActivationSuccess extends Component {
 
     this.props.track.trackViewProducts();
     onClose();
-    showProductsModal(() => showTransactionsModal(this.props.isKLA));
+    showProductsModal(() => showTransactionsModal());
   }
 
   render() {
