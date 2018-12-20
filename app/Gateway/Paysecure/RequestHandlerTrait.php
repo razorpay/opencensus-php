@@ -37,7 +37,9 @@ trait RequestHandlerTrait
         $cardBin = substr($cardNumber, 0, 9);
 
         // todo: Remove this after certification
-        if ($cardNumber === '6074811617117849')
+        if ((isset($this->input['payment']['notes']['test_name']) === true) and
+            ($this->input['payment']['notes']['test_name'] === 'AQPG_06')
+        )
         {
             $cardBin = '222222222';
         }
@@ -145,9 +147,9 @@ trait RequestHandlerTrait
         ];
 
         // todo: This needs to be removed  when going live.
-        // Added here just for certifications
-        if ($card['number'] === '6073849700004947' or
-            $card['number'] === '6074819900004939')
+        if ((isset($this->input['payment']['notes']['test_name']) === true) and
+            ($this->input['payment']['notes']['test_name'] === 'AQPG_03')
+        )
         {
             $requestArray[Fields::CUSTOM4] = 'S';
         }
@@ -280,8 +282,10 @@ trait RequestHandlerTrait
     {
         $tokenId = $this->config['token'];
 
-        if (($this->action === Action::AUTHORIZE) and
-            ($this->input['card']['number'] === '6074819602229586'))
+        // Todo: Remove after certification
+        if ((isset($this->input['payment']['notes']['test_name']) === true) and
+            ($this->input['payment']['notes']['test_name'] === 'AQPG_04')
+        )
         {
             $tokenId = '8cbce028-98bc-49b1-a090-16dbe2043bd9';
         }

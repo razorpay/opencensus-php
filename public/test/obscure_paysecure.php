@@ -201,6 +201,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <td><input type="text" name="contact" size="25" value="9976543210"></td>
         </tr>
         <tr>
+            <td colspan='40'>Test Name:</td>
+            <td><input type="text" name="notes[test_name]" size="25" value="AQPG_01"></td>
+        </tr>
+        <tr>
             <td colspan="100" align="center">
                 <input type="submit" value="  Submit  " >
             </td>
