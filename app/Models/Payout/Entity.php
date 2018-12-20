@@ -540,4 +540,14 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return false;
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return $this->isBalanceTypeBanking();
+    }
 }

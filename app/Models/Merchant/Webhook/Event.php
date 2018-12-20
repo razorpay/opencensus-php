@@ -39,6 +39,7 @@ class Event
     const PAYMENT_DISPUTE_WON       = 'payment.dispute.won';
     const PAYMENT_DISPUTE_LOST      = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED    = 'payment.dispute.closed';
+    const TRANSACTION_CREATED       = 'transaction.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -68,6 +69,7 @@ class Event
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
+        self::TRANSACTION_CREATED,
     ];
 
     /**
@@ -103,6 +105,7 @@ class Event
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
+        self::TRANSACTION_CREATED,
     ];
 
     protected static $bitPosition = [
@@ -133,6 +136,7 @@ class Event
         self::PAYMENT_DISPUTE_WON       => 25,
         self::PAYMENT_DISPUTE_LOST      => 26,
         self::PAYMENT_DISPUTE_CLOSED    => 27,
+        self::TRANSACTION_CREATED       => 28,
     ];
 
     /**
@@ -196,6 +200,7 @@ class Event
         self::PAYMENT_DISPUTE_WON       => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_LOST      => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_CLOSED    => Entity::DISPUTE,
+        self::TRANSACTION_CREATED       => Entity::TRANSACTION,
     ];
 
     public static $eventsToFeatureMap = [
