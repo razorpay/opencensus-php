@@ -53,7 +53,12 @@ class ViewDataSerializer extends Base\Core
         $this->merchant     = $subscription->merchant;
         $this->customer     = $subscription->customer;
         $this->plan         = $subscription->plan;
-        $this->card         = $subscription->token->card;
+
+        if ($subscription->token !== null)
+        {
+            $this->card = $subscription->token->card;
+        }
+
     }
 
     /**
@@ -125,11 +130,18 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeCustomerForHosted(): array
     {
-        return [
-            'name'    => $this->customer->getName(),
-            'email'   => $this->customer->getEmail(),
-            'contact' => $this->customer->getContact()
-        ];
+        if ($this->customer !== null)
+        {
+            return [
+                'name'    => $this->customer->getName(),
+                'email'   => $this->customer->getEmail(),
+                'contact' => $this->customer->getContact()
+            ];
+        }
+        else {
+            return [];
+        }
+
     }
 
     protected function serializePlanForHosted(): array
@@ -144,6 +156,11 @@ class ViewDataSerializer extends Base\Core
 
     protected function serializeCardForHosted(): array
     {
+        if ($this->card === null)
+        {
+            return [];
+        }
+
         $expiresAt          = $this->card->getExpiryTimestamp();
         $expiresAtFormatted = Carbon::createFromTimestamp($expiresAt, Timezone::IST)->format('F Y');
 

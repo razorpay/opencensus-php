@@ -727,6 +727,15 @@ class SubscriptionCreateTest extends TestCase
         $this->assertArrayHasKey('type', $subscription);
     }
 
+    public function testCreateSubscriptionForViewTest()
+    {
+        $this->testCreateSubscriptionWithoutCustomerId();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->callViewUrlAndMakeAssertions($subscription['id']);
+    }
+
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
     {
         $requestContent = $this->testData[$function];
