@@ -19,14 +19,20 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     // Attributes
-    const NAME    = 'name';
-    const CONTACT = 'contact';
-    const EMAIL   = 'email';
-    const TYPE    = 'type';
-    const NOTES   = 'notes';
-    const ACTIVE  = 'active';
+    const NAME         = 'name';
+    const CONTACT      = 'contact';
+    const EMAIL        = 'email';
+    const TYPE         = 'type';
 
-    // Additional input & output attributes.
+    //
+    // Reference ID is metadata set by the merchant, this does not
+    // refer to any entity on our system
+    //
+    const REFERENCE_ID = 'reference_id';
+    const NOTES        = 'notes';
+    const ACTIVE       = 'active';
+
+    // Additional input & output attributes
     const ACCOUNT_NUMBER  = 'account_number';
     const FUND_ACCOUNT_ID = 'fund_account_id';
 
@@ -37,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::EMAIL,
         self::TYPE,
+        self::REFERENCE_ID,
         self::ACTIVE,
         self::NOTES,
     ];
@@ -48,17 +55,19 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::EMAIL,
         self::TYPE,
+        self::REFERENCE_ID,
         self::ACTIVE,
         self::NOTES,
         self::CREATED_AT,
     ];
 
     protected $defaults = [
-        self::CONTACT => null,
-        self::EMAIL   => null,
-        self::TYPE    => null,
-        self::NOTES   => [],
-        self::ACTIVE  => true,
+        self::CONTACT      => null,
+        self::EMAIL        => null,
+        self::TYPE         => null,
+        self::REFERENCE_ID => null,
+        self::NOTES        => [],
+        self::ACTIVE       => true,
     ];
 
     protected $casts = [
@@ -95,6 +104,11 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getAttribute(self::REFERENCE_ID);
     }
 
     public function getActive()
