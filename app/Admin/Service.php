@@ -112,7 +112,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        // for suspend action, clear all sessions of users for that merchant
+        // for suspend/unsuspend action, clear all sessions of users for that merchant
         if((empty($error) === true) and
            (($action === Constants::ACTION_SUSPEND) or
            ($action === Constants::ACTION_UNSUSPEND)))
