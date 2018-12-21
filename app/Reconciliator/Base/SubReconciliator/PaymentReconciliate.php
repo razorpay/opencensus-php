@@ -463,8 +463,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'    => 'Force authorized the failed payment.',
+                    'info_code'  => Base\InfoCode::PAYMENT_FORCE_AUTHORIZED,
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway,
                 ]);
 
@@ -475,8 +476,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Unable to force authorize the payment. Payment is still in failed state.',
+                    'info_code'  => Base\InfoCode::PAYMENT_FORCE_AUTHORIZE_FAILED,
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -1307,6 +1309,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'         => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'           => 'Reference1 is not same as in recon',
                     'payment_id'        => $this->payment->getId(),
+                    'amount'            => $this->payment->getAmount(),
                     'api_reference1'    => $dbReference1,
                     'recon_reference1'  => $reference1,
                     'gateway'           => $this->gateway
@@ -1967,6 +1970,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Gateway Transaction ID in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
                     'db_gateway_txn_id'         => $dbGatewayTransactionId,
                     'recon_gateway_txn_id'      => $gatewayTransactionId,
                     'gateway'                   => $this->gateway
@@ -2001,6 +2005,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Gateway Payment Id in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
                     'db_gateway_payment_id'     => $dbGatewayPaymentId,
                     'recon_gateway_payment_id'  => $gatewayPaymentId,
                     'gateway'                   => $this->gateway
