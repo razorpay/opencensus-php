@@ -1,5 +1,7 @@
 import Smooch from 'smooch';
 
+import { getExperiment } from 'common/util';
+
 const SMOOCH_APP_ID = '54d849a9c99af8250046dbf8';
 // const FRESHCHAT_TOKEN = 'ecf81a9c-2040-43d2-b65f-af058b1508d9'; //test
 const FRESHCHAT_TOKEN = '188cc5ce-796c-4918-8029-c2dc1d924274'; //live
@@ -59,9 +61,7 @@ const initFreshchat = data => {
 };
 
 export default function initChat(data) {
-  const chatExp = (window.rzp_user.experiments || {}).new_chat || {};
-
-  if (chatExp.result === 'on') {
+  if (getExperiment('new_chat') === 'on') {
     initFreshchat(data);
   } else {
     initSmooch(data);

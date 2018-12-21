@@ -9,7 +9,7 @@ export default class SupportHeader extends Component {
     return (
       <button
         class={classList(
-          'btn-primary btn-block support-header',
+          'btn btn-primary btn-block support-header',
           notifyCount && 'notify'
         )}
         onClick={onToggle}

@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import Banner from 'rzp/ui/Banner';
 
+import { getExperiment } from 'common/util';
+
 export default class SupportBody extends Component {
   handleClick = id => {
     const { onToggle, onChat, notifyCount } = this.props;
@@ -85,10 +87,7 @@ export default class SupportBody extends Component {
                 </li>
               ) : null
             ) : null}
-            {window.rzp_user &&
-            window.rzp_user.experiments &&
-            window.rzp_user.experiments.support_call &&
-            window.rzp_user.experiments.support_call.result === 'on' ? (
+            {getExperiment('support_call') === 'on' ? (
               <li
                 class={`support-item p-all call ${
                   shouldDisable ? 'disabled' : ''
@@ -107,11 +106,17 @@ export default class SupportBody extends Component {
           </ul>
 
           <div class="support-feedback">
-            <button class="btn-default pull-left" onClick={this.handleFeedback}>
+            <button
+              class="btn btn-default pull-left"
+              onClick={this.handleFeedback}
+            >
               <i class="i i-voice-record m-r" />
               Share Feedback
             </button>
-            <button class="btn-default pull-right" onClick={this.handleFaqs}>
+            <button
+              class="btn btn-default pull-right"
+              onClick={this.handleFaqs}
+            >
               <i class="i i-help  m-r" />
               FAQs
             </button>
