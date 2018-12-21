@@ -102,6 +102,7 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
+            self::AXIS2,
         ];
     }
 
