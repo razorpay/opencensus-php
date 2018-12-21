@@ -1,112 +1,154 @@
 $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
 
-.support
-    position: fixed
-    bottom:  0
-    right: 25px
-    width: 340px
-    z-index: 9999 // smooch hit area has 9998
-    opacity: 1
-    box-shadow: 0 1px 2px rgba(0,0,0,.1)
-    &.hidden
-      opacity: 0
-  .support-notify
-    background-color: #F76A69;
-    padding: 0 8px;
-    border-radius: 8px;
-    font-size: 12px;
+
+.support 
+  position: absolute
+  z-index: 9999 // smooch hit area has 9998
+  .notify-icon
+    display: inline-block;
+    position: absolute;
+    background: #f05050;
+    width: 20px;
+    height: 20px;
+    right: -10px;
+    top: -10px;
+    border-radius: 50%;
+    text-align: center;
+    color: #fff;
+.support-launcher
+  position: fixed;
+  bottom: 20px;
+  right: 40px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: $sidebar-bg-color
+  transform-origin: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-shadow: 0 5px 4px 0 rgba(0,0,0,.26);
+  .open-icon, .close-icon
+    font-size: 1.5em;
     color: #fff
-  .support-header.btn
-    padding: 10px
-    border-radius: 5px 5px 0 0;
-    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 4px;
+    bottom: 0;
+    width: 100%;
+    transition: transform 0.16s linear, opacity 0.08s linear, -webkit-transform 0.16s linear;
+  .open-icon
+    opacity: 1
+    transform: rotate(0deg) scale(1);
+  .close-icon
+    opacity: 0
+    transform: rotate(-30deg);
+  &.active
+    .notify-icon
+      display: none
+    .open-icon
+      opacity: 0;
+      transform: rotate(30deg) scale(0);
+    .close-icon
+      opacity: 1;
+      transform: rotate(0deg);
+.support-body
+  position fixed
+  background: #fff
+  bottom: 100px;
+  right: 40px;
+  border-radius: 4px
+  box-shadow: 0 5px 20px rgba(0,0,0,.16);
+  overflow: hidden;
+  transition: all 150ms ease-in;
+  opacity: 0;
+  max-width: 450px;
+  height: 0;
+  &.active
+    opacity: 1
+    height: auto
+  header
+    font-size: 16px
+    font-weight: 600
+    padding: 16px
     background-color: $sidebar-bg-color
-    color: #b4b6bd
-    &:focus
-      background-color: $sidebar-bg-color
-      color: #fff
-    &:active, &:active, &:hover
-      background-color: $sidebar-active-color
-      color: #fff
-    &.notify
-      background-color: $prime
-      color: #fff
-      &:focus
-        background-color: $prime
-      &:active, &:active, &:hover
-        background-color: $secondary-color-hover
-    .support-toggle
-      font-size: 16px
-      margin-top: 4px
-  .support-body 
-    background: #fff
-    transition: all .4s cubic-bezier(.62,.28,.23,.99)
-    max-height: 0
-    &.open
-      max-height: 500px
-    h4
-      font-size: 16px
-      font-weight: 600
-      margin-bottom: 16px
-      margin-top: 4px
-    .support-feedback
-      overflow: hidden
-      button 
-        display: inline-block
-        width: 49%
-        padding: 4px 8px
-    .rzp-banner
-      margin: 0
-      font-size: 13px
-      border: none
-      .btn-link 
-        cursor: pointer
-    .support-list
-      list-style: none
-      border: 1px solid rgba(158, 157, 157, 0.4)
-      padding: 0
-      .support-item
-        display: block
-        height: 70px
-        padding-left: 60px
-        padding-top: 14px
-        cursor: pointer
-        background-size: 40px;
-        background-repeat: no-repeat;
-        background-position: 10px;
-        &:hover:not(.disabled)
-          background-color: #f6fcfd
-        &.disabled
-          background-color: #f6f6f6
-          cursor: auto
-          .help-block
-            color:rgba(240, 81, 80, 0.7)
-        .help-content
-          color: #A3B0B7
-          cursor: auto
-        &:not(:last-child)
-          border-bottom: 1px solid rgba(158, 157, 157, 0.4)
-        &.ticket
-          background-image: url($ticketSystemCdn/icon-paper.png)
-        &.chat:not(.disabled)
-          background-image: url($ticketSystemCdn/icon-chat.png)
-        &.call:not(.disabled)
-          background-image: url($ticketSystemCdn/icon-support-call.svg)
-        &.chat.disabled
-          background-image: url(assets/support_widget/chat_disabled.svg)
-        &.call.disabled
-          background-image: url(assets/support_widget/call_disabled.svg)          
+    color: #fff
+    .mob-close
+      display: none
+  .support-feedback
+    overflow: hidden
+    button 
+      display: inline-block
+      width: 50%
+      padding: 12px
+  .support-list
+    list-style: none
+    padding: 0
+    margin: 0
+    .support-item
+      display: block
+      height: 80px
+      padding-left: 80px
+      padding-top: 20px
+      cursor: pointer
+      background-size: 40px;
+      background-repeat: no-repeat;
+      background-position: 20px;
+      &:hover:not(.disabled)
+        background-color: #f6fcfd
+      &.disabled
+        background-color: #f6f6f6
+        cursor: auto
+        .help-block
+          color:rgba(240, 81, 80, 0.7)
+      .help-content
+        color: #A3B0B7
+        cursor: auto
+      &:not(:last-child)
+        border-bottom: 1px solid rgba(158, 157, 157, 0.4)
+      &.ticket
+        background-image: url($ticketSystemCdn/icon-paper.png)
+      &.chat:not(.disabled)
+        background-image: url($ticketSystemCdn/icon-chat.png)
+      &.call:not(.disabled)
+        background-image: url($ticketSystemCdn/icon-support-call.svg)
+      &.chat.disabled
+        background-image: url(assets/support_widget/chat_disabled.svg)
+      &.call.disabled
+        background-image: url(assets/support_widget/call_disabled.svg)          
+  .notify-icon
+    position: relative;
+    right: 0;
+    top: 0;
+    width: 28px;
+    border-radius: 15px;
+    font-size: 12px;
+    line-height: 20px
 
 // hide hotjar feedback button
 div[class$="feedback_minimized_label"]
   display: none
 
 @media(max-width: 424px)
-  .support
+  .support-body
     width: 100%
-    right: 0
-    .support-header, .support-body
-      width: 90%
-      margin: 0 auto
-    .support-body
-      border: 1px solid rgba(179, 179, 179, 0.3)
+    height: 0
+    top: 0
+    left: 0
+    border: 1px solid rgba(179, 179, 179, 0.3)
+    &.active
+      height: 100%
+    .mob-close
+      font-size: 24px;
+      font-weight: bold;
+      display: inline-block !important
+
+@media(max-height: 424px)
+  .support-body .support-list .support-item
+    padding-top: 10px
+    height: 60px
+
