@@ -431,4 +431,53 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testSearchPayoutByTransactionId()
+    {
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['method'], $responsePayout['method']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByUtr()
+    {
+        $payout = $this->testCreatePayout();
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'utr' => '1234567890'
+            ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?utr=1234567890';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['method'], $responsePayout['method']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
 }

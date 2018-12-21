@@ -3786,4 +3786,27 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('banking', $merchants);
     }
+
+    public function testBulkAssignPricing()
+    {
+        $this->setAdminForInternalAuth();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000011']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000012']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000013']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000014']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignPricingMissingInput()
+    {
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

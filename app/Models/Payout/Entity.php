@@ -350,14 +350,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
-    public function isStatusCreated()
+    public function isStatusCreated(): bool
     {
         return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusProcessed(): bool
+    {
+        return ($this->getStatus() === Status::PROCESSED);
     }
 
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isStatusProcessedOrFailed(): bool
+    {
+        return ($this->isStatusProcessed() or $this->isStatusCreated());
     }
 
     public function isStatusInitiated()
@@ -539,5 +549,15 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return false;
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return $this->isBalanceTypeBanking();
     }
 }

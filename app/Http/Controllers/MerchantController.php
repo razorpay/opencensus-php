@@ -1148,6 +1148,24 @@ class MerchantController extends Controller
     /**
      * Input JSON sample:
      * {
+     *   "pricing_plan_id": "1AXludj60w4pSp",
+     *   "merchant_ids": ["10000000000000", "100000Razorpay"]
+     * }
+     *
+     * @return mixed
+     */
+    public function bulkAssignPricing()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignPricing($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Input JSON sample:
+     * {
      *   "schedule": {
      *     "schedule_id": "40000000000000",
      *     "type": "settlement"

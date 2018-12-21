@@ -21,20 +21,22 @@ class Validator extends Base\Validator
     const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
 
     protected static $createRules = [
-        Entity::NAME    => 'required|string|max:50|nullable|custom',
-        Entity::CONTACT => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL   => 'sometimes|nullable|email',
-        Entity::TYPE    => 'sometimes|nullable|custom',
-        Entity::NOTES   => 'sometimes|notes',
+        Entity::NAME         => 'required|string|max:50|nullable|custom',
+        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL        => 'sometimes|nullable|email',
+        Entity::TYPE         => 'sometimes|nullable|custom',
+        Entity::REFERENCE_ID => 'sometimes|string|max:40',
+        Entity::NOTES        => 'sometimes|notes',
     ];
 
     protected static $editRules = [
-        Entity::NAME    => 'sometimes|string|max:50|custom',
-        Entity::CONTACT => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL   => 'sometimes|nullable|email',
-        Entity::TYPE    => 'sometimes|nullable|custom',
-        Entity::ACTIVE  => 'sometimes|boolean',
-        Entity::NOTES   => 'sometimes|notes',
+        Entity::NAME         => 'sometimes|string|max:50|custom',
+        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL        => 'sometimes|nullable|email',
+        Entity::TYPE         => 'sometimes|nullable|custom',
+        Entity::REFERENCE_ID => 'sometimes|nullable|string|max:40',
+        Entity::ACTIVE       => 'sometimes|boolean',
+        Entity::NOTES        => 'sometimes|notes',
     ];
 
     protected function validateName($attribute, $value)

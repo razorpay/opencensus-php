@@ -688,3 +688,11 @@ if (! function_exists('is_rzp_business_hour'))
                 ($dateTime->hour < 18));
     }
 }
+
+if (! function_exists('mask_except_last4'))
+{
+    function mask_except_last4(string $value, string $masker = 'X'): string
+    {
+        return str_repeat($masker, max(strlen($value) - 4, 0)) . substr($value, -4);
+    }
+}

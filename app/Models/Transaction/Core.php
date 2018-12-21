@@ -1433,4 +1433,18 @@ class Core extends Base\Core
             }
         }
     }
+
+    /**
+     * Dispatches webhook, sms and/or email for newly created transaction.
+     * This is a safe method i.e. it is not expected to throw any exceptions.
+     * Notifier and webhook dispatcher used here suppress and log exceptions if any.
+     *
+     * @param Entity $txn
+     */
+    public function dispatchEventForTransactionCreated(Entity $txn)
+    {
+        (new Notifier($txn))->notify();
+
+        $this->app->events->fire('api.transaction.created', $txn);
+    }
 }
