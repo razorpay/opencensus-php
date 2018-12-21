@@ -141,8 +141,8 @@ export default class ActivationContainer extends React.Component {
           throw { errors: ['Some mandatory fields are required'] };
         }
 
-        if (this.props.onKYCSuccess) {
-          return this.props.onKYCSuccess(response);
+        if (this.onKYCSuccess) {
+          return this.onKYCSuccess(response);
         }
 
         this.postSubmitStep(response);

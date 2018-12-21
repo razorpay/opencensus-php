@@ -166,7 +166,6 @@ export default class ActivationContainer extends Component {
             {...commonProps}
             onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
-            onKYCSuccess={this.handleKYCSuccess}
           />
         );
       }
