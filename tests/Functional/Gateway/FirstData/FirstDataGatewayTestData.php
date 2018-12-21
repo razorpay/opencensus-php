@@ -227,7 +227,7 @@ return [
         ],
     ],
 
-    'testFailedRecurringPayment' => [
+    'testFailedSecondRecurringPayment' => [
         'response'  => [
             'content'     => [
                 'error' => [

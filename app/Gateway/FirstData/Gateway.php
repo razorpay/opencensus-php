@@ -127,7 +127,7 @@ class Gateway extends Base\Gateway
             'amount' => $input['payment'][Payment\Entity::AMOUNT],
         ];
 
-        $defaultEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
+        $gatewayEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
 
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
 
         $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
-        $purchaseEntity = $this->updateGatewayPaymentEntity($defaultEntity, $purchaseFields, false);
+        $purchaseEntity = $this->updateGatewayPaymentEntity($gatewayEntity, $purchaseFields, false);
 
         $this->checkApprovalCode($purchaseEntity);
     }
@@ -482,7 +482,7 @@ class Gateway extends Base\Gateway
 
         $refundGatewayStatus = (string) $refundTransactionValue->TransactionState;
 
-        assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
+        assertTrue(($refundGatewayStatus !== null), 'Status cannot be null');
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
 
@@ -1476,7 +1476,7 @@ class Gateway extends Base\Gateway
         //
         // curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
 
-        curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
     }
 
     protected function getVerifyRequestContentArray(array $input)
@@ -2029,7 +2029,7 @@ class Gateway extends Base\Gateway
 
     protected function parseXmlAndReturnArray($xml)
     {
-        $xml = preg_replace("/(<\/?)(\w+-*\w+):([^>]*>)/", "$1$2$3", $xml);
+        $xml = preg_replace('/(<\/?)(\w+-*\w+):([^>]*>)/', '$1$2$3', $xml);
 
         $formattedXml = simplexml_load_string($xml);
 

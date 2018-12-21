@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use \RZP\Error\ErrorCode;
 
 class FirstDataGatewayTest extends TestCase
 {
@@ -135,7 +136,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
-    public function testFailedRecurringPayment()
+    public function testFailedSecondRecurringPayment()
     {
         list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
@@ -161,7 +162,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content)
         {
-            throw new Exception\GatewayErrorException(\RZP\Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
         });
 
         // Set payment for second recurring payment
@@ -179,6 +180,7 @@ class FirstDataGatewayTest extends TestCase
 
         $lastPayment = $this->getLastEntity('Payment', true);
         $this->assertEquals($lastPayment['status'], 'failed');
+        $this->assertNotNull($lastPayment['amount']);
 
         $gatewayEntity = $this->getLastEntity('first_data', true);
         $this->assertNull($gatewayEntity['transaction_result']);
@@ -621,7 +623,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals("N:mocked failure approval code", $gatewayPayment['approval_code']);
+        $this->assertEquals('N:mocked failure approval code', $gatewayPayment['approval_code']);
     }
 
     public function testFailedAuthUnknownError()
@@ -876,7 +878,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Error code for N:03 is mapped to Invalid Merchant
-            "The payment has been rejected by the gateway." .
+            'The payment has been rejected by the gateway.' .
                 "\nGateway Error Code: N:03\nGateway Error Desc: Invalid merchant");
     }
 
@@ -893,7 +895,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Any invalid code is mapped to General Error
-            "Payment processing failed due to error at bank or wallet gateway" .
+            'Payment processing failed due to error at bank or wallet gateway' .
             "\nGateway Error Code: Invalid code\nGateway Error Desc: General Error");
     }
 
@@ -910,7 +912,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Any invalid code is mapped to General Error
-            "Payment was not completed on time." .
+            'Payment was not completed on time.' .
             "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
 }
