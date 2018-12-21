@@ -112,7 +112,8 @@ class Gateway extends Base\Gateway
         switch ($enrolled)
         {
             case Base\Enrolled::Y:
-                if ($input['payment']['auth_type'] === 'otp')
+                if ((isset($input['authenticate']['auth_type']) === true) and
+                    ($input['authenticate']['auth_type'] === 'native'))
                 {
                     if (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === true)
                     {
@@ -722,7 +723,8 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        if ($input['payment']['auth_type'] === 'otp')
+        if ((isset($input['authenticate']['auth_type']) === true) and
+            ($input['authenticate']['auth_type'] === 'native'))
         {
             $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::CH][PAReq::ACCID] = $this->model->getAccId();
 
@@ -797,7 +799,8 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        if ($input['payment']['auth_type'] === 'otp')
+        if ((isset($input['authenticate']['auth_type']) === true) and
+            ($input['authenticate']['auth_type'] === 'native'))
         {
             $content[VEReq::MESSAGE][VEReq::VEREQ]['Extension'] = [
                 '@attributes' => [

@@ -203,8 +203,7 @@ trait Authorize
 
                 $retry = false;
 
-                if (($this->canRunHeadlessOtpFlow($payment) === true) and
-                    ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false))
+                if ($this->canRunHeadlessOtpFlow($payment) === true)
                 {
                     $request = $this->openHeadlessBrowser($payment, $request);
                 }
@@ -1491,15 +1490,20 @@ trait Authorize
                     {
                         if ($payment->getGateway() === Payment\Gateway::HITACHI)
                         {
+                            $authType = 'headless_otp';
                             $authGateway = Payment\Gateway::MPI_BLADE;
 
                             if (($this->canRunAxisExpressPay($payment) === true) and
                                 ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false))
                             {
+                                $authType = 'native';
                                 $authGateway = Payment\Gateway::MPI_ENSTAGE;
                             }
 
-                            $gatewayInput['authenticate']['gateway'] = $authGateway;
+                            $gatewayInput['authenticate'] = [
+                                'gateway' => $authGateway,
+                                'auth_type' => $authType,
+                            ];
                         }
                     }
 
@@ -1990,7 +1994,7 @@ trait Authorize
 
             $cacheKey = sprintf('emi_plans_%s', $cacheKey);
 
-            $emiPlans = (array)$this->app['cache']->get($cacheKey, null);
+            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 
             $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
 

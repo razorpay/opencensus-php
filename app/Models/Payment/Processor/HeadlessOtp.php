@@ -41,9 +41,9 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true)
         {
-            return false;
+            return true;
         }
 
         if (($payment->isMethodCardOrEmi() === true) and
