@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import Banner from 'rzp/ui/Banner';
 
+import { getExperiment } from 'common/util';
+
 export default class SupportBody extends Component {
   handleClick = id => {
     const { onToggle, onChat, notifyCount } = this.props;
@@ -50,22 +52,6 @@ export default class SupportBody extends Component {
 
     return (
       <div class={`support-body ${isOpened ? ' open' : ''}`}>
-        {shouldDisable && (
-          <Banner>
-            <span>
-              Our chat and call support are currently offline, kindly{' '}
-              <span
-                class="btn-link"
-                onClick={() => {
-                  handleClick('ticket');
-                }}
-              >
-                Raise a Request
-              </span>{' '}
-              to get in touch with us
-            </span>
-          </Banner>
-        )}
         <div class="p-all">
           <h4>Reach out to us</h4>
           <ul class="support-list">
@@ -79,8 +65,9 @@ export default class SupportBody extends Component {
               </small>
             </li>
             {window.rzp_user ? (
-              window.rzp_user.activation_status === 'activated' ||
-              window.rzp_user.activation_status === 'under_review' ? (
+              ['activated', 'under_review', 'instantly_activated'].indexOf(
+                window.rzp_user.activation_status
+              ) > -1 ? (
                 <li
                   class={`support-item p-all chat ${
                     shouldDisable && notifyCount < 1 ? 'disabled' : ''
@@ -93,15 +80,14 @@ export default class SupportBody extends Component {
                     <span class="support-notify m-l">{notifyCount}</span>
                   )}
                   <small class="help-block">
-                    For quick questions or help on dashboard
+                    {shouldDisable && notifyCount < 1
+                      ? 'Currently unavailable'
+                      : 'For quick questions or help on dashboard'}
                   </small>
                 </li>
               ) : null
             ) : null}
-            {window.rzp_user &&
-            window.rzp_user.experiments &&
-            window.rzp_user.experiments.support_call &&
-            window.rzp_user.experiments.support_call.result === 'on' ? (
+            {getExperiment('support_call') === 'on' ? (
               <li
                 class={`support-item p-all call ${
                   shouldDisable ? 'disabled' : ''
@@ -111,18 +97,26 @@ export default class SupportBody extends Component {
                 Call Support{' '}
                 <small class="help-content">(9am-6pm, working days)</small>
                 <small class="help-block">
-                  For queries and help on the dashboard
+                  {shouldDisable
+                    ? 'Currenlty unavailable'
+                    : 'For queries and help on the dashboard'}
                 </small>
               </li>
             ) : null}
           </ul>
 
           <div class="support-feedback">
-            <button class="btn-default" onClick={this.handleFeedback}>
+            <button
+              class="btn btn-default pull-left"
+              onClick={this.handleFeedback}
+            >
               <i class="i i-voice-record m-r" />
               Share Feedback
             </button>
-            <button class="btn-default" onClick={this.handleFaqs}>
+            <button
+              class="btn btn-default pull-right"
+              onClick={this.handleFaqs}
+            >
               <i class="i i-help  m-r" />
               FAQs
             </button>
