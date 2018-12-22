@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
     const BALANCE                   = 'balance';
+    const BANKING_BALANCE           = 'banking_balance';
 
     const ROLE                      = 'role';
     const BANKING_ROLE              = 'banking_role';
@@ -173,6 +174,7 @@ class Entity extends Base\PublicEntity
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     protected $entity = 'merchant';
 

@@ -213,18 +213,18 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param Merchant\Entity $merchant
-     * @param string          $balanceType
-     * @param string          $connection
-     *
+     * @param string      $merchantId
+     * @param string      $balanceType
+     * @param string|null $connection
      * @return mixed
      */
-    public function getMerchantBalanceByType(Merchant\Entity $merchant, string $balanceType, string $connection)
+    public function getMerchantBalanceByType(string $merchantId, string $balanceType, string $connection = null)
     {
-        return $this->newQueryWithConnection($connection)
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::TYPE, '=', $balanceType)
-                    ->first();
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
+                     ->where(Entity::TYPE, $balanceType)
+                     ->first();
     }
 
     public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
