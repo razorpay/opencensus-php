@@ -18,6 +18,8 @@ const SHOW_KYC_SUCCESS = 'SHOW_KYC_SUCCESS';
 const HIDE_KYC_SUCCESS = 'HIDE_KYC_SUCCESS';
 const SHOW_KYC_DETAILS = 'SHOW_KYC_DETAILS';
 const HIDE_KYC_DETAILS = 'HIDE_KYC_DETAILS';
+const SHOW_ACCEPT_PAYMENTS = 'SHOW_ACCEPT_PAYMENTS';
+const HIDE_ACCEPT_PAYMENTS = 'HIDE_ACCEPT_PAYMENTS';
 
 let initialState = {
   analytics: {
@@ -45,6 +47,7 @@ let initialState = {
     showKYCActivationSuccess: false,
     showInstantActivationSuccess: false,
     showKYCDetails: false,
+    showAcceptPayments: false,
   },
 };
 
@@ -138,6 +141,14 @@ export const showKYCDetailsModal = () => ({
 
 export const hideKYCDetailsModal = () => ({
   type: HIDE_KYC_DETAILS,
+});
+
+export const showAcceptPaymentsModal = () => ({
+  type: SHOW_ACCEPT_PAYMENTS,
+});
+
+export const hideAcceptPaymentsModal = () => ({
+  type: HIDE_ACCEPT_PAYMENTS,
 });
 
 export default function(state = initialState, action) {
@@ -243,6 +254,16 @@ export default function(state = initialState, action) {
     case `HIDE_KYC_DETAILS`:
       return set(state, 'instantActivations', {
         showKYCDetails: false,
+      });
+
+    case `SHOW_ACCEPT_PAYMENTS`:
+      return set(state, 'instantActivations', {
+        showAcceptPayments: true,
+      });
+
+    case `HIDE_ACCEPT_PAYMENTS`:
+      return set(state, 'instantActivations', {
+        showAcceptPayments: false,
       });
 
     default:

@@ -16,9 +16,25 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
     border-radius: 8px;
     font-size: 12px;
     color: #fff
-  .support-header
+  .support-header.btn
     padding: 10px
     border-radius: 5px 5px 0 0;
+    border: none !important;
+    background-color: $sidebar-bg-color
+    color: #b4b6bd
+    &:focus
+      background-color: $sidebar-bg-color
+      color: #fff
+    &:active, &:active, &:hover
+      background-color: $sidebar-active-color
+      color: #fff
+    &.notify
+      background-color: $prime
+      color: #fff
+      &:focus
+        background-color: $prime
+      &:active, &:active, &:hover
+        background-color: $secondary-color-hover
     .support-toggle
       font-size: 16px
       margin-top: 4px
@@ -34,11 +50,11 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       margin-bottom: 16px
       margin-top: 4px
     .support-feedback
+      overflow: hidden
       button 
         display: inline-block
-        width: 50%
-        padding: 4px 16px
-        height: 40px
+        width: 49%
+        padding: 4px 8px
     .rzp-banner
       margin: 0
       font-size: 13px
@@ -61,17 +77,25 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         &:hover:not(.disabled)
           background-color: #f6fcfd
         &.disabled
-          background-color: #efefef
+          background-color: #f6f6f6
+          cursor: auto
+          .help-block
+            color:rgba(240, 81, 80, 0.7)
         .help-content
           color: #A3B0B7
+          cursor: auto
         &:not(:last-child)
           border-bottom: 1px solid rgba(158, 157, 157, 0.4)
         &.ticket
           background-image: url($ticketSystemCdn/icon-paper.png)
-        &.chat
+        &.chat:not(.disabled)
           background-image: url($ticketSystemCdn/icon-chat.png)
-        &.call
+        &.call:not(.disabled)
           background-image: url($ticketSystemCdn/icon-support-call.svg)
+        &.chat.disabled
+          background-image: url(assets/support_widget/chat_disabled.svg)
+        &.call.disabled
+          background-image: url(assets/support_widget/call_disabled.svg)          
 
 // hide hotjar feedback button
 div[class$="feedback_minimized_label"]
@@ -86,5 +110,3 @@ div[class$="feedback_minimized_label"]
       margin: 0 auto
     .support-body
       border: 1px solid rgba(179, 179, 179, 0.3)
-    .support-feedback button
-      padding: 0

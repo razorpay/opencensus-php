@@ -24,6 +24,7 @@ export default function SettlementBulkChannel() {
         <option value="yesbank">yesbank</option>
         <option value="hdfc">hdfc</option>
         <option value="rbl">rbl</option>
+        <option value="axis2">PowerAccess</option>
       </SelectField>
       <AsyncButton
         text="Generate"
