@@ -18,7 +18,7 @@ abstract class RequestProcessor extends Beneficiary
      * @param PublicCollection $bankAccounts
      * @return array
      */
-    protected function registerBeneficiary(PublicCollection $bankAccounts): array
+    public function registerBeneficiary(PublicCollection $bankAccounts): array
     {
         $this->process($bankAccounts);
 

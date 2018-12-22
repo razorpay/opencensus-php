@@ -25,8 +25,6 @@ class Beneficiary extends ApiProcessor
      * Slack notification will be sent as a summary
      *
      * @param PublicCollection $bankAccounts
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
      */
     public function process(PublicCollection $bankAccounts)
     {
@@ -61,7 +59,7 @@ class Beneficiary extends ApiProcessor
 
                 $status = $this->checkBeneficiaryStatusForRegistration($input, $nodalBeneficiary);
 
-                if($status === false)
+                if ($status === false)
                 {
                     continue;
                 }
@@ -101,10 +99,9 @@ class Beneficiary extends ApiProcessor
 
     /**
      * Updates beneficiary status
+     *
      * @param BankAccount $bankAccount
-     * @param string $beneficiaryStatus
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
+     * @param string      $beneficiaryStatus
      */
     protected function updateBeneficiaryStatus(BankAccount $bankAccount, string $beneficiaryStatus)
     {
