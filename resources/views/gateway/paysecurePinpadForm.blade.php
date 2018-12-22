@@ -14,7 +14,7 @@
         // We receive only the response code in this case, which gets forwarded to the callback URL in the input
         // If the response code is ACCU999, it simply means that the PINPad lock was opened by the user, hence we
         // can ignore that trigger.
-        if (strResponse != 'ACCU999' && strResponse != "") {
+        if (strResponse != 'ACCU999' && strResponse != 'ISSUER999' && strResponse != "") {
             location.href = "{{$data['callbackUrl']}}" + "?AccuResponseCode=" + strResponse;
         }
     }
