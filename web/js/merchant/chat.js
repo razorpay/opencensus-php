@@ -41,7 +41,7 @@ const initFreshchat = data => {
     token: FRESHCHAT_TOKEN,
     host: FRESHCHAT_HOST,
     config: {
-      headerProperty: { hideChatButton: true },
+      headerProperty: { hideChatButton: true, backgroundColor: '#2E3345' },
     },
   });
   fcWidget.setExternalId(data.id);
