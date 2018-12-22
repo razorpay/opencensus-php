@@ -293,13 +293,6 @@ class Beneficiary extends Base\Core
             'channel'          => $channel,
         ];
 
-        $isBeneRegRequired = $this->checkIfBeneRegRequired($bankAccount);
-
-        if ($isBeneRegRequired === false)
-        {
-            return true;
-        }
-
         $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
 
         $this->trace->info(TraceCode::FTA_MERCHANT_BENE_REG_INIT, $data);
@@ -330,20 +323,6 @@ class Beneficiary extends Base\Core
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
 
         if ($registrationStatus === Status::REGISTERED)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Entity $bankAccount
-     * @return bool
-     */
-    protected function checkIfBeneRegRequired(Entity $bankAccount): bool
-    {
-        if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(),true) === true)
         {
             return true;
         }

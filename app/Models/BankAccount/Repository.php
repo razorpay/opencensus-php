@@ -193,7 +193,7 @@ class Repository extends Base\Repository
     public function getCountOfBankAccountsCreatedBetween($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->count();
     }

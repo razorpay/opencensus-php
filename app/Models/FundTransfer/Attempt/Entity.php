@@ -232,6 +232,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
+    public function isSettlement()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
+    }
+
     public function getDateTime()
     {
         return $this->getAttribute(self::DATE_TIME);
@@ -391,5 +396,16 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         return $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function isBeneRegistrationRequired(): bool
+    {
+        if (($this->isRefund() === true) or
+            ($this->hasVpa() === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

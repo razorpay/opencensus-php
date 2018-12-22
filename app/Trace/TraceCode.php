@@ -202,6 +202,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_FILE_SEND_VIA_BEAM                        = 'FTA_FILE_SEND_VIA_BEAM';
     const FTA_INITIATE_247                              = 'FTA_INITIATE_247';
     const FTA_INITIATE_TIMES                            = 'FTA_INITIATE_TIMES';
+    const FTA_NOT_FOUND                                 = 'FTA_NOT_FOUND';
+    const FTA_CHANNEL_NOT_SUPPORTED                     = 'FTA_CHANNEL_NOT_SUPPORTED';
+    const FTA_BENEFICIARY_NOT_REGISTERED                = 'FTA_BENEFICIARY_NOT_REGISTERED';
     const FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED        = 'FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED          = 'FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_SKIPPED                 = 'FUND_TRANSFER_ATTEMPT_SKIPPED';

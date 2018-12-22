@@ -232,7 +232,7 @@ class BulkRecon extends Base\Core
             'ids'     => []
         ];
 
-        $statusClass = $this->getStatusClass($this->channel);
+        $statusClass = $this->getStatusClass($entity);
 
         $isCriticalError = $statusClass::isCriticalError($entity);
 
@@ -258,8 +258,15 @@ class BulkRecon extends Base\Core
         $this->notificationSummary[$remark]++;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(FundTransferAttempt\Entity $entity)
     {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+            return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\Reconciliation\\Status";
     }
 
