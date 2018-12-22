@@ -88,6 +88,10 @@ export default class Support extends Component {
   render() {
     const { notifyCount, isOpened, isHidden } = this.state;
 
+    if (location.hostname !== 'dashboard.razorpay.com') {
+      return null;
+    }
+
     return (
       <div class={classList('support', isHidden && 'hidden')}>
         <SupportHeader
