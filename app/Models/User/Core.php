@@ -122,57 +122,78 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
-    public function get(Entity $user)
+    /**
+     * Serializes user along with all the merchant it has access to, it's
+     * settings etcetera. Primarily consumed by internal dashboard application.
+     *
+     * @param  Entity $user
+     * @return array
+     */
+    public function get(Entity $user): array
     {
-        $response    = $user->toArrayPublic();
+        $response = $user->toArrayPublic();
 
-        $merchants   = $user->merchants
-                            ->where(Merchant\Entity::SUSPENDED_AT, null)
-                            ->callOnEveryItem('toArrayUser');
+        $merchants = $user->merchants
+                          ->where(Merchant\Entity::SUSPENDED_AT, null)
+                          ->callOnEveryItem('toArrayUser');
 
-        $merchantData = [];
+        // Prepares unique list of merchants for users out of pivot relations.
+        $merchantsUnique = [];
 
-        // This looks like all if conditions, but it's ok.
-        array_walk($merchants, function ($merchant) use (&$merchantData) {
-            if (isset($merchantData[$merchant[Entity::ID]]) === false)
+        array_walk($merchants, function ($merchant) use (& $merchantsUnique)
+        {
+            $id   = $merchant[Entity::ID];
+            $role = $merchant[Entity::ROLE];
+
+            if (isset($merchantsUnique[$id]) === false)
             {
-                $merchantData[$merchant[Entity::ID]] = $merchant;
+                $merchantsUnique[$id]                       = $merchant;
+                $merchantsUnique[$id][Entity::BANKING_ROLE] = null;
+                $merchantsUnique[$id][Entity::ROLE]         = null;
+            }
 
-                if ($merchant[Entity::PRODUCT] === Product::BANKING)
-                {
-                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
-                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = null;
-                }
-                else
-                {
-                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = null;
-                }
-            }
-            else
-            {
-                if ($merchant[Entity::PRODUCT] === Product::BANKING)
-                {
-                    $merchantData[$merchant[Entity::ID]][Entity::BANKING_ROLE] = $merchant[Entity::ROLE];
-                }
-                else
-                {
-                    $merchantData[$merchant[Entity::ID]][Entity::ROLE] = $merchant[Entity::ROLE];
-                }
-            }
+            // Push pivot's role to one of the keys in response basis product type.
+            $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
+            $merchantsUnique[$id][$key] = $role;
         });
 
-        $merchants = array_values($merchantData);
+        // Additional resources for users.
+        $merchantsUnique = $this->appendBankingSpecificDetails(array_values($merchantsUnique));
+        $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
+        $settings        = $user->getAllSettings();
 
-        $invitations = $user->invitations
-                            ->callOnEveryItem('toArrayUser');
-
-        $settings    = $user->getAllSettings();
-
-        $response[Entity::MERCHANTS]   = $merchants;
+        $response[Entity::MERCHANTS]   = $merchantsUnique;
         $response[Entity::INVITATIONS] = $invitations;
         $response[Entity::SETTINGS]    = $settings;
 
         return $response;
+    }
+
+    /**
+     * Appends banking specific details in serialized unique list of merchants where applies.
+     * @param  array $merchants
+     * @return array
+     */
+    protected function appendBankingSpecificDetails(array $merchants)
+    {
+        return array_map(
+            function (array $merchant)
+            {
+                if ($merchant[Entity::BANKING_ROLE] === null)
+                {
+                    return $merchant;
+                }
+
+                $balance = $this->repo->balance->getMerchantBalanceByType($merchant[Entity::ID], Product::BANKING);
+                $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+
+                return $merchant +
+                    [
+                        Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
+                        Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
+                    ];
+            },
+            $merchants);
     }
 
     /**

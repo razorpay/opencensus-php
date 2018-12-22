@@ -91,6 +91,18 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support API based beneficiary registration
+     *
+     * @return array
+     */
+    public static function getChannelsWithOnlineBeneficiaryRegistration()
+    {
+        return [
+            self::YESBANK
+        ];
+    }
+
+    /**
      * Gives list of channels which support file based settlement and recon
      *
      * @return array
@@ -102,6 +114,7 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
+            self::AXIS2,
         ];
     }
 

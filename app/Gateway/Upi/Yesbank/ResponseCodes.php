@@ -95,7 +95,7 @@ class ResponseCodes
         'AM' => 'UPI PIN not set by customer',
         'B1' => 'Registered Mobile number linked to the account has been changed/removed',
         'B3' => 'Transaction not permitted to the account',
-        '0'  =>  'APPROVED OR COMPLETED SUCCESSFULLY',
+        '0'  => 'APPROVED OR COMPLETED SUCCESSFULLY',
         'ZA' => 'TRANSACTION DECLINED BY CUSTOMER',
         'ZH' => 'INVALID VIRTUAL ADDRESS',
         'UX' => 'EXPIRED VIRTUAL ADDRESS',
@@ -176,10 +176,19 @@ class ResponseCodes
         'NC'  => 'Credit Not Done',
         'ND'  => 'Debit Not Done',
 
-        // razorpay custom error codes for sending response to FTA
-        'RZP_DUPLICATE_PAYOUT' => 'RZP: A payout with given reference Id already exists',
-        'RZP_REF_ID_MISMATCH'  => 'RZP: Validation error, ref id mismatch',
-        'RZP_AMOUNT_MISMATCH'  => 'RZP: amount mismatch',
+        // razorpay custom error codes for transfer request
+        'RZP_DUPLICATE_PAYOUT'              => 'RZP: A payout with given reference Id already exists',
+        'RZP_FTA_REQUEST_INVALID'           => 'RZP: payout fta request is invalid',
+        'RZP_REQUEST_ENCRYPTION_FAILURE'    => 'RZP: request encryption failure',
+        'RZP_PAYOUT_TIMED_OUT'              => 'RZP: payout request timed out',
+        'RZP_REQUEST_DECRYPTION_FAILED'     => 'RZP: response decryption failed',
+        'RZP_PAYOUT_UNKNOWN_ERROR'          => 'RZP: fatal error, please contact gateway',
+
+        // razorpay custom error codes for verify request
+        'RZP_REF_ID_MISMATCH'               => 'RZP: Validation error, ref id mismatch',
+        'RZP_AMOUNT_MISMATCH'               => 'RZP: amount mismatch',
+        'RZP_PAYOUT_VERIFY_TIMED_OUT'       => 'RZP: verify payout timed out',
+
     ];
 
     public static function getResponseMessage($code)

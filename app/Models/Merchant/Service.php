@@ -2502,9 +2502,9 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    public function registerBeneficiariesThroughApi(array $input, string $channel): array
     {
-        $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBeneficiariesThroughApi($input, $channel);
 
         return $response;
     }

@@ -12,6 +12,7 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
+                'account_number'  => '2224440041626905',
                 'amount'          => 1000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
@@ -109,11 +110,12 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'destination' => 'ba_9LfZofLRJIpwrH',
-                'customer_id' => 'cust_100000customer',
-                'notes'       => [
+                'account_number'    => '2224440041626905',
+                'amount'            => 1000000,
+                'currency'          => 'INR',
+                'destination'       => 'ba_9LfZofLRJIpwrH',
+                'customer_id'       => 'cust_100000customer',
+                'notes'             => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -139,10 +141,11 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'amount'      => 1000000,
-                'currency'    => 'INR',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'       => [
+                'account_number'    => '2224440041626905',
+                'amount'            => 1000000,
+                'currency'          => 'INR',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'notes'             => [
                     'abc' => 'xyz',
                 ],
             ],

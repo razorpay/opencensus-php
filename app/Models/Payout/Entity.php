@@ -12,17 +12,21 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\FundTransfer\Attempt\Purpose;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property Customer\Entity    $customer
  * @property Merchant\Entity    $merchant
  * @property User\Entity        $user
+ * @property FundAccount\Entity $fundAccount
  */
 class Entity extends Base\PublicEntity
 {
@@ -145,8 +149,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::FUND_ACCOUNT_ID,
-        self::DESTINATION,
-        self::METHOD,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -156,10 +158,12 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::USER_ID,
         self::USER,
-        self::SETTLED_ON,
         self::MODE,
         self::CREATED_AT,
-        self::UPDATED_AT,
+    ];
+
+    protected static $modifiers = [
+        self::MODE,
     ];
 
     protected $publicSetters = [
@@ -179,7 +183,9 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT_ID   => null,
         self::NOTES             => [],
         self::ATTEMPTS          => 1,
-        self::TYPE              => self::DEFAULT
+        self::TYPE              => self::DEFAULT,
+        self::MODE              => null,
+        self::UTR               => null,
     ];
 
     protected $amounts = [
@@ -549,6 +555,29 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    protected function modifyMode(& $input)
+    {
+        if (isset($input[self::MODE]) === false)
+        {
+            return;
+        }
+
+        if ($this->fundAccount->getSourceType() === FundAccount\Type::BANK_ACCOUNT)
+        {
+            /** @var BankAccount\Entity $ba */
+            $ba = $this->fundAccount->source;
+
+            $ifsc = $ba->getIfscCode();
+
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
+            {
+                $input[Mode::IFT];
+            }
+        }
     }
 
     public function shouldNotifyTxnViaSms(): bool

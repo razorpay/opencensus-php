@@ -12,12 +12,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -36,6 +38,8 @@ class PayoutTest extends TestCase
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
+
+        $this->setUpMerchantForBusinessBanking(false, 100000);
     }
 
     public function testCreatePayout(): array
@@ -61,7 +65,7 @@ class PayoutTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
-        $this->assertEquals('10000000000000', $txn['balance_id']);
+        $this->assertNotNull($txn['balance_id']);
 
         return $payout;
     }
@@ -78,6 +82,7 @@ class PayoutTest extends TestCase
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
+
         $this->assertEquals("MerchantUser01", $payout['user_id']);
     }
 
@@ -193,7 +198,7 @@ class PayoutTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $response = $this->startTest();
+        $this->startTest();
     }
 
     public function testCreateMerchantPayoutWithModulo()
@@ -449,7 +454,7 @@ class PayoutTest extends TestCase
         $responsePayout = $response['items'][0];
 
         $this->assertEquals($payout['id'], $responsePayout['id']);
-        $this->assertEquals($payout['method'], $responsePayout['method']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
@@ -477,7 +482,7 @@ class PayoutTest extends TestCase
         $responsePayout = $response['items'][0];
 
         $this->assertEquals($payout['id'], $responsePayout['id']);
-        $this->assertEquals($payout['method'], $responsePayout['method']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 }

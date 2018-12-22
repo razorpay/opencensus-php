@@ -26,6 +26,7 @@ class Mode
     public static function get24x7TransferModes(): array {
         return [
             self::IMPS,
+            self::IFT,
         ];
     }
 

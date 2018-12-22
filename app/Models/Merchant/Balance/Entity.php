@@ -30,7 +30,15 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID     = 'balance_id';
 
     protected $fillable = [
-        self::ID
+        self::ID,
+        self::TYPE,
+        self::CURRENCY,
+    ];
+
+    protected $defaults = [
+        self::TYPE     => Type::PRIMARY,
+        self::CURRENCY => null,
+        self::BALANCE  => 0,
     ];
 
     protected $visible = [

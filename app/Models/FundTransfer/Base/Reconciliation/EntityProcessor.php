@@ -207,14 +207,7 @@ abstract class EntityProcessor extends Base\Core
 
         $failureReason  = null;
 
-        $channel = $this->fta->getChannel();
-
-        $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
-
-        if ($this->fta->hasVpa() === true)
-        {
-            $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
-        }
+        $statusNamespace = $this->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
@@ -356,8 +349,15 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(Attempt\Entity $entity)
     {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 

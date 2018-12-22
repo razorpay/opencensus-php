@@ -37,11 +37,22 @@ class GatewayStatus extends BaseStatus
     const U43 = 'U43'; const U44 = 'U44'; const U45 = 'U45'; const U46 = 'U46'; const U47 = 'U47'; const U48 = 'U48';
     const U49 = 'U49'; const U50 = 'U50'; const U51 = 'U51'; const U52 = 'U52'; const U53 = 'U53'; const U54 = 'U54';
     const U66 = 'U66'; const U67 = 'U67'; const U68 = 'U68'; const U69 = 'U69'; const U70 = 'U70'; const U77 = 'U77';
-    const U78 = 'U78'; const OC = 'OC'; const OD = 'OD';
+    const U78 = 'U78'; const OC = 'OC'; const OD = 'OD'; const DT = 'DT';
 
-    const RZP_DUPLICATE_PAYOUT  = 'RZP_DUPLICATE_PAYOUT';
-    const RZP_REF_ID_MISMATCH   = 'RZP_REF_ID_MISMATCH';
-    const RZP_AMOUNT_MISMATCH   = 'RZP_AMOUNT_MISMATCH';
+    // pre processing  error codes for transfer request
+    const RZP_FTA_REQUEST_INVALID           = 'RZP_FTA_REQUEST_INVALID';
+    const RZP_REQUEST_ENCRYPTION_FAILURE    = 'RZP_REQUEST_ENCRYPTION_FAILURE';
+
+    // post processing  error codes for transfer request
+    const RZP_DUPLICATE_PAYOUT              = 'RZP_DUPLICATE_PAYOUT';
+    const RZP_PAYOUT_TIMED_OUT              = 'RZP_PAYOUT_TIMED_OUT';
+    const RZP_PAYOUT_UNKNOWN_ERROR          = 'RZP_PAYOUT_UNKNOWN_ERROR';
+    const RZP_RESPONSE_DECRYPTION_FAILED    = 'RZP_RESPONSE_DECRYPTION_FAILED';
+
+    // verify related status codes
+    const RZP_REF_ID_MISMATCH           = 'RZP_REF_ID_MISMATCH';
+    const RZP_AMOUNT_MISMATCH           = 'RZP_AMOUNT_MISMATCH';
+    const RZP_PAYOUT_VERIFY_TIMED_OUT   = 'RZP_PAYOUT_VERIFY_TIMED_OUT';
 
     public static function getSuccessfulStatus(): array
     {
@@ -53,39 +64,53 @@ class GatewayStatus extends BaseStatus
 
     public static function getFailureStatus($bankStatusCode = null): array
     {
-        if (in_array($bankStatusCode, self::getSuccessfulStatus(), true) === false)
-        {
-            return [$bankStatusCode];
-        }
-
-        return [];
-
-        // return [
-        //     self::MT01, self::MT02, self::MT03, self::MT04, self::MT05, self::MT06, self::MT07, self::MT08,
-        //     self::MT09, self::MT10, self::MT11, self::MT12, self::MT13, self::MT14, self::MT15, self::MT16,
-        //     self::MT17, self::MT18, self::MT19, self::MT20, self::MT21, self::MT22, self::MT23, self::MT24,
-        //     self::MT25, self::MT26, self::MT27, self::MT28, self::MT29, self::MT30, self::MT31, self::Z9,
-        //     self::RM, self::RN, self::RZ, self::BR, self::B2, self::SP, self::AJ, self::K1, self::ZI, self::Z8,
-        //     self::Z7, self::Z6, self::ZM, self::ZD, self::ZR, self::ZS, self::ZT, self::ZX, self::XD, self::XF,
-        //     self::XH, self::XJ, self::XL, self::XN, self::XP, self::XR, self::XT, self::XV, self::XY, self::YA,
-        //     self::YC, self::YE, self::Z5, self::ZP, self::ZY, self::XE, self::XG, self::XI, self::XK, self::XM,
-        //     self::XO, self::XQ, self::XS, self::XU, self::XW, self::Y1, self::YB, self::YD, self::YF, self::X6,
-        //     self::X7, self::XB, self::XC, self::AM, self::B1, self::B3, self::ZA, self::ZH, self::UX, self::ZG,
-        //     self::ZE, self::ZB, self::YG, self::X1, self::UT, self::BT, self::RB, self::RP, self::E32, self::E21,
-        //     self::U01, self::U02, self::U03, self::U04, self::U05, self::U06, self::U07, self::U08, self::U09,
-        //     self::U10, self::U11, self::U12, self::U13, self::U14, self::U15, self::U16, self::U17, self::U18,
-        //     self::U19, self::U20, self::U21, self::U22, self::U23, self::U24, self::U25, self::U26, self::U27,
-        //     self::U28, self::U29, self::U30, self::U31, self::U32, self::U33, self::U34, self::U35, self::U36,
-        //     self::U37, self::U38, self::U39, self::U40, self::U41, self::U42, self::U43, self::U44, self::U45,
-        //     self::U46, self::U47, self::U48, self::U49, self::U50, self::U51, self::U52, self::U53, self::U54,
-        //     self::U66, self::U67, self::U68, self::U69, self::U70, self::U77, self::U78, self::OC, self::OD,
-        //     self::RZP_DUPLICATE_PAYOUT, self::RZP_REF_ID_MISMATCH, self::RZP_AMOUNT_MISMATCH
-        // ];
+         return [
+             self::MT01, self::MT02, self::MT03, self::MT04, self::MT05, self::MT06, self::MT07, self::MT08,
+             self::MT09, self::MT10, self::MT11, self::MT12, self::MT13, self::MT14, self::MT15, self::MT16,
+             self::MT17, self::MT18, self::MT19, self::MT20, self::MT21, self::MT22, self::MT23, self::MT24,
+             self::MT25, self::MT26, self::MT27, self::MT28, self::MT29, self::MT30, self::MT31, self::Z9,
+             self::RM, self::RN, self::RZ, self::BR, self::B2, self::SP, self::AJ, self::K1, self::ZI, self::Z8,
+             self::Z7, self::Z6, self::ZM, self::ZD, self::ZR, self::ZS, self::ZT, self::ZX, self::XD, self::XF,
+             self::XH, self::XJ, self::XL, self::XN, self::XP, self::XR, self::XT, self::XV, self::XY, self::YA,
+             self::YC, self::YE, self::Z5, self::ZP, self::ZY, self::XE, self::XG, self::XI, self::XK, self::XM,
+             self::XO, self::XQ, self::XS, self::XU, self::XW, self::Y1, self::YB, self::YD, self::YF, self::X6,
+             self::X7, self::XB, self::XC, self::AM, self::B1, self::B3, self::ZA, self::ZH, self::UX, self::ZG,
+             self::ZE, self::ZB, self::YG, self::X1, self::UT, self::BT, self::RB, self::RP, self::E32, self::E21,
+             self::U01, self::U02, self::U03, self::U04, self::U05, self::U06, self::U07, self::U08, self::U09,
+             self::U10, self::U11, self::U12, self::U13, self::U14, self::U15, self::U16, self::U17, self::U18,
+             self::U19, self::U20, self::U21, self::U22, self::U23, self::U24, self::U25, self::U26, self::U27,
+             self::U28, self::U29, self::U30, self::U31, self::U32, self::U33, self::U34, self::U35, self::U36,
+             self::U37, self::U38, self::U39, self::U40, self::U41, self::U42, self::U43, self::U44, self::U45,
+             self::U46, self::U47, self::U48, self::U49, self::U50, self::U51, self::U52, self::U53, self::U54,
+             self::U66, self::U67, self::U68, self::U69, self::U70, self::U77, self::U78, self::OC, self::OD, self::DT,
+             self::RZP_FTA_REQUEST_INVALID, self::RZP_REQUEST_ENCRYPTION_FAILURE, self::RZP_DUPLICATE_PAYOUT,
+             self::RZP_RESPONSE_DECRYPTION_FAILED, self::RZP_REF_ID_MISMATCH, self::RZP_AMOUNT_MISMATCH,
+         ];
     }
 
     public static function getCriticalErrorStatus(): array
     {
-       return [];
+       return [
+           self::RZP_DUPLICATE_PAYOUT,
+           self::RZP_FTA_REQUEST_INVALID,
+           self::RZP_REQUEST_ENCRYPTION_FAILURE,
+           self::RZP_RESPONSE_DECRYPTION_FAILED,
+           self::RZP_REF_ID_MISMATCH,
+           self::RZP_AMOUNT_MISMATCH,
+           self::RZP_PAYOUT_UNKNOWN_ERROR,
+           self::U14,
+           self::U15,
+           self::U77,
+           self::U05,
+           self::U02,
+           self::U03,
+           self::U07,
+           self::U10,
+           self::U11,
+           self::U12,
+           self::XK,
+           self::DT,
+       ];
     }
 
     public static function getCriticalErrorRemarks(): array

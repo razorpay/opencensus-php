@@ -34,6 +34,12 @@ class FundTransfer extends Job
 
     public function handle()
     {
+        $ftaInitiator = new Initiator;
+
+        $data = [
+            'fta_id' => $this->ftaId
+        ];
+
         try
         {
             parent::handle();
@@ -42,7 +48,7 @@ class FundTransfer extends Job
 
             if ($fta === null)
             {
-                $this->logAndDelete(['fta_id' => $this->ftaId]);
+                $this->logAndDelete(['fta_id' => $this->ftaId], TraceCode::FTA_NOT_FOUND);
 
                 return;
             }
@@ -63,21 +69,27 @@ class FundTransfer extends Job
             {
                 (new SlackNotification)->send('Unsupported channel for Fund transfer', $data, null, 1);
 
-                $this->logAndDelete($data);
+                $this->logAndDelete($data, TraceCode::FTA_CHANNEL_NOT_SUPPORTED);
 
                 return;
             }
 
-            $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
+            $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
 
-            if ($beneficiaryRegistered === false)
+            if ($isBeneRegistrationRequired === true)
             {
-                $this->checkRetryOrDelete($data);
+                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus($channel,
+                                                                                                     $bankAccount);
+
+                if ($beneficiaryRegistered === false)
+                {
+                    $this->checkRetryOrDelete($data);
+
+                    return;
+                }
             }
-            else
-            {
-                (new Initiator)->initFundTransferOnChannel($fta, $channel);
-            }
+
+            $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
         catch (\Throwable $e)
         {
@@ -101,9 +113,11 @@ class FundTransfer extends Job
      */
     public function checkRetryOrDelete(array $data)
     {
+        $traceCode = TraceCode::FTA_BENEFICIARY_NOT_REGISTERED;
+
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->release(self::RELEASE_WAIT_SECS);
+            $this->logAndDelete($data, $traceCode, true);
 
             return;
         }
@@ -111,14 +125,24 @@ class FundTransfer extends Job
         {
             (new SlackNotification)->send('Fund transfer not initiated due to beneficiary registration failure', $data, null, 1);
 
-            $this->delete();
+            $this->logAndDelete($data, $traceCode);
         }
     }
 
-    protected function logAndDelete(array $data)
+    protected function logAndDelete(
+        array $data,
+        string $traceCode = TraceCode::FTA_DISPATCH_FOR_MERCHANT_DELETED,
+        bool $soft = false)
     {
-        $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_DELETED, $data);
+        $this->trace->info($traceCode, $data);
 
-        $this->delete();
+        if ($soft === true)
+        {
+            $this->release(self::RELEASE_WAIT_SECS);
+        }
+        else
+        {
+            $this->delete();
+        }
     }
 }

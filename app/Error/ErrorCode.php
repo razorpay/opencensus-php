@@ -310,6 +310,8 @@ class ErrorCode
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                           = 'BAD_REQUEST_RATE_LIMIT_EXCEEDED';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
+    const BAD_REQUEST_DUPLICATE_PAYOUT                                              = 'BAD_REQUEST_DUPLICATE_PAYOUT';
+    const BAD_REQUEST_INVALID_REQUEST_BODY                                          = 'BAD_REQUEST_INVALID_REQUEST_BODY';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
@@ -1098,4 +1100,5 @@ class ErrorCode
 
     const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE';
+    const BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE                        = 'BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE';
 }

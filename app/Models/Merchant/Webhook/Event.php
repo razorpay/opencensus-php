@@ -268,7 +268,7 @@ class Event
 
     public static function getEnabledEvents($hex)
     {
-        $events = array();
+        $events = [];
 
         foreach (self::$events as $event)
         {

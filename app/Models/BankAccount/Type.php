@@ -32,7 +32,8 @@ class Type
     public static function getBeneficiaryRegistrationTypes()
     {
         return [
-          self::MERCHANT
+            self::MERCHANT,
+            self::CONTACT,
         ];
     }
 }

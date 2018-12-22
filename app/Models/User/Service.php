@@ -294,7 +294,7 @@ class Service extends Base\Service
         }
         else
         {
-            // using user context from header to avoid IDOR.
+            // Using user context from header to avoid IDOR.
             $user = $this->auth->getUser();
         }
 

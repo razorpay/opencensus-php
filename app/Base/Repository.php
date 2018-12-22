@@ -861,7 +861,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === MODE::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
+        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
 
         return $connection;
     }

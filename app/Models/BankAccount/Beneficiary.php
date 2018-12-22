@@ -7,14 +7,19 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\NodalBeneficiary\Status;
+use RZP\Jobs\BeneficiaryRegistrationJob;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -31,6 +36,68 @@ class Beneficiary extends Base\Core
         $result = $this->registerBeneficiary($bankAccounts, $channel);
 
         return $result;
+    }
+
+    /**
+     * Enqueues the bank account in queue to perform beneficiary registration
+     * This will enqueue different message for each channel
+     *
+     * @param Entity $bankAccount
+     */
+    public function enqueueForBeneficiaryRegistration(Entity $bankAccount)
+    {
+        //
+        // We don't have to register beneficiary for the bank account created in test mode.
+        //
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        //
+        // We enqueue bank account with all the available channels which provide API based bene registration.
+        //
+        $channels = Channel::getChannelsWithOnlineBeneficiaryRegistration();
+
+        foreach ($channels as $channel)
+        {
+            $this->dispatchBankAccount($bankAccount, $channel);
+        }
+    }
+
+    /**
+     * Push the bank account id to the queue along with the channel on which bene registration
+     * has to be performed. Also suppresses error which might happen because of queue
+     *
+     * @param Entity $bankAccount
+     * @param string $channel
+     */
+    protected function dispatchBankAccount(Entity $bankAccount, string $channel)
+    {
+        try
+        {
+            BeneficiaryRegistrationJob::dispatch($this->mode, $channel, $bankAccount->getId());
+
+            $this->trace->info(
+                TraceCode::BANK_ACCOUNT_ENQUEUED_FOR_REGISTRATION,
+                [
+                    'mode'            => $this->mode,
+                    'channel'         => $channel,
+                    'bank_account_id' => $bankAccount->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_BANK_ACCOUNT,
+                [
+                    'mode'            => $this->mode,
+                    'channel'         => $channel,
+                    'bank_account_id' => $bankAccount->getId(),
+                ]);
+        }
     }
 
     public function registerBetweenTimestamps(array $input, string $channel): array
@@ -100,17 +167,14 @@ class Beneficiary extends Base\Core
      * @return array
      * @throws InvalidArgumentException
      */
-    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    public function registerBeneficiariesThroughApi(array $input, string $channel): array
     {
-        $bankAccounts = new Base\PublicCollection;
-
         $this->trace->info(
             TraceCode::BENEFICIARY_REGISTER_API_INIT,
             [
                 'input'   => $input,
                 'channel' => $channel
-            ]
-        );
+            ]);
 
         (new Validator)->validateInput('beneficiary_register_api', $input);
 
@@ -145,6 +209,40 @@ class Beneficiary extends Base\Core
     }
 
     /**
+     * @param Entity $bankAccount
+     * @param string $channel
+     *
+     * @return bool
+     * @throws LogicException
+     */
+    public function registerBeneficiaryThroughApi(Entity $bankAccount, string $channel)
+    {
+        if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+        {
+            return false;
+        }
+
+        $bankAccounts = (new PublicCollection)->push($bankAccount);
+
+        $this->registerBeneficiary($bankAccounts, $channel);
+
+        $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
+
+        if ($status === false)
+        {
+            throw new LogicException(
+                "Beneficiary registration failed",
+                null,
+                [
+                    'channel'         => $channel,
+                    'bank_account_id' => $bankAccount->getId(),
+                ]);
+        }
+
+        return $status;
+    }
+
+    /**
      * @param int $duration
      * @return Base\PublicCollection
      */
@@ -161,25 +259,26 @@ class Beneficiary extends Base\Core
             [
                 'from' => $startTime,
                 'to'   => $endTime
-            ]
-        );
+            ]);
 
         return $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp($startTime, $endTime);
     }
 
     /**
+     * @param $channel
+     *
      * @return Base\PublicCollection
      */
     protected function fetchNonRegisteredBankAccount($channel): Base\PublicCollection
     {
-        $bankAccount = $this->repo->nodal_beneficiary->fetchNonRegisteredBankAccount($channel);
+        $bankAccounts = $this->repo->nodal_beneficiary->fetchNonRegisteredBankAccount($channel);
 
-        if (empty($bankAccount) === true)
+        if (empty($bankAccounts) === true)
         {
-            return new Base\PublicCollection();
+            return new Base\PublicCollection;
         }
 
-        return $this->repo->bank_account->findMany($bankAccount);
+        return $this->repo->bank_account->findMany($bankAccounts);
     }
 
     /**
@@ -193,13 +292,6 @@ class Beneficiary extends Base\Core
             'bank_account_id'  => $bankAccount->getId(),
             'channel'          => $channel,
         ];
-
-        $isBeneRegRequired = $this->checkIfBeneRegRequired($bankAccount);
-
-        if ($isBeneRegRequired === false)
-        {
-            return true;
-        }
 
         $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
 
@@ -231,20 +323,6 @@ class Beneficiary extends Base\Core
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
 
         if ($registrationStatus === Status::REGISTERED)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Entity $bankAccount
-     * @return bool
-     */
-    protected function checkIfBeneRegRequired(Entity $bankAccount): bool
-    {
-        if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(),true) === true)
         {
             return true;
         }

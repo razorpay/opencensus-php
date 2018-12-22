@@ -25,16 +25,18 @@ trait TestsBusinessBanking
 
     /**
      * Setup merchant for business banking.
+     *
      * @param bool $skipFeatureAddition
+     * @param int  $balance
      */
-    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false)
+    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false, int $balance = 0)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();
 
         // Creates banking balance
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType();
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType($balance);
 
         // Creates virtual account, its bank account receiver on new banking balance.
         $virtualAccount = $this->fixtures->create('virtual_account');
