@@ -54,7 +54,6 @@ class Core extends Base\Core
             // Evey balance we create will start with 0 balance. if needed we can extend this.
             $input = [
                 Entity::TYPE     => $balanceType,
-                Entity::BALANCE  => 0,
                 Entity::CURRENCY => Currency::INR,
             ];
 
