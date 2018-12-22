@@ -95,6 +95,7 @@ class Transfer extends Base
                 Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
+                // TODO: Check if this can be configured to be shown on bank statement
                 Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
             ],
         ]);

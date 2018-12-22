@@ -156,7 +156,7 @@ abstract class Base extends BaseCore
      */
     protected function createPayoutEntity(array $input)
     {
-        $payout = (new Payout\Entity)->build($input);
+        $payout = (new Payout\Entity);
 
         $payout->merchant()->associate($this->merchant);
 
@@ -170,6 +170,15 @@ abstract class Base extends BaseCore
 
         $payout->balance()->associate($this->balance);
 
+        // Doing this after all the associations since
+        // the modifiers require payout account to be associated.
+        $payout = $payout->build($input);
+
+        // Doing only THIS association after build because
+        // since it is present in $defaults, the association
+        // gets overridden with the default value (null)
+        // in the build function.
+        // NOTE: Not sure why it does not happen with FundAccount.
         $this->associateUserIfApplicable($payout);
 
         // Doing this after all the associations since

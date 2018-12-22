@@ -48,7 +48,7 @@ class Service extends Base\Service
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
-        $this->processAccountNumber($input);
+        $this->processAccountNumber($payoutInput);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
@@ -106,22 +106,14 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * We are allowing Fund Account payouts only on RX.
+     * In RX, we always mandate account number.
+     *
+     * @param array $input
+     */
     protected function processAccountNumber(array & $input)
     {
-        //
-        // If the account number is not present, we don't care about anything.
-        // The payout would happen from the merchant's primary balance.
-        //
-        if (isset($input[Entity::ACCOUNT_NUMBER]) === false)
-        {
-            return;
-        }
-
-        //
-        // If an account number is present, it means that the merchant
-        // should be enabled on business banking and we have to convert
-        // to balance_id.
-        //
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 

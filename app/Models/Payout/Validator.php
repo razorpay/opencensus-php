@@ -79,6 +79,10 @@ class Validator extends Base\Validator
         'ids.*'  => 'required|public_id|size:19'
     ];
 
+    protected static $createValidators = [
+        'account_type_with_amount'
+    ];
+
     protected static $fundAccountPayoutValidators = [
         Entity::MODE,
     ];
@@ -86,6 +90,39 @@ class Validator extends Base\Validator
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
+    }
+
+    protected function validateAccountTypeWithAmount($input)
+    {
+        // TODO: Need to do similar stuff for refund also
+
+        $payout = $this->entity;
+
+        // In case of merchant payouts, payout does not have a fund account.
+        // Merchant payouts work on "destination". Needs to be deprecated.
+        if ($payout->hasFundAccount() === true)
+        {
+            $accountType = $payout->fundAccount->getAccountType();
+        }
+        else
+        {
+            $accountType = $payout->destination->getEntity();
+        }
+
+        $amount = $payout->getAmount();
+
+        if (($accountType === FundAccount\Type::VPA) and
+            ($amount > FundAccount\Validator::MAX_VPA_AMOUNT))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE,
+                null,
+                [
+                    'amount'            => $amount,
+                    'account_type'      => $accountType,
+                    'fund_account_id'   => $payout->fundAccount->getId(),
+                ]);
+        }
     }
 
     protected function validateMode($input)
