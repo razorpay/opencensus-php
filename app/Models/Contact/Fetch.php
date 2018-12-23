@@ -14,7 +14,7 @@ class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID                => 'sometimes|string|min:14',
+            Entity::ID                => 'sometimes|public_id|size:19',
             Entity::EMAIL             => 'sometimes|email',
             Entity::NAME              => 'sometimes|string|max:50',
             Entity::CONTACT           => 'sometimes|contact_syntax',
@@ -38,8 +38,8 @@ class Fetch extends Base\Fetch
             EsRepository::SEARCH_HITS,
         ],
         AuthType::PROXY_AUTH => [
-            Entity::ID
-        ]
+            Entity::ID,
+        ],
     ];
 
     const ES_FIELDS = [

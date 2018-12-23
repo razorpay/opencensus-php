@@ -19,6 +19,14 @@ class Entity extends Transaction\Entity
     // Derived attributes
     const ACCOUNT_NUMBER = 'account_number';
 
+    // Additional input/output attributes
+    const CONTACT_ID      = 'contact_id';
+    const PAYOUT_ID       = 'payout_id';
+    const CONTACT_NAME    = 'contact_name';
+    const CONTACT_PHONE   = 'contact_phone';
+    const CONTACT_EMAIL   = 'contact_email';
+    const FUND_ACCOUNT_ID = 'fund_account_id';
+
     protected $entity = 'statement';
 
     protected $public = [
