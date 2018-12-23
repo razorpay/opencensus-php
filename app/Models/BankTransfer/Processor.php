@@ -118,7 +118,7 @@ class Processor extends VirtualAccount\Processor
         // Currently dispatches transaction.created only for bank transfer on banking balance.
         if ($bankTransfer->isBalanceTypeBanking() === true)
         {
-            (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+            (new Transaction\Core)->dispatchEventForTransactionCreated($bankTransfer->transaction);
         }
 
         $this->refundOrCapturePayment($bankTransfer);

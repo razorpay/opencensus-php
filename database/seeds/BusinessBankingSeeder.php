@@ -133,7 +133,7 @@ class BusinessBankingSeeder extends Seeder
             [
                 [
                     'id'                   => 'xterminal00000',
-                    'merchant_id'          => '10000000000000',
+                    'merchant_id'          => '100000Razorpay',
                     'gateway'              => 'bt_yesbank',
                     'gateway_merchant_id'  => '222444',
                     'gateway_merchant_id2' => '00',
