@@ -70,6 +70,12 @@ export default class ActivationContainer extends React.Component {
     this.activationFormName = user.showInstantActivation
       ? 'KYC Form'
       : 'Activation Form';
+
+    if (props.rpc && props.rpc.notifyOnKYCSuccess) {
+      props.rpc.notifyOnKYCSuccess(reply => {
+        this.onKYCSuccess = reply;
+      });
+    }
   }
 
   preloadWelcomeAsset() {
@@ -133,6 +139,10 @@ export default class ActivationContainer extends React.Component {
       .then(response => {
         if (!response.data.can_submit) {
           throw { errors: ['Some mandatory fields are required'] };
+        }
+
+        if (this.onKYCSuccess) {
+          return this.onKYCSuccess(response);
         }
 
         this.postSubmitStep(response);
@@ -307,6 +317,14 @@ export default class ActivationContainer extends React.Component {
     this.props.history.replace(`/`);
   };
 
+  handleUIUpdate = () => {
+    return this.props.handleUIUpdate && this.props.handleUIUpdate();
+  };
+
+  componentDidMount() {
+    this.handleUIUpdate();
+  }
+
   /*
   * 1. For linked account form, only spinner or Activation wizard.
   * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -358,6 +376,7 @@ export default class ActivationContainer extends React.Component {
           submitForm={this.submitForm}
           getPincodeDetails={this.getPincodeDetails}
           defaultMsg={this.props.defaultMsg}
+          handleUIUpdate={this.handleUIUpdate}
         />
       );
     }

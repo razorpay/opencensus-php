@@ -57,6 +57,8 @@ var app = angular
     '$filterProvider',
     '$provide',
     '$httpProvider',
+    'isHostedInBB',
+    'appHost',
     function(
       $stateProvider,
       $urlRouterProvider,
@@ -64,7 +66,9 @@ var app = angular
       $compileProvider,
       $filterProvider,
       $provide,
-      $httpProvider
+      $httpProvider,
+      isHostedInBB,
+      appHost
     ) {
       // lazy controller, directive and service
       app.controller = $controllerProvider.register;
@@ -78,6 +82,10 @@ var app = angular
 
       $httpProvider.defaults.headers.common['X-Requested-With'] =
         'XMLHttpRequest';
+
+      if (isHostedInBB) {
+        $httpProvider.defaults.headers.common['X-Origin-Product'] = appHost;
+      }
 
       $stateProvider //Logged in routes
         .state('app', {
@@ -166,9 +174,7 @@ var app = angular
   ])
   .constant('appHost', window.RZP && window.RZP.appHost)
   .constant('appName', window.RZP && window.RZP.appName)
-  .constant('isHostedInBB', [
-    'appName',
-    function(appName) {
-      return appname === 'businessbanking';
-    },
-  ]);
+  .constant(
+    'isHostedInBB',
+    window.RZP && window.RZP.appName === 'businessbanking'
+  );
