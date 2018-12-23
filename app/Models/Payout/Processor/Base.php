@@ -250,7 +250,6 @@ abstract class Base extends BaseCore
 
     protected function setPayoutBalance(array $input)
     {
-        // TODO: Change to `source_account` instead of `balance_id`
         $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
 
         if (empty($balanceId) === true)

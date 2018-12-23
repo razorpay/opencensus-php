@@ -7,6 +7,8 @@ use RZP\Models\Merchant\Balance;
 /**
  * A few entities have balance relation e.g. virtual_account, transaction & payout.
  * This trait includes the relation and few helper methods.
+ *
+ * @property Balance\Entity $balance
  */
 trait HasBalance
 {

@@ -3,14 +3,15 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
-use RZP\Jobs\FundTransfer;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
 use RZP\Models\Customer;
+use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -235,6 +236,34 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
 
         return $payout;
+    }
+
+    public function reversePayout(Entity $payout): Reversal\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        // TODO: call `isReversed()` instead
+        if ($payout->getStatus() === Status::REVERSED)
+        {
+            throw new Exception\LogicException('Attempted to reverse an already reversed payout');
+        }
+
+        $reversal = $this->repo->transaction(function() use ($payout)
+        {
+            $reversal = (new Reversal\Core)->reverseForPayout($payout);
+
+            $payout->setStatus(Status::REVERSED);
+
+            $this->repo->saveOrFail($payout);
+
+            return $reversal;
+        });
+
+        return $reversal;
     }
 
     public function retryFailedPayouts(array $input): array

@@ -770,6 +770,15 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromPayoutReversal(Reversal\Entity $reversal): Entity
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
+
+        return $txn;
+    }
+
     public function createFromDispute(Dispute\Entity $dispute): Entity
     {
         $txn = new Entity;

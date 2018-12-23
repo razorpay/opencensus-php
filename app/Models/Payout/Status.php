@@ -10,4 +10,5 @@ class Status
     const INITIATED = Attempt\Status::INITIATED;
     const PROCESSED = 'processed';
     const FAILED    = 'failed';
+    const REVERSED  = 'reversed';
 }

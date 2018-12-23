@@ -4569,6 +4569,14 @@ ALTER TABLE contacts
     ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER type,
     ADD INDEX contacts_reference_id_merchant_id_index (reference_id, merchant_id);
 
+ALTER TABLE reversals
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER entity_type,
+    ADD INDEX reversals_balance_id_index (balance_id);
+
+ALTER TABLE reversals
+    ADD COLUMN channel VARCHAR(255) DEFAULT NULL AFTER balance_id;
+
 ALTER TABLE payouts
     ADD COLUMN purpose_type VARCHAR(255) DEFAULT NULL AFTER purpose,
     ADD INDEX payouts_purpose_type_index (purpose_type);
+    
