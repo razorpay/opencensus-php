@@ -26,16 +26,6 @@ class Fetch extends BaseFetch
     ];
 
     const ACCESSES = [
-        AuthType::PROXY_AUTH     => [
-            self::EXPAND_EACH,
-        ],
-        AuthType::PRIVILEGE_AUTH => [
-            Entity::MERCHANT_ID,
-            Entity::CUSTOMER_ID,
-            Entity::FUND_ACCOUNT_ID,
-            Entity::DESTINATION,
-            Entity::METHOD,
-        ],
         AuthType::PRIVATE_AUTH => [
             Entity::TRANSACTION_ID,
             Entity::UTR,
@@ -45,6 +35,15 @@ class Fetch extends BaseFetch
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
         ],
+        AuthType::PROXY_AUTH     => [
+            self::EXPAND_EACH,
+        ],
+        AuthType::PRIVILEGE_AUTH => [
+            Entity::MERCHANT_ID,
+            Entity::CUSTOMER_ID,
+            Entity::DESTINATION,
+            Entity::METHOD,
+        ],
     ];
 
     const SIGNED_IDS = [
@@ -53,4 +52,9 @@ class Fetch extends BaseFetch
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
     ];
+
+    protected function validateMethod(string $attribute, string $value)
+    {
+        Method::validateMethod($value);
+    }
 }
