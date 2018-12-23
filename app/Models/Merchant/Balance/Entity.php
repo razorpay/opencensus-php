@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
@@ -280,5 +281,16 @@ class Entity extends Base\PublicEntity
                 null,
                 $this->toArray());
         }
+    }
+
+    /**
+     * Applies where clause on MERCHANT_ID and TYPE. For TYPE defaults to PRIMARY.
+     * @param  BuilderEx $query
+     * @param  string    $merchantId
+     */
+    public function scopeMerchantIdAndType(BuilderEx $query, string $merchantId, string $type = Type::PRIMARY)
+    {
+        $query->where($this->dbColumn(Entity::MERCHANT_ID), $merchantId)
+              ->where($this->dbColumn(Entity::TYPE), $type);
     }
 }

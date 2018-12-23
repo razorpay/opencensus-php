@@ -4579,4 +4579,6 @@ ALTER TABLE reversals
 ALTER TABLE payouts
     ADD COLUMN purpose_type VARCHAR(255) DEFAULT NULL AFTER purpose,
     ADD INDEX payouts_purpose_type_index (purpose_type);
-    
+
+ALTER TABLE balance
+    ADD UNIQUE INDEX balance_merchant_id_type_unique (merchant_id, type);
