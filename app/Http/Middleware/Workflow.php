@@ -46,6 +46,7 @@ class Workflow
         Permission::DELETE_ADMIN,
         Permission::EDIT_MERCHANT_REQUESTS,
         Permission::UPDATE_PRICING_PLAN,
+        Permission::MANAGE_RAZORX_OPERATIONS,
     ];
 
     protected $app;
