@@ -119,7 +119,7 @@ class Repository extends Base\Repository
 
         $sourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
 
-        $this->joinFundAccount($query);
+        $this->joinQueryFundAccount($query);
 
         $query->select($this->getTableName() . '.*');
         $query->where($contactIdColumn, $contactId);
@@ -150,9 +150,9 @@ class Repository extends Base\Repository
 
         $contactNameColumn = $this->repo->contact->dbColumn(Contact\Entity::NAME);
 
-        $this->joinFundAccount($query);
+        $this->joinQueryFundAccount($query);
 
-        $this->joinContact($query);
+        $this->joinQueryContact($query);
 
         $query->select($this->getTableName() . '.*');
         $query->where($contactNameColumn, $contactName);
@@ -181,9 +181,9 @@ class Repository extends Base\Repository
 
         $contactPhoneColumn = $this->repo->contact->dbColumn(Contact\Entity::CONTACT);
 
-        $this->joinFundAccount($query);
+        $this->joinQueryFundAccount($query);
 
-        $this->joinContact($query);
+        $this->joinQueryContact($query);
 
         $query->select($this->getTableName() . '.*');
         $query->where($contactPhoneColumn, $contactPhone);
@@ -212,9 +212,9 @@ class Repository extends Base\Repository
 
         $contactEmailColumn = $this->repo->contact->dbColumn(Contact\Entity::EMAIL);
 
-        $this->joinFundAccount($query);
+        $this->joinQueryFundAccount($query);
 
-        $this->joinContact($query);
+        $this->joinQueryContact($query);
 
         $query->select($this->getTableName() . '.*');
         $query->where($contactEmailColumn, $contactEmail);
@@ -245,7 +245,7 @@ class Repository extends Base\Repository
         $query->where($faColumn, $faId);
     }
 
-    protected function joinFundAccount(BuilderEx $query)
+    protected function joinQueryFundAccount(BuilderEx $query)
     {
         $faTable = $this->repo->fund_account->getTableName();
 
@@ -266,7 +266,7 @@ class Repository extends Base\Repository
             });
     }
 
-    protected function joinContact(BuilderEx $query)
+    protected function joinQueryContact(BuilderEx $query)
     {
         $contactTable = $this->repo->contact->getTableName();
 
