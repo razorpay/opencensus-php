@@ -202,6 +202,8 @@ abstract class Base extends BaseCore
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::MODE      => $payout->getMode(),
+            // TODO: Set narration here properly so that it gets set
+            // in FTA and in Yesbank, we can fetch from FTA directly.
             FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
         ];
 

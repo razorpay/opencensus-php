@@ -83,6 +83,9 @@ class Entity extends Base\PublicEntity
     // Input keys
     const ACCOUNT_NUMBER = 'account_number';
 
+    // Used only for `visible` array
+    const INTERNAL_STATUS = 'internal_status';
+
     // Relations
     const USER     = 'user';
     const CUSTOMER = 'customer';
@@ -142,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -173,6 +177,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
         self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
@@ -209,6 +214,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+    ];
+
+    protected $appends = [
+        self::INTERNAL_STATUS,
     ];
 
     protected $ignoredRelations = [
@@ -375,14 +384,26 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isStatusFailed()
+    public function isStatusReversed()
     {
-        return ($this->getStatus() === Status::FAILED);
+        return ($this->getStatus() === Status::REVERSED);
     }
 
-    public function isStatusProcessedOrFailed(): bool
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
+    public function isStatusFailed()
     {
-        return ($this->isStatusProcessed() or $this->isStatusCreated());
+        return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusProcessedOrReversed(): bool
+    {
+        return ($this->isStatusProcessed() or $this->isStatusReversed());
     }
 
     public function isStatusInitiated()
@@ -512,6 +533,11 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function getInternalStatusAttribute()
+    {
+        return $this->getStatus();
+    }
+
     public function setPublicDestinationAttribute(array & $attributes)
     {
         $type = $this->getDestinationType();
@@ -564,6 +590,15 @@ class Entity extends Base\PublicEntity
         $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
 
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
+    }
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
     }
 
     public function getPricingFeatures()

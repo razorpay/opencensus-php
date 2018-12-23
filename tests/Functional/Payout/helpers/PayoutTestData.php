@@ -322,7 +322,7 @@ return [
 
     'testPayoutEntitySuccess' => [
         'channel' => 'yesbank',
-        'status' => PayoutStatus::CREATED,
+        'status' => PayoutStatus::PROCESSING,
         'utr' => NULL,
         'remarks' => NULL,
         'failure_reason' => NULL,

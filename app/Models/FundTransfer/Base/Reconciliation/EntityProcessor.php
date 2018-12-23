@@ -82,6 +82,8 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateEntities()
     {
+        // All of these are in a single DB transaction.
+
         $this->updateAttemptEntity();
 
         if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
@@ -167,6 +169,9 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
+        // TODO: Move this logic to respective source's core instead
+        // TODO: Do the same (^) in the row processor also.
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);
@@ -252,7 +257,6 @@ abstract class EntityProcessor extends Base\Core
             case Entity::SETTLEMENT:
             case Entity::PAYOUT:
             case Entity::REFUND:
-                // TODO: Make changes here for status related stuff
                 return $this->getStatusForEntity($sourceEntityName);
 
             default:

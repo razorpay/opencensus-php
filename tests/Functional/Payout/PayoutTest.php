@@ -132,7 +132,7 @@ class PayoutTest extends TestCase
             'payout',
             $payout['id'],
             [
-                'status' => Payout\Status::FAILED
+                'status' => Payout\Status::REVERSED
             ]);
 
         $this->fixtures->edit(
@@ -153,7 +153,7 @@ class PayoutTest extends TestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($payout['status'], Payout\Status::CREATED);
+        $this->assertEquals($payout['status'], Payout\Status::PROCESSING);
         $this->assertEquals($payoutAttempt['status'], Attempt\Status::CREATED);
 
         // Verify attempt entity

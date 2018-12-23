@@ -68,7 +68,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->processFailedPayouts($input);
+        $data = $this->service()->processReversedPayouts($input);
 
         return ApiResponse::json($data);
     }

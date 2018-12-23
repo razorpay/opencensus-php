@@ -7,6 +7,7 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Payout;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
@@ -172,10 +173,19 @@ trait AttemptTrait
 
         // Verify settlement entity
         $sourceEntities = $this->getEntities($sourceType, ['count' => $sourceCount], true);
+
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA
@@ -205,7 +215,15 @@ trait AttemptTrait
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA

@@ -18,6 +18,7 @@ class BusinessBankingSeeder extends Seeder
             $this->seedBankingBalance();
             $this->seedBankingVA();
             $this->seedBankingVATerminal();
+            $this->seedPayoutFeature();
         });
     }
 
@@ -146,5 +147,20 @@ class BusinessBankingSeeder extends Seeder
                     'deleted_at'           => null,
                 ]
             ]);
+    }
+
+    private function seedPayoutFeature()
+    {
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_x0x0x0',
+                    'name'          => 'payout',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+        ]);
     }
 }

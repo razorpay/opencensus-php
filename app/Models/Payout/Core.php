@@ -246,8 +246,7 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        // TODO: call `isReversed()` instead
-        if ($payout->getStatus() === Status::REVERSED)
+        if ($payout->isStatusReversed() === true)
         {
             throw new Exception\LogicException('Attempted to reverse an already reversed payout');
         }
@@ -266,7 +265,7 @@ class Core extends Base\Core
         return $reversal;
     }
 
-    public function retryFailedPayouts(array $input): array
+    public function retryReversedPayouts(array $input): array
     {
         $this->trace->info(TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST, $input);
 
@@ -274,7 +273,7 @@ class Core extends Base\Core
 
         $ids = Entity::verifyIdAndStripSignMultiple($input['ids']);
 
-        $payouts = $this->repo->payout->fetchFailedPayouts($ids);
+        $payouts = $this->repo->payout->fetchReversedPayouts($ids);
 
         $mutexResource = sprintf(self::PAYOUT_RETRY, $this->mode);
 
@@ -282,7 +281,7 @@ class Core extends Base\Core
             $mutexResource,
             function () use ($payouts)
             {
-                return $this->attemptRetryForFailedPayouts($payouts);
+                return $this->attemptRetryForReversedPayouts($payouts);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -292,11 +291,11 @@ class Core extends Base\Core
         ];
     }
 
-    protected function attemptRetryForFailedPayouts(Base\PublicCollection $payouts): array
+    protected function attemptRetryForReversedPayouts(Base\PublicCollection $payouts): array
     {
         $payoutsRetried = [];
 
-        $retryFailed = [];
+        $retryReversed = [];
 
         foreach ($payouts as $payout)
         {
@@ -309,14 +308,14 @@ class Core extends Base\Core
                 $payout = $this->repo->transaction(
                     function () use ($merchantSettler, $payout)
                     {
-                        return $merchantSettler->retryFailedPayout($payout);
+                        return $merchantSettler->retryReversedPayout($payout);
                     });
 
                 $payoutsRetried[] = $payout->getId();
             }
             catch (\Throwable $e)
             {
-                $retryFailed[] = $payout->getId();
+                $retryReversed[] = $payout->getId();
 
                 $this->trace->traceException(
                     $e,
@@ -333,7 +332,7 @@ class Core extends Base\Core
 
             return [
                 'payouts_retried'       => $payoutsRetried,
-                'failed_retries'        => $retryFailed,
+                'failed_retries'        => $retryReversed,
             ];
         }
 

@@ -43,7 +43,7 @@ class Repository extends Base\Repository
     {
         if ($payouts->count() === 0)
         {
-            return;
+            return 0;
         }
 
         $IdsToUpdate = $payouts->getIds();
@@ -79,12 +79,12 @@ class Repository extends Base\Repository
         $query->where(Entity::DESTINATION_ID, $destinationId);
     }
 
-    public function fetchFailedPayouts(array $ids)
+    public function fetchReversedPayouts(array $ids)
     {
         return $this->newQuery()
                     ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
-                    ->where(Entity::STATUS, Status::FAILED)
+                    ->where(Entity::STATUS, Status::REVERSED)
                     ->get();
     }
 }

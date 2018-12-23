@@ -99,9 +99,9 @@ class Service extends Base\Service
         return $payouts->toArrayPublic();
     }
 
-    public function processFailedPayouts(array $input)
+    public function processReversedPayouts(array $input)
     {
-        $data = (new Core)->retryFailedPayouts($input);
+        $data = (new Core)->retryReversedPayouts($input);
 
         return $data;
     }
