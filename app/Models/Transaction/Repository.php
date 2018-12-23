@@ -109,6 +109,8 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
 
         $selectedColumns = $this->fetchRequiredColumnsForSettlement();
 
@@ -120,7 +122,7 @@ class Repository extends Base\Repository
                                 })
                       ->mergeBindings($activatedMerchants->getQuery())
                       ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
+                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -1198,13 +1200,14 @@ class Repository extends Base\Repository
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
         $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $timestamp = Carbon::now()->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
                       ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
+                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
