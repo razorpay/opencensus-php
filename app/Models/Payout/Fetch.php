@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Models\Contact;
 
 class Fetch extends BaseFetch
 {
@@ -16,6 +17,11 @@ class Fetch extends BaseFetch
             self::EXPAND_EACH       => 'filled|string|in:user',
             Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
             Entity::UTR             => 'sometimes|string',
+            Entity::CONTACT_NAME    => 'sometimes|string',
+            Entity::CONTACT_PHONE   => 'sometimes|contact_syntax',
+            Entity::CONTACT_ID      => 'sometimes|alpha_num',
+            Entity::CONTACT_EMAIL   => 'sometimes|email',
+            Entity::FUND_ACCOUNT_ID => 'sometimes|string',
         ],
     ];
 
@@ -33,6 +39,11 @@ class Fetch extends BaseFetch
         AuthType::PRIVATE_AUTH => [
             Entity::TRANSACTION_ID,
             Entity::UTR,
+            Entity::CONTACT_ID,
+            Entity::CONTACT_NAME,
+            Entity::CONTACT_PHONE,
+            Entity::CONTACT_EMAIL,
+            Entity::FUND_ACCOUNT_ID,
         ],
     ];
 }
