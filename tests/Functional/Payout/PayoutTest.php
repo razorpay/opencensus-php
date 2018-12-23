@@ -70,6 +70,20 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutToInactiveFundAccount()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000001fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba',
+                'active'       => 0,
+            ]);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithOtp()
     {
         $testData = $this->testData['testCreatePayout'];

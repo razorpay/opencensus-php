@@ -142,6 +142,13 @@ abstract class Base extends BaseCore
         /** @var FundAccount\Entity $fundAccount */
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
+        if ($fundAccount->isActive() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
