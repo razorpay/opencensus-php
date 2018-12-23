@@ -15,7 +15,6 @@ use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
@@ -76,7 +75,7 @@ class Core extends Base\Core
                 $onDemand = $this->getOnDemandStatus($input);
 
                 $payoutInput = [
-                    Entity::PURPOSE   => FundTransferAttempt\Purpose::SETTLEMENT,
+                    Entity::PURPOSE   => Purpose::PAYOUT,
                     Entity::AMOUNT    => $amount,
                     Entity::CURRENCY  => $currency,
                     Entity::TYPE      => $onDemand,

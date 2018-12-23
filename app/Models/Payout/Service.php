@@ -106,6 +106,22 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getPurposes(): array
+    {
+        return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function postPurpose(array $input): array
+    {
+        (new Validator)->validateInput('create_purpose', $input);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
+
+        return $purposeObj->getAll($this->merchant);
+    }
+
     /**
      * We are allowing Fund Account payouts only on RX.
      * In RX, we always mandate account number.

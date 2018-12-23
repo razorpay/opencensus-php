@@ -15,6 +15,7 @@ return [
                 'account_number'  => '2224440041626905',
                 'amount'          => 1000,
                 'currency'        => 'INR',
+                'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -27,6 +28,8 @@ return [
                 'amount'          => 1000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'purpose_type'    => 'refund',
                 'tax'             => 92,
                 'fees'            => 602,
                 'notes'           => [
@@ -145,6 +148,7 @@ return [
                 'amount'            => 1000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
+                'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
                 ],
@@ -196,10 +200,11 @@ return [
             'method'  => 'POST',
             'url'     => '/payments/{id}/payout',
             'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
+                'amount'          => 1000,
+                'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
-                'notes'       => [
+                'purpose'         => 'refund',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -256,6 +261,7 @@ return [
                 'amount'          => 2000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -284,6 +290,7 @@ return [
                 'amount'          => 1000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],

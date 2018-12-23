@@ -170,20 +170,28 @@ abstract class Base extends BaseCore
 
         $payout->balance()->associate($this->balance);
 
+        //
         // Doing this after all the associations since
         // the modifiers require payout account to be associated.
+        //
         $payout = $payout->build($input);
 
+        //
         // Doing only THIS association after build because
         // since it is present in $defaults, the association
         // gets overridden with the default value (null)
         // in the build function.
-        // NOTE: Not sure why it does not happen with FundAccount.
+        // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
+        //
         $this->associateUserIfApplicable($payout);
 
+        //
         // Doing this after all the associations since
         // some validations run on the relations' data
+        //
         $this->runInputValidations($payout, $input);
+
+        (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
     }
@@ -191,7 +199,7 @@ abstract class Base extends BaseCore
     protected function createFundTransferAttemptEntity(Payout\Entity $payout)
     {
         $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
+            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::MODE      => $payout->getMode(),
             FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',

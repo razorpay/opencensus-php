@@ -72,4 +72,20 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getPurposes()
+    {
+        $data = $this->service()->getPurposes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPurpose()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPurpose($input);
+
+        return ApiResponse::json($data);
+    }
 }

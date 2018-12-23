@@ -19,7 +19,6 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
@@ -43,6 +42,7 @@ class Entity extends Base\PublicEntity
     const DESTINATION_TYPE       = 'destination_type';
     const USER_ID                = 'user_id';
     const PURPOSE                = 'purpose';
+    const PURPOSE_TYPE           = 'purpose_type';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const NOTES                  = 'notes';
@@ -124,6 +124,8 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::CURRENCY,
         self::NOTES,
+        self::PURPOSE,
+        self::PURPOSE_TYPE,
         self::METHOD,
         self::FEES,
         self::TAX,
@@ -155,6 +157,8 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::TAX,
         self::STATUS,
+        self::PURPOSE,
+        self::PURPOSE_TYPE,
         self::UTR,
         self::USER_ID,
         self::USER,
@@ -264,6 +268,11 @@ class Entity extends Base\PublicEntity
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getPurposeType()
+    {
+        return $this->getAttribute(self::PURPOSE_TYPE);
     }
 
     public function getMode()
@@ -464,6 +473,16 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setPurpose(string $purpose)
+    {
+        $this->setAttribute(self::PURPOSE, $purpose);
+    }
+
+    public function setPurposeType(string $purposeType)
+    {
+        $this->setAttribute(self::PURPOSE_TYPE, $purposeType);
     }
 
     public function setSettledOn($date)
