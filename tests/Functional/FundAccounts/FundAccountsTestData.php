@@ -63,6 +63,35 @@ return [
         ],
     ],
 
+    'testCreateFundAccountInactiveContact' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'details'      => [
+                    'ifsc_code'        => 'SBIN0007105',
+                    'beneficiary_name' => 'Amit M',
+                    'account_number'   => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Fund accounts cannot be created on an inactive contact',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateFundAccountBankAccount' => [
         'request'  => [
             'content' => [

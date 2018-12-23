@@ -69,6 +69,36 @@ return [
         ],
     ],
 
+    'testCreatePayoutToInactiveContactFundAccount' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000001fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payouts cannot be created on an inactive contact fund account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateMerchantPayout' => [
         'request' => [
             'method'  => 'POST',
