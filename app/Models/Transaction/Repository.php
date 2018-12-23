@@ -9,13 +9,13 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as ConstantEntity;
 
 class Repository extends Base\Repository
@@ -106,6 +106,9 @@ class Repository extends Base\Repository
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
 
         $selectedColumns = $this->fetchRequiredColumnsForSettlement();
 
@@ -116,6 +119,8 @@ class Repository extends Base\Repository
                                     $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
                                 })
                       ->mergeBindings($activatedMerchants->getQuery())
+                      ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -133,10 +138,19 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
     {
+        $transactionIdColumn = $this->dbColumn(Entity::ID);
+        $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionTypeColumn = $this->dbColumn(Entity::TYPE);
+
+        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
+
         $query = $this->newQuery()
-                      ->select(['id'])
+                      ->select([$transactionIdColumn])
+                      ->join(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
                       ->where(Transaction\Entity::SETTLED, '=', 0)
-                      ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->where($transactionTypeColumn, '!=', Type::SETTLEMENT)
                       ->merchantId($merchantId);
 
         return $query->get();
@@ -1175,18 +1189,23 @@ class Repository extends Base\Repository
 
         $selectedColumns = $this->fetchRequiredColumnsForSettlement();
 
-        $merchantId             = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionType        = $this->dbColumn(Entity::TYPE);
         $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
         $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
 
         $timestamp = Carbon::now()->getTimestamp();
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->where($merchantId, $mid)
+                      ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY)
+                      ->where($transactionMerchantId, $mid)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -1231,7 +1250,6 @@ class Repository extends Base\Repository
         }
 
         return $selectedColumns;
-
     }
 
     public function fetchTransactionCountForSettlementId(string $setlId): int
