@@ -1002,7 +1002,7 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isTypeApplicable($type)
+    public function isTypeApplicable(string $type): bool
     {
         $enabledTypes = $this->getType();
 
