@@ -86,7 +86,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOtpRules = [
-        Entity::MEDIUM => 'required|filled|in:sms,email',
+        // When medium is not sent otp is sent to both mediums.
+        Entity::MEDIUM => 'sometimes|filled|in:sms,email',
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
 
         // Temporary: Need to send these payloads for raven's sms content.
@@ -247,12 +248,13 @@ class Validator extends Base\Validator
         $this->validateInput('createOtp', $input);
 
         $action = $input[Entity::ACTION];
-        $medium = $input[Entity::MEDIUM];
+        // Medium is optional input, for validation logic here assigns 'both' as the value.
+        $medium = $input[Entity::MEDIUM] ?? 'both';
 
         if (($action === 'verify_contact') and
-            ($medium === 'email'))
+            ($medium !== 'sms'))
         {
-            throw new BadRequestValidationFailureException('Email is invalid medium for verifying contact');
+            throw new BadRequestValidationFailureException('Sms must be the medium for verifying contact');
         }
 
         if (($action === 'verify_contact') and
