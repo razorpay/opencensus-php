@@ -149,6 +149,15 @@ abstract class Base extends BaseCore
                 Payout\Entity::FUND_ACCOUNT_ID);
         }
 
+        if (optional($fundAccount->source)->isActive() === false)
+        {
+            $sourceEntity = $fundAccount->source->getEntity();
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive ' . $sourceEntity . ' fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
