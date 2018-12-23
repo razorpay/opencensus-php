@@ -12,6 +12,8 @@ use RZP\Models\Base\Traits\NotesTrait;
  * Class Entity
  *
  * @package RZP\Models\Contact
+ *
+ * @property Merchant\Entity $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -119,6 +121,11 @@ class Entity extends Base\PublicEntity
     // ------------- End Getters -------------
 
     // --------------- Setters ---------------
+
+    public function setType(string $type = null)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
 
     // ------------- End Setters -------------
 

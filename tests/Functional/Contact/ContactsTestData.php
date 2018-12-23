@@ -145,6 +145,7 @@ return [
         'request'   => [
             'content' => [
                 'type' => 'invalid_type',
+                'name' => 'Test',
             ],
             'url'     => '/contacts',
             'method'  => 'POST'
@@ -153,7 +154,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid contact type: invalid_type',
+                    'description' => 'Invalid type: invalid_type',
                 ],
             ],
             'status_code' => 400,

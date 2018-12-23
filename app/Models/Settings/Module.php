@@ -22,6 +22,7 @@ class Module
     const SUBSCRIPTIONS  = 'subscriptions';
     const PAYMENT_LINK   = 'payment_link';
     const PAYOUT_PURPOSE = 'payout_purpose';
+    const CONTACT_TYPE   = 'contact_type';
 
     /**
      * @param string $module

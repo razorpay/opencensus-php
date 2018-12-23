@@ -960,6 +960,8 @@ final class Route
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
+        'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
+        'contact_types_post'                       => ['post',     'contacts/types',                                 'ContactController@postType'                                        ],
 
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
@@ -1193,6 +1195,8 @@ final class Route
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'vpa_payout',
+        'contact_types_get',
+        'contact_types_post',
         'contact_get',
         'contact_list',
         'contact_create',
