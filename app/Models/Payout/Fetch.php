@@ -10,18 +10,18 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-            Entity::CUSTOMER_ID     => 'sometimes|string|max:19',
-            Entity::DESTINATION     => 'sometimes|string|max:20',
-            Entity::METHOD          => 'sometimes|string',
-            self::EXPAND_EACH       => 'filled|string|in:user',
-            Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
-            Entity::UTR             => 'sometimes|string',
-            Entity::CONTACT_NAME    => 'sometimes|string',
+            Entity::MERCHANT_ID     => 'sometimes|unsigned_id',
+            Entity::CUSTOMER_ID     => 'sometimes|public_id|size:19',
+            Entity::DESTINATION     => 'sometimes|public_id|max:20',
+            Entity::METHOD          => 'sometimes|string|custom',
+            Entity::TRANSACTION_ID  => 'sometimes|public_id',
+            Entity::UTR             => 'sometimes|string|max:255',
+            Entity::CONTACT_NAME    => 'sometimes|string|max:255',
             Entity::CONTACT_PHONE   => 'sometimes|contact_syntax',
-            Entity::CONTACT_ID      => 'sometimes|alpha_num',
+            Entity::CONTACT_ID      => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL   => 'sometimes|email',
-            Entity::FUND_ACCOUNT_ID => 'sometimes|string',
+            Entity::FUND_ACCOUNT_ID => 'sometimes|public_id|size:17',
+            self::EXPAND_EACH       => 'filled|string|in:user',
         ],
     ];
 
@@ -45,5 +45,12 @@ class Fetch extends BaseFetch
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
         ],
+    ];
+
+    const SIGNED_IDS = [
+        Entity::CUSTOMER_ID,
+        Entity::TRANSACTION_ID,
+        Entity::CONTACT_ID,
+        Entity::FUND_ACCOUNT_ID,
     ];
 }

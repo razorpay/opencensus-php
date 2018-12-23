@@ -474,7 +474,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'];
+        $request['url'] = '/payouts?transaction_id=txn_' . $payout['transaction_id'];
 
         $this->ba->privateAuth();
 
@@ -531,7 +531,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_id=1000010contact';
+        $request['url'] = '/payouts?contact_id=cont_1000010contact';
 
         $this->ba->privateAuth();
 

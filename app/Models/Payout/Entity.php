@@ -80,7 +80,7 @@ class Entity extends Base\PublicEntity
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 
-    // additional attributes
+    // Additional input/output attributes
     const CONTACT_NAME    = 'contact_name';
     const CONTACT_PHONE   = 'contact_phone';
     const CONTACT_ID      = 'contact_id';
