@@ -687,7 +687,6 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
-
         parent::refund($input);
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
@@ -709,6 +708,23 @@ class Gateway extends Base\Gateway
         $response[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($refund, $response);
+
+        $this->checkRefundStatus($response);
+    }
+
+    protected function checkRefundStatus($response)
+    {
+        if ($response[Fields::CODE] != Status::REFUND_SUCCESS)
+        {
+            $code = $response[Fields::CODE];
+
+            $errorCode = ErrorCodeMap::getApiErrorCode($code);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $code,
+                ErrorCodeMap::getResponseMessage($code));
+        }
     }
 
     protected function getRefundRequestArray(array $input): array

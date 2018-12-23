@@ -550,6 +550,22 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
+    public function testRefundFailure()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[Fields::CODE] = 'A79';
+        });
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);
