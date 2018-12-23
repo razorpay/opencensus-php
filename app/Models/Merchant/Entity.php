@@ -361,7 +361,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
         self::WHITELISTED_IPS_LIVE   => 'array',
         self::WHITELISTED_IPS_TEST   => 'array',
-        self::FEE_CREDITS_THRESHOLD  => 'int'
+        self::FEE_CREDITS_THRESHOLD  => 'int',
+        self::BUSINESS_BANKING       => 'bool',
     ];
 
     protected $eventFields = [
@@ -1336,7 +1337,7 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isBusinessBankingEnabled(): bool
+    public function isBusinessBankingEnabled()
     {
         return $this->getAttribute(self::BUSINESS_BANKING);
     }

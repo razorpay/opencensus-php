@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
@@ -181,7 +182,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
 
             Mail::queue($confirmationMail);
         }
@@ -376,7 +379,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $passwordResetMail = new UserMail\PasswordReset($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
 
             Mail::queue($passwordResetMail);
         }
