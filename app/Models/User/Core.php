@@ -185,6 +185,13 @@ class Core extends Base\Core
                 }
 
                 $balance = $this->repo->balance->getMerchantBalanceByType($merchant[Entity::ID], Product::BANKING);
+
+                // We hit this flow during /login too where merchant even though of X, doesn't have balance etc created yet.
+                if ($balance === null)
+                {
+                    return $merchant;
+                }
+
                 $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
 
                 return $merchant +
