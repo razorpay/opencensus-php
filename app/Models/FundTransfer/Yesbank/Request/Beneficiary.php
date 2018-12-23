@@ -19,9 +19,9 @@ class Beneficiary extends Base
 
     protected $responseIdentifier = Constants::BENE_RESPONSE_IDENTIFIER;
 
-    public function __construct()
+    public function __construct(bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->urlIdentifier = $this->config['ben_add_url_suffix'];
     }

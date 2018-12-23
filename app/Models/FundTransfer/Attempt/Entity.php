@@ -39,6 +39,11 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT            = 'settlement';
     const BENEFICIARY           = 'beneficiary';
 
+    /**
+     * Used to check if the FTA's source has balance ID
+     */
+    const BALANCE_ID            = 'balance_id';
+
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
@@ -375,6 +380,18 @@ class Entity extends Base\PublicEntity
         if ($ftaBatchId === $sourceBatchId)
         {
             return true;
+        }
+
+        return false;
+    }
+
+    public function isOfBanking(): bool
+    {
+        $source = $this->source;
+
+        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        {
+            return $source->isBalanceTypeBanking();
         }
 
         return false;

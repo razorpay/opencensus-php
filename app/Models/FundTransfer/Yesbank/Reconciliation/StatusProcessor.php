@@ -25,7 +25,6 @@ class StatusProcessor extends BaseRowProcessor
      * This will update the status based on the transfer API response
      *
      * @return null
-     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -47,9 +46,11 @@ class StatusProcessor extends BaseRowProcessor
     {
         $gateway = ($this->row->hasVpa() === true);
 
-        $response = (new StatusRequest)->init()
-                                       ->setEntity($this->row)
-                                       ->makeRequest($gateway);
+        $banking = $this->row->isOfBanking();
+
+        $response = (new StatusRequest($banking))->init()
+                                                 ->setEntity($this->row)
+                                                 ->makeRequest($gateway);
 
         if (empty($response) === false)
         {

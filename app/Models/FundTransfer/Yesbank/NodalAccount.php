@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Base\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
@@ -43,8 +44,6 @@ class NodalAccount extends NodalBase\NodalAccount
      */
     public function process(PublicCollection $attempts): array
     {
-        $transfer = new Transfer($this->purpose);
-
         $processedCount = 0;
 
         $lock = (new Lock($this->channel));
@@ -74,6 +73,10 @@ class NodalAccount extends NodalBase\NodalAccount
             $gateway = ($attempt->hasVpa() === true);
 
             $this->doRequiredChecks($gateway);
+
+            $banking = $attempt->isOfBanking();
+
+            $transfer = new Transfer($this->purpose, $banking);
 
             try
             {

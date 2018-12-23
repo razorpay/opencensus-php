@@ -45,13 +45,19 @@ abstract class Base extends ApiProcessor
 
     protected $entity = null;
 
-    public function __construct()
+    public function __construct(bool $banking = false)
     {
         parent::__construct();
 
         $this->channel = Channel::YESBANK;
 
-        $this->config = Config::get('nodal.yesbank');
+        $this->config = Config::get('nodal.yesbank.primary');
+
+        if ($banking === true)
+        {
+            $this->config = Config::get('nodal.yesbank.banking');
+        }
+
 
         $this->appId = $this->config['app_id'];
 

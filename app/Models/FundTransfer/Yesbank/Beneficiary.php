@@ -30,6 +30,7 @@ class Beneficiary extends ApiProcessor
     {
         $this->count = $bankAccounts->count();
 
+        // TODO: Figure out how to do beneficiary registration on two different nodal accounts of the same channel!
         $request = new BeneficiaryRequest;
 
         foreach ($bankAccounts as $bankAccount)

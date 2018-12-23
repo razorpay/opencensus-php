@@ -27,9 +27,9 @@ class Transfer extends Base
 
     protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $purpose)
+    public function __construct(string $purpose, bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->purpose = $purpose;
 
@@ -95,8 +95,7 @@ class Transfer extends Base
                 Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
-                // TODO: Check if this can be configured to be shown on bank statement
-                Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
+                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
             ],
         ]);
 
@@ -172,6 +171,29 @@ class Transfer extends Base
         return [
             Constants::BENEFICIARY_CODE => $this->entity->bankAccount->getId(),
         ];
+    }
+
+    /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @return string
+     */
+    protected function getNarration()
+    {
+        $merchant = $this->entity->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($merchantBillingLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . 'FUND TRANSFER';
+
+        return $narration;
     }
 
     /**
