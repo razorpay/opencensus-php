@@ -355,6 +355,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAccountBalances()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchAccountBalances($input);
+
+        return ApiResponse::json($data);
+    }
+
     // This is on proxy Auth
     public function getAccountConfig()
     {

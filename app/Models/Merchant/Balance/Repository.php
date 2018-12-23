@@ -9,9 +9,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'balance';
 
-    // protected $appFetchParamRules = array(
-    //     Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-    // );
+    // These are proxy allowed params to search on.
+    protected $proxyFetchParamRules = [
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num',
+    ];
 
     public function findOrFail($id, $columns = array('*'))
     {
