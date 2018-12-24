@@ -10,6 +10,8 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import Image from 'rzp/ui/Image';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import debounce from 'rzp/utils/debounce';
 
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SwitchMerchant, {
@@ -28,6 +30,16 @@ import SwitchMerchant, {
   { logout, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
+  state = {
+    showRazorpayxToolTip: false,
+  };
+
+  handleShow = () => {
+    setTimeout(() => {
+      this.setState({ showRazorpayxToolTip: true });
+    }, 500);
+  };
+
   logout = () => {
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
@@ -90,8 +102,10 @@ export default class ProfileDropdown extends Component {
       analytics = () => {},
     } = this.props;
     let merchant = user.merchants[user.current];
+    const { showRazorpayxToolTip } = this.state;
+
     return (
-      <Dropdown closeOnClick={false}>
+      <Dropdown closeOnClick={false} onShow={this.handleShow}>
         <DropdownTrigger class="dropdown-toggle">
           {isMobileResolution ? (
             <span className="merchant-logo-preview">
@@ -166,22 +180,38 @@ export default class ProfileDropdown extends Component {
             )}
 
             {user.isRazorxAnnouncementEnabled && (
-              <div class="media media-action">
-                <div class="media-left">
-                  <div class="media-object">
-                    <img
-                      src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
-                      alt=""
-                      height="24"
-                    />
+              <>
+                <div class="media media-action">
+                  <div class="media-left">
+                    <div class="media-object">
+                      <img
+                        src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
+                        alt=""
+                        height="24"
+                      />
+                    </div>
+                  </div>
+                  <div class="media-body">
+                    <a href="https://x.razorpay.com" target="_blank">
+                      Go to RazorpayX
+                    </a>
                   </div>
                 </div>
-                <div class="media-body">
-                  <a href="https://x.razorpay.com" target="_blank">
-                    Go to RazorpayX
-                  </a>
-                </div>
-              </div>
+                {!showMobileNav &&
+                  showRazorpayxToolTip && (
+                    <Popover
+                      persistent={true}
+                      theme="dark"
+                      align="left"
+                      delay={3000}
+                      class="razorpayx-popover"
+                    >
+                      <PopoverBody>
+                        You can switch to RazorpayX Dashboard from here
+                      </PopoverBody>
+                    </Popover>
+                  )}
+              </>
             )}
 
             <div class="media loggedin-as">
