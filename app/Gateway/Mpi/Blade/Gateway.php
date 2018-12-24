@@ -112,13 +112,17 @@ class Gateway extends Base\Gateway
         switch ($enrolled)
         {
             case Base\Enrolled::Y:
-                if ((isset($input['authenticate']['auth_type']) === true) and
-                    ($input['authenticate']['auth_type'] === 'native'))
+                if ($this->isIvrPayment($input) === true)
                 {
                     if (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === true)
                     {
                         throw new Exception\GatewayErrorException(
-                            ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE);
+                            ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                            null,
+                            null,
+                            [],
+                            null,
+                            BaseGateway\Action::AUTHENTICATE);
                     }
 
                     return $this->getOtpSubmitRequest($input, $response);
@@ -348,8 +352,8 @@ class Gateway extends Base\Gateway
             'method'    => 'post',
             'content'   => [
                 PAReq::PAREQ     => $pareq,
-                PAReq::TERMURL   => 'https://api.razorpay.com/',
-                PAReq::MD        => $input['payment']['id']
+                PAReq::MD        => $input['payment']['id'],
+                PAReq::TERMURL   => '',
             ]
         ];
 
@@ -723,8 +727,7 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        if ((isset($input['authenticate']['auth_type']) === true) and
-            ($input['authenticate']['auth_type'] === 'native'))
+        if ($this->isIvrPayment($input) === true)
         {
             $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::CH][PAReq::ACCID] = $this->model->getAccId();
 
@@ -799,8 +802,7 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        if ((isset($input['authenticate']['auth_type']) === true) and
-            ($input['authenticate']['auth_type'] === 'native'))
+        if ($this->isIvrPayment($input) === true)
         {
             $content[VEReq::MESSAGE][VEReq::VEREQ]['Extension'] = [
                 '@attributes' => [
@@ -1003,5 +1005,11 @@ class Gateway extends Base\Gateway
     protected function getGatewayCertDirName()
     {
         return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
+    }
+
+    protected function isIvrPayment($input)
+    {
+        return ((isset($input['authenticate']['auth_type']) === true) and
+                ($input['authenticate']['auth_type'] === 'native'));
     }
 }
