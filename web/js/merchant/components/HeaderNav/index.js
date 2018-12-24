@@ -16,9 +16,8 @@ const analytics = action => {
   });
 };
 
-function toggleDropdown(shouldShow) {
-  if (shouldShow)
-    document.querySelector('#profile-dropdown .dropdown-toggle').click();
+function toggleDropdown() {
+  document.querySelector('#profile-dropdown .dropdown-toggle').click();
 }
 
 @withRouter
@@ -38,14 +37,14 @@ export default class HeaderNav extends Component {
   componentDidMount() {
     const hash = this.props.history.location.hash;
     if (hash === '#profile_dropdown') {
-      toggleDropdown(true);
+      toggleDropdown();
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.location.hash !== this.props.location.hash) {
       if (nextProps.location.hash === '#profile_dropdown') {
-        toggleDropdown(true);
+        toggleDropdown();
       }
     }
   }
