@@ -14,6 +14,7 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
@@ -887,6 +888,24 @@ class Core extends Base\Core
         $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]      = $merchant->isLive();
         $response[Entity::ACTIVATION_FLOW]    = $merchantDetails->getActivationFlow();
+
+        $response = $this->appendBankingSpecificDetails($response, $merchant);
+
+        return $response;
+    }
+
+    private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+
+        if (empty($balance) === false)
+        {
+            $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+
+            $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
+                                                                          Merchant\Balance\Entity::CURRENCY]);
+            $response[Merchant\Entity::BANKING_ACCOUNT] = $bankAccount->toArrayHosted();
+        }
 
         return $response;
     }
