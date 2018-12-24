@@ -13,6 +13,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Error\PublicErrorDescription;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Merchant
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
@@ -106,13 +113,19 @@ class Validator extends Base\Validator
         'action'         => 'required|string|filled|max:10|in:insert,delete',
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14'
+        'merchant_ids.*' => 'required|string|filled|size:14'
     ];
 
     protected static $bulkAssignScheduleRules = [
         'schedule'       => 'required|array',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14',
+        'merchant_ids.*' => 'required|string|filled|size:14',
+    ];
+
+    protected static $bulkAssignPricingRules = [
+        'pricing_plan_id' => 'required|string|size:14',
+        'merchant_ids'    => 'required|array',
+        'merchant_ids.*'  => 'required|string|filled|size:14',
     ];
 
     protected static $oauthMailRules = [
@@ -1010,7 +1023,14 @@ class Validator extends Base\Validator
 
         if ($merchant->isBusinessBankingEnabled() === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                null,
+                [
+                    'merchant_id'      => $merchant->getId(),
+                    'merchant_name'    => $merchant->getName(),
+                    'business_banking' => $merchant->isBusinessBankingEnabled()
+                ]);
         }
     }
 
@@ -1036,7 +1056,9 @@ class Validator extends Base\Validator
 
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
         $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+
         $input[Balance\Entity::BALANCE_ID] = $balanceId;
     }
 }

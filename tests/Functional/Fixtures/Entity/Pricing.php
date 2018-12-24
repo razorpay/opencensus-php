@@ -6,9 +6,11 @@ use RZP\Models;
 
 class Pricing extends Base
 {
+    const DEFAULT_PRICING_PLAN_ID = '1hDYlICobzOCYt';
+
     public function createDefaultPlan()
     {
-        $pricingPlanId = '1hDYlICobzOCYt';
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
 
         $rows = [
             [

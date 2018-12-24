@@ -14,9 +14,11 @@ class Fetch extends Base\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
+            Entity::ID                => 'sometimes|public_id|size:19',
             Entity::EMAIL             => 'sometimes|email',
             Entity::NAME              => 'sometimes|string|max:50',
             Entity::CONTACT           => 'sometimes|contact_syntax',
+            Entity::REFERENCE_ID      => 'sometimes|string|max:40',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|string|min:14|max:19',
             Entity::ACCOUNT_NUMBER    => 'sometimes|alpha_num|between:5,22',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
@@ -29,10 +31,14 @@ class Fetch extends Base\Fetch
             Entity::NAME,
             Entity::EMAIL,
             Entity::CONTACT,
+            Entity::REFERENCE_ID,
             Entity::FUND_ACCOUNT_ID,
             Entity::ACCOUNT_NUMBER,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::ID,
         ],
     ];
 

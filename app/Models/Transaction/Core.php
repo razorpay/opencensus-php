@@ -52,12 +52,20 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    /*
-     * Refactoring entity by entity, will introduce factory method in the future
-    */
+    public function getFactory(Base\Entity $source): TransactionProcessor\Base
+    {
+        $type = $source->getEntityName();
+
+        $processor = __NAMESPACE__ ;
+
+        $processor .= '\\Processor\\' .studly_case($type);
+
+        return new $processor($source);
+    }
+
     public function createTransactionForSource(Base\Entity $source)
     {
-        $txnProcessor = (new TransactionProcessor\Payment($source));
+        $txnProcessor = $this->getFactory($source);
 
         return $txnProcessor->createTransaction();
     }
@@ -579,11 +587,7 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-        list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-        return $txn;
+        return $this->createTransactionForSource($refund);
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
@@ -770,6 +774,15 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromPayoutReversal(Reversal\Entity $reversal): Entity
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
+
+        return $txn;
+    }
+
     public function createFromDispute(Dispute\Entity $dispute): Entity
     {
         $txn = new Entity;
@@ -932,7 +945,7 @@ class Core extends Base\Core
     {
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
-        $txn->associateBalance($merchantBalance);
+        $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
@@ -1432,5 +1445,19 @@ class Core extends Base\Core
                 throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
             }
         }
+    }
+
+    /**
+     * Dispatches webhook, sms and/or email for newly created transaction.
+     * This is a safe method i.e. it is not expected to throw any exceptions.
+     * Notifier and webhook dispatcher used here suppress and log exceptions if any.
+     *
+     * @param Entity $txn
+     */
+    public function dispatchEventForTransactionCreated(Entity $txn)
+    {
+        (new Notifier($txn))->notify();
+
+        $this->app->events->fire('api.transaction.created', $txn);
     }
 }

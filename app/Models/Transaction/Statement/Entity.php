@@ -7,6 +7,7 @@ use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 
 /**
  * Class Entity
@@ -15,24 +16,40 @@ use RZP\Models\Base\PublicEntity;
  */
 class Entity extends Transaction\Entity
 {
+    // Derived attributes
+    const ACCOUNT_NUMBER = 'account_number';
+
+    // Additional input/output attributes
+    const CONTACT_ID      = 'contact_id';
+    const PAYOUT_ID       = 'payout_id';
+    const CONTACT_NAME    = 'contact_name';
+    const CONTACT_PHONE   = 'contact_phone';
+    const CONTACT_EMAIL   = 'contact_email';
+    const FUND_ACCOUNT_ID = 'fund_account_id';
+
     protected $entity = 'statement';
 
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::ACCOUNT_NUMBER,
         self::AMOUNT,
+        self::CURRENCY,
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
         self::SOURCE,
         self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::SOURCE,
+    ];
+
+    protected $appends = [
+        self::ACCOUNT_NUMBER,
     ];
 
 
@@ -53,7 +70,10 @@ class Entity extends Transaction\Entity
                 return $this->setPublicSourceAttributeForBankTransfer($array);
 
             default:
-                return $this->setPublicSourceAttributeForDefault($array);
+                throw new LogicException(
+                    'Transaction of unexpected type is being exposed to public!',
+                    null,
+                    array_only($array[self::SOURCE], [self::ID, self::ENTITY]));
         }
     }
 
@@ -101,16 +121,6 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $bankTransfer->getPayerIfsc();
     }
 
-    protected function setPublicSourceAttributeForDefault(array & $array)
-    {
-        $array[self::SOURCE] = array_only(
-            $array[self::SOURCE],
-            [
-                PublicEntity::ID,
-                PublicEntity::ENTITY,
-            ]);
-    }
-
     /**
      * {@inheritDoc}
      * Transaction/Statement/* is internal code organization for exposing transaction.
@@ -119,6 +129,13 @@ class Entity extends Transaction\Entity
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'transaction';
+    }
+
+    // Appends
+
+    public function getAccountNumberAttribute()
+    {
+        return $this->accountBalance->getAccountNumber();
     }
 
     /**

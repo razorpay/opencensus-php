@@ -33,7 +33,6 @@ class Core extends Base\Core
      *
      * @return Transfer\Entity
      * @throws Exception\BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
     {

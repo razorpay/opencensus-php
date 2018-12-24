@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
     const BALANCE                   = 'balance';
+    const BANKING_BALANCE           = 'banking_balance';
 
     const ROLE                      = 'role';
     const BANKING_ROLE              = 'banking_role';
@@ -173,6 +174,7 @@ class Entity extends Base\PublicEntity
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     protected $entity = 'merchant';
 
@@ -329,7 +331,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::AXIS,
+        self::CHANNEL                => Settlement\Channel::AXIS2,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -359,7 +361,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
         self::WHITELISTED_IPS_LIVE   => 'array',
         self::WHITELISTED_IPS_TEST   => 'array',
-        self::FEE_CREDITS_THRESHOLD  => 'int'
+        self::FEE_CREDITS_THRESHOLD  => 'int',
+        self::BUSINESS_BANKING       => 'bool',
     ];
 
     protected $eventFields = [
@@ -1334,7 +1337,7 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isBusinessBankingEnabled(): bool
+    public function isBusinessBankingEnabled()
     {
         return $this->getAttribute(self::BUSINESS_BANKING);
     }

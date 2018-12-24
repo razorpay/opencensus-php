@@ -53,6 +53,9 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::PURPOSE, 30);
 
+            $table->string(Payout::PURPOSE_TYPE, 255)
+                  ->nullable();
+
             $table->integer(Payout::AMOUNT)
                   ->unsigned();
 
@@ -113,6 +116,9 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::TYPE, 30)
                   ->default('default');
 
+            $table->string(Payout::MODE, 30)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);
@@ -122,6 +128,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::METHOD);
 
             $table->index(Payout::STATUS);
+
+            $table->index(Payout::MODE);
 
             $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
 

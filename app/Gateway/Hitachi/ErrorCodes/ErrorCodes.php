@@ -9,7 +9,9 @@ class ErrorCodes extends Cards\ErrorCodes
 {
     public static $authRespCodeMap = [
         '17' => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
-        '51' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
+        '20' => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+        '21' => ErrorCode::GATEWAY_ERROR_PRIOR_TRANSACTION_IN_PROGRESS,
+        '28' => ErrorCode::GATEWAY_ERROR_FILE_ERROR,
         '52' => ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
         '53' => ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
         '54' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
@@ -33,6 +35,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '82' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         '83' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
         '85' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        '95' => ErrorCode::GATEWAY_ERROR_RECONCILE_ERROR,
         'B1' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         'N0' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         'N3' => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,

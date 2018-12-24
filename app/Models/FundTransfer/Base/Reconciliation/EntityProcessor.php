@@ -19,6 +19,8 @@ use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
 {
+    use DispatchesEvents;
+
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -80,6 +82,8 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateEntities()
     {
+        // All of these are in a single DB transaction.
+
         $this->updateAttemptEntity();
 
         if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
@@ -165,6 +169,9 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
+        // TODO: Move this logic to respective source's core instead
+        // TODO: Do the same (^) in the row processor also.
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);
@@ -172,6 +179,8 @@ abstract class EntityProcessor extends Base\Core
         $this->source->setFailureReason($this->fta->getFailureReason());
 
         $this->repo->saveOrFail($this->source);
+
+        $this->dispatchEventsForSourceAfterRecon($this->source);
     }
 
     protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
@@ -203,15 +212,13 @@ abstract class EntityProcessor extends Base\Core
 
         $failureReason  = null;
 
-        $channel = $this->fta->getChannel();
-
-        $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+        $statusNamespace = $this->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
         $successStatuses = $statusClass::getSuccessfulStatus();
 
-        $failureStatuses = $statusClass::getFailureStatus();
+        $failureStatuses = $statusClass::getFailureStatus($bankStatusCode);
 
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
@@ -346,8 +353,15 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(Attempt\Entity $entity)
     {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 

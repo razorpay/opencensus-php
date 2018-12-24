@@ -34,6 +34,7 @@ class Workflow
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,
         Permission::SCHEDULE_ASSIGN_BULK,
+        Permission::PRICING_ASSIGN_BULK,
         Permission::EDIT_MERCHANT_ENABLE_LIVE,
         Permission::EDIT_MERCHANT_DISABLE_LIVE,
         Permission::DELETE_MERCHANT_FEATURES,
@@ -45,6 +46,7 @@ class Workflow
         Permission::DELETE_ADMIN,
         Permission::EDIT_MERCHANT_REQUESTS,
         Permission::UPDATE_PRICING_PLAN,
+        Permission::MANAGE_RAZORX_OPERATIONS,
     ];
 
     protected $app;

@@ -18,6 +18,15 @@ class Repository extends Base\Repository
 {
     protected $entity = 'contact';
 
+    protected function addQueryParamId($query, $params)
+    {
+        $id = $params[Entity::ID];
+
+        Entity::stripSignOrFail($id);
+
+        $query->where(Entity::ID, $id);
+    }
+
     /**
      * SELECT contacts.*
      * FROM   contacts

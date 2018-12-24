@@ -61,6 +61,11 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactInvalidReferenceId()
+    {
+        $this->startTest();
+    }
+
     public function testFetchContactsByPhone()
     {
         $this->fixtures->create('contact', ['id' => '1000004contact', 'email' => 'test@test4.com', 'contact' => '8888888888']);
@@ -99,7 +104,7 @@ class ContactsTest extends TestCase
 
     public function testUpdateContact()
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self']);
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
 
         $this->startTest();
     }

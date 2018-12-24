@@ -372,6 +372,11 @@ class Core extends Base\Core
         $mainEntity,
         $relations)
     {
+        if (E::isValidEntity($mainEntity) === false)
+        {
+            return;
+        }
+
         $entityOb = ConstantsEntity::getEntityObject($mainEntity);
 
         if (empty($relations) === false)

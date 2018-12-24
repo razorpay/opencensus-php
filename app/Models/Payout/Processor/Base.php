@@ -67,15 +67,15 @@ abstract class Base extends BaseCore
      */
     protected $fundTransferDestination;
 
-    public function createPayout(array $input)
+    public function createPayout(array $input): Payout\Entity
     {
         $this->preValidations();
 
         $this->setPayoutBalance($input);
 
-        $this->setChannel();
+        $this->setChannel($input);
 
-        return $this->repo->transaction(function () use ($input)
+        $payout = $this->repo->transaction(function () use ($input)
         {
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
@@ -99,6 +99,10 @@ abstract class Base extends BaseCore
 
             return $payout;
         });
+
+        $this->app->events->fire('api.payout.created', [$payout]);
+
+        return $payout;
     }
 
     /**
@@ -138,6 +142,22 @@ abstract class Base extends BaseCore
         /** @var FundAccount\Entity $fundAccount */
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
+        if ($fundAccount->isActive() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
+        if (optional($fundAccount->source)->isActive() === false)
+        {
+            $sourceEntity = $fundAccount->source->getEntity();
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive ' . $sourceEntity . ' fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
@@ -152,9 +172,7 @@ abstract class Base extends BaseCore
      */
     protected function createPayoutEntity(array $input)
     {
-        $payout = (new Payout\Entity)->build($input);
-
-        $this->runInputValidations($payout, $input);
+        $payout = (new Payout\Entity);
 
         $payout->merchant()->associate($this->merchant);
 
@@ -164,9 +182,32 @@ abstract class Base extends BaseCore
 
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
+        $this->setMethod($payout);
+
         $payout->balance()->associate($this->balance);
 
+        //
+        // Doing this after all the associations since
+        // the modifiers require payout account to be associated.
+        //
+        $payout = $payout->build($input);
+
+        //
+        // Doing only THIS association after build because
+        // since it is present in $defaults, the association
+        // gets overridden with the default value (null)
+        // in the build function.
+        // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
+        //
         $this->associateUserIfApplicable($payout);
+
+        //
+        // Doing this after all the associations since
+        // some validations run on the relations' data
+        //
+        $this->runInputValidations($payout, $input);
+
+        (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
     }
@@ -174,9 +215,10 @@ abstract class Base extends BaseCore
     protected function createFundTransferAttemptEntity(Payout\Entity $payout)
     {
         $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
+            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
-            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
+            FundTransferAttempt\Entity::NARRATION => $this->getNarration($payout),
         ];
 
         $ftaAccount = $this->fundTransferDestination;
@@ -197,6 +239,31 @@ abstract class Base extends BaseCore
             default:
                 // Throw exception
         }
+    }
+
+    /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return string
+     */
+    protected function getNarration(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     protected function preValidations()
@@ -224,7 +291,6 @@ abstract class Base extends BaseCore
 
     protected function setPayoutBalance(array $input)
     {
-        // TODO: Change to `source_account` instead of `balance_id`
         $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
 
         if (empty($balanceId) === true)
@@ -294,5 +360,14 @@ abstract class Base extends BaseCore
         $payout->user()->associate($user);
     }
 
-    abstract protected function setChannel();
+    protected function setMethod(Payout\Entity $payout)
+    {
+        $destinationType = $this->fundTransferDestination->getEntity();
+
+        $method = Payout\Method::$destinationMethodMap[$destinationType];
+
+        $payout->setMethod($method);
+    }
+
+    abstract protected function setChannel($input = []);
 }

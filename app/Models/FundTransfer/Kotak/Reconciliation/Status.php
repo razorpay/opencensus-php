@@ -14,7 +14,7 @@ class Status extends BaseStatus
         return [];
     }
 
-    public static function getFailureStatus(): array
+    public static function getFailureStatus($bankStatusCode = null): array
     {
         return [
             self::CANCELLED
