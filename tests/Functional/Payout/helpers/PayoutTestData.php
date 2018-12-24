@@ -218,14 +218,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
 
@@ -430,14 +430,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
     'testCreateMerchantPayoutOnHoldFunds' => [
