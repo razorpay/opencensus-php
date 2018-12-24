@@ -487,6 +487,8 @@ class Service extends Base\Service
 
         $data =  $currentMerchant->toArray() + $data;
 
+        $data['merchants'][$currentMerchant->id] = $currentMerchant->toArray();
+
         return $data;
     }
 
