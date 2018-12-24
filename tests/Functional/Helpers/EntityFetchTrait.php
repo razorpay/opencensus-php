@@ -31,9 +31,7 @@ trait EntityFetchTrait
 
         if ($admin)
         {
-            $appAuth = 'appAuth' . camel_case($mode);
-
-            $this->ba->adminAuth();
+            $this->ba->adminAuth($mode);
 
             $url = '/admin/'.$entity;
         }
@@ -61,9 +59,7 @@ trait EntityFetchTrait
 
         if ($admin)
         {
-            $appAuth = 'appAuth' . camel_case($mode);
-
-            $this->ba->adminAuth();
+            $this->ba->adminAuth($mode);
 
             $url = '/admin/'.$entity.'/'.$id;
         }
