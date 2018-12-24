@@ -33,6 +33,8 @@ class Service extends Base\Service
 
         $user = null;
 
+        $tokenData = null;
+
         /*
          * If we have an invitation token, the user may have created an account
          * in the meantime. $user will be equal to the user with the same email
@@ -117,8 +119,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $businessName,
+                'name'  => $businessName
             ];
+
+            if (empty($tokenData) === false)
+            {
+                $merchantInputData['org_id'] = $tokenData['org_id'];
+            }
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }

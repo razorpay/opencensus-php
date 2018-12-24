@@ -13,14 +13,15 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
+use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
-use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
@@ -493,6 +494,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
+    public function setActivationSource(string $activationSource)
+    {
+        $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
     public function getReferrer()
     {
         $tagNames = $this->tagNames();
@@ -586,6 +592,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $subvention;
+    }
+
+    public function getActivationSource()
+    {
+        return $this->getAttribute(self::ACTIVATION_SOURCE);
     }
 
     public function activate()
@@ -1590,7 +1601,7 @@ class Entity extends Base\PublicEntity
      *
      * @param Balance/Type $product
      */
-    public function owners($product = Balance\Type::PRIMARY)
+    public function owners($product = Product::PRIMARY)
     {
         return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
@@ -1602,16 +1613,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->users()
                     ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
-                    ->where(self::PRODUCT, Balance\Type::PRIMARY)
+                    ->where(self::PRODUCT, Product::PRIMARY)
                     ->first();
     }
 
     /**
      * Get the primary owner of the merchant.
      */
-    public function primaryOwner()
+    public function primaryOwner($product = Product::PRIMARY)
     {
-        return $this->owners()->first();
+        return $this->owners($product)->first();
     }
 
     /**
