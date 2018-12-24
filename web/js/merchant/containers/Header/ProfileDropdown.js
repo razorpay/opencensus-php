@@ -209,12 +209,12 @@ export default class ProfileDropdown extends Component {
                   </div>
                 </div>
                 {!showMobileNav &&
-                  showRazorpayxToolTip && (
+                  showRazorpayxToolTip &&
+                  user.isRazorxAnnouncementEnabled(
                     <Popover
                       persistent={true}
                       theme="dark"
                       align="left"
-                      delay={3000}
                       class="razorpayx-popover"
                     >
                       <PopoverBody>
