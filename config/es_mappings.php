@@ -440,4 +440,41 @@ return [
             ],
         ],
     ],
+
+
+    'transaction_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'account_number' => [
+                'type'  => 'keyword',
+            ],
+            'customer_name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'customer_email' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'balance_id' => [
+                'type'            => 'keyword',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
 ];

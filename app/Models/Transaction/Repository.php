@@ -1274,4 +1274,52 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
     }
+
+
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $balance = $entity->accountBalance;
+
+        if (($balance === null) or
+            ($balance->isTypeBanking() === false))
+        {
+            return [];
+        }
+
+        $serialized = parent::serializeForIndexing($entity);
+
+        $serialized[Entity::BALANCE_ID] = $entity->getBalanceId();
+        $serialized[Statement\Entity::ACCOUNT_NUMBER] = $balance->getAccountNumber();
+
+        $source = $entity->source;
+
+        if ($source === null)
+        {
+            return $serialized;
+        }
+
+        $enitityType = $entity->getType();
+
+        if ($enitityType === ConstantEntity::PAYOUT)
+        {
+            $serialized[Statement\Entity::UTR] = $source->getUtr();
+
+            $fa = $source->fundAccount;
+
+            if ($fa->getSourceType() === ConstantEntity::CONTACT)
+            {
+                $contact = $fa->source;
+                $serialized[Statement\Entity::CONTACT_NAME] = $contact->getName();
+                $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
+            }
+
+        }
+
+        return $serialized;
+    }
 }
