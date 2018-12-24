@@ -39,7 +39,7 @@ class PayoutTest extends TestCase
                 'account_id'   => '1000000lcustba'
             ]);
 
-        $this->setUpMerchantForBusinessBanking(false, 100000);
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
     }
 
     public function testCreatePayout(): array

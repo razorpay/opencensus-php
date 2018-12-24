@@ -13,7 +13,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          => 1000,
+                'amount'          => 2000000,
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
@@ -25,13 +25,13 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          => 1000,
+                'amount'          => 2000000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
                 'purpose_type'    => 'refund',
-                'tax'             => 92,
-                'fees'            => 602,
+                'tax'             => 162,
+                'fees'            => 1062,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -205,7 +205,7 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'    => '2224440041626905',
-                'amount'            => 1000000,
+                'amount'            => 300000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
                 'purpose'           => 'refund',

@@ -19,6 +19,7 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
@@ -32,9 +33,11 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
+ * @property Org\Entity         $org
  * @property Detail\Entity      $merchantDetail
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
+ * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
  */
 class Entity extends Base\PublicEntity
