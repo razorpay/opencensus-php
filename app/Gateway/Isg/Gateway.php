@@ -73,7 +73,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayEntity = $this->repo->findByPaymentIdAndAction($this->input['payment']['id'], Base\Action::AUTHORIZE);
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
 
         $attributes = $this->getRefundRequestData($gatewayEntity);
 
