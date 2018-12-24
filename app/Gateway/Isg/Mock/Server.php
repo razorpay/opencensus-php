@@ -34,6 +34,17 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $this->validateActionInput($input);
+
+        $response = $this->getRefundResponse($input);
+
+        return $this->makeResponse($response);
+    }
+
     protected function getVerifyResponse($input)
     {
         $attributes = [
@@ -53,6 +64,19 @@ class Server extends Base\Mock\Server
         $encryptedCardNumber = $this->getEncryptedString($attributes[Field::CONSUMER_PAN]);
 
         $attributes[Field::CONSUMER_PAN] = $encryptedCardNumber;
+
+        $this->content($attributes, $this->action);
+
+        return $attributes;
+    }
+
+    protected function getRefundResponse($input)
+    {
+        $attributes = [
+            Field::RFD_TXN_ID   => random_integer(14),
+            Field::STATUS_CODE  => '00',
+            Field::STATUS_DESC  => '00',
+        ];
 
         $this->content($attributes, $this->action);
 
