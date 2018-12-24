@@ -218,9 +218,7 @@ abstract class Base extends BaseCore
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            // TODO: Set narration here properly so that it gets set
-            // in FTA and in Yesbank, we can fetch from FTA directly.
-            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::NARRATION => $this->getNarration($payout),
         ];
 
         $ftaAccount = $this->fundTransferDestination;
@@ -241,6 +239,31 @@ abstract class Base extends BaseCore
             default:
                 // Throw exception
         }
+    }
+
+    /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return string
+     */
+    protected function getNarration(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     protected function preValidations()
