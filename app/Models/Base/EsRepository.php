@@ -322,6 +322,11 @@ class EsRepository extends \Razorpay\Spine\Repository
             $params['body'][] = $document;
         }
 
+        if (empty($params) === true)
+        {
+            return [];
+        }
+
         $res = $this->esDao->bulkUpdate($params);
 
         $this->checkForBulkUpdateOperationErrors($params, $res);
