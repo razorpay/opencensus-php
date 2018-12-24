@@ -398,4 +398,34 @@ return [
             ],
         ],
     ],
+
+    'payout_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'customer_name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'customer_email' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
 ];

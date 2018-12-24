@@ -236,4 +236,28 @@ class Repository extends Base\Repository
                 $join->where($faSourceTypeColumn, E::CONTACT);
             });
     }
+
+     /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        $fa = $entity->fundAccount;
+
+        if ($fa->getSourceType() !== E::CONTACT)
+        {
+            return [];
+        }
+
+        $contact = $fa->source;
+
+        $serialized[Entity::CONTACT_NAME] = $contact->getName();
+        $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+
+        return $serialized;
+    }
 }

@@ -25,6 +25,8 @@ class Fetch extends BaseFetch
             Entity::FUND_ACCOUNT_ID => 'sometimes|public_id|size:17',
             self::EXPAND_EACH       => 'filled|string|in:user',
             Entity::STATUS          => 'sometimes|string|in:created,processed,reversed,processing,initiated'
+            EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
+            EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
     ];
 
@@ -40,6 +42,8 @@ class Fetch extends BaseFetch
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
             Entity::STATUS,
+            EsRepository::QUERY,
+            EsRepository::SEARCH_HITS,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
@@ -58,6 +62,19 @@ class Fetch extends BaseFetch
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
     ];
+
+    const ES_FIELDS = [
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_EMAIL,
+        EsRepository::QUERY,
+        EsRepository::SEARCH_HITS,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_EMAIL,
+    ];
+
 
     protected function validateMethod(string $attribute, string $value)
     {
