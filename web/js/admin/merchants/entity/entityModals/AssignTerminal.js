@@ -95,6 +95,7 @@ const terminalTypesMapping = [
   { value: 'ivr', name: 'IVR' },
   { value: 'numeric_account', name: 'Numeric Account' },
   { value: 'alpha_numeric_account', name: 'Alpha Numeric Account' },
+  { value: 'business_banking', name: 'Business Banking' },
   { value: 'no_2fa', name: 'No 2FA' },
   { value: 'pay', name: 'UPI Pay' },
   { value: 'collect', name: 'UPI Collect' },
