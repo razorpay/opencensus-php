@@ -94,8 +94,9 @@ class Entity extends Base\PublicEntity
     const INTERNAL_STATUS = 'internal_status';
 
     // Relations
-    const USER     = 'user';
-    const CUSTOMER = 'customer';
+    const USER         = 'user';
+    const CUSTOMER     = 'customer';
+    const FUND_ACCOUNT = 'fund_account';
 
     protected $entity = 'payout';
 
@@ -162,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,

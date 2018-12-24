@@ -23,8 +23,10 @@ class Fetch extends BaseFetch
             Entity::CONTACT_EMAIL   => 'sometimes|email',
             Entity::CONTACT_TYPE    => 'sometimes|string',
             Entity::FUND_ACCOUNT_ID => 'sometimes|public_id|size:17',
-            self::EXPAND_EACH       => 'filled|string|in:user',
             Entity::STATUS          => 'sometimes|string|in:created,processed,reversed,processing,initiated'
+        ],
+        AuthType::PROXY_AUTH => [
+            self::EXPAND_EACH       => 'filled|string|in:user,fund_account.contact',
         ],
     ];
 
