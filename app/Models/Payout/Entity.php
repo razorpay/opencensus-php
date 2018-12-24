@@ -482,6 +482,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setUtr`
+     * function, to set the utr.
+     *
+     * @param string|null $utr
+     */
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
@@ -492,6 +499,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setRemarks`
+     * function, to set the bank remarks.
+     *
+     * @param string|null $remarks
+     */
     public function setRemarks(string $remarks = null)
     {
         $this->setAttribute(self::REMARKS, $remarks);
