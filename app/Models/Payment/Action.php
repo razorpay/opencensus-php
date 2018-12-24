@@ -42,6 +42,8 @@ class Action
     const OTP_RESEND                    = 'otp_resend';
     const PAYOUT                        = 'payout';
     const PAYOUT_VERIFY                 = 'payout_verify';
+    const CHECK_ACCOUNT                 = 'check_account';
+    const FETCH_TOKEN                   = 'fetch_token';
 
     protected $merchant;
 
