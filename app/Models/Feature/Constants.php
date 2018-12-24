@@ -102,6 +102,7 @@ class Constants
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
+    const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
 
     /**
@@ -259,6 +260,7 @@ class Constants
         self::INVOICE_NO_RECEIPT_UNIQUE       => true,
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
         self::ES_AUTOMATIC_THREE_PM           => true,
+        self::CALLBACK_URL_VALIDATION         => true,
     ];
 
     // Entity type constants
