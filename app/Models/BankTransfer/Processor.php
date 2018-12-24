@@ -306,23 +306,45 @@ class Processor extends VirtualAccount\Processor
 
     protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $bankTransfer): bool
     {
-        //
-        // This needs to be done first because isPaymentExpected sets
-        // $this->virtualAccount which is required in the below block
-        //
-        $isExpected = parent::checkPaymentExpectedAndSetVirtualAccount($bankTransfer);
+        $this->setVirtualAccount($bankTransfer);
 
-        // VA payments for crypto merchants are blocked based on cache key
-        if (($isExpected === true) and
-            ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
-            ($this->areBankTransfersBlockedForCrypto() === true))
+        if ($this->useSharedVirtualAccount($bankTransfer) === true)
         {
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
 
-            return false;
+                return false;
         }
 
-        return $isExpected;
+        return true;
+    }
+
+    protected function useSharedVirtualAccount(Base\PublicEntity $bankTransfer): bool
+    {
+        if ($this->virtualAccount === null)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
+                [
+                    'entity' => $bankTransfer->toArray(),
+                ]);
+
+            return true;
+        }
+
+        if (($this->virtualAccount->merchant->isLive() === false) and
+            ($this->isLiveMode() === true))
+        {
+           return true;
+        }
+
+        // VA payments for crypto merchants are blocked based on cache key
+        if (($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
+            ($this->areBankTransfersBlockedForCrypto() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function areBankTransfersBlockedForCrypto(): bool
