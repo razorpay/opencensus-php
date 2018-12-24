@@ -511,8 +511,6 @@ class Gateway extends Base\Gateway
             $attributes[Field::STATUS_CODE] = Status::APPROVED;
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;
-
-            return $attributes;
         }
         else if ((isset($ex) === true) and ($ex instanceOf Exception\GatewayErrorException))
         {
