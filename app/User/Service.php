@@ -413,6 +413,11 @@ class Service extends Base\Service
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
 
                     $data['features'] = $merchantService->getMerchantFeatures();
+
+                    if ($data['role'] === null or $data['banking_role'] === null)
+                    {
+                        $data = $this->updateUserDetails($data, $user);
+                    }
                 }
 
                 if (((bool) $merchant['activated']) === true)
@@ -451,6 +456,38 @@ class Service extends Base\Service
         }
 
         return [[], $data];
+    }
+
+    /**
+     * On Page load when a user doens't have role for a particular product which he is trying to access.
+     * User Product sync will sync the roles and roles need to be updated on html view.
+     *
+     * @param $data
+     * @param $user
+     *
+     * @return array
+     */
+    private function updateUserDetails($data, $user)
+    {
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+        if (empty($error) === false)
+        {
+            return [$error, $data];
+        }
+
+        $data['user'] = $genericUser->toArray();
+
+        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+
+        if ($currentMerchant === null)
+        {
+            return [[], $data];
+        }
+
+        $data =  $currentMerchant->toArray() + $data;
+
+        return $data;
     }
 
     public function loginOnApi(array $input)
