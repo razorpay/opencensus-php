@@ -52,12 +52,20 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    /*
-     * Refactoring entity by entity, will introduce factory method in the future
-    */
+    public function getFactory(Base\Entity $source): TransactionProcessor\Base
+    {
+        $type = $source->getEntityName();
+
+        $processor = __NAMESPACE__ ;
+
+        $processor .= '\\Processor\\' .studly_case($type);
+
+        return new $processor($source);
+    }
+
     public function createTransactionForSource(Base\Entity $source)
     {
-        $txnProcessor = (new TransactionProcessor\Payment($source));
+        $txnProcessor = $this->getFactory($source);
 
         return $txnProcessor->createTransaction();
     }
@@ -579,11 +587,7 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-        list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-        return $txn;
+        return $this->createTransactionForSource($refund);
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)

@@ -279,6 +279,8 @@ class ErrorCode
     const GATEWAY_ERROR_VPA_RESOLUTION_FAILED                                       = 'GATEWAY_ERROR_VPA_RESOLUTION_FAILED';
     const GATEWAY_ERROR_REQAUTH_DECLINED                                            = 'GATEWAY_ERROR_REQAUTH_DECLINED';
     const GATEWAY_ERROR_NPCI_RESPONSE_TIMEOUT                                       = 'GATEWAY_ERROR_NPCI_RESPONSE_TIMEOUT';
+    const GATEWAY_ERROR_PRIOR_TRANSACTION_IN_PROGRESS                               = 'GATEWAY_ERROR_PRIOR_TRANSACTION_IN_PROGRESS';
+    const GATEWAY_ERROR_RECONCILE_ERROR                                             = 'GATEWAY_ERROR_RECONCILE_ERROR';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'BAD_REQUEST_UPI_MPIN_NOT_SET';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                           = 'BAD_REQUEST_UPI_INVALID_ATM_PIN';

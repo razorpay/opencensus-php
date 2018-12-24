@@ -183,17 +183,24 @@ class Transfer extends Base
      */
     protected function getNarration()
     {
-        $merchant = $this->entity->merchant;
+        $ftaNarration = $this->entity->getNarration();
 
-        $merchantBillingLabel = $merchant->getBillingLabel();
+        if (empty($ftaNarration) === false)
+        {
+            $narration = $ftaNarration;
+        }
+        else
+        {
+            $narration = $this->entity->merchant->getBillingLabel();
+        }
 
-        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+        $formattedNarration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $narration);
 
-        $formattedLabel = ($merchantBillingLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+        $formattedNarration = ($formattedNarration ? str_limit($formattedNarration, 30) : 'Razorpay');
 
-        $narration = $formattedLabel . 'FUND TRANSFER';
+        $formattedNarration = $formattedNarration . ' FUND TRANSFER';
 
-        return $narration;
+        return $formattedNarration;
     }
 
     /**
