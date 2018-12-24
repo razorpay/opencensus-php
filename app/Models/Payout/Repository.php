@@ -68,6 +68,15 @@ class Repository extends Base\Repository
         return $updatedCount;
     }
 
+    protected function addQueryParamId($query, $params)
+    {
+        $id = $params[Entity::ID];
+
+        Entity::stripSignOrFail($id);
+
+        $query->where(Entity::ID, $id);
+    }
+
     public function addQueryParamDestination($query, $params)
     {
         $destinationId = $params[Entity::DESTINATION];
@@ -112,6 +121,23 @@ class Repository extends Base\Repository
 
         $query->where($faSourceIdColumn, $contactId);
         $query->where($faSourceTypeColumn, E::CONTACT);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactType(BuilderEx $query, array $params)
+    {
+        $contactType       = $params[Entity::CONTACT_TYPE];
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactTypeColumn, $contactType);
     }
 
 

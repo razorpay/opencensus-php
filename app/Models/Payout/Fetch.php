@@ -10,6 +10,7 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
+            Entity::ID              => 'sometimes|public_id|size:19',
             Entity::MERCHANT_ID     => 'sometimes|unsigned_id',
             Entity::CUSTOMER_ID     => 'sometimes|public_id|size:19',
             Entity::DESTINATION     => 'sometimes|public_id|max:20',
@@ -20,20 +21,25 @@ class Fetch extends BaseFetch
             Entity::CONTACT_PHONE   => 'sometimes|contact_syntax',
             Entity::CONTACT_ID      => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL   => 'sometimes|email',
+            Entity::CONTACT_TYPE    => 'sometimes|string',
             Entity::FUND_ACCOUNT_ID => 'sometimes|public_id|size:17',
             self::EXPAND_EACH       => 'filled|string|in:user',
+            Entity::STATUS          => 'sometimes|string|in:created,processed,reversed,processing,initiated'
         ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVATE_AUTH => [
+            Entity::ID,
             Entity::TRANSACTION_ID,
             Entity::UTR,
             Entity::CONTACT_ID,
             Entity::CONTACT_NAME,
             Entity::CONTACT_PHONE,
+            Entity::CONTACT_TYPE,
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
+            Entity::STATUS,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
