@@ -15,6 +15,7 @@ use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
 
 class Core extends Base\Core
@@ -238,33 +239,6 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public function reversePayout(Entity $payout): Reversal\Entity
-    {
-        $this->trace->info(
-            TraceCode::PAYOUT_REVERSAL_INITIATED,
-            [
-                'payout_id' => $payout->getId(),
-            ]);
-
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException('Attempted to reverse an already reversed payout');
-        }
-
-        $reversal = $this->repo->transaction(function() use ($payout)
-        {
-            $reversal = (new Reversal\Core)->reverseForPayout($payout);
-
-            $payout->setStatus(Status::REVERSED);
-
-            $this->repo->saveOrFail($payout);
-
-            return $reversal;
-        });
-
-        return $reversal;
-    }
-
     public function retryReversedPayouts(array $input): array
     {
         $this->trace->info(TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST, $input);
@@ -289,6 +263,103 @@ class Core extends Base\Core
         return $result + [
             'not_attempted' => array_diff($ids, $payouts->getIds()),
         ];
+    }
+
+    public function updateStatusAfterFtaRecon(Entity $payout, string $ftaStatus, string $ftaFailureReason = null)
+    {
+        switch ($ftaStatus)
+        {
+            case Attempt\Status::PROCESSED:
+                $this->handleFtaProcessed($payout);
+                break;
+
+            case Attempt\Status::FAILED:
+                $this->handleFtaFailed($payout, $ftaFailureReason);
+                break;
+
+            case Attempt\Status::CREATED:
+                break;
+
+            case Attempt\Status::INITIATED:
+                break;
+
+            default:
+                $this->trace->warning(
+                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
+                    [
+                        'payout_id'             => $payout->getId(),
+                        'fta_status'            => $ftaStatus,
+                        'fta_failure_reason'    => $ftaFailureReason,
+                    ]);
+        }
+    }
+
+    public function updateWithDetailsBeforeFtaRecon(Entity $payout, Attempt\Entity $attempt)
+    {
+        $utr = $attempt->getUtr();
+
+        $remarks = $attempt->getRemarks();
+
+        $mode = $attempt->getMode();
+
+        $payout->setUtr($utr);
+
+        $payout->setRemarks($remarks);
+
+        $payout->setMode($mode);
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    protected function handleFtaProcessed(Entity $payout)
+    {
+        $payout->setStatus(Status::PROCESSED);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.processed', [$payout]);
+    }
+
+    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    {
+        $this->reversePayout($payout, $ftaFailureReason);
+
+        $this->app->events->fire('api.payout.reversed', [$payout]);
+    }
+
+    protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to reverse an already reversed payout',
+                [
+                    'payout_id'         => $payout->getId(),
+                    'status'            => $payout->getStatus(),
+                    'reverse_reason'    => $reverseReason,
+                ]);
+        }
+
+        $reversal = $this->repo->transaction(
+            function() use ($payout, $reverseReason) {
+                $reversal = (new Reversal\Core)->reverseForPayout($payout);
+
+                $payout->setStatus(Status::REVERSED);
+
+                $payout->setFailureReason($reverseReason);
+
+                $this->repo->saveOrFail($payout);
+
+                return $reversal;
+            });
+
+        return $reversal;
     }
 
     protected function attemptRetryForReversedPayouts(Base\PublicCollection $payouts): array

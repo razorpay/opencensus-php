@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -19,8 +20,6 @@ use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
 {
-    use DispatchesEvents;
-
     /**
      * All payments in the current mpr
      * will have the same reconciledAt timestamp
@@ -169,18 +168,23 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
-        // TODO: Move this logic to respective source's core instead
-        // TODO: Do the same (^) in the row processor also.
+        $attemptStatus = $this->fta->getStatus();
+        $attemptFailureReason = $this->fta->getFailureReason();
 
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
+        if ($this->source->getEntity() === Entity::PAYOUT)
+        {
+            (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+            return;
+        }
+
+        $sourceStatus = $this->getSourceStatusFromReconEntityStatus($attemptStatus);
 
         $this->source->setStatus($sourceStatus);
 
-        $this->source->setFailureReason($this->fta->getFailureReason());
+        $this->source->setFailureReason($attemptFailureReason);
 
         $this->repo->saveOrFail($this->source);
-
-        $this->dispatchEventsForSourceAfterRecon($this->source);
     }
 
     protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
@@ -248,27 +252,24 @@ abstract class EntityProcessor extends Base\Core
         return [$status, $failureReason];
     }
 
-    protected function getSourceStatusFromReconEntityStatus(): string
+    protected function getSourceStatusFromReconEntityStatus(string $attemptStatus): string
     {
         $sourceEntityName = $this->source->getEntity();
 
         switch ($sourceEntityName)
         {
             case Entity::SETTLEMENT:
-            case Entity::PAYOUT:
             case Entity::REFUND:
-                return $this->getStatusForEntity($sourceEntityName);
+                return $this->getStatusForEntity($sourceEntityName, $attemptStatus);
 
             default:
                 throw new Exception\LogicException('Unrecognized source entity: ' . $sourceEntityName);
         }
     }
 
-    protected function getStatusForEntity(string $sourceEntityName): string
+    protected function getStatusForEntity(string $sourceEntityName, string $attemptStatus): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-
-        $attemptStatus = $this->fta->getStatus();
 
         switch ($attemptStatus)
         {

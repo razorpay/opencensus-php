@@ -4,10 +4,12 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class RowProcessor extends Base\Core
@@ -133,22 +135,22 @@ abstract class RowProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
+        $source = $this->reconEntity->source;
+
+        if ($source->getEntity() === Constants\Entity::PAYOUT)
+        {
+            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($source, $this->reconEntity);
+
+            return;
+        }
+
         $utr = $this->reconEntity->getUtr();
 
         $remarks = $this->reconEntity->getRemarks();
 
-        $mode = $this->reconEntity->getMode();
-
-        $source = $this->reconEntity->source;
-
         $source->setUtr($utr);
 
         $source->setRemarks($remarks);
-
-        if ($this->reconEntity->getSourceType() === Type::PAYOUT)
-        {
-            $source->setMode($mode);
-        }
 
         $this->trace->info(
             TraceCode::FTA_RECON_SOURCE_UPDATED,
@@ -160,8 +162,6 @@ abstract class RowProcessor extends Base\Core
             ]);
 
         $this->repo->saveOrFail($source);
-
-        $this->dispatchEventsForSourceAfterRecon($source);
     }
 
     /**
