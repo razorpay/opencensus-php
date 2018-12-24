@@ -121,8 +121,12 @@ class Repository extends Base\Repository
                                     $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
                                 })
                       ->mergeBindings($activatedMerchants->getQuery())
-                      ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
+                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceId)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -140,17 +144,21 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
     {
-        $transactionIdColumn = $this->dbColumn(Entity::ID);
+        $transactionIdColumn        = $this->dbColumn(Entity::ID);
+        $transactionTypeColumn      = $this->dbColumn(Entity::TYPE);
         $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $transactionTypeColumn = $this->dbColumn(Entity::TYPE);
 
-        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
         $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
 
         $query = $this->newQuery()
                       ->select([$transactionIdColumn])
-                      ->join(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
-                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
+                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+                      ->where(function($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceIdColumn)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
                       ->where(Transaction\Entity::SETTLED, '=', 0)
                       ->where($transactionTypeColumn, '!=', Type::SETTLEMENT)
                       ->merchantId($merchantId);
@@ -1206,8 +1214,12 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
-                      ->join(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
-                      ->where($balanceTypeColumn, Balance\Type::PRIMARY)
+                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceId)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
