@@ -41,6 +41,11 @@ class EditWebsiteDetails extends Component {
           mode: this.props.mode,
         });
 
+        //refresh to fetch `has_key_access` prop of user
+        if (newUser.activation_status === 'instantly_activated') {
+          return location.reload();
+        }
+
         this.props.onClose();
       }
     });
