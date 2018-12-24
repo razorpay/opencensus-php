@@ -4525,6 +4525,8 @@ ALTER TABLE payouts
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
 
+ALTER TABLE terminals
+    ADD COLUMN ifsc_code varchar(11) DEFAULT NULL AFTER account_number;
 ALTER TABLE fund_accounts
     ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
     ADD COLUMN source_id CHAR(14) AFTER source_type,

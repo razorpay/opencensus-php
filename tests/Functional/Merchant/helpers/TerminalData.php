@@ -86,6 +86,39 @@ return [
         ]
     ],
 
+    'testAssignHitachiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => 1,
+                    'bharat_qr'     => 1,
+                ],
+                'account_number'            => '1234567891011121314',
+                'ifsc_code'                 => 'HDFC0009080'
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
     'testAssignBankAccountTerminal' => [
         'request' => [
             'content' => [
@@ -403,6 +436,32 @@ return [
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
                 'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAddUpiMindgateBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'vpa'                       => 'random@hdfc',
+                'gateway_terminal_password' => 'password',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
                 'enabled'             => true
             ]
         ]

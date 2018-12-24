@@ -70,6 +70,7 @@ class Entity extends Base\PublicEntity
     const ENABLED_BANKS                 = 'enabled_banks';
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
+    const IFSC_CODE                     = 'ifsc_code';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -138,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
         self::CARDLESS_EMI,
     ];
 
@@ -180,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
         self::CARDLESS_EMI,
     ];
 
@@ -733,6 +736,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RUPAY_MPAN);
     }
 
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getIfscCode()
+    {
+        return $this->getAttribute(self::IFSC_CODE);
+    }
+
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
@@ -821,7 +834,7 @@ class Entity extends Base\PublicEntity
 
         $typeColumn = $this->dbColumn(Entity::TYPE);
 
-        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
+        return $query->whereRaw($typeColumn . ' & ' . $bitComparator . ' = ' . $bitComparator);
     }
 
     // ---------------------- END SCOPES ----------------------
