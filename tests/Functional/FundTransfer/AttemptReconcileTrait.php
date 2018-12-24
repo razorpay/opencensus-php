@@ -196,7 +196,16 @@ trait AttemptReconcileTrait
         else
         {
             $this->assertNotNull($attempt['utr']);
-            $this->assertNotNull($source['utr']);
+
+            if (($source['status'] === 'processed') or
+                ($source['status'] === 'reversed'))
+            {
+                $this->assertNotNull($source['utr']);
+            }
+            else
+            {
+                $this->assertNull($source['utr']);
+            }
         }
     }
 

@@ -174,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::MODE,
+        self::FAILURE_REASON,
         self::CREATED_AT,
     ];
 
@@ -190,6 +191,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FAILURE_REASON,
+        self::UTR,
     ];
 
     protected $defaults = [
@@ -202,6 +205,7 @@ class Entity extends Base\PublicEntity
         self::TYPE              => self::DEFAULT,
         self::MODE              => null,
         self::UTR               => null,
+        self::FAILURE_REASON    => null,
     ];
 
     protected $amounts = [
@@ -620,6 +624,22 @@ class Entity extends Base\PublicEntity
         $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
 
         $attributes[self::STATUS] = $externalStatus;
+    }
+
+    public function setPublicFailureReasonAttribute(array & $attributes)
+    {
+        if ($this->isStatusReversed() === false)
+        {
+            $attributes[self::FAILURE_REASON] = null;
+        }
+    }
+
+    public function setPublicUtrAttribute(array & $attributes)
+    {
+        if ($this->isStatusProcessedOrReversed() === false)
+        {
+            $attributes[self::UTR] = null;
+        }
     }
 
     public function getPricingFeatures()

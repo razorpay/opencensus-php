@@ -157,7 +157,7 @@ abstract class RowProcessor extends Base\Core
 
         if ($source->getEntity() === Constants\Entity::PAYOUT)
         {
-            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($source, $this->reconEntity);
+            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($source, $this->reconEntity, $this->parsedData);
 
             return;
         }

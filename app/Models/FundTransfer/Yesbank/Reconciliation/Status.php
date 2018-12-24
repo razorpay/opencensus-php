@@ -128,7 +128,7 @@ class Status extends BaseStatus
     // We are maintaining the map of sub code to remark because status response will only have the sub status code
     // So this mapping will give the corresponding remark based on the sub status code
     //
-    const REMARK_MAP = [
+    const FAILURE_CODE_INTERNAL_MAPPING = [
         'ns:E402'    => 'Insufficient Balance in debit account, payment required',
         'ns:E405'    => 'Invalid Transfer Type',
         'ns:E429'    => '(Limit Daily/transaction/rate) exceeded',
@@ -175,6 +175,53 @@ class Status extends BaseStatus
         'sfms:E70'   => 'Outward Transaction Rejected',
         'sfms:E18'   => 'Rejected by SFMS',
         'ns:E1029'   => 'IMPS is not enabled for the remitter',
+    ];
+
+    const FAILURE_CODE_PUBLIC_MAPPING = [
+        'ns:E402'    => 'Payout failed. Contact support for help.',
+        'ns:E405'    => 'Payout failed. Contact support for help.',
+        'ns:E429'    => 'Payout failed. Contact support for help.',
+        'ns:E406'    => 'Payout failed. Contact support for help.',
+        'ns:E502'    => 'Payout failed. Contact support for help.',
+        'ns:E504'    => 'Payout failed. Contact support for help.',
+        'ns:E1001'   => 'Payout failed. Contact support for help.',
+        'ns:E1002'   => 'Payout failed. Contact support for help.',
+        'ns:E1004'   => 'Payout failed. Contact support for help.',
+        'ns:E1005'   => 'Payout failed. Contact support for help.',
+        'ns:E1006'   => 'Payout failed. Contact support for help.',
+        'ns:E1028'   => 'IMPS is not enabled on this fund account.',
+        'ns:E2000'   => 'Payout failed. Contact support for help.',
+        'ns:E6000'   => 'Payout failed. Contact support for help.',
+        'ns:E6001'   => 'Payout failed. Contact support for help.',
+        'ns:E6002'   => 'Payout failed. Contact support for help.',
+        'ns:E6003'   => 'Payout failed. Contact support for help.',
+        'ns:E6005'   => 'Payout failed. Contact support for help.',
+        'ns:E6006'   => 'Payout failed. Contact support for help.',
+        'ns:E6007'   => 'Payout failed. Contact support for help.',
+        'ns:E6008'   => 'Payout failed. Contact support for help.',
+        'flex:E18'   => 'Payout failed. Contact support for help.',
+        'flex:E307'  => 'Partner bank systems are down. Try again later.',
+        'flex:E404'  => 'Payout failed. Contact support for help.',
+        'flex:E449'  => 'Payout failed. Contact support for help.',
+        'flex:E8036' => 'Payout failed. Contact support for help.',
+        'flex:E8087' => 'Account number is not valid.',
+        'flex:E9072' => "Fund account's bank and branch could not be resolved.",
+        'npci:E08'   => 'Partner bank systems are down. Try again later.',
+        'npci:EM1'   => 'Payout failed. Contact support for help.',
+        'npci:EM2'   => 'Payout failed. Contact support for help.',
+        'npci:EM3'   => 'Fund account is blocked or frozen.',
+        'npci:EM4'   => 'Payout failed. Contact support for help.',
+        'npci:EM5'   => 'Fund account is closed.',
+        'npci:E307'  => "Contact's bank rejected/failed the payout.",
+        'npci:E308'  => "Contact's bank rejected/failed the payout.",
+        'npci:E449'  => "Contact's bank rejected/failed the payout due to invalid parameters.",
+        'atom:E307'  => 'Payout failed. Contact support for help.',
+        'atom:E404'  => 'Payout failed. Contact support for help.',
+        'atom:E449'  => 'Payout failed. Contact support for help.',
+        'sfms:E99'   => 'Payout failed. Contact support for help.',
+        'sfms:E70'   => 'Payout failed. Contact support for help.',
+        'sfms:E18'   => 'Payout failed. Contact support for help.',
+        'ns:E1029'   => 'Payout failed. Contact support for help.',
     ];
 
     /**
@@ -346,14 +393,29 @@ class Status extends BaseStatus
     }
 
     /**
-     * If the code exist in remark map then returns the remark corresponding to the code
-     * else returns null
+     * If the code exist in remark map then returns the
+     * remark corresponding to the code else returns null
      *
      * @param string|null $code
+     *
      * @return mixed|null
      */
     public static function getRemark(string $code = null)
     {
-        return (isset(self::REMARK_MAP[$code]) === true) ? self::REMARK_MAP[$code] : null;
+        return (isset(self::FAILURE_CODE_INTERNAL_MAPPING[$code]) === true) ? self::FAILURE_CODE_INTERNAL_MAPPING[$code] : null;
+    }
+
+    public static function getPublicFailureReason($bankSubStatus)
+    {
+        if (in_array($bankSubStatus, self::getSuccessfulStatus(), true) === true)
+        {
+            return null;
+        }
+        else if (in_array($bankSubStatus, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
+        {
+            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankSubStatus];
+        }
+
+        return 'Transfer not completed. Contact support for help.';
     }
 }
