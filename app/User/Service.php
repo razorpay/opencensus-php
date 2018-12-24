@@ -416,6 +416,17 @@ class Service extends Base\Service
 
                     if ($data['role'] === null or $data['banking_role'] === null)
                     {
+                        $options = [
+                            'client_type' => 'merchant',
+                            'headers'     => [
+                                'X-Request-Origin' => null,
+                            ],
+                        ];
+
+                        $request = new \App\Admin\ApiRequestAny($options);
+
+                        list($error, $x) = $request->send("merchants/product-switch", "POST");
+
                         $data = $this->updateUserDetails($data, $user);
                     }
                 }
