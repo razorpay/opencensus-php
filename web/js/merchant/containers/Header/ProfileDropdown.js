@@ -34,6 +34,13 @@ export default class ProfileDropdown extends Component {
     showRazorpayxToolTip: false,
   };
 
+  handleHide = () => {
+    // hide profile drop down when in hash mode
+    if (location.hash.indexOf('#profile_dropdown') > -1) {
+      this.props.history.replace(this.props.location.pathname);
+    }
+  };
+
   handleShow = () => {
     setTimeout(() => {
       this.setState({ showRazorpayxToolTip: true });
@@ -105,7 +112,11 @@ export default class ProfileDropdown extends Component {
     const { showRazorpayxToolTip } = this.state;
 
     return (
-      <Dropdown closeOnClick={false} onShow={this.handleShow}>
+      <Dropdown
+        closeOnClick={false}
+        onShow={this.handleShow}
+        onHide={this.handleHide}
+      >
         <DropdownTrigger class="dropdown-toggle">
           {isMobileResolution ? (
             <span className="merchant-logo-preview">

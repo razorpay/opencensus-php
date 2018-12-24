@@ -85,8 +85,8 @@ class Constants
             'buttons'     => [
                 [
                     'type'  => 'button',
-                    'label' => 'Go To RazorpayX',
-                    'url'   => 'https://x.razorpay.com',
+                    'label' => 'Get Started',
+                    'url'   => '#profile_dropdown',
                 ],
             ],
             'filters'     => [

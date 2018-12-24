@@ -263,6 +263,11 @@ const NotificationCard = ({
         <div class="action-buttons">
           {buttons.map((btn, idx) => {
             const isExternal = /^http(s)?:\/\//.test(btn.url);
+            const isHash = !isExternal && btn.url.indexOf('#') === 0;
+
+            let internalUrl = isHash
+              ? `${location.href}${btn.url}`
+              : `#/app${btn.url}`;
 
             return (
               <a
@@ -277,7 +282,7 @@ const NotificationCard = ({
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
                   );
                 }}
-                href={isExternal ? btn.url : '#/app' + btn.url}
+                href={isExternal ? btn.url : internalUrl}
                 target={isExternal ? '_blank' : ''}
               >
                 <b>
