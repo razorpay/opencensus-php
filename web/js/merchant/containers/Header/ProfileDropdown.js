@@ -179,6 +179,24 @@ export default class ProfileDropdown extends Component {
                   <div class="media-body">Show Dashboard Home Tour</div>
                 </div>
               )}
+            {user.isRazorxAnnouncementEnabled && (
+              <div class="media media-action">
+                <div class="media-left">
+                  <div class="media-object">
+                    <img
+                      src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
+                      alt=""
+                      height="24"
+                    />
+                  </div>
+                </div>
+                <div class="media-body">
+                  <a href="https://x.razorpay.com" target="_blank">
+                    Go to RazorpayX
+                  </a>
+                </div>
+              </div>
+            )}
 
             <div class="media loggedin-as">
               <div class="media-body">
