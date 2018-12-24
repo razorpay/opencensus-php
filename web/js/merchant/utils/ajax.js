@@ -21,6 +21,14 @@ export function merchantFetch(params) {
       'X-Razorpay-Account': params.accountId,
     };
   }
+
+  if (window.RZP.appName === 'businessbanking') {
+    params.headers = {
+      ...params.headers,
+      'X-Origin-Product': window.RZP.appHost,
+    };
+  }
+
   delete params.accountId;
 
   params.url = `/merchant/api/${mode}/${params.url}`;

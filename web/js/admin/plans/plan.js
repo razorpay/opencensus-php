@@ -91,6 +91,10 @@ export default class Plan extends Collection {
 }
 
 export const options = {
+  product: {
+    primary: 'PG Primary',
+    banking: 'Banking',
+  },
   feature: {
     payment: 'Payment',
     recurring: 'Recurring',
@@ -106,6 +110,7 @@ export const options = {
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
+    upi: 'Payout: UPI',
     account: 'Transfer: Account (Marketplace)',
     customer: 'Transfer: Customer (Openwallet)',
     cardless_emi: 'Cardless EMI',
@@ -135,9 +140,12 @@ export const options = {
   amount_range: {
     '': 'None',
     '0-100000': '0-100000',
+    '0-1000000': '0 to 10k',
     '100000-200000': '100000-200000',
+    '1000000-2500000': '10k to 25k',
     '0-200000': '0-200000',
     '200000-1000000000': '200000-1000000000',
+    '2500000-': '25k +',
     '0-10000000': '0 - 1 lac',
     '10000000-': '1 lac+',
     custom: 'Custom',

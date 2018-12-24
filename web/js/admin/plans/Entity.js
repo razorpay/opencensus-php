@@ -90,6 +90,7 @@ export default class PlanEntity extends Component {
 
 const fields = [
   ['', item => item.id],
+  ['Product', item => item.selectField('product')],
   ['Feature', item => item.selectField('feature')],
   [
     'Method',
