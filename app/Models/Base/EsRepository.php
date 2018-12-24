@@ -98,7 +98,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        $this->mode = $app['rzp.mode'];
+        $this->mode = $app['rzp.mode'] ?? 'test';
 
         $this->entity = $entity;
 
