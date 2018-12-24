@@ -8,7 +8,9 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 {
     public static $authRespDescriptionMap = [
         '17' => 'Customer cancellation',
-        '51' => 'Insufficient funds',
+        '20' => 'Invalid response',
+        '21' => 'No action taken (unable to back out prior transaction)',
+        '28' => 'File is temporarily unavailable',
         '52' => 'No checking account',
         '53' => 'No savings account',
         '54' => 'Expired card',
@@ -36,6 +38,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '83' => 'Unable to verify PIN',
         '85' => 'No reason to decline a request for account number verification, address verification, CVV2
         verification, or a credit voucher or merchandise return',
+        '95' => 'Reconcile error',
         'B1' => 'Surcharge amount not permitted on Visa cards (U.S. acquirers only)',
         'N0' => 'Force STIP',
         'N3' => 'Cash service not available',
