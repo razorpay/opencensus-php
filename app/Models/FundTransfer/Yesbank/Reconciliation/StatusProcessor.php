@@ -2,7 +2,10 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
@@ -41,9 +44,13 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $response = (new StatusRequest())->init()
-                                         ->setEntity($this->row)
-                                         ->makeRequest();
+        $gateway = ($this->row->hasVpa() === true);
+
+        $banking = $this->row->isOfBanking();
+
+        $response = (new StatusRequest($banking))->init()
+                                                 ->setEntity($this->row)
+                                                 ->makeRequest($gateway);
 
         if (empty($response) === false)
         {
@@ -51,20 +58,38 @@ class StatusProcessor extends BaseRowProcessor
         }
     }
 
+    /**
+     * @param array $response
+     * @throws LogicException
+     */
     protected function setParsedData(array $response)
     {
+        $this->reconEntityId = $response[self::PAYMENT_REF_NO];
+
+        if ($this->reconEntityId === null)
+        {
+            throw new LogicException(
+                "Recon entity id can not be null",
+                ErrorCode::SERVER_ERROR_INVALID_ATTEMPT_ID,
+                [
+                    'response' => $response,
+                ]);
+        }
+
         $this->parsedData = [
             self::UTR              => $response[self::UTR],
             self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
             self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE] ?? null,
+            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE],
             self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::MODE             => $response[self::MODE],
+            self::MODE             => Mode::getInternalModeFromExternalMode($response[self::MODE]),
         ];
 
-        $this->reconEntityId = $response[self::PAYMENT_REF_NO];
-
-        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
+        $this->trace->info(
+            TraceCode::FTA_RECON_PARSED_DATA,
+            [
+                'parsed_data' => $this->parsedData
+            ]);
     }
 
     /**

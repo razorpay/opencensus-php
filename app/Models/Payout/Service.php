@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -25,6 +25,8 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
+
+        $this->processAccountNumber($input);
 
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
@@ -45,6 +47,8 @@ class Service extends Base\Service
         (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
 
         $payoutInput = array_except($input, ['otp', 'token']);
+
+        $this->processAccountNumber($payoutInput);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
@@ -95,10 +99,40 @@ class Service extends Base\Service
         return $payouts->toArrayPublic();
     }
 
-    public function processFailedPayouts(array $input)
+    public function processReversedPayouts(array $input)
     {
-        $data = (new Core)->retryFailedPayouts($input);
+        $data = (new Core)->retryReversedPayouts($input);
 
         return $data;
+    }
+
+    public function getPurposes(): array
+    {
+        return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function postPurpose(array $input): array
+    {
+        (new Validator)->validateInput('create_purpose', $input);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
+
+        return $purposeObj->getAll($this->merchant);
+    }
+
+    /**
+     * We are allowing Fund Account payouts only on RX.
+     * In RX, we always mandate account number.
+     *
+     * @param array $input
+     */
+    protected function processAccountNumber(array & $input)
+    {
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 }

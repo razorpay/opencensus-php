@@ -243,6 +243,7 @@ return [
             Permission::SCHEDULE_UPDATE                     => '',
             Permission::SCHEDULE_ASSIGN                     => '',
             Permission::SCHEDULE_ASSIGN_BULK                => '',
+            Permission::PRICING_ASSIGN_BULK                 => '',
             Permission::SCHEDULE_MIGRATION                  => '',
             Permission::VIEW_ACTIONS                        => '',
             Permission::VIEW_MERCHANT_STATS                 => '',

@@ -13,4 +13,6 @@ class Url
     const REFUND            = '/upi/refundReqSvc';
 
     const VALIDATE_VPA      = '/upi/checkMeVirtualAddress';
+
+    const INTENT_TPV        = '/upi/mePayInetentReq';
 }

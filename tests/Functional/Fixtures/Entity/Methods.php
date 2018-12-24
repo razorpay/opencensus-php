@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Constants\Mode;
-
 class Methods extends Base
 {
     public function createDefaultMethods(array $attributes = [])

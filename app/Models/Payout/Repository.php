@@ -2,21 +2,19 @@
 
 namespace RZP\Models\Payout;
 
-use RZP\Models\Base;
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Payout;
+use RZP\Models\Contact;
+use RZP\Base\BuilderEx;
+use RZP\Models\FundAccount;
+use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payout';
-
-    // These are admin allowed params to search on.
-    protected $appFetchParamRules = [
-        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
-        Entity::CUSTOMER_ID        => 'sometimes|string|max:19',
-        Entity::FUND_ACCOUNT_ID    => 'sometimes|string|max:17',
-        Entity::DESTINATION        => 'sometimes|string|max:20',
-        Entity::METHOD             => 'sometimes|string',
-    ];
 
     public function fetchCreatedPayouts($timestamp, $method)
     {
@@ -43,7 +41,7 @@ class Repository extends Base\Repository
     {
         if ($payouts->count() === 0)
         {
-            return;
+            return 0;
         }
 
         $IdsToUpdate = $payouts->getIds();
@@ -79,12 +77,137 @@ class Repository extends Base\Repository
         $query->where(Entity::DESTINATION_ID, $destinationId);
     }
 
-    public function fetchFailedPayouts(array $ids)
+    public function fetchReversedPayouts(array $ids)
     {
         return $this->newQuery()
                     ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
-                    ->where(Entity::STATUS, Status::FAILED)
+                    ->where(Entity::STATUS, Status::REVERSED)
                     ->get();
+    }
+
+    /**
+     * SELECT payouts.*
+     * FROM   payouts
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.id = payouts.fund_account_id
+     * WHERE  payouts.merchant_id = '10000000000000'
+     *        AND fund_accounts.source_id = 'BXV5GAmaJEcGr1'
+     *        AND fund_accounts.source_type = 'contact'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactId(BuilderEx $query, array $params)
+    {
+        $contactId          = $params[Entity::CONTACT_ID];
+        $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+        $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryFundAccount($query);
+
+        $query->where($faSourceIdColumn, $contactId);
+        $query->where($faSourceTypeColumn, E::CONTACT);
+    }
+
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactName(BuilderEx $query, array $params)
+    {
+        $contactName       = $params[Entity::CONTACT_NAME];
+        $contactNameColumn = $this->repo->contact->dbColumn(Contact\Entity::NAME);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactNameColumn, $contactName);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactPhone(BuilderEx $query, array $params)
+    {
+        $contactPhone       = $params[Entity::CONTACT_PHONE];
+        $contactPhoneColumn = $this->repo->contact->dbColumn(Contact\Entity::CONTACT);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactPhoneColumn, $contactPhone);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactEmail(BuilderEx $query, array $params)
+    {
+        $contactEmail       = $params[Entity::CONTACT_EMAIL];
+        $contactEmailColumn = $this->repo->contact->dbColumn(Contact\Entity::EMAIL);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactEmailColumn, $contactEmail);
+    }
+
+    protected function joinQueryFundAccount(BuilderEx $query)
+    {
+        $faTable = $this->repo->fund_account->getTableName();
+
+        if ($query->hasJoin($faTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $faTable,
+            function (JoinClause $join)
+            {
+                $faIdColumn       = $this->repo->fund_account->dbColumn(FundAccount\Entity::ID);
+                $payoutFaIdColumn = $this->repo->payout->dbColumn(Payout\Entity::FUND_ACCOUNT_ID);
+
+                $join->on($faIdColumn, $payoutFaIdColumn);
+            });
+    }
+
+    protected function joinQueryContact(BuilderEx $query)
+    {
+        $contactTable = $this->repo->contact->getTableName();
+
+        if ($query->hasJoin($contactTable) === true)
+        {
+            return;
+        }
+
+        // Must join fund_account to join contact
+        $this->joinQueryFundAccount($query);
+
+        $query->join(
+            $contactTable,
+            function (JoinClause $join)
+            {
+                $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
+                $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+                $join->on($contactIdColumn, $faSourceIdColumn);
+                $join->where($faSourceTypeColumn, E::CONTACT);
+            });
     }
 }

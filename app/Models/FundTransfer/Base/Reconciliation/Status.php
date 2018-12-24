@@ -8,7 +8,7 @@ abstract class Status
 {
     abstract public static function getSuccessfulStatus(): array;
 
-    abstract public static function getFailureStatus(): array;
+    abstract public static function getFailureStatus($bankStatusCode = null): array;
 
     /**
      * Should be implemented to return all critical error which has to be notified.
@@ -78,6 +78,14 @@ abstract class Status
     {
         $statusCodes = static::getCriticalErrorStatus();
 
-        return (in_array($bankStatusCode, $statusCodes, true) === true);
+        $isCritical =  (in_array($bankStatusCode, $statusCodes, true) === true);
+
+        if ($isCritical === false)
+        {
+            // If the status code is not present in the constant list then consider it as critical
+            $isCritical = (defined('static::'.strtoupper($bankStatusCode)) === false);
+        }
+
+        return $isCritical;
     }
 }

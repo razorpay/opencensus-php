@@ -238,4 +238,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function backfillUpiMindgateReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->backfillUpiMindgateReference1($input);
+
+        return ApiResponse::json($data);
+    }
 }

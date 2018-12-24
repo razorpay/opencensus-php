@@ -88,6 +88,13 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getMerchantBankAccountsFromAccountNumber(string $accountNumber): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->first();
+    }
+
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
@@ -166,8 +173,8 @@ class Repository extends Base\Repository
     public function getMerchantBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
-                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
+                    ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
                     ->with(['source', 'source.merchantDetail'])
                     ->oldest()
                     ->get();
@@ -186,7 +193,7 @@ class Repository extends Base\Repository
     public function getCountOfBankAccountsCreatedBetween($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->count();
     }
@@ -245,6 +252,8 @@ class Repository extends Base\Repository
      * Else, it is hard deleted.
      *
      * @param  BankAccount\Entity $bankAccount The bank account to be deleted
+     *
+     * @return bool|null
      */
     public function delete($bankAccount)
     {
@@ -256,5 +265,18 @@ class Repository extends Base\Repository
         {
             return $bankAccount->delete();
         }
+    }
+
+    /**
+     * Fetches the details of bank account for the given id if active
+     *
+     * @param string $bankAccountId
+     * @return mixed
+     */
+    public function getBankAccountById(string $bankAccountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $bankAccountId)
+                    ->first();
     }
 }

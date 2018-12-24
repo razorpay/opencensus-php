@@ -4525,11 +4525,13 @@ ALTER TABLE payouts
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
 
+ALTER TABLE terminals
+    ADD COLUMN ifsc_code varchar(11) DEFAULT NULL AFTER account_number;
 ALTER TABLE fund_accounts
-	ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
-	ADD COLUMN source_id CHAR(14) AFTER source_type,
-	ADD INDEX `fund_accounts_source_id_index` (source_id),
-	DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
+    ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
+    ADD COLUMN source_id CHAR(14) AFTER source_type,
+    ADD INDEX `fund_accounts_source_id_index` (source_id),
+    DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
     DROP COLUMN contact_id;
 
 ALTER TABLE users
@@ -4544,6 +4546,10 @@ ALTER TABLE bank_transfers
     ADD INDEX bank_transfers_balance_id_index (balance_id);
 
 ALTER TABLE payouts
+    ADD COLUMN mode VARCHAR(30) DEFAULT NULL AFTER method,
+    ADD INDEX payouts_mode_index (mode);
+
+ALTER TABLE payouts
     ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,
     ADD INDEX payouts_user_id_index (user_id);
 
@@ -4556,3 +4562,25 @@ ALTER TABLE payouts
     MODIFY COLUMN destination_type VARCHAR(255) DEFAULT NULL,
     MODIFY COLUMN destination_id CHAR(14) DEFAULT NULL,
     ADD INDEX payouts_fund_account_id_index (fund_account_id);
+
+ALTER TABLE vpas
+    DROP INDEX vpas_username_handle_unique,
+    ADD INDEX vpas_username_handle_index (username, handle);
+
+ALTER TABLE contacts
+    ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX contacts_reference_id_merchant_id_index (reference_id, merchant_id);
+
+ALTER TABLE reversals
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER entity_type,
+    ADD INDEX reversals_balance_id_index (balance_id);
+
+ALTER TABLE reversals
+    ADD COLUMN channel VARCHAR(255) DEFAULT NULL AFTER balance_id;
+
+ALTER TABLE payouts
+    ADD COLUMN purpose_type VARCHAR(255) DEFAULT NULL AFTER purpose,
+    ADD INDEX payouts_purpose_type_index (purpose_type);
+
+ALTER TABLE balance
+    ADD UNIQUE INDEX balance_merchant_id_type_unique (merchant_id, type);

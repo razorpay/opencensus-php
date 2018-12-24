@@ -5,9 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Vpa\Entity;
-use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\BankAccount\Entity as BankAccount;
 
 class CreateVpas extends Migration
 {
@@ -45,7 +43,7 @@ class CreateVpas extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->unique([Entity::USERNAME, Entity::HANDLE]);
+            $table->index([Entity::USERNAME, Entity::HANDLE]);
 
             $table->index(Entity::MERCHANT_ID);
 

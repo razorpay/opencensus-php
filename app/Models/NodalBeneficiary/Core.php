@@ -40,9 +40,8 @@ class Core extends Base\Core
 
     /**
      * @param array $input
+     *
      * @return mixed
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
      */
     public function update(array $input)
     {
@@ -82,7 +81,7 @@ class Core extends Base\Core
 
         $nodalBeneficiary = $nodalBeneficiary->edit($input);
 
-        $this->repo->nodal_beneficiary->saveorFail($nodalBeneficiary);
+        $this->repo->nodal_beneficiary->saveOrFail($nodalBeneficiary);
 
         return $nodalBeneficiary;
     }

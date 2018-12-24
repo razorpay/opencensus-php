@@ -15,6 +15,7 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Repository extends Base\Repository
@@ -862,6 +863,54 @@ class Repository extends Base\Repository
                       ->update([
                             Refund\Entity::PROCESSED_AT => DB::raw('refunds.last_attempted_at'),
                         ]);
+
+        return $count;
+    }
+
+    /**
+     *
+     * update `refunds` inner join
+     * (select `npci_reference_id`, `refund_id` from `upi` where `npci_reference_id` is not null
+     * and `created_at` <= $to and `created_at` >= $from and
+     * `status_code` = "00" order by `created_at` desc limit $limit) as `upi` on `refunds`.`id` = `upi`.`refund_id`
+     * set `reference1` = upi.npci_reference_id
+     * where `reference1` is null and `refunds`.`gateway` = "upi_mindgate" and `refunds`.`status` = "processed"
+     *
+     * @param $limit
+     * @param $createdAt
+     * @return int Numbers of rows affected
+     */
+    public function backfillUpiMindgateReference1($limit, $from, $to)
+    {
+        $refundIdColumn = $this->repo->refund->dbColumn(Refund\Entity::ID);
+
+        $upiRefundIdColumn = Table::UPI . '.' . UpiEntity::REFUND_ID;
+
+        $subQuery = $this->newQuery()
+                         ->select(UpiEntity::NPCI_REFERENCE_ID, UpiEntity::REFUND_ID)
+                         ->from(Table::UPI)
+                         ->whereNotNull(UpiEntity::NPCI_REFERENCE_ID)
+                         ->whereNotNull(UpiEntity::REFUND_ID)
+                         ->where(UpiEntity::CREATED_AT, '<=', $to)
+                         ->where(UpiEntity::CREATED_AT, '>=', $from)
+                         ->whereIn(UpiEntity::STATUS_CODE, ['00', 'SUCCESS'])
+                         ->orderBy(UpiEntity::CREATED_AT, 'desc')
+                         ->limit($limit);
+
+        $count = $this->newQueryWithoutTimestamps()
+                      ->joinSub(
+                          $subQuery,
+                          Table::UPI,
+                          function ($join) use($refundIdColumn, $upiRefundIdColumn)
+                          {
+                              $join->on($refundIdColumn, '=', $upiRefundIdColumn);
+                          })
+                      ->whereNull(Refund\Entity::REFERENCE1)
+                      ->where(Table::REFUND . '.' . Refund\Entity::GATEWAY, Payment\Gateway::UPI_MINDGATE)
+                      ->where(Table::REFUND . '.' . Refund\Entity::STATUS, Refund\Status::PROCESSED)
+                      ->update([
+                          Refund\Entity::REFERENCE1 => DB::raw(Table::UPI . '.' . UpiEntity::NPCI_REFERENCE_ID),
+                      ]);
 
         return $count;
     }

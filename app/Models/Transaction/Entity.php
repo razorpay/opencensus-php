@@ -24,8 +24,6 @@ use RZP\Models\Base\Traits\HasBalance;
  */
 class Entity extends Base\PublicEntity
 {
-    use HasBalance;
-
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
     const AMOUNT              = 'amount';
@@ -73,6 +71,7 @@ class Entity extends Base\PublicEntity
 
     // Relation names/attributes
     const SOURCE            = 'source';
+    const ACCOUNT_BALANCE   = 'account_balance';
 
     protected static $sign = 'txn';
 
@@ -584,11 +583,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TAX, $tax);
     }
 
-    public function associateBalance(Merchant\Balance\Entity $balance)
-    {
-        $this->balance()->associate($balance);
-    }
-
     public function setFeeBearer($bearer)
     {
         $this->setAttribute(self::FEE_BEARER, $bearer);
@@ -855,5 +849,53 @@ class Entity extends Base\PublicEntity
         public function getReconTimeFromTransactionCreationInMinutes(): int
     {
         return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
+    }
+
+    /**
+     *
+     * Transaction entity has balance (integer) attribute. Having a relation with same name in Eloquent model has
+     * multiple issues(examples below). These issues had not surfaced before this change because of very limited
+     * usage around the same. Now we have exposed web-hooks, APIs etc around transaction and hence more usage.
+     *
+     * Few examples of issues:
+     * 1. Having a $transaction object outside this class you cannot access balance relation as normal.
+      *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
+     *    expressive. I.e. $transaction->getRelation('balance') etcetera.
+      * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
+     *    it'll always get overridden with balance relation because how the base serialization happens. Again,
+     *    workaround for this also exists but not worth repeating.
+     *
+     * Also refer http://php.net/manual/en/language.oop5.traits.php and the trait HasBalance on why can't use:
+     * use HasBalance { balance as accountBalance; }
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function accountBalance()
+    {
+        return $this->belongsTo(Merchant\Balance\Entity::class, Entity::BALANCE_ID);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    /**
+     * Constructs & returns corresponding Statement\Entity.
+     * Statement entity is the publicly exposed entity on /transactions/* apis. :(
+     *
+     * @return Statement\Entity
+     */
+    public function toStatement(): Statement\Entity
+    {
+        $statement = new Statement\Entity;
+
+        $statement->exists     = $this->exists;
+        $statement->connection = $this->connection;
+        $statement->attributes = $this->attributes;
+        $statement->relations  = $this->relations;
+        $statement->original   = $this->original;
+
+        return $statement;
     }
 }

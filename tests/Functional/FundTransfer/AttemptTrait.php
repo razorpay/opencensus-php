@@ -7,6 +7,7 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Payout;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
@@ -106,7 +107,15 @@ trait AttemptTrait
     {
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
-        $content = $this->initiateTransfer($channel, $purpose, $failureTest);
+        $this->initiateTransfer($channel, $purpose, $failureTest);
+    }
+
+    protected function createDataAndAssertInitiateOnlineTransferResponseForVpa(
+        string $channel, string $purpose, int $setlCount, string $sourceType, bool $failureTest)
+    {
+        $this->createDataForChannelForVpa($channel, $purpose, $setlCount, $sourceType);
+
+        $this->initiateTransfer($channel, $purpose, $failureTest);
     }
 
     protected function createDataAndAssertInitiateTransferSuccess(string $channel, int $setlCount, string $sourceType)
@@ -127,12 +136,18 @@ trait AttemptTrait
     {
         $purpose = Attempt\Purpose::SETTLEMENT;
 
-        $content = $this->createDataAndAssertInitiateOnlineTransferResponse(
-            $channel, $purpose, $setlCount, $sourceType, $failureTest);
+        $this->createDataAndAssertInitiateOnlineTransferResponse($channel, $purpose, $setlCount, $sourceType, $failureTest);
 
         $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
+    }
 
-        return $content;
+    protected function createDataAndAssertInitiateOnlineTransferSuccessForVpa(string $channel, int $setlCount, string $sourceType, bool $failureTest)
+    {
+        $purpose = Attempt\Purpose::SETTLEMENT;
+
+        $this->createDataAndAssertInitiateOnlineTransferResponseForVpa($channel, $purpose, $setlCount, $sourceType, $failureTest);
+
+        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
     }
 
     protected function assertEntitiesAfterInitiateTransfer(
@@ -158,10 +173,19 @@ trait AttemptTrait
 
         // Verify settlement entity
         $sourceEntities = $this->getEntities($sourceType, ['count' => $sourceCount], true);
+
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA
@@ -180,6 +204,7 @@ trait AttemptTrait
         $batch = $this->getLastEntity(Entity::BATCH_FUND_TRANSFER, true);
 
         $batchTestData = 'testFileCreation' . ucfirst($sourceType);
+
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);
@@ -190,7 +215,15 @@ trait AttemptTrait
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA
@@ -207,10 +240,25 @@ trait AttemptTrait
     {
         switch ($sourceType) {
             case Attempt\Type::SETTLEMENT:
-                return $this->createSettlementData($channel, $purpose, $sourceCount);
+                $this->createSettlementData($channel, $purpose, $sourceCount);
+                break;
 
             case Attempt\Type::PAYOUT:
-                return $this->createPayoutData($channel, $purpose, $sourceCount);
+                $this->createPayoutData($channel, $purpose, $sourceCount);
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid source type: ' . $sourceType);
+        }
+    }
+
+    protected function createDataForChannelForVpa(
+        string $channel, string $purpose, int $sourceCount, string $sourceType)
+    {
+        switch ($sourceType) {
+            case Attempt\Type::PAYOUT:
+                $this->createPayoutDataForVpa($channel, $purpose, $sourceCount);
+                break;
 
             default:
                 throw new Exception\LogicException('Invalid source type: ' . $sourceType);
@@ -223,7 +271,7 @@ trait AttemptTrait
             'payout',
             [
                'channel' => $channel,
-                'amount' => 10000000,
+               'amount' => 1000,
             ]);
 
         if ($sourceCount === 1)
@@ -246,6 +294,39 @@ trait AttemptTrait
                     'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
                 ]
             );
+        }
+    }
+
+    protected function createPayoutDataForVpa(string $channel, string $purpose, int $sourceCount)
+    {
+        $payouts = $this->fixtures->times($sourceCount)->create(
+            'payout',
+            [
+                'channel'           => $channel,
+                'amount'            => 1000,
+                'destination_id'    => '1000000lcustba',
+                'destination_type'  => 'vpa',
+            ]);
+
+        if ($sourceCount === 1)
+        {
+            $payouts = [$payouts];
+        }
+
+        foreach ($payouts as $payout)
+        {
+            $this->fixtures->create(
+                'fund_transfer_attempt',
+                [
+                    'channel'                   => $channel,
+                    'source_id'                 => $payout->getId(),
+                    'vpa_id'                    => $payout->getDestinationId(),
+                    'merchant_id'               => $payout->getMerchantId(),
+                    'purpose'                   => $purpose,
+                    'status'                    => Attempt\Status::CREATED,
+                    'source_type'               => Attempt\Type::PAYOUT,
+                    'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+                ]);
         }
     }
 

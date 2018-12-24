@@ -182,7 +182,6 @@ abstract class Processor extends Base\Core
         return $summary;
     }
 
-
     protected function startVerification($data): array
     {
         $summary = $this->repo->transaction(function() use ($data)

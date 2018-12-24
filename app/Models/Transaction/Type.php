@@ -34,7 +34,9 @@ class Type
 
     public static function validateType(string $type)
     {
-        if (defined(__CLASS__.'::'.strtoupper($type)) === false)
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        if ((defined($key) === false) or (constant($key) !== $type))
         {
             throw new InvalidArgumentException("Not a valid Transaction type: {$type}");
         }

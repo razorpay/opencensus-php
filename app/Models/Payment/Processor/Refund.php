@@ -627,7 +627,7 @@ trait Refund
             return null;
         }
 
-        $txn = (new Transaction\Core)->createFromRefund($refund);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
 
@@ -1852,7 +1852,8 @@ trait Refund
 
             $input = [
                 FundTransferAttempt\Entity::NARRATION => $bankTransfer->getRefundNarration(),
-                FundTransferAttempt\Entity::MODE      => strtoupper($bankTransfer->getMode()),
+                // This is not used anywhere. Not sure why is this even here. Commenting out for now.
+                // FundTransferAttempt\Entity::MODE      => strtoupper($bankTransfer->getMode()),
             ];
         }
 
