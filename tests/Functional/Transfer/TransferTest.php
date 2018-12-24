@@ -105,15 +105,27 @@ class TransferTest extends TestCase
         ];
 
         $txnData = [
-            'amount'      => $transfer['amount'],
-            'fee'         => $expectedFee,
-            'tax'         => $tax,
-            'debit'       => $transfer['amount'] + $expectedFee,
-            'credit_type' => 'default',
-            'fee_credits' => 0,
+            'amount'          => $transfer['amount'],
+            'fee'             => $expectedFee,
+            'tax'             => $tax,
+            'debit'           => $transfer['amount'] + $expectedFee,
+            'credit_type'     => 'default',
+            'fee_credits'     => 0,
         ];
 
-        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+        $txnId = $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "transfer",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "1zE31zbyeGCTd4",
+            'percentage'      => null,
+            'amount'          => 20,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
     public function testTransferToAccountPricingPostpaid()
@@ -835,6 +847,10 @@ class TransferTest extends TestCase
         }
 
         $this->assertArraySelectiveEquals($expectedTxn, $txn);
+
+        $txnId = str_after($txn['id'], 'txn_');
+
+        return $txnId;;
     }
 
     protected function checkPaymentAndTxnRecords($transfer, array $txnData = [])
