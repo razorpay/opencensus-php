@@ -498,7 +498,8 @@ class Gateway extends Base\Gateway
     public function getBharatQrResponse(bool $valid, $input = null, $ex = null)
     {
         $attributes = [
-            Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
+            Field::TRANSACTION_ID                   => $input[Field::TRANSACTION_ID],
+            Field::NOTIFICATION_REF_NO              => null,
         ];
 
         if ($valid === true)
@@ -527,8 +528,6 @@ class Gateway extends Base\Gateway
 
             $attributes[Field::STATUS_DESC] = Status::FAILED;
         }
-
-        $attributes[Field::NOTIFICATION_REF_NO] = null;
 
         return $attributes;
     }
