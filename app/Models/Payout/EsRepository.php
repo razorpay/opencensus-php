@@ -16,7 +16,6 @@ class EsRepository extends Base\EsRepository
         Entity::MERCHANT_ID,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
-        Entity::CONTACT_EMAIL,
         Entity::TYPE,
         Entity::CREATED_AT,
     ];
