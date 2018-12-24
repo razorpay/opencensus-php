@@ -1353,7 +1353,7 @@ class Entity extends Base\PublicEntity
      */
     public function isBusinessBankingEnabled()
     {
-        return $this->getAttribute(self::BUSINESS_BANKING);
+        return $this->getAttribute(self::BUSINESS_BANKING) == true;
     }
 
     public function getHoldFunds()

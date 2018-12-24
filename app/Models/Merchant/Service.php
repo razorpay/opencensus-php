@@ -2739,10 +2739,10 @@ class Service extends Base\Service
         return false;
     }
 
-    public function switchProductMerchant()
+    public function switchProductMerchant($product = null)
     {
         // Add Banking Role for the current merchant User.
-        (new User\Service())->addProductSwitchRole();
+        (new User\Service())->addProductSwitchRole($product);
 
         $merchant = $this->auth->getMerchant();
 

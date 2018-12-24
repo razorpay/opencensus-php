@@ -120,11 +120,15 @@ class MerchantCreateTest extends TestCase
 
     protected function checkBalances()
     {
-        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $this->runRequestResponseFlow($this->testData['testBalanceInTestAfterCreatedMerchant']);
 
-        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt', $user->getId());
 
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
@@ -300,9 +304,7 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->create('user', ['email' => 'submerchant@razorpay.com']);
 
-        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -313,7 +315,7 @@ class MerchantCreateTest extends TestCase
             return $mail->hasTo('submerchant@razorpay.com', 'Submerchant 2');
         });
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
     }
@@ -352,9 +354,9 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -369,7 +371,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -380,9 +382,9 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -404,7 +406,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -415,11 +417,11 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $user2 = $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -439,7 +441,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -454,9 +456,9 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -476,7 +478,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         // This should be empty once aggregator type's dashboard access is removed
         // in withEmail cases.
@@ -487,15 +489,15 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantByAggregatorWithoutEmail()
     {
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -508,17 +510,17 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantByAggregatorWithoutApp()
     {
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
         (new Application\Repository())->deleteOrFail($app);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -533,12 +535,12 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
         // TODO: Move to partner app post discussion on features in proxy auth
         $this->fixtures->merchant->addFeatures(['allow_sub_without_email']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -549,7 +551,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
 
         $this->assertEquals(1, count($mapping));
 
@@ -761,11 +763,11 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $this->ba->proxyAuth();
 
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = 'MerchantUser01';
 
         $this->startTest();
     }
@@ -779,9 +781,9 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -816,7 +818,7 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000002');
 
-        $this->ba->proxyAuth('rzp_test_10000000000002');
+        $this->ba->proxyAuth('rzp_test_10000000000002', $user['id']);
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
@@ -870,7 +872,7 @@ class MerchantCreateTest extends TestCase
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
 
@@ -1026,14 +1028,12 @@ class MerchantCreateTest extends TestCase
 
     protected function getLastMappingForBothModes()
     {
-        $test = $this->getLastEntity(
+        $test = $this->getDbLastEntity(
                 Constants\Entity::MERCHANT_ACCESS_MAP,
-                true,
                 'test');
 
-        $live = $this->getLastEntity(
+        $live = $this->getDbLastEntity(
                 Constants\Entity::MERCHANT_ACCESS_MAP,
-                true,
                 'live');
 
         return [$test, $live];
@@ -1047,9 +1047,7 @@ class MerchantCreateTest extends TestCase
 
         $app = $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner']);
 
-        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        return [$app, $user];
+        return $app;
     }
 
     protected function verifyAccessMapEntries(OAuthApp $app, array $submerchant)

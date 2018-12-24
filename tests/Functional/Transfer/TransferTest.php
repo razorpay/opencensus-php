@@ -571,9 +571,11 @@ class TransferTest extends TestCase
         // Notes will be fetched from payments entity
         unset($transfer['notes']);
 
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
         $data['response']['content']['items'] = [$transfer];
 
-        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $this->ba->proxyAuth('rzp_test_10000000000001' , $user->getId());
 
         $this->startTest();
     }
@@ -589,9 +591,11 @@ class TransferTest extends TestCase
         // Notes will be fetched from payments entity
         unset($transfer['notes']);
 
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
         $data['response']['content'] = $transfer;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $this->ba->proxyAuth('rzp_test_10000000000001' , $user->getId());
 
         $this->startTest();
     }
@@ -600,7 +604,9 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000' , $user->getId());
 
         $this->startTest();
     }
@@ -609,7 +615,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $data = $this->testData[__FUNCTION__];
+        $data = & $this->testData[__FUNCTION__];
 
         $reversal = $this->createReversal($transfer['id']);
 
@@ -617,7 +623,9 @@ class TransferTest extends TestCase
 
         $data['response']['content']['items'][] = $reversal;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
 
         $this->startTest();
     }
@@ -626,13 +634,17 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $data = $this->testData[__FUNCTION__];
-
         $reversal = $this->createReversal($transfer['id']);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/la-reversals';
 
         $data['response']['content']['items'][] = $reversal;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
 
         $this->startTest();
     }
