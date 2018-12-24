@@ -76,6 +76,23 @@ class Constants
                 'tags' => ['pp_notify_earlyaccess'],
             ]
         ],
+        [
+            'title'       => 'RazorpayX',
+            'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
+            'start_ts'    => 1545625800,
+            'end_ts'      => 1554006600,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/razorx.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Started',
+                    'url'   => '#profile_dropdown',
+                ],
+            ],
+            'filters'     => [
+                'tags' => ['announcement_razorpayx'],
+            ]
+      ],        
     ];
 
     public static function getNotifications(): array
