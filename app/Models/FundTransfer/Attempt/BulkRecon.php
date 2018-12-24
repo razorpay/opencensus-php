@@ -67,21 +67,65 @@ class BulkRecon extends Base\Core
         return $data;
     }
 
+    public function processIndividualEntity(Entity $fta)
+    {
+        $attempts = (new Base\PublicCollection)->push($fta);
+
+        $channel = $fta->getChannel();
+
+        (new Lock($channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(Base\PublicCollection $collection)
+            {
+                return $this->initiateBulkReconProcess($collection);
+            });
+
+        $this->fireSettlementWebhook();
+    }
+
     public function processEntities()
     {
         list($from, $to) = $this->getTimestamps();
 
-        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
+        $attempts = $this->repo
+                         ->fund_transfer_attempt
+                         ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to);
 
-        $ftaIds = $this->repo
-                       ->fund_transfer_attempt
-                       ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to)
-                       ->pluck(FundTransferAttempt\Entity::ID)
-                       ->toArray();
+        (new Lock( $this->channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(Base\PublicCollection $collection)
+            {
+                return $this->initiateBulkReconProcess($collection);
+            });
+
+        try
+        {
+            $summary = $this->getSummary();
+
+            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
+        }
+
+        $this->fireSettlementWebhook();
+
+        return $summary;
+    }
+
+    protected function initiateBulkReconProcess(Base\PublicCollection $attempts)
+    {
+        $ftaIds = $attempts->getIds();
+
+        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
 
         $chunks = array_chunk($ftaIds, 1000);
 
-        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
+        $entityProcessor = $this->getEntityProcessorClass($this->channel);
 
         $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
         {
@@ -106,13 +150,7 @@ class BulkRecon extends Base\Core
                 }
 
                 // Update batch stats post reconciliations
-                foreach ($this->batchFundTransferStats as $batchId => $attrs)
-                {
-                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                    $batchEntity->setProcessedCount($attrs['processed_count']);
-                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                    $batchEntity->saveOrFail();
-                }
+                $this->updateBatchProcess();
             }
             catch (\Throwable $e)
             {
@@ -121,22 +159,10 @@ class BulkRecon extends Base\Core
                 throw $e;
             }
         });
+    }
 
-        try
-        {
-            $summary = $this->getSummary();
-
-            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
-
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
-        }
-
+    protected function fireSettlementWebhook()
+    {
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
         {
@@ -156,8 +182,17 @@ class BulkRecon extends Base\Core
                 TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
                 ['entities' => $entityIds]);
         }
+    }
 
-        return $summary;
+    protected function updateBatchProcess()
+    {
+        foreach ($this->batchFundTransferStats as $batchId => $attrs)
+        {
+            $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+            $batchEntity->setProcessedCount($attrs['processed_count']);
+            $batchEntity->setProcessedAmount($attrs['processed_amount']);
+            $batchEntity->saveOrFail();
+        }
     }
 
     protected function notifyCriticalErrors()
@@ -268,6 +303,11 @@ class BulkRecon extends Base\Core
         }
 
         return "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\Reconciliation\\Status";
+    }
+
+    protected function getEntityProcessorClass(string $channel)
+    {
+        return '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\EntityProcessor';
     }
 
     protected function getSummary(): array

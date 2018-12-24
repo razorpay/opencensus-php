@@ -69,6 +69,8 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
+    const BAD_REQUEST_ANOTHER_FTA_RECONCILIATION_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';
+    const BAD_REQUEST_ANOTHER_FTA_TRANSFER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
