@@ -165,20 +165,6 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            {mode === 'live' &&
-              !showMobileNav && (
-                <div
-                  class="media media-action"
-                  onClick={() => this.showOrHideTour(true)}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="i i-tour" />
-                    </div>
-                  </div>
-                  <div class="media-body">Show Dashboard Home Tour</div>
-                </div>
-              )}
             {user.isRazorxAnnouncementEnabled && (
               <div class="media media-action">
                 <div class="media-left">
