@@ -78,11 +78,10 @@ class Constants
         ],
         [
             'title'       => 'RazorpayX',
-            'description' => 'With RazorpayX track, automate and accelerate every aspect of your financial payouts',
+            'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
             'start_ts'    => 1545625800,
             'end_ts'      => 1554006600,
-            // TODO: change the icon to razorx
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/paymentpages.png',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/razorx.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
