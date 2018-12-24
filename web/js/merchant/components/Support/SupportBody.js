@@ -127,6 +127,8 @@ export default class SupportBody extends Component {
 }
 
 const isWorkingDay = () => {
+  return false;
+
   const today = new Date();
   const day = today.getDay();
   const hours = today.getHours();
