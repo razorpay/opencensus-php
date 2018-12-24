@@ -274,11 +274,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findCreatedFtaById(string $id)
+    public function findByIdWithStatus(string $id, string $status = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::STATUS, Status::CREATED)
-                    ->where(Entity::ID, $id)
-                    ->first();
+        $query =  $this->newQuery()
+                       ->where(Entity::ID, $id);
+
+        if (empty($status) === false)
+        {
+            $query = $query->where(Entity::STATUS, $status);
+        }
+
+        return $query->first();
     }
 }

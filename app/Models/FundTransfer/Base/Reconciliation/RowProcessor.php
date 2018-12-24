@@ -9,7 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\FundTransfer\Attempt\Lock;
 use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class RowProcessor extends Base\Core
@@ -42,8 +42,19 @@ abstract class RowProcessor extends Base\Core
         $this->row = $row;
     }
 
+    /**
+     * This is called for both file based and api based..
+     *
+     * @return null
+     */
     public function process()
     {
+        //
+        // We can take a lock only after processRow runs
+        // since only then we get the fta ID.
+        // This applies for both file based and API based.
+        //
+
         $this->processRow();
 
         if (empty($this->reconEntityId) === false)
@@ -62,7 +73,14 @@ abstract class RowProcessor extends Base\Core
             return null;
         }
 
-        $this->updateEntities();
+        // We are accepting a dummy collection because
+        // that's how the function was written.
+        (new Lock)->acquireLockAndProcessAttempt(
+            $this->reconEntity,
+            function(Base\PublicCollection $collection)
+            {
+                $this->updateEntities();
+            });
 
         return $this->reconEntity;
     }

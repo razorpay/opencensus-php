@@ -660,8 +660,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FATAL_ERROR                       = 'GATEWAY_FATAL_ERROR';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
+    const FTA_RECONCILE_DISPATCH_FAILED             = 'FTA_RECONCILE_DISPATCH_FAILED';
+    const FTA_RECONCILE_JOB                         = 'FTA_RECONCILE_JOB';
+    const FTA_RECONCILE_SKIPPED                     = 'FTA_RECONCILE_SKIPPED';
+    const FTA_RECONCILE_JOB_FAILED                  = 'FTA_RECONCILE_JOB_FAILED';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const INVALID_ATTEMPT_ID                        = 'INVALID_ATTEMPT_ID';
+    const INVALID_FTA_CHANNEL                       = 'INVALID_FTA_CHANNEL';
     const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
     const FTA_FETCHED                               = 'FTA_FETCHED';
     const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
@@ -1375,6 +1380,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
     const FTA_RECON_SOURCE_UPDATE_SKIPPED               = 'FTA_RECON_SOURCE_UPDATE_SKIPPED';
     const FTA_RECON_SOURCE_UPDATED                      = 'FTA_RECON_SOURCE_UPDATED';
+    const FTA_RECON_FAILED                              = 'FTA_RECON_FAILED';
     const FTA_STATUS_FAILED                             = 'FTA_STATUS_FAILED';
     const FTA_STATUS_FAILED_MERCHANT_ERROR              = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
 
@@ -1469,6 +1475,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_MERCHANT_COMPLETE  = 'FTA_DISPATCH_FOR_MERCHANT_COMPLETE';
     const FTA_MERCHANT_FUND_TRANSFER_COMPLETE = 'FTA_MERCHANT_FUND_TRANSFER_COMPLETE';
     const FTA_DISPATCH_FOR_MERCHANT_DELETED   = 'FTA_DISPATCH_FOR_MERCHANT_DELETED';
+    const FTA_RECONCILIATION_JOB_DELETED      = 'FTA_RECONCILIATION_JOB_DELETED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
     const CONTACT_PHONE   = 'contact_phone';
     const CONTACT_ID      = 'contact_id';
     const CONTACT_EMAIL   = 'contact_email';
+    const CONTACT_TYPE    = 'contact_type';
 
     // Input keys
     const ACCOUNT_NUMBER = 'account_number';
