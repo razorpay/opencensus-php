@@ -606,6 +606,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Input JSON sample:
+     * {
+     *   "methods": {
+     *     "credit_card": 1,
+     *     "debit_card": 0,
+     *     "upi": 1,
+     *     "emi":0
+     *   },
+     *   "merchants": ["10000000000000", "ACIg0vIkvgCALm"]
+     * }
+     *
+     * @return mixed
+     */
     public function updateMethodsForMultipleMerchants()
     {
         $input = Request::all();

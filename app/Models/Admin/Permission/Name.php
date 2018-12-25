@@ -113,6 +113,7 @@ class Name
     const SCHEDULE_ASSIGN                     = 'schedule_assign';
     const SCHEDULE_ASSIGN_BULK                = 'schedule_assign_bulk';
     const PRICING_ASSIGN_BULK                 = 'pricing_assign_bulk';
+    const METHODS_ASSIGN_BULK                 = 'methods_assign_bulk';
     const SCHEDULE_MIGRATION                  = 'schedule_migration';
     const VIEW_ACTIONS                        = 'view_actions';
     const VIEW_MERCHANT_STATS                 = 'view_merchant_stats';

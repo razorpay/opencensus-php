@@ -62,6 +62,84 @@ return [
         ],
     ],
 
+    'testBulkMethodUpdateInvalidMerchantId' => [
+        'request'  => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '1000000000000x'],
+                'methods'   => [
+                    'debit_card'  => true,
+                    'credit_card' => true,
+                    'netbanking'  => true
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'     => 2,
+                'failed'    => 1,
+                'success'   => 1,
+                'failedIds' => ['1000000000000x']
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateInvalidMethodsInput' => [
+        'request'   => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods'   => [
+                    'debit_card' => true,
+                    'credit_card',
+                    'netbanking' => true
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The methods.0 field must be true or false.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testBulkMethodUpdateMissingInput' => [
+        'request'   => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'methods' => [
+                    'debit_card'  => true,
+                    'credit_card' => true,
+                    'netbanking'  => true
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchants field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testRecurringCards' => [
         'request' => [
             'url' => '/methods',

@@ -1196,6 +1196,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
 
+        (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
+
         $merchantIds = $input['merchants'];
 
         $successCount = $failedCount = 0;
@@ -1206,12 +1208,24 @@ class Service extends Base\Service
         {
             try
             {
-                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->setPaymentMethods($merchantId, $input['methods']);
+                });
 
                 $successCount++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $t)
             {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_METHODS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input['methods'],
+                    ]);
+
                 $failedCount++;
 
                 $failedIds[] = $merchantId;
