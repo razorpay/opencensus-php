@@ -194,6 +194,8 @@ abstract class Base extends BaseCore
 
         $txn->generateId();
 
+        $txn->setSettled(false);
+
         $txn->sourceAssociate($this->source);
 
         $txn->merchant()->associate($this->source->merchant);

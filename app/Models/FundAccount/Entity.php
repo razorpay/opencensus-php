@@ -148,7 +148,7 @@ class Entity extends Base\PublicEntity
             array_pull($attributes, self::CONTACT) ?:
             array_pull($attributes, self::CUSTOMER);
 
-        if ($source !== null)
+        if (empty($source) === false)
         {
             $attributes[$sourceType] = $source;
         }

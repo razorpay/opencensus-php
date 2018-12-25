@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -656,9 +657,17 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTransactionAttribute(array & $attributes)
     {
-        if (isset($attributes[self::TRANSACTION_ID]) === true)
+        if ($this->hasRelation(self::TRANSACTION) === true)
         {
-            $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
+            if (($this->transaction instanceof Transaction\Entity) === true)
+            {
+                $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
+            }
+            else
+            {
+                // Not exposing transaction relation when payout on Customer\Transaction\Entity, for now.
+                unset($attributes[self::TRANSACTION]);
+            }
         }
     }
 
@@ -703,5 +712,17 @@ class Entity extends Base\PublicEntity
     public function shouldNotifyTxnViaEmail(): bool
     {
         return $this->isBalanceTypeBanking();
+    }
+
+    public function toArrayPublic()
+    {
+        if ($this->hasRelation(Entity::TRANSACTION) === true)
+        {
+            $txn = $this->transaction;
+            $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
+            $txn->setRelations($relations);
+        }
+
+        return parent::toArrayPublic();
     }
 }
