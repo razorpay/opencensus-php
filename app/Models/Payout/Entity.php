@@ -191,7 +191,13 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        // We want to show the failure reason only if the status is reversed.
+        // This is because we might have intermittent failure reasons even
+        // when the payout is not completely processed (succeeded/failed)
         self::FAILURE_REASON,
+        // Sometimes, we get the UTR even if the payout has not been processed.
+        // This might cause confusions and hence we show UTR only when either
+        // the payout is in processed or reversed state.
         self::UTR,
     ];
 
