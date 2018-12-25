@@ -110,7 +110,7 @@ export const options = {
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
-    upi: 'Payout: UPI',
+    upi: 'UPI',
     account: 'Transfer: Account (Marketplace)',
     customer: 'Transfer: Customer (Openwallet)',
     cardless_emi: 'Cardless EMI',
@@ -460,7 +460,7 @@ class Rule extends CollectionItem {
   }
 
   receiverTypeField() {
-    if (this.payment_method === 'card' || this.payment_method === 'upi') {
+    if (this.product === 'primary' && (this.payment_method === 'card' || this.payment_method === 'upi')) {
       var field = this.selectField('receiver_type');
       if (field) {
         return <div>Receiver Type: {field}</div>;
