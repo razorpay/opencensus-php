@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
@@ -31,8 +32,8 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -316,9 +317,14 @@ class Service extends Base\Service
 
         $orgId = $subMerchant['org']['id'];
 
-        $org = $this->repo->org->find($orgId)->toArrayPublic();
+        /** @var Org\Entity $org */
+        $org = $this->repo->org->find($orgId);
 
-        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
+        $hostname = $org->getPrimaryHostName();
+
+        $org = $org->toArrayPublic();
+
+        $org[Hostname\Entity::HOSTNAME] = $hostname;
 
         $mailUserData = $createdNewUser ? $user : null;
 

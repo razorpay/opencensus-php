@@ -6,8 +6,8 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Pricing;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
@@ -37,7 +37,9 @@ class Repository extends Base\Repository
     {
         $app = App::getFacadeRoot();
 
-        $orgId = $app['basicauth']->getOrgId();
+        $rzpOrgId = Org\Entity::getSignedId(Org\Entity::RAZORPAY_ORG_ID);
+
+        $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
 
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
@@ -55,8 +57,7 @@ class Repository extends Base\Repository
                         ->orderBy(Pricing\Entity::ID, 'desc')
                         ->get();
 
-        if (($pricing->count() === 0) and
-            ($fail))
+        if (($pricing->count() === 0) and ($fail))
         {
             if ($public)
             {
