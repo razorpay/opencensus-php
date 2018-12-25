@@ -29,9 +29,10 @@ class CustomerWalletPayout extends Base
         $customerTransactionData = $this->getCustomerTransactionData($payout);
 
         // Create customer debit transaction.
-        $customerTransaction = (new CustTransactionCore)->createForCustomerDebit($customerTransactionData,
-                                                                                 $this->merchant,
-                                                                                 Constants\Entity::PAYOUT);
+        $customerTransaction = (new CustTransactionCore)->createForCustomerDebit(
+            $customerTransactionData,
+            $this->merchant,
+            Constants\Entity::PAYOUT);
 
         $payout->transaction()->associate($customerTransaction);
 

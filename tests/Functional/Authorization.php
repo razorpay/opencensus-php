@@ -120,16 +120,16 @@ class Authorization
         $this->appAuth('rzp_test', $pwd);
     }
 
-    public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null, $merchantUserRole = 'owner')
+    public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user);
 
         $this->proxy = true;
 
-        $this->addProxyAuthHeaders($merchantUser, $merchantUserRole);
+        $this->addProxyAuthHeaders($merchantUser);
     }
 
-    public function addProxyAuthHeaders($user, $userRole)
+    public function addProxyAuthHeaders($user)
     {
         if ($user === null)
         {
@@ -138,7 +138,6 @@ class Authorization
 
         $this->proxyHeaders = [
             'X-Dashboard-User-Id'   => $user,
-            'X-Dashboard-User-Role' => $userRole,
         ];
     }
 

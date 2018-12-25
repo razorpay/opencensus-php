@@ -223,7 +223,6 @@ abstract class EntityProcessor extends Base\Core
         $successStatuses = $statusClass::getSuccessfulStatus();
 
         $failureStatuses = $statusClass::getFailureStatus($bankStatusCode);
-
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
         {
@@ -237,7 +236,8 @@ abstract class EntityProcessor extends Base\Core
 
             $tenTenPm = $recordDate->hour(22)->minute(10)->getTimestamp();
 
-            if (($now < $tenTenPm) and ($this->env !== 'testing'))
+            if (($this->fta->getSourceType() !== Attempt\Type::PAYOUT) and
+                ($now < $tenTenPm) and ($this->env !== 'testing'))
             {
                 $status = $this->fta->getStatus();
             }

@@ -27,6 +27,8 @@ class StatementTest extends TestCase
 
     public function testFetchMultipleStatements()
     {
+        $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => true]);
+
         // Creates two bank transfer transaction on banking balance.
         $this->createBankTransferTransaction();
         $this->createBankTransferTransaction();
@@ -38,6 +40,7 @@ class StatementTest extends TestCase
 
         // One the first two transactions should appear in response.
         $this->ba->privateAuth();
+
         $response = $this->startTest();
 
         // Asserts other keys existence in items.

@@ -166,8 +166,10 @@ class Core extends Base\Core
 
         $transfer->to()->associate($to);
 
+        $txnCore = new Transaction\Core;
+
         // Create a transaction for the transfer; debits the source merchant
-        $txn = (new Transaction\Core)->createFromTransfer($transfer);
+        list($txn,$feesSplit) = $txnCore->createFromTransfer($transfer);
 
         $transfer->setFees($txn->getFee());
 
@@ -176,6 +178,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($transfer);
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
 
         return $transfer;
     }

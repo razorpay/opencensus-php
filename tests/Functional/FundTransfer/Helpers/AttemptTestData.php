@@ -24,6 +24,17 @@ return [
         'type'              => 'settlement',
     ],
 
+    'testFileCreationPayoutVpa' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 1000,
+        'processed_count'   => 1,
+        'total_count'       => 1,
+        'transaction_count' => 1,
+        'type'              => 'payout',
+    ],
+
     'testFileCreationPayout' => [
         'amount'            => 1000,
         'fees'              => 602,
@@ -34,6 +45,7 @@ return [
         'transaction_count' => 1,
         'type'              => 'payout',
     ],
+
 
     'matchAttemptForReconSuccessKotak' => [
         'version'           => 'V3',
@@ -101,14 +113,14 @@ return [
     'matchAttemptForReconSuccessYesbankVpa' => [
         'version'           => 'V3',
         'bank_status_code'  => YesbankGatewayStatus::COMPLETED,
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::PROCESSED,
         'failure_reason'    => null,
     ],
 
     'matchAttemptForReconFailureYesbankVpa' => [
         'version'           => 'V3',
         'bank_status_code'  => 'FAILED',
-        'status'            => AttemptStatus::INITIATED,
+        'status'            => AttemptStatus::FAILED,
         'failure_reason'    => null,
     ],
 

@@ -28,6 +28,11 @@ trait HasBalance
         return $this->getAttribute(self::BALANCE_ID);
     }
 
+    public function hasBalance(): bool
+    {
+        return $this->isAttributeNotNull(self::BALANCE_ID);
+    }
+
     /**
      * Returns balance type.
      * Handles old entities where balance_id is not back filled yet by defaulting to type 'primary'.

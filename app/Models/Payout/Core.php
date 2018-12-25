@@ -294,7 +294,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateWithDetailsBeforeFtaRecon(Entity $payout, Attempt\Entity $attempt)
+    public function updateWithDetailsBeforeFtaRecon(Entity $payout, Attempt\Entity $attempt, array $responseData = [])
     {
         $utr = $attempt->getUtr();
 
@@ -302,11 +302,16 @@ class Core extends Base\Core
 
         $mode = $attempt->getMode();
 
+        // For non-Yesbank, we will not get public_failure_reason
+        $failureReason = $responseData['public_failure_reason'] ?? null;
+
         $payout->setUtr($utr);
 
         $payout->setRemarks($remarks);
 
         $payout->setMode($mode);
+
+        $payout->setFailureReason($failureReason);
 
         $this->repo->saveOrFail($payout);
     }
