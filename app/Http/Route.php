@@ -2093,7 +2093,7 @@ final class Route
         'merchant_generate_test_bank_acnt'         => '*',
         'merchant_send_activation_mail'            => '*',
         'merchants_update_bank_account'            => '*',
-        'methods_update_merchants'                 => '*',
+        'methods_update_merchants'                 => Permission::METHODS_ASSIGN_BULK,
         'migrate_tokens_to_gateway_tokens'         => '*',
         'mock_generate_reconciliation'             => '*',
         'nodal_add_beneficiary'                    => '*',
