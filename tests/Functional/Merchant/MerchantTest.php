@@ -424,6 +424,8 @@ class MerchantTest extends TestCase
     {
         $content = $this->createMerchant();
 
+        $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
         $this->ba->adminAuth();
 
         Event::fake(false);
@@ -440,6 +442,10 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner()->getEmail());
     }
 
     public function testEditMerchantWhitelistedIpsLive()
