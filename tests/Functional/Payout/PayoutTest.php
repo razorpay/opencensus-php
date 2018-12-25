@@ -384,6 +384,8 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutAttemptSuccess()
     {
+        // FTA initiate happens via sync queue
+
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
 
@@ -407,7 +409,7 @@ class PayoutTest extends TestCase
         {
             $this->assertTestResponse($attempt, 'testPayoutAttemptSuccess');
 
-            $this->assertNull($attempt['batch_fund_transfer_id']);
+            $this->assertNotNull($attempt['batch_fund_transfer_id']);
         }
 
         // Verify payouts
@@ -416,11 +418,12 @@ class PayoutTest extends TestCase
         $this->assertEquals(2, $payouts['count']);
 
         $payouts = $payouts['items'];
+
         foreach ($payouts as $payout)
         {
             $this->assertTestResponse($payout, 'testPayoutEntitySuccess');
 
-            $this->assertNull($payout['batch_fund_transfer_id']);
+            $this->assertNotNull($payout['batch_fund_transfer_id']);
         }
 
         Carbon::setTestNow();

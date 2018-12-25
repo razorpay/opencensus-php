@@ -19,7 +19,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\NodalBeneficiary\Status;
-use RZP\Jobs\BeneficiaryRegistrationJob;
+use RZP\Jobs\BeneficiaryRegistration;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -76,7 +76,7 @@ class Beneficiary extends Base\Core
     {
         try
         {
-            BeneficiaryRegistrationJob::dispatch($this->mode, $channel, $bankAccount->getId());
+            BeneficiaryRegistration::dispatch($this->mode, $channel, $bankAccount->getId());
 
             $this->trace->info(
                 TraceCode::BANK_ACCOUNT_ENQUEUED_FOR_REGISTRATION,
