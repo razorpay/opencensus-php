@@ -101,7 +101,7 @@ export default class SupportBody extends Component {
               <small class="help-content">(9am-6pm, working days)</small>
               <small class="help-block">
                 {shouldDisable
-                  ? 'Currenlty unavailable'
+                  ? 'Currently unavailable'
                   : 'For queries and help on the dashboard'}
               </small>
             </li>
@@ -127,8 +127,6 @@ export default class SupportBody extends Component {
 }
 
 const isWorkingDay = () => {
-  return false;
-
   const today = new Date();
   const day = today.getDay();
   const hours = today.getHours();
