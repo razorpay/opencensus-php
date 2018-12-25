@@ -11,6 +11,12 @@ class Type
     const PAYOUT     = Constants\Entity::PAYOUT;
     const REFUND     = Constants\Entity::REFUND;
 
+    // Request Types to the bank
+    // based on these type interaction with nodal account may differ
+    const PRIMARY       = 'primary';
+    const BANKIING      = 'banking';
+    const PENNY_TESTING = 'penny_testing';
+
     protected static $validTypes = [
         self::SETTLEMENT,
         self::PAYOUT,

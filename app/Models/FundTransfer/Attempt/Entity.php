@@ -397,6 +397,11 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isPennyTesting(): bool
+    {
+        return ($this->getSourceType() === Type::PENNY_TESTING);
+    }
+
     // ---------------------------- public setters -----------------------------
 
     public function setPublicSourceAttribute(array & $attributes)
@@ -424,5 +429,27 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    /**
+     * Gives request type for the given attempt.
+     * Based on these attempts nodal config will be picked while making any request to bank
+     *
+     * @param Entity $attempt
+     * @return string
+     */
+    public function getRequestType(): string
+    {
+        switch (true)
+        {
+            case $this->isOfBanking():
+                return Attempt\Type::BANKIING;
+
+            case $this->isPennyTesting():
+                return Attempt\Type::PENNY_TESTING;
+
+            default:
+                return Attempt\Type::PRIMARY;
+        }
     }
 }

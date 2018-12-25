@@ -47,11 +47,11 @@ class StatusProcessor extends BaseRowProcessor
     {
         $gateway = ($this->row->hasVpa() === true);
 
-        $banking = $this->row->isOfBanking();
+        $type = $this->row->getRequestType();
 
-        $response = (new StatusRequest($banking))->init()
-                                                 ->setEntity($this->row)
-                                                 ->makeRequest($gateway);
+        $response = (new StatusRequest($type))->init()
+                                              ->setEntity($this->row)
+                                              ->makeRequest($gateway);
 
         if (empty($response) === false)
         {

@@ -6,6 +6,7 @@ use Config;
 use Requests_Hooks;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Base\Initiator\ApiProcessor;
 
@@ -31,6 +32,7 @@ abstract class Base extends ApiProcessor
     const TRANSFER_TYPE         = 'transfer_type';
     const MODE                  = 'mode';
     const PUBLIC_FAILURE_REASON = 'public_failure_reason';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     protected $appId;
 
@@ -46,19 +48,13 @@ abstract class Base extends ApiProcessor
 
     protected $entity = null;
 
-    public function __construct(bool $banking = false)
+    public function __construct(string $type = null)
     {
         parent::__construct();
 
         $this->channel = Channel::YESBANK;
 
-        $this->config = Config::get('nodal.yesbank.primary');
-
-        if ($banking === true)
-        {
-            $this->config = Config::get('nodal.yesbank.banking');
-        }
-
+        $this->config = $this->loadNodalConfig($type);
 
         $this->appId = $this->config['app_id'];
 
@@ -75,6 +71,32 @@ abstract class Base extends ApiProcessor
         $this->version = '1';
 
         $this->init();
+    }
+
+    /**
+     * Loads config based on the type specified.
+     * If no type is provided then it load default configuration
+     * which is async nodal config
+     *
+     * @param string $type
+     * @return array
+     */
+    protected function loadNodalConfig(string $type): array
+    {
+        switch ($type)
+        {
+            case Type::PRIMARY:
+                return Config::get('nodal.yesbank.primary');
+
+            case Type::BANKIING:
+                return Config::get('nodal.yesbank.banking');
+
+            case Type::PENNY_TESTING:
+                return Config::get('nodal.yesbank.sync');
+
+            default:
+                return Config::get('nodal.yesbank.primary');
+        }
     }
 
     protected function init()

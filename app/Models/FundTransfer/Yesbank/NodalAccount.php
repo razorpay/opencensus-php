@@ -71,15 +71,14 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $this->doRequiredChecks($gateway);
 
-            $banking = $attempt->isOfBanking();
+            $type = $attempt->getRequestType();
 
-            $transfer = new Transfer($this->purpose, $banking);
+            $transfer = new Transfer($this->purpose, $type);
 
             try
             {
                 // Calling init will reset all the data of previous request
-                $response = $transfer->init()
-                                     ->setEntity($attempt)
+                $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);
 
                 // We set attempt's status to `initiated` before calling this function, `process`.

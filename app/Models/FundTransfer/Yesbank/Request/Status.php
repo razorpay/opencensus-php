@@ -24,9 +24,9 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct(bool $banking = false)
+    public function __construct(string $type = null)
     {
-        parent::__construct($banking);
+        parent::__construct($type);
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }

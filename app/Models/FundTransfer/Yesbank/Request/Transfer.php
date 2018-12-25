@@ -25,15 +25,36 @@ class Transfer extends Base
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
-    protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
+    protected $requestIdentifier;
 
-    public function __construct(string $purpose, bool $banking = false)
+    protected $responseIdentifier;
+
+    public function __construct(string $purpose, string $type = null)
     {
-        parent::__construct($banking);
+        parent::__construct($type);
 
         $this->purpose = $purpose;
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
+
+        $this->setRequestResponseIdentifiers($type);
+    }
+
+    protected function setRequestResponseIdentifiers(string $type = null)
+    {
+        switch ($type)
+        {
+            case Attempt\Type::PENNY_TESTING:
+                $this->requestIdentifier  = Constants::SYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+
+            default:
+                $this->requestIdentifier  = Constants::ASYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+
+        }
     }
 
     public function init()
@@ -66,29 +87,33 @@ class Transfer extends Base
      */
     public function requestBody(): string
     {
-        $source = $this->entity->source;
-
-        $this->trace->info(
-            TraceCode::YESBANK_SOURCE_AMOUNT, ['sourceAmount' => $source->getAmount() ]);
-
-        $amount = ($source->getAmount() / 100);
-
-        $this->trace->info(
-            TraceCode::YESBANK_CONVERTED_AMOUNT, ['convertedAmount' => $amount ]);
-
-        $amount = round($amount, 2);
-
         ini_set('serialize_precision', -1);
 
-        $this->trace->info(
-            TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
+        $requestData = $this->getRequestData();
 
-        $jsonRequest  = json_encode([
-                Constants::TRANSFER_REQUEST_IDENTIFIER => [
+        $jsonRequest  = json_encode($requestData);
+
+        ini_restore('serialize_precision');
+
+        return $jsonRequest;
+    }
+
+    /**
+     * Gives an request body in array format which has to be sent in request body
+     * this will construct the data based on type of request
+     * which is derived by entity
+     *
+     * @return array
+     */
+    protected function getRequestData(): array
+    {
+        $amount = $this->getFormattedAmount();
+
+        $data = [
+            $this->requestIdentifier => [
                 Constants::VERSION                      => self::VERSION,
                 Constants::UNIQUE_REQUEST_NO            => $this->entity->getId(),
                 Constants::APP_ID                       => $this->appId,
-                Constants::PURPOSE_CODE                 => Constants::PURPOSE_CODE_MAP[$this->purpose],
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
@@ -97,11 +122,17 @@ class Transfer extends Base
                 Constants::TRANSFER_AMOUNT              => $amount,
                 Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
             ],
-        ]);
+        ];
 
-        ini_restore('serialize_precision');
+        //
+        // Purpose is not required for sync mode
+        //
+        if ($this->entity->isPennyTesting() !== true)
+        {
+            $data[Constants::PURPOSE_CODE] = Constants::PURPOSE_CODE_MAP[$this->purpose];
+        }
 
-        return $jsonRequest;
+        return $data;
     }
 
     public function getRequestInputForGateway(): array
@@ -137,8 +168,49 @@ class Transfer extends Base
         return Action::PAYOUT;
     }
 
+    /**
+     * This will convert the amount which is in paise to rupees.
+     * and log outpput of each stage for debugging purpose
+     *
+     * @return float|int
+     */
+    protected function getFormattedAmount()
+    {
+        $source = $this->entity->source;
+
+        $this->trace->info(
+            TraceCode::YESBANK_SOURCE_AMOUNT,
+            [
+                'sourceAmount' => $source->getAmount()
+            ]);
+
+        $amount = ($source->getAmount() / 100);
+
+        $this->trace->info(
+            TraceCode::YESBANK_CONVERTED_AMOUNT,
+            [
+                'convertedAmount' => $amount
+            ]);
+
+        $amount = round($amount, 2);
+
+        $this->trace->info(
+            TraceCode::YESBANK_TRANSFER_AMOUNT,
+            [
+                'transferAmount' => $amount
+            ]);
+
+        return $amount;
+    }
+
     protected function getPaymentType(Attempt\Entity $attempt, $amount)
     {
+        // Penny test is only possible through IMPS
+        if ($attempt->isPennyTesting() === true)
+        {
+            return Mode::IMPS;
+        }
+
         $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
 
         return Mode::getExternalModeFromInternalMode($mode);
@@ -146,7 +218,10 @@ class Transfer extends Base
 
     protected function getPurposeSpecificData(): array
     {
-        if ($this->isRefund() === true)
+        $attempt = $this->entity;
+
+        if (($attempt->isRefund() === true) or
+            ($attempt->isPennyTesting() === true))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 
@@ -208,7 +283,7 @@ class Transfer extends Base
      */
     protected function extractSuccessfulData(array $response): array
     {
-        return $this->extractData($response);
+        return $this->extractDataFromAsyncResponse($response);
     }
 
     /**
@@ -218,16 +293,17 @@ class Transfer extends Base
      */
     protected function extractFailedData(array $response): array
     {
-        return $this->extractData($response);
+        if ($this->entity->isPennyTesting() === true)
+        {
+            return $this->extractDataFromSyncResponse($response);
+        }
+        else
+        {
+            return $this->extractDataFromAsyncResponse($response);
+        }
     }
 
-    /**
-     * Extract the required data from the given response array
-     *
-     * @param array $response
-     * @return array
-     */
-    protected function extractData(array $response): array
+    protected function extractDataFromSyncResponse(array $response): array
     {
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
 
@@ -251,7 +327,43 @@ class Transfer extends Base
             self::TRANSFER_TYPE         => null,
             self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
             self::MODE                  => null,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            self::NAME_WITH_BENE_BANK   => null,
+        ];
+    }
+
+    /**
+     * Extract the required data from the given response array
+     *
+     * @param array $response
+     * @return array
+     */
+    protected function extractDataFromAsyncResponse(array $response): array
+    {
+        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
+
+        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
+
+        $statusCode = $response[Constants::STATUS_CODE] ?? null;
+
+        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+
+        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
+
+        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+
+        return [
+            self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
+            self::UTR                   => null,
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            self::MODE                  => null,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            self::NAME_WITH_BENE_BANK   => null,
         ];
     }
 
@@ -303,7 +415,7 @@ class Transfer extends Base
     protected function mockGenerateSuccessResponse(): string
     {
         return json_encode([
-            Constants::TRANSFER_RESPONSE_IDENTIFIER => [
+            Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
@@ -319,7 +431,7 @@ class Transfer extends Base
     protected function mockGenerateFailedResponse(): string
     {
         return json_encode([
-            Constants::TRANSFER_RESPONSE_IDENTIFIER => [
+            Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
