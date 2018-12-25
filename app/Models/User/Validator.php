@@ -41,6 +41,10 @@ class Validator extends Base\Validator
         Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
+    protected static $editEmailForMerchantRules = [
+        Entity::EMAIL                 => 'filled|email|unique:users,email',
+    ];
+
     protected static $changePasswordRules = [
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
