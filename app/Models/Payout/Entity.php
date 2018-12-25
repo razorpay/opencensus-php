@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
     const USER         = 'user';
     const CUSTOMER     = 'customer';
     const FUND_ACCOUNT = 'fund_account';
+    const TRANSACTION  = 'transaction';
 
     protected $entity = 'payout';
 
@@ -166,6 +167,8 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT,
         self::AMOUNT,
         self::CURRENCY,
+        self::TRANSACTION_ID,
+        self::TRANSACTION,
         self::NOTES,
         self::FEES,
         self::TAX,
@@ -176,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::MODE,
         self::FAILURE_REASON,
+        self::PROCESSED_AT,
         self::CREATED_AT,
     ];
 
@@ -200,6 +204,7 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
+        self::TRANSACTION,
     ];
 
     protected $defaults = [
@@ -646,6 +651,14 @@ class Entity extends Base\PublicEntity
         if ($this->isStatusProcessedOrReversed() === false)
         {
             $attributes[self::UTR] = null;
+        }
+    }
+
+    public function setPublicTransactionAttribute(array & $attributes)
+    {
+        if (isset($attributes[self::TRANSACTION_ID]) === true)
+        {
+            $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
         }
     }
 

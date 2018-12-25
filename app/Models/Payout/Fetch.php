@@ -26,7 +26,7 @@ class Fetch extends BaseFetch
             Entity::STATUS          => 'sometimes|string|in:created,processed,reversed,processing,initiated'
         ],
         AuthType::PROXY_AUTH => [
-            self::EXPAND_EACH       => 'filled|string|in:user,fund_account.contact',
+            self::EXPAND_EACH       => 'filled|string|in:user,fund_account.contact,transaction',
         ],
     ];
 

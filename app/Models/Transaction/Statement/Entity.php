@@ -79,6 +79,11 @@ class Entity extends Transaction\Entity
 
     protected function setPublicSourceAttributeForPayout(array & $array)
     {
+        if (isset($attributes[self::SOURCE]) === false)
+        {
+            return;
+        }
+
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
