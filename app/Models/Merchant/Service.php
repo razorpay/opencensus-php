@@ -30,6 +30,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Pricing\Plan;
 use RZP\Error\PublicErrorDescription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -440,6 +441,34 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
+    public function fetchAccountBalances(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        //
+        // For non-activated merchants in live mode, simply return 0.
+        // For these merchants, balance entity is not yet created so
+        // we need to create the exception here.
+        //
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isActivated() === false) and
+            (Account::isNodalAccount($merchantId) === false))
+        {
+            $balanceCollection = new Base\PublicCollection();
+
+            $balance[Balance\Entity::ID]      = $merchantId;
+            $balance[Balance\Entity::BALANCE] = 0;
+
+            $balanceCollection->add($balance);
+
+            return $balanceCollection->toArrayPublic();
+        }
+
+        $balance = $this->repo->balance->fetch($input, $merchantId);
+
+        return $balance->toArrayWithItems();
+    }
+
     public function editAmountCredits($merchantId, $input)
     {
         (new Validator)->validateInput('edit_credits', $input);
@@ -462,6 +491,7 @@ class Service extends Base\Service
                 'input'       => $input
             ]);
 
+        /** @var Entity $merchant */
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
@@ -473,6 +503,7 @@ class Service extends Base\Service
 
         $orgId = $merchant->org->getId();
 
+        /** @var Plan $plan */
         $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($input['pricing_plan_id'], $orgId);
 
         // validate if this plan can be set for this merchant.
@@ -572,6 +603,53 @@ class Service extends Base\Service
                 $failedIds[] = $merchantId;
             }
         }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
+    public function bulkAssignPricing(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_pricing', $input);
+
+        $merchantIds   = $input['merchant_ids'];
+        unset($input['merchant_ids']);
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->assignPricingPlan($merchantId, $input);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_PRICING_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        // Tracing all ids together for ease of re-running in case of errors. The dashboard error
+        // display is not that convenient and can be lost. Collecting from the previous logs of
+        // individual failures is more time consuming.
+        $this->trace->error(TraceCode::MERCHANT_PRICING_BULK_ALL_FAILED_IDS, [ 'failed_ids' => $failedIds]);
 
         return [
             'total_count'  => count($merchantIds),
@@ -2452,9 +2530,9 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    public function registerBeneficiariesThroughApi(array $input, string $channel): array
     {
-        $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBeneficiariesThroughApi($input, $channel);
 
         return $response;
     }
@@ -2661,10 +2739,10 @@ class Service extends Base\Service
         return false;
     }
 
-    public function switchProductMerchant()
+    public function switchProductMerchant($product = null)
     {
         // Add Banking Role for the current merchant User.
-        (new User\Service())->addProductSwitchRole();
+        (new User\Service())->addProductSwitchRole($product);
 
         $merchant = $this->auth->getMerchant();
 

@@ -698,7 +698,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'amount'          => 300,
-                'method'          => 'fund_transfer',
                 'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
 
@@ -726,7 +725,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'amount'          => 800,
-                'method'          => 'fund_transfer',
                 'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
 
@@ -754,7 +752,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'amount'          => 800,
-                'method'          => 'fund_transfer',
                 'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
                 'currency'        => 'INR',
@@ -767,7 +764,7 @@ return [
                 'fund_account_id' => 'fa_100000000000fa',
                 'currency'        => 'INR',
                 'amount'          => 800,
-                'status'          => 'created',
+                'status'          => 'processing',
             ]
         ],
 

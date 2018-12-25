@@ -13,13 +13,15 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
+use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
-use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
@@ -32,9 +34,11 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
+ * @property Org\Entity         $org
  * @property Detail\Entity      $merchantDetail
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
+ * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
  */
 class Entity extends Base\PublicEntity
@@ -157,6 +161,7 @@ class Entity extends Base\PublicEntity
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
     const BALANCE                   = 'balance';
+    const BANKING_BALANCE           = 'banking_balance';
 
     const ROLE                      = 'role';
     const BANKING_ROLE              = 'banking_role';
@@ -173,6 +178,7 @@ class Entity extends Base\PublicEntity
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     protected $entity = 'merchant';
 
@@ -329,7 +335,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::AXIS,
+        self::CHANNEL                => Settlement\Channel::AXIS2,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -359,7 +365,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
         self::WHITELISTED_IPS_LIVE   => 'array',
         self::WHITELISTED_IPS_TEST   => 'array',
-        self::FEE_CREDITS_THRESHOLD  => 'int'
+        self::FEE_CREDITS_THRESHOLD  => 'int',
+        self::BUSINESS_BANKING       => 'bool',
     ];
 
     protected $eventFields = [
@@ -487,6 +494,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
+    public function setActivationSource(string $activationSource)
+    {
+        $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
     public function getReferrer()
     {
         $tagNames = $this->tagNames();
@@ -580,6 +592,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $subvention;
+    }
+
+    public function getActivationSource()
+    {
+        return $this->getAttribute(self::ACTIVATION_SOURCE);
     }
 
     public function activate()
@@ -1334,9 +1351,9 @@ class Entity extends Base\PublicEntity
      *
      * @return bool
      */
-    public function isBusinessBankingEnabled(): bool
+    public function isBusinessBankingEnabled()
     {
-        return $this->getAttribute(self::BUSINESS_BANKING);
+        return $this->getAttribute(self::BUSINESS_BANKING) == true;
     }
 
     public function getHoldFunds()
@@ -1584,7 +1601,7 @@ class Entity extends Base\PublicEntity
      *
      * @param Balance/Type $product
      */
-    public function owners($product = Balance\Type::PRIMARY)
+    public function owners($product = Product::PRIMARY)
     {
         return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
@@ -1596,16 +1613,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->users()
                     ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
-                    ->where(self::PRODUCT, Balance\Type::PRIMARY)
+                    ->where(self::PRODUCT, Product::PRIMARY)
                     ->first();
     }
 
     /**
      * Get the primary owner of the merchant.
      */
-    public function primaryOwner()
+    public function primaryOwner($product = Product::PRIMARY)
     {
-        return $this->owners()->first();
+        return $this->owners($product)->first();
     }
 
     /**

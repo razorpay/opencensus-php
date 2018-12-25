@@ -69,5 +69,5 @@ abstract class Beneficiary extends BaseCore
         return $normalizedString;
     }
 
-    abstract protected function registerBeneficiary(PublicCollection $bankAccounts): array;
+    abstract public function registerBeneficiary(PublicCollection $bankAccounts): array;
 }

@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -80,6 +81,8 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateEntities()
     {
+        // All of these are in a single DB transaction.
+
         $this->updateAttemptEntity();
 
         if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
@@ -165,11 +168,21 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
+        $attemptStatus = $this->fta->getStatus();
+        $attemptFailureReason = $this->fta->getFailureReason();
+
+        if ($this->source->getEntity() === Entity::PAYOUT)
+        {
+            (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+            return;
+        }
+
+        $sourceStatus = $this->getSourceStatusFromReconEntityStatus($attemptStatus);
 
         $this->source->setStatus($sourceStatus);
 
-        $this->source->setFailureReason($this->fta->getFailureReason());
+        $this->source->setFailureReason($attemptFailureReason);
 
         $this->repo->saveOrFail($this->source);
     }
@@ -203,16 +216,13 @@ abstract class EntityProcessor extends Base\Core
 
         $failureReason  = null;
 
-        $channel = $this->fta->getChannel();
-
-        $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+        $statusNamespace = $this->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
         $successStatuses = $statusClass::getSuccessfulStatus();
 
-        $failureStatuses = $statusClass::getFailureStatus();
-
+        $failureStatuses = $statusClass::getFailureStatus($bankStatusCode);
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
         {
@@ -226,7 +236,8 @@ abstract class EntityProcessor extends Base\Core
 
             $tenTenPm = $recordDate->hour(22)->minute(10)->getTimestamp();
 
-            if (($now < $tenTenPm) and ($this->env !== 'testing'))
+            if (($this->fta->getSourceType() !== Attempt\Type::PAYOUT) and
+                ($now < $tenTenPm) and ($this->env !== 'testing'))
             {
                 $status = $this->fta->getStatus();
             }
@@ -241,27 +252,24 @@ abstract class EntityProcessor extends Base\Core
         return [$status, $failureReason];
     }
 
-    protected function getSourceStatusFromReconEntityStatus(): string
+    protected function getSourceStatusFromReconEntityStatus(string $attemptStatus): string
     {
         $sourceEntityName = $this->source->getEntity();
 
         switch ($sourceEntityName)
         {
             case Entity::SETTLEMENT:
-            case Entity::PAYOUT:
             case Entity::REFUND:
-                return $this->getStatusForEntity($sourceEntityName);
+                return $this->getStatusForEntity($sourceEntityName, $attemptStatus);
 
             default:
                 throw new Exception\LogicException('Unrecognized source entity: ' . $sourceEntityName);
         }
     }
 
-    protected function getStatusForEntity(string $sourceEntityName): string
+    protected function getStatusForEntity(string $sourceEntityName, string $attemptStatus): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-
-        $attemptStatus = $this->fta->getStatus();
 
         switch ($attemptStatus)
         {
@@ -346,8 +354,15 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(Attempt\Entity $entity)
     {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 

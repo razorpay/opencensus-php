@@ -2,13 +2,18 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
-use RZP\Models\Bank\IFSC;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 
 class Transfer extends Base
 {
@@ -22,9 +27,9 @@ class Transfer extends Base
 
     protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $purpose)
+    public function __construct(string $purpose, bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->purpose = $purpose;
 
@@ -87,10 +92,10 @@ class Transfer extends Base
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
-                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity->bankAccount, $amount),
+                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
-                Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
+                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
             ],
         ]);
 
@@ -99,22 +104,44 @@ class Transfer extends Base
         return $jsonRequest;
     }
 
-    protected function getPaymentType(BankAccount\Entity $ba, $amount)
+    public function getRequestInputForGateway(): array
     {
-        $ifsc = $ba->getIfscCode();
+        $fta = $this->entity;
 
-        $ifscFirstFour = substr($ifsc, 0, 4);
+        $source = $fta->source;
 
-        if ($ifscFirstFour === IFSC::YESB)
-        {
-            return Constants::FT;
-        }
-        else if ($amount < self::MAX_IMPS_AMOUNT)
-        {
-            return Mode::IMPS;
-        }
+        $amount = $source->getAmount();
 
-        return $this->getTransferMode($amount, $ba->merchant);
+        //
+        // For now, we would be hardcoding the terminal. Later, have to
+        // figure out how to do terminal selection for this, since each
+        // merchant might have a different terminal. Use-case being merchant
+        // wants the payout/refund to happen from their custom vpa handle
+        // instead of from razorpay handle
+        //
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
+
+        return [
+            'terminal' => $terminal->toArray(),
+            'merchant' => $source->merchant->toArrayPublic(),
+            'gateway_input' => [
+                'amount'    => $amount,
+                'vpa'       => $fta->vpa->getAddress(),
+                'ref_id'    => $fta->getId(),
+            ]
+        ];
+    }
+
+    public function getActionForGateway(): string
+    {
+        return Action::PAYOUT;
+    }
+
+    protected function getPaymentType(Attempt\Entity $attempt, $amount)
+    {
+        $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
+
+        return Mode::getExternalModeFromInternalMode($mode);
     }
 
     protected function getPurposeSpecificData(): array
@@ -147,6 +174,36 @@ class Transfer extends Base
     }
 
     /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @return string
+     */
+    protected function getNarration()
+    {
+        $ftaNarration = $this->entity->getNarration();
+
+        if (empty($ftaNarration) === false)
+        {
+            $narration = $ftaNarration;
+        }
+        else
+        {
+            $narration = $this->entity->merchant->getBillingLabel();
+        }
+
+        $formattedNarration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $narration);
+
+        $formattedNarration = ($formattedNarration ? str_limit($formattedNarration, 30) : 'Razorpay');
+
+        $formattedNarration = $formattedNarration . ' FUND TRANSFER';
+
+        return $formattedNarration;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function extractSuccessfulData(array $response): array
@@ -174,7 +231,7 @@ class Transfer extends Base
     {
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
 
-        $bankReferenceNo =  $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
+        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
 
         $statusCode = $response[Constants::STATUS_CODE] ?? null;
 
@@ -182,16 +239,61 @@ class Transfer extends Base
 
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
 
+        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+
         return [
             self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
-            self::UTR                  => null,
-            self::BANK_STATUS_CODE     => $this->getNullOnEmpty($statusCode),
-            self::REMARK               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE         => null,
-            self::TRANSFER_TYPE        => null,
-            self::REFERENCE_NUMBER     => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                 => null,
+            self::UTR                   => null,
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            self::MODE                  => null,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
+        ];
+    }
+
+    protected function extractGatewayData(array $response): array
+    {
+        // Required data:
+        //     self::PAYMENT_REF_NO,
+        //     self::UTR,
+        //     self::BANK_STATUS_CODE,
+        //     self::REMARK,
+        //     self::PAYMENT_DATE,
+        //     self::REFERENCE_NUMBER,
+        //     self::MODE,
+        //     self::PUBLIC_FAILURE_REASON
+
+        //
+        // We have null checks everywhere since it's possible that the
+        // third-party is down and we don't get any data at all.
+        //
+
+        // FTA ID
+        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
+        $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
+        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
+
+        $statusCode = $response[Constants::STATUS_CODE] ?? null;
+        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
+        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode);
+
+        return [
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            self::UTR                   => $this->getNullOnEmpty($utr),
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            self::MODE                  => null,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
 
@@ -227,5 +329,20 @@ class Transfer extends Base
                 Constants::SUB_STATUS_TEXT      => 'Some error while attempting the transfer',
             ],
         ]);
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        return [
+            Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
+            Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
+            Constants::STATUS_CODE          => GatewayStatus::COMPLETED,
+        ];
+    }
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        // TODO: Return stuff
+        return [];
     }
 }

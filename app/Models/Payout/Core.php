@@ -7,13 +7,16 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
 use RZP\Models\Customer;
+use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
+use RZP\Models\Settlement;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Settlement\Merchant as SettlementMerchant;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
@@ -63,7 +66,7 @@ class Core extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        return $this->mutex->acquireAndRelease(
+        $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use ($input, $merchant)
             {
@@ -74,10 +77,9 @@ class Core extends Base\Core
                 $onDemand = $this->getOnDemandStatus($input);
 
                 $payoutInput = [
-                    Entity::PURPOSE   => FundTransferAttempt\Purpose::SETTLEMENT,
+                    Entity::PURPOSE   => Purpose::PAYOUT,
                     Entity::AMOUNT    => $amount,
                     Entity::CURRENCY  => $currency,
-                    Entity::METHOD    => Method::FUND_TRANSFER,
                     Entity::TYPE      => $onDemand,
                 ];
 
@@ -87,6 +89,44 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+        $ftaId = $payout->fundTransferAttempts->first()->getId();
+
+        try
+        {
+            $info = [
+                'fta_id'    => $ftaId,
+                'payout_id' => $payout->getId()
+            ];
+
+            if ((isset($input[Entity::TYPE])) and
+                ($input[Entity::TYPE] === Entity::ON_DEMAND))
+            {
+                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_INIT, $info);
+
+                FundTransfer::dispatch($this->mode, $ftaId);
+
+                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_COMPLETE, $info);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $data = $info + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_DISPATCH_FOR_MERCHANT_FAILED,
+                $data);
+
+            (new Settlement\SlackNotification)->send(
+                'FundTransfer dispatch for merchant failed',
+                $data,
+                $e,
+                1);
+        }
+
+        return $payout;
     }
 
     /**
@@ -199,7 +239,7 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public function retryFailedPayouts(array $input): array
+    public function retryReversedPayouts(array $input): array
     {
         $this->trace->info(TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST, $input);
 
@@ -207,7 +247,7 @@ class Core extends Base\Core
 
         $ids = Entity::verifyIdAndStripSignMultiple($input['ids']);
 
-        $payouts = $this->repo->payout->fetchFailedPayouts($ids);
+        $payouts = $this->repo->payout->fetchReversedPayouts($ids);
 
         $mutexResource = sprintf(self::PAYOUT_RETRY, $this->mode);
 
@@ -215,7 +255,7 @@ class Core extends Base\Core
             $mutexResource,
             function () use ($payouts)
             {
-                return $this->attemptRetryForFailedPayouts($payouts);
+                return $this->attemptRetryForReversedPayouts($payouts);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -225,11 +265,113 @@ class Core extends Base\Core
         ];
     }
 
-    protected function attemptRetryForFailedPayouts(Base\PublicCollection $payouts): array
+    public function updateStatusAfterFtaRecon(Entity $payout, string $ftaStatus, string $ftaFailureReason = null)
+    {
+        switch ($ftaStatus)
+        {
+            case Attempt\Status::PROCESSED:
+                $this->handleFtaProcessed($payout);
+                break;
+
+            case Attempt\Status::FAILED:
+                $this->handleFtaFailed($payout, $ftaFailureReason);
+                break;
+
+            case Attempt\Status::CREATED:
+                break;
+
+            case Attempt\Status::INITIATED:
+                break;
+
+            default:
+                $this->trace->warning(
+                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
+                    [
+                        'payout_id'             => $payout->getId(),
+                        'fta_status'            => $ftaStatus,
+                        'fta_failure_reason'    => $ftaFailureReason,
+                    ]);
+        }
+    }
+
+    public function updateWithDetailsBeforeFtaRecon(Entity $payout, Attempt\Entity $attempt, array $responseData = [])
+    {
+        $utr = $attempt->getUtr();
+
+        $remarks = $attempt->getRemarks();
+
+        $mode = $attempt->getMode();
+
+        // For non-Yesbank, we will not get public_failure_reason
+        $failureReason = $responseData['public_failure_reason'] ?? null;
+
+        $payout->setUtr($utr);
+
+        $payout->setRemarks($remarks);
+
+        $payout->setMode($mode);
+
+        $payout->setFailureReason($failureReason);
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    protected function handleFtaProcessed(Entity $payout)
+    {
+        $payout->setStatus(Status::PROCESSED);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.processed', [$payout]);
+    }
+
+    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    {
+        $this->reversePayout($payout, $ftaFailureReason);
+
+        $this->app->events->fire('api.payout.reversed', [$payout]);
+    }
+
+    protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to reverse an already reversed payout',
+                [
+                    'payout_id'         => $payout->getId(),
+                    'status'            => $payout->getStatus(),
+                    'reverse_reason'    => $reverseReason,
+                ]);
+        }
+
+        $reversal = $this->repo->transaction(
+            function() use ($payout, $reverseReason) {
+                $reversal = (new Reversal\Core)->reverseForPayout($payout);
+
+                $payout->setStatus(Status::REVERSED);
+
+                $payout->setFailureReason($reverseReason);
+
+                $this->repo->saveOrFail($payout);
+
+                return $reversal;
+            });
+
+        return $reversal;
+    }
+
+    protected function attemptRetryForReversedPayouts(Base\PublicCollection $payouts): array
     {
         $payoutsRetried = [];
 
-        $retryFailed = [];
+        $retryReversed = [];
 
         foreach ($payouts as $payout)
         {
@@ -242,14 +384,14 @@ class Core extends Base\Core
                 $payout = $this->repo->transaction(
                     function () use ($merchantSettler, $payout)
                     {
-                        return $merchantSettler->retryFailedPayout($payout);
+                        return $merchantSettler->retryReversedPayout($payout);
                     });
 
                 $payoutsRetried[] = $payout->getId();
             }
             catch (\Throwable $e)
             {
-                $retryFailed[] = $payout->getId();
+                $retryReversed[] = $payout->getId();
 
                 $this->trace->traceException(
                     $e,
@@ -266,7 +408,7 @@ class Core extends Base\Core
 
             return [
                 'payouts_retried'       => $payoutsRetried,
-                'failed_retries'        => $retryFailed,
+                'failed_retries'        => $retryReversed,
             ];
         }
 
@@ -338,7 +480,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::CURRENCY]) === true)
         {
-             return $input[Entity::CURRENCY];
+            return $input[Entity::CURRENCY];
         }
 
         return Currency::INR;

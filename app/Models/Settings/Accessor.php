@@ -46,13 +46,18 @@ class Accessor extends Base\Core
      */
     protected $laravelSettings;
 
-    public function __construct(Base\PublicEntity $entity, string $module)
+    public function __construct(Base\PublicEntity $entity, string $module, string $connection = null)
     {
         parent::__construct();
 
         $this->entity = $entity->getEntity();
         $this->id     = $entity->getId();
         $this->module = $module;
+
+        if ($connection !== null)
+        {
+            config(['settings.connection' => $connection]);
+        }
 
         $this->initLaravelSettings();
 
@@ -72,11 +77,13 @@ class Accessor extends Base\Core
      * @param Base\PublicEntity $entity
      * @param string            $module
      *
+     * @param string|null       $connection
+     *
      * @return Accessor
      */
-    public static function for(Base\PublicEntity $entity, string $module): Accessor
+    public static function for(Base\PublicEntity $entity, string $module, string $connection = null): Accessor
     {
-        return new static($entity, $module);
+        return new static($entity, $module, $connection);
     }
 
     /**
@@ -127,6 +134,25 @@ class Accessor extends Base\Core
         $settings = $this->laravelSettings->get($key);
 
         return $this->serializeSettings($settings);
+    }
+
+    /**
+     * Check if a key exists. Can be a parent key or a dot-notated nested key.
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function exists(string $key): bool
+    {
+        $value = $this->get($key);
+
+        if ($value instanceof Dictionary)
+        {
+            $value = $value->toArray();
+        }
+
+        return (empty($value) === false);
     }
 
     /**

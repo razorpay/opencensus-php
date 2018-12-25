@@ -12,12 +12,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -36,6 +38,8 @@ class PayoutTest extends TestCase
                 'account_type' => 'bank_account',
                 'account_id'   => '1000000lcustba'
             ]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
     }
 
     public function testCreatePayout(): array
@@ -56,14 +60,59 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
 
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
-        $this->assertEquals('10000000000000', $txn['balance_id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testCreatePayoutToInactiveFundAccount()
+    {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000001fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba',
+                'active'       => 0,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutToInactiveContactFundAccount()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000001fa',
+                'source_id'    => '1000000contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $this->startTest();
     }
 
     public function testCreatePayoutWithOtp()
@@ -78,6 +127,7 @@ class PayoutTest extends TestCase
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
+
         $this->assertEquals("MerchantUser01", $payout['user_id']);
     }
 
@@ -127,7 +177,7 @@ class PayoutTest extends TestCase
             'payout',
             $payout['id'],
             [
-                'status' => Payout\Status::FAILED
+                'status' => Payout\Status::REVERSED
             ]);
 
         $this->fixtures->edit(
@@ -148,7 +198,7 @@ class PayoutTest extends TestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($payout['status'], Payout\Status::CREATED);
+        $this->assertEquals($payout['status'], Payout\Status::PROCESSING);
         $this->assertEquals($payoutAttempt['status'], Attempt\Status::CREATED);
 
         // Verify attempt entity
@@ -193,7 +243,7 @@ class PayoutTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $response = $this->startTest();
+        $this->startTest();
     }
 
     public function testCreateMerchantPayoutWithModulo()
@@ -327,25 +377,6 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateBankAccountPayoutOnCardPayment()
-    {
-        $card = $this->fixtures->on('live')->create('card', ['type' => 'credit']);
-
-        $payment = $this->fixtures->on('live')->create('payment:captured');
-        $this->fixtures->on('live')->edit('payment', $payment['id'], ['card_id' => $card['id']]);
-
-        $this->fixtures->on('live')->edit('transaction', $payment->getTransactionId(), ['settled' => 1]);
-
-        $data['request']['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
-
-        // Merchant needs to be activated to make live requests
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest($data);
-    }
-
     public function setPaymentPayoutUrl($payment, & $request)
     {
         $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
@@ -449,5 +480,275 @@ class PayoutTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testSearchPayoutByTransactionId()
+    {
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?transaction_id=txn_' . $payout['transaction_id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByPayoutStatus()
+    {
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => 'processed'
+            ]);
+
+        $request['url'] = '/payouts?status=processed';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+
+    public function testSearchPayoutByPayoutContactType()
+    {
+        $contact = $this->fixtures->create('contact', [
+            'id' => '1000005contact', 'email' => 'test@test5.com',
+            'contact' => '8888888888', 'name' => 'test user',
+            'type' => 'customer'
+        ]);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_type=customer';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByUtr()
+    {
+        $payout = $this->testCreatePayout();
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'utr' => '1234567890'
+            ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?utr=1234567890';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByContactId()
+    {
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000010contact',
+                'source_type' => 'contact',
+            ]);
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_id=cont_1000010contact';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByContactName()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_name=test user';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByContactPhone()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_phone=8888888888';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByContactEmail()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_email=test@payout.com';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByFundAccountId()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 }

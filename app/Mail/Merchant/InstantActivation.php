@@ -3,6 +3,7 @@
 namespace RZP\Mail\Merchant;
 
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 
@@ -28,9 +29,31 @@ class InstantActivation extends Mailable
         return $this;
     }
 
+    /**
+     * For Instant Activations Mail
+     * 1) Other Org Merchants should receive old activations mail with out razorpayX content.
+     * 2) When a Merchant submit's form on banking product then he should receive mail with X content in the first fold.
+     * 3) When a Merchant submit's form on primary product then he should receive mail with primary content first.
+     *
+     * @return $this
+     */
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.instant_activation');
+        $this->view('emails.merchant.instant_activation_heimdall');
+
+        // Commenting the below code till x goes live.
+        //        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
+        //        {
+        //            $this->view('emails.merchant.instant_activation_heimdall');
+        //        }
+        //        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
+        //        {
+        //            $this->view('emails.merchant.instant_activation_banking');
+        //        }
+        //        else
+        //        {
+        //            $this->view('emails.merchant.instant_activation');
+        //        }
 
         return $this;
     }

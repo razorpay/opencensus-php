@@ -37,9 +37,7 @@ class MerchantController extends Controller
 
     public function postSwitchProductMerchant()
     {
-        $input = Request::all();
-
-         $this->service()->switchProductMerchant($input);
+        $this->service()->switchProductMerchant();
 
         return ApiResponse::json([]);
     }
@@ -351,6 +349,15 @@ class MerchantController extends Controller
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountBalances()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchAccountBalances($input);
 
         return ApiResponse::json($data);
     }
@@ -1115,7 +1122,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+        $data = $this->service()->registerBeneficiariesThroughApi($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -1141,6 +1148,24 @@ class MerchantController extends Controller
     public function getRazorxTreatment($featureFlag)
     {
         $response = $this->service(E::MERCHANT)->getRazorxTreatment($featureFlag);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Input JSON sample:
+     * {
+     *   "pricing_plan_id": "1AXludj60w4pSp",
+     *   "merchant_ids": ["10000000000000", "100000Razorpay"]
+     * }
+     *
+     * @return mixed
+     */
+    public function bulkAssignPricing()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignPricing($input);
 
         return ApiResponse::json($response);
     }

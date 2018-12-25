@@ -7,6 +7,8 @@ use RZP\Models\Merchant\Balance;
 /**
  * A few entities have balance relation e.g. virtual_account, transaction & payout.
  * This trait includes the relation and few helper methods.
+ *
+ * @property Balance\Entity $balance
  */
 trait HasBalance
 {
@@ -24,6 +26,11 @@ trait HasBalance
     public function getBalanceId()
     {
         return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function hasBalance(): bool
+    {
+        return $this->isAttributeNotNull(self::BALANCE_ID);
     }
 
     /**
@@ -52,5 +59,16 @@ trait HasBalance
         $balanceId = $this->getAttribute(self::BALANCE_ID);
 
         $attributes[self::BALANCE_ID] = Balance\Entity::getSignedIdOrNull($balanceId);
+    }
+
+    /**
+     * Appends balance.account_number attribute in used-by entity's toArray() if
+     * ACCOUNT_NUMBER exists in $appends.
+     *
+     * @return string|null
+     */
+    public function getAccountNumberAttribute()
+    {
+        return optional($this->balance)->getAccountNumber();
     }
 }

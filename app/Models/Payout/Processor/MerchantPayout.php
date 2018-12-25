@@ -4,10 +4,13 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Payout;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement;
 
 class MerchantPayout extends Base
 {
-    protected function setChannel()
+    const DEFAULT_MERCHANT_PAYOUT_CHANNEL = Settlement\Channel::YESBANK;
+
+    protected function setChannel($input = [])
     {
         $this->channel = $this->merchant->getChannel();
     }
@@ -23,7 +26,13 @@ class MerchantPayout extends Base
         //
         if ($destination === null)
         {
-            throw new LogicException('Merchant bank account should exist for on demand payouts');
+            throw new LogicException(
+                'Merchant bank account should exist for on demand payouts',
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'input'     => $input,
+                ]);
         }
 
         $payout->destination()->associate($destination);

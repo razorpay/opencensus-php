@@ -3,18 +3,21 @@
 namespace RZP\Models\FundTransfer\Yesbank;
 
 use App;
-use Carbon\Carbon;
 use Config;
+use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
+
+use RZP\Models\Base\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Mode;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt\Lock;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
@@ -42,15 +45,9 @@ class NodalAccount extends NodalBase\NodalAccount
      */
     public function process(PublicCollection $attempts): array
     {
-        $transfer = new Transfer($this->purpose);
-
         $processedCount = 0;
 
-        $lock = (new Lock($this->channel));
-
-        $attempts = $lock->lockAttempts($attempts);
-
-        foreach ($attempts as $entity)
+        foreach ($attempts as $attempt)
         {
             //
             // This is required only for Yesbank since the schedule sets
@@ -62,25 +59,36 @@ class NodalAccount extends NodalBase\NodalAccount
             // Also, for other banks, settlements itself won't be even
             // initiated on non-working days/hours
             //
-            $isTransferAllowedToday = $this->isTransferAllowedToday($entity);
+
+            $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
 
             if ($isTransferAllowedToday === false)
             {
                 continue;
             }
 
+            $gateway = ($attempt->hasVpa() === true);
+
+            $this->doRequiredChecks($gateway);
+
+            $banking = $attempt->isOfBanking();
+
+            $transfer = new Transfer($this->purpose, $banking);
+
             try
             {
                 // Calling init will reset all the data of previous request
                 $response = $transfer->init()
-                                     ->setEntity($entity)
-                                     ->makeRequest();
+                                     ->setEntity($attempt)
+                                     ->makeRequest($gateway);
 
-                $this->repo->saveOrFail($entity);
+                // We set attempt's status to `initiated` before calling this function, `process`.
+                // Only if the request is executed successfully, we want to save the attempt's status.
+                $this->repo->saveOrFail($attempt);
 
-                $this->repo->saveOrFail($entity->source);
+                $this->repo->saveOrFail($attempt->source);
 
-                $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
+                $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
             }
             catch (\Throwable $e)
             {
@@ -90,13 +98,11 @@ class NodalAccount extends NodalBase\NodalAccount
                     TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
                     [
                         'channel'       => $this->channel,
-                        'entity_id'     => $entity->getId(),
-                        'settlement_id' => $entity->getSourceId(),
+                        'attempt_id'    => $attempt->getId(),
+                        'settlement_id' => $attempt->getSourceId(),
                     ]);
 
-                $lock->releaseAttempt($entity);
-
-                $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $entity->getSourceType());
+                $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $attempt->getSourceType());
 
                 continue;
             }
@@ -116,10 +122,6 @@ class NodalAccount extends NodalBase\NodalAccount
                     $response
                 );
             }
-            finally
-            {
-                $lock->releaseAttempt($entity);
-            }
         }
 
         $this->updateTransferStatus($processedCount);
@@ -128,58 +130,38 @@ class NodalAccount extends NodalBase\NodalAccount
     }
 
     /**
-     * filters the attempts based on holiday and channel
-     * for yesbank we allow settlements on holidays but it should only be IMPS
-     * IMPS has amount limit of 2L.
-     * So if any attempt of yesbank on holidays will be filtered based on amount
-     *
-     * @param Attempt\Entity $attempt
-     * @return bool
+     * @param bool $gateway
+     * @throws LogicException
      */
-    protected function isTransferAllowedToday(Attempt\Entity $attempt):  bool
+    protected function doRequiredChecks(bool $gateway)
     {
-        $amount = $attempt->source->getAmount() / 100;
-
-        $mode = $this->getPaymentMode($attempt->bankAccount, $amount);
-
-        $allowedModes = Mode::get24x7TransferModes();
-
-        if (in_array($mode, $allowedModes, true) === true)
+        if ($gateway === false)
         {
-            return true;
+            return;
         }
 
-        if ($this->isWorkingDay === false)
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
+
+        if ($terminal === null)
         {
-            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
-                'attempt_id'=> $attempt->getId(),
-                'reason'    => 'Holiday today!',
-            ]);
-
-            return false;
+            throw new LogicException(
+                "Terminal not found.",
+                null,
+                [
+                    'gateway' => Gateway::UPI_YESBANK
+                ]);
         }
-
-        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-        if (($currentTime >= $this->bankingStartTime) and
-            ($currentTime <= $this->bankingEndTime))
-        {
-            return true;
-        }
-
-        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
-            'attempt_id'            => $attempt->getId(),
-            'amount'                => $amount,
-            'mode'                  => $mode,
-            'banking_start_time'    => $this->bankingStartTime,
-            'banking_ending_time'   => $this->bankingEndTime,
-        ]);
-
-        return false;
     }
 
-    protected function getPaymentMode(BankAccount\Entity $ba, $amount): string
+    public function getPaymentModeForBankAccount(Attempt\Entity $attempt, $amount): string
     {
+        if ($attempt->hasMode() === true)
+        {
+            return $attempt->getMode();
+        }
+
+        $ba = $attempt->bankAccount;
+
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
@@ -194,5 +176,80 @@ class NodalAccount extends NodalBase\NodalAccount
         }
 
         return $this->getTransferMode($amount, $ba->merchant);
+    }
+
+    /**
+     * filters the attempts based on holiday and channel
+     * for yesbank we allow settlements on holidays but it should only be IMPS
+     * IMPS has amount limit of 2L.
+     * So if any attempt of yesbank on holidays will be filtered based on amount
+     *
+     * @param Attempt\Entity $attempt
+     * @return bool
+     */
+    protected function isTransferAllowedToday(Attempt\Entity $attempt):  bool
+    {
+        if ($attempt->hasVpa() === true)
+        {
+            return true;
+        }
+
+        $amount = $attempt->source->getAmount() / 100;
+
+        $mode = $this->getPaymentModeForBankAccount($attempt, $amount);
+
+        $allowedModes = Mode::get24x7TransferModes();
+
+        // For IMPS
+        if (in_array($mode, $allowedModes, true) === true)
+        {
+            return true;
+        }
+
+        if ($this->isWorkingDay === false)
+        {
+            $this->trace->info(
+                TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED,
+                [
+                    'attempt_id'    => $attempt->getId(),
+                    'reason'        => 'Holiday today!',
+                ]);
+
+            return false;
+        }
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        // For RTGS
+        if ($mode === Mode::RTGS)
+        {
+            if (($currentTime >= $this->bankingStartTimeRtgs) and
+                ($currentTime <= $this->bankingEndTimeRtgs))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // For NEFT and IFT
+        if (($currentTime >= $this->bankingStartTime) and
+            ($currentTime <= $this->bankingEndTime))
+        {
+            return true;
+        }
+
+        $this->trace->info(
+            TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED,
+            [
+                'attempt_id'            => $attempt->getId(),
+                'amount'                => $amount,
+                'mode'                  => $mode,
+                'current_time'          => $currentTime,
+                'banking_start_time'    => $this->bankingStartTime,
+                'banking_ending_time'   => $this->bankingEndTime,
+            ]);
+
+        return false;
     }
 }

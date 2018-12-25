@@ -11,6 +11,7 @@ use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -135,6 +136,46 @@ class ReconciliationFileTest extends TestCase
         $updatedGatewayPayment = $this->getDbLastEntityToArray('first_data');
 
         $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
+    /**
+     * A failed payment should be force authorised only if
+     * payment amount and currency match.
+     */
+    public function testAmountMisMatchForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        // change the amount  and set status to 'failed'
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'amount'                => $payment['amount']*2,
+                'base_amount'           => $payment['base_amount']*2,
+                'status'                => PaymentStatus::FAILED,
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment, [], 'first_data');
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $updatedGatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $this->assertEquals('failed', $updatedPayment['status']);
     }
 
     public function testHdfcFssReconPaymentFile()

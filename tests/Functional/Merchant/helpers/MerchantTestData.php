@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 
 return [
     'testCreateKey' => [
@@ -3757,6 +3758,72 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testBulkAssignPricing' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 9,
+                'failed_count' => 4,
+                'failed_ids'   => [
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015'
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkAssignPricingMissingInput' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The pricing plan id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

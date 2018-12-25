@@ -4,13 +4,13 @@ namespace RZP\Models\Pricing;
 
 use App;
 
-use RZP\Constants\Product;
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
-use RZP\Models\Admin\Org;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 
 class Repository extends Base\Repository
@@ -126,6 +126,19 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->firstOrFail();
+    }
+
+    public function getBankingPricingRulesForMethod(string $feature, string $method, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->org->getId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->get();
     }
 
     public function getPricingPlansOrderedByPlanId()

@@ -18,7 +18,9 @@ use RZP\Models\Merchant\Detail\Entity;
  */
 class Whitelist extends Base implements ActivationFlowInterface
 {
-
+    /**
+     * @param Entity $merchantDetails
+     */
     public function process(Entity $merchantDetails)
     {
         $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);

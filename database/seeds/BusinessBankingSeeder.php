@@ -18,6 +18,7 @@ class BusinessBankingSeeder extends Seeder
             $this->seedBankingBalance();
             $this->seedBankingVA();
             $this->seedBankingVATerminal();
+            $this->seedPayoutFeature();
         });
     }
 
@@ -117,6 +118,9 @@ class BusinessBankingSeeder extends Seeder
                     'status'          => 'active',
                     'name'            => 'Test Merchant',
                     'balance_id'      => 'xbalance000000',
+                    'amount_received' => 0,
+                    'amount_paid'     => 0,
+                    'amount_reversed' => 0,
                     'bank_account_id' => 'xba00000000000',
                     'notes'           => '{}',
                     'created_at'      => time(),
@@ -132,7 +136,7 @@ class BusinessBankingSeeder extends Seeder
             [
                 [
                     'id'                   => 'xterminal00000',
-                    'merchant_id'          => '10000000000000',
+                    'merchant_id'          => '100000Razorpay',
                     'gateway'              => 'bt_yesbank',
                     'gateway_merchant_id'  => '222444',
                     'gateway_merchant_id2' => '00',
@@ -146,5 +150,20 @@ class BusinessBankingSeeder extends Seeder
                     'deleted_at'           => null,
                 ]
             ]);
+    }
+
+    private function seedPayoutFeature()
+    {
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_x0x0x0',
+                    'name'          => 'payout',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+        ]);
     }
 }

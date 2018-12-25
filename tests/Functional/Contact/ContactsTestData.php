@@ -66,11 +66,12 @@ return [
     'testCreateContact' => [
         'request'  => [
             'content' => [
-                'name'    => 'Test Contact',
-                'type'    => 'self',
-                'email'   => 'asd@abc.com',
-                'contact' => '9123456789',
-                'notes'   => [
+                'name'         => 'Test Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
                     'test1' => 'One',
                 ],
             ],
@@ -79,12 +80,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'  => 'contact',
-                'name'    => 'Test Contact',
-                'type'    => 'self',
-                'email'   => 'asd@abc.com',
-                'contact' => '9123456789',
-                'notes'   => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
                     'test1' => 'One',
                 ],
             ]
@@ -143,6 +145,7 @@ return [
         'request'   => [
             'content' => [
                 'type' => 'invalid_type',
+                'name' => 'Test',
             ],
             'url'     => '/contacts',
             'method'  => 'POST'
@@ -151,7 +154,31 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid contact type: invalid_type',
+                    'description' => 'Invalid type: invalid_type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateContactInvalidReferenceId' => [
+        'request'   => [
+            'content' => [
+                'name'         => 'Test',
+                'reference_id' => '12345678901234567890123456789012345678901234567890',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reference id may not be greater than 40 characters.',
                 ],
             ],
             'status_code' => 400,
@@ -165,16 +192,18 @@ return [
     'testUpdateContact' => [
         'request'  => [
             'content' => [
-                'type' => 'employee',
+                'type'         => 'employee',
+                'reference_id' => '213',
             ],
             'url'     => '/contacts/cont_1000000contact',
             'method'  => 'PATCH'
         ],
         'response' => [
             'content' => [
-                'id'     => 'cont_1000000contact',
-                'entity' => 'contact',
-                'type'   => 'employee',
+                'id'           => 'cont_1000000contact',
+                'entity'       => 'contact',
+                'type'         => 'employee',
+                'reference_id' => '213',
             ]
         ]
     ],
@@ -276,6 +305,46 @@ return [
     ],
 
     'testFetchContactByFundAccountId' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByActive' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByType' => [
         'request'  => [
             'url'    => '/contacts?account_number=111000',
             'method' => 'GET'

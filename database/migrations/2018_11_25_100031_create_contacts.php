@@ -38,6 +38,9 @@ class CreateContacts extends Migration
             $table->string(Contact::TYPE, 255)
                   ->nullable();
 
+            $table->string(Contact::REFERENCE_ID, 255)
+                  ->nullable();
+
             $table->text(Contact::NOTES);
 
             $table->tinyInteger(Contact::ACTIVE)
@@ -57,6 +60,8 @@ class CreateContacts extends Migration
             $table->index([Contact::CONTACT, Contact::MERCHANT_ID]);
 
             $table->index([Contact::TYPE, Contact::MERCHANT_ID]);
+
+            $table->index([Contact::REFERENCE_ID, Contact::MERCHANT_ID]);
 
             $table->index([Contact::MERCHANT_ID, Contact::CREATED_AT]);
 

@@ -147,6 +147,7 @@ trait AttemptReconcileTrait
         {
             $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
         }
+
         $this->assertTestResponse($attempt, $dataKey);
 
         $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
@@ -165,6 +166,48 @@ trait AttemptReconcileTrait
         }
     }
 
+    protected function assertReconProcessSuccessForChannelVpa(string $channel, string $sourceType, bool $failureTest)
+    {
+        $data = $this->reconcileOnlineSettlements($channel, $failureTest);
+
+        // Validate settlement attempt entity
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        if ($failureTest === false)
+        {
+            $dataKey = 'matchAttemptForReconSuccess' . ucfirst($channel) . 'Vpa';
+        }
+        else
+        {
+            $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel) . 'Vpa';
+        }
+
+        $this->assertTestResponse($attempt, $dataKey);
+
+        $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
+
+        $source = $this->getLastEntity($sourceType, true);
+
+        if ($failureTest === true)
+        {
+            $this->assertNull($attempt['utr']);
+            $this->assertNull($source['utr']);
+        }
+        else
+        {
+            $this->assertNotNull($attempt['utr']);
+
+            if (($source['status'] === 'processed') or
+                ($source['status'] === 'reversed'))
+            {
+                $this->assertNotNull($source['utr']);
+            }
+            else
+            {
+                $this->assertNull($source['utr']);
+            }
+        }
+    }
 
     protected function createUploadedFile($file, $mimeType = 'text/plain')
     {
