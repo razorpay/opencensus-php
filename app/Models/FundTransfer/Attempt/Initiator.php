@@ -15,6 +15,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
+use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
@@ -156,6 +157,10 @@ class Initiator extends Base\Core
             {
                 $this->dispatchFtaForReconProcess($attempt);
             }
+            else
+            {
+                $this->dispatchFtaForStatusCheckProcess($attempt);
+            }
         }
 
         $data += $response;
@@ -165,6 +170,37 @@ class Initiator extends Base\Core
         (new SlackNotification)->send('setl_initiate', $slackData);
 
         return $data;
+    }
+
+    protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
+    {
+        try
+        {
+            //
+            // Dispatching in 180 sec as all the operation are happening in queue
+            // and bank generally update the status in 2 min
+            // TODO: observe the response time from bank and update the wait time accordingly
+            //
+            AttemptStatusCheckJob::dispatch($this->mode, $attempt->getId())->delay(180);
+
+            $this->trace->info(
+                TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_STATUS_CHECK_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
     }
 
     protected function dispatchFtaForReconProcess(Entity $attempt)
@@ -177,13 +213,14 @@ class Initiator extends Base\Core
 
         try
         {
-            //
-            // Dispatching in 5 sec as all the operation are happening in queue
-            // and all the queues are trying to acquire log in fta id
-            // to avoid the mutex lock issue we are dispatching the job with some delay
-            // so that current lock will be release before next job starts
-            //
             AttemptsReconJob::dispatch($this->mode, $attempt->getId());
+
+            $this->trace->info(
+                TraceCode::FTA_RECON_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
         }
         catch (\Throwable $e)
         {

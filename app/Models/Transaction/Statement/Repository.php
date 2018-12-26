@@ -34,6 +34,15 @@ class Repository extends Transaction\Repository
     ];
 
     /**
+     * In GET and LIST for only source of type payout laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypePayout = [
+        'source.fundAccount.contact',
+        'source.fundAccount.account',
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function findByPublicIdAndMerchantForBankingBalance(
@@ -43,10 +52,17 @@ class Repository extends Transaction\Repository
     {
         Entity::verifyIdAndStripSign($id);
 
-        return $this->getQueryForFindWithParams($params)
-                    ->merchantId($merchant->getId())
-                    ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
-                    ->findOrFailPublic($id);
+        $statement = $this->getQueryForFindWithParams($params)
+                          ->merchantId($merchant->getId())
+                          ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
+                          ->findOrFailPublic($id);
+
+        if ($statement->isTypePayout() === true)
+        {
+            $statement->load($this->expandsForTypePayout);
+        }
+
+        return $statement;
     }
 
     /**
@@ -56,14 +72,8 @@ class Repository extends Transaction\Repository
     {
         $statements = parent::fetch($input, $merchantId);
 
-        // Todo: update these after 'payout-on-fa' branch is merged.
         // After fetching settlement collection, we lazy load source relations for payout.
-        // $statements->where(Entity::TYPE, E::PAYOUT)
-        //            ->load(
-        //                 [
-        //                     'source.customer',
-        //                     'source.destination',
-        //                 ]);
+        $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
 
         return $statements;
     }
@@ -221,6 +231,38 @@ class Repository extends Transaction\Repository
      *        INNER JOIN payouts
      *                ON payouts.id = transactions.entity_id
      *                   AND transactions.type = 'payout'
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.id = payouts.fund_account_id
+     *        INNER JOIN contacts
+     *                ON contacts.id = fund_accounts.source_id
+     *                   AND fund_accounts.source_type = 'contact'
+     * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND contacts.type = 'vendor'
+     *        AND transactions.balance_id = 'xbalance000000'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactType(BuilderEx $query, array $params)
+    {
+        $contactType       = $params[Entity::CONTACT_TYPE];
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $query->select($this->getTableName(). '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactTypeColumn, $contactType);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        INNER JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *                   AND transactions.type = 'payout'
      * WHERE  transactions.merchant_id = '10000000000000'
      *        AND payouts.fund_account_id = 'BXV5GAmaJEcGr1'
      *        AND transactions.balance_id = 'xbalance000000'
@@ -240,6 +282,33 @@ class Repository extends Transaction\Repository
         $this->joinQueryPayout($query);
 
         $query->where($fundAccountColumn, $faId);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        INNER JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *                   AND transactions.type = 'payout'
+     * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND payouts.mode = 'IMPS'
+     *        AND transactions.balance_id = 'xbalance000000'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamMode(BuilderEx $query, array $params)
+    {
+        $mode       = $params[Entity::MODE];
+        $modeColumn = $this->repo->payout->dbColumn(Payout\Entity::MODE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayout($query);
+
+        $query->where($modeColumn, $mode);
     }
 
     protected function joinQueryPayout(BuilderEx $query)
@@ -289,26 +358,26 @@ class Repository extends Transaction\Repository
 
     protected function joinQueryContact(BuilderEx $query)
     {
-         $contactTable = $this->repo->contact->getTableName();
+        $contactTable = $this->repo->contact->getTableName();
 
-         if ($query->hasJoin($contactTable) === true)
-         {
-             return;
-         }
+        if ($query->hasJoin($contactTable) === true)
+        {
+            return;
+        }
 
-         // Must join fund_account for joining contact
-         $this->joinQueryFundAccount($query);
+        // Must join fund_account for joining contact
+        $this->joinQueryFundAccount($query);
 
-         $query->join(
-             $contactTable,
-             function (JoinClause $join)
-             {
-                 $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
-                 $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
-                 $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+        $query->join(
+            $contactTable,
+            function(JoinClause $join)
+            {
+                $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
+                $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
 
-                 $join->on($contactIdColumn, $faSourceIdColumn);
-                 $join->where($faSourceTypeColumn, E::CONTACT);
-             });
+                $join->on($contactIdColumn, $faSourceIdColumn);
+                $join->where($faSourceTypeColumn, E::CONTACT);
+            });
     }
 }

@@ -4,14 +4,13 @@ namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Models\Contact;
+use RZP\Models\FundTransfer\Mode;
 
 class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
             Entity::ID              => 'sometimes|public_id|size:19',
-            Entity::CONTACT_TYPE    => 'sometimes|string',
             Entity::MERCHANT_ID       => 'sometimes|unsigned_id',
             Entity::CUSTOMER_ID       => 'sometimes|public_id|size:19',
             Entity::DESTINATION       => 'sometimes|public_id|max:20',
@@ -22,11 +21,14 @@ class Fetch extends BaseFetch
             Entity::CONTACT_PHONE     => 'sometimes|contact_syntax',
             Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL     => 'sometimes|email|max:50',
+            Entity::CONTACT_TYPE      => 'sometimes|string',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::STATUS            => 'sometimes|string|custom',
-            self::EXPAND_EACH         => 'filled|string|in:user',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        ],
+        AuthType::PROXY_AUTH => [
+            self::EXPAND_EACH       => 'filled|string|in:user,fund_account,fund_account.contact,transaction',
         ],
     ];
 
@@ -44,6 +46,7 @@ class Fetch extends BaseFetch
             Entity::STATUS,
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
+            Entity::MODE,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
@@ -86,5 +89,10 @@ class Fetch extends BaseFetch
     protected function validateStatus(string $attribute, string $value)
     {
         Status::validate($value);
+    }
+
+    protected function validateMode(string $attribute, string $value)
+    {
+        Mode::validateMode($value);
     }
 }

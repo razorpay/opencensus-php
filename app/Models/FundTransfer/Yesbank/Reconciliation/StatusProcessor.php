@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
@@ -26,6 +27,7 @@ class StatusProcessor extends BaseRowProcessor
      * This will update the status based on the transfer API response
      *
      * @return null
+     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -104,6 +106,8 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
+        $currentStatus = $this->reconEntity->getBankStatusCode();
+
         $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
@@ -111,6 +115,11 @@ class StatusProcessor extends BaseRowProcessor
         $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
 
         $this->reconEntity->setMode($this->parsedData[self::MODE]);
+
+        if ($this->parsedData[self::BANK_STATUS_CODE] !== $currentStatus)
+        {
+            $this->reconEntity->setStatus(AttemptStatus::INITIATED);
+        }
 
         //
         // Reference number is only available in transfer request's response.

@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -94,8 +95,10 @@ class Entity extends Base\PublicEntity
     const INTERNAL_STATUS = 'internal_status';
 
     // Relations
-    const USER     = 'user';
-    const CUSTOMER = 'customer';
+    const USER         = 'user';
+    const CUSTOMER     = 'customer';
+    const FUND_ACCOUNT = 'fund_account';
+    const TRANSACTION  = 'transaction';
 
     protected $entity = 'payout';
 
@@ -162,8 +165,11 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
         self::AMOUNT,
         self::CURRENCY,
+        self::TRANSACTION_ID,
+        self::TRANSACTION,
         self::NOTES,
         self::FEES,
         self::TAX,
@@ -190,6 +196,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
         // when the payout is not completely processed (succeeded/failed)
@@ -198,6 +205,8 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
+        self::TRANSACTION_ID,
+        self::TRANSACTION,
     ];
 
     protected $defaults = [
@@ -622,6 +631,24 @@ class Entity extends Base\PublicEntity
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
     }
 
+    public function setPublicFundAccountAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose fund_account on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the fund_account is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::FUND_ACCOUNT);
+
+            return;
+        }
+    }
+
     public function setPublicStatusAttribute(array & $attributes)
     {
         $internalStatus = $this->getAttribute(self::STATUS);
@@ -644,6 +671,47 @@ class Entity extends Base\PublicEntity
         if ($this->isStatusProcessedOrReversed() === false)
         {
             $attributes[self::UTR] = null;
+        }
+    }
+
+    public function setPublicTransactionIdAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::TRANSACTION_ID]);
+
+            return;
+        }
+
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($attributes[self::TRANSACTION_ID]);
+    }
+
+    public function setPublicTransactionAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose transactions on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the transactions is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::TRANSACTION);
+
+            return;
+        }
+
+        $transaction = array_pull($attributes, self::TRANSACTION);
+
+        //
+        // We don't want to expose customer_transactions as of now.
+        //
+        if ((empty($transaction) === false) and
+            (($this->transaction instanceof Transaction\Entity)))
+        {
+            $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
         }
     }
 
@@ -688,5 +756,43 @@ class Entity extends Base\PublicEntity
     public function shouldNotifyTxnViaEmail(): bool
     {
         return $this->isBalanceTypeBanking();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArrayPublic()
+    {
+        $this->removeRecursiveRelation();
+
+        return parent::toArrayPublic();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArray()
+    {
+        $this->removeRecursiveRelation();
+
+        return parent::toArray();
+    }
+
+    /**
+     * This removes the recursive relations caused by using the same entity to associate.
+     * Relations' mind is blown when this happens.
+     * This happens in POST /payouts. In that, we create a transaction and associate the
+     * payout created to the newly created transaction and then associate this newly created
+     * transaction to the same payout. Since here the payout has transaction loaded and
+     * transaction has the same payout loaded, recursion is spawned.
+     */
+    protected function removeRecursiveRelation()
+    {
+        if ($this->hasRelation(Entity::TRANSACTION) === true)
+        {
+            $txn = $this->transaction;
+            $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
+            $txn->setRelations($relations);
+        }
     }
 }
