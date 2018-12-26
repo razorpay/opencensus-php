@@ -212,7 +212,7 @@ class Entity extends Base\PublicEntity
      */
     public function contact()
     {
-        return $this->morphTo(Entity::CONTACT, Entity::SOURCE_TYPE, ENTITY::SOURCE_ID);
+        return $this->morphTo(Entity::CONTACT, Entity::SOURCE_TYPE, Entity::SOURCE_ID);
     }
 
     /**
@@ -222,7 +222,7 @@ class Entity extends Base\PublicEntity
      */
     public function customer()
     {
-        return $this->morphTo(Entity::CUSTOMER, Entity::SOURCE_TYPE, ENTITY::SOURCE_ID);
+        return $this->morphTo(Entity::CUSTOMER, Entity::SOURCE_TYPE, Entity::SOURCE_ID);
     }
 
     // ------------ End Relations ------------

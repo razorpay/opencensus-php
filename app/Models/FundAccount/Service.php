@@ -65,4 +65,11 @@ class Service extends Base\Service
 
         return $entity->toArrayPublic();
     }
+
+    public function fetch(string $id, array $input): array
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return $entity->toArrayPublic();
+    }
 }

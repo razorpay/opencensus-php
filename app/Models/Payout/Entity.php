@@ -633,6 +633,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicFundAccountAttribute(array & $attributes)
     {
+        //
+        // We never want to expose fund_account on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the fund_account is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
         if (app('basicauth')->isStrictPrivateAuth() === true)
         {
             array_forget($attributes, self::FUND_ACCOUNT);
@@ -680,6 +688,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTransactionAttribute(array & $attributes)
     {
+        //
+        // We never want to expose transactions on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the transactions is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
         if (app('basicauth')->isStrictPrivateAuth() === true)
         {
             array_forget($attributes, self::TRANSACTION);
@@ -687,22 +703,15 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        $transaction = array_pull($attributes, self::TRANSACTION);
+
         //
-        // Public setters are run after model serialization and so if a relation is not
-        // eager loaded the corresponding key won't exist in $attributes and must not be in final
-        // response after public setters run.
+        // We don't want to expose customer_transactions as of now.
         //
-        if ($this->hasRelation(self::TRANSACTION) === true)
+        if ((empty($transaction) === false) and
+            (($this->transaction instanceof Transaction\Entity)))
         {
-            if (($this->transaction instanceof Transaction\Entity) === true)
-            {
-                $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
-            }
-            else
-            {
-                // Not exposing transaction relation when payout on Customer\Transaction\Entity, for now.
-                array_forget($attributes, self::TRANSACTION);
-            }
+            $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
         }
     }
 
@@ -770,10 +779,12 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Removes recursive transaction.source relation which points to this entity.
-     * This happens in POST /payout flow where there bidirectional relation.
-     * Having payout & txn there, we associate payout's transaction() and txn's source() relation with
-     * each other and hence this issue. Ideally payout's transaction() relation is redundant (probably, not sure!).
+     * This removes the recursive relations caused by using the same entity to associate.
+     * Relations' mind is blown when this happens.
+     * This happens in POST /payouts. In that, we create a transaction and associate the
+     * payout created to the newly created transaction and then associate this newly created
+     * transaction to the same payout. Since here the payout has transaction loaded and
+     * transaction has the same payout loaded, recursion is spawned.
      */
     protected function removeRecursiveRelation()
     {
