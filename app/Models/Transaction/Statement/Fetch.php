@@ -58,8 +58,7 @@ class Fetch extends Transaction\Fetch
     ];
 
     const COMMON_FIELDS = [
-        Entity::CONTACT_NAME,
-        Entity::CONTACT_EMAIL,
+        Entity::MERCHANT_ID,
         Entity::BALANCE_ID,
     ];
 }

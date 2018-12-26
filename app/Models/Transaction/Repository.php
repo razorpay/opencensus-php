@@ -7,8 +7,9 @@ use DB;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Table;
+use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
@@ -1305,9 +1306,9 @@ class Repository extends Base\Repository
 
         if ($enitityType === ConstantEntity::PAYOUT)
         {
-            $serialized[Statement\Entity::UTR] = $source->getUtr();
+            $serialized[Statement\Entity::UTR] = $entity->source->getUtr();
 
-            $fa = $source->fundAccount;
+            $fa = $entity->source->fundAccount;
 
             if ($fa->getSourceType() === ConstantEntity::CONTACT)
             {
