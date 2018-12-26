@@ -478,6 +478,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
+    public function setSettled(bool $settled)
+    {
+        $this->setAttribute(self::SETTLED, $settled);
+    }
+
     public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);

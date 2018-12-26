@@ -19,6 +19,9 @@ class Fetch extends Base\Fetch
             Entity::CONTACT_ID   => 'sometimes|string',
             Entity::ACCOUNT_TYPE => 'sometimes|string',
         ],
+        AuthType::PROXY_AUTH => [
+            self::EXPAND_EACH    => 'filled|string|in:contact',
+        ],
     ];
 
     const SIGNED_IDS = [
@@ -33,6 +36,9 @@ class Fetch extends Base\Fetch
         AuthType::PRIVATE_AUTH   => [
             Entity::CONTACT_ID,
             Entity::CUSTOMER_ID,
+        ],
+        AuthType::PROXY_AUTH => [
+            self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::SOURCE_ID,
