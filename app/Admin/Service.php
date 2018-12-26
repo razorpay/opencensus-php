@@ -15,31 +15,34 @@ use Config;
 use Request;
 use Session;
 use Requests;
+use Exception;
 
 use App\Base;
 use App\User;
-use Exception;
 use App\Admin;
 use App\Generic;
 use App\Merchant;
 use App\Schedules;
 use App\Providers;
-use Carbon\Carbon;
-use App\User\Helper;
 use App\Transaction;
-use UAParser\Parser;
+use App\User\Helper;
 use App\Http\ApiUrl;
-use App\MerchantDetails;
 use App\Trace\TraceCode;
+use App\MerchantDetails;
 use App\Mailers\MiscMailer;
 use App\Providers\ApiGuard;
+use App\Admin\ApiRequestAny;
 use App\Session as SessionTable;
-use Aws\Laravel\AwsFacade as AWS;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\Error as ApiError;
-use Illuminate\Support\Facades\App as App;
 use App\Transaction\Service as TransactionService;
+use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+
+use Carbon\Carbon;
+use UAParser\Parser;
+use Aws\Laravel\AwsFacade as AWS;
+use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
@@ -70,7 +73,7 @@ class Service extends Base\Service
         {
             // This is password based login
 
-            $request = new \App\Admin\ApiRequestAny();
+            $request = new ApiRequestAny();
 
             list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
@@ -84,12 +87,48 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    /**
+    * Called when admin performs merchant actions like suspend
+    * @param  string  $id   Merchant Id
+    * @return merchant obj
+    **/
+    public function action(string $merchantId) : array
+    {
+        try
+        {
+            $request = new ApiRequestAny(['client_type' => 'admin']);
+
+            $input = Request::all();
+            $action = $input[Constants::ACTION];
+
+            list($error, $data) = $request->send("merchants/{$merchantId}/action", Request::method());
+        }
+        catch (BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+        catch (ServerError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        // for suspend/unsuspend action, clear all sessions of users for that merchant
+        if((empty($error) === true) and
+           (($action === Constants::ACTION_SUSPEND) or
+           ($action === Constants::ACTION_UNSUSPEND)))
+        {
+            $this->clearMerchantUserSessions($merchantId);
+        }
+
+        return [$error, $data];
+    }
+
     public function oAuthLogin($input)
     {
         $error = $data = null;
         // This is oAuth based login
 
-        $request = new Admin\ApiRequestAny(
+        $request = new ApiRequestAny(
             ["client_type" => "internal"]
         );
 
@@ -400,7 +439,7 @@ class Service extends Base\Service
     {
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
+        $request = new ApiRequestAny(['client_type' => 'admin']);
 
         list($error, $data) = $request->processInput($input)->send("merchants/$id/email", 'PUT');
 
@@ -662,7 +701,7 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        $request = new \App\Admin\ApiRequestAny([
+        $request = new ApiRequestAny([
             'client_type' => 'admin',
             'headers' => [
                 'X-Razorpay-Account' => $id,
@@ -1132,7 +1171,7 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $request = new Admin\ApiRequestAny();
+        $request = new ApiRequestAny();
 
         list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
 
@@ -1166,7 +1205,7 @@ class Service extends Base\Service
                 'token' => $admin->token
             ];
 
-            $request = new Admin\ApiRequestAny(['client_type' => 'admin']);
+            $request = new ApiRequestAny(['client_type' => 'admin']);
 
             list($error, $data) = $request->processInput($body)->send('current_admin', 'POST');
         }
@@ -1240,7 +1279,7 @@ class Service extends Base\Service
 
         try
         {
-            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
+            $request = new ApiRequestAny(['client_type' => 'admin']);
 
             list($error, $data) = $request->send('admin/logout', 'POST');
 
