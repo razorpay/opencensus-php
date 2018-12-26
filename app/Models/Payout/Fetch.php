@@ -52,14 +52,12 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
-            Entity::BALANCE_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::CUSTOMER_ID,
             Entity::DESTINATION,
             Entity::METHOD,
-            Entity::BALANCE_ID,
         ],
     ];
 
