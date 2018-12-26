@@ -348,7 +348,7 @@ class Gateway extends Base\Gateway
         $pareq = $this->getPayerAuthenticationContent($input);
 
         $request = [
-            'url'       => Cache::get('acs_url_' . $input['payment']['id']),
+            'url'       => $this->cache->get('acs_url_' . $input['payment']['id']),
             'method'    => 'post',
             'content'   => [
                 PAReq::PAREQ     => $pareq,
@@ -543,7 +543,7 @@ class Gateway extends Base\Gateway
     {
         $response = func_get_arg(1);
 
-        Cache::put('acs_url_' . $input['payment']['id'], $response[VERes::MESSAGE][VERes::VERES][VERes::URL], 20);
+        $this->cache->put('acs_url_' . $input['payment']['id'], $response[VERes::MESSAGE][VERes::VERES][VERes::URL], 20);
 
         return parent::getOtpSubmitRequest($input);
     }
