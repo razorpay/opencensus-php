@@ -194,7 +194,8 @@ abstract class Base extends BaseCore
 
         $txn->generateId();
 
-        $txn->setSettled(false);
+        // Calling build() sets model defaults.
+        $txn->build();
 
         $txn->sourceAssociate($this->source);
 

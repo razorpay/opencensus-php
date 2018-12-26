@@ -716,6 +716,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
+        // Removes recursive this.transaction.source relation which is this again!
         if ($this->hasRelation(Entity::TRANSACTION) === true)
         {
             $txn = $this->transaction;
