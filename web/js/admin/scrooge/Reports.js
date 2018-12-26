@@ -10,23 +10,24 @@ import { pluralize } from 'rzp/utils/rzp-utils';
 
 function refundLink(item, when) {
   let count = 0;
+  let query = {};
 
-  if (item.aging[when] !== null) {
+  if (typeof item.aging[when] !== 'undefined') {
     count = item.aging[when].count;
-  }
 
-  let query = {
-    status: ['file_init'],
-    attempts: {
-      gte: 1,
-    },
-    gateway: [item.gateway],
-    method: [item.method],
-    created_at: {
-      gte: item.aging[when].from,
-      lt: item.aging[when].to,
-    },
-  };
+    query = {
+      status: ['file_init'],
+      attempts: {
+        gte: 1,
+      },
+      gateway: [item.gateway],
+      method: [item.method],
+      created_at: {
+        gte: item.aging[when].from,
+        lt: item.aging[when].to,
+      },
+    };
+  }
 
   let queryString = Object.keys(query)
     .map(key => key + '=' + JSON.stringify(query[key]))
@@ -127,7 +128,7 @@ export default class RefundsList extends Component {
 const fields = [
   ['Gateway', item => item.gateway],
   ['Method', item => item.method],
-  // ['Total', item => refundLink(item, 'total')],
+  ['Total', item => refundLink(item, 'total')],
   ['Today', item => refundLink(item, 'today')],
   ['Yesterday', item => refundLink(item, 'yesterday')],
   ['Last 7 Days', item => refundLink(item, 'last_7days')],
