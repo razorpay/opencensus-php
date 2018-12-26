@@ -148,15 +148,15 @@ class Gateway extends Base\Gateway
 
         if ($verify->amountMismatch === true)
         {
-            throw new Exception\LogicException(
-                'Amount tampering found.',
-                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
                 [
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway,
                     'callback_response' => $input['gateway'],
                     'verify_response'   => $verify->verifyResponseContent,
-                    'payment_id'        => $input['payment']['id'],
-                    'gateway'           => $this->gateway
-                ]);
+                ]
+            );
         }
     }
 
