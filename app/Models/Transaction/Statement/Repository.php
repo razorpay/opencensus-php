@@ -222,6 +222,38 @@ class Repository extends Transaction\Repository
      *        INNER JOIN payouts
      *                ON payouts.id = transactions.entity_id
      *                   AND transactions.type = 'payout'
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.id = payouts.fund_account_id
+     *        INNER JOIN contacts
+     *                ON contacts.id = fund_accounts.source_id
+     *                   AND fund_accounts.source_type = 'contact'
+     * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND contacts.type = 'vendor'
+     *        AND transactions.balance_id = 'xbalance000000'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactType(BuilderEx $query, array $params)
+    {
+        $contactType       = $params[Entity::CONTACT_TYPE];
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $query->select($this->getTableName(). '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactTypeColumn, $contactType);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        INNER JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *                   AND transactions.type = 'payout'
      * WHERE  transactions.merchant_id = '10000000000000'
      *        AND payouts.fund_account_id = 'BXV5GAmaJEcGr1'
      *        AND transactions.balance_id = 'xbalance000000'
@@ -241,6 +273,33 @@ class Repository extends Transaction\Repository
         $this->joinQueryPayout($query);
 
         $query->where($fundAccountColumn, $faId);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        INNER JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *                   AND transactions.type = 'payout'
+     * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND payouts.mode = 'IMPS'
+     *        AND transactions.balance_id = 'xbalance000000'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamMode(BuilderEx $query, array $params)
+    {
+        $mode       = $params[Entity::MODE];
+        $modeColumn = $this->repo->payout->dbColumn(Payout\Entity::MODE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayout($query);
+
+        $query->where($modeColumn, $mode);
     }
 
     protected function joinQueryPayout(BuilderEx $query)

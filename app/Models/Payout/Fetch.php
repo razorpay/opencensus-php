@@ -4,7 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Models\Contact;
+use RZP\Models\FundTransfer\Mode;
 
 class Fetch extends BaseFetch
 {
@@ -15,6 +15,7 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID     => 'sometimes|public_id|size:19',
             Entity::DESTINATION     => 'sometimes|public_id|max:20',
             Entity::METHOD          => 'sometimes|string|custom',
+            Entity::MODE            => 'sometimes|string|custom',
             Entity::TRANSACTION_ID  => 'sometimes|public_id',
             Entity::UTR             => 'sometimes|string|max:255',
             Entity::CONTACT_NAME    => 'sometimes|string|max:255',
@@ -42,6 +43,7 @@ class Fetch extends BaseFetch
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
             Entity::STATUS,
+            Entity::MODE,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
@@ -64,5 +66,10 @@ class Fetch extends BaseFetch
     protected function validateMethod(string $attribute, string $value)
     {
         Method::validateMethod($value);
+    }
+
+    protected function validateMode(string $attribute, string $value)
+    {
+        Mode::validateMode($value);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\Type as AuthType;
 
 /**
@@ -20,7 +21,9 @@ class Fetch extends Transaction\Fetch
             Entity::CONTACT_NAME    => 'sometimes|string|max:255',
             Entity::CONTACT_PHONE   => 'sometimes|contact_syntax',
             Entity::CONTACT_EMAIL   => 'sometimes|email',
+            Entity::CONTACT_TYPE    => 'sometimes|string|max:255',
             Entity::FUND_ACCOUNT_ID => 'sometimes|public_id|size:17',
+            Entity::MODE            => 'sometimes|string|custom'
         ],
     ];
 
@@ -32,7 +35,9 @@ class Fetch extends Transaction\Fetch
             Entity::CONTACT_NAME,
             Entity::CONTACT_PHONE,
             Entity::CONTACT_EMAIL,
+            Entity::CONTACT_TYPE,
             Entity::FUND_ACCOUNT_ID,
+            Entity::MODE,
         ],
     ];
 
@@ -41,4 +46,9 @@ class Fetch extends Transaction\Fetch
         Entity::PAYOUT_ID,
         Entity::FUND_ACCOUNT_ID,
     ];
+
+    protected function validateMode(string $attribute, string $value)
+    {
+        Mode::validateMode($value);
+    }
 }
