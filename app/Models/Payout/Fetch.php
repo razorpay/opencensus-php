@@ -10,9 +10,10 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID              => 'sometimes|public_id|size:19',
+            Entity::ID                => 'sometimes|public_id|size:19',
             Entity::MERCHANT_ID       => 'sometimes|unsigned_id',
             Entity::CUSTOMER_ID       => 'sometimes|public_id|size:19',
+            Entity::BALANCE_ID        => 'sometimes|unsigned_id',
             Entity::DESTINATION       => 'sometimes|public_id|max:20',
             Entity::METHOD            => 'sometimes|string|custom',
             Entity::TRANSACTION_ID    => 'sometimes|public_id',
@@ -50,6 +51,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
+            Entity::BALANCE_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
