@@ -287,7 +287,6 @@ return [
         ],
     ],
 
-
     'testGetPayout' => [
         'request' => [
             'method'  => 'get',
@@ -421,19 +420,19 @@ return [
         'channel' => 'yesbank',
         'version' => 'V3',
         'status' => FundTransferAttemptStatus::INITIATED,
-        'utr' => NULL,
+        'utr' => null,
         'remarks' => '',
-        'failure_reason' => NULL,
+        'failure_reason' => null,
     ],
 
     'testPayoutEntitySuccess' => [
         'channel' => 'yesbank',
         'status' => PayoutStatus::PROCESSING,
-        'utr' => NULL,
+        'utr' => null,
         'remarks' => '',
-        'failure_reason' => NULL,
-        'processed_at' => NULL,
-        'settled_on' => NULL,
+        'failure_reason' => null,
+        'processed_at' => null,
+        'settled_on' => null,
     ],
 
     'testPayoutAttemptReconSuccess' => [

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payout;
 
-use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
