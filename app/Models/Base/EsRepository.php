@@ -309,6 +309,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         $params = [];
 
+        $documents = array_values(array_filter($documents));
+
         if (empty($documents) === true)
         {
             return [];
@@ -316,18 +318,15 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         foreach($documents as $document)
         {
-            if (empty($document) === false)
-            {
-                $params['body'][] = [
-                    'index' => [
-                        '_index' => $this->indexName,
-                        '_type'  => $this->typeName,
-                        '_id'    => $document['id'],
-                    ]
-                ];
+            $params['body'][] = [
+                'index' => [
+                    '_index' => $this->indexName,
+                    '_type'  => $this->typeName,
+                    '_id'    => $document['id'],
+                ]
+            ];
 
-                $params['body'][] = $document;
-            }
+            $params['body'][] = $document;
         }
 
         $res = $this->esDao->bulkUpdate($params);

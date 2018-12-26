@@ -237,10 +237,16 @@ class Repository extends Base\Repository
             });
     }
 
-     /**
-     * @param Base\PublicEntity $entity
-     *
-     * @return array
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization: Eager load fund_account.contact. If not possible here then somewhere else.
+    }
+
+    /**
+     * {@inheritDoc}
      */
     protected function serializeForIndexing(Base\PublicEntity $entity): array
     {
@@ -250,12 +256,13 @@ class Repository extends Base\Repository
 
         if ($fa->getSourceType() !== E::CONTACT)
         {
+            // I.e. this documentn will not be indexed.
             return [];
         }
 
         $contact = $fa->source;
 
-        $serialized[Entity::CONTACT_NAME] = $contact->getName();
+        $serialized[Entity::CONTACT_NAME]  = $contact->getName();
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
 
         return $serialized;

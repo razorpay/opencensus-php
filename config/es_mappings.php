@@ -401,7 +401,7 @@ return [
 
     'payout_mapping' => [
         '_all' => [
-            'enabled' => false
+            'enabled' => false,
         ],
         'properties' => [
             'id' => [
@@ -410,17 +410,29 @@ return [
             'merchant_id' => [
                 'type'  => 'keyword',
             ],
-            'customer_name' => [
+            'balance_id' => [
+                'type'  => 'keyword',
+            ],
+            'contact_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
-            'customer_email' => [
+            'contact_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
+            ],
+            'type' => [
+                'type'  => 'keyword',
+            ],
+            'method' => [
+                'type'  => 'keyword',
+            ],
+            'status' => [
+                'type'  => 'keyword',
             ],
             'created_at' => [
                 'type'   => 'date',

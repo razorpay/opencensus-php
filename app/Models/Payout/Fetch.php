@@ -23,7 +23,7 @@ class Fetch extends BaseFetch
             Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL     => 'sometimes|email|max:50',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
-            Entity::STATUS          => 'sometimes|string|in:created,processed,reversed,processing,initiated'
+            Entity::STATUS            => 'sometimes|string|custom',
             self::EXPAND_EACH         => 'filled|string|in:user',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:50',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
@@ -71,13 +71,20 @@ class Fetch extends BaseFetch
     ];
 
     const COMMON_FIELDS = [
-        Entity::CONTACT_NAME,
-        Entity::CONTACT_EMAIL,
+        Entity::ID,
+        Entity::MERCHANT_ID,
+        Entity::TYPE,
+        Entity::METHOD,
+        Entity::STATUS,
     ];
-
 
     protected function validateMethod(string $attribute, string $value)
     {
         Method::validateMethod($value);
+    }
+
+    protected function validateStatus(string $attribute, string $value)
+    {
+        Status::validate($value);
     }
 }
