@@ -169,7 +169,6 @@ class Entity extends Base\PublicEntity
         self::TAX,
         self::STATUS,
         self::PURPOSE,
-        self::PURPOSE_TYPE,
         self::UTR,
         self::USER_ID,
         self::USER,

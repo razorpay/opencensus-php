@@ -29,7 +29,6 @@ return [
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
-                'purpose_type'    => 'refund',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
@@ -58,7 +57,6 @@ return [
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
                 'purpose'         => 'refund',
-                'purpose_type'    => 'refund',
                 'tax'             => 90,
                 'fees'            => 590,
                 'notes'           => [],

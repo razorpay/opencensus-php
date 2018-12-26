@@ -11,20 +11,32 @@ use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
 class Purpose
 {
-    const REFUND   = 'refund';
-    const CASHBACK = 'cashback';
-    const PAYOUT   = 'payout';
+    const REFUND        = 'refund';
+    const CASHBACK      = 'cashback';
+    const PAYOUT        = 'payout';
+    const DISBURSEMENT  = 'disbursement';
+    const SALARY        = 'salary';
+    const UTILITY       = 'utility';
+    const INVOICE       = 'invoice';
 
     protected static $default = [
         self::REFUND,
         self::CASHBACK,
         self::PAYOUT,
+        self::DISBURSEMENT,
+        self::SALARY,
+        self::UTILITY,
+        self::INVOICE,
     ];
 
     protected static $defaultPurposeTypeMap = [
-        self::REFUND   => FTAPurpose::REFUND,
-        self::CASHBACK => FTAPurpose::SETTLEMENT,
-        self::PAYOUT   => FTAPurpose::SETTLEMENT,
+        self::REFUND        => FTAPurpose::REFUND,
+        self::CASHBACK      => FTAPurpose::SETTLEMENT,
+        self::PAYOUT        => FTAPurpose::SETTLEMENT,
+        self::DISBURSEMENT  => FTAPurpose::SETTLEMENT,
+        self::SALARY        => FTAPurpose::SETTLEMENT,
+        self::UTILITY       => FTAPurpose::SETTLEMENT,
+        self::INVOICE       => FTAPurpose::SETTLEMENT,
     ];
 
     public function setPurposeAndTypeForPayout(Entity $payout, string $purpose)
