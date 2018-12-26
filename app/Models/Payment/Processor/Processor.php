@@ -505,6 +505,11 @@ class Processor
     {
         $coproto = null;
 
+        if ($payment->isWallet() === false)
+        {
+            return $coproto;
+        }
+
         //
         // TODO: This needs to be fixed since we use dummy phone and email
         // in subscriptions subsequent charges too. We could be using
@@ -514,12 +519,11 @@ class Processor
         // Actually, this won't even work for S2S since we remove
         // `content` and `missing` attributes completely before returning
         //
-        if (($payment->isWallet() === true) and
-            ((($payment->merchant->isPhoneOptional() === true) and
+        if ((($payment->merchant->isPhoneOptional() === true) and
               ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
              (($payment->merchant->isEmailOptional() === true) and
               (Wallet::isEmailRequired($payment->getWallet()) === true) and
-              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
+              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)))
         {
             $coproto = [
                 'type'    => 'respawn',
