@@ -638,6 +638,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DISPUTE);
     }
 
+    public function isTypePayout(): bool
+    {
+        return ($this->getType() === Type::PAYOUT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);

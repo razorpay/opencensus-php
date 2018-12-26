@@ -100,7 +100,10 @@ class Entity extends Transaction\Entity
             [
                 Payout\Entity::ID,
                 Payout\Entity::ENTITY,
-                Payout\Entity::METHOD,
+                Payout\Entity::FUND_ACCOUNT_ID,
+                Payout\Entity::FUND_ACCOUNT,
+                Payout\Entity::MODE,
+                Payout\Entity::UTR,
                 Payout\Entity::NOTES,
             ]);
     }

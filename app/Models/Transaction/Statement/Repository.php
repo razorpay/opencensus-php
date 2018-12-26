@@ -34,6 +34,15 @@ class Repository extends Transaction\Repository
     ];
 
     /**
+     * In GET and LIST for only source of type payout laze loads following nested relations.
+     * @var array
+     */
+    protected $expandsForTypePayout = [
+        'source.fundAccount.contact',
+        'source.fundAccount.account',
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function findByPublicIdAndMerchantForBankingBalance(
@@ -43,10 +52,17 @@ class Repository extends Transaction\Repository
     {
         Entity::verifyIdAndStripSign($id);
 
-        return $this->getQueryForFindWithParams($params)
-                    ->merchantId($merchant->getId())
-                    ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
-                    ->findOrFailPublic($id);
+        $statement = $this->getQueryForFindWithParams($params)
+                          ->merchantId($merchant->getId())
+                          ->where(Entity::BALANCE_ID, $merchant->bankingBalance->getId())
+                          ->findOrFailPublic($id);
+
+        if ($statement->isTypePayout() === true)
+        {
+            $statement->load($this->expandsForTypePayout);
+        }
+
+        return $statement;
     }
 
     /**
@@ -56,14 +72,8 @@ class Repository extends Transaction\Repository
     {
         $statements = parent::fetch($input, $merchantId);
 
-        // Todo: update these after 'payout-on-fa' branch is merged.
         // After fetching settlement collection, we lazy load source relations for payout.
-        // $statements->where(Entity::TYPE, E::PAYOUT)
-        //            ->load(
-        //                 [
-        //                     'source.customer',
-        //                     'source.destination',
-        //                 ]);
+        $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
 
         return $statements;
     }
