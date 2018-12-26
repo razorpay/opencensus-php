@@ -1,12 +1,12 @@
 <?php
 
-    use RZP\Error\ErrorCode;
-    use RZP\Error\PublicErrorCode;
-    use RZP\Error\PublicErrorDescription;
-    use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
-    use RZP\Models\Payout\Status as PayoutStatus;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payout\Status as PayoutStatus;
+use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
 
-    return [
+return [
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',
