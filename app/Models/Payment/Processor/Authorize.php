@@ -1506,16 +1506,23 @@ trait Authorize
                     {
                         if ($payment->getGateway() === Payment\Gateway::HITACHI)
                         {
-                            $authGateway = Payment\Gateway::MPI_BLADE;
+                            $gateway = Payment\Gateway::MPI_BLADE;
+                            $authType = '3ds';
 
-                            if (($this->canRunAxisExpressPay($payment) === true) and
-                                ($this->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === false))
+                            if ($this->canRunIvrFlow($payment) === true)
                             {
-                                $authGateway = Payment\Gateway::MPI_ENSTAGE;
+                                $authType = 'otp';
+                                $gateway = Payment\Gateway::MPI_BLADE;
+
+                                if ($this->canRunAxisExpressPay($payment) === true)
+                                {
+                                    $gateway = Payment\Gateway::MPI_ENSTAGE;
+                                }
                             }
 
                             $gatewayInput['authenticate'] = [
-                                'gateway' => $authGateway,
+                                'gateway'   => $gateway,
+                                'auth_type' => $authType,
                             ];
                         }
                     }
@@ -4088,7 +4095,7 @@ trait Authorize
                 // condition covers a superset.
                 //
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
-                    ($this->canRunAxisExpressPay($payment) === true))
+                    ($this->canRunIvrFlow($payment) === true))
                 {
                     return true;
                 }
@@ -4139,6 +4146,18 @@ trait Authorize
             ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunIvrFlow(Payment\Entity $payment)
+    {
+        if (($this->isAuthTypeOtp($payment) === true) and
+            ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
         {
             return true;
