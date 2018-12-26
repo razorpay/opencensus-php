@@ -20,9 +20,9 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'tags' => ['announcement_early_settlements'],
-                'not_tags' => ['es_automatic'],
-                'activated' => 1,
+                'tags'         => ['announcement_early_settlements'],
+                'not_tags'     => ['es_automatic'],
+                'activated'    => 1,
                 'not_features' => ['es_on_demand']
             ]
         ],
@@ -42,6 +42,57 @@ class Constants
             ],
             'filters'     => []
         ],
+        [
+            'title'       => 'All New Payment Pages!',
+            'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
+            'start_ts'    => 1545213008,
+            'end_ts'      => 1545762599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/paymentpages.png',
+            'buttons'     => [
+                [
+                    'type'  => 'link',
+                    'label' => 'Go To Payment Pages',
+                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
+                ],
+            ],
+            'filters'     => [
+                'tags' => ['pp_notify_existing'],
+            ]
+        ],
+        [
+            'title'       => 'Payment Pages - Now Live!',
+            'description' => 'The wait is over, we finally have the product live. Thanks for showing interest. Start creating your custom branded page now! ',
+            'start_ts'    => 1545213008,
+            'end_ts'      => 1545762599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/paymentpages.png',
+            'buttons'     => [
+                [
+                    'type'  => 'link',
+                    'label' => 'Go To Payment Pages',
+                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
+                ],
+            ],
+            'filters'     => [
+                'tags' => ['pp_notify_earlyaccess'],
+            ]
+        ],
+        [
+            'title'       => 'RazorpayX',
+            'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
+            'start_ts'    => 1545625800,
+            'end_ts'      => 1554006600,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/razorx.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Started',
+                    'url'   => '#profile_dropdown',
+                ],
+            ],
+            'filters'     => [
+                'tags' => ['announcement_razorpayx'],
+            ]
+      ],        
     ];
 
     public static function getNotifications(): array

@@ -199,6 +199,10 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
+  get isRazorxAnnouncementEnabled() {
+    return this.findTag('announcement_razorpayx');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

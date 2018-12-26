@@ -28,12 +28,17 @@ import {
   sourceFilterVals,
 } from './pokedexData';
 
+window.RZP = window.RZP || {};
+
 const merchantId = (pokeConfig.merchantId = window.rzp_user.id);
 
-@connect(state => state.session, {
-  ...SessionActions,
-  ...NotificationActions,
-})
+@connect(
+  state => state.session,
+  {
+    ...SessionActions,
+    ...NotificationActions,
+  }
+)
 class App extends Component {
   constructor(props) {
     super(props);

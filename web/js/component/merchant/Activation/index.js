@@ -191,6 +191,10 @@ export default class ActivationWizard extends React.Component {
       });
   }
 
+  componentDidUpdate() {
+    return this.props.handleUIUpdate && this.props.handleUIUpdate();
+  }
+
   componentDidMount() {
     addDropShield('.Activation--wizard');
   }

@@ -42,7 +42,7 @@ body {
 .layout {
   position: relative;
   min-height: 94vh;
-  padding-bottom: 45px;
+  padding-bottom: 80px;
 }
 
 .layout--fp {
@@ -324,7 +324,7 @@ $sidebar-width = 200px;
 
 .pagefooter {
   position: absolute;
-  bottom: 0;
+  bottom: 35px;
   padding: 10px 20px;
   font-size: 12px;
   color: #8F96B3;
@@ -1129,6 +1129,10 @@ tr:hover .row-action.btn-group {
   .i-undo {
     font-size: 20px;
   }
+
+  .razorpayx-popover {
+    top: 120px !important
+  }
 }
 
 ul.switch-modes-menu.nav.nav-stacked {
@@ -1444,3 +1448,12 @@ span.transfer-scheduled-text.text-warning span.label--primary {
   top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+
+
+// support widget space issue for phone
+@media(max-width: 424px) 
+  .layout 
+    padding-bottom: 150px
+  .pagefooter 
+    bottom: 90px
+  

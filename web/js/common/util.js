@@ -256,3 +256,17 @@ export function intersect(a, b) {
     return b.indexOf(e) > -1;
   });
 }
+
+/**
+ * @param {String}
+ * Find experiment value if it exists
+ */
+export function getExperiment(name) {
+  if (window.rzp_user) {
+    let experiment = (window.rzp_user.experiments || {})[name] || {};
+
+    return experiment.result;
+  }
+
+  return null;
+}

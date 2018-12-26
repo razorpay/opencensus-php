@@ -91,6 +91,10 @@ export default class Plan extends Collection {
 }
 
 export const options = {
+  product: {
+    primary: 'PG Primary',
+    banking: 'Banking',
+  },
   feature: {
     payment: 'Payment',
     recurring: 'Recurring',
@@ -106,9 +110,10 @@ export const options = {
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
+    upi: 'UPI',
     account: 'Transfer: Account (Marketplace)',
     customer: 'Transfer: Customer (Openwallet)',
-    cardless_emi: 'Cardless EMI'
+    cardless_emi: 'Cardless EMI',
   },
   payment_method_type: {
     '': 'All',
@@ -121,8 +126,8 @@ export const options = {
     '': 'All',
     HDFC: 'HDFC',
     ICIC: 'ICICI',
-    zestmoney:'ZESTMONEY',
-    earlysalary:'EARLYSALARY',
+    zestmoney: 'ZESTMONEY',
+    earlysalary: 'EARLYSALARY',
   },
   international: {
     0: 'No',
@@ -135,9 +140,12 @@ export const options = {
   amount_range: {
     '': 'None',
     '0-100000': '0-100000',
+    '0-1000000': '0 to 10k',
     '100000-200000': '100000-200000',
+    '1000000-2500000': '10k to 25k',
     '0-200000': '0-200000',
     '200000-1000000000': '200000-1000000000',
+    '2500000-': '25k +',
     '0-10000000': '0 - 1 lac',
     '10000000-': '1 lac+',
     custom: 'Custom',
@@ -452,7 +460,7 @@ class Rule extends CollectionItem {
   }
 
   receiverTypeField() {
-    if (this.payment_method === 'card' || this.payment_method === 'upi') {
+    if (this.product === 'primary' && (this.payment_method === 'card' || this.payment_method === 'upi')) {
       var field = this.selectField('receiver_type');
       if (field) {
         return <div>Receiver Type: {field}</div>;
