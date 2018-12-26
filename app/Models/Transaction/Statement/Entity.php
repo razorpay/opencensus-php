@@ -28,6 +28,7 @@ class Entity extends Transaction\Entity
     const CONTACT_TYPE    = 'contact_type';
     const MODE            = 'mode';
     const FUND_ACCOUNT_ID = 'fund_account_id';
+    const UTR             = 'utr';
 
     protected $entity = 'statement';
 

@@ -236,4 +236,35 @@ class Repository extends Base\Repository
                 $join->where($faSourceTypeColumn, E::CONTACT);
             });
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization: Eager load fund_account.contact. If not possible here then somewhere else.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        $fa = $entity->fundAccount;
+
+        if ($fa->getSourceType() !== E::CONTACT)
+        {
+            // I.e. this documentn will not be indexed.
+            return [];
+        }
+
+        $contact = $fa->source;
+
+        $serialized[Entity::CONTACT_NAME]  = $contact->getName();
+        $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+
+        return $serialized;
+    }
 }

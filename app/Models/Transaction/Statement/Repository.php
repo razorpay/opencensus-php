@@ -78,6 +78,15 @@ class Repository extends Transaction\Repository
         return $statements;
     }
 
+    protected function addQueryParamId($query, $params)
+    {
+        $id = $params[Entity::ID];
+
+        Entity::stripSignOrFail($id);
+
+        $query->where(Entity::ID, $id);
+    }
+
     /**
      * SELECT transactions.*
      * FROM   transactions
