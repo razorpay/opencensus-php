@@ -254,7 +254,7 @@ class Repository extends Base\Repository
 
         $fa = $entity->fundAccount;
 
-        if ($fa->getSourceType() !== E::CONTACT)
+        if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
         {
             // I.e. this documentn will not be indexed.
             return [];
