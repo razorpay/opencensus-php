@@ -33,7 +33,11 @@ class StatementTest extends TestCase
         $this->createBankTransferTransaction();
         $this->createBankTransferTransaction();
 
-        // Todo: Creates some payout transaction on banking balance.
+        $this->createPayout();
+
+        $payout = $this->getDbEntity('payout');
+
+        $this->reversePayout($payout);
 
         // Creates one normal payment transaction on primary balance.
         $this->doAuthAndCapturePayment(null, 50000);
@@ -43,8 +47,8 @@ class StatementTest extends TestCase
 
         $response = $this->startTest();
 
-        // Asserts other keys existence in items.
-        $statement = current($response['items']);
+        // Asserts other keys existence in items - for bank_transfer txn
+        $statement = $response['items'][2];
         $this->assertNotEmpty($statement['id']);
         $this->assertNotEmpty($statement['created_at']);
         $this->assertNotEmpty($statement['source']['id']);

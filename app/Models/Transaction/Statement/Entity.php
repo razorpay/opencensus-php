@@ -3,7 +3,6 @@
 namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Payout;
-use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
@@ -88,7 +87,7 @@ class Entity extends Transaction\Entity
                 break;
 
             case E::REVERSAL:
-                $this->setPublicSourceAttributeForReversal($array);
+                // Do nothing special for reversal transactions
                 break;
 
             default:
@@ -111,6 +110,7 @@ class Entity extends Transaction\Entity
                 Payout\Entity::MODE,
                 Payout\Entity::UTR,
                 Payout\Entity::NOTES,
+                Payout\Entity::CREATED_AT,
             ]);
     }
 
@@ -123,6 +123,7 @@ class Entity extends Transaction\Entity
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
                 BankTransfer\Entity::PAYER_BANK_ACCOUNT,
+                BankTransfer\Entity::CREATED_AT,
             ]);
 
         /** @var BankTransfer\Entity $bankTransfer */
@@ -136,20 +137,6 @@ class Entity extends Transaction\Entity
                                     BankTransfer\Entity::PAYER_ACCOUNT  => $bankTransfer->getPayerAccount(),
                                     BankTransfer\Entity::PAYER_IFSC     => $bankTransfer->getPayerIfsc(),
                                ] + $array[self::SOURCE];
-    }
-
-    protected function setPublicSourceAttributeForReversal(array & $attributes)
-    {
-        // Attributes of the reversal entity that we expose in the 'source' object
-        $attributesToExpose = [
-            Reversal\Entity::ID,
-            Reversal\Entity::ENTITY,
-            Reversal\Entity::PAYOUT_ID,
-            Reversal\Entity::AMOUNT,
-            Reversal\Entity::CURRENCY,
-        ];
-
-        $attributes[self::SOURCE] = array_only($attributes[self::SOURCE], $attributesToExpose);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
+use RZP\Models\Payout as PayoutModel;
+
 /**
  * Consists reusable methods to help with business banking related tests.
  */
@@ -115,6 +117,14 @@ trait TestsBusinessBanking
         $this->payout      = $payout;
         $this->transaction = $txn;
         $this->ba->publicAuth();
+
+        return $payout;
+    }
+
+    protected function reversePayout(PayoutModel\Entity $payout)
+    {
+        // TODO: Fix this shit with proper fixtures
+        (new PayoutModel\Core)->updateStatusAfterFtaRecon($payout, 'failed');
     }
 
     protected function createContact()
