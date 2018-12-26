@@ -7,7 +7,7 @@
 <h2>Password Reset</h2>
 
 <div>
-    @if ($product = 'banking')
+    @if ($product === 'banking')
         To reset your password, <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
             .'/forgot-password?token='. $token . '&email=' . $email}}" target="_blank">click here</a>. <br/>
 
