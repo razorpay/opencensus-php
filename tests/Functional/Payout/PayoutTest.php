@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -20,6 +21,7 @@ class PayoutTest extends TestCase
     use PaymentTrait;
     use SettlementTrait;
     use TestsBusinessBanking;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -314,7 +316,9 @@ class PayoutTest extends TestCase
     {
         $this->testCreatePayout();
 
-        $payout = $this->getLastEntity('payout', false);
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->privateAuth();
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
@@ -322,7 +326,7 @@ class PayoutTest extends TestCase
 
         $payout2 = $this->startTest();
 
-        $this->assertEquals($payout, $payout2);
+        $this->assertArraySelectiveEquals($payout2, $payout);
     }
 
     public function testCreatePaymentPayout(): array
@@ -508,8 +512,7 @@ class PayoutTest extends TestCase
         $payout = $this->testCreatePayout();
 
         $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'];
+        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -537,7 +540,7 @@ class PayoutTest extends TestCase
                 'status' => 'processed'
             ]);
 
-        $request['url'] = '/payouts?status=processed';
+        $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -573,7 +576,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_type=customer';
+        $request['url'] = '/payouts?contact_type=customer&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -601,7 +604,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?utr=1234567890';
+        $request['url'] = '/payouts?utr=1234567890&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -630,7 +633,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_id=cont_1000010contact';
+        $request['url'] = '/payouts?contact_id=cont_1000010contact&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -662,7 +665,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_name=test user';
+        $request['url'] = '/payouts?contact_name=test user&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -694,7 +697,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_phone=8888888888';
+        $request['url'] = '/payouts?contact_phone=8888888888&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -726,7 +729,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_email=test@payout.com';
+        $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -758,7 +761,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'];
+        $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
