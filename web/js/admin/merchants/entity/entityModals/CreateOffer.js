@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
@@ -7,7 +7,6 @@ import Field, {
   SelectField,
   DateField,
   SwitchField,
-  TimeField,
 } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
@@ -18,6 +17,7 @@ import { adminPost } from 'common/fetch';
 
 const WALLET_MAP = getMappingFor('wallet');
 const CARD_NETWORK_MAP = getMappingFor('network');
+const emiDurationPlans = [3, 6, 9, 12, 18, 24];
 
 export default class CreateOffer extends Component {
   state = {};
@@ -66,6 +66,29 @@ export default class CreateOffer extends Component {
     }
     if (offer.ends_at) {
       offer.ends_at = this.ends_at.startOf('day').unix() + offsetEnd;
+    }
+
+    // 7. emi_subvention is valid only if payment_method is emi
+    if (offer.payment_method !== 'emi' || offer.emi_subvention !== '1') {
+      delete offer.emi_subvention;
+    } else {
+      offer.emi_subvention = Number(offer.emi_subvention);
+    }
+
+    //8. sanitize emi_duration field
+    if (offer.payment_method === 'emi') {
+      offer.emi_durations = Object.keys(offer.emi_durations).reduce(
+        (durations, key) => {
+          if (offer.emi_durations[key] === '1') {
+            return [...durations, Number(key[0])];
+          } else {
+            return [...durations];
+          }
+        },
+        []
+      );
+    } else {
+      delete offer.emi_durations;
     }
 
     delete offer.starts_at_time;
@@ -186,6 +209,32 @@ export default class CreateOffer extends Component {
               name="iins"
               placeholder="Enter comma(,) separated values"
             />
+          )}
+
+          {this.state.payment_method === 'emi' && (
+            <SwitchField
+              label="No Cost EMI"
+              name="emi_subvention"
+              enabledLabel="Yes"
+              disabledLabel="No"
+            />
+          )}
+
+          {this.state.payment_method === 'emi' && (
+            <div class="field">
+              <label>EMI Plans(in months)</label>
+              {emiDurationPlans.map((duration, index) => (
+                <Fragment key={duration}>
+                  <input
+                    type="checkbox"
+                    name={`emi_durations[${duration}_months]`}
+                    value={duration}
+                    id={`emi_durations[${duration}]`}
+                  />
+                  <span>{duration}</span>
+                </Fragment>
+              ))}
+            </div>
           )}
 
           <Field
