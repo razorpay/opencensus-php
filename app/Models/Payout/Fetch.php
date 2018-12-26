@@ -25,8 +25,8 @@ class Fetch extends BaseFetch
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::STATUS            => 'sometimes|string|custom',
             self::EXPAND_EACH         => 'filled|string|in:user',
-            EsRepository::QUERY       => 'sometimes|string|min:1|max:50',
-            EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
+            // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
     ];
 
@@ -43,7 +43,7 @@ class Fetch extends BaseFetch
             Entity::FUND_ACCOUNT_ID,
             Entity::STATUS,
             EsRepository::QUERY,
-            EsRepository::SEARCH_HITS,
+            // EsRepository::SEARCH_HITS,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
@@ -67,7 +67,7 @@ class Fetch extends BaseFetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         EsRepository::QUERY,
-        EsRepository::SEARCH_HITS,
+        // EsRepository::SEARCH_HITS,
     ];
 
     const COMMON_FIELDS = [
