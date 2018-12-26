@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
@@ -119,6 +120,7 @@ class FeeCalculator
         // In case the merchant is customer fee bearer, we shouldn't check
         // $amount < $totalFees because amount is already inclusive of the fees.
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
+            ($this->isEntityPayoutOnBankingBalance() === false) and
             ($amount !== 0))
         {
             list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
@@ -142,7 +144,7 @@ class FeeCalculator
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->primaryBalance;
+        $merchantBalance = $this->entity->merchant->getBalanceByProductType($this->product);
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
@@ -961,5 +963,11 @@ class FeeCalculator
         }
 
         return $fee;
+    }
+
+    protected function isEntityPayoutOnBankingBalance(): bool
+    {
+        return (($this->entity instanceof Payout\Entity === true) and
+            ($this->entity->isBalanceTypeBanking() === true));
     }
 }
