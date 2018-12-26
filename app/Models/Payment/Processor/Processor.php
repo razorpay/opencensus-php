@@ -542,7 +542,8 @@ class Processor
                 unset($coproto['request']['content']['contact']);
             }
 
-            if ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)
+            if (($payment->getEmail() === Payment\Entity::DUMMY_EMAIL) and
+                (Wallet::isEmailRequired($payment->getWallet()) === true))
             {
                 $coproto['missing'][] = 'email';
                 unset($coproto['request']['content']['email']);
