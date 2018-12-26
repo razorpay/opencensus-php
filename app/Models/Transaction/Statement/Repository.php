@@ -349,26 +349,26 @@ class Repository extends Transaction\Repository
 
     protected function joinQueryContact(BuilderEx $query)
     {
-         $contactTable = $this->repo->contact->getTableName();
+        $contactTable = $this->repo->contact->getTableName();
 
-         if ($query->hasJoin($contactTable) === true)
-         {
-             return;
-         }
+        if ($query->hasJoin($contactTable) === true)
+        {
+            return;
+        }
 
-         // Must join fund_account for joining contact
-         $this->joinQueryFundAccount($query);
+        // Must join fund_account for joining contact
+        $this->joinQueryFundAccount($query);
 
-         $query->join(
-             $contactTable,
-             function (JoinClause $join)
-             {
-                 $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
-                 $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
-                 $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+        $query->join(
+            $contactTable,
+            function(JoinClause $join)
+            {
+                $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
+                $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
 
-                 $join->on($contactIdColumn, $faSourceIdColumn);
-                 $join->where($faSourceTypeColumn, E::CONTACT);
-             });
+                $join->on($contactIdColumn, $faSourceIdColumn);
+                $join->where($faSourceTypeColumn, E::CONTACT);
+            });
     }
 }
