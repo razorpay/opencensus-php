@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
@@ -25,6 +26,7 @@ abstract class Base extends BaseCore
 {
     protected $source;
 
+    /** @var Transaction\Entity */
     protected $txn;
 
     protected $merchantBalance;
@@ -185,7 +187,6 @@ abstract class Base extends BaseCore
     {
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
     }
-
 
     protected function createNewTransaction()
     {

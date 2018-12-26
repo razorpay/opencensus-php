@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
@@ -31,8 +32,8 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -316,9 +317,14 @@ class Service extends Base\Service
 
         $orgId = $subMerchant['org']['id'];
 
-        $org = $this->repo->org->find($orgId)->toArrayPublic();
+        /** @var Org\Entity $org */
+        $org = $this->repo->org->find($orgId);
 
-        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
+        $hostname = $org->getPrimaryHostName();
+
+        $org = $org->toArrayPublic();
+
+        $org[Hostname\Entity::HOSTNAME] = $hostname;
 
         $mailUserData = $createdNewUser ? $user : null;
 
@@ -1196,6 +1202,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
 
+        (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
+
         $merchantIds = $input['merchants'];
 
         $successCount = $failedCount = 0;
@@ -1206,12 +1214,24 @@ class Service extends Base\Service
         {
             try
             {
-                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->setPaymentMethods($merchantId, $input['methods']);
+                });
 
                 $successCount++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $t)
             {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_METHODS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input['methods'],
+                    ]);
+
                 $failedCount++;
 
                 $failedIds[] = $merchantId;
@@ -2739,10 +2759,10 @@ class Service extends Base\Service
         return false;
     }
 
-    public function switchProductMerchant()
+    public function switchProductMerchant($product = null)
     {
         // Add Banking Role for the current merchant User.
-        (new User\Service())->addProductSwitchRole();
+        (new User\Service())->addProductSwitchRole($product);
 
         $merchant = $this->auth->getMerchant();
 

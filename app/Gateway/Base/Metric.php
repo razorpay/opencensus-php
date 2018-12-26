@@ -53,6 +53,8 @@ class Metric
         Payment\Action::CALLBACK,
         Payment\Action::CAPTURE,
         Payment\Action::REFUND,
+        Payment\Action::CHECK_ACCOUNT,
+        Payment\Action::FETCH_TOKEN,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
         // Payment\Action::AUTHORIZE_PUSH,

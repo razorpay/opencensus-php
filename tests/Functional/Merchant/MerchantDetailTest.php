@@ -40,7 +40,9 @@ class MerchantDetailTest extends TestCase
     {
         $merchant = $this->fixtures->create('merchant:with_keys');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id'], $user->getId());
 
         $this->startTest();
     }

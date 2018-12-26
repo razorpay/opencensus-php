@@ -13,8 +13,9 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'  => '2224440041626905',
-                'amount'          => 1000,
+                'amount'          => 2000000,
                 'currency'        => 'INR',
+                'purpose'         => 'refund',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -24,15 +25,104 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'amount'          => 1000,
+                'amount'          => 2000000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
-                'tax'             => 92,
-                'fees'            => 602,
+                'purpose'         => 'refund',
+                'purpose_type'    => 'refund',
+                'tax'             => 162,
+                'fees'            => 1062,
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
+        ],
+    ],
+
+    'testCreatePayoutForAmountLessThanMinFee' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'purpose_type'    => 'refund',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutToInactiveFundAccount' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000001fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payouts cannot be created on an inactive fund account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePayoutToInactiveContactFundAccount' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 1000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000001fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payouts cannot be created on an inactive contact fund account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -142,9 +232,10 @@ return [
             'url'     => '/payouts',
             'content' => [
                 'account_number'    => '2224440041626905',
-                'amount'            => 1000000,
+                'amount'            => 300000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
+                'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
                 ],
@@ -154,14 +245,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
 
@@ -196,10 +287,11 @@ return [
             'method'  => 'POST',
             'url'     => '/payments/{id}/payout',
             'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
+                'amount'          => 1000,
+                'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
-                'notes'       => [
+                'purpose'         => 'refund',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -256,6 +348,7 @@ return [
                 'amount'          => 2000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -284,6 +377,7 @@ return [
                 'amount'          => 1000,
                 'currency'        => 'INR',
                 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -307,17 +401,17 @@ return [
     'testPayoutAttemptSuccess' => [
         'channel' => 'yesbank',
         'version' => 'V3',
-        'status' => FundTransferAttemptStatus::CREATED,
+        'status' => FundTransferAttemptStatus::INITIATED,
         'utr' => NULL,
-        'remarks' => NULL,
+        'remarks' => '',
         'failure_reason' => NULL,
     ],
 
     'testPayoutEntitySuccess' => [
         'channel' => 'yesbank',
-        'status' => PayoutStatus::CREATED,
+        'status' => PayoutStatus::PROCESSING,
         'utr' => NULL,
-        'remarks' => NULL,
+        'remarks' => '',
         'failure_reason' => NULL,
         'processed_at' => NULL,
         'settled_on' => NULL,
@@ -363,14 +457,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
     'testCreateMerchantPayoutOnHoldFunds' => [
@@ -446,4 +540,107 @@ return [
         ]
     ],
 
+    'testSearchPayoutByContactId' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByContactName' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByContactPhone' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByContactEmail' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByFundAccountId' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByPayoutId' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByPayoutStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByPayoutContactType' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
 ];

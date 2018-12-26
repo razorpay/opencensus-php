@@ -48,7 +48,7 @@ class Otp extends Mailable
 
     protected function addSubject()
     {
-        $this->subject("Razorpay | OTP to {$this->action}");
+        $this->subject("RazorpayX | OTP to {$this->action}");
 
         return $this;
     }

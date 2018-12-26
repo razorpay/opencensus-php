@@ -145,6 +145,7 @@ return [
         'request'   => [
             'content' => [
                 'type' => 'invalid_type',
+                'name' => 'Test',
             ],
             'url'     => '/contacts',
             'method'  => 'POST'
@@ -153,7 +154,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid contact type: invalid_type',
+                    'description' => 'Invalid type: invalid_type',
                 ],
             ],
             'status_code' => 400,
@@ -304,6 +305,46 @@ return [
     ],
 
     'testFetchContactByFundAccountId' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByActive' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByType' => [
         'request'  => [
             'url'    => '/contacts?account_number=111000',
             'method' => 'GET'

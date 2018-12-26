@@ -7,6 +7,7 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Payout;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
@@ -172,10 +173,21 @@ trait AttemptTrait
 
         // Verify settlement entity
         $sourceEntities = $this->getEntities($sourceType, ['count' => $sourceCount], true);
+
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = (empty($attempt['vpa_id']) === false) ?
+                    Payout\Status::PROCESSED :
+                    Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA
@@ -193,7 +205,15 @@ trait AttemptTrait
         // Verify Batch
         $batch = $this->getLastEntity(Entity::BATCH_FUND_TRANSFER, true);
 
+        $attempt = $this->getLastEntity(Entity::FUND_TRANSFER_ATTEMPT, true);
+
         $batchTestData = 'testFileCreation' . ucfirst($sourceType);
+
+        // for VPA recon happens instantly
+        if (empty($attempt['vpa_id']) === false)
+        {
+            $batchTestData = $batchTestData . 'Vpa';
+        }
 
         $this->assertTestResponse($batch, $batchTestData);
 
@@ -205,15 +225,29 @@ trait AttemptTrait
         foreach ($sourceEntities['items'] as $source)
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $source['status']);
+
+            $expectedStatus = Attempt\Status::INITIATED;
+
+            if ($sourceType === Entity::PAYOUT)
+            {
+                $expectedStatus = (empty($attempt['vpa_id']) === false) ?
+                    Payout\Status::PROCESSED :
+                    Payout\Status::PROCESSING;
+            }
+
+            $this->assertEquals($expectedStatus, $source['status']);
         }
 
         // Verify FTA
         $ftas = $this->getEntities('fund_transfer_attempt', ['count' => $sourceCount], true);
         foreach ($ftas['items'] as $fta)
         {
+            $expectedStatus = (empty($attempt['vpa_id']) === false) ?
+                Payout\Status::PROCESSED:
+                Payout\Status::INITIATED;
+
             $this->assertEquals($batch['id'], $fta['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $fta[Attempt\Entity::STATUS]);
+            $this->assertEquals($expectedStatus, $fta[Attempt\Entity::STATUS]);
         }
     }
 

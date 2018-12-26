@@ -175,7 +175,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
-                    ->with(['source', 'source.merchantDetail'])
+                    ->with(['source'])
                     ->oldest()
                     ->get();
     }

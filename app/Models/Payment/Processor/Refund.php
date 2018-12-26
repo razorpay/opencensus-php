@@ -627,7 +627,7 @@ trait Refund
             return null;
         }
 
-        $txn = (new Transaction\Core)->createFromRefund($refund);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
 

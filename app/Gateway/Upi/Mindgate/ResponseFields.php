@@ -33,7 +33,10 @@ class ResponseFields
     const BANK_NAME                 = 'bank_name';
     const PHONE_NUMBER              = 'phone_number';
     const NO_BANK_DETAIL            = 'NA';
-
+    const REFERENCE_6               = 'reference_6';
+    const REFERENCE_7               = 'reference_7';
+    const REFERENCE_8               = 'reference_8';
+    const REFERENCE_9               = 'reference_9';
 
     /**
      * These are the expected field orders
@@ -118,6 +121,22 @@ class ResponseFields
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::PHONE_NUMBER,
+    ];
+
+    const INTENT_TPV = [
+        self::PAYMENT_ID,
+        self::STATUS,
+        self::STATUS_DESCRIPTION,
+        self::REFERENCE_1,
+        self::REFERENCE_2,
+        self::REFERENCE_3,
+        self::REFERENCE_4,
+        self::REFERENCE_5,
+        self::REFERENCE_6,
+        self::ACCOUNT_NUMBER,
+        self::REFERENCE_7,
+        self::REFERENCE_8,
+        self::REFERENCE_9,
     ];
 
     //In gateway response Bank Name, Account Number, IFSC Code, Phone Number are send as string with ! separator

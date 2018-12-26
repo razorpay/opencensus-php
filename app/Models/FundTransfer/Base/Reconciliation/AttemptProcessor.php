@@ -5,11 +5,13 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 
 /**
  * Class AttemptProcessor
@@ -54,7 +56,9 @@ abstract class AttemptProcessor extends Processor
      */
     protected function processReconciliation(array $input)
     {
-        $lock = new Attempt\Lock(static::$channel);
+        // TODO: This function should only be fetching the IDs to update
+        // and dispatch them onto a queue. It should not do any other
+        // kind of processing.
 
         //
         // We fetch 150 attempts considering there would be some attempt which is already in process
@@ -71,11 +75,7 @@ abstract class AttemptProcessor extends Processor
                              null,
                              $batchSize);
 
-        $lockedAttempts = $lock->lockAttempts($attempts);
-
-        $response = $this->reconcile($lockedAttempts);
-
-        $lock->releaseAttempts($attempts);
+        $response = $this->reconcile($attempts);
 
         $this->trace->info(
             TraceCode::ATTEMPT_RECONCILIATION_STATUS,
@@ -101,6 +101,7 @@ abstract class AttemptProcessor extends Processor
     /**
      * @param array $input
      * @return array
+     * @throws LogicException
      */
     protected function verifySettlements(array $input)
     {
@@ -108,11 +109,12 @@ abstract class AttemptProcessor extends Processor
 
         $attempts = $this->fetchAttempts($input);
 
-        $lockedAttempts = $lock->lockAttempts($attempts);
-
-        $response = $this->startVerification($lockedAttempts);
-
-        $lock->releaseAttempts($attempts);
+        $response = $lock->acquireLockAndProcessAttempts(
+            $attempts,
+            function(PublicCollection $collection)
+            {
+                return $this->startVerification($collection);
+            });
 
         $this->trace->info(
             TraceCode::ATTEMPT_RECONCILIATION_STATUS,

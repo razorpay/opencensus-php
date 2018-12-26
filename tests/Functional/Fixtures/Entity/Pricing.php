@@ -324,6 +324,11 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createDefaultBankingPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getBankingPlanData());
+    }
+
     public function createStandardPlan()
     {
         $pricingPlanId = '1A0Fkd38fGZPVC';

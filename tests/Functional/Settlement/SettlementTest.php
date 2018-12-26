@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Settlement\Channel;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
@@ -27,6 +28,7 @@ class SettlementTest extends TestCase
     use HeimdallTrait;
     use ScheduleTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -197,6 +199,26 @@ class SettlementTest extends TestCase
 
         // (5 payments txn + 1 payout txn)
         $this->assertEquals(3, $content[$channel]['txnCount']);
+    }
+
+    public function testBankingPayoutSettlementExcluded()
+    {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0);
+
+        Carbon::setTestNow($now);
+
+        // Create payments and refunds with timestamps two days back
+        $this->createPaymentEntities(2);
+
+        $this->setUpMerchantForBusinessBanking(false, 5000);
+        $this->createPayout();
+
+        $channel = Channel::AXIS;
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements($channel);
+
+        // (2 payments txns)
+        $this->assertEquals(2, $content[$channel]['txnCount']);
     }
 
     public function testMerchantSettlementForCreditTransaction()

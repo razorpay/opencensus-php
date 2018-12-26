@@ -101,7 +101,9 @@ class CouponsTest extends TestCase
             'method' => 'GET',
         ];
 
-        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
 
@@ -148,7 +150,9 @@ class CouponsTest extends TestCase
             'method' => 'GET',
         ];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->getId());
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
 
@@ -195,7 +199,9 @@ class CouponsTest extends TestCase
             'method' => 'GET',
         ];
 
-        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $response = $this->makeRequestAndGetContent($balanceRequest);
 

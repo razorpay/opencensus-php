@@ -105,15 +105,27 @@ class TransferTest extends TestCase
         ];
 
         $txnData = [
-            'amount'      => $transfer['amount'],
-            'fee'         => $expectedFee,
-            'tax'         => $tax,
-            'debit'       => $transfer['amount'] + $expectedFee,
-            'credit_type' => 'default',
-            'fee_credits' => 0,
+            'amount'          => $transfer['amount'],
+            'fee'             => $expectedFee,
+            'tax'             => $tax,
+            'debit'           => $transfer['amount'] + $expectedFee,
+            'credit_type'     => 'default',
+            'fee_credits'     => 0,
         ];
 
-        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+        $txnId = $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "transfer",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "1zE31zbyeGCTd4",
+            'percentage'      => null,
+            'amount'          => 20,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
     public function testTransferToAccountPricingPostpaid()
@@ -571,9 +583,11 @@ class TransferTest extends TestCase
         // Notes will be fetched from payments entity
         unset($transfer['notes']);
 
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
         $data['response']['content']['items'] = [$transfer];
 
-        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $this->ba->proxyAuth('rzp_test_10000000000001' , $user->getId());
 
         $this->startTest();
     }
@@ -589,9 +603,11 @@ class TransferTest extends TestCase
         // Notes will be fetched from payments entity
         unset($transfer['notes']);
 
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
         $data['response']['content'] = $transfer;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $this->ba->proxyAuth('rzp_test_10000000000001' , $user->getId());
 
         $this->startTest();
     }
@@ -600,7 +616,9 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000' ,null,Role::LINKED_ACCOUNT_OWNER);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000' , $user->getId());
 
         $this->startTest();
     }
@@ -609,7 +627,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $data = $this->testData[__FUNCTION__];
+        $data = & $this->testData[__FUNCTION__];
 
         $reversal = $this->createReversal($transfer['id']);
 
@@ -617,7 +635,9 @@ class TransferTest extends TestCase
 
         $data['response']['content']['items'][] = $reversal;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
 
         $this->startTest();
     }
@@ -626,13 +646,17 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $data = $this->testData[__FUNCTION__];
-
         $reversal = $this->createReversal($transfer['id']);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/la-reversals';
 
         $data['response']['content']['items'][] = $reversal;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
 
         $this->startTest();
     }
@@ -823,6 +847,10 @@ class TransferTest extends TestCase
         }
 
         $this->assertArraySelectiveEquals($expectedTxn, $txn);
+
+        $txnId = str_after($txn['id'], 'txn_');
+
+        return $txnId;;
     }
 
     protected function checkPaymentAndTxnRecords($transfer, array $txnData = [])

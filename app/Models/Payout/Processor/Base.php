@@ -142,6 +142,22 @@ abstract class Base extends BaseCore
         /** @var FundAccount\Entity $fundAccount */
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
+        if ($fundAccount->isActive() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
+        if (optional($fundAccount->source)->isActive() === false)
+        {
+            $sourceEntity = $fundAccount->source->getEntity();
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive ' . $sourceEntity . ' fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
         $payout->fundAccount()->associate($fundAccount);
 
         $this->fundTransferDestination = $fundAccount->account;
@@ -170,20 +186,28 @@ abstract class Base extends BaseCore
 
         $payout->balance()->associate($this->balance);
 
+        //
         // Doing this after all the associations since
         // the modifiers require payout account to be associated.
+        //
         $payout = $payout->build($input);
 
+        //
         // Doing only THIS association after build because
         // since it is present in $defaults, the association
         // gets overridden with the default value (null)
         // in the build function.
-        // NOTE: Not sure why it does not happen with FundAccount.
+        // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
+        //
         $this->associateUserIfApplicable($payout);
 
+        //
         // Doing this after all the associations since
         // some validations run on the relations' data
+        //
         $this->runInputValidations($payout, $input);
+
+        (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
     }
@@ -191,10 +215,10 @@ abstract class Base extends BaseCore
     protected function createFundTransferAttemptEntity(Payout\Entity $payout)
     {
         $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
+            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::NARRATION => $this->getNarration($payout),
         ];
 
         $ftaAccount = $this->fundTransferDestination;
@@ -215,6 +239,31 @@ abstract class Base extends BaseCore
             default:
                 // Throw exception
         }
+    }
+
+    /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return string
+     */
+    protected function getNarration(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     protected function preValidations()
@@ -242,7 +291,6 @@ abstract class Base extends BaseCore
 
     protected function setPayoutBalance(array $input)
     {
-        // TODO: Change to `source_account` instead of `balance_id`
         $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
 
         if (empty($balanceId) === true)
@@ -294,6 +342,10 @@ abstract class Base extends BaseCore
 
         $payout->setFees($txn->getFee());
         $payout->setTax($txn->getTax());
+
+        $this->repo->saveOrFail($txn);
+
+        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
 
         $this->repo->saveOrFail($txn);
     }
