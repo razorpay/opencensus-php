@@ -349,6 +349,7 @@ class Notifier extends Base\Core
         $custom         = $this->getCustomRavenTemplateAndParams($merchant);
         $customTemplate = $custom['template'];
         $customParams   = $custom['params'];
+        $customSender   = $custom['sender'];
 
         $request = [
             'receiver' => $contact,
@@ -356,6 +357,11 @@ class Notifier extends Base\Core
             'template' => $customTemplate ?? $defaultTemplate,
             'params'   => $customParams ?? $defaultParams,
         ];
+
+        if ($customSender !== null)
+        {
+            $request['sender'] = $customSender;
+        }
 
         $this->trace->info(
             TraceCode::INVOICE_RAVEN_REQUEST,
@@ -369,7 +375,7 @@ class Notifier extends Base\Core
 
     protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
     {
-        $template = $params = null;
+        $template = $params = $sender = null;
 
         switch ($merchant->getId())
         {
@@ -377,6 +383,7 @@ class Notifier extends Base\Core
             case Preferences::MID_AMIT_RBLCARD:
 
                 $template = 'sms.custom_invoice.rbl_card';
+                $sender   = 'RBLCRD';
                 $params   = [
                     'receipt'      => $this->invoice->getReceipt(),
                     'invoice_link' => $this->invoice->getShortUrl(),
@@ -389,6 +396,7 @@ class Notifier extends Base\Core
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $template = 'sms.custom_invoice.rbl_loan';
+                $sender   = 'RBLBNK';
                 $params   = [
                     'invoice_link' => $this->invoice->getShortUrl(),
                     'amount'       => $this->invoice->getAmount() / 100,
@@ -397,6 +405,6 @@ class Notifier extends Base\Core
                 break;
         }
 
-        return ['template' => $template, 'params' => $params];
+        return ['template' => $template, 'params' => $params, 'sender' => $sender];
     }
 }
