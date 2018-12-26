@@ -215,6 +215,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_ICICI,
         self::UPI_MINDGATE,
+        self::UPI_AXIS,
     ];
 
     /**
@@ -1127,7 +1128,6 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        Netbanking::PUNB_R,
     ];
 
     /**
@@ -1775,7 +1775,7 @@ class Gateway
 
     public static function getTerminalsForValidateVpaForMode(string $mode)
     {
-        // Currently we are only using MindGate for live and Sharp for test, later when
+        // Currently we are only using MindGate and SBI for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }

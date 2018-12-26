@@ -4,13 +4,21 @@ namespace RZP\Tests\Functional\Batch;
 
 use Mail;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Batch\Header;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Mail\Admin\NotifyActivationSubmission as AdminSubmitMail;
+use RZP\Mail\Merchant\NotifyActivationSubmission as MerchantSubmitMail;
 
 class SubMerchantBatchTest extends TestCase
 {
+    use OAuthTrait;
     use BatchTestTrait;
 
     public function setUp()
@@ -20,6 +28,10 @@ class SubMerchantBatchTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateSubMerchantBatchAggregator()
@@ -35,6 +47,253 @@ class SubMerchantBatchTest extends TestCase
         $this->startTest();
 
         Queue::assertNotPushed(BatchJob::class);
+    }
+
+    /**
+     * Does not use merchant emails as dummy. Follows through all steps
+     * up to activation.
+     */
+    public function testProcessSubMerchantBatchPartnerNotDummyAllSteps()
+    {
+        Mail::fake();
+
+        $entries = $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        Mail::assertQueued(CreateSubMerchantPartner::class, 3);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[0][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[1][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[2][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(AdminSubmitMail::class, 3);
+        Mail::assertQueued(MerchantSubmitMail::class, 3);
+
+        $emails = $this->getEntities('merchant_email', [], true)['items'];
+
+        $this->assertEmpty($emails);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertTrue($merchantDetail['submitted']);
+
+        $this->assertNotNull($merchantDetail['submitted_at']);
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertTrue($merchant['activated']);
+
+        $this->assertNotNull($merchant['activated_at']);
+    }
+
+    /**
+     * Does not use merchant emails as dummy. Follows through all steps
+     * up to form submit.
+     */
+    public function testProcessSubMerchantBatchPartnerNotDummySubmit()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $entries = $this->setUpForProcessing(__FUNCTION__);
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        Mail::assertQueued(CreateSubMerchantPartner::class, 3);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[0][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[1][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
+        {
+            return $mail->hasTo($entries[2][Header::MERCHANT_EMAIL]);
+        });
+
+        Mail::assertQueued(AdminSubmitMail::class, 3);
+        Mail::assertQueued(MerchantSubmitMail::class, 3);
+        Mail::assertNotQueued(ActivationMail::class);
+
+        $emails = $this->getEntities('merchant_email', [], true)['items'];
+
+        $this->assertEmpty($emails);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertTrue($merchantDetail['submitted']);
+
+        $this->assertNotNull($merchantDetail['submitted_at']);
+    }
+
+    /**
+     * Uses merchant emails as dummy. Follows through all steps
+     * up to activation.
+     */
+    public function testProcessSubMerchantBatchPartnerDummyEmailAllSteps()
+    {
+        Mail::fake();
+
+        $entries = $this->setUpForProcessing(__FUNCTION__);
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        Mail::assertQueued(CreateSubMerchantPartner::class, 3);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 0);
+
+        Mail::assertQueued(AdminSubmitMail::class, 3);
+        Mail::assertQueued(MerchantSubmitMail::class, 3);
+
+        $emails = $this->getEntities('merchant_email', [], true)['items'];
+
+        $expectedEmails = [
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[2][Header::MERCHANT_EMAIL],
+            ],
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[1][Header::MERCHANT_EMAIL],
+            ],
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[0][Header::MERCHANT_EMAIL],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedEmails, $emails);
+    }
+
+    /**
+     * Uses merchant emails as dummy. Just creates submerchants
+     */
+    public function testProcessSubMerchantBatchPartnerDummyEmailCreate()
+    {
+        Mail::fake();
+
+        $entries = $this->setUpForProcessing(__FUNCTION__);
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        Mail::assertQueued(CreateSubMerchantPartner::class, 3);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 0);
+
+        $emails = $this->getEntities('merchant_email', [], true)['items'];
+
+        $expectedEmails = [
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[2][Header::MERCHANT_EMAIL],
+            ],
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[1][Header::MERCHANT_EMAIL],
+            ],
+            [
+                'type' => 'partner_dummy',
+                'email' => $entries[0][Header::MERCHANT_EMAIL],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedEmails, $emails);
+    }
+
+    /**
+     * Tries to create and activate merchants with invalid input for activate
+     * step for 1 merchant.
+     */
+    public function testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate()
+    {
+        // This is not handled yet but needs to be, WIP
+        $this->markTestSkipped();
+
+        Mail::fake();
+
+        $this->fixtures->merchant->markPartner();
+
+        $this->createPartnerApplicationAndGetClientByEnv('dev');
+
+        $entries = $this->getDefaultFileEntries();
+
+        $entries[2][Header::BANK_BRANCH_IFSC] = 'blah';
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '10000000UserId']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId');
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $this->assertProcessedCounts(3, 2, 1);
+
+        Mail::assertQueued(AdminSubmitMail::class, 2);
+        Mail::assertQueued(MerchantSubmitMail::class, 2);
+        Mail::assertQueued(CreateSubMerchantPartner::class, 2);
+    }
+
+    public function testProcessSubMerchantBatchPartnerInvalidInput()
+    {
+        Mail::fake();
+
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->startTest();
+
+        $this->ba->adminAuth();
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertNull($batch);
+
+        Mail::assertNotQueued(AdminSubmitMail::class);
+        Mail::assertNotQueued(MerchantSubmitMail::class);
+        Mail::assertNotQueued(CreateSubMerchantPartner::class);
+        Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
     }
 
     public function testCreateSubMerchantBatchPartner()
@@ -54,6 +313,8 @@ class SubMerchantBatchTest extends TestCase
 
     public function testCreateSubMerchantBatchInvalidHeaders()
     {
+        Mail::fake();
+
         $this->fixtures->merchant->addFeatures('aggregator');
 
         $entries = $this->getDefaultFileEntries();
@@ -66,10 +327,42 @@ class SubMerchantBatchTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
+
+        Mail::assertNotQueued(AdminSubmitMail::class);
+        Mail::assertNotQueued(MerchantSubmitMail::class);
+        Mail::assertNotQueued(CreateSubMerchantPartner::class);
+        Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
     }
 
     protected function getDefaultFileEntries(): array
     {
         return $this->testData['defaultEntries'];
+    }
+
+    protected function setUpForProcessing($callee): array
+    {
+        $this->fixtures->merchant->markPartner();
+
+        $this->createPartnerApplicationAndGetClientByEnv('dev');
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, $callee);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '10000000UserId']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId');
+
+        return $entries;
+    }
+
+    protected function assertProcessedCounts(int $processed, int $success, int $failed)
+    {
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals($processed, $batch['processed_count']);
+        $this->assertEquals($success, $batch['success_count']);
+        $this->assertEquals($failed, $batch['failure_count']);
+        $this->assertEquals('processed', $batch['status']);
     }
 }

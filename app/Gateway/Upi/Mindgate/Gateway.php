@@ -50,6 +50,7 @@ class Gateway extends Base\Gateway
         Action::REFUND        => 20,
         Action::VERIFY        => 14,
         Action::VALIDATE_PUSH => 14,
+        Action::INTENT_TPV    => 19,
     ];
 
     protected $map = [
@@ -87,6 +88,11 @@ class Gateway extends Base\Gateway
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $this->initiateIntentTpv($input);
+            }
+
             return $this->authorizeIntent($input);
         }
 
@@ -101,8 +107,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body);
-
-        $response[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
@@ -124,7 +128,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request = $this->getIntentRequest($input);
 
@@ -184,6 +188,8 @@ class Gateway extends Base\Gateway
         $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
 
         $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
+
+        return $this->returnValidateVpaResponse($response);
     }
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
@@ -294,8 +300,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->decrypt($responseBody);
 
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
         $type = strtoupper($type);
 
         $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
@@ -336,6 +340,11 @@ class Gateway extends Base\Gateway
         {
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'parsed'            => $content,
+            'type'              => $gatewayPayment->getType()
+        ]);
 
         assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
@@ -408,7 +417,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getMappedAttributes($response);
 
-        // To mark that we have received a response for this request
+        // To mark that we have received a callback for this payment/refund
         $attributes[Entity::RECEIVED] = 1;
 
         $payment->fill($attributes);
@@ -904,8 +913,6 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $content[Entity::RECEIVED] = 1;
-
         $this->updateGatewayPaymentEntity($verify->payment, $content);
     }
 
@@ -1114,5 +1121,78 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    protected function returnValidateVpaResponse($response)
+    {
+        if (isset($response[ResponseFields::PAYER_NAME]) === true)
+        {
+            return $response[ResponseFields::PAYER_NAME];
+        }
+    }
+
+    protected function initiateIntentTpv($input)
+    {
+        $this->action = Action::INTENT_TPV;
+
+        $data = [
+            $this->getMerchantId(),
+            $input['payment']['id'],
+            $this->getMerchantCategoryCode($input),
+            self::P2M,
+            self::PAY,
+            $this->getPaymentRemark($input),
+            '',
+            '',
+            $this->formatAmount($input['payment']['amount']),
+            '',
+            '',
+            '',
+            '',
+            '',
+            'MEBR',
+            $input['order']['account_number'],
+            'NA',
+            'NA',
+            'NA',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body, Action::INTENT_TPV);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        $status = $response[ResponseFields::STATUS];
+
+        if ($status !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
     }
 }

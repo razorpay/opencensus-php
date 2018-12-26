@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
@@ -31,6 +32,8 @@ class Service extends Base\Service
         $invitation = null;
 
         $user = null;
+
+        $tokenData = null;
 
         /*
          * If we have an invitation token, the user may have created an account
@@ -116,8 +119,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $businessName,
+                'name'  => $businessName
             ];
+
+            if (empty($tokenData) === false)
+            {
+                $merchantInputData['org_id'] = $tokenData['org_id'];
+            }
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
@@ -181,7 +189,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
 
             Mail::queue($confirmationMail);
         }
@@ -208,6 +218,19 @@ class Service extends Base\Service
         $user = (new Core)->edit($user, $input);
 
         return $user->toArrayPublic();
+    }
+
+    /**
+     * Edit user action for logged in user (via Dashboard headers).
+     *
+     * @param  array  $input
+     * @return array
+     */
+    public function editSelf(array $input): array
+    {
+        $this->core()->edit($this->user, $input);
+
+        return $this->user->toArrayPublic();
     }
 
     public function confirm(string $id): array
@@ -275,7 +298,15 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findOrFailPublic($id);
+        }
+        else
+        {
+            // Using user context from header to avoid IDOR.
+            $user = $this->auth->getUser();
+        }
 
         $response = (new Core)->get($user);
 
@@ -355,7 +386,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $passwordResetMail = new UserMail\PasswordReset($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
 
             Mail::queue($passwordResetMail);
         }
@@ -529,5 +562,102 @@ class Service extends Base\Service
         {
             $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
+    }
+
+    public function syncMerchantUserOnProducts(string $merchantId)
+    {
+        $userRole = null;
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $user = $this->auth->getUser();
+
+        $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                                     $user->getId(),
+                                                                null,
+                                                                     $switchProduct);
+        if (empty($userMapping) === false)
+        {
+            $currentUserRole = $userMapping->pivot->role;
+
+            if (in_array($currentUserRole, Role::BANKING_ROLES, true) === true)
+            {
+                (new Merchant\Service)->switchProductMerchant($product);
+
+                $userRole = $currentUserRole;
+            }
+        }
+
+        return $userRole;
+    }
+    /**
+     * This will assign applicable role to the product by checking it's origin.
+     * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
+     * @return null|\RZP\Models\User\Entity
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function addProductSwitchRole($product)
+    {
+        $user = $this->auth->getUser();
+
+        $product = $product ?? $this->auth->getRequestOriginProduct();
+
+        $merchantId = $this->auth->getMerchantId();
+
+        // Check if a role for this user already exists with the existing product merchant user mapping.
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                                     $user->getId(),
+                                                                     null,
+                                                                     $product);
+
+        if (empty($userMapping) === true)
+        {
+            // Since we have user roles in headers we can get the opposite product easily.
+            // In switch we have to assign the role for merchants with only the opposite product side role.
+            // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
+
+            $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                $user->getId(),
+                null,
+                $switchProduct);
+
+            $productRole = null;
+
+            if (empty($userMapping) === false)
+            {
+                $productRole = $userMapping->pivot->role;
+            }
+
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => $productRole,
+                'merchant_id' => $merchantId,
+                'product'     => $product,
+            ];
+
+            $user = (new User\Core)->updateUserMerchantMapping($user, $userMerchantMappingInputData);
+        }
+
+        return $user;
+    }
+
+    public function sendOtp(array $input)
+    {
+        $this->user->getValidator()->validateSendOtpOperation($input);
+
+        return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function verifyContactWithOtp(array $input): array
+    {
+        $this->user->getValidator()->validateVerifyContactWithOtpOperation($input);
+
+        $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
+
+        return $this->user->toArrayPublic();
     }
 }

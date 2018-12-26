@@ -5,19 +5,23 @@ namespace RZP\Tests\Functional\BankTransfer;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund;
-use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Payment\Status;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 class BankTransferTest extends TestCase
 {
     use AttemptTrait;
+    use DbEntityFetchTrait;
     use AttemptReconcileTrait;
 
     public function setUp()
@@ -30,6 +34,16 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
+        $this->fixtures->merchant->createAccount("BankAccountMer");
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => true, 'live' => true]);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['activated' => true, 'live' => true]);
+        $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts'], 'BankAccountMer');
+        $this->fixtures->on('live')->merchant->enableMethod('BankAccountMer', 'bank_transfer');
+        $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
         $this->createTerminals();
 
         $this->bankAccount = $this->createVirtualAccount();
@@ -39,27 +53,27 @@ class BankTransferTest extends TestCase
 
     protected function createTerminals()
     {
-        // Creating Generic Bank Account Terminal,
+        // Creating Fallback Terminals,
         // Fallback Terminals are those terminals which are created with just Root
         // and are assigned to the Shared Merchant to get unexpected payments.
         $terminalAttributes = [ 'id' => 'GENERICBANKACC', 'gateway_merchant_id2' => '', 'enabled' => false ];
-
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
-
         $terminalAttributes = ['id' => 'GENERICABNKACC', 'gateway_merchant_id2' => '', 'enabled' => false];
-
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num', $terminalAttributes);
 
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
-
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal_alpha_num');
 
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $terminalAttributes = [ 'id' => 'GENERICBANKACC', 'gateway_merchant_id2' => '', 'enabled' => false, 'gateway' => Gateway::BT_YESBANK ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
 
-        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $terminalAttributes = [ 'gateway' => Gateway::BT_YESBANK ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $this->fixtures->on('test')->create('terminal:bharat_qr_terminal');
+        $this->fixtures->on('test')->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
-
         $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->on('test');
@@ -92,7 +106,46 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_dashboard', $payment['gateway']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
+    public function testBankTransferWithInActiveAccount()
+    {
+        $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
+
+        $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['live' => false]);
+
+        $accountNumber = $bankAccount['account_number'];
+        $ifsc = $bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null , null, 'live');
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true, 'live');
+        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -205,7 +258,6 @@ class BankTransferTest extends TestCase
             Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('NEFT', $attempt['mode']);
         $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
 
         $channel = Channel::YESBANK;
@@ -338,7 +390,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         // Set to mapped IFSC code for HDFC Bank code
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
@@ -358,7 +411,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
-        $this->assertEquals($bankTransfer['mode'], $attempt['mode']);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -411,7 +463,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         // Set to mapped IFSC code for PAYTM Nbin
         $this->assertEquals('PYTM0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
@@ -469,7 +522,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         // Null, because IFSC was not received for IMPS transaction
         $this->assertNull($bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
@@ -528,7 +582,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         // Null, because IFSC was not received for IMPS transaction
         $this->assertNull($bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
@@ -573,7 +628,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $refund['status']);
 
         // IFSC updated for payer bank account
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('RAZR0000001', $bankAccount['ifsc']);
 
         // Fund transfer attempt created for refund
@@ -610,7 +666,8 @@ class BankTransferTest extends TestCase
         $utr = $response['transaction_id'];
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -715,7 +772,8 @@ class BankTransferTest extends TestCase
         $utr = $response['transaction_id'];
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -776,7 +834,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $refund['status']);
 
         // Another bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
         $this->assertEquals('1234567890987654321', $bankAccount['account_number']);
         $this->assertEquals('New Bank Account', $bankAccount['name']);
@@ -873,12 +932,13 @@ class BankTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
         $this->assertEquals('123456', $bankAccount['account_number']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $bankTransfer['payer_bank_account_id']);
     }
 
     public function testBankTransferImpsFromRogueBankInvalidAccount()
@@ -967,7 +1027,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created, but with the zeroes stripped
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('CNRB0000002', $bankAccount['ifsc']);
         $this->assertSame('0000000123456', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -1002,7 +1063,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         // Null, because IFSC was not received for IMPS transaction
         $this->assertNull($bankAccount['ifsc']);
         $this->assertEquals('123123123', $bankAccount['account_number']);
@@ -1029,7 +1091,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertNull($bankAccount['ifsc']);
         $this->assertSame('00000000000123456', $bankAccount['account_number']);
 
@@ -1044,7 +1107,8 @@ class BankTransferTest extends TestCase
 
         $this->assertContains($bankTransfer['id'], $response);
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertNull($bankAccount['ifsc']);
         $this->assertSame('0000000123456', $bankAccount['account_number']);
     }
@@ -1213,7 +1277,8 @@ class BankTransferTest extends TestCase
         $this->assertNull($response['message']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('HDFC Bank', $bankAccount['bank_name']);
@@ -1222,7 +1287,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $bankTransfer['payer_bank_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -1279,7 +1344,8 @@ class BankTransferTest extends TestCase
         $this->assertNull($response['message']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('HDFC Bank', $bankAccount['bank_name']);
@@ -1288,7 +1354,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $bankTransfer['payer_bank_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -1525,7 +1591,8 @@ class BankTransferTest extends TestCase
         $utr = $response['transaction_id'];
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -1614,7 +1681,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -1632,14 +1700,20 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals('HDFC0000002', $response['payer_bank_account']['ifsc']);
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
         $this->assertEquals('123456', $bankAccount['account_number']);
     }
 
-    protected function createVirtualAccount()
+    protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000')
     {
         $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
 
         $request = $this->testData[__FUNCTION__];
 
@@ -1665,9 +1739,9 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null)
+    protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null, $mode = 'test')
     {
-        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount);
+        return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount, $mode);
     }
 
     protected function notifyBankTransfer($accountNumber, $ifsc, $utr = null)
@@ -1675,7 +1749,7 @@ class BankTransferTest extends TestCase
         return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
-    protected function processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount = null)
+    protected function processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount = null, $mode = 'test')
     {
         $request = $this->testData[__FUNCTION__];
 
@@ -1694,6 +1768,11 @@ class BankTransferTest extends TestCase
         $request['content']['amount'] = $amount ?: 50000;
 
         $this->ba->appAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->yesbankAuth('live');
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1714,7 +1793,8 @@ class BankTransferTest extends TestCase
         $utr = $response['transaction_id'];
 
         // Customer bank account created
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
@@ -1812,13 +1892,14 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
 
         $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
 
-        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $refund['bank_account_id']);
 
         $this->assertEquals('refund', $bankAccount['type']);
     }

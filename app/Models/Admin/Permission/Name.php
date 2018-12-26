@@ -112,6 +112,8 @@ class Name
     const SCHEDULE_UPDATE                     = 'schedule_update';
     const SCHEDULE_ASSIGN                     = 'schedule_assign';
     const SCHEDULE_ASSIGN_BULK                = 'schedule_assign_bulk';
+    const PRICING_ASSIGN_BULK                 = 'pricing_assign_bulk';
+    const METHODS_ASSIGN_BULK                 = 'methods_assign_bulk';
     const SCHEDULE_MIGRATION                  = 'schedule_migration';
     const VIEW_ACTIONS                        = 'view_actions';
     const VIEW_MERCHANT_STATS                 = 'view_merchant_stats';
@@ -194,6 +196,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

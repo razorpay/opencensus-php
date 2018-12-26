@@ -352,6 +352,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
+    public function isPrimaryProduct(): bool
+    {
+        return ($this->getProduct() === Product::PRIMARY);
+    }
+
+    public function isBankingProduct(): bool
+    {
+        return ($this->getProduct() === Product::BANKING);
+    }
+
     /**
      * For adding plan_id filter in queries
      *

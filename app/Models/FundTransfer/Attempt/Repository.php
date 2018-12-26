@@ -273,4 +273,17 @@ class Repository extends Base\Repository
                     ->skip($offset)
                     ->get();
     }
+
+    public function findByIdWithStatus(string $id, string $status = null)
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::ID, $id);
+
+        if (empty($status) === false)
+        {
+            $query = $query->where(Entity::STATUS, $status);
+        }
+
+        return $query->first();
+    }
 }

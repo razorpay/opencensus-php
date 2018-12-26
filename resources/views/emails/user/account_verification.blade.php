@@ -7,12 +7,25 @@
 <h2>Welcome to {{ $org['business_name'] }}</h2>
 
 <div>
-    <p>To activate your account, please click
-        <a href = "{{ $org['hostname'] . '/#/access/confirm/'. $token }}" >here</a>.</p>
+    @if ($product === 'banking')
+        <p>To activate your account, please click
+            <a href = "{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
+            .'/confirm?token='. $token}}" >here</a>.</p>
 
-    <p>Alternatively, open the following link in your browser:<br/>
-        <a href = "{{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}" >
-            {{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}</a>
+        <p>Alternatively, open the following link in your browser:<br/>
+            <a href = "{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
+            .'/confirm?token='. $token}}">
+                {{'https://'. parse_url(config('applications.banking_service_url'), PHP_URL_HOST).'/confirm?token='.
+                $token}}</a>
+    @else
+        <p>To activate your account, please click
+            <a href = "{{'https://'. $org['hostname'] . '/#/access/confirm/'. $token }}" >here</a>.</p>
+
+        <p>Alternatively, open the following link in your browser:<br/>
+            <a href = "{{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}" >
+                {{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}</a>
+    @endif
+
 </div>
 
 <div>

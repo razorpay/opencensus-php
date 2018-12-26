@@ -26,7 +26,15 @@ class Server extends Base\Mock\Server
 
         $this->content($content);
 
-        $content['checksum'] = $this->generateHash($content);
+        /**
+         * This is a temporary fix as Mobikwik is not using refid while calculating checksum for callback response.
+         */
+
+        $checksumContent = $content;
+
+        unset($checksumContent['refid']);
+
+        $content['checksum'] = $this->generateHash($checksumContent);
 
         $url = $input['redirecturl'] . '?' . http_build_query($content);
 
@@ -40,14 +48,16 @@ class Server extends Base\Mock\Server
         parse_str($input, $inputArray);
         $input = $inputArray;
         $id = $input['orderid'];
-//        $merchantId = $input['mid'];
+
         $payment = (new Payment\Repository)->findOrFailPublic($id);
+
+        $amount = (string) number_format($payment['amount'] / 100, 2, '.', '');
 
         $content = array(
             'statuscode'    => '0',
             'orderid'       => $input['orderid'],
             'refid'         => '12345',
-            'amount'        => $payment['amount'],
+            'amount'        => $amount,
             'statusmessage' => 'success',
             'ordertype'     => 'payment'
         );

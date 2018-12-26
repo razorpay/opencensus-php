@@ -627,7 +627,7 @@ trait Refund
             return null;
         }
 
-        $txn = (new Transaction\Core)->createFromRefund($refund);
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
 
@@ -1106,6 +1106,8 @@ trait Refund
 
         $this->refund->incrementAttempts();
 
+        $this->setRefundReference1($refunded);
+
         // We don't want the transaction to fail if this
         // save fails that's why keeping it outside.
         $this->repo->saveOrFail($this->refund);
@@ -1254,11 +1256,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $refundedOnGateway = $this->verifyRefund($refund);
+        $verifyResponse = $this->verifyRefund($refund);
 
         // true  if refunded
         // false if not refunded
-        $refundedOnGateway = $refundedOnGateway[Payment\Gateway::SUCCESS];
+        $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
 
         if ($refundedOnGateway === false)
         {
@@ -1283,6 +1285,8 @@ trait Refund
         {
             $refund->setStatusProcessed();
         }
+
+        $this->setRefundReference1($verifyResponse);
 
         $refund->setGatewayRefunded($refundedOnGateway);
 
@@ -1589,6 +1593,7 @@ trait Refund
             'amount' => $refundAmount
         ];
 
+        /** @var RefundEntity $refund */
         $refund = $this->buildRefundEntity($payment, $input);
 
         $this->setPaymentAndRefundInfo($refund, $payment);
@@ -1847,7 +1852,8 @@ trait Refund
 
             $input = [
                 FundTransferAttempt\Entity::NARRATION => $bankTransfer->getRefundNarration(),
-                FundTransferAttempt\Entity::MODE      => strtoupper($bankTransfer->getMode()),
+                // This is not used anywhere. Not sure why is this even here. Commenting out for now.
+                // FundTransferAttempt\Entity::MODE      => strtoupper($bankTransfer->getMode()),
             ];
         }
 
@@ -1871,5 +1877,20 @@ trait Refund
                 );
 
         $this->refund->bankAccount()->associate($bankAccount);
+    }
+
+    /**
+     * Currently saving reference number sent by bank in refund response only for UPI refunds.
+     *
+     * @param array $response
+     */
+    protected function setRefundReference1(array $response)
+    {
+        if (($this->refund->payment->getMethod() === Payment\Method::UPI) and
+            (isset($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]) === true) and
+            (empty($this->refund->getReference1()) === true))
+        {
+            $this->refund->setReference1($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]);
+        }
     }
 }

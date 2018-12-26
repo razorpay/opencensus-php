@@ -2251,59 +2251,6 @@ class Processor
         return substr($contact, -10);
     }
 
-    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
-    {
-        $this->trace->info(
-            TraceCode::CREATING_FEES_BREAKUP,
-            [
-                'transaction_id'    => $txn->getId(),
-                'payment_id'        => $txn->getEntityId(),
-                'fee_split'         => $feesSplit->toArrayPublic(),
-            ]);
-
-        try
-        {
-            $this->repo->transaction(function() use ($txn, $feesSplit)
-            {
-                foreach ($feesSplit as $feeSplit)
-                {
-                    $feeSplit->transaction()->associate($txn);
-
-                    $this->repo->saveOrFail($feeSplit);
-                }
-
-                $this->trace->info(
-                    TraceCode::FEES_BREAKUP_CREATED,
-                    [
-                        'transaction_id'    => $txn->getId(),
-                        'payment_id'        => $txn->getEntityId(),
-                        'fee_split'         => $feesSplit->toArrayPublic(),
-                    ]);
-            });
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->trace->info(
-                TraceCode::FEES_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                    'message'           => $ex->getMessage(),
-                ]);
-
-            throw new Exception\LogicException(
-                'Error while recording fee breakup',
-                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                ]);
-        }
-
-    }
-
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         if ((isset($gatewayInput["skip_gateway_call"]) === true) and
@@ -2343,17 +2290,21 @@ class Processor
      * Marks the payment as acknowledged.
      *
      * @param Payment\Entity $payment
+     * @param array          $input
      */
-    public function acknowledge(Payment\Entity $payment)
+    public function acknowledge(Payment\Entity $payment, array $input)
     {
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
             [
+                'input'            => $input,
                 Payment\Entity::ID => $payment->getId(),
             ]);
 
         $this->mutex->acquireAndRelease($payment->getId(),
-            function() use ($payment)
+            function() use ($payment, $notes)
             {
                 $this->repo->reload($payment);
 
@@ -2362,6 +2313,8 @@ class Processor
                 $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $payment->setAcknowledgedAt($currentTime);
+
+                $payment->appendNotes($notes);
 
                 $this->repo->saveOrFail($payment);
             },

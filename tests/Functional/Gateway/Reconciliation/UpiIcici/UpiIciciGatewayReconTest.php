@@ -60,6 +60,8 @@ class UpiIciciGatewayReconTest extends TestCase
         {
             $this->assertEquals('processed', $refund['status']);
 
+            $this->assertEquals($refund['reference1'], '733817298334');
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
@@ -68,6 +70,10 @@ class UpiIciciGatewayReconTest extends TestCase
 
             // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
             $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
+
+            $upi = $this->getDbLastEntity('upi');
+
+            $this->assertEquals($upi['npci_reference_id'], '733817298334');
         }
 
         $this->assertBatchStatus(Status::PROCESSED);
@@ -106,8 +112,6 @@ class UpiIciciGatewayReconTest extends TestCase
         // We do not reconcile refunds that fail the amount assertion step
         foreach ($refunds['items'] as $refund)
         {
-            $this->assertNull($refund['status']);
-
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
@@ -387,7 +391,8 @@ class UpiIciciGatewayReconTest extends TestCase
                 'upi',
                 [
                     'payment_id' => $payment,
-                    'refund_id'  => PublicEntity::stripDefaultSign($refund['id'])
+                    'refund_id'  => PublicEntity::stripDefaultSign($refund['id']),
+                    'action'     => Payment\Action::REFUND
                 ]);
 
             $refunds[] = $refund['id'];

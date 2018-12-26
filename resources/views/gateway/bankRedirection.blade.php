@@ -7,9 +7,9 @@
     @include('partials.loader')
   </head>
   <body onload="document.forms[0].submit()">
-    <form action="<?= $data['url'] ?>" method="<?= $data['method'] ?>">
+    <form action="{{ $data['url'] }}" method="{{ $data['method'] }}">
       @foreach ($data['content'] as $key => $value)
-          <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}" />
+          <input type="hidden" name="{{ $key }}" value="{{ $value }}" />
       @endforeach
       <!-- <input type="submit" /> -->
     </form>

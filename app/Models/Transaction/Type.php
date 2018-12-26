@@ -2,7 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Exception;
+use RZP\Constants\Entity as E;
+use RZP\Exception\InvalidArgumentException;
 
 class Type
 {
@@ -14,6 +15,7 @@ class Type
     const REVERSAL      = 'reversal';
     const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
+    const BANK_TRANSFER = 'bank_transfer';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
@@ -26,25 +28,24 @@ class Type
         self::DISPUTE,
         self::REVERSAL,
         self::SETTLEMENT,
-        self::ADJUSTMENT
+        self::ADJUSTMENT,
+        self::BANK_TRANSFER,
     ];
 
-    public static function validateType($type)
+    public static function validateType(string $type)
     {
-        if (defined(__CLASS__.'::'.strtoupper($type)) === false)
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        if ((defined($key) === false) or (constant($key) !== $type))
         {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid Transaction type: ' . $type);
+            throw new InvalidArgumentException("Not a valid Transaction type: {$type}");
         }
     }
 
-    public static function getEntityClass($type)
+    public static function getEntityClass(string $type): string
     {
-        $entity = 'RZP\\Models\\' . ucfirst($type) . '\Entity';
+        self::validateType($type);
 
-        if ($type === self::REFUND)
-            $entity = 'RZP\\Models\\Payment\\' . ucfirst($type) . '\Entity';
-
-        return $entity;
+        return E::getEntityClass($type);
     }
 }

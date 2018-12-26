@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex">
   <title></title>
   <script>
+    @if (isset($_SERVER['HTTP_HOST']))
     <?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>
     var Razorpay = {
       config: {
@@ -13,6 +14,7 @@
       }
     };
     <?php endif; ?>
+    @endif
   </script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
@@ -60,8 +62,10 @@ var options = {
     },
     callback_url: location.href,
     "prefill": {
+        <?php if (empty($data['customer']) === false): ?>
         "name": {!! json_encode($data['customer']['name']) !!},
         "email": {!! json_encode($data['customer']['email']) !!}
+        <?php endif; ?>
     }
 };
 

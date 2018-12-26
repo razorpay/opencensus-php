@@ -5,10 +5,18 @@ namespace RZP\Models\User;
 use App;
 use Hash;
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\User
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
@@ -24,12 +32,17 @@ class Validator extends Base\Validator
         Entity::CONFIRM_TOKEN         => 'sometimes',
         Entity::CAPTCHA               => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
+        Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|string|max:200',
-        Entity::EMAIL                 => 'sometimes|email|unique:users,email',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15',
+        Entity::SETTINGS              => 'nullable|associative_array',
+    ];
+
+    protected static $editEmailForMerchantRules = [
+        Entity::EMAIL                 => 'filled|email|unique:users,email',
     ];
 
     protected static $changePasswordRules = [
@@ -72,6 +85,25 @@ class Validator extends Base\Validator
         Entity::TOKEN                 => 'required|string|size:50',
     ];
 
+    protected static $actionValidators = [
+        'product_role'
+    ];
+
+    protected static $createOtpRules = [
+        // When medium is not sent otp is sent to both mediums.
+        Entity::MEDIUM => 'sometimes|filled|in:sms,email',
+        Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
+
+        // Temporary: Need to send these payloads for raven's sms content.
+        'amount'         => 'sometimes|integer|min:100|required_if:action,create_payout',
+        'account_number' => 'sometimes|alpha_num|between:5,22|required_if:action,create_payout',
+    ];
+
+    protected static $verifyOtpRules = [
+        Entity::OTP   => 'required|filled|min:4',
+        Entity::TOKEN => 'required|unsigned_id',
+    ];
+
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',
@@ -89,20 +121,30 @@ class Validator extends Base\Validator
      * merchant can not edit or delete his own user id.
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
     protected function validateSelfUser(array $input)
     {
         $app = App::getFacadeRoot();
 
-        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+        $dashboardUser = $app['basicauth']->getUser();
 
-        $dashboardUserId = $dashboardHeaders['user_id'];
-
-        if ($input['user_id'] === $dashboardUserId)
+        if ((empty($dashboardUser) === true) or ($input['user_id'] === $dashboardUser->getId()))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
+        }
+    }
+
+    protected function validateProductRole(array $input)
+    {
+        if (empty($input['role']) === false)
+        {
+            $role = new Role();
+
+            if ($role->validateProductRole($input['role'], $input['product']) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            }
         }
     }
 
@@ -112,7 +154,7 @@ class Validator extends Base\Validator
 
         if (Hash::check($input[Entity::OLD_PASSWORD], $user->getPassword()) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
         }
     }
 
@@ -120,7 +162,7 @@ class Validator extends Base\Validator
      * This function handles https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
     protected function validateTeamUser(array $input)
     {
@@ -128,15 +170,15 @@ class Validator extends Base\Validator
 
         if (empty($user) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
         }
     }
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (Role::exists($role) === false) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+        if (Role::exists($role) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }
     }
 
@@ -145,7 +187,7 @@ class Validator extends Base\Validator
      *
      * @param array $input
      *
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
     protected function validateCaptcha(array $input)
     {
@@ -173,7 +215,7 @@ class Validator extends Base\Validator
 
             $captchaQuery = http_build_query($input);
 
-            $url = "https://www.google.com/recaptcha/api/siteverify?". $captchaQuery;
+            $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
 
             $response = \Requests::get($url);
 
@@ -181,7 +223,7 @@ class Validator extends Base\Validator
 
             if($output->success !== true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
             }
         }
     }
@@ -190,7 +232,60 @@ class Validator extends Base\Validator
     {
         if (Action::exists($action) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED);
         }
+    }
+
+    /**
+     * Validates send OTP operation
+     *
+     * @param  array $input
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateSendOtpOperation(array $input)
+    {
+        /** @var Entity $user */
+        $user = $this->entity;
+
+        $this->validateInput('createOtp', $input);
+
+        $action = $input[Entity::ACTION];
+        // Medium is optional input, for validation logic here assigns 'both' as the value.
+        $medium = $input[Entity::MEDIUM] ?? 'both';
+
+        if (($action === 'verify_contact') and
+            ($medium !== 'sms'))
+        {
+            throw new BadRequestValidationFailureException('Sms must be the medium for verifying contact');
+        }
+
+        if (($action === 'verify_contact') and
+            ($user->isContactMobileVerified() === true))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        if (($medium === 'sms') and
+            ($user->getContactMobile() === null))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile does not exist');
+        }
+
+        if (($medium === 'sms') and
+            ($action !== 'verify_contact') and
+            ($user->isContactMobileVerified() === false))
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is not verified');
+        }
+    }
+
+    public function validateVerifyContactWithOtpOperation(array $input)
+    {
+        if ($this->entity->isContactMobileVerified() === true)
+        {
+            throw new BadRequestValidationFailureException('Contact mobile is already verified');
+        }
+
+        $this->validateInput('verifyOtp', $input);
     }
 }

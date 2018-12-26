@@ -115,6 +115,8 @@ final class Constants
 
     const SUB_STATUS_TEXT               = 'subStatusText';
 
+    const RRN                           = 'rrn';
+
     const REQ_TRANSFER_TYPE             = 'reqTransferType';
 
     const DEFAULT_TRANSFER_TYPE         = 'ANY';

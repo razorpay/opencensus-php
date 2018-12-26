@@ -2,21 +2,25 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const REMARK            = 'remark';
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-    const MODE              = 'mode';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const REMARK                = 'remark';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const RRN                   = 'rrn';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const MODE                  = 'mode';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     /**
      * This will update the status based on the transfer API response
@@ -41,9 +45,13 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $response = (new StatusRequest())->init()
-                                         ->setEntity($this->row)
-                                         ->makeRequest();
+        $gateway = ($this->row->hasVpa() === true);
+
+        $banking = $this->row->isOfBanking();
+
+        $response = (new StatusRequest($banking))->init()
+                                                 ->setEntity($this->row)
+                                                 ->makeRequest($gateway);
 
         if (empty($response) === false)
         {
@@ -51,20 +59,42 @@ class StatusProcessor extends BaseRowProcessor
         }
     }
 
+    /**
+     * @param array $response
+     * @throws LogicException
+     */
     protected function setParsedData(array $response)
     {
-        $this->parsedData = [
-            self::UTR              => $response[self::UTR],
-            self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
-            self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE] ?? null,
-            self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::MODE             => $response[self::MODE],
-        ];
-
         $this->reconEntityId = $response[self::PAYMENT_REF_NO];
 
-        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
+        if ($this->reconEntityId === null)
+        {
+            throw new LogicException(
+                "Recon entity id can not be null",
+                ErrorCode::SERVER_ERROR_INVALID_ATTEMPT_ID,
+                [
+                    'response' => $response,
+                ]);
+        }
+
+        // TODO: Use yesbank/transfer/request.php while reading from the response.
+
+        $this->parsedData = [
+            self::UTR                   => $response[self::UTR],
+            self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
+            self::REMARK                => $response[self::REMARK],
+            self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
+            self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
+            self::MODE                  => Mode::getInternalModeFromExternalMode($response[self::MODE]),
+            // Won't be present in case of a successful response
+            self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
+        ];
+
+        $this->trace->info(
+            TraceCode::FTA_RECON_PARSED_DATA,
+            [
+                'parsed_data' => $this->parsedData
+            ]);
     }
 
     /**

@@ -82,8 +82,14 @@ class Fields
     const SUCCESS                   = 'success';
     const ERROR_MESSAGE             = 'error_message';
     const REQUEST_REFERENCE_NUMBER  = 'requestReferenceNo';
+    const UNIQUE_RESPONSE_NUMBER    = 'uniqueResponseNo';
     const STATUS_CODE               = 'statusCode';
     const SUB_STATUS_TEXT           = 'subStatusText';
+    const BANK_REFERENCE_NUMBER     = 'bankReferenceNo';
+    const TERMINAL                  = 'terminal';
+    const MERCHANT                  = 'merchant';
+    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
+    const CATEGORY                  = 'category';
 
     const PAYOUT = [
       self::YBLREFNO,

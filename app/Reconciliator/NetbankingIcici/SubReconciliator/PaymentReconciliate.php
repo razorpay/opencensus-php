@@ -50,6 +50,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'info_code'              => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'payment_id'             => $this->payment->getId(),
+                    'amount'                 => $this->payment->getAmount(),
                     'db_reference_number'    => $dbReferenceNumber,
                     'recon_reference_number' => $referenceNumber,
                     'gateway'                => $this->gateway

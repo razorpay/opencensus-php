@@ -30,6 +30,7 @@ abstract class Base extends ApiProcessor
     const REMARK                = 'remark';
     const TRANSFER_TYPE         = 'transfer_type';
     const MODE                  = 'mode';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $appId;
 
@@ -45,13 +46,19 @@ abstract class Base extends ApiProcessor
 
     protected $entity = null;
 
-    public function __construct()
+    public function __construct(bool $banking = false)
     {
         parent::__construct();
 
         $this->channel = Channel::YESBANK;
 
-        $this->config = Config::get('nodal.yesbank');
+        $this->config = Config::get('nodal.yesbank.primary');
+
+        if ($banking === true)
+        {
+            $this->config = Config::get('nodal.yesbank.banking');
+        }
+
 
         $this->appId = $this->config['app_id'];
 
@@ -164,6 +171,11 @@ abstract class Base extends ApiProcessor
         throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
     }
 
+    public function processGatewayResponse(array $response): array
+    {
+        return $this->extractGatewayData($response);
+    }
+
     /**
      * Gives the content type for the request
      *
@@ -217,6 +229,17 @@ abstract class Base extends ApiProcessor
         return $this->mockGenerateSuccessResponse();
     }
 
+    protected function mockResponseGeneratorForGateway(array $input): array
+    {
+        if ((isset($input['failed_response']) === true) and
+            ($input['failed_response'] === '1'))
+        {
+            return $this->mockGenerateFailedResponseForGateway();
+        }
+
+        return $this->mockGenerateSuccessResponseForGateway();
+    }
+
     /**
      * Generates successful response for given request
      *
@@ -230,6 +253,20 @@ abstract class Base extends ApiProcessor
      * @return string
      */
     protected abstract function mockGenerateSuccessResponse(): string;
+
+    /**
+     * Generates successful response for given request
+     *
+     * @return array
+     */
+    protected abstract function mockGenerateFailedResponseForGateway(): array;
+
+    /**
+     * Generates failed response for given request
+     *
+     * @return array
+     */
+    protected abstract function mockGenerateSuccessResponseForGateway(): array;
 
     /**
      * Extracts data from response when response received is a valid success response.
@@ -252,7 +289,6 @@ abstract class Base extends ApiProcessor
     protected abstract function extractSuccessfulData(array $response): array;
 
     /**
-     *
      * Extracts data from response when response received is a failure response.
      * Failure response are response without `Body` attribute and header.status will be any of failure status
      *
@@ -271,6 +307,8 @@ abstract class Base extends ApiProcessor
      * ]
      */
     protected abstract function extractFailedData(array $response): array;
+
+    protected abstract function extractGatewayData(array $response): array;
 
     /**
      * Normalizes beneficiary name should have length between 5 - 35

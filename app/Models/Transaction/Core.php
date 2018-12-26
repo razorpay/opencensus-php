@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
@@ -52,12 +53,20 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    /*
-     * Refactoring entity by entity, will introduce factory method in the future
-    */
+    public function getFactory(Base\Entity $source): TransactionProcessor\Base
+    {
+        $type = $source->getEntityName();
+
+        $processor = __NAMESPACE__ ;
+
+        $processor .= '\\Processor\\' .studly_case($type);
+
+        return new $processor($source);
+    }
+
     public function createTransactionForSource(Base\Entity $source)
     {
-        $txnProcessor = (new TransactionProcessor\Payment($source));
+        $txnProcessor = $this->getFactory($source);
 
         return $txnProcessor->createTransaction();
     }
@@ -228,7 +237,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($txn);
 
-            (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
+            $this->saveFeeDetails($txn, $feesSplit);
         });
     }
 
@@ -350,7 +359,7 @@ class Core extends Base\Core
 
             $txn->setPricingRule($pricingRuleId);
         }
-        else if ($merchant->isPrepaid())
+        else if ($merchant->isPrepaid() === true)
         {
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePrepaidFee($txn);
         }
@@ -579,11 +588,7 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-        list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-        return $txn;
+        return $this->createTransactionForSource($refund);
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
@@ -635,8 +640,9 @@ class Core extends Base\Core
     /**
      * Record and associate a transaction for a payment transfer.
      *
-     * @param  Transfer\Entity      $transfer Transfer entity
-     * @return Transaction\Entity
+     * @param  Transfer\Entity $transfer Transfer entity
+     *
+     * @return array
      */
     public function createFromTransfer(Transfer\Entity $transfer)
     {
@@ -723,7 +729,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     /**
@@ -766,6 +772,15 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromPayoutReversal(Reversal\Entity $reversal): Entity
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
         return $txn;
     }
@@ -866,10 +881,10 @@ class Core extends Base\Core
             $debitAmount = $amount;
 
             // Here, payout amount is the amount requested by merchant for payout and fees is
-            // levied over it.Also, this fees is deducted from merchant balance.This happens for
-            // merchants which do not have 'es_on_demand' feature enabled.In case of 'es_on_demand'
+            // levied over it. Also, this fees is deducted from merchant balance. This happens for
+            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
             // merchants, payout fees will be deducted from payout amount requested by the merchant.
-            // This is done allow a merchant to do a payout on requested amount , rather then
+            // This is done to allow a merchant to do a payout on requested amount, rather than
             // calculating fees over it and failing a transaction if merchant does not have enough balance.
             $payout->setAmount($payoutAmount);
         }
@@ -932,7 +947,7 @@ class Core extends Base\Core
     {
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
-        $txn->associateBalance($merchantBalance);
+        $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
@@ -1431,6 +1446,70 @@ class Core extends Base\Core
                 // Invalid case
                 throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
             }
+        }
+    }
+
+    /**
+     * Dispatches webhook, sms and/or email for newly created transaction.
+     * This is a safe method i.e. it is not expected to throw any exceptions.
+     * Notifier and webhook dispatcher used here suppress and log exceptions if any.
+     *
+     * @param Entity $txn
+     */
+    public function dispatchEventForTransactionCreated(Entity $txn)
+    {
+        (new Notifier($txn))->notify();
+
+        $this->app->events->fire('api.transaction.created', $txn);
+    }
+
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
+    {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'source_id'         => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
+        try
+        {
+            $this->repo->transaction(function() use ($txn, $feesSplit)
+            {
+                foreach ($feesSplit as $feeSplit)
+                {
+                    $feeSplit->transaction()->associate($txn);
+
+                    $this->repo->saveOrFail($feeSplit);
+                }
+
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_CREATED,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'source_id'      => $txn->getEntityId()
+                    ]);
+            });
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL,
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'source_id'      => $txn->getEntityId()
+                ]);
+
+            throw new Exception\LogicException(
+                'Error while recording fee breakup',
+                ErrorCode::SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
         }
     }
 }

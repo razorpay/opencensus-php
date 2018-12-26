@@ -163,6 +163,13 @@ class OrderTest extends TestCase
         return $orderResponse;
     }
 
+    public function testCreateTPVOrderWithoutAccountNumber()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+    }
+
     public function testCreateTPVOrderWithNewFlow()
     {
         $testData = $this->testData[__FUNCTION__];
@@ -178,13 +185,13 @@ class OrderTest extends TestCase
         // Account number and payer name will be updated in both the places
         // until on gateways we start using account number from bank accounts.
         $this->assertEquals($bankAccount->getAccountNumber(),$bankAccountRequest['account_number']);
-        $this->assertEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc_code']);
-        $this->assertEquals($bankAccount->getBeneficiaryName(), $bankAccountRequest['beneficiary_name']);
+        $this->assertEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc']);
+        $this->assertEquals($bankAccount->getBeneficiaryName(), $bankAccountRequest['name']);
 
         $this->assertEquals($order->getAccountNumber(),$bankAccountRequest['account_number']);
-        $bankCodeFromIfsc = strtoupper(substr($bankAccountRequest['ifsc_code'], 0, 4));
+        $bankCodeFromIfsc = strtoupper(substr($bankAccountRequest['ifsc'], 0, 4));
         $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
-        $this->assertEquals($order->getPayerName(), $bankAccountRequest['beneficiary_name']);
+        $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
     }
 
     public function testCreateTPVOrderEmptyMethod()
@@ -243,11 +250,6 @@ class OrderTest extends TestCase
         $order = $this->startTest();
 
         return $order;
-    }
-
-    public function testCreateTPVOrderWithInvalidAccountNumber()
-    {
-        $this->startTest();
     }
 
     public function testGetOrder()

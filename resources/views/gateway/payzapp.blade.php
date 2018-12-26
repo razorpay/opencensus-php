@@ -15,7 +15,7 @@ _wIapDefaults = {
   wIapButtonId: 'wIapBtn',
 
 {{-- Provide wibmo environment domain. default value is for production that is 'www.wibmo.com' --}}
-  wIapWibmoDomain: "<?= $request['url'] ?>",
+  wIapWibmoDomain: "{{ $request['url'] }}",
 
 {{-- Default false. Pass true, If you want IAP response to be passed to your web page through javascript call --}}
   wIapInlineResponse: false,
@@ -24,13 +24,13 @@ _wIapDefaults = {
   wIapInlineResponseHandler: 'handleWibmoIapResponse',
 
 {{-- mandatory if wIapInlineResponse is false --}}
-  wIapReturnUrl: "<?= $request['callback_url'] ?>",
+  wIapReturnUrl: "{{ $request['callback_url'] }}",
 };
 
 _wIapInitRequestJSON = JSON.parse(<?= "'".json_encode($request['content'])."'" ?>);
 
 </script>
-<script src="https://<?= $request['url']?>/v1/wIAP.js"></script>
+<script src="https://{{ $request['url'] }}/v1/wIAP.js"></script>
 </head>
 <body>
 <script type="text/javascript">

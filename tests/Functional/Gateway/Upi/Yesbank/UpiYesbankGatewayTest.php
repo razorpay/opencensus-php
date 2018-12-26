@@ -78,7 +78,7 @@ class UpiYesbankGatewayTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response['success']);
-        $this->assertNotNull($response['rrn']);
+        $this->assertNotNull($response['bankReferenceNo']);
 
         $gatewayEntity = $this->getLastEntity('upi', true);
 
@@ -315,6 +315,34 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertFalse($response['success']);
 
         $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['error_message']);
+
+        $this->assertEquals('RZP_AMOUNT_MISMATCH', $response['statusCode']);
+    }
+
+    public function testDuplicatePayoutRequest()
+    {
+        $attributes = [
+            'terminal'  => ['gateway_merchant_id' => '123456'],
+            'merchant'  => ['category' => '1520'],
+            'fund_transfer_attempt' => ['ref_id' => '12345'],
+            'gateway_input' => [
+                'vpa'       => 'komal@yesb',
+                'amount'    => '100',
+                'ref_id'    => 'testReference'
+            ]
+        ];
+
+        $request = $this->getPayoutRequest($attributes, 'pay');
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('RZP_DUPLICATE_PAYOUT', $response['statusCode']);
     }
 
     protected function getPayoutRequest(array $attributes, string $type)

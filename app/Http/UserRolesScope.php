@@ -59,9 +59,8 @@ class UserRolesScope
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
-            'balance_fetch'                       => array_merge(
-                Role::allExceptPaymentLinkRoles(),
-                Role::LINKED_ACCOUNT_ROLES),
+            'balance_fetch'                       => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
+            'merchant_balance_fetch'              => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'bank_account_fetch'                  => Role::allExceptPaymentLinkRoles(),
             'merchant_activation_details'         => [
                 Role::OWNER,

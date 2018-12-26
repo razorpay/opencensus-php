@@ -856,7 +856,7 @@ return [
                         'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
-                            'activation_status' => null,
+                            'activation_status' => 'activated',
                         ],
                         'dashboard_access' => false,
                     ],
@@ -979,7 +979,7 @@ return [
                         'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
-                            'activation_status' => null,
+                            'activation_status' => 'activated',
                         ],
                         'dashboard_access' => false,
                     ],

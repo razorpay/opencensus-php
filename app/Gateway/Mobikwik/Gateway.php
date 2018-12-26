@@ -190,6 +190,8 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
+        $this->verifyAmountMismatch($verify, $input, $content);
+
         $verify->payment = $this->saveVerifyContentIfNeeded($payment, $content);
 
         return $verify->status;
@@ -642,7 +644,6 @@ class Gateway extends Base\Gateway
             'amount',
             'statusmessage',
             'mid',
-            'refid'
         );
 
         $actual = $content['checksum'];
@@ -881,5 +882,18 @@ class Gateway extends Base\Gateway
         $number = new PhoneBook($contact, true);
 
         return $number->format(PhoneBook::DOMESTIC);
+    }
+
+    protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response)
+    {
+        if (is_string($response['amount']) === false)
+        {
+            return;
+        }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format(floatval($response['amount']), 2, '.', '');
+
+        $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
 }

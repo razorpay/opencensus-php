@@ -57,6 +57,12 @@ class Entity extends Base\PublicEntity
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
+    const RRN                    = 'rrn';
+
+    /**
+     * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
+     */
+    const BANK_REFERENCE_NO = 'reference_no';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const VPA_ID                 = 'vpa_id';
@@ -414,6 +420,12 @@ class Entity extends Base\PublicEntity
                     self::ARN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::UPI:
+                $acquirerData = [
+                    self::RRN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -583,6 +595,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);

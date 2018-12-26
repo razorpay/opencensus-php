@@ -4,6 +4,8 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Constants\Entity as E;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
@@ -36,6 +38,11 @@ class Entity extends Base\PublicEntity
     const FILE_TYPE             = 'file_type';
     const SETTLEMENT            = 'settlement';
     const BENEFICIARY           = 'beneficiary';
+
+    /**
+     * Used to check if the FTA's source has balance ID
+     */
+    const BALANCE_ID            = 'balance_id';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -210,6 +217,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INITIATE_AT);
     }
 
+    public function hasMode()
+    {
+        return ($this->isAttributeNotNull(self::MODE) === true);
+    }
+
     public function getMode()
     {
         return $this->getAttribute(self::MODE);
@@ -225,9 +237,24 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
+    public function isSettlement()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
+    }
+
     public function getDateTime()
     {
         return $this->getAttribute(self::DATE_TIME);
+    }
+
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     // ------------------------------- setters ---------------------------------
@@ -299,6 +326,28 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::CMS_REF_NO] = substr($refNo, 0, 255);
     }
 
+    public function modifyModeIfRequired()
+    {
+        if ($this->hasMode() === false)
+        {
+            return;
+        }
+
+        // Assumption is that the validation would have happened already before this
+        // step and hence we can assume that the bank account exists and is valid.
+
+        $ba = $this->bankAccount;
+
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
+        {
+            $this->setMode(Mode::IFT);
+        }
+    }
+
     // -------------------------------- methods --------------------------------
 
     public function isStatusCreated()
@@ -336,7 +385,20 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isOfBanking(): bool
+    {
+        $source = $this->source;
+
+        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        {
+            return $source->isBalanceTypeBanking();
+        }
+
+        return false;
+    }
+
     // ---------------------------- public setters -----------------------------
+
     public function setPublicSourceAttribute(array & $attributes)
     {
         $sourceId = $this->getAttribute(self::SOURCE_ID);
@@ -351,5 +413,16 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         return $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function isBeneRegistrationRequired(): bool
+    {
+        if (($this->isRefund() === true) or
+            ($this->hasVpa() === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

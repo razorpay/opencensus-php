@@ -21,6 +21,7 @@ use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
 /**
@@ -274,6 +275,11 @@ class BasicAuth
      * @var \RZP\Models\User\Entity | null
      */
     protected $user        = null;
+
+    /**
+     * User Role is a role associated to the merchant for the user.
+     */
+    protected $userRole    = null;
 
     /**
      * @var boolean
@@ -1410,6 +1416,10 @@ class BasicAuth
         if ($merchant !== null)
         {
             $this->setOrgId($merchant->org->getPublicId());
+
+            // basic auth is scattered across the code in core and services  for avoiding duplicate code setting merchant here
+
+            $this->merchant = $merchant;
         }
 
         $authCreds = $this->authCreds;
@@ -1417,8 +1427,6 @@ class BasicAuth
         if ((empty($authCreds) === false))
         {
             $this->authCreds->setMerchant($merchant);
-
-            $this->merchant = $this->authCreds->getMerchant();
         }
     }
 
@@ -1924,7 +1932,7 @@ class BasicAuth
      * Denotes if a request came from banking source or primary dashbaord
      * @return bool
      */
-    public function isBanking(): bool
+    public function isProductBanking(): bool
     {
         return ($this->getRequestOriginProduct() === Merchant\Balance\Type::BANKING);
     }
@@ -1953,6 +1961,11 @@ class BasicAuth
         return $this->user;
     }
 
+    public function getUserRole()
+    {
+        return $this->userRole;
+    }
+
     /**
      * Verifies and sets user from the headers.
      */
@@ -1967,6 +1980,33 @@ class BasicAuth
             $user = $this->repo->user->findOrFailPublic($userId);
 
             $this->setUser($user);
+
+            $this->setUserRole($userId);
+        }
+    }
+
+    public function setUserRole(string $userId)
+    {
+        // Fetching MID from authcreds because X-Razorpay-Account will be set as ba merchant
+        // When a marketplace account requests on behalf of linked account. so fetching the user
+        // mapping via keyId and userId.
+        if ($this->isProxyAuth() === true)
+        {
+            $merchantId = $this->authCreds->creds[self::KEY_ID];
+        }
+
+        if (empty($merchantId) === false)
+        {
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $userId);
+
+            if (empty($userMapping) === false)
+            {
+                $this->userRole = $userMapping->pivot->role;
+            }
+            else
+            {
+                $this->userRole = (new UserService)->syncMerchantUserOnProducts($merchantId);
+            }
         }
     }
 

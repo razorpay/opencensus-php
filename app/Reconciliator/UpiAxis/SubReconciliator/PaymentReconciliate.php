@@ -5,7 +5,9 @@ namespace RZP\Reconciliator\UpiAxis\SubReconciliator;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Action;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\Reconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
@@ -43,6 +45,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getReferenceNumber($row)
     {
         return $row[self::RRN] ?? null;
+    }
+
+    protected function getReconVpa($row)
+    {
+        return $row[self::VPA] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)
@@ -117,7 +124,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $this->trace->info(TraceCode::RECON_INFO_ALERT, [
                 'message'           => 'Npci Reference id is not same as in recon',
-                'info_code'         => 'DATA_MISMATCH',
+                'info_code'         => Base\InfoCode::DATA_MISMATCH,
                 'payment_id'        => $this->payment->getId(),
                 'payment_status'    => $this->payment->getStatus(),
                 'api_reference1'    => $npciRefId,
@@ -206,5 +213,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         $gatewayPayment->setGatewayPaymentId($gatewayTransactionId);
+    }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            Fields::RRN   => $this->getReferenceNumber($row),
+            Entity::VPA   => $this->getReconVpa($row),
+        ];
     }
 }

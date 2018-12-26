@@ -19,7 +19,7 @@ class CustomerWalletPayout extends Base
      * Since we don't want to register beneficiaries for all the merchants customers.
      * Yes bank will be used as channel.
      */
-    protected function setChannel()
+    protected function setChannel($input = [])
     {
         $this->channel = Settlement\Channel::YESBANK;
     }
@@ -29,9 +29,10 @@ class CustomerWalletPayout extends Base
         $customerTransactionData = $this->getCustomerTransactionData($payout);
 
         // Create customer debit transaction.
-        $customerTransaction = (new CustTransactionCore)->createForCustomerDebit($customerTransactionData,
-                                                                                 $this->merchant,
-                                                                                 Constants\Entity::PAYOUT);
+        $customerTransaction = (new CustTransactionCore)->createForCustomerDebit(
+            $customerTransactionData,
+            $this->merchant,
+            Constants\Entity::PAYOUT);
 
         $payout->transaction()->associate($customerTransaction);
 

@@ -41,6 +41,13 @@ class FeeCalculator
      */
     protected $entity;
 
+    /**
+     * Product line for Fee calculation (primary - pg / banking)
+     *
+     * @var string
+     */
+    protected $product;
+
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
     protected $feesSplit = null;
@@ -56,9 +63,11 @@ class FeeCalculator
 
     protected $taxComponents = null;
 
-    public function __construct($entity)
+    public function __construct($entity, string $product)
     {
         $this->entity = $entity;
+
+        $this->product = $product;
 
         $this->feesSplit = new Base\PublicCollection;
 
@@ -170,19 +179,21 @@ class FeeCalculator
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
-        $method = $this->entity->getMethod();
+        $method  = $this->entity->getMethod();
+        $product = $this->product;
 
         foreach ($features as $feature)
         {
-            $filters = array(
-                [Pricing\Entity::FEATURE, $feature, false, null  ],
-                [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
-            );
+            $filters = [
+                [Pricing\Entity::PRODUCT,        $product, false, null],
+                [Pricing\Entity::FEATURE,        $feature, false, null],
+                [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
+            ];
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
             if ((count($rules) > 0) and
-                $entityName === Pricing\Feature::PAYMENT)
+                ($entityName === Pricing\Feature::PAYMENT))
             {
                 $rule = $this->getRelevantPaymentPricingRule($rules, $method);
 
@@ -193,13 +204,15 @@ class FeeCalculator
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
-        $method = $this->entity->getMethod();
-        $orgId = $this->entity->merchant->org->getId();
+        $method  = $this->entity->getMethod();
+        $orgId   = $this->entity->merchant->org->getId();
+        $product = $this->product;
 
-        $filters = array(
+        $filters = [
+            [Pricing\Entity::PRODUCT,         $product, false, null  ],
             [Pricing\Entity::FEATURE,         $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
@@ -297,7 +310,7 @@ class FeeCalculator
 
     protected function getRelevantPayoutPricingRule($rules, $method)
     {
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
+        $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
 
         return $rule;
     }

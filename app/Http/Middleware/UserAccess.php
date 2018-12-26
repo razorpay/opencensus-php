@@ -165,7 +165,7 @@ class UserAccess
             return;
         }
 
-        $userRole = $this->getUserRole();
+        $userRole = $this->ba->getUserRole();
 
         // If no role was sent in the headers
         if (empty($userRole) === true)
@@ -181,17 +181,5 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
-    }
-
-    private function getUserRole()
-    {
-        // @todo validate the user actually has the role sent
-        // in headers since we don't want to trust dashboard
-
-        $dashboardHeaders = $this->ba->getDashboardHeaders();
-
-        $userRole = $dashboardHeaders['user_role'] ?? null;
-
-        return $userRole;
     }
 }

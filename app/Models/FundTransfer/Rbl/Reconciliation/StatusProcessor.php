@@ -8,13 +8,14 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const REMARK            = 'remark';
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const REMARK                = 'remark';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const RRN                   = 'rrn';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const PUBLIC_FAILURE_REASON = 'pubic_failure_reason';
 
     public function updateTransferStatus()
     {
@@ -42,11 +43,13 @@ class StatusProcessor extends BaseRowProcessor
     protected function setParsedData(array $response)
     {
         $this->parsedData = [
-            self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::UTR              => $response[self::UTR],
-            self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
-            self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE]
+            self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
+            self::UTR                   => $response[self::UTR],
+            self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
+            self::REMARK                => $response[self::REMARK],
+            self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
+            // Won't be present in case of success response
+            self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
         ];
 
         $this->reconEntityId = $response[self::PAYMENT_REF_NO];

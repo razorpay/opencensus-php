@@ -7,13 +7,25 @@ use Request;
 
 class PayoutController extends Controller
 {
-    public function postCustomerPayout()
+    public function postFundAccountPayout()
     {
         $input = Request::all();
 
-        $data = $this->service()->customerPayout($input);
+        $data = $this->service()->fundAccountPayout($input);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * Logged in business banking user creates payout with OTP (proxy auth)
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postFundAccountPayoutWithOtp()
+    {
+        $response = $this->service()->fundAccountPayoutWithOtp($this->input);
+
+        return ApiResponse::json($response);
     }
 
     public function postMerchantPayoutOnDemand()
@@ -56,7 +68,23 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->processFailedPayouts($input);
+        $data = $this->service()->processReversedPayouts($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPurposes()
+    {
+        $data = $this->service()->getPurposes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPurpose()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPurpose($input);
 
         return ApiResponse::json($data);
     }

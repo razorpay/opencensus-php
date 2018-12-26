@@ -21,6 +21,7 @@ use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\BharatQr;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -967,6 +968,11 @@ class Gateway extends Base\Gateway
                 $content[Fields::STATUS],
                 ResponseCode::getResponseMessage($code));
         }
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+        ];
     }
 
     protected function getRefundRequest(array $input)
@@ -1004,6 +1010,24 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return[
+                Fields::ORIGINAL_BANK_RRN_REQ => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
+                Fields::STATUS                => $refundFields[Fields::STATUS] ?? null,
+                Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
+                Fields::SUCCESS               => $refundFields[Fields::SUCCESS] ?? null,
+                Fields::MESSAGE               => $refundFields[Fields::MESSAGE] ?? null,
+                //Sending RRN here to update the reference no in refund entity - requirement of Go Ibibo
+                //Todo: remove during scrooge integration
+                RefundEntity::RRN             => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
+            ];
+        }
+        return [];
     }
 
     /**

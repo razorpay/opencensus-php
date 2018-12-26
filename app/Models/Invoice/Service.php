@@ -361,10 +361,11 @@ class Service extends Base\Service
      */
     protected function setUser()
     {
-        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
+        $user = $this->auth->getUser();
 
-        $this->userId   = $dashboardHeaders['user_id'] ?? null;
-        $this->userRole = $dashboardHeaders['user_role'] ?? null;
+        $this->userId   = (empty($user) === false) ? $user->getId() : null;
+
+        $this->userRole = $this->auth->getUserRole();
     }
 
     /**

@@ -64,7 +64,9 @@ class RefundTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay', $merchantUser->getId());
 
         $this->startTest();
     }

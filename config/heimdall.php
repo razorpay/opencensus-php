@@ -243,6 +243,8 @@ return [
             Permission::SCHEDULE_UPDATE                     => '',
             Permission::SCHEDULE_ASSIGN                     => '',
             Permission::SCHEDULE_ASSIGN_BULK                => '',
+            Permission::PRICING_ASSIGN_BULK                 => '',
+            Permission::METHODS_ASSIGN_BULK                 => '',
             Permission::SCHEDULE_MIGRATION                  => '',
             Permission::VIEW_ACTIONS                        => '',
             Permission::VIEW_MERCHANT_STATS                 => '',
@@ -594,6 +596,10 @@ return [
                 'description' => 'Evaluate shield rules',
                 'assignable'  => false,
             ],
+        ],
+
+        PermissionCategory::REPORTING => [
+            Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
         ],
     ],
 

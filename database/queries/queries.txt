@@ -4458,7 +4458,7 @@ ALTER TABLE hitachi
     ADD INDEX `hitachi_prrn_index` (pRRN);
 
 ALTER TABLE merchant_banks
-    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
+    ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi;
 
 ALTER TABLE terminals
     ADD COLUMN cardless_emi TINYINT(1) NOT NULL DEFAULT 0 AFTER emi,
@@ -4502,8 +4502,8 @@ INSERT INTO schedule_tasks
     (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
     (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
     FROM schedule_tasks INNER JOIN (
-    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
-    	) AS im ON im.id = schedule_tasks.merchant_id
+        SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+        ) AS im ON im.id = schedule_tasks.merchant_id
         WHERE type = 'settlement' and method = 'card' AND deleted_at is null
     )
 
@@ -4511,13 +4511,86 @@ INSERT INTO schedule_tasks
     (merchant_id, entity_id, entity_type, type, method, international, schedule_id, next_run_at, last_run_at, created_at, updated_at)
     (SELECT merchant_id, entity_id, entity_type, type, method, 1, schedule_id, next_run_at, last_run_at, Unix_timestamp(Now()), Unix_timestamp(Now())
     FROM schedule_tasks INNER JOIN (
-    	SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
-    	) AS im ON im.id = schedule_tasks.merchant_id
+        SELECT id FROM merchants WHERE activated=1 AND activated_at < unix_timestamp(now()) AND international = 1
+        ) AS im ON im.id = schedule_tasks.merchant_id
         WHERE type = 'settlement' AND method is null AND deleted_at is null AND merchant_id not in (
-        	SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
+            SELECT merchant_id FROM schedule_tasks WHERE type = 'settlement' AND method = 'card' AND international = 1 AND deleted_at is null
         )
     )
 
 ALTER TABLE pricing
-	ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
+    ADD COLUMN product VARCHAR(255) DEFAULT 'primary' AFTER plan_name;
 
+ALTER TABLE payouts
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX payouts_balance_id_merchant_id_index (balance_id, merchant_id);
+
+ALTER TABLE terminals
+    ADD COLUMN ifsc_code varchar(11) DEFAULT NULL AFTER account_number;
+ALTER TABLE fund_accounts
+    ADD COLUMN source_type VARCHAR(255) AFTER merchant_id,
+    ADD COLUMN source_id CHAR(14) AFTER source_type,
+    ADD INDEX `fund_accounts_source_id_index` (source_id),
+    DROP INDEX beneficiary_accounts_beneficiary_id_foreign,
+    DROP COLUMN contact_id;
+
+ALTER TABLE users
+    ADD COLUMN contact_mobile_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_reset_expiry;
+
+ALTER TABLE balance
+    ADD COLUMN account_number VARCHAR(255) DEFAULT NULL AFTER refund_credits,
+    ADD INDEX balance_account_number_index (account_number);
+
+ALTER TABLE bank_transfers
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER virtual_account_id,
+    ADD INDEX bank_transfers_balance_id_index (balance_id);
+
+ALTER TABLE payouts
+    ADD COLUMN mode VARCHAR(30) DEFAULT NULL AFTER method,
+    ADD INDEX payouts_mode_index (mode);
+
+ALTER TABLE payouts
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER destination_type,
+    ADD INDEX payouts_user_id_index (user_id);
+
+ALTER TABLE contacts
+    ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER email,
+    ADD INDEX contacts_type_merchant_id_index (type, merchant_id);
+
+ALTER TABLE payouts
+    ADD COLUMN fund_account_id CHAR(14) DEFAULT NULL AFTER destination_type,
+    MODIFY COLUMN destination_type VARCHAR(255) DEFAULT NULL,
+    MODIFY COLUMN destination_id CHAR(14) DEFAULT NULL,
+    ADD INDEX payouts_fund_account_id_index (fund_account_id);
+
+ALTER TABLE vpas
+    DROP INDEX vpas_username_handle_unique,
+    ADD INDEX vpas_username_handle_index (username, handle);
+
+ALTER TABLE contacts
+    ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX contacts_reference_id_merchant_id_index (reference_id, merchant_id);
+
+ALTER TABLE reversals
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER entity_type,
+    ADD INDEX reversals_balance_id_index (balance_id);
+
+ALTER TABLE reversals
+    ADD COLUMN channel VARCHAR(255) DEFAULT NULL AFTER balance_id;
+
+ALTER TABLE payouts
+    ADD COLUMN purpose_type VARCHAR(255) DEFAULT NULL AFTER purpose,
+    ADD INDEX payouts_purpose_type_index (purpose_type);
+
+ALTER TABLE balance
+    ADD UNIQUE INDEX balance_merchant_id_type_unique (merchant_id, type);
+
+# Inserts default banking pricing for payouts.
+INSERT INTO pricing (id, plan_id, plan_name, product, feature, gateway, payment_method, payment_method_type, auth_type, payment_network, payment_issuer, emi_duration, international, receiver_type, amount_range_active, amount_range_min, amount_range_max, percent_rate, fixed_rate, min_fee, max_fee, org_id, created_at, updated_at, deleted_at, expired_at)
+VALUES
+    ("Bbg7cl6t6I3XA5", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 0, 100000, 0, 500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7dTcURsOr77", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 100000, 2500000, 0, 900, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7e4oKCgaubd", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 2500000, 4294967295, 0, 1500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7eYLkxM7sLP", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 0, 100000, 0, 500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7f0FaUJQOvj", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 100000, 2500000, 0, 900, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7fgaDwax03u", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 2500000, 4294967295, 0, 1500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL);

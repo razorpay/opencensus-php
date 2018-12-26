@@ -75,16 +75,18 @@ class Service extends Base\Service
         //
         // Hence, forcing the input mode to be live mode here, if not already.
         //
-        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $liveMode = $this->auth->getLiveConnection();
 
         $this->core()->setModeAndDefaultConnection($liveMode);
 
-        return $this->core()->saveMerchantDetails($input, $this->merchant);
+        $originProduct = $this->auth->getRequestOriginProduct();
+
+        return $this->core()->saveMerchantDetails($input, $this->merchant, $originProduct);
     }
 
     public function saveInstantActivationDetails(array $input): array
     {
-        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $liveMode = $this->auth->getLiveConnection();
 
         $this->core()->setModeAndDefaultConnection($liveMode);
 
@@ -591,7 +593,9 @@ class Service extends Base\Service
 
             // Save User Information of contact name nad contact Email.
 
-            $user = $this->merchant->primaryOwner();
+            $originProduct = $this->auth->getRequestOriginProduct();
+
+            $user = $this->merchant->primaryOwner($originProduct);
 
             $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
             $userEditData['name']           = $input['contact_name'] ?? null;

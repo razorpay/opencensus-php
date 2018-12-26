@@ -323,13 +323,6 @@ class Validator extends Base\Validator
     public function validateSubscriptionViewable()
     {
         $subscription   = $this->entity;
-        $subscriptionId = $subscription->getPublicId();
-
-        if ($subscription->hasBeenAuthenticated() === false)
-        {
-            $message = "Subscription with id {$subscriptionId} is not authenticated yet";
-            throw new BadRequestValidationFailureException($message);
-        }
 
         if ($subscription->isGlobal() === false)
         {

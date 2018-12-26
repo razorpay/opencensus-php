@@ -114,6 +114,18 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
     }
 
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant, $balance): Entity
+    {
+        $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBalanceId($balance->getId());
+
+        if ($virtualAccount === null)
+        {
+            $virtualAccount = $this->createForBankingBalance($merchant);
+        }
+
+        return $virtualAccount;
+    }
+
     protected function buildVirtualAccountAndReceivers(
         Entity $virtualAccount,
         array $input,
@@ -194,6 +206,8 @@ class Core extends Base\Core
 
     protected function buildReceivers(Entity $virtualAccount, array $receivers)
     {
+        $virtualAccount->getValidator()->validateReceiversForBanking($receivers);
+
         $receiverHelper = $virtualAccount->getReceiverBuilder();
 
         foreach ($receivers[Entity::TYPES] as $receiverType)
@@ -209,6 +223,23 @@ class Core extends Base\Core
             $association = camel_case($receiverType);
 
             $virtualAccount->$association()->associate($receiver);
+        }
+
+        $this->updateBalanceAccountNumberForBanking($virtualAccount);
+    }
+
+    /**
+     * Updates balance's account number if applicable per below condition.
+     * @param Entity $virtualAccount
+     */
+    protected function updateBalanceAccountNumberForBanking(Entity $virtualAccount)
+    {
+        if (($virtualAccount->isBalanceTypeBanking() === true) and
+            ($virtualAccount->hasBankAccount() === true))
+        {
+            $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
+
+            (new Balance\Core)->updateBalanceAccountNumber($virtualAccount->balance, $accountNumber);
         }
     }
 
