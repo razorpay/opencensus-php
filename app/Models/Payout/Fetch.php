@@ -28,7 +28,7 @@ class Fetch extends BaseFetch
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
         AuthType::PROXY_AUTH => [
-            self::EXPAND_EACH       => 'filled|string|in:user,fund_account,fund_account.contact,transaction',
+            self::EXPAND_EACH       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
         ],
     ];
 

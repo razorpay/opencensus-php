@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
@@ -95,10 +96,11 @@ class Entity extends Base\PublicEntity
     const INTERNAL_STATUS = 'internal_status';
 
     // Relations
-    const USER         = 'user';
-    const CUSTOMER     = 'customer';
-    const FUND_ACCOUNT = 'fund_account';
-    const TRANSACTION  = 'transaction';
+    const USER          = 'user';
+    const CUSTOMER      = 'customer';
+    const FUND_ACCOUNT  = 'fund_account';
+    const TRANSACTION   = 'transaction';
+    const REVERSAL      = 'reversal';
 
     protected $entity = 'payout';
 
@@ -137,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::CURRENCY,
         self::NOTES,
+        self::REVERSAL,
         self::PURPOSE,
         self::PURPOSE_TYPE,
         self::METHOD,
@@ -179,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::MODE,
+        self::REVERSAL,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -197,6 +201,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
         self::FUND_ACCOUNT,
+        self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
         // when the payout is not completely processed (succeeded/failed)
@@ -277,6 +282,11 @@ class Entity extends Base\PublicEntity
     public function payment()
     {
         return $this->belongsTo(Payment\Entity::class);
+    }
+
+    public function reversal()
+    {
+        return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
     }
 
     /**
@@ -644,6 +654,24 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isStrictPrivateAuth() === true)
         {
             array_forget($attributes, self::FUND_ACCOUNT);
+
+            return;
+        }
+    }
+
+    public function setPublicReversalAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose reversal on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the reversal is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::REVERSAL);
 
             return;
         }

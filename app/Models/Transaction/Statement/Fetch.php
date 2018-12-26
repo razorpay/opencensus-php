@@ -25,6 +25,8 @@ class Fetch extends Transaction\Fetch
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::UTR               => 'sometimes|string',
             Entity::MODE              => 'sometimes|string|custom',
+            // Commenting out for now since the `explain` was scary
+            // Entity::ACTION          => 'sometimes|string|in:debit,credit',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
@@ -44,6 +46,10 @@ class Fetch extends Transaction\Fetch
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
+        ],
+        AuthType::PROXY_AUTH => [
+            // Commenting out for now since the `explain` was scary
+            // Entity::ACTION
         ],
     ];
 

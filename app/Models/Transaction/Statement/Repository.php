@@ -40,6 +40,7 @@ class Repository extends Transaction\Repository
     protected $expandsForTypePayout = [
         'source.fundAccount.contact',
         'source.fundAccount.account',
+        'source.reversal',
     ];
 
     /**
@@ -85,6 +86,37 @@ class Repository extends Transaction\Repository
         Entity::stripSignOrFail($id);
 
         $query->where(Entity::ID, $id);
+    }
+
+    /**
+     * SELECT *
+     * FROM transactions
+     * WHERE debit != 0
+     *    OR (credit = 0 AND debit = 0)
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamAction(BuilderEx $query, array $params)
+    {
+        $action = $params[Entity::ACTION];
+        $actionColumn = $this->dbColumn($action);
+
+        if ($action === Entity::DEBIT)
+        {
+            $oppositeActionColumn = $this->dbColumn(Entity::CREDIT);
+        }
+        else
+        {
+            $oppositeActionColumn = $this->dbColumn(Entity::DEBIT);
+        }
+
+        $query->where($actionColumn, '!=', 0)
+              ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
+                {
+                    $query->where($actionColumn, 0)
+                          ->where($oppositeActionColumn, 0);
+                });
     }
 
     /**
