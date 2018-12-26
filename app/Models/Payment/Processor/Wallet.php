@@ -36,6 +36,20 @@ class Wallet
         self::AMAZONPAY     => 'AmazonPay'
     );
 
+    public static $emailRequiredWallets = array(
+        self::MOBIKWIK,
+        self::OLAMONEY,
+        self::PAYTM,
+        self::PAYUMONEY,
+        self::PAYZAPP,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::JIOMONEY,
+        self::SBIBUDDY,
+        self::OPENWALLET,
+        self::MPESA,
+    );
+
     public static function exists($wallet)
     {
         return (isset(self::$fullName[$wallet]) === true);
@@ -49,6 +63,11 @@ class Wallet
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
                 Payment\Entity::WALLET);
         }
+    }
+
+    public static function isEmailRequired($wallet)
+    {
+        return (in_array($wallet, self::$emailRequiredWallets) === true);
     }
 
     public static function getWalletNetworkNamesMap()

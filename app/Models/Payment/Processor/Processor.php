@@ -518,6 +518,7 @@ class Processor
             ((($payment->merchant->isPhoneOptional() === true) and
               ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
              (($payment->merchant->isEmailOptional() === true) and
+              (Wallet::isEmailRequired($payment->getWallet()) === true) and
               ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
         {
             $coproto = [

@@ -202,6 +202,21 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
     }
 
+    public function testWalletPostFormWithDummyEmail()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        $payment['contact'] = '+919999999998';
+        $payment['email'] = 'void@razorpay.com';
+
+        $payment = $this->doAuthPayment($payment, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
     public function testCoprotoForMissingBankAccountDetailsForFirstRecurring()
     {
         $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
