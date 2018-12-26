@@ -31,7 +31,7 @@ class Purpose
 
     protected static $defaultPurposeTypeMap = [
         self::REFUND        => FTAPurpose::REFUND,
-        self::CASHBACK      => FTAPurpose::SETTLEMENT,
+        self::CASHBACK      => FTAPurpose::REFUND,
         self::PAYOUT        => FTAPurpose::SETTLEMENT,
         self::DISBURSEMENT  => FTAPurpose::SETTLEMENT,
         self::SALARY        => FTAPurpose::SETTLEMENT,
