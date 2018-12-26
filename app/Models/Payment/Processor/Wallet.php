@@ -65,7 +65,7 @@ class Wallet
         }
     }
 
-    public static function isEmailRequired($wallet)
+    public static function isEmailRequired(string $wallet)
     {
         return (in_array($wallet, self::$emailRequiredWallets) === true);
     }
