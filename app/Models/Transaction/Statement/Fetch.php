@@ -22,8 +22,8 @@ class Fetch extends Transaction\Fetch
             Entity::CONTACT_EMAIL     => 'sometimes|email',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::UTR               => 'sometimes|string',
-            EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
-            EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
+            // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
     ];
 
@@ -38,7 +38,7 @@ class Fetch extends Transaction\Fetch
             Entity::FUND_ACCOUNT_ID,
             Entity::UTR,
             EsRepository::QUERY,
-            EsRepository::SEARCH_HITS,
+            // EsRepository::SEARCH_HITS,
         ],
     ];
 
@@ -53,15 +53,13 @@ class Fetch extends Transaction\Fetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         Entity::UTR,
-        Entity::BALANCE_ID,
         EsRepository::QUERY,
-        EsRepository::SEARCH_HITS,
+        // EsRepository::SEARCH_HITS,
     ];
 
     const COMMON_FIELDS = [
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
-        Entity::UTR,
-        Entity::BALANCE_ID
+        Entity::BALANCE_ID,
     ];
 }

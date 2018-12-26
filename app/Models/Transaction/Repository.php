@@ -1275,6 +1275,13 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization
+    }
 
     /**
      * @param Base\PublicEntity $entity
@@ -1286,22 +1293,13 @@ class Repository extends Base\Repository
         $balance = $entity->accountBalance;
 
         if (($balance === null) or
-            ($balance->isTypeBanking() === false))
+            ($balance->isTypeBanking() === false) or
+            ($entity->source === null))
         {
             return [];
         }
 
         $serialized = parent::serializeForIndexing($entity);
-
-        $serialized[Entity::BALANCE_ID] = $entity->getBalanceId();
-        $serialized[Statement\Entity::ACCOUNT_NUMBER] = $balance->getAccountNumber();
-
-        $source = $entity->source;
-
-        if ($source === null)
-        {
-            return $serialized;
-        }
 
         $enitityType = $entity->getType();
 
@@ -1317,7 +1315,6 @@ class Repository extends Base\Repository
                 $serialized[Statement\Entity::CONTACT_NAME] = $contact->getName();
                 $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
             }
-
         }
 
         return $serialized;

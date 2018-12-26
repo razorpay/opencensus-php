@@ -8,21 +8,14 @@ use RZP\Models\Transaction\Statement;
 class EsRepository extends Base\EsRepository
 {
     protected $indexedFields = [
-        Statement\Entity::ID,
-        Statement\Entity::MERCHANT_ID,
-        Statement\Entity::CONTACT_NAME,
-        Statement\Entity::CONTACT_EMAIL,
-        Statement\Entity::BALANCE_ID,
-        Statement\Entity::UTR,
-        Statement\Entity::CREATED_AT,
-        Statement\Entity::ACCOUNT_NUMBER,
-    ];
+        Entity::ID,
+        Entity::MERCHANT_ID,
+        Entity::BALANCE_ID,
+        Entity::CREATED_AT,
 
-    protected $queryFields = [
+        // Statement\* module which extends this module also relies on transaction's index to serve its fetch.
         Statement\Entity::CONTACT_NAME,
         Statement\Entity::CONTACT_EMAIL,
         Statement\Entity::UTR,
-        Statement\Entity::ACCOUNT_NUMBER,
-        Statement\Entity::BALANCE_ID,
     ];
 }

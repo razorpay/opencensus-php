@@ -4,14 +4,24 @@ namespace RZP\Models\Transaction\Statement;
 
 use RZP\Models\Base;
 use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 
 class EsRepository extends Transaction\EsRepository
 {
-    protected $indexName = 'transaction';
+    /**
+     * {@inheritDoc}
+     */
+    protected $queryFields = [
+        Entity::UTR,
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_EMAIL,
+    ];
 
-
+    /**
+     * {@inheritDoc}
+     */
     public function getIndexSuffix(): string
     {
-        return $this->indexName . '_' . $this->mode;
+        return E::TRANSACTION . '_' . $this->mode;
     }
 }

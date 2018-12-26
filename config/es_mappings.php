@@ -444,7 +444,7 @@ return [
 
     'transaction_mapping' => [
         '_all' => [
-            'enabled' => false
+            'enabled' => false,
         ],
         'properties' => [
             'id' => [
@@ -453,23 +453,23 @@ return [
             'merchant_id' => [
                 'type'  => 'keyword',
             ],
-            'account_number' => [
+            'balance_id' => [
                 'type'  => 'keyword',
             ],
-            'customer_name' => [
+            'contact_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
-            'customer_email' => [
+            'contact_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
-            'balance_id' => [
-                'type'            => 'keyword',
+            'utr' => [
+                'type'  => 'keyword',
             ],
             'created_at' => [
                 'type'   => 'date',
