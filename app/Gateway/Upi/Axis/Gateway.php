@@ -555,7 +555,7 @@ class Gateway extends Base\Gateway
         return $verify->getDataToTrace();
     }
 
-    protected function getPaymentVerifyRequestArray($input)
+    protected function getPaymentVerifyRequestArray($input, $gatewayPayment)
     {
         $payment = $input['payment'];
 
@@ -565,6 +565,13 @@ class Gateway extends Base\Gateway
             Fields::CHECK_STATUS_UNQ_TXN_ID     => $payment['id'],
             Fields::CHECK_STATUS_MOBILE_NO      => $this->getMobileNumber(),
         ];
+
+        if ($gatewayPayment[Entity::TYPE] === Base\Type::PAY)
+        {
+            $data[Fields::CHECK_STATUS_MERCH_ID] = $this->config['live_razorpay_merchant_id'];
+
+            $data[Fields::CHECK_STATUS_MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+        }
 
         $dataStr = implode('', $data);
 
@@ -596,7 +603,9 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getPaymentVerifyRequestArray($input);
+        $gatewayPayment = $verify->payment;
+
+        $request = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -689,11 +698,17 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $upiPaymentType = $gatewayEntity[Entity::TYPE];
+
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
+
+        $attributes[Entity::TYPE] = $upiPaymentType;
 
         $refund = $this->createGatewayPaymentEntity($attributes);
 
-        $request =  $this->getRefundRequestArray($input);
+        $request =  $this->getRefundRequestArray($input, $upiPaymentType);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
@@ -727,7 +742,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getRefundRequestArray(array $input): array
+    protected function getRefundRequestArray(array $input, string $type): array
     {
         $data = [
             Fields::MERCH_ID            => $this->getMerchantId(),
@@ -739,6 +754,13 @@ class Gateway extends Base\Gateway
             Fields::REFUND_REASON       => $this->getRefundRemark($input),
             Fields::S_ID                => '',
         ];
+
+        if ($type === Base\Type::PAY)
+        {
+            $data[Fields::MERCH_ID] = $this->config['live_razorpay_merchant_id'];
+
+            $data[Fields::MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+        }
 
         $dataStr = implode('', $data);
 
