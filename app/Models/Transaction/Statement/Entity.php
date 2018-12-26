@@ -57,17 +57,33 @@ class Entity extends Transaction\Entity
 
     /**
      * Sets public attributes of source relation.
+     *
      * @param $array
+     *
+     * @throws LogicException
      */
     public function setPublicSourceAttribute(array & $array)
     {
+        //
+        // The assumption is that if source is required to be sent in the response,
+        // it would have been already loaded. If it's not already loaded, we don't
+        // want to do it as part of public setters.
+        //
+
+        if (isset($array[self::SOURCE]) === false)
+        {
+            return;
+        }
+
         switch ($this->getType())
         {
             case E::PAYOUT:
-                return $this->setPublicSourceAttributeForPayout($array);
+                $this->setPublicSourceAttributeForPayout($array);
+                break;
 
             case E::BANK_TRANSFER:
-                return $this->setPublicSourceAttributeForBankTransfer($array);
+                $this->setPublicSourceAttributeForBankTransfer($array);
+                break;
 
             default:
                 throw new LogicException(
@@ -84,16 +100,12 @@ class Entity extends Transaction\Entity
             [
                 Payout\Entity::ID,
                 Payout\Entity::ENTITY,
-                // Todo: Update these after 'payout-on-fa' branch is merged.
-                // Payout\Entity::CUSTOMER_ID,
-                // Payout\Entity::DESTINATION_ID,
-                Payout\Entity::METHOD,
+                Payout\Entity::FUND_ACCOUNT_ID,
+                Payout\Entity::FUND_ACCOUNT,
+                Payout\Entity::MODE,
+                Payout\Entity::UTR,
                 Payout\Entity::NOTES,
             ]);
-
-        // Todo: Update these after 'payout-on-fa' branch is merged.
-        // $array[self::SOURCE][Payout\Entity::CUSTOMER]    = $this->source->customer->toArrayPublic();
-        // $array[self::SOURCE][Payout\Entity::DESTINATION] = $this->source->destination->toArrayPublic();
     }
 
     protected function setPublicSourceAttributeForBankTransfer(array & $array)
@@ -112,13 +124,12 @@ class Entity extends Transaction\Entity
 
         // Prepends id & entity as they are not exposed in bank_transfer entity, for now.
         $array[self::SOURCE] = [
-                                   BankTransfer\Entity::ID     => $bankTransfer->getPublicId(),
-                                   BankTransfer\Entity::ENTITY => $bankTransfer->getEntity(),
+                                    BankTransfer\Entity::ID             => $bankTransfer->getPublicId(),
+                                    BankTransfer\Entity::ENTITY         => $bankTransfer->getEntity(),
+                                    BankTransfer\Entity::PAYER_NAME     => $bankTransfer->getPayerName(),
+                                    BankTransfer\Entity::PAYER_ACCOUNT  => $bankTransfer->getPayerAccount(),
+                                    BankTransfer\Entity::PAYER_IFSC     => $bankTransfer->getPayerIfsc(),
                                ] + $array[self::SOURCE];
-
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $bankTransfer->getPayerName();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $bankTransfer->getPayerIfsc();
     }
 
     /**

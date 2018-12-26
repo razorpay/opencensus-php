@@ -106,7 +106,7 @@ trait TestsBusinessBanking
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
 
         $balance = $this->getEntityById('balance', $txn['balance_id'], true);
