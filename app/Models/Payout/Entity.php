@@ -180,7 +180,6 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::MODE,
         self::FAILURE_REASON,
-        self::PROCESSED_AT,
         self::CREATED_AT,
     ];
 
@@ -197,6 +196,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
         // when the payout is not completely processed (succeeded/failed)
@@ -205,6 +205,7 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
+        self::TRANSACTION_ID,
         self::TRANSACTION,
     ];
 
@@ -630,6 +631,16 @@ class Entity extends Base\PublicEntity
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
     }
 
+    public function setPublicFundAccountAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::FUND_ACCOUNT);
+
+            return;
+        }
+    }
+
     public function setPublicStatusAttribute(array & $attributes)
     {
         $internalStatus = $this->getAttribute(self::STATUS);
@@ -655,8 +666,32 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicTransactionIdAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::TRANSACTION_ID]);
+
+            return;
+        }
+
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($attributes[self::TRANSACTION_ID]);
+    }
+
     public function setPublicTransactionAttribute(array & $attributes)
     {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::TRANSACTION);
+
+            return;
+        }
+
+        //
+        // Public setters are run after model serialization and so if a relation is not
+        // eager loaded the corresponding key won't exist in $attributes and must not be in final
+        // response after public setters run.
+        //
         if ($this->hasRelation(self::TRANSACTION) === true)
         {
             if (($this->transaction instanceof Transaction\Entity) === true)
@@ -666,7 +701,7 @@ class Entity extends Base\PublicEntity
             else
             {
                 // Not exposing transaction relation when payout on Customer\Transaction\Entity, for now.
-                unset($attributes[self::TRANSACTION]);
+                array_forget($attributes, self::TRANSACTION);
             }
         }
     }
@@ -714,16 +749,39 @@ class Entity extends Base\PublicEntity
         return $this->isBalanceTypeBanking();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function toArrayPublic()
     {
-        // Removes recursive this.transaction.source relation which is this again!
+        $this->removeRecursiveRelation();
+
+        return parent::toArrayPublic();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArray()
+    {
+        $this->removeRecursiveRelation();
+
+        return parent::toArray();
+    }
+
+    /**
+     * Removes recursive transaction.source relation which points to this entity.
+     * This happens in POST /payout flow where there bidirectional relation.
+     * Having payout & txn there, we associate payout's transaction() and txn's source() relation with
+     * each other and hence this issue. Ideally payout's transaction() relation is redundant (probably, not sure!).
+     */
+    protected function removeRecursiveRelation()
+    {
         if ($this->hasRelation(Entity::TRANSACTION) === true)
         {
             $txn = $this->transaction;
             $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
             $txn->setRelations($relations);
         }
-
-        return parent::toArrayPublic();
     }
 }

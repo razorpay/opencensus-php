@@ -142,6 +142,13 @@ class Entity extends Base\PublicEntity
      */
     public function setPublicSourceAttribute(array & $attributes)
     {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
+
+            return;
+        }
+
         $sourceType = $attributes[self::SOURCE_TYPE];
 
         $source = array_pull($attributes, self::SOURCE) ?:

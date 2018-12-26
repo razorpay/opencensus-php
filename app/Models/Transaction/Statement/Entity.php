@@ -79,6 +79,11 @@ class Entity extends Transaction\Entity
 
     protected function setPublicSourceAttributeForPayout(array & $array)
     {
+        //
+        // Public setters are run after model serialization and so if a relation is not
+        // eager loaded the corresponding key won't exist in $attributes and must not be in final
+        // response after public setters run.
+        //
         if (isset($array[self::SOURCE]) === false)
         {
             return;

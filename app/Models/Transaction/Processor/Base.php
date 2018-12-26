@@ -194,8 +194,13 @@ abstract class Base extends BaseCore
 
         $txn->generateId();
 
-        // Calling build() sets model defaults.
-        $txn->build();
+        //
+        // Transaction's settled attribute is used in it's public setters which now gets invokec in
+        // POST /payouts, returning related transaction on proxy auth(only).
+        // We are not using build() for safety(in hurry at the moment), we are not sure if it would
+        // break anything.
+        //
+        $txn->setSettled(false);
 
         $txn->sourceAssociate($this->source);
 
