@@ -257,15 +257,36 @@ return [
     'testGetPayouts' => [
         'request' => [
             'method'  => 'get',
-            'url'     => '/payouts',
-            'content' => [
-            ],
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
         ],
         'response' => [
             'content' => [
             ]
         ]
     ],
+
+    'testGetPayoutsWithoutAccountNumber' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 
     'testGetPayout' => [
         'request' => [

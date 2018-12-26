@@ -299,6 +299,17 @@ class PayoutTest extends TestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testGetPayoutsWithoutAccountNumber()
+    {
+        $payout = $this->testCreatePayout();
+
+        $payout = $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+
+        $payouts = $this->startTest();
+    }
+
     public function testGetPayout()
     {
         $this->testCreatePayout();
