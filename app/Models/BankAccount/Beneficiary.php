@@ -46,10 +46,12 @@ class Beneficiary extends Base\Core
      */
     public function enqueueForBeneficiaryRegistration(Entity $bankAccount)
     {
+        $isValidType =  (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false);
+
         //
         // We don't have to register beneficiary for the bank account created in test mode.
         //
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) or ($isValidType !== false))
         {
             return;
         }
