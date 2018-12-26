@@ -32,6 +32,7 @@ class EsRepository extends Base\EsRepository
     protected $queryFields = [
         Entity::ID,
         Entity::CONTACT_NAME,
+        Entity::BALANCE_ID,
         Entity::CONTACT_EMAIL,
     ];
 }
