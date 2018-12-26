@@ -519,38 +519,42 @@ class Processor
         // Actually, this won't even work for S2S since we remove
         // `content` and `missing` attributes completely before returning
         //
-        if ((($payment->merchant->isPhoneOptional() === true) and
-              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
-             (($payment->merchant->isEmailOptional() === true) and
-              (Wallet::isEmailRequired($payment->getWallet()) === true) and
-              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)))
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
         {
-            $coproto = [
-                'type'    => 'respawn',
-                'request' => [
-                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'  => 'POST',
-                    'content' => array_assoc_flatten($input, '%s[%s]'),
-                ],
-                'method' => 'wallet',
-                'version' => '1',
-            ];
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
 
-            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
-            {
-                $coproto['missing'][] = 'contact';
-                unset($coproto['request']['content']['contact']);
-            }
+            $coproto['missing'][] = 'contact';
 
-            if (($payment->getEmail() === Payment\Entity::DUMMY_EMAIL) and
-                (Wallet::isEmailRequired($payment->getWallet()) === true))
-            {
-                $coproto['missing'][] = 'email';
-                unset($coproto['request']['content']['email']);
-            }
+            unset($coproto['request']['content']['contact']);
+        }
+
+        if (($payment->merchant->isEmailOptional() === true) and
+            (Wallet::isEmailRequired($payment->getWallet()) === true) and
+            ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))
+        {
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
+
+            $coproto['missing'][] = 'email';
+
+            unset($coproto['request']['content']['email']);
         }
 
         return $coproto;
+    }
+
+    protected function getCoprotoDefaultArrayForWallet(array $input)
+    {
+        return [
+            'type'    => 'respawn',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => array_assoc_flatten($input, '%s[%s]'),
+            ],
+            'method' => 'wallet',
+            'version' => '1',
+        ];
     }
 
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
