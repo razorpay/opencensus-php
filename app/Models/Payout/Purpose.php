@@ -39,10 +39,15 @@ class Purpose
         self::INVOICE       => FTAPurpose::SETTLEMENT,
     ];
 
+    public static function isInDefaults(string $purpose): bool
+    {
+        return (in_array($purpose, array_keys(self::$defaultPurposeTypeMap), true) === true);
+    }
+
     public function setPurposeAndTypeForPayout(Entity $payout, string $purpose)
     {
         // If $purpose is one of the defaults, set and return
-        if (isset(self::$defaultPurposeTypeMap[$purpose]) === true)
+        if (self::isInDefaults($purpose) === true)
         {
             $payout->setPurpose($purpose);
             $payout->setPurposeType(self::$defaultPurposeTypeMap[$purpose]);
@@ -102,11 +107,22 @@ class Purpose
 
     public function addNewCustom(string $purpose, string $type, Merchant\Entity $merchant)
     {
-        if ((isset(self::$defaultPurposeTypeMap[$purpose])) or
-            ($this->getSettingsAccessor($merchant)->exists($purpose) === true))
+        $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        if ((self::isInDefaults(strtolower($purpose))) or
+            (array_search_ci($purpose, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Purpose '$purpose' is already defined and cannot be added.",
+                Entity::PURPOSE);
+        }
+
+        if (count($allCustomKeys) >= Validator::MAX_PURPOSES_ALLOWED)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit (" .
+                (Validator::MAX_PURPOSES_ALLOWED) .
+                ") of custom payout purposes that can be created.",
                 Entity::PURPOSE);
         }
 
