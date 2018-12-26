@@ -1,12 +1,12 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
-use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
-use RZP\Models\Payout\Status as PayoutStatus;
+    use RZP\Error\ErrorCode;
+    use RZP\Error\PublicErrorCode;
+    use RZP\Error\PublicErrorDescription;
+    use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
+    use RZP\Models\Payout\Status as PayoutStatus;
 
-return [
+    return [
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',
@@ -417,29 +417,29 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'yesbank',
-        'version' => 'V3',
-        'status' => FundTransferAttemptStatus::INITIATED,
-        'utr' => null,
-        'remarks' => '',
+        'channel'        => 'yesbank',
+        'version'        => 'V3',
+        'status'         => FundTransferAttemptStatus::INITIATED,
+        'utr'            => null,
+        'remarks'        => '',
         'failure_reason' => null,
     ],
 
     'testPayoutEntitySuccess' => [
-        'channel' => 'yesbank',
-        'status' => PayoutStatus::PROCESSING,
-        'utr' => null,
-        'remarks' => '',
+        'channel'        => 'yesbank',
+        'status'         => PayoutStatus::PROCESSING,
+        'utr'            => null,
+        'remarks'        => '',
         'failure_reason' => null,
-        'processed_at' => null,
-        'settled_on' => null,
+        'processed_at'   => null,
+        'settled_on'     => null,
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'yesbank',
-        'version' => 'V3',
-        'bank_status_code'  => 'P',
-        'status'  => FundTransferAttemptStatus::INITIATED,
+        'channel'          => 'yesbank',
+        'version'          => 'V3',
+        'bank_status_code' => 'P',
+        'status'           => FundTransferAttemptStatus::INITIATED,
     ],
 
     'testCreateMerchantPayoutOnDemand' => [

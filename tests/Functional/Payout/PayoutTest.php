@@ -8,7 +8,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -21,7 +20,6 @@ class PayoutTest extends TestCase
     use PaymentTrait;
     use SettlementTrait;
     use TestsBusinessBanking;
-    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -303,13 +301,13 @@ class PayoutTest extends TestCase
 
     public function testGetPayoutsWithoutAccountNumber()
     {
-        $payout = $this->testCreatePayout();
+        $this->testCreatePayout();
 
-        $payout = $this->testCreatePayout();
+        $this->testCreatePayout();
 
         $this->ba->proxyAuth();
 
-        $payouts = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetPayout()
