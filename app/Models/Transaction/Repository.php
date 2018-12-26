@@ -1291,11 +1291,7 @@ class Repository extends Base\Repository
      */
     protected function serializeForIndexing(Base\PublicEntity $entity): array
     {
-        $balance = $entity->accountBalance;
-
-        if (($balance === null) or
-            ($balance->isTypeBanking() === false) or
-            ($entity->source === null))
+        if ($entity->isBalanceTypeBanking() === false)
         {
             return [];
         }
@@ -1319,5 +1315,15 @@ class Repository extends Base\Repository
         }
 
         return $serialized;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isEsSyncNeeded(string $action, array $dirty = null, Base\PublicEntity $entity = null): bool
+    {
+        // Additionally, checks if transaction is on banking balance. Others are not required as of now.
+        return ((($entity === null) or ($entity->isBalanceTypeBanking() === true)) and
+                (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
 }

@@ -890,6 +890,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_ID);
     }
 
+    public function isBalanceTypeBanking(): bool
+    {
+        return (optional($this->accountBalance)->getType() === Merchant\Balance\Type::BANKING);
+    }
+
     /**
      * Constructs & returns corresponding Statement\Entity.
      * Statement entity is the publicly exposed entity on /transactions/* apis. :(
