@@ -639,19 +639,20 @@ class TransactionFilter extends Terminal\Filter
                                 return true;
                             }
 
-                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
-                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            $gateway = $terminal->getGateway();
+
+                            //
+                            // IVR is supported only on on Hitachi.
+                            // Hence, it should be enabled only for all the IVR enabled iins.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
                             {
                                 return true;
                             }
 
-                            //
-                            // Expresspay is supported on Hitachi.
-                            // Hence, it should be enabled only for axis MC/Visa cards.
-                            //
-                            if (($gateway === Payment\Gateway::HITACHI) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
-                                ($payment->card->getIssuer() === IFSC::UTIB))
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
                             {
                                 return true;
                             }

@@ -17,7 +17,7 @@ use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
 use RZP\Services\OtpElf;
 
-class HeadlessOtpTest extends TestCase
+class OtpPaymentTest extends TestCase
 {
     use PaymentTrait;
 
@@ -25,9 +25,50 @@ class HeadlessOtpTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/HeadlessTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/OtpPaymentTestData.php';
 
         parent::setUp();
+    }
+
+    public function testIvrAuthenticationPayment()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockTokenEx();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     public function testHeadlessOtpAuthenticationPayment()
@@ -931,7 +972,7 @@ class HeadlessOtpTest extends TestCase
                         ],
                     ],
                     'error' => [
-                        "reason" => 'INVALID_OTP'
+                        'reason' => 'INVALID_OTP'
                     ],
                 ];
             });
@@ -1384,7 +1425,6 @@ class HeadlessOtpTest extends TestCase
                 return null;
             });
 
-
         $this->makeRequestAndCatchException(
         function() use ($payment)
         {
@@ -1461,7 +1501,6 @@ class HeadlessOtpTest extends TestCase
 
         $this->assertNotEquals($token[Token::USED_AT], null);
 
-
         // test haeadless with save card;
         $payment = $this->getDefaultPaymentArray();
         $payment['card'] = array('cvv' => 111);
@@ -1470,7 +1509,6 @@ class HeadlessOtpTest extends TestCase
         $this->setOtp(1234);
 
         $response = $this->doAuthPayment($payment);
-
 
         self::assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -1491,7 +1529,6 @@ class HeadlessOtpTest extends TestCase
         $this->setOtp(1234);
 
         $response = $this->doAuthPayment($payment);
-
 
         self::assertArrayHasKey('razorpay_payment_id', $response);
 

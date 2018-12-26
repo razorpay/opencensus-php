@@ -348,6 +348,9 @@ class Gateway extends Base\Gateway
 
     protected function submitOtp(array $input)
     {
+        // Hack for updating the authentication terminal auth type
+        $input['authenticate']['auth_type'] = 'otp';
+
         $pareq = $this->getPayerAuthenticationContent($input);
 
         $request = [
