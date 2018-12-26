@@ -84,6 +84,13 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutForAmountLessThanMinFee()
+    {
+        // Minimum fee is INR 5, attempts and asserts success when creating payout for INR 1.
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
     public function testCreatePayoutToInactiveFundAccount()
     {
         $this->fixtures->create(

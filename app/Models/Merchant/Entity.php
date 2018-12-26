@@ -734,6 +734,26 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
+    public function getBalanceByProductType(string $product): Balance\Entity
+    {
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                return $this->primaryBalance;
+
+            case Product::BANKING:
+                return $this->bankingBalance;
+
+            default:
+                throw new LogicException(
+                    "Invalid product type - {$product}",
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $this->getId(),
+                    ]);
+        }
+    }
+
     public function bankAccount()
     {
         return $this->hasOne(
