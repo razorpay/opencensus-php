@@ -4,18 +4,25 @@
         margin: 20% auto 0;
     }
 
-    .animoo .circle, .animoo .checkmark {
+    .animoo .circle, .animoo .mark {
         position: absolute;
         top: 50%;
         left: 50%;
     }
 
-    .animoo .checkmark {
+    .animoo .mark {
         width: 2.8em;
         transform: translate(-50%, -50%);
     }
 
-    .animoo .checkmark::after {
+    .animoo .cross {
+        font-weight: 600;
+        font-size: 72px;
+        color: #e60b34;
+        margin: -4px 0 0 1px;
+    }
+
+    .animoo .check::after {
         content: '';
         animation: checkmark 0.4s linear forwards 0.45s;
         transform: scaleX(-1) rotate(135deg);
@@ -37,6 +44,10 @@
         transform-origin: center;
 
         animation: appear 0.4s forwards cubic-bezier(0.54, 1.29, 0.8, 1.18);
+    }
+
+    .animoo.error .circle {
+        background-color: #ff002f;
     }
 
     // Vertical position fix for cicles in IE
@@ -81,17 +92,17 @@
     @media screen and (min-width:0\0) and (min-resolution: .001dpcm) {
         /* IE-9 only styles */
 
-        .animoo .circle, .animoo .checkmark {
+        .animoo .circle, .animoo .mark {
             left: 0;
             top: 0;
         }
 
-        .animoo .checkmark {
+        .animoo .mark {
             margin-top: 58px;
             margin-left: 72px;
         }
 
-        .animoo .checkmark::after {
+        .animoo .mark::after {
             height: 2.3em;
             width: 1em;
             opacity: 1;
