@@ -10,7 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base\Entity as GatewayEntity;
@@ -27,7 +26,7 @@ class Gateway extends Base\Gateway
         /**
          * Fields from authorize request used to create gateway payment entity
          */
-        RequestFields::AMOUNT    => Base\Entity::AMOUNT,
+        RequestFields::AMOUNT        => Base\Entity::AMOUNT,
         RequestFields::MERCHANT_CODE => Base\Entity::MERCHANT_CODE,
 
         /**
@@ -295,13 +294,6 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse($responseString): array
     {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'response'   => $responseString,
-                'gateway'    => $this->gateway,
-            ]);
-
         return $this->processGatewayResponse($responseString);
     }
 
@@ -468,9 +460,10 @@ class Gateway extends Base\Gateway
         if ($this->crypto === null)
         {
             $this->crypto = new Crypto(
-                $this->getSecret(),
-                $this->getIv(),
-                self::ENCRYPTION_METHOD);
+                                   $this->getSecret(),
+                                   $this->getIv(),
+                           self::ENCRYPTION_METHOD
+                                  );
         }
     }
 
