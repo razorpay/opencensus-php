@@ -620,24 +620,17 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     case Payment\AuthType::OTP:
-                        $gateway = $terminal->getGateway();
-
-                        if (($this->input['merchant']->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true) and
-                            ($gateway === Payment\Gateway::HITACHI))
-                        {
-                            return true;
-                        }
-
                         // We should select the terminal only if iin is set and flows are supported
                         // by the IIN
                         if ($payment->card->iinRelation !== null)
                         {
-
                             if (($terminal->isIvr() === true) and
                                 ($payment->card->iinRelation->supports(Flow::OTP) === true))
                             {
                                 return true;
                             }
+
+                            $gateway = $terminal->getGateway();
 
                             if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
                                 ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))

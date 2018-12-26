@@ -6,7 +6,6 @@ use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Feature;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -64,11 +63,6 @@ class AuthTypeSorter extends Terminal\Sorter
      */
     protected function filterOtpAuthType($payment, $terminal, $authType)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true)
-        {
-            return true;
-        }
-
         if (($authType === Payment\AuthType::OTP) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === Bank\IFSC::UTIB) and

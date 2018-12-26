@@ -733,15 +733,15 @@ class Gateway extends Base\Gateway
 
             $content[PAReq::MESSAGE][PAReq::MSG_PAREQ]['Extension'] = [
                 '@attributes' => [
-                    'critical'  => 'false',
-                    'id' => 'visa.3ds.india_ivr'
+                    'id'       => 'visa.3ds.india_ivr',
+                    'critical' => 'false',
                 ],
                 'npc356authuserdata' => [
                     'attribute' => [
                         '@attributes' => [
-                            'name'  => 'OTP2',
-                            'value' => $input['gateway']['otp'],
-                            'status' => 'Y',
+                            'name'      => 'OTP2',
+                            'value'     => $input['gateway']['otp'],
+                            'status'    => 'Y',
                             'encrypted' => 'false',
                         ],
                     ]
@@ -750,6 +750,7 @@ class Gateway extends Base\Gateway
         }
 
         $xml = Xml::create('ThreeDSecure', $content);
+
         $this->traceGatewayPaymentRequest(['content' => $content, 'xml' => $xml], $input, TraceCode::PAYER_AUTHENTICATION_REQUEST);
 
         $xml = zlib_encode($xml, 15);
@@ -806,15 +807,15 @@ class Gateway extends Base\Gateway
         {
             $content[VEReq::MESSAGE][VEReq::VEREQ]['Extension'] = [
                 '@attributes' => [
-                    'critical'  => 'false',
-                    'id' => 'visa.3ds.india_ivr'
+                    'id'       => 'visa.3ds.india_ivr',
+                    'critical' => 'false',
                 ],
-                'npc356chphoneidformat' => 'D',
-                'npc356chphoneid' => '',
-                'npc356pareqchannel' => 'DIRECT',
-                'npc356shopchannel' => 'IVR',
+                'npc356chphoneidformat'  => 'D',
+                'npc356chphoneid'        => '',
+                'npc356pareqchannel'     => 'DIRECT',
+                'npc356shopchannel'      => 'IVR',
                 'npc356availauthchannel' => 'SMS',
-                'npc356itpcredential' => '',
+                'npc356itpcredential'    => '',
             ];
         }
 
@@ -1010,6 +1011,6 @@ class Gateway extends Base\Gateway
     protected function isIvrPayment($input)
     {
         return ((isset($input['authenticate']['auth_type']) === true) and
-                ($input['authenticate']['auth_type'] === 'native'));
+                ($input['authenticate']['auth_type'] === 'otp'));
     }
 }
