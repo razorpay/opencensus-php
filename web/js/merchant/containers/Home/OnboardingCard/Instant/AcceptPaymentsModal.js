@@ -1,17 +1,24 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import ProductsModal from 'merchant/components/ProducsModal';
 import TransactionsModal from 'merchant/components/TransactionsHelperModal';
 import { trackTransactionsHelper, trackProductsModal } from './ga';
+import { showProductsModal, hideProductsModal } from 'merchant/modules/home';
 
 let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
 
 @withRouter
+@connect(
+  state => ({
+    showProducts: state.home.instantActivations.showProductsModal,
+  }),
+  { showProductsModal, hideProductsModal }
+)
 export default class AcceptPayments extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       showProducts: showProductsModalOnLoad,
       showTransactionsHelper: this.props.shouldShow,
@@ -36,13 +43,18 @@ export default class AcceptPayments extends Component {
     }
   }
 
-  componentWillReceiveProps({ shouldShow }) {
+  componentWillReceiveProps({ shouldShow, showProducts }) {
     if (shouldShow !== this.state.showTransactionsHelper) {
       this.setState({ showTransactionsHelper: shouldShow });
+    }
+
+    if (showProducts !== this.state.showProducts) {
+      this.setState({ showProducts });
     }
   }
 
   showProductsModal(onCloseCb) {
+    this.props.showProductsModal();
     if (typeof onCloseCb === 'function') {
       this.onCloseProductsModal = onCloseCb;
     }
@@ -54,7 +66,7 @@ export default class AcceptPayments extends Component {
 
   hideProductsModal(onHide) {
     trackProductsModal.trackClose();
-
+    this.props.hideProductsModal();
     this.setState(
       {
         showProducts: false,

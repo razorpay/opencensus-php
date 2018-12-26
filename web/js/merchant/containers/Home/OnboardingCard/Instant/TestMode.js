@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
+import { showProductsModal } from 'merchant/modules/home';
 
 const TestProducts = ({ onClick }) => (
   <span className="btn-link cursor-pointer" onClick={onClick}>
@@ -16,6 +18,7 @@ const initialState = {
   content: null,
 };
 
+@connect(null, { showProductsModal })
 export default class TestMode extends Component {
   constructor(props) {
     super(props);
@@ -69,7 +72,9 @@ export default class TestMode extends Component {
             </Link>{' '}
             and use{' '}
             <TestProducts
-              onClick={() => (track.viewTestProducts(), showProductsModal())}
+              onClick={() => (
+                track.viewTestProducts(), this.props.showProductsModal()
+              )}
             />
           </span>
         );
@@ -87,7 +92,9 @@ export default class TestMode extends Component {
             </a>{' '}
             or use{' '}
             <TestProducts
-              onClick={() => (track.viewTestProducts(), showProductsModal())}
+              onClick={() => (
+                track.viewTestProducts(), this.props.showProductsModal()
+              )}
             />
           </span>
         );
