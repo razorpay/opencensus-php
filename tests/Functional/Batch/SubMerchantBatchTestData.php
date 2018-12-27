@@ -31,6 +31,160 @@ return [
         ],
     ],
 
+    'testProcessSubMerchantBatchPartnerNotDummyAllSteps' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 1,
+                'autofill_details' => 1,
+                'use_email_as_dummy' => 0,
+                'auto_activate' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testProcessSubMerchantBatchPartnerNotDummySubmit' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 1,
+                'autofill_details' => 1,
+                'use_email_as_dummy' => 0,
+                'auto_activate' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testProcessSubMerchantBatchPartnerDummyEmailAllSteps' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 1,
+                'autofill_details' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testProcessSubMerchantBatchPartnerDummyEmailCreate' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 0,
+                'autofill_details' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 1,
+                'autofill_details' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testProcessSubMerchantBatchPartnerInvalidInput' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'sub_merchant',
+                'auto_submit' => 1,
+                'autofill_details' => 'blah',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The autofill details field must be true or false.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateSubMerchantBatchPartner' => [
         'request' => [
             'url'     => '/batches',
@@ -94,7 +248,7 @@ return [
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
             Header::BUSINESS_CATEGORY        => 'finance',
-            Header::BUSINESS_SUB_CATEGORY    => 'leding',
+            Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
             Header::REGISTERED_STATE         => 'karnataka',
@@ -126,6 +280,8 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
+            Header::BUSINESS_CATEGORY        => 'finance',
+            Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
             Header::REGISTERED_STATE         => 'karnataka',
@@ -140,7 +296,7 @@ return [
             Header::WEBSITE_URL              => 'http://www.test.com',
             Header::PROMOTER_PAN_NAME        => 'sdfds',
             Header::BANK_ACCOUNT_NUMBER      => '123456789099',
-            Header::BANK_BRANCH_IFSC         => 'HDFC0000077',
+            Header::BANK_BRANCH_IFSC         => 'HDFC0000056',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',
             Header::REFERENCE1               => 'service id',
         ],
@@ -157,6 +313,8 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
+            Header::BUSINESS_CATEGORY        => 'finance',
+            Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
             Header::REGISTERED_STATE         => 'karnataka',
@@ -171,7 +329,7 @@ return [
             Header::WEBSITE_URL              => 'http://www.test.com',
             Header::PROMOTER_PAN_NAME        => 'sdfds',
             Header::BANK_ACCOUNT_NUMBER      => '123456789090',
-            Header::BANK_BRANCH_IFSC         => 'HDFC0000077',
+            Header::BANK_BRANCH_IFSC         => 'HDFC0000011',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',
             Header::REFERENCE1               => 'service id',
         ],

@@ -68,6 +68,15 @@ class Repository extends Base\Repository
         return $updatedCount;
     }
 
+    protected function addQueryParamId($query, $params)
+    {
+        $id = $params[Entity::ID];
+
+        Entity::stripSignOrFail($id);
+
+        $query->where(Entity::ID, $id);
+    }
+
     public function addQueryParamDestination($query, $params)
     {
         $destinationId = $params[Entity::DESTINATION];
@@ -112,6 +121,23 @@ class Repository extends Base\Repository
 
         $query->where($faSourceIdColumn, $contactId);
         $query->where($faSourceTypeColumn, E::CONTACT);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactType(BuilderEx $query, array $params)
+    {
+        $contactType       = $params[Entity::CONTACT_TYPE];
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactTypeColumn, $contactType);
     }
 
 
@@ -209,5 +235,36 @@ class Repository extends Base\Repository
                 $join->on($contactIdColumn, $faSourceIdColumn);
                 $join->where($faSourceTypeColumn, E::CONTACT);
             });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization: Eager load fund_account.contact. If not possible here then somewhere else.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        $fa = $entity->fundAccount;
+
+        if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
+        {
+            // I.e. this documentn will not be indexed.
+            return [];
+        }
+
+        $contact = $fa->source;
+
+        $serialized[Entity::CONTACT_NAME]  = $contact->getName();
+        $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+
+        return $serialized;
     }
 }

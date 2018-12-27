@@ -30,6 +30,7 @@ abstract class Base extends ApiProcessor
     const REMARK                = 'remark';
     const TRANSFER_TYPE         = 'transfer_type';
     const MODE                  = 'mode';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $appId;
 

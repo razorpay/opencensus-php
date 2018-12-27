@@ -732,9 +732,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 6,
+                'count' => 7,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => "Banking default plan",
+                    ],
                     [
                         'name' => 'testDefaultEmiPlan',
                         'entity' => 'pricing',
@@ -838,6 +841,10 @@ return [
         ],
         'response' => [
             'content' => [
+                [
+                    'plan_name'   => "Banking default plan",
+                    'rules_count' => 6,
+                ],
                 [
                     'plan_name'   => 'testDefaultEmiPlan',
                     'rules_count' => 1,

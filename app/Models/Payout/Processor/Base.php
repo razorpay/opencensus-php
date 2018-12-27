@@ -344,6 +344,10 @@ abstract class Base extends BaseCore
         $payout->setTax($txn->getTax());
 
         $this->repo->saveOrFail($txn);
+
+        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+
+        $this->repo->saveOrFail($txn);
     }
 
     /**

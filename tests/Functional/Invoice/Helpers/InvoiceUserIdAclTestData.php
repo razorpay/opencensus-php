@@ -6,13 +6,10 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'testCreateInvoiceWithUserIdHeader' => [
+    'testCreateInvoiceWithUserId' => [
         'request' => [
             'url'    => '/invoices',
             'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
-            ],
             'content' => [
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
@@ -42,49 +39,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'user_id'       => '10000000UserId',
-            ],
-        ],
-    ],
-
-    'testCreateInvoiceWithUserIdAndDiffRoleHeader' => [
-        'request' => [
-            'url'    => '/invoices',
-            'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
-                'HTTP_X-Dashboard-User-Role' => 'newrandomrole',
-            ],
-            'content' => [
-                'customer'      => [
-                    'email'     => 'test@razorpay.com',
-                    'contact'   => '9999999999',
-                    'name'      => 'test',
-                ],
-                'line_items'    => [
-                    [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
-                    ]
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'customer_details' => [
-                    'email'     => 'test@razorpay.com',
-                    'contact'   => '9999999999',
-                    'name'      => 'test',
-                ],
-                'line_items'    => [
-                    [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
-                    ]
-                ],
-                'user_id'       => '10000000UserId',
             ],
         ],
     ],
@@ -153,10 +107,6 @@ return [
             'url' => '/invoices',
             'method' => 'get',
             'content' => [],
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
-                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
-            ],
         ],
         'response' => [
             'content' => [
@@ -178,10 +128,6 @@ return [
             'url' => '/invoices',
             'method' => 'get',
             'content' => [],
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
-                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
-            ],
         ],
         'response' => [
             'content' => [
@@ -397,10 +343,6 @@ return [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'delete',
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '100AgentUserId',
-                'HTTP_X-Dashboard-User-Role' => 'agent',
-            ],
             'content' => [],
         ],
         'response' => [
@@ -422,10 +364,6 @@ return [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
-                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
-            ],
             'content' => [],
         ],
         'response' => [
@@ -440,10 +378,6 @@ return [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
-                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
-            ],
             'content' => [],
         ],
         'response' => [

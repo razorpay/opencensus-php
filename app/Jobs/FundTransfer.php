@@ -2,18 +2,23 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
+use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
 
 class FundTransfer extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 10;
+    const MUTEX_LOCK_TTL        = 45;
 
-    const RELEASE_WAIT_SECS    = 60;
+    const MAX_ALLOWED_ATTEMPTS  = 10;
+
+    const RELEASE_WAIT_SECS     = 60;
 
     /**
      * @var string
@@ -44,7 +49,9 @@ class FundTransfer extends Job
         {
             parent::handle();
 
-            $fta = $this->repoManager->fund_transfer_attempt->findCreatedFtaById($this->ftaId);
+            $fta = $this->repoManager
+                        ->fund_transfer_attempt
+                        ->findByIdWithStatus($this->ftaId, Status::CREATED);
 
             if ($fta === null)
             {
@@ -67,8 +74,6 @@ class FundTransfer extends Job
 
             if (in_array($channel, $allowedChannels, true) === false)
             {
-                (new SlackNotification)->send('Unsupported channel for Fund transfer', $data, null, 1);
-
                 $this->logAndDelete($data, TraceCode::FTA_CHANNEL_NOT_SUPPORTED);
 
                 return;

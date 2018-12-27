@@ -14,6 +14,7 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
@@ -32,7 +33,7 @@ class Core extends Base\Core
     use NotifyTrait;
     use DispatchesJobs;
 
-    public function saveMerchantDetails(array $input, Merchant\Entity $merchant)
+    public function saveMerchantDetails(array $input, Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -49,7 +50,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $originProduct)
         {
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
@@ -68,6 +69,8 @@ class Core extends Base\Core
                 $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
                 $this->markSubmittedAndLock($merchantDetails);
+
+                $this->updateActivationSource($merchantDetails, $originProduct);
 
                 $activationStatusData = [
                     Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
@@ -193,6 +196,7 @@ class Core extends Base\Core
 
             $this->trackActivationProgressEvents($merchant, $activationProgress);
 
+            // Only Linked accounts will have auto Activated set to true.
             $response['auto_activated'] = false;
 
             return $response;
@@ -491,6 +495,21 @@ class Core extends Base\Core
         }
 
         $merchant->setHasKeyAccess(true);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    /**
+     * Updates the product business banking or primary from where the activation form was submitted.
+     *
+     * @param Entity $merchantDetails
+     * @param string $originProduct
+     */
+    public function updateActivationSource(Entity $merchantDetails, string $originProduct)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        $merchant->setActivationSource($originProduct);
 
         $this->repo->saveOrFail($merchant);
     }
@@ -887,6 +906,24 @@ class Core extends Base\Core
         $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]      = $merchant->isLive();
         $response[Entity::ACTIVATION_FLOW]    = $merchantDetails->getActivationFlow();
+
+        $response = $this->appendBankingSpecificDetails($response, $merchant);
+
+        return $response;
+    }
+
+    private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+
+        if (empty($balance) === false)
+        {
+            $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+
+            $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
+                                                                          Merchant\Balance\Entity::CURRENCY]);
+            $response[Merchant\Entity::BANKING_ACCOUNT] = $bankAccount->toArrayHosted();
+        }
 
         return $response;
     }

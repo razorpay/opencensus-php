@@ -39,6 +39,9 @@ class Provider
         self::DASHBOARD => 'RAZR0000001',
     ];
 
+    // Ifsc code of new yes bank current account for RazorpayX.
+    const IFSC_YESBANK_X = 'YESB0000022';
+
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
     // Further details can be derived from this IFSC, but are not required

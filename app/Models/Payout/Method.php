@@ -10,6 +10,11 @@ class Method
     const FUND_TRANSFER     = 'fund_transfer';
     const UPI               = 'upi';
 
+    public static $methods = [
+        self::FUND_TRANSFER,
+        self::UPI,
+    ];
+
     public static $destinationMethodMap = [
         E::BANK_ACCOUNT => self::FUND_TRANSFER,
         E::VPA          => self::UPI,
@@ -28,5 +33,10 @@ class Method
         {
             throw new Exception\BadRequestValidationFailureException('Not a valid Payout method: ' . $method);
         }
+    }
+
+    public static function getAll(): array
+    {
+        return self::$methods;
     }
 }

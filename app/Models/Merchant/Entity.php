@@ -13,13 +13,15 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
+use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
-use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
@@ -32,9 +34,11 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
+ * @property Org\Entity         $org
  * @property Detail\Entity      $merchantDetail
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
+ * @property Balance\Entity     $bankingBalance
  * @property Balance\Entity     $primaryBalance
  */
 class Entity extends Base\PublicEntity
@@ -490,6 +494,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
+    public function setActivationSource(string $activationSource)
+    {
+        $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
+    }
+
     public function getReferrer()
     {
         $tagNames = $this->tagNames();
@@ -583,6 +592,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $subvention;
+    }
+
+    public function getActivationSource()
+    {
+        return $this->getAttribute(self::ACTIVATION_SOURCE);
     }
 
     public function activate()
@@ -718,6 +732,26 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
+    }
+
+    public function getBalanceByProductType(string $product): Balance\Entity
+    {
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                return $this->primaryBalance;
+
+            case Product::BANKING:
+                return $this->bankingBalance;
+
+            default:
+                throw new LogicException(
+                    "Invalid product type - {$product}",
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $this->getId(),
+                    ]);
+        }
     }
 
     public function bankAccount()
@@ -1339,7 +1373,7 @@ class Entity extends Base\PublicEntity
      */
     public function isBusinessBankingEnabled()
     {
-        return $this->getAttribute(self::BUSINESS_BANKING);
+        return $this->getAttribute(self::BUSINESS_BANKING) == true;
     }
 
     public function getHoldFunds()
@@ -1587,7 +1621,7 @@ class Entity extends Base\PublicEntity
      *
      * @param Balance/Type $product
      */
-    public function owners($product = Balance\Type::PRIMARY)
+    public function owners($product = Product::PRIMARY)
     {
         return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
@@ -1599,16 +1633,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->users()
                     ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
-                    ->where(self::PRODUCT, Balance\Type::PRIMARY)
+                    ->where(self::PRODUCT, Product::PRIMARY)
                     ->first();
     }
 
     /**
      * Get the primary owner of the merchant.
      */
-    public function primaryOwner()
+    public function primaryOwner($product = Product::PRIMARY)
     {
-        return $this->owners()->first();
+        return $this->owners($product)->first();
     }
 
     /**

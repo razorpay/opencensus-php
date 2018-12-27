@@ -93,7 +93,7 @@ class PaymentLinkController extends Controller
         }
 
         // Additionally, appends all request parameters too for view to consume
-        $payload[Entity::REQUEST_PARAMS] = Request::all();
+        $payload[Entity::REQUEST_PARAMS] = $this->input;
 
         return View::make($view, $payload);
     }
