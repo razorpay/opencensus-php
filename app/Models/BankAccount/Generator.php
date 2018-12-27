@@ -211,12 +211,6 @@ class Generator extends Base\Core
             Entity::BENEFICIARY_NAME   => $virtualAccount->getName(),
         ];
 
-        // Todo: Refactor this!
-        if ($virtualAccount->isBalanceTypeBanking() === true)
-        {
-            $bankAccountInput[Entity::IFSC_CODE] = VirtualAccount\Provider::IFSC_YESBANK_X;
-        }
-
         return array_merge($bankAccountInput, $merchantDetails);
     }
 
