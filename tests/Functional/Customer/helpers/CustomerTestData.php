@@ -768,5 +768,34 @@ return [
             ]
         ],
 
-    ]
+    ],
+
+
+    'testAddCustomerTokenCardCardVault' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens',
+            'method' => 'post',
+            'content' => [
+                'method'  => 'card',
+                'card'    => [
+                    'number'       => '4012001038443335',
+                    'expiry_month' => '11',
+                    'expiry_year'  => '2020',
+                    'name'         => 'Random',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'card',
+                'card'   => [
+                    'last4'   => '3335',
+                    'network' => 'Visa',
+                ],
+                'wallet' => null,
+                'bank'   => null,
+            ],
+        ],
+    ],
+
 ];

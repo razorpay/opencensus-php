@@ -918,6 +918,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
+    const CARD_VAULT_REQUEST                        = 'CARD_VAULT_REQUEST';
+    const CARD_VAULT_RESPONSE                       = 'CARD_VAULT_RESPONSE';
+    const CARD_VAULT_RETRY                          = 'CARD_VAULT_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
     const RAVEN_CALLBACK_REQUEST                    = 'RAVEN_CALLBACK_REQUEST';
