@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Banner from 'rzp/ui/Banner';
 
 import { getExperiment, classList } from 'common/util';
+import { trackSupportOptions } from 'merchant/containers/Support/ga';
 
 export default class SupportBody extends Component {
   handleClick = id => {
@@ -9,6 +10,8 @@ export default class SupportBody extends Component {
     const rzpTicketSystem = window.rzpTicketSystem;
 
     if (rzpTicketSystem) {
+      trackSupportOptions(id);
+
       // if not working day for call/chat support, do nothing
       if (id === 'call') {
         if (!isWorkingDay()) {
@@ -37,12 +40,20 @@ export default class SupportBody extends Component {
   handleFeedback = () => {
     const { onToggle } = this.props;
 
-    document.querySelector('[class$="feedback_minimized_label"]').click();
+    trackSupportOptions('feedback');
+
+    try {
+      document.querySelector('[class$="feedback_minimized_label"]').click();
+    } catch (err) {
+      console.log(err);
+    }
+
     onToggle();
   };
 
   handleFaqs = () => {
     window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
+    trackSupportOptions('faqs');
   };
 
   render() {
