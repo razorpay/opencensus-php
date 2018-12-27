@@ -66,7 +66,7 @@ class PayoutTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
@@ -197,7 +197,7 @@ class PayoutTest extends TestCase
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
 
         $this->retryPayout((array) $payout['id']);
 
@@ -498,7 +498,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?transaction_id=txn_' . $payout['transaction_id'];
+        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'];
 
         $this->ba->privateAuth();
 

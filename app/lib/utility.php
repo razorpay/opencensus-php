@@ -209,6 +209,19 @@ if (! function_exists('random_string_special_chars'))
 }
 
 /**
+ * Does a case insensitive search in an array (sequential/associative)
+ *
+ * @param       $needle
+ * @param array $haystack
+ *
+ * @return false|int|string
+ */
+function array_search_ci($needle, array $haystack)
+{
+    return array_search(strtolower($needle), array_map('strtolower', $haystack));
+}
+
+/**
  * We do not check for whether this function is defined already
  * If it is defined already by some other library (like phpunit)
  * then we want this definition to be the correct one.

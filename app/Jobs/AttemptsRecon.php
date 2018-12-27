@@ -63,16 +63,18 @@ class AttemptsRecon extends Job
                     'fta_id' => $this->ftaId
                 ]);
 
-            if ($this->attempts() >= self::MAX_RETRY_ATTEMPT)
+            if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
             {
-                $this->traceData(TraceCode::FTA_RECONCILIATION_JOB_DELETED);
+                $this->traceData(TraceCode::FTA_RECONCILIATION_JOB_RELEASED);
 
-                $this->delete();
-            }
-            else
-            {
                 $this->release(self::MAX_RETRY_DELAY);
             }
+        }
+        finally
+        {
+            $this->traceData(TraceCode::FTA_RECONCILIATION_JOB_DELETED);
+
+            $this->delete();
         }
     }
 

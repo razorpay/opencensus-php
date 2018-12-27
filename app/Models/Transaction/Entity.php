@@ -478,6 +478,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
+    public function setSettled(bool $settled)
+    {
+        $this->setAttribute(self::SETTLED, $settled);
+    }
+
     public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
@@ -631,6 +636,11 @@ class Entity extends Base\PublicEntity
     public function isTypeDispute()
     {
         return ($this->getType() === Type::DISPUTE);
+    }
+
+    public function isTypePayout(): bool
+    {
+        return ($this->getType() === Type::PAYOUT);
     }
 
     public function isGratis()
@@ -878,6 +888,11 @@ class Entity extends Base\PublicEntity
     public function getBalanceId()
     {
         return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function isBalanceTypeBanking(): bool
+    {
+        return (optional($this->accountBalance)->getType() === Merchant\Balance\Type::BANKING);
     }
 
     /**

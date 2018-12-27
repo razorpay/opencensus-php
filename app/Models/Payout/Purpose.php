@@ -11,26 +11,43 @@ use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
 class Purpose
 {
-    const REFUND   = 'refund';
-    const CASHBACK = 'cashback';
-    const PAYOUT   = 'payout';
+    const REFUND        = 'refund';
+    const CASHBACK      = 'cashback';
+    const PAYOUT        = 'payout';
+    const DISBURSEMENT  = 'disbursement';
+    const SALARY        = 'salary';
+    const UTILITY       = 'utility';
+    const INVOICE       = 'invoice';
 
     protected static $default = [
         self::REFUND,
         self::CASHBACK,
         self::PAYOUT,
+        self::DISBURSEMENT,
+        self::SALARY,
+        self::UTILITY,
+        self::INVOICE,
     ];
 
     protected static $defaultPurposeTypeMap = [
-        self::REFUND   => FTAPurpose::REFUND,
-        self::CASHBACK => FTAPurpose::SETTLEMENT,
-        self::PAYOUT   => FTAPurpose::SETTLEMENT,
+        self::REFUND        => FTAPurpose::REFUND,
+        self::CASHBACK      => FTAPurpose::REFUND,
+        self::PAYOUT        => FTAPurpose::SETTLEMENT,
+        self::DISBURSEMENT  => FTAPurpose::SETTLEMENT,
+        self::SALARY        => FTAPurpose::SETTLEMENT,
+        self::UTILITY       => FTAPurpose::SETTLEMENT,
+        self::INVOICE       => FTAPurpose::SETTLEMENT,
     ];
+
+    public static function isInDefaults(string $purpose): bool
+    {
+        return (in_array($purpose, array_keys(self::$defaultPurposeTypeMap), true) === true);
+    }
 
     public function setPurposeAndTypeForPayout(Entity $payout, string $purpose)
     {
         // If $purpose is one of the defaults, set and return
-        if (isset(self::$defaultPurposeTypeMap[$purpose]) === true)
+        if (self::isInDefaults($purpose) === true)
         {
             $payout->setPurpose($purpose);
             $payout->setPurposeType(self::$defaultPurposeTypeMap[$purpose]);
@@ -90,11 +107,22 @@ class Purpose
 
     public function addNewCustom(string $purpose, string $type, Merchant\Entity $merchant)
     {
-        if ((isset(self::$defaultPurposeTypeMap[$purpose])) or
-            ($this->getSettingsAccessor($merchant)->exists($purpose) === true))
+        $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        if ((self::isInDefaults(strtolower($purpose))) or
+            (array_search_ci($purpose, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Purpose '$purpose' is already defined and cannot be added.",
+                Entity::PURPOSE);
+        }
+
+        if (count($allCustomKeys) >= Validator::MAX_PURPOSES_ALLOWED)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit (" .
+                (Validator::MAX_PURPOSES_ALLOWED) .
+                ") of custom payout purposes that can be created.",
                 Entity::PURPOSE);
         }
 

@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Settlement;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Environment;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
@@ -42,6 +45,14 @@ class Validator extends Base\Validator
         RequestConstants::KYC_DOC_CONTENT => 'required|string',
     ];
 
+    protected static $statusReconcileForApiRules = [
+        'fta_ids'         => 'sometimes|array',
+        'fta_ids.*'       => 'sometimes|alpha_num|size:14',
+        'status'          => 'sometimes|string',
+        'duration'        => 'sometimes|integer',
+        'failed_response' => 'sometimes|custom',
+    ];
+
     protected static $updateChannelRules = [
         'settlement_ids'   => 'required|array',
         'settlement_ids.*' => 'required|alpha_dash|max:19',
@@ -67,7 +78,7 @@ class Validator extends Base\Validator
         'to'              => 'required_with:to|epoch|date_format:U|after:from',
         'fta_ids'         => 'required_without_all:from,status|array',
         'fta_ids.*'       => 'sometimes|string|size:14',
-        'failed_response' => 'sometimes|int',
+        'failed_response' => 'sometimes|custom',
         Entity::STATUS    => 'required_without_all:fta_ids,from|string|in:initiated,failed,processed',
     ];
 
@@ -76,6 +87,17 @@ class Validator extends Base\Validator
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
     ];
+
+    protected function validateFailedResponse($attribute, $value)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment(Environment::TESTING, Environment::DEV) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'failed_response only be used in testing environment');
+        }
+    }
 
     protected function validateGateway($attribute, $value)
     {

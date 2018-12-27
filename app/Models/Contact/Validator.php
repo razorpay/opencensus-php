@@ -20,6 +20,8 @@ class Validator extends Base\Validator
      */
     const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
 
+    const MAX_TYPES_ALLOWED = 100;
+
     protected static $createRules = [
         Entity::NAME         => 'required|string|max:50|nullable|custom',
         Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
