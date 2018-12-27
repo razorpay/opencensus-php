@@ -13,6 +13,8 @@ use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {
+    const MAX_PURPOSES_ALLOWED = 100;
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs

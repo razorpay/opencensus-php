@@ -323,4 +323,44 @@ return [
             ]
         ],
     ],
+
+    'testFetchContactByActive' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByType' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
 ];

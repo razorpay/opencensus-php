@@ -698,7 +698,7 @@ trait Capture
 
         $this->repo->saveOrFail($payment);
 
-        $this->saveFeeDetails($txn, $feesSplit);
+        $txnCore->saveFeeDetails($txn, $feesSplit);
     }
 
     protected function verifyOrderUnpaid(Payment\Entity $payment)

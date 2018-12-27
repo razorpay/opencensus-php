@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Bank;
-use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Method;
+use RZP\Exception\LogicException;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\VirtualAccount\Receiver;
@@ -25,19 +25,23 @@ class Plan extends PublicCollection
      */
     public function toArrayPublic()
     {
-        $plan = array();
-        $rules = array();
+        $plan = $rules = [];
 
         if ($this->count() === 0)
-            return array();
+        {
+            return [];
+        }
 
+        /** @var Entity $item */
         foreach ($this->items as $item)
         {
             $rule = $item->toArray();
 
+            //
             // We need to send the human version of the payment network name
             // as well, so DICL becomes Diners Club and
             // AMEX becomes American Express
+            //
             if ($rule[Entity::PAYMENT_NETWORK] !== null)
             {
                 $network = $rule[Entity::PAYMENT_NETWORK];
@@ -71,11 +75,7 @@ class Plan extends PublicCollection
             array_push($rules, $rule);
         }
 
-        $this->setPlanAttributes(
-            $plan,
-            $this->items[0],
-            $rules,
-            count($this->items));
+        $this->setPlanAttributes($plan, $this->items[0], $rules, count($this->items));
 
         return $plan;
     }
@@ -152,6 +152,7 @@ class Plan extends PublicCollection
         // The collection of plans array is multiple plans.
         //
 
+        /** @var Entity $item */
         foreach ($this->items as $item)
         {
             if ($plan[self::ID] === $item->getPlanId())
@@ -188,6 +189,7 @@ class Plan extends PublicCollection
 
     protected function setPlanAttributes(& $plan, $item, $rules = array(), $count = 0)
     {
+        /** @var Entity $item */
         $plan = array(
             self::ID        => $item->getPlanId(),
             self::NAME      => $item->getPlanName(),
@@ -200,6 +202,7 @@ class Plan extends PublicCollection
 
     public function hasQrCodeReceiver()
     {
+        /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if ($rule->getReceiverType() === Receiver::QR_CODE)
@@ -213,6 +216,7 @@ class Plan extends PublicCollection
 
     public function hasMethod($method)
     {
+        /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if ($rule->getPaymentMethod() === $method)
@@ -226,6 +230,7 @@ class Plan extends PublicCollection
 
     public function hasNetworkAmex()
     {
+        /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if ($rule->getPaymentNetwork() === 'AMEX')
@@ -239,6 +244,7 @@ class Plan extends PublicCollection
 
     public function hasInternationalPricing()
     {
+        /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if ($rule->isInternational())
@@ -246,6 +252,22 @@ class Plan extends PublicCollection
                 return true;
             }
         }
+        return false;
+    }
+
+    public function hasBankingPayoutRuleForMethod(string $method): bool
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if (($rule->isBankingProduct() === true) and
+                ($rule->getFeature() === Feature::PAYOUT) and
+                ($rule->getPaymentMethod() === $method))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 }

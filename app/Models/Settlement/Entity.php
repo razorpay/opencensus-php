@@ -5,10 +5,9 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
-use RZP\Models\Transaction;
-use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {

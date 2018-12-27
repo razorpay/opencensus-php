@@ -134,7 +134,7 @@ trait AttemptReconcileTrait
 
     protected function assertReconProcessSuccessForChannel(string $channel, string $sourceType, bool $failureTest)
     {
-        $data = $this->reconcileOnlineSettlements($channel, $failureTest);
+        $this->reconcileOnlineSettlements($channel, $failureTest);
 
         // Validate settlement attempt entity
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -196,7 +196,16 @@ trait AttemptReconcileTrait
         else
         {
             $this->assertNotNull($attempt['utr']);
-            $this->assertNotNull($source['utr']);
+
+            if (($source['status'] === 'processed') or
+                ($source['status'] === 'reversed'))
+            {
+                $this->assertNotNull($source['utr']);
+            }
+            else
+            {
+                $this->assertNull($source['utr']);
+            }
         }
     }
 

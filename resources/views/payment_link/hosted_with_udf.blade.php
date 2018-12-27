@@ -56,19 +56,42 @@
                   form_title: 'Payment Details'
                 },
               };
-
-            function renderPaymentPage() {
-                window.RZP.renderApp('paymentpage-container', templateData);
-            }
         </script>
 
-        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
-        <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+        @if (empty($request_params) === true)
+            <script>
+                function renderPaymentPage() {
+                    window.RZP.renderApp('paymentpage-container', templateData);
+                }
+            </script>
+
+            <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+            <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
+            <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+        @else
+            @include('payment_link.partials.post_screen')
+        @endif
     </head>
 
     <body>
         <div id="paymentpage-container">
+            @if (empty($request_params) === false)
+                @if (isset($request_params['razorpay_payment_id']))
+                    @include('hostedpage.partials.success')
+                    <div id="post-msg"><a href="{{{$payment_page_data['short_url']}}}"">Make Another Payment</a></div>
+                @else
+                    @include('hostedpage.partials.success', ['error' => true])
+                    <div id="post-msg">
+                        <div>{{$request_params['description'] ?? 'If any amount is deducted, it will be automatically refunded'}}</div>
+                        <a href="{{{$payment_page_data['short_url']}}}"">Retry Payment</a>
+                    </div>
+                @endif
+
+            @endif
         </div>
+
+        @if (empty($request_params) === false and isset($request_params['razorpay_payment_id']) === true)
+            <script>showSuccessMsg()</script>
+        @endif
     </body>
 </html>

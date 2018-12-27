@@ -233,7 +233,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -277,7 +277,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -319,7 +319,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 

@@ -2199,6 +2199,16 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
+    public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_MINDGATE_INTENT_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiMindgateIntentTerminal($attributes);
+    }
+
     public function createSharedUpiMindgateSbiTerminal(array $attributes)
     {
         $termId = Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL;

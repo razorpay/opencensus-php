@@ -763,9 +763,16 @@ class TransactionFilter extends Terminal\Filter
 
         $metadata = $payment->getMetadata();
 
+        $bankingTypeApplicable = $terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING);
+
         // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
-        if (($metadata[Generator::BANKING] === true) and
-            ($terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING) === false))
+        if (($metadata[Generator::BANKING] === true) and ($bankingTypeApplicable === false))
+        {
+            return false;
+        }
+
+        // If metadata.banking is not set, we must not select the terminal with business_banking type.
+        if (($metadata[Generator::BANKING] === false) and ($bankingTypeApplicable === true))
         {
             return false;
         }

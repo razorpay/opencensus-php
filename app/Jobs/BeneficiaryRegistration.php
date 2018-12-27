@@ -5,11 +5,12 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception\LogicException;
+use RZP\Models\BankAccount\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Beneficiary;
 
-class BeneficiaryRegistrationJob extends Job
+class BeneficiaryRegistration extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 5;
 
@@ -57,6 +58,14 @@ class BeneficiaryRegistrationJob extends Job
 
             $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
 
+            // Check to avoid unnecessary tries.
+            // As the `registerBeneficiaryThroughApi` checks for the type
+            // and returns false for the bank account which are not `merchant` or `contact`
+            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+            {
+                return;
+            }
+
             if ($bankAccount === null)
             {
                 $this->traceData(TraceCode::INVALID_BENEFICIARY_BANK_ACCOUNT_ID);
@@ -84,8 +93,10 @@ class BeneficiaryRegistrationJob extends Job
                     'bank_account_id' => $this->bankAccountId,
                 ]);
 
-            if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
+            if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
             {
+                $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
+
                 $this->release(self::RETRY_INTERVAL);
             }
         }
@@ -100,7 +111,9 @@ class BeneficiaryRegistrationJob extends Job
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
-
+        }
+        finally
+        {
             $this->delete();
         }
     }

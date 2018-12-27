@@ -599,8 +599,10 @@ class EnachRblGatewayTest extends TestCase
 
         $batchFile = $this->getBatchFileToUpload($payment);
 
+        $user = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+
         $url = '/batches';
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->proxyAuth('rzp_test_100000Razorpay', $user->getId());
 
         $testData = $this->testData[__FUNCTION__];
 
