@@ -70,7 +70,7 @@ class AttemptStatusCheck extends Job
 
             $summary = (new $nameSpace)->startReconciliation($attempts);
 
-            $processed = ($summary['processed_count'] === 1);
+            $processed = ($summary['unprocessed_count'] === 0);
 
             $this->traceData(TraceCode::FTA_STATUS_CHECK_PROCESS_STATUS, $processed);
 
