@@ -682,7 +682,7 @@ $custom_labels                  = $data['custom_labels'];
             options.name = invoiceObj.merchant_label;
 
             if (data.custom_labels) {
-                options.customLabel = data.custom_labels.first_payment_min_amount;
+                options.min_amount_label = data.custom_labels.first_payment_min_amount;
             }
 
             if (merchant) {
