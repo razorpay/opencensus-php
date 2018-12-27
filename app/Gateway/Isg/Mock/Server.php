@@ -73,7 +73,7 @@ class Server extends Base\Mock\Server
     protected function getRefundResponse($input)
     {
         $attributes = [
-            Field::RFD_TXN_ID   => random_integer(14),
+            Field::RFD_TXN_ID   => $input[Field::RFD_TXN_ID],
             Field::STATUS_CODE  => '00',
             Field::STATUS_DESC  => '00',
         ];

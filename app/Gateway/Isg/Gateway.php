@@ -75,7 +75,13 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
 
+        $refundDataToSave = [
+            Entity::MERCHANT_PAN => $gatewayEntity[Entity::MERCHANT_PAN]
+        ];
+
         $attributes = $this->getRefundRequestData($gatewayEntity);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($input, $refundDataToSave);
 
         $request = $this->getStandardRequestArray($attributes);
 
@@ -89,7 +95,9 @@ class Gateway extends Base\Gateway
 
         $refundAttributesToSave = $this->getRefundAttributes($responseContent, $gatewayEntity);
 
-        $this->createGatewayPaymentEntity($input, $refundAttributesToSave);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $refundAttributesToSave, false);
+
+        $this->assertRefundId($input['refund']['id'], $responseContent[Field::RFD_TXN_ID]);
 
         $this->checkRefundResponse($responseContent);
     }
@@ -126,9 +134,22 @@ class Gateway extends Base\Gateway
             Entity::BANK_REFERENCE_NUMBER       => $response[Field::RFD_TXN_ID],
             Entity::AUTH_CODE                   => $gatewayEntity[Entity::AUTH_CODE],
             Entity::STATUS_CODE                 => $response[Field::STATUS_CODE],
+            Entity::RECEIVED                    => true,
         ];
 
         return $attributes;
+    }
+
+    protected function assertRefundId($actualRefundId, $expectedRefundId)
+    {
+        if ($actualRefundId !== $expectedRefundId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                'expected' => $expectedRefundId,
+                'actual'   => $actualRefundId
+            ]);
+        }
     }
 
     protected function checkRefundResponse($response)
@@ -499,6 +520,8 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::STATUS_DESC] = $statusDescription;
 
+        $attributes[Entity::RECEIVED] = true;
+
         return $attributes;
     }
 
@@ -509,6 +532,11 @@ class Gateway extends Base\Gateway
         $action = $action ?: $this->action;
 
         $gatewayPayment->setAction($action);
+
+        if ($action === Base\Action::REFUND)
+        {
+            $gatewayPayment->setRefundId($input['refund']['id']);
+        }
 
         $gatewayPayment->setPaymentId($input['payment']['id']);
 
