@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt\Status;
 
@@ -53,6 +54,15 @@ class AttemptStatusCheck extends Job
             }
 
             $channel = $attempt->getChannel();
+
+            $allowedChannels = Channel::getApiBasedChannels();
+
+            if (in_array($channel, $allowedChannels, true) === false)
+            {
+                $this->traceData(TraceCode::FTA_CHANNEL_NOT_SUPPORTED);
+
+                return;
+            }
 
             $attempts = (new PublicCollection)->push($attempt);
 

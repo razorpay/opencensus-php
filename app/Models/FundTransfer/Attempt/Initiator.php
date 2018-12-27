@@ -147,20 +147,11 @@ class Initiator extends Base\Core
                 ];
             });
 
-        // Dispatching after lock is released as this should also work in sync mode
-        // This dispatch is will happen only on locked attempts in above step
-        foreach ($attemptedFTAs as $attempt)
+        $allowedChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $allowedChannels, true) === true)
         {
-            // For bank accounts, we anyway don't get the status in initiate. So no use
-            // of dispatching it as part of initiate request. In VPA, we get the status.
-            if ($attempt->hasVpa() === true)
-            {
-                $this->dispatchFtaForReconProcess($attempt);
-            }
-            else
-            {
-                $this->dispatchFtaForStatusCheckProcess($attempt);
-            }
+            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
         }
 
         $data += $response;
@@ -372,5 +363,26 @@ class Initiator extends Base\Core
         $response = $this->processFundTransferAttempts(self::FTA_PURPOSE, $channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
+    }
+
+    protected function dispatchForReconAndStatusCheck($attemptedFTAs)
+    {
+        // Dispatching after lock is released as this should also work in sync mode
+        // This dispatch is will happen only on locked attempts in above step
+        foreach ($attemptedFTAs as $attempt)
+        {
+            // For bank accounts, we anyway don't get the status in initiate. So no use
+            // of dispatching it as part of initiate request. In VPA, we get the status.
+            if ($attempt->hasVpa() === true)
+            {
+                $this->dispatchFtaForReconProcess($attempt);
+            }
+            else
+            {
+                $this->dispatchFtaForStatusCheckProcess($attempt);
+            }
+        }
+
+        return;
     }
 }
