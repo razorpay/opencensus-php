@@ -174,7 +174,8 @@ class Core extends Base\Core
 
         $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
         $data[Payment\Method::UPI] = $methods->isUpiEnabled();
-        $data[Payment\Method::CARDLESS_EMI] = $this->getCardlessEmiProviders($merchant);
+        $data[Payment\Method::CARDLESS_EMI] =
+                                      $methods->isCardlessEmiEnabled() ? $this->getCardlessEmiProviders($merchant) : [];
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)
