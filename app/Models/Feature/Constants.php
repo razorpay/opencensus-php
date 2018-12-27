@@ -321,32 +321,32 @@ class Constants
         self::MARKETPLACE      => [
             'feature'       => self::MARKETPLACE,
             'display_name'  => 'Route',
-            'documentation' => 'route'
+            'documentation' => 'route',
         ],
         self::SUBSCRIPTIONS    => [
             'feature'       => self::SUBSCRIPTIONS,
             'display_name'  => 'Subscriptions',
-            'documentation' => 'subscriptions'
+            'documentation' => 'subscriptions',
         ],
         self::VIRTUAL_ACCOUNTS => [
             'feature'       => self::VIRTUAL_ACCOUNTS,
             'display_name'  => 'Smart Collect',
-            'documentation' => 'smart-collect'
+            'documentation' => 'smart-collect',
         ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
-            'documentation' => ''
+            'documentation' => '',
         ],
         self::ES_ON_DEMAND => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
-            'documentation' => ''
+            'documentation' => '',
         ],
         self::PL_FIRST_MIN_AMOUNT => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
-            'documentation' => ''
+            'documentation' => '',
         ],
     ];
 

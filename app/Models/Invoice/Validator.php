@@ -299,7 +299,7 @@ class Validator extends Base\Validator
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
 
-        $this->validateMinAmount($input[Entity::AMOUNT]);
+        $this->validateMinAmount($input);
     }
 
     /**
@@ -392,18 +392,36 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMinAmount(int $amount)
+    public function validateMinAmount(array $input)
     {
         $invoice = $this->entity;
+
+        $amount = $input[Entity::AMOUNT];
 
         if ($amount < self::MIN_AMOUNT)
         {
             throw new BadRequestValidationFailureException(
-                'The amount should be atleast '.self::MIN_AMOUNT,
-                'amount',
+                'The amount should be atleast ' . self::MIN_AMOUNT,
+                Entity::AMOUNT,
                 [
-                    'id'                 => $invoice->getId(),
-                    'amount'             => $amount,
+                    'id'     => $invoice->getId(),
+                    'amount' => $amount,
+                ]);
+        }
+
+        // Amount should always be greater than then first_payment_min_amount
+        $firstPaymentMinAmount = array_key_exists(Entity::FIRST_PAYMENT_MIN_AMOUNT, $input) ?
+            $input[Entity::FIRST_PAYMENT_MIN_AMOUNT] : $this->entity->getFirstPaymentMinAmount();
+
+        if ($amount <= $firstPaymentMinAmount)
+        {
+            throw new BadRequestValidationFailureException(
+                'The amount should be greater than the first payment min amount ',
+                Entity::AMOUNT,
+                [
+                    'id'                       => $invoice->getId(),
+                    'amount'                   => $amount,
+                    'first_payment_min_amount' => $firstPaymentMinAmount,
                 ]);
         }
     }
@@ -493,34 +511,39 @@ class Validator extends Base\Validator
         // 1. Allow `first_payment_min_amount` to be set only for ecod and link types
         $type = $input[Entity::TYPE] ?? $this->entity->getType();
 
-        if (in_array($type, [Type::LINK, Type::INVOICE], true) === false)
+        if (Type::isPaymentLinkType($type) === false)
         {
             throw new BadRequestValidationFailureException(
                 'First payment min amount can be only sent for ecod or link types.');
         }
 
-        // 2. Do not `first_payment_min_amount` if partial payment is not enabled
+        // 2. Do not allow `first_payment_min_amount` if partial payment is not enabled
         $partialPaymentEnabled = array_key_exists(Entity::PARTIAL_PAYMENT, $input) ?
                                     $input[Entity::PARTIAL_PAYMENT] : $this->entity->isPartialPaymentAllowed();
 
         $partialPaymentEnabled = (bool) $partialPaymentEnabled;
 
-        $firstPaymentAmount = $input[Entity::FIRST_PAYMENT_MIN_AMOUNT] ?? null;
-
-        if (($partialPaymentEnabled === false) and
-            ($firstPaymentAmount !== null))
+        if ($partialPaymentEnabled === false)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount cannot be set when partial payment is disabled");
+                "First payment min amount cannot be set when partial payment is disabled",
+                Entity::FIRST_PAYMENT_MIN_AMOUNT);
         }
 
         // 3. `first_payment_min_amount` should be lesser than the amount`
         $amount = array_key_exists(Entity::AMOUNT, $input) ? $input[Entity::AMOUNT] : $this->entity->getAmount();
 
+        $firstPaymentAmount = $input[Entity::FIRST_PAYMENT_MIN_AMOUNT];
+
         if ($firstPaymentAmount >= $amount)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount must be lesser than the amount");
+                "First payment min amount must be lesser than the amount",
+                Entity::FIRST_PAYMENT_MIN_AMOUNT,
+                [
+                    'amount'                   => $amount,
+                    'first_payment_min_amount' => $firstPaymentAmount,
+                ]);
         }
     }
 

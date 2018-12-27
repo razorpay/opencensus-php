@@ -15,6 +15,7 @@ use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Address;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -25,7 +26,8 @@ use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Subscription\Entity $subscription
- * @property Order\Entity        order
+ * @property Order\Entity        $order
+ * @property Merchant\Entity     $merchant
  */
 class Entity extends Base\PublicEntity
 {
