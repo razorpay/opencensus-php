@@ -10,6 +10,7 @@ class PAReq
     const MESSAGE       = 'Message';
     const ATTRIBUTES    = '@attributes';
     const ID            = 'id';
+    const CRITICAL      = 'critical';
     const MSG_PAREQ     = 'PAReq';
     const VERSION       = 'version';
     const MERCHANT      = 'Merchant';
@@ -28,4 +29,7 @@ class PAReq
     const EXPIRY        = 'expiry';
     const CH            = 'CH';
     const ACCID         = 'acctID';
+
+    const EXTENSION     = 'Extension';
+    const ATTRIBUTE     = 'attribute';
 }

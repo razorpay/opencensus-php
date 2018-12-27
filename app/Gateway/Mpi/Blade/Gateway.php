@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
             case Base\Enrolled::Y:
                 if ($this->isIvrPayment($input) === true)
                 {
-                    if (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === true)
+                    if (empty($response[VERes::MESSAGE][VERes::VERES][VERes::Extension][VERes::IVR_AUTH_DATA]) === true)
                     {
                         throw new Exception\GatewayErrorException(
                             ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
@@ -731,18 +731,18 @@ class Gateway extends Base\Gateway
         {
             $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::CH][PAReq::ACCID] = $this->model->getAccId();
 
-            $content[PAReq::MESSAGE][PAReq::MSG_PAREQ]['Extension'] = [
-                '@attributes' => [
-                    'id'       => 'visa.3ds.india_ivr',
-                    'critical' => 'false',
+            $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::EXTENSION] = [
+                PAReq::ATTRIBUTES => [
+                    PAReq::ID       => 'visa.3ds.india_ivr',
+                    PAReq::CRITICAL => 'false',
                 ],
-                'npc356authuserdata' => [
-                    'attribute' => [
-                        '@attributes' => [
-                            'name'      => 'OTP2',
-                            'value'     => $input['gateway']['otp'],
-                            'status'    => 'Y',
-                            'encrypted' => 'false',
+                PAReq::IVR_AUTH_USER_DATA => [
+                    PAReq::ATTRIBUTE => [
+                        PAReq::ATTRIBUTES => [
+                            PAReq::NAME      => 'OTP2',
+                            PAReq::VALUE     => $input['gateway']['otp'],
+                            PAReq::STATUS    => 'Y',
+                            PAReq::ENCRYPTED => 'false',
                         ],
                     ]
                 ]
@@ -805,17 +805,17 @@ class Gateway extends Base\Gateway
 
         if ($this->isIvrPayment($input) === true)
         {
-            $content[VEReq::MESSAGE][VEReq::VEREQ]['Extension'] = [
-                '@attributes' => [
-                    'id'       => 'visa.3ds.india_ivr',
-                    'critical' => 'false',
+            $content[VEReq::MESSAGE][VEReq::VEREQ][VEReq::EXTENSION] = [
+                VEReq::ATTRIBUTES => [
+                    VEReq::ID       => 'visa.3ds.india_ivr',
+                    VEReq::CRITICAL => 'false',
                 ],
-                'npc356chphoneidformat'  => 'D',
-                'npc356chphoneid'        => '',
-                'npc356pareqchannel'     => 'DIRECT',
-                'npc356shopchannel'      => 'IVR',
-                'npc356availauthchannel' => 'SMS',
-                'npc356itpcredential'    => '',
+                VEReq::IVR_CH_PHONE_FORMAT    => 'D',
+                VEReq::IVR_CH_PHONE           => '',
+                VEReq::IVR_PAREQ_CHANNEL      => 'DIRECT',
+                VEReq::IVR_SHOP_CHANNEL       => 'IVR',
+                VEReq::IVR_AVAIL_AUTH_CHANNEL => 'SMS',
+                VEReq::IVR_ITP_CREDENTIAL     => '',
             ];
         }
 
