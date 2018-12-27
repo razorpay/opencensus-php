@@ -12,10 +12,11 @@ class Url
     const GET_BALANCE       = '/olamoney/v1/userBalance';
     const TOPUP_WALLET      = '/olamoney/webview/index.html';
     const TOPUP_REDIRECT    = '/olamoney/v1/verifyloadmoney';
-    const AUTHORIZE         = '/olamoney/webview/index.html';
+    //const AUTHORIZE         = '/olamoney/webview/index.html';
     const DEBIT_WALLET      = '/olamoney/v1/autoDebit';
-    //const REFUND          = '/olamoney/v2/refund';
     const VERIFY            = '/olamoney/v2/query';
-    const AUTHORIZE_V2      = '/credit-app/postpaid';
+
+    const AUTHORIZE         = '/credit-app/postpaid';
     const REFUND            = '/olamoney/v3/refund';
+
 }

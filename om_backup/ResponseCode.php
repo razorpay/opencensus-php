@@ -7,8 +7,8 @@ use RZP\Error\ErrorCode;
 class ResponseCode
 {
     public static $codes = [
-        'Invalid OTP'                                                                                   =>
-            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+//        'Invalid OTP'                                                                                   =>
+//            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         'Invalid user access token'                                                                     =>
             ErrorCode::BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED,
         'The email ID provided is already registered with us. Please try with a different email ID.'    =>
