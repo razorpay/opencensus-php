@@ -681,6 +681,10 @@ $custom_labels                  = $data['custom_labels'];
 
             options.name = invoiceObj.merchant_label;
 
+            if (data.custom_labels) {
+                options.customLabel = data.custom_labels.first_payment_min_amount;
+            }
+
             if (merchant) {
                 var color = merchant.brand_color || '#168AFA';
                 options.theme.color = color;
