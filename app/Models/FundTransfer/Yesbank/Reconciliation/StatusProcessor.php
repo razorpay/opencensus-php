@@ -27,7 +27,6 @@ class StatusProcessor extends BaseRowProcessor
      * This will update the status based on the transfer API response
      *
      * @return null
-     * @throws LogicException
      */
     public function updateTransferStatus()
     {
