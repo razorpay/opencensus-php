@@ -211,15 +211,11 @@ class Generator extends Base\Core
             Entity::BENEFICIARY_NAME   => $virtualAccount->getName(),
         ];
 
-        //
         // Todo: Refactor this!
-        // This has been commented again for few days, we will continue to use
-        // existing nodal account with a copied terminal having different gateway_merchant_id2.
-        //
-        // if ($virtualAccount->isBalanceTypeBanking() === true)
-        // {
-        //     $bankAccountInput[Entity::IFSC_CODE] = VirtualAccount\Provider::IFSC_YESBANK_X;
-        // }
+        if ($virtualAccount->isBalanceTypeBanking() === true)
+        {
+            $bankAccountInput[Entity::IFSC_CODE] = VirtualAccount\Provider::IFSC_YESBANK_X;
+        }
 
         return array_merge($bankAccountInput, $merchantDetails);
     }
