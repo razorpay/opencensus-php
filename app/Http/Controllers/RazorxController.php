@@ -221,12 +221,14 @@ class RazorxController extends Controller
 
     protected function addActionAdminEmail()
     {
-        $adminEmail = app()['basicauth']->getAdmin()->getEmail();
+        $admin = app()['basicauth']->getAdmin();
 
-        if ($adminEmail === null)
+        if ($admin === null)
         {
-            throw new Exception\BadRequestValidationFailureException('admin email is not present');
+            throw new Exception\BadRequestValidationFailureException('admin auth not present.');
         }
+
+        $adminEmail = $admin->getEmail();
 
         Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
     }
