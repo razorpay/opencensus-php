@@ -82,7 +82,10 @@ export default class CreateOffer extends Component {
       offer.emi_durations = Object.keys(offer.emi_durations).reduce(
         (durations, key) => {
           if (offer.emi_durations[key] === '1') {
-            return [...durations, Number(key[0])];
+            // key could be 12_months or 3_months,
+            //  so either extract first two or 2 chars
+            const newDuration = Number(key.substring(0, 2)) || Number(key[0]);
+            return [...durations, newDuration];
           } else {
             return [...durations];
           }
