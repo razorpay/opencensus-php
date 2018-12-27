@@ -58,6 +58,17 @@ class BeneficiaryRegistration extends Job
 
             $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
 
+            // TODO: Check when this can be empty
+            // Example case: BcqrSOKTFuw1pS
+            // Mode sent was live, but it was created in test mode.
+            // No live bank account exists for the merchant: BcqrSKvM8bIq2g
+            if (empty($bankAccount) === true)
+            {
+                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
+
+                return;
+            }
+
             // Check to avoid unnecessary tries.
             // As the `registerBeneficiaryThroughApi` checks for the type
             // and returns false for the bank account which are not `merchant` or `contact`
@@ -126,6 +137,7 @@ class BeneficiaryRegistration extends Job
                 'channel'         => $this->channel,
                 'attempt_count'   => $this->attempts(),
                 'bank_account_id' => $this->bankAccountId,
+                'mode'            => $this->mode,
             ] + $extraData
         );
     }
