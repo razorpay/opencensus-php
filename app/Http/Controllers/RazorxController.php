@@ -56,11 +56,11 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
+        $this->addActionAdminEmail();
+
         $path           = $this->validateAndGetServicePathParam();
         $method         = null;
         $requestParams  = $this->getRequestParams();
-
-        $this->addActionAdminEmail();
 
         foreach (self::WORKFLOW_REGEX_ROUTES as $route => $regex)
         {
@@ -228,6 +228,6 @@ class RazorxController extends Controller
             throw new Exception\BadRequestValidationFailureException('admin email is not present');
         }
 
-        Request()->request->add([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
+        Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
     }
 }
