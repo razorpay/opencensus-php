@@ -8,6 +8,7 @@ $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
+$custom_labels                  = $data['custom_labels'];
 ?>
 
 <!doctype html>
@@ -264,7 +265,7 @@ $customer_details               = $invoice_data['customer_details'];
 
                                 @if(isset($invoice_data['receipt']))
                                     <div class="info">
-                                        RECEIPT NO.
+                                        {{ $custom_labels['receipt_number'] ?? 'RECEIPT NO.' }}
                                         <div class="val">
                                             {{{ $invoice_data['receipt'] }}}
                                         </div>
@@ -422,7 +423,7 @@ $customer_details               = $invoice_data['customer_details'];
 
                         @if(isset($invoice_data['receipt']))
                             <div class="info">
-                                RECEIPT NO.
+                                {{ $custom_labels['receipt_number'] ?? 'RECEIPT NO.' }}
                                 <div class="val">
                                     {{{ $invoice_data['receipt'] }}}
                                 </div>
