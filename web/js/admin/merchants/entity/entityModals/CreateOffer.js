@@ -68,11 +68,13 @@ export default class CreateOffer extends Component {
       offer.ends_at = this.ends_at.startOf('day').unix() + offsetEnd;
     }
 
-    // 7. emi_subvention is valid only if payment_method is emi
+    // 7. validations and cleaning of data related to emi_subvention
     if (offer.payment_method !== 'emi' || offer.emi_subvention !== '1') {
       delete offer.emi_subvention;
     } else {
       offer.emi_subvention = Number(offer.emi_subvention);
+      delete offer.checkout_display;
+      delete offer.type;
     }
 
     //8. sanitize emi_duration field
@@ -155,15 +157,31 @@ export default class CreateOffer extends Component {
             <option value="wallet">Wallet</option>
           </SelectField>
 
+          {this.state.payment_method === 'emi' && (
+            <SwitchField
+              label="No Cost EMI"
+              name="emi_subvention"
+              enabledLabel="Yes"
+              disabledLabel="No"
+              onChange={event => {
+                this.setState({ emi_subvention: event.target.value });
+              }}
+            />
+          )}
+
           {['netbanking', 'wallet', 'upi'].indexOf(
             this.state.payment_method
-          ) === -1 && (
-            <SelectField label="Payment Method Type" name="payment_method_type">
-              <option value="">All</option>
-              <option value="credit">Credit</option>
-              <option value="debit">Debit</option>
-            </SelectField>
-          )}
+          ) === -1 &&
+            this.state.emi_subvention !== '1' && (
+              <SelectField
+                label="Payment Method Type"
+                name="payment_method_type"
+              >
+                <option value="">All</option>
+                <option value="credit">Credit</option>
+                <option value="debit">Debit</option>
+              </SelectField>
+            )}
 
           {['netbanking', 'wallet', 'upi'].indexOf(
             this.state.payment_method
@@ -203,26 +221,18 @@ export default class CreateOffer extends Component {
 
           {['netbanking', 'wallet', 'upi'].indexOf(
             this.state.payment_method
-          ) === -1 && (
-            <Field
-              label="iins"
-              name="iins"
-              placeholder="Enter comma(,) separated values"
-            />
-          )}
+          ) === -1 &&
+            this.state.emi_subvention !== '1' && (
+              <Field
+                label="iins"
+                name="iins"
+                placeholder="Enter comma(,) separated values"
+              />
+            )}
 
-          {this.state.payment_method === 'emi' && (
-            <SwitchField
-              label="No Cost EMI"
-              name="emi_subvention"
-              enabledLabel="Yes"
-              disabledLabel="No"
-            />
-          )}
-
-          {this.state.payment_method === 'emi' && (
+          {this.state.emi_subvention === '1' && (
             <div class="field">
-              <label>EMI Plans(in months)</label>
+              <label class="required">EMI Plans(in months)</label>
               {emiDurationPlans.map((duration, index) => (
                 <Fragment key={duration}>
                   <input
@@ -237,31 +247,40 @@ export default class CreateOffer extends Component {
             </div>
           )}
 
-          <Field
-            label="Percent Rate"
-            name="percent_rate"
-            placeholder="Eg: 45.25"
-          />
-          <Field
-            label="Max Cashback"
-            name="max_cashback"
-            placeholder="(in paisa)"
-          />
-          <Field
-            label="Flat Cashback"
-            name="flat_cashback"
-            placeholder="(in paisa)"
-          />
+          {this.state.emi_subvention !== '1' && (
+            <>
+              <Field
+                label="Percent Rate"
+                name="percent_rate"
+                placeholder="Eg: 45.25"
+              />
+
+              <Field
+                label="Max Cashback"
+                name="max_cashback"
+                placeholder="(in paisa)"
+              />
+
+              <Field
+                label="Flat Cashback"
+                name="flat_cashback"
+                placeholder="(in paisa)"
+              />
+            </>
+          )}
           <Field
             label="Min Amount"
             name="min_amount"
             placeholder="(in paisa)"
           />
-          <Field
-            label="Linked Offer ids"
-            name="linked_offer_ids"
-            placeholder="Enter comma(,) separated values"
-          />
+
+          {this.state.emi_subvention !== '1' && (
+            <Field
+              label="Linked Offer ids"
+              name="linked_offer_ids"
+              placeholder="Enter comma(,) separated values"
+            />
+          )}
 
           {/* Starts at */}
           <DateField
@@ -290,23 +309,27 @@ export default class CreateOffer extends Component {
             required
           />
 
-          <SwitchField
-            name="type"
-            label="Type"
-            defaultValue={'deferred'}
-            disabledLabel="Instant"
-            enabledLabel="Deferred"
-            enabledValue="deferred"
-            disabledValue="instant"
-          />
+          {this.state.emi_subvention !== '1' && (
+            <SwitchField
+              name="type"
+              label="Type"
+              defaultValue={'deferred'}
+              disabledLabel="Instant"
+              enabledLabel="Deferred"
+              enabledValue="deferred"
+              disabledValue="instant"
+            />
+          )}
 
-          <SwitchField
-            label="Display on Checkout"
-            name="checkout_display"
-            defaultValue="0"
-            disabledLabel="False"
-            enabledLabel="True"
-          />
+          {this.state.emi_subvention !== '1' && (
+            <SwitchField
+              label="Display on Checkout"
+              name="checkout_display"
+              defaultValue="0"
+              disabledLabel="False"
+              enabledLabel="True"
+            />
+          )}
 
           <Field label="Display Text" name="display_text" />
           <Field label="Error Message" name="error_message" />
