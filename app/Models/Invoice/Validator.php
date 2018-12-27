@@ -6,7 +6,6 @@ use Lib\Gstin;
 use Carbon\Carbon;
 
 use RZP\Base;
-use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -18,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -492,7 +492,7 @@ class Validator extends Base\Validator
         }
     }
 
-    function validateFirstPaymentMinAmount(array $input)
+    public function validateFirstPaymentMinAmount(array $input)
     {
         if (isset($input[Entity::FIRST_PAYMENT_MIN_AMOUNT]) === false)
         {

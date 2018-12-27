@@ -7,7 +7,6 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
@@ -15,8 +14,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\Merchant\Preferences;
 use RZP\Exception\BadRequestException;
 use RZP\Models\SubscriptionRegistration;
+
 /**
  * This class is common source of invoice and related data to be sent
  * - to mail templates as payload
@@ -113,7 +114,6 @@ class ViewDataSerializer extends Base\Core
 
             case Preferences::MID_RBLLOAN:
             case Preferences::MID_AMIT_RBLLOAN:
-            case '10000000000000':
 
                 $customLabels = [
                     'receipt_number'           => 'Loan Account Number',
