@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use Config;
+use Illuminate\Support\Facades\Artisan;
+
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
@@ -658,8 +661,9 @@ class PayoutTest extends TestCase
                 'source_type' => 'contact',
             ]);
 
-
         $payout = $this->testCreatePayout();
+
+        $this->createEsIndex();
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
@@ -772,5 +776,36 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['id'], $responsePayout['id']);
         $this->assertEquals($payout['mode'], $responsePayout['mode']);
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function createEsIndex()
+    {
+        $esMock = Config::get('database.es_mock');
+
+        if ($esMock === false)
+        {
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'test',
+                    'entity'       => 'payout',
+                    'index_prefix' => env('ES_ENTITY_INDEX_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
+                    '--reindex'    => true,
+                ]);
+
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'live',
+                    'entity'       => 'payout',
+                    'index_prefix' => env('ES_ENTITY_INDEX_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
+                    '--reindex'    => true,
+                ]);
+
+            Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'payout']);
+            Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'payout']);
+        }
     }
 }

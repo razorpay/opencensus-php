@@ -72,7 +72,6 @@ class Fetch extends BaseFetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         EsRepository::QUERY,
-        Entity::BALANCE_ID,
         // EsRepository::SEARCH_HITS,
     ];
 
@@ -81,6 +80,7 @@ class Fetch extends BaseFetch
         Entity::MERCHANT_ID,
         Entity::TYPE,
         Entity::METHOD,
+        Entity::BALANCE_ID,
         Entity::STATUS,
     ];
 
