@@ -2,7 +2,6 @@ import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { titleCase } from 'rzp/utils/rzp-utils';
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
@@ -13,7 +12,7 @@ const CustomInput = props => {
   return (
     <div class="Input--custom">
       <div class="Input-label">
-        {titleCase(MIN_AMOUNT_TEXT.emi)} (Optional)
+        {MIN_AMOUNT_TEXT} (Optional)
         <small className="help-content">
           <i class="i i-info-outline" style={{ marginLeft: 4 }} />
           <Popover

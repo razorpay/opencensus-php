@@ -5,15 +5,12 @@ import Button, { AsyncBtn } from 'component/Button';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-export const MIN_AMOUNT_TEXT = {
-  emi: 'EMI amount',
-  general: 'Minimum payable amount',
-};
+export const MIN_AMOUNT_TEXT = 'Minimum due amount';
 
-export const PopoverBodyText = _ => (
+export const PopoverBodyText = (
   <PopoverBody>
     <div>
-      You can set a {MIN_AMOUNT_TEXT.emi} for the first payment made by your
+      You can set a minimum due amount for the first payment made by your
       customer
     </div>
   </PopoverBody>
@@ -35,10 +32,10 @@ export function validateMinAmount(val, maxAmount) {
   }
 
   if (Number(val) > 0 && Number(val) < 1) {
-    return `${MIN_AMOUNT_TEXT.emi} must be atleast ₹1`;
+    return `${MIN_AMOUNT_TEXT} must be atleast ₹1`;
   }
   if (Number(val) >= maxAmount) {
-    return `${MIN_AMOUNT_TEXT.emi} must be less than Amount`;
+    return `${MIN_AMOUNT_TEXT} must be less than Amount`;
   }
 }
 
@@ -95,7 +92,7 @@ export default class EditMinimumAmount extends React.Component {
             value={this.state.first_payment_min_amount * 100}
             currency={currency}
           />{' '}
-          {titleCase(MIN_AMOUNT_TEXT.emi)}
+          {titleCase(MIN_AMOUNT_TEXT)}
           <small className="help-content">
             <i
               class="i i-info-outline"
@@ -115,10 +112,10 @@ export default class EditMinimumAmount extends React.Component {
     if (this.state.isEditableMode) {
       content = (
         <div style={{ marginTop: 4 }}>
-          {MIN_AMOUNT_TEXT.emi}
+          {MIN_AMOUNT_TEXT}
           <Input
             name="first_payment_min_amount"
-            placeholder={titleCase(MIN_AMOUNT_TEXT.emi)}
+            placeholder={titleCase(MIN_AMOUNT_TEXT)}
             addonBefore="₹"
             class="Input--small"
             value={this.state.first_payment_min_amount}
