@@ -525,7 +525,7 @@ class HitachiGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('refund', true);
-s($refund);
+
         $this->refundReverseFailureTestHelper($payment);
     }
 
@@ -535,19 +535,17 @@ s($refund);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->mockFailureResponseCode();
-//        $this->mockServerContentFunction(function (& $content)
-//        {
-//            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
-//        });
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        });
 
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('refund', true);
 
         $hitachi = $this->getLastEntity('hitachi', true);
-        s($hitachi);
-        s($refund);
+
         $this->assertEquals(explode('_', $refund['id'])[1], $hitachi['refund_id']);
     }
 
