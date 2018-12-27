@@ -1100,8 +1100,11 @@ class RefundTest extends TestCase
     public function testCreateRefundProxyAuthInvalidRole()
     {
         $payment = $this->fixtures->create('payment:captured');
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'finance');
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'finance');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
         $this->startTest($payment->getPublicId(), $payment->getAmount());
     }
 

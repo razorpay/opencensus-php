@@ -90,40 +90,10 @@ class Core extends Base\Core
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
 
-        $ftaId = $payout->fundTransferAttempts->first()->getId();
-
-        try
+        if ((isset($input[Entity::TYPE])) and
+            ($input[Entity::TYPE] === Entity::ON_DEMAND))
         {
-            $info = [
-                'fta_id'    => $ftaId,
-                'payout_id' => $payout->getId()
-            ];
-
-            if ((isset($input[Entity::TYPE])) and
-                ($input[Entity::TYPE] === Entity::ON_DEMAND))
-            {
-                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_INIT, $info);
-
-                FundTransfer::dispatch($this->mode, $ftaId);
-
-                $this->trace->info(TraceCode::FTA_DISPATCH_FOR_MERCHANT_COMPLETE, $info);
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $data = $info + [ 'message' => $e->getMessage() ];
-
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTA_DISPATCH_FOR_MERCHANT_FAILED,
-                $data);
-
-            (new Settlement\SlackNotification)->send(
-                'FundTransfer dispatch for merchant failed',
-                $data,
-                $e,
-                1);
+            $this->dispatchFtaInitiate($payout);
         }
 
         return $payout;
@@ -150,7 +120,7 @@ class Core extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        return $this->mutex->acquireAndRelease(
+        $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
             function() use ($input, $merchant)
             {
@@ -160,6 +130,10 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+        $this->dispatchFtaInitiate($payout);
+
+        return $payout;
     }
 
     /**
@@ -498,5 +472,40 @@ class Core extends Base\Core
         $processor .= '\\' . studly_case($type);
 
         return new $processor();
+    }
+
+    protected function dispatchFtaInitiate(Entity $payout)
+    {
+        $ftaId = $payout->fundTransferAttempts->first()->getId();
+
+        $info = [
+            'fta_id'    => $ftaId,
+            'payout_id' => $payout->getId()
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::FTA_DISPATCH_FOR_PAYOUT_INIT, $info);
+
+            FundTransfer::dispatch($this->mode, $ftaId);
+
+            $this->trace->info(TraceCode::FTA_DISPATCH_FOR_PAYOUT_COMPLETE, $info);
+        }
+        catch (\Throwable $e)
+        {
+            $data = $info + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_DISPATCH_FOR_MERCHANT_FAILED,
+                $data);
+
+            (new Settlement\SlackNotification)->send(
+                'FundTransfer dispatch for merchant failed',
+                $data,
+                $e,
+                1);
+        }
     }
 }

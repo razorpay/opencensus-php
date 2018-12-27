@@ -65,6 +65,7 @@ return [
             'fund_transfer_url_suffix'    => env('YESBANK_FUND_TRANSFER_URL_SUFFIX'),
             'payment_status_url_suffix'   => env('YESBANK_PAYMENT_STATUS_URL_SUFFIX')
         ],
+
         'sync' => [
             'mock'                        => env('MOCK_NODAL_REQUEST', false),
             'url'                         => env('YESBANK_NODAL_URL'),

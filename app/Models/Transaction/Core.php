@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
@@ -236,7 +237,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($txn);
 
-            (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
+            $this->saveFeeDetails($txn, $feesSplit);
         });
     }
 
@@ -358,7 +359,7 @@ class Core extends Base\Core
 
             $txn->setPricingRule($pricingRuleId);
         }
-        else if ($merchant->isPrepaid())
+        else if ($merchant->isPrepaid() === true)
         {
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePrepaidFee($txn);
         }
@@ -639,8 +640,9 @@ class Core extends Base\Core
     /**
      * Record and associate a transaction for a payment transfer.
      *
-     * @param  Transfer\Entity      $transfer Transfer entity
-     * @return Transaction\Entity
+     * @param  Transfer\Entity $transfer Transfer entity
+     *
+     * @return array
      */
     public function createFromTransfer(Transfer\Entity $transfer)
     {
@@ -727,7 +729,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     /**
@@ -1459,5 +1461,55 @@ class Core extends Base\Core
         (new Notifier($txn))->notify();
 
         $this->app->events->fire('api.transaction.created', $txn);
+    }
+
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
+    {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'source_id'         => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
+        try
+        {
+            $this->repo->transaction(function() use ($txn, $feesSplit)
+            {
+                foreach ($feesSplit as $feeSplit)
+                {
+                    $feeSplit->transaction()->associate($txn);
+
+                    $this->repo->saveOrFail($feeSplit);
+                }
+
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_CREATED,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'source_id'      => $txn->getEntityId()
+                    ]);
+            });
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL,
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'source_id'      => $txn->getEntityId()
+                ]);
+
+            throw new Exception\LogicException(
+                'Error while recording fee breakup',
+                ErrorCode::SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
+        }
     }
 }

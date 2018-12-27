@@ -236,7 +236,7 @@ class Repository extends Base\Repository
             $query->skip($offset);
         }
 
-        return $query->inRandomOrder()->get();
+        return $query->get();
     }
 
     public function getAttemptsWithIds(

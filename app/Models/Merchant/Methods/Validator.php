@@ -47,6 +47,13 @@ class Validator extends Base\Validator
         'methodBanks'
     ];
 
+    protected static $bulkAssignMethodsRules = [
+        'methods'     => 'required|array',
+        'methods.*'   => 'required|boolean',
+        'merchants'   => 'required|array',
+        'merchants.*' => 'required|string|filled|size:14',
+    ];
+
     protected function validateMethodBanks(array $input)
     {
         if (isset($input['disabled_banks']) === false)

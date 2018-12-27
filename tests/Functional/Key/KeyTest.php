@@ -46,12 +46,17 @@ class KeyTest extends TestCase
     public function testRegenerateKeyWhereMerchantIdIsDifferent()
     {
         $merchant = $this->fixtures->create('merchant:with_keys');
+
         $id = $merchant['id'];
 
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
         $testData = & $this->testData[__FUNCTION__];
+
         $testData['request']['url'] = '/keys/rzp_test_TheTestAuthKey';
 
-        $this->ba->proxyAuth('rzp_test_' . $id);
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
         $this->startTest();
     }
 
@@ -60,10 +65,14 @@ class KeyTest extends TestCase
         $merchant = $this->fixtures->create('merchant:with_keys');
         $id = $merchant['id'];
 
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
         $testData = & $this->testData[__FUNCTION__];
+
         $testData['request']['url'] = '/keys';
 
-        $this->ba->proxyAuth('rzp_test_' . $id);
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
         $content = $this->startTest();
 
         $this->assertEquals(1, count($content['items']));

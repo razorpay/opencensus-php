@@ -331,6 +331,43 @@ return [
         ]
     ],
 
+    'testEditMerchantWithHighRiskThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => 1000,
+                'risk_threshold' => 101
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The risk threshold may not be greater than 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditMerchantWithNullFeeCreditsThreshold' => [
         'request' => [
             'raw' => json_encode([

@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use DB;
 use Carbon\Carbon;
+use DB;
 
 class User extends Base
 {
@@ -11,7 +11,16 @@ class User extends Base
 
     public function setup()
     {
-        $this->fixtures->create('user', ['id' => self::MERCHANT_USER_ID]);
+        $user = $this->fixtures->create('user', ['id' => self::MERCHANT_USER_ID]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
     }
 
     public function create(array $attributes = [])
@@ -31,7 +40,7 @@ class User extends Base
         return $user;
     }
 
-    public function createUserMerchantMapping(array $attributes)
+    public function createUserMerchantMapping(array $attributes, $mode = 'test')
     {
         $userId = $attributes['user_id'];
 
@@ -39,7 +48,7 @@ class User extends Base
 
         $role = $attributes['role'];
 
-        DB::connection('test')->table('merchant_users')
+        DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
@@ -49,15 +58,18 @@ class User extends Base
             ]);
     }
 
-    public function createUserForMerchant(string $merchantId = '10000000000000', array $attributes = [])
+    public function createUserForMerchant(string $merchantId = '10000000000000',
+                                          array $attributes = [],
+                                          $role = 'owner',
+                                          $mode = 'test')
     {
         $user = $this->createEntityInTestAndLive('user', $attributes);
 
         $this->createUserMerchantMapping([
-                'merchant_id' => $merchantId,
-                'user_id'     => $user['id'],
-                'role'        => 'owner',
-            ]);
+                    'merchant_id' => $merchantId,
+                    'user_id'     => $user['id'],
+                    'role'        => $role,
+            ], $mode);
 
         return $user;
     }

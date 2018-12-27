@@ -4584,3 +4584,13 @@ ALTER TABLE payouts
 
 ALTER TABLE balance
     ADD UNIQUE INDEX balance_merchant_id_type_unique (merchant_id, type);
+
+# Inserts default banking pricing for payouts.
+INSERT INTO pricing (id, plan_id, plan_name, product, feature, gateway, payment_method, payment_method_type, auth_type, payment_network, payment_issuer, emi_duration, international, receiver_type, amount_range_active, amount_range_min, amount_range_max, percent_rate, fixed_rate, min_fee, max_fee, org_id, created_at, updated_at, deleted_at, expired_at)
+VALUES
+    ("Bbg7cl6t6I3XA5", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 0, 100000, 0, 500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7dTcURsOr77", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 100000, 2500000, 0, 900, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7e4oKCgaubd", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "fund_transfer", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 2500000, 4294967295, 0, 1500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7eYLkxM7sLP", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 0, 100000, 0, 500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7f0FaUJQOvj", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 100000, 2500000, 0, 900, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL),
+    ("Bbg7fgaDwax03u", "BTo98voDY05ueB", "Banking default plan", "banking", "payout", NULL, "upi", NULL, NULL, NULL, NULL, NULL, 0, NULL, 1, 2500000, 4294967295, 0, 1500, 0, NULL, "100000razorpay", unix_timestamp(), unix_timestamp(), NULL, NULL);

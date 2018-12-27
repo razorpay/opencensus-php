@@ -4,7 +4,6 @@ namespace RZP\Jobs;
 
 use App;
 
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;

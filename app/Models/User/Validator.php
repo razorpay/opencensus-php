@@ -41,6 +41,10 @@ class Validator extends Base\Validator
         Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
+    protected static $editEmailForMerchantRules = [
+        Entity::EMAIL                 => 'filled|email|unique:users,email',
+    ];
+
     protected static $changePasswordRules = [
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
@@ -123,11 +127,9 @@ class Validator extends Base\Validator
     {
         $app = App::getFacadeRoot();
 
-        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+        $dashboardUser = $app['basicauth']->getUser();
 
-        $dashboardUserId = $dashboardHeaders['user_id'];
-
-        if ($input['user_id'] === $dashboardUserId)
+        if ((empty($dashboardUser) === true) or ($input['user_id'] === $dashboardUser->getId()))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
         }
@@ -141,7 +143,7 @@ class Validator extends Base\Validator
 
             if ($role->validateProductRole($input['role'], $input['product']) === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
             }
         }
     }

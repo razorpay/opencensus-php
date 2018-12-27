@@ -39,7 +39,7 @@ class PayoutTest extends TestCase
                 'account_id'   => '1000000lcustba'
             ]);
 
-        $this->setUpMerchantForBusinessBanking(false, 100000);
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
     }
 
     public function testCreatePayout(): array
@@ -64,11 +64,31 @@ class PayoutTest extends TestCase
 
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
 
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
         return $payout;
+    }
+
+    public function testCreatePayoutForAmountLessThanMinFee()
+    {
+        // Minimum fee is INR 5, attempts and asserts success when creating payout for INR 1.
+        $this->ba->privateAuth();
+        $this->startTest();
     }
 
     public function testCreatePayoutToInactiveFundAccount()
@@ -177,7 +197,7 @@ class PayoutTest extends TestCase
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
 
         $this->retryPayout((array) $payout['id']);
 
@@ -371,6 +391,8 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutAttemptSuccess()
     {
+        // FTA initiate happens via sync queue
+
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
 
@@ -394,7 +416,7 @@ class PayoutTest extends TestCase
         {
             $this->assertTestResponse($attempt, 'testPayoutAttemptSuccess');
 
-            $this->assertNull($attempt['batch_fund_transfer_id']);
+            $this->assertNotNull($attempt['batch_fund_transfer_id']);
         }
 
         // Verify payouts
@@ -403,11 +425,12 @@ class PayoutTest extends TestCase
         $this->assertEquals(2, $payouts['count']);
 
         $payouts = $payouts['items'];
+
         foreach ($payouts as $payout)
         {
             $this->assertTestResponse($payout, 'testPayoutEntitySuccess');
 
-            $this->assertNull($payout['batch_fund_transfer_id']);
+            $this->assertNotNull($payout['batch_fund_transfer_id']);
         }
 
         Carbon::setTestNow();
@@ -475,7 +498,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?transaction_id=txn_' . $payout['transaction_id'];
+        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'];
 
         $this->ba->privateAuth();
 

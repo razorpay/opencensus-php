@@ -212,51 +212,6 @@ class CaptureTest extends TestCase
         Mail::assertQueued(CapturedMail::class);
     }
 
-    public function testCaptureWithFeeBreakupException()
-    {
-        $payment = $this->fixtures->create('payment:card_authorized');
-
-        $merchant = $this->getLastEntity('merchant', true);
-
-        $merchant['id'] = $payment['merchant_id'];
-
-        $merchantEntity = (new Merchant\Entity)->fill($merchant);
-
-        $class = Payments\Processor\Processor::class;
-
-        $processor = Mockery::mock($class, [$merchantEntity])
-                        ->makePartial();
-
-        $processor->shouldReceive('saveFeeDetails')
-            ->times(1)
-            ->withAnyArgs()
-            ->andThrow(new Exception\LogicException(
-                    'Error while recording fee breakup',
-                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED));
-
-        $params = ['amount' => 1000000];
-
-        try
-        {
-            $processor->capture($payment, $params);
-        }
-        catch (Exception\LogicException $ex)
-        {
-            $this->assertEquals("BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED", $ex->getCode());
-
-            $this->assertEquals("Error while recording fee breakup", $ex->getMessage());
-
-            $payment = $this->getLastEntity('payment', true);
-
-            $this->assertEquals('authorized', $payment['status']);
-
-            $this->assertNull($payment['captured_at']);
-            return;
-        }
-
-        $this->fail();
-    }
-
     public function testCaptureTwice()
     {
         $payment = $this->fixtures->create('payment:captured')->toArrayPublic();
@@ -1484,10 +1439,10 @@ class CaptureTest extends TestCase
 
     protected function doAuthPaymentAndCatchException($order)
     {
-        return $this->makeRequestAndCatchException(function () use ($order)
+        $this->makeRequestAndCatchException(function() use ($order)
         {
-            $payment = $this->getDefaultPaymentArray();
-            $payment['amount'] = $order->getAmount();
+            $payment             = $this->getDefaultPaymentArray();
+            $payment['amount']   = $order->getAmount();
             $payment['order_id'] = $order->getPublicId();
 
             $content = $this->doAuthPayment($payment);
@@ -1500,20 +1455,5 @@ class CaptureTest extends TestCase
     {
         $this->assertEquals('failed', $payment['status']);
         $this->assertEquals($internalErrorCode, $payment['internal_error_code']);
-    }
-
-    protected function mockProcessorRequest(Merchant\Entity $merchant, $times = 1)
-    {
-        $class = Payments\Processor\Processor::class;
-
-        $processor = Mockery::mock($class, [$merchant])
-                        ->makePartial();
-
-        $processor->shouldReceive('saveFeeDetails')
-            ->times($times)
-            ->withAnyArgs()
-            ->andThrow(new Exception\LogicException(
-                    ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED));
-
     }
 }

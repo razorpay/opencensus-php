@@ -3,22 +3,21 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Feature;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
@@ -134,6 +133,10 @@ class Activate extends Base\Core
         $merchant->activate();
 
         $merchant->holdFunds();
+
+        $originProduct = $this->app['basicauth']->getRequestOriginProduct();
+
+        $merchant->setActivationSource($originProduct);
 
         (new Core)->createBalance($merchant, 'live');
 
@@ -325,6 +328,7 @@ class Activate extends Base\Core
                 'website'                            => $merchant->getWebsite(),
                 'billing_label'                      => $merchant->getBillingLabel(),
                 'email'                              => $merchant->getEmail(),
+                'activation_source'                  => $merchant->getActivationSource(),
                 Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
                 'org'                                => [
                     'business_name' => $org->getBusinessName(),
@@ -346,16 +350,18 @@ class Activate extends Base\Core
         Mail::queue($activationMail);
     }
 
-    public function notifyMerchantForInstantActivation($merchant)
+    public function notifyMerchantForInstantActivation(Entity $merchant)
     {
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
             'merchant' => [
-                Entity::NAME          => $merchant->getName(),
-                Entity::BILLING_LABEL => $merchant->getBillingLabel(),
-                Entity::EMAIL         => $merchant->getEmail(),
-                'org'                 => [
+                Entity::NAME              => $merchant->getName(),
+                Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
+                Entity::EMAIL             => $merchant->getEmail(),
+                Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
+                Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
+                'org'                     => [
                     OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
                     OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
                 ],
@@ -620,6 +626,8 @@ class Activate extends Base\Core
                 // Virtual Account.
                 $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
             }
+
+            $merchantDetails->reload();
 
             // This means that L2 form is also verified.
             if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)

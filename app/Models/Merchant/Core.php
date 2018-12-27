@@ -765,7 +765,7 @@ class Core extends Base\Core
                 'email' => $newEmail,
             ];
 
-            (new User\Core)->edit($selfUser, $userData);
+            (new User\Core)->edit($selfUser, $userData, 'edit_email_for_merchant');
         }
     }
 
