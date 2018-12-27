@@ -648,7 +648,7 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactName()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test user']);
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test']);
 
         $this->fixtures->edit(
             'fund_account',
@@ -663,7 +663,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_name=test user&account_number=2224440041626905';
+        $request['url'] = '/payouts?contact_name=test&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
