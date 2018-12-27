@@ -16,6 +16,7 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID        => 'sometimes|unsigned_id',
             Entity::DESTINATION       => 'sometimes|public_id|max:20',
             Entity::METHOD            => 'sometimes|string|custom',
+            Entity::MODE              => 'sometimes|string|custom',
             Entity::TRANSACTION_ID    => 'sometimes|public_id',
             Entity::UTR               => 'sometimes|string|max:255',
             Entity::CONTACT_NAME      => 'sometimes|string|max:50',
