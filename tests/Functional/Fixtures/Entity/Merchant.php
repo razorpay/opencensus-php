@@ -611,6 +611,11 @@ class Merchant extends Base
         return $this->edit($id, ['fee_bearer' => $feebearer]);
     }
 
+    public function setFeeModel($feeModel, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_model' => $feeModel]);
+    }
+
     /**
      * Setups up a hierarchy of groups, admins and merchants under the
      * test razorpay's organization. This can be very useful in many tests.
