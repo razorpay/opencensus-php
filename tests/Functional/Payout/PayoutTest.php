@@ -287,6 +287,8 @@ class PayoutTest extends TestCase
 
     public function testGetPayouts()
     {
+        $this->createEsIndex();
+        
         $payout = $this->testCreatePayout();
 
         $payout = $this->testCreatePayout();
@@ -662,8 +664,6 @@ class PayoutTest extends TestCase
             ]);
 
         $payout = $this->testCreatePayout();
-
-        $this->createEsIndex();
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
