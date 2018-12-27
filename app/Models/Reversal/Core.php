@@ -4,6 +4,7 @@ namespace RZP\Models\Reversal;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
@@ -113,6 +114,50 @@ class Core extends Base\Core
                     return $reversal;
                 });
             });
+    }
+
+    /**
+     * Create a full reversal for a payout
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return Entity
+     */
+    public function reverseForPayout(Payout\Entity $payout): Entity
+    {
+        $reversalInput = [
+            Entity::AMOUNT   => $payout->getAmount() + $payout->getFees(),
+            Entity::CURRENCY => $payout->getCurrency(),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($payout->getChannel());
+
+        $reversal->merchant()->associate($payout->merchant);
+        $reversal->entity()->associate($payout);
+
+        $reversal->balance()->associate($payout->balance);
+
+        $reversal = $this->repo->transaction(function() use ($reversal)
+        {
+            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($reversal);
+
+            return $reversal;
+        });
+
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_CREATED,
+            [
+                'payout_id' => $payout->getId(),
+                'reversal_id' => $reversal->getId(),
+            ]);
+
+        return $reversal;
     }
 
     protected function create(array $input) : Entity

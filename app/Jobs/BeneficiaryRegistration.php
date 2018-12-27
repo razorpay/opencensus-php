@@ -9,7 +9,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Beneficiary;
 
-class BeneficiaryRegistrationJob extends Job
+class BeneficiaryRegistration extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 5;
 

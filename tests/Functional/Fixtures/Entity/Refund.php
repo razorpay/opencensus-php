@@ -36,7 +36,7 @@ class Refund extends Base
 
         $hdfcRefund = $this->fixtures->create('hdfc:from_refund', ['refund' => $refund]);
 
-        $txn = $this->createTransactionOnRefund($refund);
+        list($txn, $feesSplit) = $this->createTransactionOnRefund($refund);
         $txn->saveOrFail();
 
         $refund->transaction()->associate($txn);
@@ -63,7 +63,7 @@ class Refund extends Base
 
         $refund = $this->build('refund', $attributes);
 
-        $txn = $this->createTransactionOnRefund($refund);
+        list($txn, $feesSplit) = $this->createTransactionOnRefund($refund);
 
         $txn->saveOrFail();
 

@@ -99,11 +99,27 @@ class Service extends Base\Service
         return $payouts->toArrayPublic();
     }
 
-    public function processFailedPayouts(array $input)
+    public function processReversedPayouts(array $input)
     {
-        $data = (new Core)->retryFailedPayouts($input);
+        $data = (new Core)->retryReversedPayouts($input);
 
         return $data;
+    }
+
+    public function getPurposes(): array
+    {
+        return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function postPurpose(array $input): array
+    {
+        (new Validator)->validateInput('create_purpose', $input);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
+
+        return $purposeObj->getAll($this->merchant);
     }
 
     /**

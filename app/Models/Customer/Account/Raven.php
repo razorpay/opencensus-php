@@ -35,7 +35,12 @@ class Raven extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(TraceCode::RAVEN_ASYNC_REQUEST_FAILED, $request);
+            $traceData = array(
+                'error' => $e->getMessage(),
+                'request' => $request,
+            );
+
+            $this->trace->error(TraceCode::RAVEN_ASYNC_REQUEST_FAILED, $traceData);
 
             $success = false;
             $response = $this->raven->sendOtp($request);

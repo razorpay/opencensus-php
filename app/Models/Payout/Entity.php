@@ -19,7 +19,6 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
@@ -43,6 +42,7 @@ class Entity extends Base\PublicEntity
     const DESTINATION_TYPE       = 'destination_type';
     const USER_ID                = 'user_id';
     const PURPOSE                = 'purpose';
+    const PURPOSE_TYPE           = 'purpose_type';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const NOTES                  = 'notes';
@@ -80,8 +80,18 @@ class Entity extends Base\PublicEntity
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 
+    // Additional input/output attributes
+    const CONTACT_NAME    = 'contact_name';
+    const CONTACT_PHONE   = 'contact_phone';
+    const CONTACT_ID      = 'contact_id';
+    const CONTACT_EMAIL   = 'contact_email';
+    const CONTACT_TYPE    = 'contact_type';
+
     // Input keys
     const ACCOUNT_NUMBER = 'account_number';
+
+    // Used only for `visible` array
+    const INTERNAL_STATUS = 'internal_status';
 
     // Relations
     const USER     = 'user';
@@ -124,6 +134,8 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::CURRENCY,
         self::NOTES,
+        self::PURPOSE,
+        self::PURPOSE_TYPE,
         self::METHOD,
         self::FEES,
         self::TAX,
@@ -140,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -155,10 +168,13 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::TAX,
         self::STATUS,
+        self::PURPOSE,
+        self::PURPOSE_TYPE,
         self::UTR,
         self::USER_ID,
         self::USER,
         self::MODE,
+        self::FAILURE_REASON,
         self::CREATED_AT,
     ];
 
@@ -169,11 +185,20 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
         self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        // We want to show the failure reason only if the status is reversed.
+        // This is because we might have intermittent failure reasons even
+        // when the payout is not completely processed (succeeded/failed)
+        self::FAILURE_REASON,
+        // Sometimes, we get the UTR even if the payout has not been processed.
+        // This might cause confusions and hence we show UTR only when either
+        // the payout is in processed or reversed state.
+        self::UTR,
     ];
 
     protected $defaults = [
@@ -186,6 +211,7 @@ class Entity extends Base\PublicEntity
         self::TYPE              => self::DEFAULT,
         self::MODE              => null,
         self::UTR               => null,
+        self::FAILURE_REASON    => null,
     ];
 
     protected $amounts = [
@@ -205,6 +231,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+    ];
+
+    protected $appends = [
+        self::INTERNAL_STATUS,
     ];
 
     protected $ignoredRelations = [
@@ -264,6 +294,11 @@ class Entity extends Base\PublicEntity
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getPurposeType()
+    {
+        return $this->getAttribute(self::PURPOSE_TYPE);
     }
 
     public function getMode()
@@ -366,14 +401,26 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isStatusFailed()
+    public function isStatusReversed()
     {
-        return ($this->getStatus() === Status::FAILED);
+        return ($this->getStatus() === Status::REVERSED);
     }
 
-    public function isStatusProcessedOrFailed(): bool
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
+    public function isStatusFailed()
     {
-        return ($this->isStatusProcessed() or $this->isStatusCreated());
+        return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusProcessedOrReversed(): bool
+    {
+        return ($this->isStatusProcessed() or $this->isStatusReversed());
     }
 
     public function isStatusInitiated()
@@ -446,6 +493,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setUtr`
+     * function, to set the utr.
+     *
+     * @param string|null $utr
+     */
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
@@ -456,6 +510,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setRemarks`
+     * function, to set the bank remarks.
+     *
+     * @param string|null $remarks
+     */
     public function setRemarks(string $remarks = null)
     {
         $this->setAttribute(self::REMARKS, $remarks);
@@ -464,6 +525,16 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setPurpose(string $purpose)
+    {
+        $this->setAttribute(self::PURPOSE, $purpose);
+    }
+
+    public function setPurposeType(string $purposeType)
+    {
+        $this->setAttribute(self::PURPOSE_TYPE, $purposeType);
     }
 
     public function setSettledOn($date)
@@ -491,6 +562,11 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    public function getInternalStatusAttribute()
+    {
+        return $this->getStatus();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
@@ -545,6 +621,31 @@ class Entity extends Base\PublicEntity
         $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
 
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
+    }
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
+    }
+
+    public function setPublicFailureReasonAttribute(array & $attributes)
+    {
+        if ($this->isStatusReversed() === false)
+        {
+            $attributes[self::FAILURE_REASON] = null;
+        }
+    }
+
+    public function setPublicUtrAttribute(array & $attributes)
+    {
+        if ($this->isStatusProcessedOrReversed() === false)
+        {
+            $attributes[self::UTR] = null;
+        }
     }
 
     public function getPricingFeatures()

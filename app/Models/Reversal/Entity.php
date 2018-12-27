@@ -3,31 +3,37 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Transfer;
+use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 class Entity extends Base\PublicEntity
 {
-    use LinkedAccountNotesTrait;
     use NotesTrait;
+    use HasBalance;
+    use LinkedAccountNotesTrait;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
+    const BALANCE_ID            = 'balance_id';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
     const NOTES                 = 'notes';
     const TRANSACTION_ID        = 'transaction_id';
     const TRANSFER              = 'transfer';
+    const CHANNEL               = 'channel';
 
     // Input attribute const
     const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
 
-    // response attribute const
-    const TRANSFER_ID = 'transfer_id';
+    // Response attribute const
+    const TRANSFER_ID           = 'transfer_id';
 
     protected static $sign = 'rvrsl';
 
@@ -39,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
+        self::CHANNEL,
         self::LINKED_ACCOUNT_NOTES,
     ];
 
@@ -48,6 +55,8 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::ENTITY_TYPE,
         self::ENTITY_ID,
+        self::CHANNEL,
+        self::BALANCE_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -62,8 +71,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
-        self::CREATED_AT,
         self::LINKED_ACCOUNT_NOTES,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
@@ -89,12 +98,12 @@ class Entity extends Base\PublicEntity
 
     public function transaction()
     {
-        return $this->belongsTo('RZP\Models\Transaction\Entity');
+        return $this->belongsTo(Transaction\Entity::class);
     }
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function entity()
@@ -105,6 +114,7 @@ class Entity extends Base\PublicEntity
     // -------------------- End Relations -----------------------
 
     // -------------------- Getters -----------------------------
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -120,6 +130,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     // -------------------- End Getters --------------------------
 
     // -------------------- Setters ------------------------------
@@ -128,9 +143,13 @@ class Entity extends Base\PublicEntity
     {
         if ($this->getAttribute(self::ENTITY_TYPE) === E::TRANSFER)
         {
-            $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId(
-                $this->getAttribute(self::ENTITY_ID));
+            $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId($this->getAttribute(self::ENTITY_ID));
         }
+    }
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     // -------------------- End Setters --------------------------

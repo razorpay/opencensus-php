@@ -205,6 +205,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_NOT_FOUND                                 = 'FTA_NOT_FOUND';
     const FTA_CHANNEL_NOT_SUPPORTED                     = 'FTA_CHANNEL_NOT_SUPPORTED';
     const FTA_BENEFICIARY_NOT_REGISTERED                = 'FTA_BENEFICIARY_NOT_REGISTERED';
+    const UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT             = 'UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT';
     const FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED        = 'FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED          = 'FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_SKIPPED                 = 'FUND_TRANSFER_ATTEMPT_SKIPPED';
@@ -659,8 +660,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FATAL_ERROR                       = 'GATEWAY_FATAL_ERROR';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
+    const FTA_RECONCILE_DISPATCH_FAILED             = 'FTA_RECONCILE_DISPATCH_FAILED';
+    const FTA_RECONCILE_JOB                         = 'FTA_RECONCILE_JOB';
+    const FTA_RECONCILE_SKIPPED                     = 'FTA_RECONCILE_SKIPPED';
+    const FTA_RECONCILE_JOB_FAILED                  = 'FTA_RECONCILE_JOB_FAILED';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const INVALID_ATTEMPT_ID                        = 'INVALID_ATTEMPT_ID';
+    const INVALID_FTA_CHANNEL                       = 'INVALID_FTA_CHANNEL';
     const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
     const FTA_FETCHED                               = 'FTA_FETCHED';
     const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
@@ -1055,6 +1061,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_BULK_EXCEPTION                  = 'MERCHANT_TAGS_BULK_EXCEPTION';
 
     const MERCHANT_METHODS_BULK_UPDATE                  = 'MERCHANT_METHODS_BULK_UPDATE';
+    const MERCHANT_METHODS_BULK_EXCEPTION               = 'MERCHANT_METHODS_BULK_EXCEPTION';
     const MERCHANT_CHANNEL_BULK_UPDATE_REQUEST          = 'MERCHANT_CHANNEL_BULK_UPDATE_REQUEST';
     const MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE         = 'MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE';
     const MERCHANT_BULK_UPDATE_REQUEST                  = 'MERCHANT_BULK_UPDATE_REQUEST';
@@ -1156,6 +1163,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_EDIT                                     = 'USER_EDIT';
     const USERS_SEND_OTP_FOR_ACTION                     = 'USERS_SEND_OTP_FOR_ACTION';
     const USERS_VERIFY_OTP_FOR_ACTION                   = 'USERS_VERIFY_OTP_FOR_ACTION';
+    const USERS_SEND_SMS_OTP_FAILED                     = 'USERS_SEND_SMS_OTP_FAILED';
+    const USERS_SEND_EMAIL_OTP_FAILED                   = 'USERS_SEND_EMAIL_OTP_FAILED';
 
 // Trace code for Invitation
     const INVITATION_CREATE                             = 'INVITATION_CREATE';
@@ -1372,6 +1381,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
     const FTA_RECON_SOURCE_UPDATE_SKIPPED               = 'FTA_RECON_SOURCE_UPDATE_SKIPPED';
     const FTA_RECON_SOURCE_UPDATED                      = 'FTA_RECON_SOURCE_UPDATED';
+    const FTA_RECON_FAILED                              = 'FTA_RECON_FAILED';
     const FTA_STATUS_FAILED                             = 'FTA_STATUS_FAILED';
     const FTA_STATUS_FAILED_MERCHANT_ERROR              = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
 
@@ -1454,16 +1464,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST    = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
     const PAYOUT_FOR_PAYMENT_CREATE_REQUEST          = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
     const PAYOUT_CREATED                             = 'PAYOUT_CREATED';
+    const PAYOUT_REVERSAL_INITIATED                  = 'PAYOUT_REVERSAL_INITIATED';
+    const PAYOUT_REVERSAL_CREATED                    = 'PAYOUT_REVERSAL_CREATED';
 
     const FTA_MERCHANT_BENE_REG_INIT          = 'FTA_MERCHANT_BENE_REG_INIT';
     const FTA_MERCHANT_BENE_REG_COMPLETE      = 'FTA_MERCHANT_BENE_REG_COMPLETE';
-    const FTA_DISPATCH_FOR_MERCHANT_INIT      = 'FTA_DISPATCH_FOR_MERCHANT_INIT';
+    const FTA_DISPATCH_FOR_PAYOUT_INIT        = 'FTA_DISPATCH_FOR_PAYOUT_INIT';
     const FTA_MERCHANT_FUND_TRANSFER_INIT     = 'FTA_MERCHANT_FUND_TRANSFER_INIT';
     const FTA_DISPATCH_FOR_MERCHANT_FAILED    = 'FTA_DISPATCH_FOR_MERCHANT_FAILED';
     const FTA_PROCESSING_FOR_MERCHANT_FAILED  = 'FTA_PROCESSING_FOR_MERCHANT_FAILED';
-    const FTA_DISPATCH_FOR_MERCHANT_COMPLETE  = 'FTA_DISPATCH_FOR_MERCHANT_COMPLETE';
+    const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_MERCHANT_FUND_TRANSFER_COMPLETE = 'FTA_MERCHANT_FUND_TRANSFER_COMPLETE';
     const FTA_DISPATCH_FOR_MERCHANT_DELETED   = 'FTA_DISPATCH_FOR_MERCHANT_DELETED';
+    const FTA_RECONCILIATION_JOB_DELETED      = 'FTA_RECONCILIATION_JOB_DELETED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

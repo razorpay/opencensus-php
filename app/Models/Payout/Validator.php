@@ -34,7 +34,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
+        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
@@ -50,10 +50,11 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $merchantPayoutRules = [
-        Entity::PURPOSE         => 'required|string|max:30|in:settlement',
+        Entity::PURPOSE         => 'required|string|max:30|in:payout',
         Entity::METHOD          => 'sometimes|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
@@ -67,6 +68,11 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+    ];
+
+    protected static $createPurposeRules = [
+        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash',
+        Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
     ];
 
     protected static $merchantPayoutOnDemandRules = [
@@ -96,6 +102,7 @@ class Validator extends Base\Validator
     {
         // TODO: Need to do similar stuff for refund also
 
+        /** @var Entity $payout */
         $payout = $this->entity;
 
         // In case of merchant payouts, payout does not have a fund account.
@@ -148,10 +155,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
                 null,
                 [
-                    'amount'            => $amount,
-                    'mode'              => $mode,
-                    'min_rtgs_amount'   => $minRtgsAmount,
-                    'max_imps_amount'   => $maxImpsAmount,
+                    'amount'          => $amount,
+                    'mode'            => $mode,
+                    'min_rtgs_amount' => $minRtgsAmount,
+                    'max_imps_amount' => $maxImpsAmount,
                 ]);
         }
 
@@ -163,10 +170,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE,
                 null,
                 [
-                    'amount'            => $amount,
-                    'mode'              => $mode,
-                    'account_type'      => $accountType,
-                    'fund_account_id'   => $this->entity->fundAccount->getId(),
+                    'amount'          => $amount,
+                    'mode'            => $mode,
+                    'account_type'    => $accountType,
+                    'fund_account_id' => $this->entity->fundAccount->getId(),
                 ]);
         }
     }

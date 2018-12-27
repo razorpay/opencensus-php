@@ -4292,6 +4292,14 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
+        if (($merchantMethods === null) or
+            ($merchantMethods->isNetbankingEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT
+            );
+        }
+
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();

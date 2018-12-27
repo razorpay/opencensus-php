@@ -4,16 +4,21 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Batch;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Batch\Entity;
 use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
@@ -164,7 +169,9 @@ abstract class NodalAccount extends Base\Core
 
                 $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
 
-                $attempt->source->setStatus(Attempt\Status::INITIATED);
+                $sourceStatus = $this->getSourceStatusForInitiated($attempt);
+
+                $attempt->source->setStatus($sourceStatus);
 
                 $this->trace->info(
                     TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
@@ -185,25 +192,49 @@ abstract class NodalAccount extends Base\Core
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
     }
 
+    protected function getSourceStatusForInitiated(Attempt\Entity $attempt): string
+    {
+        $sourceEntityName = $attempt->source->getEntity();
+
+        switch ($sourceEntityName)
+        {
+            case Constants\Entity::SETTLEMENT:
+            case Constants\Entity::PAYOUT:
+            case Constants\Entity::REFUND:
+                return $this->getInitiatedStatusForEntity($sourceEntityName);
+
+            default:
+                throw new LogicException('Unrecognized source entity: ' . $sourceEntityName);
+        }
+    }
+
+    protected function getInitiatedStatusForEntity(string $sourceEntityName): string
+    {
+        /** @var Payout\Status|Settlement\Status|Refund\Status $entityStatusClass */
+        $entityStatusClass = Constants\Entity::getEntityNamespace($sourceEntityName) . '\\Status';
+
+        return $entityStatusClass::INITIATED;
+    }
+
     /**
      * It'll create batchFundTransfer entity only if its not created
      */
     protected function createBatchFundTransferEntity()
     {
-        $this->batchFundTransfer = new Entity;
+        $this->batchFundTransfer = new Batch\Entity;
 
         $input = [
-            Entity::TYPE              => $this->type,
-            Entity::CHANNEL           => $this->channel,
-            Entity::AMOUNT            => $this->amount,
-            Entity::FEES              => $this->fees,
-            Entity::TAX               => $this->tax,
-            Entity::TOTAL_COUNT       => 1,
-            Entity::TRANSACTION_COUNT => $this->txnsCount,
-            Entity::INITIATED_AT      => time(),
-            Entity::API_FEE           => 0,
-            Entity::GATEWAY_FEE       => 0,
-            Entity::URLS              => null,
+            Batch\Entity::TYPE              => $this->type,
+            Batch\Entity::CHANNEL           => $this->channel,
+            Batch\Entity::AMOUNT            => $this->amount,
+            Batch\Entity::FEES              => $this->fees,
+            Batch\Entity::TAX               => $this->tax,
+            Batch\Entity::TOTAL_COUNT       => 1,
+            Batch\Entity::TRANSACTION_COUNT => $this->txnsCount,
+            Batch\Entity::INITIATED_AT      => time(),
+            Batch\Entity::API_FEE           => 0,
+            Batch\Entity::GATEWAY_FEE       => 0,
+            Batch\Entity::URLS              => null,
         ];
 
         $this->batchFundTransfer->build($input);

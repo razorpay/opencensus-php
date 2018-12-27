@@ -34,6 +34,13 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateFundAccountInactiveContact()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'active' => 0]);
+
+        $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccount()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

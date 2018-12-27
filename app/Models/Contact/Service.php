@@ -31,4 +31,20 @@ class Service extends Base\Service
 
         $this->entityRepo = $this->repo->contact;
     }
+
+    public function getTypes(): array
+    {
+        return (new Type)->getAll($this->merchant);
+    }
+
+    public function postType(array $input): array
+    {
+        (new Validator)->validateInput('create_type', $input);
+
+        $typeObj = new Type;
+
+        $typeObj->addNewCustom($input[Entity::TYPE], $this->merchant);
+
+        return $typeObj->getAll($this->merchant);
+    }
 }

@@ -297,7 +297,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifyPayoutReconProcessForYesbankVpa();
 
-        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }

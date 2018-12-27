@@ -163,7 +163,7 @@ class SubMerchant extends Base
 
                 $this->merchantCore->edit($subMerchant, $websiteUpdateData);
 
-                $response = (new Merchant\Activate)->activate($subMerchant);
+                $response = (new Merchant\Activate)->activate($subMerchant, $subMerchant->merchantDetail);
 
                 if ($response[ME::ACTIVATED] === false)
                 {

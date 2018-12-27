@@ -12,14 +12,15 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const REMARK            = 'remark';
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-    const MODE              = 'mode';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const REMARK                = 'remark';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const RRN                   = 'rrn';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const MODE                  = 'mode';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     /**
      * This will update the status based on the transfer API response
@@ -76,13 +77,17 @@ class StatusProcessor extends BaseRowProcessor
                 ]);
         }
 
+        // TODO: Use yesbank/transfer/request.php while reading from the response.
+
         $this->parsedData = [
-            self::UTR              => $response[self::UTR],
-            self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
-            self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE],
-            self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::MODE             => Mode::getInternalModeFromExternalMode($response[self::MODE]),
+            self::UTR                   => $response[self::UTR],
+            self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
+            self::REMARK                => $response[self::REMARK],
+            self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
+            self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
+            self::MODE                  => Mode::getInternalModeFromExternalMode($response[self::MODE]),
+            // Won't be present in case of a successful response
+            self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
         ];
 
         $this->trace->info(

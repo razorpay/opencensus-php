@@ -142,6 +142,21 @@ class PaymentValidationTest extends TestCase
         'The callback url format is invalid.');
     }
 
+    public function testInvalidCallbackUrlDomainCheck()
+    {
+        $this->fixtures->merchant->addFeatures(['callback_url_validation']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['callback_url'] = 'https://google.com';
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+                $this->doAuthPayment($payment);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class,
+        'Invalid callback url');
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Contact;
 
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Models\Settings;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -16,28 +20,94 @@ final class Type
     const VENDOR   = 'vendor';
     const SELF     = 'self';
 
-    public static function getAll(): array
+    // Settings module key
+    const TYPES = 'types';
+
+    public static $defaults = [
+        self::CUSTOMER,
+        self::EMPLOYEE,
+        self::VENDOR,
+        self::SELF,
+    ];
+
+    public static function isInDefaults(string $type): bool
     {
-        return [
-            self::CUSTOMER,
-            self::EMPLOYEE,
-            self::VENDOR,
-            self::SELF,
-        ];
+        return (in_array($type, self::$defaults, true) === true);
     }
 
-    public static function isValid(string $type): bool
+    public function setTypeForContact(Entity $contact, string $type)
     {
-        $key = __CLASS__ . '::' . strtoupper($type);
-
-        return ((defined($key) === true) and (constant($key) === $type));
-    }
-
-    public static function validateType(string $type)
-    {
-        if (self::isValid($type) === false)
+        // If $type is one of the defaults, set and return
+        if (self::isInDefaults($type) === true)
         {
-            throw new BadRequestValidationFailureException('Not a valid contact type: ' . $type);
+            $contact->setType($type);
+            return;
         }
+
+        //
+        // If type sent is not one of the defaults defined. We hence fetch and
+        // check against the custom list, if available.
+        //
+        $custom = $this->getCustom($contact->merchant);
+
+        if (in_array($type, $custom, true) === true)
+        {
+            $contact->setType($type);
+            return;
+        }
+
+        //
+        // If not found anywhere, throw an exception. We expect type to be
+        // defined before being used.
+        //
+        throw new BadRequestValidationFailureException(
+            'Invalid type: ' . $type,
+            Entity::TYPE,
+            ['contact_id' => $contact->getId()]);
+    }
+
+    public function getAll(Merchant\Entity $merchant): array
+    {
+        $custom = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        $all = array_merge(self::$defaults, $custom);
+
+        $purposes = new PublicCollection;
+
+        foreach ($all as $purpose => $type)
+        {
+            $purposes->push([Entity::TYPE => $type]);
+        }
+
+        return $purposes->toArrayWithItems();
+    }
+
+    public function getCustom(Merchant\Entity $merchant): array
+    {
+        return array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+    }
+
+    public function addNewCustom(string $type, Merchant\Entity $merchant)
+    {
+        if ((self::isInDefaults($type)) or
+            ($this->getSettingsAccessor($merchant)->exists($type) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                "Type '$type' is already defined and cannot be added.",
+                Entity::TYPE);
+        }
+
+        $data = [
+            $type => ''
+        ];
+
+        $this->getSettingsAccessor($merchant)
+             ->upsert($data)
+             ->save();
+    }
+
+    protected function getSettingsAccessor(Merchant\Entity $merchant): Settings\Accessor
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);
     }
 }

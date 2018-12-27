@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Service
@@ -52,6 +53,12 @@ class Service extends Base\Service
         {
             /** @var Customer\Entity $source */
             $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+        }
+
+        if (optional($source)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
 
         $entity = $this->core->create($input, $this->merchant, $source);

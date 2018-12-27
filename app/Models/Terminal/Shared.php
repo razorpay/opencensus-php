@@ -86,6 +86,7 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
+    const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

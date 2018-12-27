@@ -764,7 +764,7 @@ return [
                 'fund_account_id' => 'fa_100000000000fa',
                 'currency'        => 'INR',
                 'amount'          => 800,
-                'status'          => 'created',
+                'status'          => 'processing',
             ]
         ],
 

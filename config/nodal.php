@@ -64,7 +64,7 @@ return [
             'ben_add_url_suffix'          => env('YESBANK_BEN_ADD_URL_SUFFIX'),
             'fund_transfer_url_suffix'    => env('YESBANK_FUND_TRANSFER_URL_SUFFIX'),
             'payment_status_url_suffix'   => env('YESBANK_PAYMENT_STATUS_URL_SUFFIX')
-        ]
+        ],
     ],
 
     'kotak' => [

@@ -21,14 +21,14 @@ class Repository extends Base\Repository
     public function findOrFail($id, $columns = array('*'))
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->merchantIdAndType($id)
                     ->firstOrFail();
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->merchantIdAndType($id)
                     ->firstOrFailPublic();
     }
 
@@ -37,7 +37,7 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-                                      ->where(Entity::MERCHANT_ID, '=', $id)
+                                      ->merchantIdAndType($id)
                                       ->firstOrFail();
     }
 
@@ -227,8 +227,7 @@ class Repository extends Base\Repository
     {
         $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
 
-        return $query->where(Entity::MERCHANT_ID, $merchantId)
-                     ->where(Entity::TYPE, $balanceType)
+        return $query->merchantIdAndType($merchantId, $balanceType)
                      ->first();
     }
 
@@ -241,8 +240,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->where(Entity::TYPE, Type::BANKING)
-                    ->merchantId($this->merchant->getId())
+                    ->merchantIdAndType($this->merchant->getId(), Type::BANKING)
                     ->firstOrFailPublic();
     }
 }

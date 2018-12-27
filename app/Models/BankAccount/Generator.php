@@ -76,7 +76,7 @@ class Generator extends Base\Core
 
         $providerBank = $this->getProviderBank($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $providerBank);
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount, $providerBank);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -199,14 +199,27 @@ class Generator extends Base\Core
         return $bankAccount;
     }
 
-    protected function getBankAccountInput(string $accountNumber, string $beneficiaryName, string $provider): array
+    protected function getBankAccountInput(
+        string $accountNumber,
+        VirtualAccount\Entity $virtualAccount,
+        string $provider): array
     {
         $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
 
         $merchantDetails = [
             Entity::ACCOUNT_NUMBER     => $accountNumber,
-            Entity::BENEFICIARY_NAME   => $beneficiaryName,
+            Entity::BENEFICIARY_NAME   => $virtualAccount->getName(),
         ];
+
+        //
+        // Todo: Refactor this!
+        // This has been commented again for few days, we will continue to use
+        // existing nodal account with a copied terminal having different gateway_merchant_id2.
+        //
+        // if ($virtualAccount->isBalanceTypeBanking() === true)
+        // {
+        //     $bankAccountInput[Entity::IFSC_CODE] = VirtualAccount\Provider::IFSC_YESBANK_X;
+        // }
 
         return array_merge($bankAccountInput, $merchantDetails);
     }

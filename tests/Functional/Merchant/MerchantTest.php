@@ -73,7 +73,9 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $this->startTest();
     }
@@ -84,7 +86,11 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
 
-        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user['id'], '1X4hRFHFx4UiXt', 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt', $user['id']);
 
         $this->startTest();
     }
@@ -142,8 +148,12 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
         $this->startTest();
 
-        $this->ba->proxyAuthLive();
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+
         $this->testData[__FUNCTION__]['response']['content']['balance'] = 0;
+
         $this->startTest();
     }
 
@@ -414,6 +424,8 @@ class MerchantTest extends TestCase
     {
         $content = $this->createMerchant();
 
+        $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
         $this->ba->adminAuth();
 
         Event::fake(false);
@@ -430,6 +442,10 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner()->getEmail());
     }
 
     public function testEditMerchantWhitelistedIpsLive()
@@ -3019,9 +3035,9 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode='test')
     {
-        DB::table('merchant_users')
+        DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,

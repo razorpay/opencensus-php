@@ -39,6 +39,9 @@ class Provider
         self::DASHBOARD => 'RAZR0000001',
     ];
 
+    // Ifsc code of new yes bank current account for RazorpayX.
+    const IFSC_YESBANK_X = 'YESB0000022';
+
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
     // Further details can be derived from this IFSC, but are not required
@@ -161,7 +164,8 @@ class Provider
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            $this->getBharatQrUpiTlv($merchantIdentifiers),
+            $this->getMerchantAccountIdentifier(Tags::MERCHANT_ACCOUNT, $merchantIdentifiers),
+            $this->getBharatQrUpiTlv($qrCode, $merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
@@ -195,7 +199,23 @@ class Provider
         return null;
     }
 
-    protected function getPointOfInitiation($qrCode)
+    protected function getMerchantAccountIdentifier(string $tag, array $merchantIdentifiers)
+    {
+        if ((isset($merchantIdentifiers['account_number']) === true) and
+            (isset($merchantIdentifiers['ifsc_code']) === true))
+        {
+            $value = $merchantIdentifiers['account_number'] . $merchantIdentifiers['ifsc_code'];
+
+            if (empty($value) === false)
+            {
+                return $tag . $this->getLengthAndValue($value);
+            }
+        }
+
+        return null;
+    }
+
+    protected function getPointOfInitiation(QrCode\Entity $qrCode)
     {
         if (empty($qrCode->getAmount()) === true)
         {
@@ -206,7 +226,7 @@ class Provider
         return Constants::DYNAMIC_POI;
     }
 
-    protected function getBharatQrUpiTlv(array $merchantIdentifiers)
+    protected function getBharatQrUpiTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
         $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
 
@@ -220,7 +240,16 @@ class Provider
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
         $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue($merchantVpa);
 
-        $upiString = $rupayRidTlv . $merchantVpaTlv;
+        $amountTlv = '';
+
+        $amount = (string) ($qrCode->getFormattedAmount());
+
+        if (empty($amount) === false)
+        {
+            $amountTlv = Tags::UPI_VPA_AMOUNT . $this->getLengthAndValue($amount);
+        }
+
+        $upiString = $rupayRidTlv . $merchantVpaTlv . $amountTlv;
 
         return Tags::UPI_VPA . strlen($upiString) . $upiString;
     }
@@ -340,6 +369,10 @@ class Provider
             if ($bharatQrNetwork === Network::RUPAY)
             {
                 $identifiers['rupay_tid'] = $terminal->getGatewayTerminalId();
+
+                $identifiers['account_number'] = $terminal->getAccountNumber();
+
+                $identifiers['ifsc_code'] = $terminal->getIfscCode();
             }
 
             $terminal = $terminal->toArray();

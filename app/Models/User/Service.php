@@ -33,6 +33,8 @@ class Service extends Base\Service
 
         $user = null;
 
+        $tokenData = null;
+
         /*
          * If we have an invitation token, the user may have created an account
          * in the meantime. $user will be equal to the user with the same email
@@ -117,8 +119,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $businessName,
+                'name'  => $businessName
             ];
+
+            if (empty($tokenData) === false)
+            {
+                $merchantInputData['org_id'] = $tokenData['org_id'];
+            }
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
@@ -557,46 +564,83 @@ class Service extends Base\Service
         }
     }
 
+    public function syncMerchantUserOnProducts(string $merchantId)
+    {
+        $userRole = null;
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $user = $this->auth->getUser();
+
+        $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                                     $user->getId(),
+                                                                null,
+                                                                     $switchProduct);
+        if (empty($userMapping) === false)
+        {
+            $currentUserRole = $userMapping->pivot->role;
+
+            if (in_array($currentUserRole, Role::BANKING_ROLES, true) === true)
+            {
+                (new Merchant\Service)->switchProductMerchant($product);
+
+                $userRole = $currentUserRole;
+            }
+        }
+
+        return $userRole;
+    }
     /**
      * This will assign applicable role to the product by checking it's origin.
      * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
      * @return null|\RZP\Models\User\Entity
      * @throws \RZP\Exception\BadRequestException
      */
-    public function addProductSwitchRole()
+    public function addProductSwitchRole($product)
     {
         $user = $this->auth->getUser();
 
-        $product = $this->auth->getRequestOriginProduct();
+        $product = $product ?? $this->auth->getRequestOriginProduct();
 
         $merchantId = $this->auth->getMerchantId();
 
         // Check if a role for this user already exists with the existing product merchant user mapping.
         $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
-            $user->getId(),
-            null,
-            $product);
+                                                                     $user->getId(),
+                                                                     null,
+                                                                     $product);
 
-        if (empty($userMapping) === false) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
+        if (empty($userMapping) === true)
+        {
+            // Since we have user roles in headers we can get the opposite product easily.
+            // In switch we have to assign the role for merchants with only the opposite product side role.
+            // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
+
+            $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                $user->getId(),
+                null,
+                $switchProduct);
+
+            $productRole = null;
+
+            if (empty($userMapping) === false)
+            {
+                $productRole = $userMapping->pivot->role;
+            }
+
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => $productRole,
+                'merchant_id' => $merchantId,
+                'product'     => $product,
+            ];
+
+            $user = (new User\Core)->updateUserMerchantMapping($user, $userMerchantMappingInputData);
         }
-
-        // Since we have user roles in headers we can get the opposite product easily.
-        // In switch we have to assign the role for merchants with only the opposite product side role.
-        // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
-
-        $dashboardHeaders = $this->auth->getDashboardHeaders();
-
-        $productRole = $dashboardHeaders['user_role'] ?? $dashboardHeaders['user_banking_role'];
-
-        $userMerchantMappingInputData = [
-            'action'      => 'attach',
-            'role'        => $productRole,
-            'merchant_id' => $merchantId,
-            'product'     => $product,
-        ];
-
-        $user = (new User\Core())->updateUserMerchantMapping($user, $userMerchantMappingInputData);
 
         return $user;
     }

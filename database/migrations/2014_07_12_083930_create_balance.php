@@ -65,6 +65,7 @@ class CreateBalance extends Migration
             $table->index(Balance::CREATED_AT);
             $table->index(Balance::MERCHANT_ID);
             $table->index(Balance::ACCOUNT_NUMBER);
+            $table->unique([Balance::MERCHANT_ID, Balance::TYPE]);
         });
     }
 

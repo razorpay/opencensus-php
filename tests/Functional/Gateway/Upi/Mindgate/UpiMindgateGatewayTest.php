@@ -844,7 +844,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         /*
             Only api success is checked , as the rest of the validation
-            is alreay done in testUnexpectedPaymentSuccess
+            is already done in testUnexpectedPaymentSuccess
         */
         $this->assertTrue($response['success']);
 
@@ -863,5 +863,115 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals(1, $upiEntities['count']);
 
         $this->assertEquals(1, $transactionEntities['count']);
+    }
+
+    public function testIntentTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_mindgate_intent_tpv_terminal');
+
+        $this->fixtures->merchant->enableTPV();
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $this->createOrder([
+            'amount'         => 50000,
+            'currency'       => 'INR',
+            'receipt'        => 'rcptid42',
+            'method'         => 'upi',
+            'bank'           => 'RATN',
+            'account_number' => '04030403040304',
+        ]);
+
+        $order = $this->getDbLastEntity('order');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['order_id'] = $order->getPublicId();
+        $this->payment['bank'] = $order->getBank();
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('UPIMGTEIntTpvl', $payment['terminal_id']);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals(
+            [
+                'success' => true
+            ],
+            $response);
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertNotNull($upi['status_code']);
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->capturePayment($payment->getPublicId(), $payment['amount']);
+
+        $payment->reload();
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
+    public function testInitiateIntentTpvFailedPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_mindgate_intent_tpv_terminal');
+
+        $this->fixtures->merchant->enableTPV();
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $this->createOrder([
+            'amount'         => 50000,
+            'currency'       => 'INR',
+            'receipt'        => 'rcptid42',
+            'method'         => 'upi',
+            'bank'           => 'RATN',
+            'account_number' => '04030403040304',
+        ]);
+
+        $order = $this->getDbLastEntity('order');
+
+        $data = $this->testData[__FUNCTION__];
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+        $this->payment['order_id'] = $order->getPublicId();
+        $this->payment['bank'] = $order->getBank();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'intent_tpv')
+            {
+                $content[1] = 'FAILURE';
+                $content[2] = 'Transaction Initialization Failed';
+            }
+        });
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
     }
 }

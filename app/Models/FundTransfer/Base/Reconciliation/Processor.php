@@ -5,12 +5,16 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\FundTransfer\Attempt\Entity;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 
 abstract class Processor extends Base\Core
@@ -43,7 +47,6 @@ abstract class Processor extends Base\Core
 
     abstract protected function verifySettlements(array $input);
 
-
     public function __construct()
     {
         parent::__construct();
@@ -51,6 +54,17 @@ abstract class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
+    /**
+     * This function is called for reconciling (only updating)
+     * file based as well as for api based.
+     *
+     * Also, this function is called only by the cron (route) and
+     * is not called via initiate transfer route internally.
+     *
+     * @param $input
+     *
+     * @return mixed
+     */
     public function process($input)
     {
         $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel);
@@ -95,7 +109,9 @@ abstract class Processor extends Base\Core
             {
                 foreach ($data as $row)
                 {
-                    $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
+                    // $row will be an array of data (row taken from excel)
+                    // in case of file based channel and it will be FTA
+                    // entity in case of API based channel
 
                     $entity = $this->reconcileEntity($row);
 
@@ -107,6 +123,10 @@ abstract class Processor extends Base\Core
                     else
                     {
                         $this->allReconciledRows[] = $entity;
+
+                        // When status is run via cron, we dispatch the
+                        // recon job directly for both file and API.
+                        $this->dispatchFtaForReconProcess($entity);
                     }
                 }
             }
@@ -131,11 +151,44 @@ abstract class Processor extends Base\Core
 
     protected function reconcileEntity($row)
     {
+        $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
+
         $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
 
         $fta = (new $rowProcessorNamespace($row))->process();
 
         return $fta;
+    }
+
+    protected function dispatchFtaForReconProcess(Entity $attempt)
+    {
+        // TODO: Allow for all, after testing payouts.
+        if ($attempt->getSourceType() !== Type::PAYOUT)
+        {
+            return;
+        }
+
+        try
+        {
+            //
+            // Dispatching in 5 sec as all the operation are happening in queue
+            // and all the queues are trying to acquire log in fta id
+            // to avoid the mutex lock issue we are dispatching the job with some delay
+            // so that current lock will be release before next job starts
+            //
+            AttemptsReconJob::dispatch($this->mode, $attempt->getId())->delay(5);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_RECONCILE_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
     }
 
     protected function sendEmail(string $message = null)
@@ -181,7 +234,6 @@ abstract class Processor extends Base\Core
 
         return $summary;
     }
-
 
     protected function startVerification($data): array
     {
