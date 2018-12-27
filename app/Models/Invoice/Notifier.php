@@ -7,9 +7,10 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
@@ -338,24 +339,72 @@ class Notifier extends Base\Core
     {
         $merchant = $this->invoice->merchant;
 
+        $defaultTemplate = 'sms.invoice';
+        $defaultParams   = [
+            'merchant_name' => $merchant->getBillingLabel(),
+            'invoice_link'  => $this->invoice->getShortUrl(),
+            'amount'        => $this->invoice->getAmount() / 100,
+        ];
+
+        $custom         = $this->getCustomRavenTemplateAndParams($merchant);
+        $customTemplate = $custom['template'];
+        $customParams   = $custom['params'];
+        $customSender   = $custom['sender'];
+
         $request = [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.invoice",
-            'template' => 'sms.invoice',
-            'params'   => [
-                'merchant_name' => $merchant->getBillingLabel(),
-                'invoice_link'  => $this->invoice->getShortUrl(),
-                'amount'        => $this->invoice->getAmount() / 100,
-            ]
+            'template' => $customTemplate ?? $defaultTemplate,
+            'params'   => $customParams ?? $defaultParams,
         ];
+
+        if ($customSender !== null)
+        {
+            $request['sender'] = $customSender;
+        }
 
         $this->trace->info(
             TraceCode::INVOICE_RAVEN_REQUEST,
             [
                 'invoice_id' => $this->invoice->getId(),
-                'request' => $request,
+                'request'    => $request,
             ]);
 
         return $request;
+    }
+
+    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
+    {
+        $template = $params = $sender = null;
+
+        switch ($merchant->getId())
+        {
+            case Preferences::MID_RBLCARD:
+            case Preferences::MID_AMIT_RBLCARD:
+
+                $template = 'sms.custom_invoice.rbl_card';
+                $sender   = 'RBLCRD';
+                $params   = [
+                    'receipt'      => $this->invoice->getReceipt(),
+                    'invoice_link' => $this->invoice->getShortUrl(),
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBLLOAN:
+            case Preferences::MID_AMIT_RBLLOAN:
+
+                $template = 'sms.custom_invoice.rbl_loan';
+                $sender   = 'RBLBNK';
+                $params   = [
+                    'invoice_link' => $this->invoice->getShortUrl(),
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+        }
+
+        return ['template' => $template, 'params' => $params, 'sender' => $sender];
     }
 }

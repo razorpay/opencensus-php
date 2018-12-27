@@ -21,6 +21,8 @@ class Transfer extends Base
 
     protected $entity = null;
 
+    public $transferType = '';
+
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
@@ -83,6 +85,8 @@ class Transfer extends Base
         $this->trace->info(
             TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
 
+        $this->transferType = $this->getPaymentType($this->entity, $amount);
+
         $jsonRequest  = json_encode([
                 Constants::TRANSFER_REQUEST_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
@@ -92,7 +96,7 @@ class Transfer extends Base
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
-                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
+                Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
                 Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
