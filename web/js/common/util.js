@@ -256,3 +256,27 @@ export function intersect(a, b) {
     return b.indexOf(e) > -1;
   });
 }
+
+/**
+ *
+ * @param {String} path - path of data member with dots as string type
+ * @param {String} value - value of variable
+ * @param {Object} obj - object where value needs to be inserted
+ */
+export function dotStringToObj(path, value, obj) {
+  const parts = path.split('.');
+  let last = parts.pop();
+
+  // converts if numeric for array
+  last = Number(last) || last;
+
+  while ((part = parts.shift())) {
+    // converts if numeric for array
+    part = Number(part) || part;
+
+    if (typeof obj[part] !== 'object') obj[part] = {};
+    obj = obj[part];
+  }
+  obj[last] = value;
+  var part;
+}
