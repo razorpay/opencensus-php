@@ -1558,11 +1558,4 @@ class Service extends Base\Service
 
         return $token;
     }
-
-    public function payoutVpa($input, $type)
-    {
-        $data = $this->getNewProcessor()->payoutVpa($input, $type);
-
-        return $data;
-    }
 }
