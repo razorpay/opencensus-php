@@ -178,7 +178,7 @@ trait RequestHandlerTrait
     protected function authorizeTransaction($gatewayPayment)
     {
         $requestArray = [
-            Fields::TRAN_ID       => $gatewayPayment[ Entity::GATEWAY_TRANSACTION_ID ],
+            Fields::TRAN_ID       => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
             Fields::AUTH_AMOUNT   => $this->input['payment']['amount'],
             Fields::CURRENCY_CODE => '356',
         ];

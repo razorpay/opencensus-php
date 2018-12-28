@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
             $attributes = $this->getMappedAttributes($response);
 
-            $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, 'false');
+            $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
 
             $request = [
                 'method' => 'direct',
