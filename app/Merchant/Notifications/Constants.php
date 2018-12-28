@@ -98,6 +98,7 @@ class Constants
             'description' => 'Your Android SDK needs an update to conform with Google Play\'s new policy. Update required before 9 Jan',
             'start_ts'    => 1545996600,
             'end_ts'      => 1547094600,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/android.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
