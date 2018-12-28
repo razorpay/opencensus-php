@@ -33,7 +33,6 @@ class Preferences
     const MID_ANGEL_BROKING         = 'AC4DJNMIX9xXOz';
     const MID_SHELLHATCH            = 'A7W1rwbYMRmn6M';
     const MID_PAISABAZAAR_MARKETING = 'B1uh6CFFBKk35S';
-    const MID_FLYREMIT              = 'BFnwkJtHkMqswv';
     const MID_AMIT_RBLCARD          = 'BcVn9Oy1aSkcOa';
     const MID_AMIT_RBLLOAN          = 'BcVzB5W2m4noKJ';
     const MID_RBLCARD               = 'BYUXW3iBH0P0zU';
@@ -136,7 +135,6 @@ class Preferences
         self::MID_ANGEL_BROKING,
         self::MID_SHELLHATCH,
         self::MID_PAISABAZAAR_MARKETING,
-        self::MID_FLYREMIT,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [
