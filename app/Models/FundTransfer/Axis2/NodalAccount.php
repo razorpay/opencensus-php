@@ -244,7 +244,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $date      = $timeNow->format('dmY');
 
-        $serialNum = $timeNow->format('hms');
+        $serialNum = $timeNow->format('his');
 
         return Axis2Constants::CORP_CODE . '_H2H_' . $date . '_' . $serialNum;
     }
