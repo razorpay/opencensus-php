@@ -463,8 +463,8 @@ class BasicAuth
         $matches = [];
 
         // Sample token: rzp_test_partner_1DP5mmOlF5G5ag-acc_ACIg2tb8NySnuh
-        // Todo: For bc we have (-|~) in below regex, to be removed soon after this deploy.
-        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})(-|~)(acc_[a-zA-Z0-9]{14})$/';
+        // Todo: For bc we have [-~] in below regex, to be removed soon after this deploy.
+        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})[-~](acc_[a-zA-Z0-9]{14})$/';
 
         $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
 
