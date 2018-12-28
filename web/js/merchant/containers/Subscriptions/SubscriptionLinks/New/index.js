@@ -139,6 +139,14 @@ export default class NewSubscriptionLink extends Component {
     this.setState({ fields });
   };
 
+  handleNotesChange = notes => {
+    const target = {
+      name: 'notes',
+      value: notes,
+    };
+    this.handleChangeIn({ target });
+  };
+
   changeTab = step => () => {
     const currentTab = this.state.currentTab + step;
 
@@ -178,7 +186,15 @@ export default class NewSubscriptionLink extends Component {
           />
         );
       case 2:
-        return <LinkDetails />;
+        return (
+          <LinkDetails
+            showTimeInput={!!this.state.fields.expire_by}
+            onDateChange={this.handleDateChange}
+            disableExpireBy={this.state.internals._isNonExpiringLink}
+            onTimeChange={this.handleTimeChange}
+            onNotesChange={this.handleNotesChange}
+          />
+        );
       case 3:
         return <Review />;
     }
@@ -268,6 +284,15 @@ function isFormValid(formIndex, fields, internals) {
 
     case 1: {
       return !internals._addOnPresent || fields.addons.every(isPresent);
+    }
+
+    case 2: {
+      const notify_info = fields.notify_info || {};
+      return (
+        (!fields.customer_notify ||
+          (!!notify_info.notify_email || !!notify_info.notify_phone)) &&
+        (internals._isNonExpiringLink || !!fields.expire_by)
+      );
     }
   }
 }
