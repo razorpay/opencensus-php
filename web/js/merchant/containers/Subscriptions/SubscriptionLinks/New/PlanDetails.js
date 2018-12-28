@@ -3,6 +3,7 @@ import { TypeAhead } from 'react-power-select';
 import Amount from 'rzp/ui/Amount';
 
 import Input, { Label, Description } from 'component/Input';
+import Button from 'component/Button';
 
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
@@ -48,27 +49,34 @@ export default function NewSubscriptionLinkPlanDetails(props) {
       <Input.Check
         label="Start Date"
         fieldLabel="Immediate, subscriptions starts with the first payment"
+        class="Input--vTop"
+        data-name="_startsImmediately"
       />
 
       <Input.Group class="InputGroup--inline InputGroup--near">
         <div class="Input-content">
           <Input.ToCalendar
-            name="startAt"
+            name="start_at"
             placeholder="DD-MM-YYYY"
             allowToday
             disablePastDates
             size="half"
             addonAfter={<i class="i i-date-range" />}
-            disabled={false}
+            disabled={props.startsImmediately}
             placement="topLeft"
+            onChange={props.onDateChange('start_at')}
           />
 
-          <Input.TimePicker
-            name="startAtTime"
-            placeholder="HH:MM A"
-            size="half"
-            addonAfter={<i class="i i-time" />}
-          />
+          {props.showTimeInput && (
+            <Input.TimePicker
+              name="start_at_time"
+              placeholder="HH:MM A"
+              size="half"
+              addonAfter={<i class="i i-time" />}
+              disabled={props.startsImmediately}
+              onChange={props.onTimeChange('start_at_time')}
+            />
+          )}
           <Description text="Date from which subscription should start" />
         </div>
       </Input.Group>
@@ -78,6 +86,7 @@ export default function NewSubscriptionLinkPlanDetails(props) {
         type="number"
         description="No. of billing cycles to be charged"
         size="half"
+        name="total_count"
       />
     </>
   );
