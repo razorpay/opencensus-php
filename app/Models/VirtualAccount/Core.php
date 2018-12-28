@@ -239,7 +239,7 @@ class Core extends Base\Core
         {
             $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 
-            (new Balance\Core)->updateBalanceAccountNumber($accountNumber);
+            (new Balance\Core)->updateBalanceAccountNumber($virtualAccount->balance, $accountNumber);
         }
     }
 

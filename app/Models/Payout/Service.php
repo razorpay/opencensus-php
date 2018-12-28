@@ -3,9 +3,11 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 
@@ -48,7 +50,7 @@ class Service extends Base\Service
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
-        $this->processAccountNumber($input);
+        $this->processAccountNumber($payoutInput);
 
         $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
@@ -94,34 +96,63 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        $this->processAccountNumber($input);
+
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
         return $payouts->toArrayPublic();
     }
 
-    public function processFailedPayouts(array $input)
+    public function processReversedPayouts(array $input)
     {
-        $data = (new Core)->retryFailedPayouts($input);
+        $data = (new Core)->retryReversedPayouts($input);
 
         return $data;
     }
 
-    protected function processAccountNumber(array & $input)
+    public function getPurposes(): array
     {
-        //
-        // If the account number is not present, we don't care about anything.
-        // The payout would happen from the merchant's primary balance.
-        //
-        if (isset($input[Entity::ACCOUNT_NUMBER]) === false)
+        return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function postPurpose(array $input): array
+    {
+        (new Validator)->validateInput('create_purpose', $input);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
+
+        return $purposeObj->getAll($this->merchant);
+    }
+
+    public function fetchReversalOfPayout(string $id): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input = [
+            Reversal\Entity::ENTITY_ID      => Entity::verifyIdAndStripSign($id),
+            Reversal\Entity::ENTITY_TYPE    => Constants\Entity::PAYOUT
+        ];
+
+        $reversals = $this->repo->reversal->fetch($input, $merchantId);
+
+        if ($reversals->count() > 0)
         {
-            return;
+            return $reversals->first()->toArrayPublic();
         }
 
-        //
-        // If an account number is present, it means that the merchant
-        // should be enabled on business banking and we have to convert
-        // to balance_id.
-        //
+        return $reversals->toArrayPublic();
+    }
+
+    /**
+     * We are allowing Fund Account payouts only on RX.
+     * In RX, we always mandate account number.
+     *
+     * @param array $input
+     */
+    protected function processAccountNumber(array & $input)
+    {
         /** @var Merchant\Validator $merchantValidator */
         $merchantValidator = $this->merchant->getValidator();
 

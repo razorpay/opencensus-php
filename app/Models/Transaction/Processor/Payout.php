@@ -115,14 +115,19 @@ class Payout extends Base
 
     protected function validateMerchantBalance()
     {
-        $debitAmount = $this->txn->getAmount() + $this->txn->getFee();
+        $debitAmount = $this->txn->getAmount();
+
+        if ($this->source->getPayoutType() === PayoutModel\Entity::ON_DEMAND)
+        {
+            $debitAmount += $this->txn->getFee();
+        }
 
         $hasBalance = ($this->merchantBalance->getBalance() >= $debitAmount);
 
         if ($hasBalance === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE,
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
                 null,
                 [
                     'payout_id'     => $this->source->getId(),

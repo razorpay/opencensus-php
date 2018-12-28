@@ -116,6 +116,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode     = $this->getPaymentType($amount, $ba);
 
+            $entity->setMode($mode);
+
+            $this->repo->save($entity);
+
             $this->updateSummary($mode, $amount);
 
             $mode     = Axis2Constants::MODE_MAPPING[$mode];
@@ -240,7 +244,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $date      = $timeNow->format('dmY');
 
-        $serialNum = $timeNow->format('hms');
+        $serialNum = $timeNow->format('his');
 
         return Axis2Constants::CORP_CODE . '_H2H_' . $date . '_' . $serialNum;
     }

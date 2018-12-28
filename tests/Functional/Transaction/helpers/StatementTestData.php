@@ -16,8 +16,40 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 4,
                 'items'  => [
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 1590,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'reversal',
+                            'amount'         => 1590,
+                            'currency'       => 'INR',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'balance'        => 103410,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'payout',
+                        ],
+                        // 'created_at'     => ,
+                    ],
                     [
                         // 'id'             => '',
                         'entity'         => 'transaction',
@@ -26,7 +58,7 @@ return [
                         'currency'       => 'INR',
                         'credit'         => 2500,
                         'debit'          => 0,
-                        'balance'        => 5000,
+                        'balance'        => 105000,
                         'source'         => [
                             // 'id'             => '',
                             'entity'         => 'bank_transfer',
@@ -47,7 +79,7 @@ return [
                         'currency'       => 'INR',
                         'credit'         => 2500,
                         'debit'          => 0,
-                        'balance'        => 2500,
+                        'balance'        => 102500,
                         'source'         => [
                             // 'id'             => '',
                             'entity'         => 'bank_transfer',
@@ -79,7 +111,7 @@ return [
                 'currency'       => 'INR',
                 'credit'         => 2500,
                 'debit'          => 0,
-                'balance'        => 2500,
+                'balance'        => 102500,
                 'source'         => [
                     // 'id'             => '',
                     'entity'         => 'bank_transfer',
@@ -135,6 +167,84 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchByContactId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByPayoutId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactName' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactEmail' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactPhone' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByFundAccountId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

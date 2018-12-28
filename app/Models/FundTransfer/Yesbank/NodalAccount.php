@@ -3,19 +3,21 @@
 namespace RZP\Models\FundTransfer\Yesbank;
 
 use App;
-use Carbon\Carbon;
 use Config;
+use Carbon\Carbon;
 
-use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Base\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt\Lock;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
@@ -43,13 +45,7 @@ class NodalAccount extends NodalBase\NodalAccount
      */
     public function process(PublicCollection $attempts): array
     {
-        $transfer = new Transfer($this->purpose);
-
         $processedCount = 0;
-
-        $lock = (new Lock($this->channel));
-
-        $attempts = $lock->lockAttempts($attempts);
 
         foreach ($attempts as $attempt)
         {
@@ -75,12 +71,20 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $this->doRequiredChecks($gateway);
 
+            $banking = $attempt->isOfBanking();
+
+            $transfer = new Transfer($this->purpose, $banking);
+
             try
             {
                 // Calling init will reset all the data of previous request
                 $response = $transfer->init()
                                      ->setEntity($attempt)
                                      ->makeRequest($gateway);
+
+                $attempt->setMode($transfer->transferType);
+
+                $this->repo->save($attempt);
 
                 // We set attempt's status to `initiated` before calling this function, `process`.
                 // Only if the request is executed successfully, we want to save the attempt's status.
@@ -102,7 +106,9 @@ class NodalAccount extends NodalBase\NodalAccount
                         'settlement_id' => $attempt->getSourceId(),
                     ]);
 
-                $lock->releaseAttempt($attempt);
+                $attempt->setMode($transfer->transferType);
+
+                $this->repo->save($attempt);
 
                 $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $attempt->getSourceType());
 
@@ -123,10 +129,6 @@ class NodalAccount extends NodalBase\NodalAccount
                     TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
                     $response
                 );
-            }
-            finally
-            {
-                $lock->releaseAttempt($attempt);
             }
         }
 

@@ -86,6 +86,10 @@ class Fields
     const STATUS_CODE               = 'statusCode';
     const SUB_STATUS_TEXT           = 'subStatusText';
     const BANK_REFERENCE_NUMBER     = 'bankReferenceNo';
+    const TERMINAL                  = 'terminal';
+    const MERCHANT                  = 'merchant';
+    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
+    const CATEGORY                  = 'category';
 
     const PAYOUT = [
       self::YBLREFNO,

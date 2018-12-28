@@ -24,13 +24,14 @@ abstract class Base extends ApiProcessor
     const ACCOUNT_NAME      = 'RAZORPAY SOFTWARE PRIVATE LIMITED';
 
     // Identifiers used store the response data
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-    const REMARK            = 'remark';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const RRN                   = 'rrn';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const REMARK                = 'remark';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $baseUrl;
 

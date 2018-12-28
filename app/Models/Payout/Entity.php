@@ -5,24 +5,30 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Reversal;
+use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\FundTransfer\Attempt\Purpose;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property Customer\Entity    $customer
  * @property Merchant\Entity    $merchant
  * @property User\Entity        $user
+ * @property FundAccount\Entity $fundAccount
  */
 class Entity extends Base\PublicEntity
 {
@@ -39,6 +45,7 @@ class Entity extends Base\PublicEntity
     const DESTINATION_TYPE       = 'destination_type';
     const USER_ID                = 'user_id';
     const PURPOSE                = 'purpose';
+    const PURPOSE_TYPE           = 'purpose_type';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const NOTES                  = 'notes';
@@ -76,12 +83,25 @@ class Entity extends Base\PublicEntity
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 
+    // Additional input/output attributes
+    const CONTACT_NAME    = 'contact_name';
+    const CONTACT_PHONE   = 'contact_phone';
+    const CONTACT_ID      = 'contact_id';
+    const CONTACT_EMAIL   = 'contact_email';
+    const CONTACT_TYPE    = 'contact_type';
+
     // Input keys
     const ACCOUNT_NUMBER = 'account_number';
 
+    // Used only for `visible` array
+    const INTERNAL_STATUS = 'internal_status';
+
     // Relations
-    const USER     = 'user';
-    const CUSTOMER = 'customer';
+    const USER          = 'user';
+    const CUSTOMER      = 'customer';
+    const FUND_ACCOUNT  = 'fund_account';
+    const TRANSACTION   = 'transaction';
+    const REVERSAL      = 'reversal';
 
     protected $entity = 'payout';
 
@@ -120,6 +140,9 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::CURRENCY,
         self::NOTES,
+        self::REVERSAL,
+        self::PURPOSE,
+        self::PURPOSE_TYPE,
         self::METHOD,
         self::FEES,
         self::TAX,
@@ -136,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -145,31 +169,50 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::FUND_ACCOUNT_ID,
-        self::DESTINATION,
-        self::METHOD,
+        self::FUND_ACCOUNT,
         self::AMOUNT,
         self::CURRENCY,
+        self::TRANSACTION_ID,
+        self::TRANSACTION,
         self::NOTES,
         self::FEES,
         self::TAX,
         self::STATUS,
+        self::PURPOSE,
         self::UTR,
         self::USER_ID,
         self::USER,
-        self::SETTLED_ON,
         self::MODE,
+        self::REVERSAL,
+        self::FAILURE_REASON,
         self::CREATED_AT,
-        self::UPDATED_AT,
+    ];
+
+    protected static $modifiers = [
+        self::MODE,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::STATUS,
         self::BALANCE_ID,
         self::DESTINATION,
         self::CUSTOMER_ID,
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
+        self::REVERSAL,
+        // We want to show the failure reason only if the status is reversed.
+        // This is because we might have intermittent failure reasons even
+        // when the payout is not completely processed (succeeded/failed)
+        self::FAILURE_REASON,
+        // Sometimes, we get the UTR even if the payout has not been processed.
+        // This might cause confusions and hence we show UTR only when either
+        // the payout is in processed or reversed state.
+        self::UTR,
+        self::TRANSACTION_ID,
+        self::TRANSACTION,
     ];
 
     protected $defaults = [
@@ -179,7 +222,10 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT_ID   => null,
         self::NOTES             => [],
         self::ATTEMPTS          => 1,
-        self::TYPE              => self::DEFAULT
+        self::TYPE              => self::DEFAULT,
+        self::MODE              => null,
+        self::UTR               => null,
+        self::FAILURE_REASON    => null,
     ];
 
     protected $amounts = [
@@ -199,6 +245,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+    ];
+
+    protected $appends = [
+        self::INTERNAL_STATUS,
     ];
 
     protected $ignoredRelations = [
@@ -235,6 +285,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Payment\Entity::class);
     }
 
+    public function reversal()
+    {
+        return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
+    }
+
     /**
      * Can be customer_transaction (used for customer wallets) or just transaction
      *
@@ -258,6 +313,11 @@ class Entity extends Base\PublicEntity
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getPurposeType()
+    {
+        return $this->getAttribute(self::PURPOSE_TYPE);
     }
 
     public function getMode()
@@ -360,14 +420,26 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isStatusFailed()
+    public function isStatusReversed()
     {
-        return ($this->getStatus() === Status::FAILED);
+        return ($this->getStatus() === Status::REVERSED);
     }
 
-    public function isStatusProcessedOrFailed(): bool
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
+    public function isStatusFailed()
     {
-        return ($this->isStatusProcessed() or $this->isStatusCreated());
+        return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusProcessedOrReversed(): bool
+    {
+        return ($this->isStatusProcessed() or $this->isStatusReversed());
     }
 
     public function isStatusInitiated()
@@ -440,6 +512,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setUtr`
+     * function, to set the utr.
+     *
+     * @param string|null $utr
+     */
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
@@ -450,6 +529,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `setRemarks`
+     * function, to set the bank remarks.
+     *
+     * @param string|null $remarks
+     */
     public function setRemarks(string $remarks = null)
     {
         $this->setAttribute(self::REMARKS, $remarks);
@@ -458,6 +544,16 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setPurpose(string $purpose)
+    {
+        $this->setAttribute(self::PURPOSE, $purpose);
+    }
+
+    public function setPurposeType(string $purposeType)
+    {
+        $this->setAttribute(self::PURPOSE_TYPE, $purposeType);
     }
 
     public function setSettledOn($date)
@@ -485,6 +581,11 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    public function getInternalStatusAttribute()
+    {
+        return $this->getStatus();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
@@ -541,6 +642,108 @@ class Entity extends Base\PublicEntity
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
     }
 
+    public function setPublicFundAccountAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose fund_account on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the fund_account is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::FUND_ACCOUNT);
+
+            return;
+        }
+    }
+
+    public function setPublicReversalAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose reversal on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the reversal is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::REVERSAL);
+
+            return;
+        }
+    }
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
+    }
+
+    public function setPublicFailureReasonAttribute(array & $attributes)
+    {
+        if ($this->isStatusReversed() === false)
+        {
+            $attributes[self::FAILURE_REASON] = null;
+        }
+    }
+
+    public function setPublicUtrAttribute(array & $attributes)
+    {
+        if ($this->isStatusProcessedOrReversed() === false)
+        {
+            $attributes[self::UTR] = null;
+        }
+    }
+
+    public function setPublicTransactionIdAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::TRANSACTION_ID]);
+
+            return;
+        }
+
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($attributes[self::TRANSACTION_ID]);
+    }
+
+    public function setPublicTransactionAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose transactions on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the transactions is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::TRANSACTION);
+
+            return;
+        }
+
+        $transaction = array_pull($attributes, self::TRANSACTION);
+
+        //
+        // We don't want to expose customer_transactions as of now.
+        //
+        if ((empty($transaction) === false) and
+            (($this->transaction instanceof Transaction\Entity)))
+        {
+            $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
+        }
+    }
+
     public function getPricingFeatures()
     {
         return [];
@@ -551,6 +754,41 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    protected function modifyMode(& $input)
+    {
+        $fundAccount = $this->fundAccount;
+
+        //
+        // In case of merchant payouts, we don't use fund account entity.
+        // We use destination directly. We have to move them to FA soon.
+        //
+        if (empty($fundAccount) === true)
+        {
+            return;
+        }
+
+        $accountType = $fundAccount->getAccountType();
+
+        if ($accountType === FundAccount\Type::VPA)
+        {
+            $input[self::MODE] = Mode::UPI;
+        }
+        else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
+        {
+            /** @var BankAccount\Entity $ba */
+            $ba = $fundAccount->account;
+
+            $ifsc = $ba->getIfscCode();
+
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
+            {
+                $input[self::MODE] = Mode::IFT;
+            }
+        }
+    }
+
     public function shouldNotifyTxnViaSms(): bool
     {
         return false;
@@ -559,5 +797,43 @@ class Entity extends Base\PublicEntity
     public function shouldNotifyTxnViaEmail(): bool
     {
         return $this->isBalanceTypeBanking();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArrayPublic()
+    {
+        $this->removeRecursiveRelation();
+
+        return parent::toArrayPublic();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArray()
+    {
+        $this->removeRecursiveRelation();
+
+        return parent::toArray();
+    }
+
+    /**
+     * This removes the recursive relations caused by using the same entity to associate.
+     * Relations' mind is blown when this happens.
+     * This happens in POST /payouts. In that, we create a transaction and associate the
+     * payout created to the newly created transaction and then associate this newly created
+     * transaction to the same payout. Since here the payout has transaction loaded and
+     * transaction has the same payout loaded, recursion is spawned.
+     */
+    protected function removeRecursiveRelation()
+    {
+        if ($this->hasRelation(Entity::TRANSACTION) === true)
+        {
+            $txn = $this->transaction;
+            $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
+            $txn->setRelations($relations);
+        }
     }
 }

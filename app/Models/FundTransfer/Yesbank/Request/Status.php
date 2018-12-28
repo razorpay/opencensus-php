@@ -24,9 +24,9 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct()
+    public function __construct(bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }
@@ -160,7 +160,7 @@ class Status extends Base
         // FTA ID
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
         $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
-        $bankReferenceNo =  $response[Constants::BANK_REFERENCE_NO] ?? null;
+        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
 
         $statusCode = $response[Constants::STATUS_CODE] ?? null;
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;

@@ -63,7 +63,7 @@ class Server extends Base\Mock\Server
 
         $msg = implode('|' , $responseArray);
 
-        $response = $this->getGatewayInstance()->encrypt($msg);
+        $response = $this->getGatewayInstance()->encryptRequest($msg);
 
         return $this->makeResponse($response);
     }
@@ -110,7 +110,7 @@ class Server extends Base\Mock\Server
 
         $msg = implode('|' , $responseArray);
 
-        $response = $this->getGatewayInstance()->encrypt($msg);
+        $response = $this->getGatewayInstance()->encryptRequest($msg);
 
         return $this->makeResponse($response);
     }
@@ -119,7 +119,7 @@ class Server extends Base\Mock\Server
     {
         $encryptedInput = $input['requestMsg'];
 
-        $res = $this->getGatewayInstance()->decrypt($encryptedInput);
+        $res = $this->getGatewayInstance()->decryptResponse($encryptedInput);
 
         $arr = explode('|', $res);
 

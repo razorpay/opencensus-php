@@ -150,7 +150,10 @@ class CreateTerminals extends Migration
                   ->nullable();
 
             $table->string(Terminal::ACCOUNT_NUMBER, 50)
-                 ->nullable();
+                  ->nullable();
+
+            $table->string(Terminal::IFSC_CODE, 11)
+                  ->nullable();
 
             $table->integer(Terminal::CREATED_AT);
 

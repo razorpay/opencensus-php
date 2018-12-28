@@ -78,7 +78,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testOAuthAppDeleteMerchantMap()
     {
-        $this->fixtures->create('merchant_access_map');
+        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
 
         $this->startTest();
 

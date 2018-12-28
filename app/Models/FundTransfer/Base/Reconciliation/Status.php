@@ -78,6 +78,26 @@ abstract class Status
     {
         $statusCodes = static::getCriticalErrorStatus();
 
-        return (in_array($bankStatusCode, $statusCodes, true) === true);
+        $isCritical =  (in_array($bankStatusCode, $statusCodes, true) === true);
+
+        if ($isCritical === false)
+        {
+            // If the status code is not present in the constant list then consider it as critical
+            $isCritical = (defined('static::' . strtoupper($bankStatusCode)) === false);
+        }
+
+        return $isCritical;
+    }
+
+    public static function getPublicFailureReason($statusCode)
+    {
+        if (in_array($statusCode, static::getSuccessfulStatus(), true) === true)
+        {
+            return null;
+        }
+
+        // TODO: Put everything in base. Move it out from child classes
+
+        return "transfer not completed";
     }
 }

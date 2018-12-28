@@ -102,7 +102,14 @@ class Beneficiary extends FileProcessor
                     'channel'           => $this->channel
                 ]);
 
-            $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
+            $address = 'Beneficiary address not available';
+
+            $merchantDetails = $ba->source->merchantDetail;
+
+            if ($merchantDetails !== null)
+            {
+                $address = $merchantDetails->getBusinessRegisteredAddress();
+            }
 
             // Removes line break from the string
             $address = $this->normalizeString($address, 30, '');

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentCreateTest extends TestCase
@@ -81,6 +82,33 @@ class PaymentCreateTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    // Test to check if payment fails on disabled methods
+    public function testCreatePaymentWithDisabledMethod()
+    {
+        $this->fixtures->merchant->disableNetbanking();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    // Test to check if payment is success on enabled methods
+    public function testCreatePaymentWithEnabledMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testCreatePaymentWithoutMethod()

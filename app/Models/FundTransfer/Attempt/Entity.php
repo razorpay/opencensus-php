@@ -39,6 +39,11 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT            = 'settlement';
     const BENEFICIARY           = 'beneficiary';
 
+    /**
+     * Used to check if the FTA's source has balance ID
+     */
+    const BALANCE_ID            = 'balance_id';
+
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
@@ -232,9 +237,30 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
+    public function isSettlement()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
+    }
+
     public function getDateTime()
     {
         return $this->getAttribute(self::DATE_TIME);
+    }
+
+    public function getDestinationType()
+    {
+        if ($this->hasVpa() === true)
+        {
+            return E::VPA;
+        }
+        else if ($this->hasBankAccount() === true)
+        {
+            return E::BANK_ACCOUNT;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public function hasBankAccount()
@@ -375,6 +401,18 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isOfBanking(): bool
+    {
+        $source = $this->source;
+
+        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        {
+            return $source->isBalanceTypeBanking();
+        }
+
+        return false;
+    }
+
     // ---------------------------- public setters -----------------------------
 
     public function setPublicSourceAttribute(array & $attributes)
@@ -391,5 +429,16 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         return $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function isBeneRegistrationRequired(): bool
+    {
+        if (($this->isRefund() === true) or
+            ($this->hasVpa() === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

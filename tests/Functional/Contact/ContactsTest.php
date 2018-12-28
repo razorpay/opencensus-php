@@ -102,6 +102,32 @@ class ContactsTest extends TestCase
         $this->startTest($data);
     }
 
+    public function testFetchContactByActive()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1]);
+
+        $fundAccount = $this->createFundAccount($contact->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/contacts?active=1';
+
+        $this->startTest($data);
+    }
+
+    public function testFetchContactByType()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1, 'type' => 'customer']);
+
+        $fundAccount = $this->createFundAccount($contact->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/contacts?type=customer';
+
+        $this->startTest($data);
+    }
+
     public function testUpdateContact()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);

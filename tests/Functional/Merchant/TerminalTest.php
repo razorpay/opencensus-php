@@ -207,6 +207,16 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddUpiMindgateBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testAssignHitachiBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
     public function testAddBharatQrTerminalWithExpected()
     {
         $request = $this->testData['testAddBharatQrTerminal'];

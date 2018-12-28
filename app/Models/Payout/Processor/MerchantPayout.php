@@ -26,7 +26,13 @@ class MerchantPayout extends Base
         //
         if ($destination === null)
         {
-            throw new LogicException('Merchant bank account should exist for on demand payouts');
+            throw new LogicException(
+                'Merchant bank account should exist for on demand payouts',
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'input'     => $input,
+                ]);
         }
 
         $payout->destination()->associate($destination);

@@ -21,15 +21,17 @@ class Transfer extends Base
 
     protected $entity = null;
 
+    public $transferType = '';
+
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
     protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $purpose)
+    public function __construct(string $purpose, bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->purpose = $purpose;
 
@@ -83,6 +85,8 @@ class Transfer extends Base
         $this->trace->info(
             TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
 
+        $this->transferType = $this->getPaymentType($this->entity, $amount);
+
         $jsonRequest  = json_encode([
                 Constants::TRANSFER_REQUEST_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
@@ -92,10 +96,10 @@ class Transfer extends Base
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
-                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
+                Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
-                Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
+                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
             ],
         ]);
 
@@ -174,6 +178,36 @@ class Transfer extends Base
     }
 
     /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @return string
+     */
+    protected function getNarration()
+    {
+        $ftaNarration = $this->entity->getNarration();
+
+        if (empty($ftaNarration) === false)
+        {
+            $narration = $ftaNarration;
+        }
+        else
+        {
+            $narration = $this->entity->merchant->getBillingLabel();
+        }
+
+        $formattedNarration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $narration);
+
+        $formattedNarration = ($formattedNarration ? str_limit($formattedNarration, 30) : 'Razorpay');
+
+        $formattedNarration = $formattedNarration . ' FUND TRANSFER';
+
+        return $formattedNarration;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function extractSuccessfulData(array $response): array
@@ -201,7 +235,7 @@ class Transfer extends Base
     {
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
 
-        $bankReferenceNo =  $response[Constants::BANK_REFERENCE_NO] ?? null;
+        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
 
         $statusCode = $response[Constants::STATUS_CODE] ?? null;
 
@@ -209,16 +243,19 @@ class Transfer extends Base
 
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
 
+        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+
         return [
             self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
-            self::UTR                  => null,
-            self::BANK_STATUS_CODE     => $this->getNullOnEmpty($statusCode),
-            self::REMARK               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE         => null,
-            self::TRANSFER_TYPE        => null,
-            self::REFERENCE_NUMBER     => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                 => null,
+            self::UTR                   => null,
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            self::MODE                  => null,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
         ];
     }
 
@@ -231,7 +268,8 @@ class Transfer extends Base
         //     self::REMARK,
         //     self::PAYMENT_DATE,
         //     self::REFERENCE_NUMBER,
-        //     self::MODE
+        //     self::MODE,
+        //     self::PUBLIC_FAILURE_REASON
 
         //
         // We have null checks everywhere since it's possible that the
@@ -247,6 +285,8 @@ class Transfer extends Base
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
         $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
 
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode);
+
         return [
             self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
             self::UTR                   => $this->getNullOnEmpty($utr),
@@ -256,7 +296,8 @@ class Transfer extends Base
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,
             self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
+            self::MODE                  => Mode::UPI,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
 

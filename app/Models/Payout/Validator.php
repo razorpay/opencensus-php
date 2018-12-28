@@ -13,6 +13,8 @@ use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {
+    const MAX_PURPOSES_ALLOWED = 100;
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -30,17 +32,17 @@ class Validator extends Base\Validator
         Entity::TYPE            => 'sometimes|string',
         Entity::BALANCE_ID      => 'sometimes|string|size:14',
         Entity::FUND_ACCOUNT_ID => 'sometimes|public_id',
-        Entity::MODE            => 'sometimes|string',
+        Entity::MODE            => 'sometimes|nullable|string',
     ];
 
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
+        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
-        Entity::MODE            => 'sometimes|string|custom',
+        Entity::MODE            => 'sometimes|nullable|string|custom',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -50,10 +52,11 @@ class Validator extends Base\Validator
         Entity::NOTES           => 'sometimes|notes',
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $merchantPayoutRules = [
-        Entity::PURPOSE         => 'required|string|max:30|in:settlement',
+        Entity::PURPOSE         => 'required|string|max:30|in:payout',
         Entity::METHOD          => 'sometimes|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
@@ -67,6 +70,11 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+    ];
+
+    protected static $createPurposeRules = [
+        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash',
+        Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
     ];
 
     protected static $merchantPayoutOnDemandRules = [
@@ -90,48 +98,43 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        if (isset($input[Entity::MODE]) === false)
+        if (empty($input[Entity::MODE]) === true)
         {
             return;
         }
 
+        $payout = $this->entity;
+
         $mode = $input[Entity::MODE];
 
-        Mode::validateMode($mode);
+        $accountType = $payout->fundAccount->getAccountType();
+
+        Mode::validateModeOfAccountType($mode, $accountType);
 
         $amount = $input[Entity::AMOUNT];
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
+        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
-            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)))
+            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
+            (($mode === Mode::UPI) and ($amount > $maxUpiAmount)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
                 null,
                 [
-                    'amount'            => $amount,
-                    'mode'              => $mode,
-                    'min_rtgs_amount'   => $minRtgsAmount,
-                    'max_imps_amount'   => $maxImpsAmount,
+                    'amount'          => $amount,
+                    'mode'            => $mode,
+                    'min_rtgs_amount' => $minRtgsAmount,
+                    'max_imps_amount' => $maxImpsAmount,
+                    'fund_account_id' => $payout->fundAccount->getId(),
+                    'account_type'    => $accountType,
                 ]);
         }
 
-        $accountType = $this->entity->fundAccount->getAccountType();
-
-        if ($accountType !== FundAccount\Type::BANK_ACCOUNT)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE,
-                null,
-                [
-                    'amount'            => $amount,
-                    'mode'              => $mode,
-                    'account_type'      => $accountType,
-                    'fund_account_id'   => $this->entity->fundAccount->getId(),
-                ]);
-        }
+        // TODO: Need to do similar stuff for refund also
     }
 
     public function validatePayoutAmount($input, $payment)

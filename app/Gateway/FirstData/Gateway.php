@@ -123,6 +123,12 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getPurchaseRequestArray($input);
 
+        $gatewayPayment = [
+            'amount' => $input['payment'][Payment\Entity::AMOUNT],
+        ];
+
+        $gatewayEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
+
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
         $response = $this->getSoapResponse($requestContent);
@@ -139,7 +145,7 @@ class Gateway extends Base\Gateway
 
         $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
-        $purchaseEntity = $this->createGatewayPaymentEntity($purchaseFields, $input);
+        $purchaseEntity = $this->updateGatewayPaymentEntity($gatewayEntity, $purchaseFields, false);
 
         $this->checkApprovalCode($purchaseEntity);
     }
@@ -476,7 +482,7 @@ class Gateway extends Base\Gateway
 
         $refundGatewayStatus = (string) $refundTransactionValue->TransactionState;
 
-        assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
+        assertTrue(($refundGatewayStatus !== null), 'Status cannot be null');
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
 
@@ -1092,21 +1098,7 @@ class Gateway extends Base\Gateway
         {
             $this->traceAndHandleRequestErrorIfApplicable($e);
 
-            $this->traceCurlErrorIfApplicable();
-
             throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
         }
 
         $this->trace->info(
@@ -1434,22 +1426,7 @@ class Gateway extends Base\Gateway
 
         $hooks = new Requests_Hooks();
 
-        $requestId = Entity::generateUniqueId();
-
-        $this->requestId = $requestId;
-
-        $hooks->register('curl.before_send', function ($curl) use ($requestId)
-        {
-            $this->setCurlSslOpts($curl);
-
-            $this->curlLogPath = storage_path('logs/curl_' . $requestId . '.log');
-
-            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
-
-            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
-        });
+        $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
 
         $options['hooks'] = $hooks;
 
@@ -1470,7 +1447,7 @@ class Gateway extends Base\Gateway
         //
         // curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
 
-        curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
     }
 
     protected function getVerifyRequestContentArray(array $input)
@@ -2023,7 +2000,7 @@ class Gateway extends Base\Gateway
 
     protected function parseXmlAndReturnArray($xml)
     {
-        $xml = preg_replace("/(<\/?)(\w+-*\w+):([^>]*>)/", "$1$2$3", $xml);
+        $xml = preg_replace('/(<\/?)(\w+-*\w+):([^>]*>)/', '$1$2$3', $xml);
 
         $formattedXml = simplexml_load_string($xml);
 

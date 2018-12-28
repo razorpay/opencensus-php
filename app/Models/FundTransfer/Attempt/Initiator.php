@@ -4,8 +4,8 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
 
+use Monolog\Logger;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -14,6 +14,8 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
+use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
@@ -133,9 +135,24 @@ class Initiator extends Base\Core
             return $data;
         }
 
-        $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+        list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(PublicCollection $collection) use ($purpose, $channel)
+            {
+                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $response = (new $class($purpose))->initiateTransfer($attempts);
+                return [
+                    (new $class($purpose))->initiateTransfer($collection),
+                    $collection
+                ];
+            });
+
+        $allowedChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $allowedChannels, true) === true)
+        {
+            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+        }
 
         $data += $response;
 
@@ -144,6 +161,69 @@ class Initiator extends Base\Core
         (new SlackNotification)->send('setl_initiate', $slackData);
 
         return $data;
+    }
+
+    protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
+    {
+        try
+        {
+            //
+            // Dispatching in 180 sec as all the operation are happening in queue
+            // and bank generally update the status in 2 min
+            // TODO: observe the response time from bank and update the wait time accordingly
+            //
+            AttemptStatusCheckJob::dispatch($this->mode, $attempt->getId())->delay(180);
+
+            $this->trace->info(
+                TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_STATUS_CHECK_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+    }
+
+    protected function dispatchFtaForReconProcess(Entity $attempt)
+    {
+        // TODO: Allow for all, after testing payouts.
+        if ($attempt->getSourceType() !== Type::PAYOUT)
+        {
+            return;
+        }
+
+        try
+        {
+            AttemptsReconJob::dispatch($this->mode, $attempt->getId());
+
+            $this->trace->info(
+                TraceCode::FTA_RECON_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_RECONCILE_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
     }
 
     protected function getTransactionsCount(Entity $attempt): int
@@ -283,5 +363,26 @@ class Initiator extends Base\Core
         $response = $this->processFundTransferAttempts(self::FTA_PURPOSE, $channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
+    }
+
+    protected function dispatchForReconAndStatusCheck($attemptedFTAs)
+    {
+        // Dispatching after lock is released as this should also work in sync mode
+        // This dispatch is will happen only on locked attempts in above step
+        foreach ($attemptedFTAs as $attempt)
+        {
+            // For bank accounts, we anyway don't get the status in initiate. So no use
+            // of dispatching it as part of initiate request. In VPA, we get the status.
+            if ($attempt->hasVpa() === true)
+            {
+                $this->dispatchFtaForReconProcess($attempt);
+            }
+            else
+            {
+                $this->dispatchFtaForStatusCheckProcess($attempt);
+            }
+        }
+
+        return;
     }
 }

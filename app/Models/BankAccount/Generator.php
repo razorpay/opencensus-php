@@ -76,7 +76,7 @@ class Generator extends Base\Core
 
         $providerBank = $this->getProviderBank($terminal);
 
-        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $providerBank);
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount, $providerBank);
 
         $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -199,13 +199,16 @@ class Generator extends Base\Core
         return $bankAccount;
     }
 
-    protected function getBankAccountInput(string $accountNumber, string $beneficiaryName, string $provider): array
+    protected function getBankAccountInput(
+        string $accountNumber,
+        VirtualAccount\Entity $virtualAccount,
+        string $provider): array
     {
         $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
 
         $merchantDetails = [
             Entity::ACCOUNT_NUMBER     => $accountNumber,
-            Entity::BENEFICIARY_NAME   => $beneficiaryName,
+            Entity::BENEFICIARY_NAME   => $virtualAccount->getName(),
         ];
 
         return array_merge($bankAccountInput, $merchantDetails);

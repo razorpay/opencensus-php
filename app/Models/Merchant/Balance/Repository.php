@@ -9,21 +9,26 @@ class Repository extends Base\Repository
 {
     protected $entity = 'balance';
 
-    // protected $appFetchParamRules = array(
-    //     Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-    // );
+    // These are proxy allowed params to search on.
+    protected $proxyFetchParamRules = [
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num',
+    ];
 
     public function findOrFail($id, $columns = array('*'))
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->merchantIdAndType($id)
                     ->firstOrFail();
     }
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $id)
+                    ->merchantIdAndType($id)
                     ->firstOrFailPublic();
     }
 
@@ -32,7 +37,7 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-                                      ->where(Entity::MERCHANT_ID, '=', $id)
+                                      ->merchantIdAndType($id)
                                       ->firstOrFail();
     }
 
@@ -213,18 +218,17 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param Merchant\Entity $merchant
-     * @param string          $balanceType
-     * @param string          $connection
-     *
+     * @param string      $merchantId
+     * @param string      $balanceType
+     * @param string|null $connection
      * @return mixed
      */
-    public function getMerchantBalanceByType(Merchant\Entity $merchant, string $balanceType, string $connection)
+    public function getMerchantBalanceByType(string $merchantId, string $balanceType, string $connection = null)
     {
-        return $this->newQueryWithConnection($connection)
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::TYPE, '=', $balanceType)
-                    ->first();
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->first();
     }
 
     public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
@@ -236,8 +240,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->where(Entity::TYPE, Type::BANKING)
-                    ->merchantId($this->merchant->getId())
+                    ->merchantIdAndType($this->merchant->getId(), Type::BANKING)
                     ->firstOrFailPublic();
     }
 }

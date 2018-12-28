@@ -13,6 +13,11 @@ class Validator extends Base\Validator
 {
     const BEFORE_CREATE = 'before_create';
 
+    /**
+     * 1lac in paise
+     */
+    const MAX_VPA_AMOUNT = 10000000;
+
     protected static $createRules = [
         Entity::CUSTOMER_ID  => 'sometimes|public_id',
         Entity::CONTACT_ID   => 'sometimes|public_id',

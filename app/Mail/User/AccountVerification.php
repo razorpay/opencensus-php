@@ -3,6 +3,7 @@
 namespace RZP\Mail\User;
 
 use RZP\Mail\Base;
+use RZP\Constants\Product;
 
 class AccountVerification extends Base\Mailable
 {
@@ -12,7 +13,9 @@ class AccountVerification extends Base\Mailable
 
     protected $token;
 
-    public function __construct($user, $org)
+    protected $product;
+
+    public function __construct($user, $org, $product = Product::PRIMARY)
     {
         parent::__construct();
 
@@ -21,6 +24,8 @@ class AccountVerification extends Base\Mailable
         $this->token = $user->getConfirmToken();
 
         $this->org = $org;
+
+        $this->product = $product;
     }
 
     protected function addRecipients()
@@ -57,6 +62,7 @@ class AccountVerification extends Base\Mailable
         $data = [
             'token'     => $this->token,
             'org'       => $this->org,
+            'product'   => $this->product,
         ];
 
         $this->with($data);

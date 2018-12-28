@@ -4,6 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use Mail;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -67,6 +68,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($newBankAccount);
 
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($newBankAccount);
+
         return $newBankAccount;
     }
 
@@ -85,6 +88,8 @@ class Core extends Base\Core
         $bankAccount->source()->associate($source);
 
         $this->repo->saveOrFail($bankAccount);
+
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($bankAccount);
 
         return $bankAccount;
     }
@@ -273,6 +278,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($ba);
 
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+
         return $ba;
     }
 
@@ -294,6 +301,8 @@ class Core extends Base\Core
         $ba->generateBeneficiaryCode();
 
         $this->repo->saveOrFail($ba);
+
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
         return $ba;
     }

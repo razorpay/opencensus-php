@@ -432,9 +432,15 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['cardless_emi' => false]);
     }
 
-    public function createBalanceOfBankingType(string $merchantId = '10000000000000')
+    public function createBalanceOfBankingType(int $balance = 0, string $merchantId = '10000000000000')
     {
-        return $this->fixtures->create('balance', ['type' => 'banking', 'merchant_id' => $merchantId]);
+        return $this->fixtures->create(
+            'balance',
+            [
+                'type' => 'banking',
+                'merchant_id' => $merchantId,
+                'balance' => $balance
+            ]);
     }
 
     public function editBalance(int $amount, string $id = '10000000000000')
@@ -603,6 +609,11 @@ class Merchant extends Base
     public function setFeeBearer($feebearer, $id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => $feebearer]);
+    }
+
+    public function setFeeModel($feeModel, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_model' => $feeModel]);
     }
 
     /**

@@ -5,12 +5,14 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 use Mail;
 use Carbon\Carbon;
 
+use Razorpay\Trace\Logger;
+
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Exception\LogicException;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt;
-
+use RZP\Models\Base\PublicCollection;
 /**
  * Class AttemptProcessor
  * @package RZP\Models\FundTransfer\Base\Reconciliation
@@ -30,7 +32,7 @@ abstract class AttemptProcessor extends Processor
      */
     public function reconcile(PublicCollection $attempts): array
     {
-        $response  = [];
+        $unprocessedCount = 0;
 
         if ($attempts->count() === 0)
         {
@@ -39,11 +41,43 @@ abstract class AttemptProcessor extends Processor
             ];
         }
 
-        $summary = $this->startReconciliation($attempts);
+        foreach ($attempts as $attempt)
+        {
+            $status = $this->dispatchForStatusCheck($attempt);
 
-        $this->updateResponse($response, $summary);
+            if ($status === false)
+            {
+                $unprocessedCount++;
+            }
+        }
 
-        return $response;
+        return [
+            'channel'               => static::$channel,
+            'total_count'           => $attempts->count(),
+            'unprocessed_count'     => $unprocessedCount,
+        ];
+    }
+
+    protected function dispatchForStatusCheck(Attempt\Entity $attempt): bool
+    {
+        try
+        {
+            AttemptStatusCheck::dispatch($this->mode, $attempt->getId());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_DISPATCH_FOR_STATUS_CHECK_FAILED,
+                [
+                    'fta_id' => $attempt->getId(),
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -54,28 +88,9 @@ abstract class AttemptProcessor extends Processor
      */
     protected function processReconciliation(array $input)
     {
-        $lock = new Attempt\Lock(static::$channel);
+        $attempts = $this->getAttemptsToReconcile($input);
 
-        //
-        // We fetch 150 attempts considering there would be some attempt which is already in process
-        // even though we reconcile only 100 attempts at a time
-        //
-        $batchSize = 150;
-
-        $attempts = $this->repo
-                         ->fund_transfer_attempt
-                         ->getAttemptsBetweenTimestampsWithStatus(
-                             static::$channel,
-                             Attempt\Status::INITIATED,
-                             null,
-                             null,
-                             $batchSize);
-
-        $lockedAttempts = $lock->lockAttempts($attempts);
-
-        $response = $this->reconcile($lockedAttempts);
-
-        $lock->releaseAttempts($attempts);
+        $response = $this->reconcile($attempts);
 
         $this->trace->info(
             TraceCode::ATTEMPT_RECONCILIATION_STATUS,
@@ -84,23 +99,60 @@ abstract class AttemptProcessor extends Processor
             ] + $response);
     }
 
-    protected function updateResponse(array & $response, array $summary)
+    protected function getTimestampRangeFromDuration(int $duration): array
     {
-        if (empty($response) === true)
+        if ($duration === 0)
         {
-            $response = $summary;
-
-            return;
+            return [null, null];
         }
 
-        $response['total_count'] += $summary['total_count'];
+        $currentTimestamp = Carbon::now(Timezone::IST);
 
-        $response['unprocessed_count'] += $summary['unprocessed_count'];
+        $toTimestamp = $currentTimestamp->getTimestamp();
+
+        $fromTimestamp = $currentTimestamp->subSeconds($duration)->getTimestamp();
+
+        return [$fromTimestamp, $toTimestamp];
+    }
+
+    protected function getAttemptsToReconcile(array $input): PublicCollection
+    {
+        $ftaIds = $input['fta_ids'] ?? [];
+
+        if (empty($ftaIds) === false)
+        {
+            // in case if the fta_ids present then we dont need check for current status for fta.
+            // because this would be done to verify the status again if the final state of the attempt has changed
+            $attempts = $this->repo
+                             ->fund_transfer_attempt
+                             ->getAttemptsWithIds(
+                                    static::$channel,
+                                    $ftaIds);
+        }
+        else
+        {
+            $status = $input['status'] ?? Attempt\Status::INITIATED;
+
+            $duration = $input['duration'] ?? 0;
+
+            list($fromTime, $toTime) = $this->getTimestampRangeFromDuration($duration);
+
+            $attempts = $this->repo
+                              ->fund_transfer_attempt
+                              ->getAttemptsWithStatusBetweenTimestamps(
+                                  static::$channel,
+                                  $status,
+                                  $fromTime,
+                                  $toTime);
+        }
+
+        return $attempts;
     }
 
     /**
      * @param array $input
      * @return array
+     * @throws LogicException
      */
     protected function verifySettlements(array $input)
     {
@@ -108,11 +160,12 @@ abstract class AttemptProcessor extends Processor
 
         $attempts = $this->fetchAttempts($input);
 
-        $lockedAttempts = $lock->lockAttempts($attempts);
-
-        $response = $this->startVerification($lockedAttempts);
-
-        $lock->releaseAttempts($attempts);
+        $response = $lock->acquireLockAndProcessAttempts(
+            $attempts,
+            function(PublicCollection $collection)
+            {
+                return $this->startVerification($collection);
+            });
 
         $this->trace->info(
             TraceCode::ATTEMPT_RECONCILIATION_STATUS,
@@ -145,7 +198,6 @@ abstract class AttemptProcessor extends Processor
 
         return [$from, $to];
     }
-
 
     protected function fetchAttempts($input)
     {

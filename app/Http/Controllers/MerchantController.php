@@ -37,9 +37,7 @@ class MerchantController extends Controller
 
     public function postSwitchProductMerchant()
     {
-        $input = Request::all();
-
-         $this->service()->switchProductMerchant($input);
+        $this->service()->switchProductMerchant();
 
         return ApiResponse::json([]);
     }
@@ -355,6 +353,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAccountBalances()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchAccountBalances($input);
+
+        return ApiResponse::json($data);
+    }
+
     // This is on proxy Auth
     public function getAccountConfig()
     {
@@ -599,6 +606,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Input JSON sample:
+     * {
+     *   "methods": {
+     *     "credit_card": 1,
+     *     "debit_card": 0,
+     *     "upi": 1,
+     *     "emi":0
+     *   },
+     *   "merchants": ["10000000000000", "ACIg0vIkvgCALm"]
+     * }
+     *
+     * @return mixed
+     */
     public function updateMethodsForMultipleMerchants()
     {
         $input = Request::all();
@@ -1115,7 +1136,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+        $data = $this->service()->registerBeneficiariesThroughApi($input, $channel);
 
         return ApiResponse::json($data);
     }

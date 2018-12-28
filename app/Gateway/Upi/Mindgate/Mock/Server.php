@@ -26,6 +26,7 @@ class Server extends Base\Mock\Server
         Action::REFUND        => 20,
         Action::VALIDATE_VPA  => 14,
         Action::VALIDATE_PUSH => 14,
+        Action::INTENT_TPV    => 19,
     ];
 
     /**
@@ -39,7 +40,39 @@ class Server extends Base\Mock\Server
         Action::CALLBACK      => 21,
         Action::REFUND        => 21,
         Action::VALIDATE_PUSH => 21,
+        Action::INTENT_TPV    => 17,
     ];
+
+    const DEFAULT_VPA = 'default@hdfc';
+
+    public function intentTpv($input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::INTENT_TPV;
+
+        $input = $this->parseInput($input, Action::INTENT_TPV);
+
+        $content = [
+            $input[1],
+            Status::SUCCESS,
+            'Transaction Initiated Successfully,',
+            null,
+            null,
+            null,
+            null,
+            null,
+            $input[14],
+            $input[15],
+            null,
+            null,
+            'NA',
+        ];
+
+        $this->content($content, Action::INTENT_TPV);
+
+        return $this->makeResponse($content);
+    }
 
     public function authorize($input)
     {
@@ -218,7 +251,7 @@ class Server extends Base\Mock\Server
             $respCode,
             // Approval Number
             random_integer(5),
-            $payment['vpa'],
+            $payment['vpa'] ?? self::DEFAULT_VPA,
             // NPCI Reference Id
             random_integer(16),
             'NA',

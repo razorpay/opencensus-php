@@ -69,6 +69,8 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
+    const BAD_REQUEST_ANOTHER_FTA_RECONCILIATION_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';
+    const BAD_REQUEST_ANOTHER_FTA_TRANSFER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
@@ -140,6 +142,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH                  = 'Capture amount must be equal to the amount authorized';
     const BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH                         = 'Capture request currency must be same as payment currency';
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT                     = 'This bank is either not valid or is not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT               = 'Netbanking not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_INVALID_MOBILE                                    = 'Payment failed because of invalid mobile number';
     const BAD_REQUEST_PAYMENT_INVALID_EMAIL                                     = 'Payment failed because of invalid email';
     const BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED                     = 'Payment failed because daily limit of the wallet has exceeded';
@@ -179,6 +182,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid ATM PIN entered';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
@@ -187,6 +191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
+    const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING                         = 'Your account does not have enough balance to carry out the payout operation.';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
@@ -577,8 +582,6 @@ class PublicErrorDescription
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                 = 'Combination of permissions used or assigned are invalid. Contact Razorpay Support';
 
-    const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                               = 'Error occured while saving fee breakup';
-
     const BAD_REQUEST_API_CAPTURE_FAILED                                        = 'Error while recording capture on API side';
 
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                    = 'Payment method invalid / not allowed';
@@ -759,4 +762,5 @@ class PublicErrorDescription
     const BAD_REQUEST_DUPLICATE_REQUEST                                             = 'The request is duplicate';
     const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'The mode is not valid for the given account type';
+    const BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE                        = 'Amount exceeds the max amount for the given account type';
 }

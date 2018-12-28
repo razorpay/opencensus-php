@@ -297,7 +297,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifyPayoutReconProcessForYesbankVpa();
 
-        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
@@ -506,9 +506,11 @@ class AttemptReconcileTest extends TestCase
 
         $settlementId = $attempt['source'];
 
+//        $this->fixtures->edit('merchant', $attempt['merchant_id'], ['hold_funds' => 1]);
+
         $content = $this->retryIntiateSettlements([$settlementId]);
 
-        // No settlements retried as merhcants funds on hold
+        // No settlements retried as merchants funds on hold
         $this->assertEquals(1, $content['retry_skipped_count']);
 
         $settlement = $this->getLastEntity('settlement', true);

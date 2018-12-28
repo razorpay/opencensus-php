@@ -195,10 +195,6 @@ class Gateway
 
     protected $paymentId;
 
-    protected $curlLogPath;
-
-    protected $curlLog;
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -1350,33 +1346,6 @@ class Gateway
     //
     // This is a temporary function for debugging the curl issue
     //
-    protected function traceCurlErrorIfApplicable()
-    {
-        try
-        {
-            if ((isset($this->exception) === true) and
-                ($this->exception instanceof \Requests_Exception) and
-                ($this->exception->getType() === 'curlerror'))
-            {
-                $curlData = file_get_contents($this->curlLogPath);
-
-                $dataToTrace = [
-                    'gateway'   => $this->gateway,
-                    'curl_data' => $curlData,
-                ];
-
-                $message = 'Curl error @vv @vivek @viv @kranti';
-
-                // #tech_curl_error
-                $this->app['slack']->queue(
-                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-        }
-    }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {

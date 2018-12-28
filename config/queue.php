@@ -189,6 +189,14 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'fund_transfer_recon_update' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fund_transfer_status_check' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

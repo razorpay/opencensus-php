@@ -68,7 +68,30 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->processFailedPayouts($input);
+        $data = $this->service()->processReversedPayouts($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPurposes()
+    {
+        $data = $this->service()->getPurposes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPurpose()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postPurpose($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPayoutReversal(string $payoutId)
+    {
+        $data = $this->service()->fetchReversalOfPayout($payoutId);
 
         return ApiResponse::json($data);
     }
