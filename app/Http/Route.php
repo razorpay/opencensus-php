@@ -2741,6 +2741,8 @@ final class Route
         else if (($key === '') and ($this->ba->isPartnerAuth() === true))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
+            // Todo: For bc there is another explode attempt, to be removed soon after this deploy.
+            $parts = count($parts) === 1 ? explode('~', $this->ba->getPublicKey()) : $parts;
 
             $key                         = $parts[0];
             $parameters['account_id']    = $this->ba->getAccountId();

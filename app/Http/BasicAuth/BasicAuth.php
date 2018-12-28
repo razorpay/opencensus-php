@@ -63,11 +63,11 @@ class BasicAuth
 
     /**
      * Callback key in the partner token flow looks like this:
-     * rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+     * rzp_test_1DP5mmOlF5G5ag-rzp_partner_ACIg2tb8NySnuh
      *
      * Delimiter used is defined in this const.
      */
-    const PARTNER_CALLBACK_KEY_DELIMITER = '~';
+    const PARTNER_CALLBACK_KEY_DELIMITER = '-';
 
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
@@ -462,8 +462,9 @@ class BasicAuth
 
         $matches = [];
 
-        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag~acc_ACIg2tb8NySnuh
-        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})~(acc_[a-zA-Z0-9]{14})$/';
+        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag-acc_ACIg2tb8NySnuh
+        // Todo: For bc we have (-|~) in below regex, to be removed soon after this deploy.
+        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})(-|~)(acc_[a-zA-Z0-9]{14})$/';
 
         $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
 
