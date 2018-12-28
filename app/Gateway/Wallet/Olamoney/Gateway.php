@@ -59,17 +59,18 @@ class Gateway extends Base\Gateway
 
     public function setVersion($terminal)
     {
-        $this->version = $terminal['gateway_access_code'];
+        $this->version = $terminal['gateway_merchant_id2'];
     }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-
         if( $this->version != "v2") {
 
             $request = $this->getBillGeneratorRequest($input);
+
+            return $request;
 
         } else {
             $content = $this->getAuthorizeRequestDataV2($input);
@@ -78,12 +79,12 @@ class Gateway extends Base\Gateway
 
             $this->createGatewayPaymentEntity($authorizeAttributes, Action::AUTHORIZE);
 
-            $request = $this->getStandardRequestArray($content,"GET","AUTHORIZE_V2");
+            $request = $this->getStandardRequestArray($content,"post","AUTHORIZE_V2");
 
             $this->traceGatewayPaymentRequest($request, $input);
-        }
 
-        return $request;
+            return $request;
+        }
     }
 
     // Not used in power-wallet flow
@@ -358,6 +359,11 @@ class Gateway extends Base\Gateway
 
     public function debit(array $input)
     {
+
+        if($this->version == "v2") {
+            return;
+        }
+
         $this->action($input, Action::DEBIT_WALLET);
 
         $request = $this->getDebitRequestArray($input);
@@ -554,7 +560,7 @@ class Gateway extends Base\Gateway
         ];
 
         if ($this->version == "v2") {
-            $fieldsInOrder[ResponseFields::SALT];
+            $fieldsInOrder[] = ResponseFields::SALT;
         }
 
 
@@ -569,6 +575,7 @@ class Gateway extends Base\Gateway
 
     protected function getBillGeneratorRequest(array $input)
     {
+
         $content = $this->getBillGeneratorAttributes($input);
 
         $requestContent = [
@@ -588,6 +595,7 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'content' => $content
             ]);
+
 
         $query = http_build_query($requestContent);
 
@@ -1078,7 +1086,7 @@ class Gateway extends Base\Gateway
         ];
 
         if($this->version == "v2") {
-            $fieldsInOrder[RequestFields::BALANCE_PREFERENCE];
+            $fieldsInOrder[] = RequestFields::BALANCE_PREFERENCE;
         }
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);

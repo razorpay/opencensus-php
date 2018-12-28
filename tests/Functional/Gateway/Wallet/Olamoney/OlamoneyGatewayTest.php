@@ -52,6 +52,21 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testPaymentV2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
     public function testAmountTampering()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
@@ -69,11 +84,47 @@ class OlamoneyGatewayTest extends TestCase
         });
     }
 
+    public function testAmountTamperingV2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amount'] = '100.00';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+
     public function testErrorPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $payment['contact'] = '9008119029';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testErrorPaymentV2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['status'] = 'failed';
+        });
+
 
         $data = $this->testData[__FUNCTION__];
 
