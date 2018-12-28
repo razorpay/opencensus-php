@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         // Check payment status
-        if ($input['gateway'][Fields::ACCU_RESPONSE_CODE] !== StatusCode::CALLBACK_SUCCESS)
+        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
