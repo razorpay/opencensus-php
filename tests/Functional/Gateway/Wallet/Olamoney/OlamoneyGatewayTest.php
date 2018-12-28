@@ -26,6 +26,8 @@ class OlamoneyGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal');
 
+        $this->sharedTerminalV2 = $this->fixtures->create('terminal:shared_olamoney_terminal', ['gateway_merchant_id2' => 'v2', 'id' => '1001OlamoneyTl']);
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'wallet_olamoney';
@@ -42,6 +44,7 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('1000OlamoneyTl', $payment['terminal_id']);
 
         $this->assertNotEmpty($payment['global_token_id']);
 
@@ -54,6 +57,8 @@ class OlamoneyGatewayTest extends TestCase
 
     public function testPaymentV2()
     {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
@@ -61,6 +66,7 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('1001OlamoneyTl', $payment['terminal_id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 

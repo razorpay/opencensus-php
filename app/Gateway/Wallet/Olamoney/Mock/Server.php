@@ -11,6 +11,8 @@ use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 use RZP\Gateway\Wallet\Olamoney\Status;
 use RZP\Models\Payment;
+use phpseclib\Crypt\RSA;
+use phpseclib\Crypt\AES;
 
 class Server extends Base\Mock\Server
 {

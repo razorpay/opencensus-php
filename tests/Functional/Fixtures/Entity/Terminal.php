@@ -544,6 +544,8 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
+        $attributes = array_merge($default, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
@@ -551,7 +553,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $default = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_olamoney',
