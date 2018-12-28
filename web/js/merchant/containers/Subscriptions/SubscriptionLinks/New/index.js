@@ -11,6 +11,7 @@ import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
 import { dotStringToObj } from 'common/util';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
@@ -263,6 +264,10 @@ function isFormValid(formIndex, fields, internals) {
         (!internals._startsImmediately && fields.start_at) &&
         !!fields.total_count
       );
+    }
+
+    case 1: {
+      return !internals._addOnPresent || fields.addons.every(isPresent);
     }
   }
 }
