@@ -3,6 +3,7 @@ import { Component } from 'react';
 import SupportHeader from 'merchant/components/Support/SupportHeader';
 import SupportBody from 'merchant/components/Support/SupportBody';
 
+import { trackSupportButton } from './ga';
 import { classList } from 'common/util';
 
 export default class Support extends Component {
@@ -64,6 +65,11 @@ export default class Support extends Component {
 
   handleToggle = () => {
     const { isOpened } = this.state;
+
+    if (!isOpened) {
+      trackSupportButton();
+    }
+
     this.setState({
       isOpened: !isOpened,
     });
