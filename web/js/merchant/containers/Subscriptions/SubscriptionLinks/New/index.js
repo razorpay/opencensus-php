@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/modules/plans';
+import { fetchItems } from 'merchant/modules/items';
 
 import { ModalAsideNav } from 'component/Wizard';
 import { Modal, ModalContent } from 'component/Modal';
@@ -17,18 +18,27 @@ import PlanDetails from './PlanDetails';
 import Review from './Review';
 
 @withRouter
-@connect(state => ({ plans: state.plans }), { fetchPlans })
+@connect(
+  state => ({
+    plans: state.plans,
+    items: state.items,
+  }),
+  { fetchPlans, fetchItems }
+)
 export default class NewSubscriptionLink extends Component {
   state = {
     currentTab: 0,
     validTabs: [false, false, false, false],
     fields: {
       quantity: 1,
+      addons: [],
     },
+    internals: {},
   };
 
   componentWillMount() {
     this.props.fetchPlans({ count: 100 });
+    this.props.fetchItems({ count: 100, type: 'invoice' });
   }
 
   handleTabChange = ({ target }) => {
@@ -37,13 +47,29 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleChangeIn = ({ target }) => {
-    const value = target.value;
+    let value = target.value;
     const name = target.name || target.dataset.name;
-    const fields = { ...this.state.fields };
+    const stateKey = target.name ? 'fields' : 'internals';
+    const values = { ...this.state[stateKey] };
 
-    dotStringToObj(name, value, fields);
+    if (target.type === 'number') {
+      value = Number(value);
+    } else if (target.type === 'checkbox') {
+      value = target.checked;
+    }
 
-    this.setState({ fields });
+    dotStringToObj(name, value, values);
+
+    this.setState({ [stateKey]: values }, () => {
+      if (name === '_addOnPresent') {
+        this.setState({
+          fields: {
+            ...this.state.fields,
+            addons: target.checked ? [{}] : [],
+          },
+        });
+      }
+    });
   };
 
   handleChangeInPlan = ({ option }) => {
@@ -55,6 +81,63 @@ export default class NewSubscriptionLink extends Component {
     });
   };
 
+  handleSelectItem = addonIndex => ({ option }) => {
+    const fields = { ...this.state.fields };
+    fields.addons[addonIndex] = {
+      item: {
+        name: option.name,
+        description: option.description,
+        amount: option.amount,
+        currency: option.currency,
+      },
+      quantity: 1,
+    };
+    this.setState({ fields });
+  };
+
+  handleDateChange = fieldName => selectedDate => {
+    selectedDate.startOf('day');
+
+    const current = this.state.fields[fieldName]
+      ? moment(this.state.fields[fieldName], 'X')
+      : 0;
+    const time = current
+      ? Number(current.format('X')) - Number(current.startOf('day').format('X'))
+      : 0;
+
+    const target = {
+      name: fieldName,
+      value: Number(selectedDate.format('X')) + time,
+    };
+    this.handleChangeIn({ target });
+  };
+
+  handleTimeChange = fieldName => selectedDate => {
+    const time =
+      Number(selectedDate.format('X')) -
+      Number(selectedDate.startOf('day').format('X'));
+    fieldName = fieldName.replace('_time', '');
+
+    let current = this.state.fields[fieldName];
+    // adding time to current day
+    current = Number(
+      moment(current, 'X')
+        .startOf('day')
+        .format('X')
+    );
+    const target = {
+      name: fieldName,
+      value: current + time,
+    };
+    this.handleChangeIn({ target });
+  };
+
+  handleAddaddon = () => {
+    const fields = { ...this.state.fields };
+    fields.addons.push({});
+    this.setState({ fields });
+  };
+
   changeTab = step => () => {
     const currentTab = this.state.currentTab + step;
 
@@ -62,6 +145,11 @@ export default class NewSubscriptionLink extends Component {
     validTabs[this.state.currentTab] = true;
 
     this.setState({ currentTab, validTabs });
+  };
+
+  isFormValid = () => {
+    const { currentTab, fields, internals } = this.state;
+    return isFormValid(currentTab, fields, internals);
   };
 
   renderForm() {
@@ -73,10 +161,21 @@ export default class NewSubscriptionLink extends Component {
             selectedPlanId={this.state.fields.plan_id}
             onChangeInPlan={this.handleChangeInPlan}
             planQuantity={this.state.fields.quantity}
+            startsImmediately={this.state.internals._startsImmediately}
+            showTimeInput={!!this.state.fields.start_at}
+            onDateChange={this.handleDateChange}
+            onTimeChange={this.handleTimeChange}
           />
         );
       case 1:
-        return <AddOnDetails />;
+        return (
+          <AddOnDetails
+            items={this.props.items}
+            addons={this.state.fields.addons}
+            onSelectItem={this.handleSelectItem}
+            onAddAddon={this.handleAddaddon}
+          />
+        );
       case 2:
         return <LinkDetails />;
       case 3:
@@ -86,6 +185,7 @@ export default class NewSubscriptionLink extends Component {
 
   renderWizard() {
     const { currentTab } = this.state;
+    const isLastTab = currentTab === tabs.length - 1;
     return (
       // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
@@ -100,7 +200,7 @@ export default class NewSubscriptionLink extends Component {
           tabsValidity={this.state.validTabs}
         />
         <main class="form-container">
-          <main-title>{tabs[Number(currentTab)].title}</main-title>
+          <main-title>{tabs[currentTab]}</main-title>
           <Form
             class="PaymentLinks--Create--Form"
             layout="tabular"
@@ -111,21 +211,26 @@ export default class NewSubscriptionLink extends Component {
           </Form>
         </main>
         <footer>
-          {this.state.currentTab > 0 && (
-            <Button onClick={this.changeTab(-1)}>Previous</Button>
+          {currentTab > 0 && (
+            <Button onClick={this.changeTab(-1)} type="button">
+              Previous
+            </Button>
           )}
-          {this.state.currentTab < tabs.length - 1 && (
-            <Button.Primary class="btn btn-primary" onClick={this.changeTab(1)}>
+          {!isLastTab ? (
+            <Button.Primary
+              onClick={this.changeTab(1)}
+              type="button"
+              disabled={!this.isFormValid()}
+            >
               Next
             </Button.Primary>
-          )}
-          {this.state.currentTab === tabs.length - 1 && (
+          ) : (
             <AsyncBtn.Primary
               pendingState="Creating..."
               type="submit"
               onClick={this.handleCreate}
             >
-              Create Subscription Link
+              Create Subscription
             </AsyncBtn.Primary>
           )}
         </footer>
@@ -147,6 +252,18 @@ export default class NewSubscriptionLink extends Component {
         {this.renderWizard({ isModalView })}
       </div>
     );
+  }
+}
+
+function isFormValid(formIndex, fields, internals) {
+  switch (formIndex) {
+    case 0: {
+      return (
+        !!fields.plan_id &&
+        (!internals._startsImmediately && fields.start_at) &&
+        !!fields.total_count
+      );
+    }
   }
 }
 
