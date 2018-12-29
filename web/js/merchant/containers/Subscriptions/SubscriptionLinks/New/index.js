@@ -279,7 +279,7 @@ function isFormValid(formIndex, fields, internals) {
     case 0: {
       return (
         !!fields.plan_id &&
-        (!internals._startsImmediately && fields.start_at) &&
+        (internals._startsImmediately || !!fields.start_at) &&
         !!fields.total_count
       );
     }

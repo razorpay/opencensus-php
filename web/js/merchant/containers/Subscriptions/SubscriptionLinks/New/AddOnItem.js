@@ -19,6 +19,7 @@ export default function AddOnItem(props) {
         selectedOptionLabelPath="name"
         onChange={props.onSelectItem}
         selected={props.selectedItem.item}
+        class="ps-in-modal"
       />
 
       {isPresent(props.selectedItem.item) && (
