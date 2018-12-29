@@ -32,9 +32,11 @@ class Server extends Base\Mock\Server
 
         $this->content($response, 'authorize');
 
-        $checksumString = http_build_query($response,null,'|');
+        $checksumString = urldecode(http_build_query($response,null,'|'));
 
         $callbackChecksum = $this->getHashOfString($checksumString);
+
+        $this->content($checksumString, 'checksum');
 
         $response[ResponseFields::CHECKSUM] = $callbackChecksum;
 

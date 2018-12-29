@@ -231,9 +231,9 @@ class NetbankingAllahabadGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if($action === 'authorize')
+            if($action === 'checksum')
             {
-                $content['bank_signature'] = 10000000000000000000000;
+                $content .= '|bank_signature=10000000000000000000000';
             }
         });
     }
