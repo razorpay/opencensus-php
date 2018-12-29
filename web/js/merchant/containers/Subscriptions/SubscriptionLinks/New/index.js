@@ -211,10 +211,12 @@ export default class NewSubscriptionLink extends Component {
           title="Create Subscription"
           description={<p>Provide details to create a subscription link</p>}
           tabs={tabs}
-          disableTabCondition={_ => false}
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
           tabsValidity={this.state.validTabs}
+          disableTabCondition={tabIndex =>
+            tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
+          }
         />
         <main class="form-container">
           <main-title>{tabs[currentTab]}</main-title>
