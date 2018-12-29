@@ -27,7 +27,6 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_olamoney',
-        'terminal_id'       => '1000OlamoneyTl',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
