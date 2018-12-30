@@ -8,6 +8,7 @@ use Request;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
 
 class Response
 {
@@ -172,6 +173,36 @@ class Response
         else if ($this->isCheckoutCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
+
+            // Todo: Remove this after PaySecure certification
+            if (isset($data['error']['data']['payment_id']) === true)
+            {
+                $paymentId = $data['error']['data']['payment_id'];
+
+                $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+                $this->app['basicauth']->setModeAndDbConnection($mode);
+
+                $payment = $this->app['repo']->payment->findOrFailPublic($paymentId);
+
+                if ($payment['gateway'] === Payment\Gateway::PAYSECURE)
+                {
+                    $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
+                        $paymentId,
+                        \RZP\Gateway\Base\Action::AUTHORIZE
+                    );
+
+                    $data['razorpay_payment_id'] = $paymentId;
+
+                    $data['rrn'] = $gatewayPayment['rrn'];
+
+                    $data['status'] = $payment['status'];
+
+                    $view = \View::make('gateway.callbackPaysecure')->with('data', $data);
+
+                    return \Response::make($view);
+                }
+            }
 
             $view = \View::make('gateway.callback')->with('data', $data)->render();
 
