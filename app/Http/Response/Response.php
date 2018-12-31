@@ -174,10 +174,12 @@ class Response
         {
             $data['http_status_code'] = $status;
 
+            $paymentId = request()->route('id');
+
             // Todo: Remove this after PaySecure certification
-            if (isset($data['error']['data']['payment_id']) === true)
+            if ($paymentId !== null)
             {
-                $paymentId = $data['error']['data']['payment_id'];
+                $paymentId = substr($paymentId, 4);
 
                 $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
