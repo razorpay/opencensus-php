@@ -264,7 +264,14 @@ export function intersect(a, b) {
  * @param {Object} obj - object where value needs to be inserted
  */
 export function dotStringToObj(path, value, obj) {
-  const parts = path.split('.');
+  // for supporting sample[0][sampleKey]
+  const squareBracketPattern = /\[|\]/;
+  if (squareBracketPattern.test(path)) {
+    parts = path.split(squareBracketPattern).filter(pathEl => !!pathEl); //splitting with regex gives empty strings
+  } else {
+    parts = path.split('.');
+  }
+
   let last = parts.pop();
 
   // converts if numeric for array
@@ -278,5 +285,5 @@ export function dotStringToObj(path, value, obj) {
     obj = obj[part];
   }
   obj[last] = value;
-  var part;
+  var parts, part;
 }
