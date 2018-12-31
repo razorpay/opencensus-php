@@ -13,6 +13,9 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Bank;
+
 
 class Validator extends Base\Validator
 {
@@ -687,6 +690,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
+    protected static $updateTerminalsBankRules = [
+        Entity::TERMINAL_IDS                => 'required|array',
+        Entity::ACTION                      => 'required|string|in:add,remove',
+        Entity::BANK                        => 'required|string|custom',
+    ];
+
     public function validateType()
     {
         if ($this->entity->isBankTransferEnabled() === false)
@@ -1023,5 +1032,14 @@ class Validator extends Base\Validator
         }
 
         return null;
+    }
+
+    protected static function validateBank($attribute, $value)
+    {
+        if (Bank\IFSC::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid bank name in input: '. $value);
+        }
     }
 }
