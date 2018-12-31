@@ -24,7 +24,7 @@ class OlamoneyGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
         $this->sharedTerminalV2 = $this->fixtures->create('terminal:shared_olamoney_terminal', ['gateway_merchant_id2' => 'v2', 'id' => '1001OlamoneyTl']);
 
@@ -130,7 +130,6 @@ class OlamoneyGatewayTest extends TestCase
         {
             $content['status'] = 'failed';
         });
-
 
         $data = $this->testData[__FUNCTION__];
 
