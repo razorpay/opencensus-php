@@ -2347,7 +2347,7 @@ class Service extends Base\Service
 
         $appId = $app->getId();
 
-        (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
+        (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId, 'partner_id' => $merchant->getId()]);
     }
 
     /**

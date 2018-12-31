@@ -819,6 +819,7 @@ final class Route
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                 => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
+        'oauth_sync_partner_map'                   => ['post',     'oauth/update_partner_map',                       'MerchantController@updateMerchantAccessMapHavingEmptyPartner'      ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
@@ -1785,6 +1786,7 @@ final class Route
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
         'oauth_sync_merchant_map',
+        'oauth_sync_partner_map',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -2192,6 +2194,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'oauth_sync_partner_map'                   => Permission::OAUTH_SYNC_MERCHANT_MAP,
         'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',

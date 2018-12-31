@@ -10,10 +10,12 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use Razorpay\OAuth\Token;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\OAuth\Application as OAuthApp;
 
 class Core extends Base\Core
 {
     public function create(
+        Merchant\Entity $partnerMerchant,
         Merchant\Entity $merchant,
         array $input = null,
         Base\PublicEntity $entity = null)
@@ -23,6 +25,7 @@ class Core extends Base\Core
         $merchantMapping->generateId();
 
         $merchantMapping->merchant()->associate($merchant);
+        $merchantMapping->partnerMerchant()->associate($partnerMerchant);
 
         if (empty($entity) === false)
         {
@@ -45,7 +48,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function addMappingForOAuthApp(Merchant\Entity $merchant, array $input): Entity
+    public function addMappingForOAuthApp(Merchant\Entity $aggregateMerchant, Merchant\Entity $merchant, array $input): Entity
     {
         $merchantId = $merchant->getId();
 
@@ -67,7 +70,7 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
 
-        return $this->create($merchant, $data);
+        return $this->create($aggregateMerchant, $merchant, $data);
     }
 
     /**
@@ -95,6 +98,75 @@ class Core extends Base\Core
         {
             return $this->repo->merchant_access_map->deleteOrFail($mapping);
         }
+    }
+
+    /**
+    * Gets all rows from merchant_access_map where partner_id is null
+    * and updates by querying auth.applications table
+    **/
+    public function updateMerchantAccessMapHavingEmptyPartner()
+    {
+        $batch = 500;
+        $skip = 0;
+        $count = 500;
+
+        $failed = 0;
+        $failedIds = [];
+        $succeeded = 0;
+        $processed = 0;
+
+        $oauthRepo = new OAuthApp\Repository;
+
+        $applications = [];
+
+        while($batch === $count)
+        {
+            $mappings = $this->repo->merchant_access_map->fetchApplicationRowsWithEmptyPartnerId($batch, $skip);
+            if(empty($mappings) === true)
+            {
+                break;
+            }
+
+            $count = $mappings->count();
+            $skip  += $count;
+
+            $applicationIds = [];
+            foreach ($mappings as $row)
+            {
+                $applicationId = $row->{Entity::ENTITY_ID};
+                if(array_key_exists($applicationId, $applications) === false)
+                {
+                    $applications[$applicationId] = $oauthRepo->find($applicationId);
+                }
+                try
+                {
+                    $succeeded++;
+                    $row->{Entity::PARTNER_ID} = $applications[$applicationId]->getAttribute(OAuthApp\Entity::MERCHANT_ID);
+
+                    $oauthRepo->saveOrFail($row);
+                }
+                catch(\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::ACCESS_MAP_UPDATE_ERROR,
+                        $traceData
+                    );
+
+                    $failed++;
+
+                    $failedIds[] = $merchantId . '.' . $appId;
+                }
+                $processed++;
+            }
+        }
+        return [
+            'success' => $succeeded,
+            'failure' => $failed,
+            'total'   => $processed,
+            'failed'  => $failedIds
+        ];
     }
 
     /**
@@ -141,18 +213,20 @@ class Core extends Base\Core
             {
                 $appId      = $mapping->app_id;
                 $merchantId = $mapping->merchant_id;
+                $partnerId  = $mapping->partner_id;
                 $createdAt  = $mapping->created_at;
 
                 $traceData = [
                     Entity::APPLICATION_ID => $appId,
                     Entity::MERCHANT_ID    => $merchantId,
+                    Entity::PARTNER_ID     => $partnerId
                 ];
 
                 $this->trace->info(TraceCode::ACCESS_MAP_UPDATE_REQUEST, $traceData);
 
                 try
                 {
-                    $this->processMigration($appId, $merchantId, $createdAt);
+                    $this->processMigration($appId, $merchantId, $partnerId, $createdAt);
 
                     $succeeded++;
                 }
@@ -182,7 +256,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function processMigration(string $appId, string $merchantId, int $createdAt)
+    protected function processMigration(string $appId, string $merchantId, string $partnerId, int $createdAt)
     {
         $mapping = DB::table(Table::MERCHANT_ACCESS_MAP)
                        ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
@@ -201,6 +275,7 @@ class Core extends Base\Core
                     Entity::ENTITY_TYPE => Entity::APPLICATION,
                     Entity::ENTITY_ID   => $appId,
                     Entity::MERCHANT_ID => $merchantId,
+                    Entity::PARTNER_ID  => $partnerId,
                     Entity::CREATED_AT  => $createdAt,
                     Entity::UPDATED_AT  => $createdAt
                 ]

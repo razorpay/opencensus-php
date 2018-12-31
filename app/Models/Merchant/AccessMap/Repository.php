@@ -75,4 +75,15 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $ids)
                     ->delete();
     }
+
+    public function fetchApplicationRowsWithEmptyPartnerId(int $limit, int $skip)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::PARTNER_ID)
+                    ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+                    ->take($limit)
+                    ->skip($skip)
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get();
+    }
 }

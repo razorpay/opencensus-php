@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
 
     const APPLICATION_ID = 'application_id';
 
+    const PARTNER_ID = 'partner_id';
+
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;
 
     protected $generateIdOnCreate = true;
@@ -41,12 +43,14 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::PARTNER_ID,
     ];
 
     protected $public = [
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::PARTNER_ID,
         self::CREATED_AT,
     ];
 
@@ -65,5 +69,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function partnerMerchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class, self::PARTNER_ID);
     }
 }

@@ -24,9 +24,20 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(self::ADD_APP, $input);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchants = $this->repo->merchant->findOrFailPublic([$merchantId, $input['partner_id']]);
+        foreach ($merchants as $row)
+        {
+            if($row->getId() === $merchantId)
+            {
+                $merchant = $row;
+            }
+            else
+            {
+                $aggregateMerchant = $row;
+            }
+        }
 
-        $mapping = (new Core)->addMappingForOAuthApp($merchant, $input);
+        $mapping = (new Core)->addMappingForOAuthApp($aggregateMerchant, $merchant, $input);
 
         return $mapping->toArrayPublic();
     }
@@ -54,5 +65,10 @@ class Service extends Base\Service
     public function updateMapFromTokens()
     {
         return (new Core)->updateMapFromTokens();
+    }
+
+    public function updateMerchantAccessMapHavingEmptyPartner()
+    {
+        return (new Core)->updateMerchantAccessMapHavingEmptyPartner();
     }
 }

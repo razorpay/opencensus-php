@@ -990,6 +990,7 @@ class Core extends Base\Core
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $partner,
                             $submerchant,
                             [
                                 AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
