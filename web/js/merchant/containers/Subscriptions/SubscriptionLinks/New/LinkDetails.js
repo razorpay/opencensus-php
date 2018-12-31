@@ -66,7 +66,7 @@ export default function NewSubscriptionLinkLinkDetails(props) {
         name="notes"
         label="Internal Notes"
         class="Input--vTop"
-        onChange={props.onNotesChange}
+        onChange={() => {}}
       />
     </>
   );

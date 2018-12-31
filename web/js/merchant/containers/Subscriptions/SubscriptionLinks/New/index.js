@@ -141,14 +141,6 @@ export default class NewSubscriptionLink extends Component {
     this.setState({ fields });
   };
 
-  handleNotesChange = notes => {
-    const target = {
-      name: 'notes',
-      value: notes,
-    };
-    this.handleChangeIn({ target });
-  };
-
   handleCreate = () => {
     const { fields: data, internals } = this.state;
     if (internals._startsImmediately) {
@@ -158,6 +150,12 @@ export default class NewSubscriptionLink extends Component {
     if (internals._isNonExpiringLink) {
       delete data.expire_by;
     }
+
+    // formatting notes, from [key: key1, value: value1] => {key1: value1}
+    data.notes = (data.notes || []).reduce(
+      (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
+      {}
+    );
 
     return this.props
       .saveSubscription(data)
@@ -230,7 +228,6 @@ export default class NewSubscriptionLink extends Component {
             onDateChange={this.handleDateChange}
             disableExpireBy={this.state.internals._isNonExpiringLink}
             onTimeChange={this.handleTimeChange}
-            onNotesChange={this.handleNotesChange}
           />
         );
       case 3:
