@@ -1,4 +1,3 @@
-import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
 import {
@@ -12,9 +11,7 @@ import { PLAN_FETCH } from 'merchant/modules/plans';
 import { CUSTOMER_FETCH } from 'merchant/modules/customers';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
-const SUBSCRIPTION_EDIT = 'SUBSCRIPTION_EDIT';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
@@ -42,10 +39,10 @@ export const fetchInvoices = subs_id => {
 };
 
 export const saveSubscription = params => {
-  const subscription = new Subscription(params);
+  const subscription = new Subscription();
   return {
-    type: subscription.isNew ? SUBSCRIPTION_CREATE : SUBSCRIPTION_EDIT,
-    payload: subscription.save(),
+    type: SUBSCRIPTION_CREATE,
+    payload: subscription.save(params),
   };
 };
 

@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
+import { saveSubscription } from 'merchant/modules/subscriptions';
+import { showNotification } from 'rzp/modules/notifications';
 
 import { ModalAsideNav } from 'component/Wizard';
 import { Modal, ModalContent } from 'component/Modal';
@@ -24,7 +26,7 @@ import Review from './Review';
     plans: state.plans,
     items: state.items,
   }),
-  { fetchPlans, fetchItems }
+  { fetchPlans, fetchItems, saveSubscription, showNotification }
 )
 export default class NewSubscriptionLink extends Component {
   state = {
@@ -145,6 +147,42 @@ export default class NewSubscriptionLink extends Component {
       value: notes,
     };
     this.handleChangeIn({ target });
+  };
+
+  handleCreate = () => {
+    const { fields: data, internals } = this.state;
+    if (internals._startsImmediately) {
+      delete data.start_at;
+    }
+
+    if (internals._isNonExpiringLink) {
+      delete data.expire_by;
+    }
+
+    return this.props
+      .saveSubscription(data)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Subscription Created Successfully',
+          });
+
+          if (this.props.onClose) {
+            this.props.onClose();
+          } else {
+            const entityId = data.id;
+            const redirectUrl = '/subscriptions/' + entityId;
+            this.props.history.push(redirectUrl);
+          }
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   changeTab = step => () => {
