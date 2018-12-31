@@ -117,6 +117,14 @@ trait RequestHandlerTrait
         // In UAT they want us to pass 6012
         $mcc = $this->mode == Mode::TEST ? '6012' : $this->input['merchant']['category'];
 
+        // todo: This needs to be removed  when going live.
+        if ((isset($this->input['payment']['notes']['test_name']) === true) and
+            ($this->input['payment']['notes']['test_name'] === 'AQPG_12')
+        )
+        {
+            $mcc = '6011';
+        }
+
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
         $requestArray = [
