@@ -557,7 +557,7 @@ class Gateway extends Base\Gateway
                               ->mpi
                               ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
-            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+            $authenticationGateway = $mpiEntity->getGateway() ?: \RZP\Models\Payment\Gateway::MPI_BLADE;
 
             $input['authentication'] = $this->callAuthenticationGateway($input, $authenticationGateway);
 
