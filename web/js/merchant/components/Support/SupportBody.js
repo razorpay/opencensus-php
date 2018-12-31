@@ -138,12 +138,5 @@ export default class SupportBody extends Component {
 }
 
 const isWorkingDay = () => {
-  const today = new Date();
-  const day = today.getDay();
-  const hours = today.getHours();
-
-  if (day >= 1 && day <= 5 && (hours >= 9 && hours < 18)) {
-    return true;
-  }
-  return false;
+  return window.RZP && window.RZP.holidays && window.RZP.holidays.isWorkingDay;
 };
