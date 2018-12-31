@@ -1,6 +1,4 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -14,7 +12,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
 
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 
 @connect(state => state.accounts, {
   ...AccountActions,
@@ -180,10 +178,18 @@ export default class AccountsListContainer extends ListContainer {
               <i class="i i-download" />
               <span>Export All (CSV)</span>
             </button>
-            <button class="btn btn-primary" onClick={this.showAddAccountModal}>
-              <i class="i i-plus" />
-              <span>Add Account</span>
-            </button>
+
+            <ShowWhen
+              additionalCondition={user => user.isAllowedEdit('accounts')}
+            >
+              <button
+                class="btn btn-primary"
+                onClick={this.showAddAccountModal}
+              >
+                <i class="i i-plus" />
+                <span>Add Account</span>
+              </button>
+            </ShowWhen>
           </div>
         </HeaderAction>
 
