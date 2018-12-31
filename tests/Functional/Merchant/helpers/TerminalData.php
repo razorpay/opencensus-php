@@ -1569,7 +1569,7 @@ return [
                 'netbanking'                => '1',
                 'tpv'                       => '1',
                 'network_category'          => 'ecommerce',
-                'gateway_secure_secret'     => 'random_secret',
+                'gateway_terminal_password' => 'random_password',
             ],
             'method' => 'POST'
         ],

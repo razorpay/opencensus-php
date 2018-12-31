@@ -579,9 +579,9 @@ class Validator extends Base\Validator
     protected static $netbankingAllahabadTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
 
     protected static $netbankingAllahabadEditTerminalRules = [
