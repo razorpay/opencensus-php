@@ -287,7 +287,7 @@ class Validator extends Base\Validator
         Entity::MODE                       => 'sometimes|in:3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
-        Entity::CAPABILITY                 => 'sometimes|',
+        Entity::CAPABILITY                 => 'sometimes',
     ];
 
     protected static $hitachiEditTerminalRules = [
