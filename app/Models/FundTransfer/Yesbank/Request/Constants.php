@@ -48,7 +48,7 @@ final class Constants
 
     const CURRENCY                            = 'INR';
 
-    // ******* Constants used in benefic      iary registration ******* //
+    // ******* Constants used in beneficiary registration ******* //
     const REQUEST_STATUS                      = 'RequestStatus';
 
     const ERROR                               = 'Error';
@@ -105,6 +105,8 @@ final class Constants
 
     const TRANSFER_TYPE                       = 'transferType';
 
+    const ATTEMPT_NO                          = 'attemptNo';
+
     const TRANSFER_CURRENCY_CODE              = 'transferCurrencyCode';
 
     const TRANSFER_AMOUNT                     = 'transferAmount';
@@ -138,6 +140,10 @@ final class Constants
     const BANK_REFERENCE_NO                   = 'bankReferenceNo';
 
     const BENEFICIARY_REFERENCE_NO            = 'beneficiaryReferenceNo';
+
+    const NAME_WITH_BENEFICIARY_BANK          = 'nameWithBeneficiaryBank';
+
+    const LOW_BALANCE_ALERT                   = 'lowBalanceAlert';
 
     // ****** Attribute specific to fault response ****** //
     const TEXT                                = 'Text';

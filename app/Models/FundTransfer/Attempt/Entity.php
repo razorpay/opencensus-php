@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\Settlement\Channel;
 
@@ -443,13 +444,13 @@ class Entity extends Base\PublicEntity
         switch (true)
         {
             case $this->isOfBanking():
-                return Attempt\Type::BANKIING;
+                return Type::BANKIING;
 
             case $this->isPennyTesting():
-                return Attempt\Type::PENNY_TESTING;
+                return Type::SYNC;
 
             default:
-                return Attempt\Type::PRIMARY;
+                return Type::PRIMARY;
         }
     }
 }

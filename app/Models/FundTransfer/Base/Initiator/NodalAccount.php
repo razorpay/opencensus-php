@@ -4,6 +4,8 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use Carbon\Carbon;
 
+use function GuzzleHttp\Psr7\try_fopen;
+use Monolog\Logger;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payout;
@@ -26,6 +28,8 @@ abstract class NodalAccount extends Base\Core
     const SUCCESS                = 'success';
 
     const FAILED                 = 'failed';
+
+    const LOW_BALANCE_ALERT      = 'low_balance_alert';
 
     const MIN_RTGS_AMOUNT        = 200000;
     const MAX_IMPS_AMOUNT        = 200000;
@@ -375,5 +379,21 @@ abstract class NodalAccount extends Base\Core
                 'memory_peak_usage'              => $memoryPeakUsage,
                 'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
+    }
+
+    protected function sendLowBalanceAlert(array $data)
+    {
+        try
+        {
+            (new Settlement\SlackNotification)->send('low_balance_alert', $data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SLACK_NOTIFICATION_SEND_FAILED,
+                $data);
+        }
     }
 }

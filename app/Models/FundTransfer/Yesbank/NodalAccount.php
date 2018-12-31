@@ -42,6 +42,7 @@ class NodalAccount extends NodalBase\NodalAccount
      *
      * @param PublicCollection $attempts
      * @return array
+     * @throws LogicException
      */
     public function process(PublicCollection $attempts): array
     {
@@ -49,6 +50,8 @@ class NodalAccount extends NodalBase\NodalAccount
 
         foreach ($attempts as $attempt)
         {
+            $lowBalanceAlert = false;
+
             //
             // This is required only for Yesbank since the schedule sets
             // time during non-working days and non-working hours also
@@ -80,6 +83,9 @@ class NodalAccount extends NodalBase\NodalAccount
                 // Calling init will reset all the data of previous request
                 $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);
+
+                // will be true if there is any low balance alert
+                $lowBalanceAlert = $response[self::LOW_BALANCE_ALERT] ?? false;
 
                 // We set attempt's status to `initiated` before calling this function, `process`.
                 // Only if the request is executed successfully, we want to save the attempt's status.
@@ -121,11 +127,46 @@ class NodalAccount extends NodalBase\NodalAccount
                     $response
                 );
             }
+
+            $this->initiatePostProcessing($attempt, $response);
+
+            if ($lowBalanceAlert === true)
+            {
+                $this->sendLowBalanceAlert([
+                    'channel'        => $this->channel,
+                    'account_number' => $transfer->getMaskedAccountNumber(),
+                ]);
+            }
         }
 
         $this->updateTransferStatus($processedCount);
 
         return $this->transferStatus;
+    }
+
+    protected function initiatePostProcessing(Attempt\Entity $attempt, array $response)
+    {
+        if ($attempt->isPennyTesting() === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $response['fta_id'] = $attempt->getId();
+
+            // TODO: This should be called only for penny testing for now
+//            $attempt->source->updateBeneData($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SOURCE_PROCESSING_FAILED,
+                $response
+            );
+        }
     }
 
     /**

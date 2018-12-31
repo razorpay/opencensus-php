@@ -33,6 +33,7 @@ abstract class Base extends ApiProcessor
     const MODE                  = 'mode';
     const PUBLIC_FAILURE_REASON = 'public_failure_reason';
     const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
+    const LOW_BALANCE_ALERT     = 'low_balance_alert';
 
     protected $appId;
 
@@ -47,6 +48,10 @@ abstract class Base extends ApiProcessor
     protected $accountNumber;
 
     protected $entity = null;
+
+    protected $requestIdentifier;
+
+    protected $responseIdentifier;
 
     public function __construct(string $type = null)
     {
@@ -91,7 +96,7 @@ abstract class Base extends ApiProcessor
             case Type::BANKIING:
                 return Config::get('nodal.yesbank.banking');
 
-            case Type::PENNY_TESTING:
+            case Type::SYNC:
                 return Config::get('nodal.yesbank.sync');
 
             default:

@@ -3,8 +3,6 @@
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use RZP\Trace\TraceCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\BankAccount;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
@@ -19,42 +17,25 @@ class Transfer extends Base
 {
     const VERSION = 1;
 
+    protected $requestType;
+
     protected $entity = null;
 
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
-    protected $requestIdentifier;
-
-    protected $responseIdentifier;
-
     public function __construct(string $purpose, string $type = null)
     {
         parent::__construct($type);
+
+        $this->requestType = $type;
 
         $this->purpose = $purpose;
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
 
-        $this->setRequestResponseIdentifiers($type);
-    }
-
-    protected function setRequestResponseIdentifiers(string $type = null)
-    {
-        switch ($type)
-        {
-            case Attempt\Type::PENNY_TESTING:
-                $this->requestIdentifier  = Constants::SYNC_TRANSFER_REQUEST_IDENTIFIER;
-                $this->responseIdentifier = Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER;
-                break;
-
-            default:
-                $this->requestIdentifier  = Constants::ASYNC_TRANSFER_REQUEST_IDENTIFIER;
-                $this->responseIdentifier = Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER;
-                break;
-
-        }
+        $this->setRequestResponseIdentifiers();
     }
 
     public function init()
@@ -98,6 +79,27 @@ class Transfer extends Base
         return $jsonRequest;
     }
 
+    public function getMaskedAccountNumber()
+    {
+        return mask_except_last4($this->accountNumber);
+    }
+
+    protected function setRequestResponseIdentifiers()
+    {
+        switch ($this->requestType)
+        {
+            case Attempt\Type::SYNC:
+                $this->requestIdentifier  = Constants::SYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+
+            default:
+                $this->requestIdentifier  = Constants::ASYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+        }
+    }
+
     /**
      * Gives an request body in array format which has to be sent in request body
      * this will construct the data based on type of request
@@ -125,9 +127,9 @@ class Transfer extends Base
         ];
 
         //
-        // Purpose is not required for sync mode
+        // Purpose is required for async mode transfers
         //
-        if ($this->entity->isPennyTesting() !== true)
+        if ($this->requestType !== Attempt\Type::SYNC)
         {
             $data[Constants::PURPOSE_CODE] = Constants::PURPOSE_CODE_MAP[$this->purpose];
         }
@@ -220,8 +222,10 @@ class Transfer extends Base
     {
         $attempt = $this->entity;
 
+        // Beneficiary details are required when the request is of purpose `refund` or
+        // the request has to be made using sync API
         if (($attempt->isRefund() === true) or
-            ($attempt->isPennyTesting() === true))
+            ($this->requestType === Attempt\Type::SYNC))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 
@@ -283,6 +287,11 @@ class Transfer extends Base
      */
     protected function extractSuccessfulData(array $response): array
     {
+        if ($this->entity->isPennyTesting() === true)
+        {
+            return $this->extractDataFromSyncResponse($response);
+        }
+
         return $this->extractDataFromAsyncResponse($response);
     }
 
@@ -297,23 +306,25 @@ class Transfer extends Base
         {
             return $this->extractDataFromSyncResponse($response);
         }
-        else
-        {
-            return $this->extractDataFromAsyncResponse($response);
-        }
+
+        return $this->extractDataFromAsyncResponse($response);
     }
 
     protected function extractDataFromSyncResponse(array $response): array
     {
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
 
-        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
+        $beneName = $response[Constants::NAME_WITH_BENEFICIARY_BANK] ?? null;
 
-        $statusCode = $response[Constants::STATUS_CODE] ?? null;
+        $mode = $response[Constants::TRANSFER_TYPE] ?? null;
 
-        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+        $lowBalanceAlert = $response[Constants::LOW_BALANCE_ALERT] ?? null;
 
-        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
+        $statusCode = $response[Constants::TRANSACTION_STATUS][Constants::STATUS_CODE] ?? null;
+
+        $bankSubStatus = $response[Constants::TRANSACTION_STATUS][Constants::SUB_STATUS_CODE] ?? null;
+
+        $bankReferenceNo = $response[Constants::TRANSACTION_STATUS][Constants::BANK_REFERENCE_NO] ?? null;
 
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
@@ -321,14 +332,15 @@ class Transfer extends Base
             self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
             self::UTR                   => null,
             self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::REMARK                => null,
             self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
             self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
+            self::TRANSFER_TYPE         => $mode,
             self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
             self::MODE                  => null,
             self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
-            self::NAME_WITH_BENE_BANK   => null,
+            self::NAME_WITH_BENE_BANK   => $beneName,
+            self::LOW_BALANCE_ALERT     => $lowBalanceAlert,
         ];
     }
 
@@ -364,6 +376,7 @@ class Transfer extends Base
             self::MODE                  => null,
             self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
             self::NAME_WITH_BENE_BANK   => null,
+            self::LOW_BALANCE_ALERT     => false,
         ];
     }
 
@@ -414,6 +427,37 @@ class Transfer extends Base
      */
     protected function mockGenerateSuccessResponse(): string
     {
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->generateSyncMockSuccessResponse();
+        }
+
+        return $this->generateAsyncMockSuccessResponse();
+    }
+
+    protected function generateSyncMockSuccessResponse(): string
+    {
+        return json_encode([
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => 'Someone',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::COMPLETED,
+                    Constants::SUB_STATUS_CODE          => 0,
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateAsyncMockSuccessResponse(): string
+    {
         return json_encode([
             Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
@@ -429,6 +473,37 @@ class Transfer extends Base
      * {@inheritdoc}
      */
     protected function mockGenerateFailedResponse(): string
+    {
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->generateSyncMockFailureResponse();
+        }
+
+        return $this->generateAsyncMockFailureResponse();
+    }
+
+    protected function generateSyncMockFailureResponse(): string
+    {
+        return json_encode([
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => '',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'npci:E307',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateAsyncMockFailureResponse(): string
     {
         return json_encode([
             Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
