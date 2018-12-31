@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $checkAvailabilityRules;
     protected static $deleteRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID            => 'string',
@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_ID            => 'sometimes',
@@ -55,49 +55,49 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getFetchHandlesRules()
+    public function makeFetchHandlesRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getAddRules()
+    public function makeAddRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchRules()
+    public function makeFetchRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getAssignBankAccountRules()
+    public function makeAssignBankAccountRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getCheckAvailabilityRules()
+    public function makeCheckAvailabilityRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getDeleteRules()
+    public function makeDeleteRules()
     {
         $rules = $this->makeRules([]);
 
