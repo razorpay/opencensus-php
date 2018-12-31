@@ -25,7 +25,8 @@ class CreateMerchantAccessMapTable extends Migration
 
                 $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
-                $table->char(Entity::PARTNER_ID, Merchant::ID_LENGTH);
+                $table->char(Entity::PARTNER_ID, Merchant::ID_LENGTH)
+                    ->nullable();
 
                 $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 
