@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
 
     const APPLICATION_ID = 'application_id';
 
+    const PARTNER_ID = 'partner_id';
+
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;
 
     protected $generateIdOnCreate = true;
