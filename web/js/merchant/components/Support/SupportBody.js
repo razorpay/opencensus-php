@@ -138,10 +138,5 @@ export default class SupportBody extends Component {
 }
 
 const isWorkingDay = () => {
-  if (window.holidays) {
-    return holidays.isWorkingDay;
-  }
-
-  //- if static holiday script breaks, disable support
-  return false;
+  return window.RZP && window.RZP.holidays && window.RZP.holidays.isWorkingDay;
 };
