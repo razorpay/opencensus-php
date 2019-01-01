@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\P2p\Device;
+namespace RZP\Models\P2p\Device\DeviceToken;
 
 class ClientLibrary
 {

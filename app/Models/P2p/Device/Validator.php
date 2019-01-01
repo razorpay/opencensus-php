@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device\DeviceToken\ClientLibrary;
 
 class Validator extends Base\Validator
 {
