@@ -15,7 +15,7 @@ use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 
 class Transfer extends Base
 {
-    const VERSION = 1;
+    const VERSION = "1";
 
     protected $requestType;
 
@@ -287,7 +287,7 @@ class Transfer extends Base
      */
     protected function extractSuccessfulData(array $response): array
     {
-        if ($this->entity->isPennyTesting() === true)
+        if ($this->requestType === Attempt\Type::SYNC)
         {
             return $this->extractDataFromSyncResponse($response);
         }
@@ -302,7 +302,7 @@ class Transfer extends Base
      */
     protected function extractFailedData(array $response): array
     {
-        if ($this->entity->isPennyTesting() === true)
+        if ($this->requestType === Attempt\Type::SYNC)
         {
             return $this->extractDataFromSyncResponse($response);
         }
