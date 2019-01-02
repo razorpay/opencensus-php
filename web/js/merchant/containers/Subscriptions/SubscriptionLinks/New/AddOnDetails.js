@@ -7,6 +7,7 @@ import AddOnItem from './AddOnItem';
 export default function NewSubscriptionLinkAddOnDetails({
   items,
   selectedItems,
+  addons,
   ...props
 }) {
   return (
@@ -16,7 +17,7 @@ export default function NewSubscriptionLinkAddOnDetails({
         fieldLabel="I want to add an upfront amount"
         class="Input--noMarginLeft"
       />
-      {props.addons.map((addon, index) => (
+      {addons.map((addon, index) => (
         <AddOnItem
           key={index}
           name={`addons.${index}`}
@@ -27,11 +28,12 @@ export default function NewSubscriptionLinkAddOnDetails({
         />
       ))}
 
-      {isPresent(props.addons) && (
-        <button class="btn btn-link" onClick={props.onAddAddon}>
-          Add New Item
-        </button>
-      )}
+      {isPresent(addons) &&
+        isPresent(addons[addons.length - 1]) && (
+          <button class="btn btn-link" onClick={props.onAddAddon}>
+            Add New Item
+          </button>
+        )}
     </>
   );
 }
