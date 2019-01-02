@@ -961,6 +961,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_REQUEST_PARAMS                         = 'ES_REQUEST_PARAMS';
     const ES_SYNC_MERCHANT_REQUEST                  = 'ES_SYNC_MERCHANT_REQUEST';
     const ES_SYNC_MERCHANT_FAILED                   = 'ES_SYNC_MERCHANT_FAILED';
+    const ES_INDEX_CREATE_REQUEST                   = 'ES_INDEX_CREATE_REQUEST';
+    const ES_INDEX_REQUEST                          = 'ES_INDEX_REQUEST';
+    const ES_INDEX_PROGRESS                         = 'ES_INDEX_PROGRESS';
 
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED             = 'RECON_EMAIL_VALIDATION_FAILED';

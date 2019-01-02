@@ -4,11 +4,13 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Illuminate\Support\Facades\Artisan;
 
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Services\EsClient;
 use RZP\Models\Base\EsDao;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 
@@ -96,6 +98,28 @@ class EsController extends Controller
         return ApiResponse::json($res);
     }
 
+    public function postIndexCreate()
+    {
+        $this->trace->info(TraceCode::ES_INDEX_CREATE_REQUEST, $this->getTracePayload());
+
+        $this->increaseAllowedSystemLimits();
+
+        Artisan::call('rzp:index_create', Request::all());
+
+        return [];
+    }
+
+    public function postIndex()
+    {
+        $this->trace->info(TraceCode::ES_INDEX_REQUEST, $this->getTracePayload());
+
+        $this->increaseAllowedSystemLimits();
+
+        Artisan::call('rzp:index', Request::all());
+
+        return [];
+    }
+
     // -------------------- Write endpoint ends -------------------------------
 
     // -------------------- Protected methods starts --------------------------
@@ -131,6 +155,12 @@ class EsController extends Controller
         ];
 
         return $data + $with;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(3600);
     }
 
     // -------------------- Protected methods ends ----------------------------
