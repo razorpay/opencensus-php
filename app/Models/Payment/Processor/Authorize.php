@@ -956,6 +956,21 @@ trait Authorize
             return;
         }
 
+        $oAuthApplicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+        //refer testAppBlacklistedFeatureEnabledOnApp
+        if ($oAuthApplicationId !== null)
+        {
+            $feature = $this->repo
+                            ->feature
+                            ->findByEntityTypeEntityIdAndName(Feature\Constants::APPLICATION, $oAuthApplicationId, Feature\Constants::S2S);
+
+            if ($feature !== null)
+            {
+                return;
+            }
+        }
+
         if ($payment->isOpenWalletPayment() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::OPENWALLET);

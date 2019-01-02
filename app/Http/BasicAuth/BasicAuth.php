@@ -608,9 +608,9 @@ class BasicAuth
         }
     }
 
-    public function oauthPublicTokenAuth(string $token = null)
+    public function oauthPublicTokenAuth(string $token = null, string $auth = Type::PUBLIC_AUTH)
     {
-        $this->setType(Type::PUBLIC_AUTH);
+        $this->setType($auth);
 
         $this->authCreds = new KeyAuthCreds($this->app, $token);
 
