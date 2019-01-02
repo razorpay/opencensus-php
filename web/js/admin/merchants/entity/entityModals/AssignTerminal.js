@@ -366,6 +366,7 @@ export default class TerminalForm extends Component {
             <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
+            <option value="2">Both</option>
           </SelectField>
 
           <SelectField name="corporate" label="Corporate" defaultValue="">
