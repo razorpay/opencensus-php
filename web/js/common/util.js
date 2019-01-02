@@ -275,13 +275,16 @@ export function dotStringToObj(path, value, obj) {
   let last = parts.pop();
 
   // converts if numeric for array
-  last = Number(last) || last;
+  last = isNaN(last) ? last : Number(last);
 
   while ((part = parts.shift())) {
     // converts if numeric for array
-    part = Number(part) || part;
+    part = isNaN(part) ? part : Number(part);
 
-    if (typeof obj[part] !== 'object') obj[part] = {};
+    if (typeof obj[part] !== 'object') {
+      // assigning an array if upcoming part is number
+      obj[part] = isNaN(parts[0]) ? {} : [];
+    }
     obj = obj[part];
   }
   obj[last] = value;
