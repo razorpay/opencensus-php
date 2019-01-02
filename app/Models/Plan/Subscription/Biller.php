@@ -35,7 +35,8 @@ class Biller extends Base\Core
     public function createInvoiceAndCharge(Entity $subscription, array $options = [])
     {
         // Subscription may have been queued and charged by a different process
-        if ($subscription->isChargeable() === false)
+        if (($subscription->isChargeable() === false) and
+            ($options['queue'] === true))
         {
             return;
         }
