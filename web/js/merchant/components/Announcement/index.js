@@ -6,6 +6,10 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import { classList } from 'common/util';
 
 export default class Announcement extends Component {
+  static defaultProps = {
+    onMount: () => {},
+  };
+
   constructor(props) {
     super(props);
 
@@ -29,12 +33,17 @@ export default class Announcement extends Component {
     }
   }
 
+  componentDidMount() {
+    this.props.onMount();
+  }
+
   render() {
     const {
       className,
       handleClose,
       canBeClosed,
       bannerKey,
+      onMount,
       ...props
     } = this.props;
 

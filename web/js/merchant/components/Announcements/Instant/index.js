@@ -2,15 +2,34 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import { activationDuration } from 'common/data';
+import LocalStorageService from 'rzp/utils/localStorage';
+
 import Announcement from 'merchant/components/Announcement';
 
 export default class InstantActivationAnnouncements extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      shouldAnimate: false,
+    };
   }
+
+  handleAnimation = () => {
+    const { user } = this.props;
+
+    //animate only the first time
+    // if(!LocalStorageService.getItem(`announcement-banner-${user.activation_status}-${user.current}`)) {
+    setTimeout(() => {
+      this.setState({
+        shouldAnimate: true,
+      });
+    }, 1000);
+    // }
+  };
 
   render() {
     const { user, mode, payments } = this.props;
+    const { shouldAnimate } = this.state;
 
     let theme = 'warning',
       title,
@@ -58,10 +77,12 @@ export default class InstantActivationAnnouncements extends Component {
       <Announcement
         title={title}
         theme={theme}
+        className={shouldAnimate && 'animate'}
         bannerKey={`announcement-banner-${user.activation_status}-${
           user.current
         }`}
         canBeClosed={user.isAccepted}
+        onMount={this.handleAnimation}
       >
         {content}
       </Announcement>
