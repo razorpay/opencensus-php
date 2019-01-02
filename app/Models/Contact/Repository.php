@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     {
         $id = $params[Entity::ID];
 
-        Entity::stripSignOrFail($id);
+        Entity::verifyIdAndStripSign($id);
 
         $query->where(Entity::ID, $id);
     }

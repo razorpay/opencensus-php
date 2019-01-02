@@ -101,6 +101,13 @@ class Entity extends Base\PublicEntity
 
     //const PRIORITY                      = 'priority';
 
+    // additional attributes
+    const ACTION                        = 'action';
+
+    const TERMINAL_IDS                  = 'terminal_ids';
+
+    const BANK                          = 'bank';
+
     protected $fillable = [
         self::GATEWAY,
         self::CARD,

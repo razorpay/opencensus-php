@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
@@ -755,15 +756,27 @@ class Entity extends Base\PublicEntity
 
     protected function modifyMode(& $input)
     {
-        if (isset($input[self::MODE]) === false)
+        $fundAccount = $this->fundAccount;
+
+        //
+        // In case of merchant payouts, we don't use fund account entity.
+        // We use destination directly. We have to move them to FA soon.
+        //
+        if (empty($fundAccount) === true)
         {
             return;
         }
 
-        if ($this->fundAccount->getSourceType() === FundAccount\Type::BANK_ACCOUNT)
+        $accountType = $fundAccount->getAccountType();
+
+        if ($accountType === FundAccount\Type::VPA)
+        {
+            $input[self::MODE] = Mode::UPI;
+        }
+        else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
         {
             /** @var BankAccount\Entity $ba */
-            $ba = $this->fundAccount->source;
+            $ba = $fundAccount->account;
 
             $ifsc = $ba->getIfscCode();
 
@@ -771,7 +784,7 @@ class Entity extends Base\PublicEntity
 
             if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
             {
-                $input[Mode::IFT];
+                $input[self::MODE] = Mode::IFT;
             }
         }
     }

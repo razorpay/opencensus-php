@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Emi;
 
+use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
+
 class Constants
 {
     public static $blackListedMcc = [
@@ -51,4 +55,31 @@ class Constants
         "8661",
         "9399",
     ];
+
+    /**
+     * returns if category or sub-category can have emi enabled
+     * used in L1 Activation form
+     * @param string $category
+     * @param string|null $subcategory
+     *
+     * @return bool
+     */
+    public static function isCategoryOrSubcategoryBlacklisted(string $category, string $subCategory = null): bool
+    {
+        if ($category === BusinessCategory::OTHERS)
+        {
+            return true;
+        }
+
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subCategory);
+
+        if (isset($subCategoryMetaData[BusinessSubCategoryMetaData::EMI_ACTIVATION]) === true)
+        {
+            return $subCategoryMetaData[BusinessSubCategoryMetaData::EMI_ACTIVATION] === ActivationFlow::BLACKLIST;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }

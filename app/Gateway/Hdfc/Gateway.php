@@ -736,6 +736,8 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayRequestException $e)
         {
+            $this->trace->traceException($e);
+
             // For verify we should throw exception as is.
             if ($this->action === BaseAction::VERIFY)
             {

@@ -17,6 +17,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
     const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
+    const PAYER_AUTHENTICATION_REQUEST                  = 'PAYER_AUTHENTICATION_REQUEST';
+    const PAYER_AUTHENTICATION_RESPONSE                 = 'PAYER_AUTHENTICATION_RESPONSE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
@@ -789,6 +791,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_ACCOUNT_DELETED                      = 'BANK_ACCOUNT_DELETED';
     const BANK_ACCOUNT_EDIT                         = 'BANK_ACCOUNT_EDIT';
 
+    const BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG       = 'BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG';
+
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST         = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED       = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
     const BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION  = 'BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION';
@@ -916,6 +920,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
+    const CARD_VAULT_REQUEST                        = 'CARD_VAULT_REQUEST';
+    const CARD_VAULT_RESPONSE                       = 'CARD_VAULT_RESPONSE';
+    const CARD_VAULT_RETRY                          = 'CARD_VAULT_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
     const RAVEN_CALLBACK_REQUEST                    = 'RAVEN_CALLBACK_REQUEST';

@@ -82,6 +82,10 @@ class NodalAccount extends NodalBase\NodalAccount
                                      ->setEntity($attempt)
                                      ->makeRequest($gateway);
 
+                $attempt->setMode($transfer->transferType);
+
+                $this->repo->save($attempt);
+
                 // We set attempt's status to `initiated` before calling this function, `process`.
                 // Only if the request is executed successfully, we want to save the attempt's status.
                 $this->repo->saveOrFail($attempt);
@@ -101,6 +105,10 @@ class NodalAccount extends NodalBase\NodalAccount
                         'attempt_id'    => $attempt->getId(),
                         'settlement_id' => $attempt->getSourceId(),
                     ]);
+
+                $attempt->setMode($transfer->transferType);
+
+                $this->repo->save($attempt);
 
                 $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $attempt->getSourceType());
 

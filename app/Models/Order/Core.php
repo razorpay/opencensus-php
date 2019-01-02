@@ -22,12 +22,8 @@ class Core extends Base\Core
      *
      *
      * @return Entity
-     * @throws Exception\BadRequestValidationFailureException
      */
-    public function create(
-        array $input,
-        Merchant\Entity $merchant,
-        bool $partialPayment = false)
+    public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
     {
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
@@ -131,6 +127,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function getFormattedDataForCheckout(
         Entity $order,
@@ -147,10 +144,11 @@ class Core extends Base\Core
         }
 
         $data = [
-            Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
-            Entity::AMOUNT          => $order->getAmount(),
-            Entity::AMOUNT_PAID     => $order->getAmountPaid(),
-            Entity::AMOUNT_DUE      => $order->getAmountDue(),
+            Entity::PARTIAL_PAYMENT          => $order->isPartialPaymentAllowed(),
+            Entity::AMOUNT                   => $order->getAmount(),
+            Entity::AMOUNT_PAID              => $order->getAmountPaid(),
+            Entity::AMOUNT_DUE               => $order->getAmountDue(),
+            Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
         ];
 
         if ($merchant->isTPVRequired() === true)

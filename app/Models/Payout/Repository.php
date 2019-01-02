@@ -68,22 +68,32 @@ class Repository extends Base\Repository
         return $updatedCount;
     }
 
-    protected function addQueryParamId($query, $params)
+    protected function addQueryParamId(BuilderEx $query, array $params)
     {
         $id = $params[Entity::ID];
 
-        Entity::stripSignOrFail($id);
+        Entity::verifyIdAndStripSign($id);
 
         $query->where(Entity::ID, $id);
     }
 
-    public function addQueryParamDestination($query, $params)
+    public function addQueryParamDestination(BuilderEx $query, array $params)
     {
         $destinationId = $params[Entity::DESTINATION];
 
         Entity::stripSignWithoutValidation($destinationId);
 
         $query->where(Entity::DESTINATION_ID, $destinationId);
+    }
+
+    public function addQueryParamStatus(BuilderEx $query, array $params)
+    {
+        $publicStatus = $params[Entity::STATUS];
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
+
+        $query->whereIn($statusColumn, $mappedStatuses);
     }
 
     public function fetchReversedPayouts(array $ids)

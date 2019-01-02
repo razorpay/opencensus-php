@@ -108,7 +108,7 @@ class Server extends Base\Mock\Server
             RefundResponseFields::MERCHANT_ID    => $input[RefundRequestFields::MERCHANT_ID],
             RefundResponseFields::TRANSACTION_ID => $input[RefundRequestFields::GATEWAY_TRANSACTION_ID],
             RefundResponseFields::AMOUNT         => $input[RefundRequestFields::REFUND_AMOUNT],
-            RefundResponseFields::STATUS_CODE    => Status::REFUND_SUCCESS,
+            RefundResponseFields::STATUS_CODE    => Status::FULL_REFUND_SUCCESS,
         ];
 
         // this is a hack to ensure gateway returns invalid date for one scenario and successful

@@ -935,6 +935,28 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestTerminalPassword();
+        }
+
+        return $this->getLiveTerminalPassword();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword()
+    {
+        return $this->input['terminal']['gateway_terminal_password'];
+    }
+
     protected function isTestMode() : bool
     {
         return ($this->mode === Mode::TEST);

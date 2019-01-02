@@ -86,6 +86,13 @@ return [
         'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
+    'card_vault' => [
+        'mock'      => env('CARD_VAULT_MOCK', false),
+        'key'       => env('CARD_VAULT_KEY'),
+        'secret'    => env('CARD_VAULT_SECRET'),
+        'url'       => env('CARD_VAULT_URL'),
+    ],
+
     'redisdualwrite' => [
         'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
         'skip_dual_write'           => env('SKIP_DUAL_WRITE'),

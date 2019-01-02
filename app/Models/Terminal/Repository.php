@@ -85,6 +85,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()
@@ -221,15 +222,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
-                    ->enabled()
-                    ->get();
-    }
-
-    // TODO: needs to be removed. temporarily added for payout route
-    public function getAllTerminalsForGateway($gateway)
-    {
-        return $this->newQuery()
-                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->enabled()
                     ->get();
     }
