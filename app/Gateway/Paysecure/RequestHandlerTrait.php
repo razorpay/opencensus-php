@@ -237,14 +237,29 @@ trait RequestHandlerTrait
 
         $requestBody    = $this->getRequestBody($params, $command);
 
+        // Set default timeout to 30 seconds
+        $timeout = 30;
+
+        switch ($command)
+        {
+            case Command::CHECKBIN2:
+            case Command::TRANSACTION_STATUS:
+                $timeout = 10;
+                break;
+            case Command::INITIATE:
+            case Command::INITIATE_2:
+                $timeout = 20;
+                break;
+            case Command::AUTHORIZE:
+                $timeout = 35;
+        }
+
         try
         {
-            // TODO: [OPTIONAL] Set trace and exceptions to false before pushing to production
             $soapClientOptions = [
                 'trace'               => true,
                 'exceptions'          => true,
-                'connection_timeout'  => 30,
-//                'soap_version'        => SOAP_1_2,
+                'connection_timeout'  => $timeout,
             ];
 
             $request = [
