@@ -92,7 +92,24 @@ class Constants
             'filters'     => [
                 'tags' => ['announcement_razorpayx'],
             ]
-      ],        
+        ],
+        [
+            'title'       => 'Android SDK Upgrade',
+            'description' => 'Your Android SDK needs an update to conform with Google Play\'s new policy. Please update before 9 January 2019 for payments to continue working.',
+            'start_ts'    => 1545996600,
+            'end_ts'      => 1547094600,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/android.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Download latest SDK now',
+                    'url'   => 'https://github.com/razorpay/razorpay-android-sample-app/releases/tag/v1.5.1',
+                ],
+            ],
+            'filters'     => [
+                'tags' => ['android_sdk_merchants'],
+            ]
+        ],        
     ];
 
     public static function getNotifications(): array
