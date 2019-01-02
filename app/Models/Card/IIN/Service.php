@@ -97,40 +97,42 @@ class Service extends Base\Service
         $cardNumber = $input[Entity::NUMBER];
         $cardType   = $input[Entity::TYPE];
 
-        $enabledBinIssuerValidator = $this->merchant->isFeatureEnabled(Feature::BIN_ISSUER_VALIDATOR);
-
         $response = ['result' => false];
 
-        // We will be returning false when the feature flag is not added.
-        // Could have thrown error at feature middleware but that is not expected functionality by frontend.
-        if ($enabledBinIssuerValidator === false)
+        $issuer = strtoupper($issuer);
+
+        $iinNumber = intval(substr($cardNumber, 0, 6));
+
+        $iin = $this->repo->iin->findByIinWithIssuerAndType($iinNumber, $issuer, $cardType);
+
+        if (empty($iin) === false)
         {
-            return $response;
+            $response['result'] = true;
         }
         else
         {
-            $issuer = strtoupper($issuer);
-
-            $iinNumber = intval(substr($cardNumber, 0, 6));
-
-            $iin = $this->repo->iin->findByIinWithIssuerAndType($iinNumber, $issuer, $cardType);
-
-            if (empty($iin) === false)
-            {
-                $response['result'] = true;
-            }
-            else
-            {
-                // This log helps us track any bin validations
-                // which we are unable to serve because of our iin database errors.
-                $this->trace->info(
-                    TraceCode::BIN_ISSUER_VALIDATION_FAILED,
-                    [
-                        'issuer' => $issuer,
-                        'iin'    => $iinNumber
-                    ]);
-            }
+            // This log helps us track any bin validations
+            // which we are unable to serve because of our iin database errors.
+            $this->trace->info(
+                TraceCode::BIN_ISSUER_VALIDATION_FAILED,
+                [
+                    'issuer' => $issuer,
+                    'iin'    => $iinNumber
+                ]);
         }
+
+        return $response;
+    }
+
+    public function getIinsList(array $input) : array
+    {
+        (new Validator)->validateInput('bin_list_validation', $input);
+
+        $iins = $this->repo->iin->findOtpEnabledIins();
+
+        $response['count'] = count($iins);
+
+        $response['iins'] = $iins;
 
         return $response;
     }

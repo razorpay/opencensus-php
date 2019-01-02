@@ -7,8 +7,9 @@ use DB;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Table;
+use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
@@ -1273,5 +1274,56 @@ class Repository extends Base\Repository
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        if ($entity->isBalanceTypeBanking() === false)
+        {
+            return [];
+        }
+
+        $serialized = parent::serializeForIndexing($entity);
+
+        $enitityType = $entity->getType();
+
+        if ($enitityType === ConstantEntity::PAYOUT)
+        {
+            $serialized[Statement\Entity::UTR] = $entity->source->getUtr();
+
+            $fa = $entity->source->fundAccount;
+
+            if ($fa->getSourceType() === ConstantEntity::CONTACT)
+            {
+                $contact = $fa->source;
+                $serialized[Statement\Entity::CONTACT_NAME] = $contact->getName();
+                $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
+            }
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isEsSyncNeeded(string $action, array $dirty = null, Base\PublicEntity $entity = null): bool
+    {
+        // Additionally, checks if transaction is on banking balance. Others are not required as of now.
+        return ((($entity === null) or ($entity->isBalanceTypeBanking() === true)) and
+                (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
 }

@@ -924,44 +924,9 @@ class Gateway extends Base\Gateway
     {
         $options['timeout'] = 60;
 
-        $hooks = new Requests_Hooks();
-
-        $hooks->register('curl.before_send', function ($curl)
-        {
-            $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
-
-            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
-            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
-        });
-
-        $options['hooks'] = $hooks;
-
         $request['options'] = $options;
 
-        try
-        {
-            $this->response = $this->sendGatewayRequest($request);
-        }
-        catch (Exception\GatewayRequestException $e)
-        {
-            $this->traceCurlErrorIfApplicable();
-
-            throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
-        }
+        $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
     }

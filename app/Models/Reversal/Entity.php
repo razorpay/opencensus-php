@@ -3,6 +3,7 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
 
     // Response attribute const
     const TRANSFER_ID           = 'transfer_id';
+    const PAYOUT_ID             = 'payout_id';
 
     protected static $sign = 'rvrsl';
 
@@ -60,6 +62,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
+        self::TRANSFER_ID,
+        self::PAYOUT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -68,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::TRANSFER_ID,
+        self::PAYOUT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -86,8 +91,15 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::PAYOUT_ID,
         self::TRANSFER_ID,
-        self::LINKED_ACCOUNT_NOTES
+        self::LINKED_ACCOUNT_NOTES,
+        self::NOTES,
+    ];
+
+    protected $appends = [
+        self::PAYOUT_ID,
+        self::TRANSFER_ID,
     ];
 
     protected $defaults = [
@@ -141,9 +153,33 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTransferIdAttribute(array & $array)
     {
-        if ($this->getAttribute(self::ENTITY_TYPE) === E::TRANSFER)
+        if ($this->getEntityType() !== E::TRANSFER)
         {
-            $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId($this->getAttribute(self::ENTITY_ID));
+            unset($array[self::TRANSFER_ID]);
+        }
+    }
+
+    public function setPublicPayoutIdAttribute(array & $array)
+    {
+        if ($this->getEntityType() !== E::PAYOUT)
+        {
+            unset($array[self::PAYOUT_ID]);
+        }
+    }
+
+    public function setPublicLinkedAccountNotesAttribute(array & $array)
+    {
+        if ($this->getEntityType() !== E::TRANSFER)
+        {
+            unset($array[self::LINKED_ACCOUNT_NOTES]);
+        }
+    }
+
+    public function setPublicNotesAttribute(array & $array)
+    {
+        if ($this->getEntityType() !== E::TRANSFER)
+        {
+            unset($array[self::NOTES]);
         }
     }
 
@@ -153,4 +189,24 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Setters --------------------------
+
+    public function getPayoutIdAttribute()
+    {
+        if ($this->getEntityType() === E::PAYOUT)
+        {
+            return Payout\Entity::getSignedIdOrNull($this->getEntityId());
+        }
+
+        return null;
+    }
+
+    public function getTransferIdAttribute()
+    {
+        if ($this->getEntityType() === E::TRANSFER)
+        {
+            return Transfer\Entity::getSignedIdOrNull($this->getEntityId());
+        }
+
+        return null;
+    }
 }

@@ -206,9 +206,13 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'result' => false
+           'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ]
             ],
+            'status_code' => 400,
         ],
     ],
 

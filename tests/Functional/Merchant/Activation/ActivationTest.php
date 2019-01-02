@@ -86,6 +86,44 @@ class ActivationTest extends TestCase
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
+    public function testInstantActivationWithBlacklistedCategoryForEmi()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
+
+        $this->assertFalse($merchantMethods->isEmiEnabled());
+    }
+
+    public function testInstantActivationWithWhitelistedCategoryForEmi()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
+
+        $this->assertTrue($merchantMethods->isEmiEnabled());
+    }
+
     public function testPostInstantActivationLinkedAccount()
     {
         $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);

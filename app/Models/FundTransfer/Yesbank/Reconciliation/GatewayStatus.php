@@ -39,6 +39,10 @@ class GatewayStatus extends BaseStatus
     const U66 = 'U66'; const U67 = 'U67'; const U68 = 'U68'; const U69 = 'U69'; const U70 = 'U70'; const U77 = 'U77';
     const U78 = 'U78'; const OC = 'OC'; const OD = 'OD'; const NC = 'NC'; const ND = 'ND'; const DT = 'DT';
 
+    // We get this error code in Verify response. Mostly it should be failed only. Anyway, will be
+    // removing this soon. Not going to rely on Verify later except in timeout or pending cases.
+    const E99 = '99';
+
     // pre processing  error codes for transfer request
     const RZP_FTA_REQUEST_INVALID           = 'RZP_FTA_REQUEST_INVALID';
     const RZP_REQUEST_ENCRYPTION_FAILURE    = 'RZP_REQUEST_ENCRYPTION_FAILURE';
@@ -223,6 +227,7 @@ class GatewayStatus extends BaseStatus
         self::NC                                => 'Payout failed. Contact support for help.',
         self::ND                                => 'Payout failed. Contact support for help.',
         self::DT                                => 'Payout failed. Contact support for help.',
+        self::E99                               => 'Payout failed. Contact support for help.',
         self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
         self::RZP_FTA_REQUEST_INVALID           => 'We should tell what was invalid in the request',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
@@ -402,7 +407,8 @@ class GatewayStatus extends BaseStatus
         self::OD                                => 'Original Debit Not Found',
         self::NC                                => 'Credit Not Done',
         self::ND                                => 'Debit Not Done',
-        self::DT                                => 'Duplicate request se',
+        self::DT                                => 'Duplicate request sent',
+        self::E99                               => 'MPIN is pending. Can be marked as failed. Check first.',
         self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
@@ -449,6 +455,7 @@ class GatewayStatus extends BaseStatus
            self::U12,
            self::XK,
            self::DT,
+           self::E99,
        ];
     }
 

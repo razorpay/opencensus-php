@@ -217,6 +217,11 @@ class Terminal extends Base
         return $this->fixtures->edit('terminal', $id, ['enabled' => true]);
     }
 
+    public function setEnabledBanks($id = '1RecurringTerm', array $enabledBanks = [])
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled_banks' => $enabledBanks]);
+    }
+
     public function createEbsTerminal(array $attributes = [])
     {
         $attributes = [

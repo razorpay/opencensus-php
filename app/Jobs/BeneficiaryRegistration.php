@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception\LogicException;
+use RZP\Models\BankAccount\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Beneficiary;
@@ -57,6 +58,25 @@ class BeneficiaryRegistration extends Job
 
             $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
 
+            // TODO: Check when this can be empty
+            // Example case: BcqrSOKTFuw1pS
+            // Mode sent was live, but it was created in test mode.
+            // No live bank account exists for the merchant: BcqrSKvM8bIq2g
+            if (empty($bankAccount) === true)
+            {
+                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
+
+                return;
+            }
+
+            // Check to avoid unnecessary tries.
+            // As the `registerBeneficiaryThroughApi` checks for the type
+            // and returns false for the bank account which are not `merchant` or `contact`
+            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+            {
+                return;
+            }
+
             if ($bankAccount === null)
             {
                 $this->traceData(TraceCode::INVALID_BENEFICIARY_BANK_ACCOUNT_ID);
@@ -84,8 +104,10 @@ class BeneficiaryRegistration extends Job
                     'bank_account_id' => $this->bankAccountId,
                 ]);
 
-            if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
+            if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
             {
+                $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
+
                 $this->release(self::RETRY_INTERVAL);
             }
         }
@@ -100,7 +122,9 @@ class BeneficiaryRegistration extends Job
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
-
+        }
+        finally
+        {
             $this->delete();
         }
     }
@@ -113,6 +137,7 @@ class BeneficiaryRegistration extends Job
                 'channel'         => $this->channel,
                 'attempt_count'   => $this->attempts(),
                 'bank_account_id' => $this->bankAccountId,
+                'mode'            => $this->mode,
             ] + $extraData
         );
     }

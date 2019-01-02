@@ -368,4 +368,64 @@ class GatewayDowntimeSorterTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('axis_migs', $payment['gateway']);
     }
+
+    public function testDowntimeSortingForVajraUpiWebHook()
+    {
+        $upiPaymentInput = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableUpi();
+
+        $iciciTerminal = $this->fixtures->create("terminal:shared_upi_icici_terminal");
+
+        $mindgateTerminal = $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        // test selection -> should pick icici
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($iciciTerminal['id'], $payment['terminal_id']);
+
+        // add a downtime for upi_icici (mimicing vajra webhook)
+        $vajraWebhookMessage = [
+            'method'      => 'upi',
+            'gateway'     => $iciciTerminal['gateway'],
+            'terminal_id' => $iciciTerminal['id'],
+        ]; 
+
+        $this->testData[__FUNCTION__]['request']['content']['message'] = json_encode($vajraWebhookMessage, true);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        // test if upi_mingate is selected
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($mindgateTerminal['id'], $payment['terminal_id']);
+
+        // resolve the downtime
+
+        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $downtime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->fixtures->edit('gateway_downtime', $downtime['id'], ['end' => Carbon::now()->subMinutes(60)->timestamp]);
+
+        // test if upi_icici is selected
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($iciciTerminal['id'], $payment['terminal_id']);
+    }
 }

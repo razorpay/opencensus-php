@@ -95,6 +95,11 @@ class Entity extends Base\PublicEntity
 
     public function supports($flows): bool
     {
+        if (is_string($flows) === true)
+        {
+            $flows = Flow::$flows[$flows];
+        }
+
         return (($this->getFlows() & $flows) === $flows);
     }
 
