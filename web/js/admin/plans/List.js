@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
 import Collection from 'model/collection';
+import { SelectField } from 'ui/Field';
+
 import { adminFetch } from 'common/fetch';
 import { openPricingEntity, copyPricingEntity } from './Entity';
-import Plan from './plan';
+import { isOrgRazorpay } from 'admin/user';
 
 function fetchFn() {
   return adminFetch(...arguments).then(
@@ -20,6 +20,10 @@ function fetchFn() {
 }
 
 export default class PlanList extends Component {
+  state = {
+    orgs: [], //default as we fetch all orgs
+  };
+
   collection = new Collection({
     data: {
       url: 'live/pricing/merchants',
@@ -42,7 +46,24 @@ export default class PlanList extends Component {
     );
   };
 
+  componentWillMount() {
+    if (isOrgRazorpay()) {
+      adminFetch('live/orgs').then(response => {
+        if (response) {
+          this.setState({
+            orgs: response.items,
+          });
+        }
+      });
+    }
+  }
+
+  handleOrgChange = e => {
+    console.log(e.target.value);
+  };
+
   render() {
+    const { orgs } = this.state;
     return (
       <div class="list-container">
         <div class="box">
@@ -52,6 +73,21 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
+          {isOrgRazorpay() &&
+            orgs.length > -1 && (
+              <SelectField
+                label="Organisation"
+                name="org_id"
+                onChange={this.handleOrgChange}
+              >
+                <option value="">All</option>
+                {orgs.map(org => (
+                  <option key={org.id} value={org.id.replace('org_', '')}>
+                    {org.display_name}
+                  </option>
+                ))}
+              </SelectField>
+            )}
         </div>
         <PageTable
           model={this.collection}
