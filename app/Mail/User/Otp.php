@@ -9,9 +9,11 @@ use RZP\Mail\Base\Constants;
 class Otp extends Mailable
 {
     /**
-     * @var string
+     * Holds addtiaionl input parameters per action.
+     * E.g. account_number for create_payout action, gets used in blade file.
+     * @var array
      */
-    public $action;
+    public $input;
 
     /**
      * @var array
@@ -23,13 +25,21 @@ class Otp extends Mailable
      */
     public $otp;
 
-    public function __construct(string $action, User\Entity $user, array $otp)
+    /**
+     * @var string
+     */
+    public $formattedAction;
+
+    public function __construct(array $input, User\Entity $user, array $otp)
     {
         parent::__construct();
 
-        $this->action = str_replace('_', ' ', $action);
+        $this->input  = $input;
         $this->user   = $user->toArrayPublic();
         $this->otp    = $otp;
+
+        // E.g. 'verify contact', 'create payout' etc, used in blade file.
+        $this->formattedAction = str_replace('_', ' ', $input['action']);
     }
 
     protected function addRecipients()
@@ -48,7 +58,7 @@ class Otp extends Mailable
 
     protected function addSubject()
     {
-        $this->subject("RazorpayX | OTP to {$this->action}");
+        $this->subject("RazorpayX | OTP to {$this->formattedAction}");
 
         return $this;
     }
@@ -57,9 +67,10 @@ class Otp extends Mailable
     {
         $this->with(
             [
-                'action' => $this->action,
-                'user'   => $this->user,
-                'otp'    => $this->otp,
+                'input'           => $this->input,
+                'user'            => $this->user,
+                'otp'             => $this->otp,
+                'formattedAction' => $this->formattedAction,
             ]);
 
         return $this;
@@ -67,7 +78,19 @@ class Otp extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.otp');
+        // For specific action there might exist different blade file. Generic fallback is emails.user.otp.
+        switch ($this->input['action'])
+        {
+            case 'create_payout':
+                $view = 'emails.user.otp_create_payout';
+                break;
+
+            default:
+                $view = 'emails.user.otp';
+                break;
+        }
+
+        $this->view($view);
 
         return $this;
     }

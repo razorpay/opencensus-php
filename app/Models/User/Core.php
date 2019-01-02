@@ -450,7 +450,7 @@ class Core extends Base\Core
     {
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
-        $mailable = new OtpMail($input[Entity::ACTION], $user, $otp);
+        $mailable = new OtpMail($input, $user, $otp);
 
         Mail::queue($mailable);
 
