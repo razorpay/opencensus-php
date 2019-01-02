@@ -17,6 +17,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
     const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
+    const PAYER_AUTHENTICATION_REQUEST                  = 'PAYER_AUTHENTICATION_REQUEST';
+    const PAYER_AUTHENTICATION_RESPONSE                 = 'PAYER_AUTHENTICATION_RESPONSE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
