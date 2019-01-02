@@ -7,7 +7,8 @@ import AddOnItem from './AddOnItem';
 export default function NewSubscriptionLinkAddOnDetails({
   items,
   selectedItems,
-  addons,
+  fields: { addons },
+  internals,
   ...props
 }) {
   return (
@@ -16,6 +17,7 @@ export default function NewSubscriptionLinkAddOnDetails({
         data-name="_addOnPresent"
         fieldLabel="I want to add an upfront amount"
         class="Input--noMarginLeft"
+        checked={internals._addOnPresent}
       />
       {addons.map((addon, index) => (
         <AddOnItem

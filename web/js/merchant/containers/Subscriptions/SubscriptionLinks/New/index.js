@@ -55,7 +55,9 @@ export default class NewSubscriptionLink extends Component {
     const stateKey = target.name ? 'fields' : 'internals';
     const values = { ...this.state[stateKey] };
 
-    if (target.type === 'number') {
+    if (name.match(/_time/)) {
+      return;
+    } else if (target.type === 'number') {
       value = Number(value);
     } else if (target.type === 'checkbox') {
       value = target.checked;
@@ -203,35 +205,36 @@ export default class NewSubscriptionLink extends Component {
         return (
           <PlanDetails
             plans={this.props.plans}
-            selectedPlanId={this.state.fields.plan_id}
             onChangeInPlan={this.handleChangeInPlan}
-            planQuantity={this.state.fields.quantity}
-            startsImmediately={this.state.internals._startsImmediately}
-            showTimeInput={!!this.state.fields.start_at}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
+            fields={this.state.fields}
+            internals={this.state.internals}
           />
         );
       case 1:
         return (
           <AddOnDetails
             items={this.props.items}
-            addons={this.state.fields.addons}
             onSelectItem={this.handleSelectItem}
             onAddAddon={this.handleAddaddon}
+            fields={this.state.fields}
+            internals={this.state.internals}
           />
         );
       case 2:
         return (
           <LinkDetails
-            showTimeInput={!!this.state.fields.expire_by}
             onDateChange={this.handleDateChange}
-            disableExpireBy={this.state.internals._isNonExpiringLink}
             onTimeChange={this.handleTimeChange}
+            fields={this.state.fields}
+            internals={this.state.internals}
           />
         );
       case 3:
-        return <Review />;
+        return (
+          <Review fields={this.state.fields} internals={this.state.internals} />
+        );
     }
   }
 

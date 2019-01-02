@@ -16,6 +16,7 @@ export default function QuantitySelector(props) {
         type="number"
         size="half"
         value={props.quantity}
+        min={1}
       />
       {props.informativeMessage(props.rate * props.quantity, props.currency)}
     </div>

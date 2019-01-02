@@ -9,14 +9,22 @@ import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
 import QuantitySelector from './QuantitySelector';
 
-export default function NewSubscriptionLinkPlanDetails(props) {
+export default function NewSubscriptionLinkPlanDetails({
+  fields,
+  internals,
+  ...props
+}) {
   const plans = props.plans.items.map(plan => ({
     ...plan.item,
     ...plan,
     item: undefined,
   }));
 
-  const selectedPlan = plans.find(({ id }) => id === props.selectedPlanId);
+  const selectedPlan = plans.find(({ id }) => id === fields.plan_id);
+
+  const dateInMoment = !!fields.start_at
+    ? moment(fields.start_at, 'X')
+    : undefined;
 
   return (
     <>
@@ -38,11 +46,12 @@ export default function NewSubscriptionLinkPlanDetails(props) {
           </div>
         </div>
       </div>
-      {props.selectedPlanId && (
+      {fields.plan_id && (
         <QuantitySelector
           rate={selectedPlan.amount}
-          quantity={props.planQuantity}
+          quantity={fields.quantity}
           informativeMessage={getInformativeMessage(selectedPlan)}
+          readOnly
         />
       )}
 
@@ -51,6 +60,7 @@ export default function NewSubscriptionLinkPlanDetails(props) {
         fieldLabel="Immediate, subscriptions starts with the first payment"
         class="Input--vTop"
         data-name="_startsImmediately"
+        checked={internals._startsImmediately}
       />
 
       <Input.Group class="InputGroup--inline InputGroup--near">
@@ -62,19 +72,23 @@ export default function NewSubscriptionLinkPlanDetails(props) {
             disablePastDates
             size="half"
             addonAfter={<i class="i i-date-range" />}
-            disabled={props.startsImmediately}
+            disabled={internals._startsImmediately}
             placement="topLeft"
             onChange={props.onDateChange('start_at')}
+            defaultValue={dateInMoment}
+            readOnly
           />
 
-          {props.showTimeInput && (
+          {!!fields.start_at && (
             <Input.TimePicker
               name="start_at_time"
               placeholder="HH:MM A"
               size="half"
               addonAfter={<i class="i i-time" />}
-              disabled={props.startsImmediately}
+              disabled={internals._startsImmediately}
               onChange={props.onTimeChange('start_at_time')}
+              defaultValue={dateInMoment}
+              readOnly
             />
           )}
           <Description text="Date from which subscription should start" />
@@ -87,6 +101,8 @@ export default function NewSubscriptionLinkPlanDetails(props) {
         description="No. of billing cycles to be charged"
         size="half"
         name="total_count"
+        defaultValue={fields.total_count}
+        min={1}
       />
     </>
   );
