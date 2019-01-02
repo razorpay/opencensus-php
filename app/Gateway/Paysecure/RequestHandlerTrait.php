@@ -254,31 +254,44 @@ trait RequestHandlerTrait
                 $timeout = 35;
         }
 
+        ini_set('default_socket_timeout', $timeout);
+
+        $soapClientOptions = [
+            'trace'               => true,
+            'exceptions'          => true,
+            'connection_timeout'  => $timeout,
+        ];
+
+        $request = [
+            'wsdl' => $this->wsdlDetails['wsdl_file'],
+            'options' => $soapClientOptions
+        ];
+
+        $soapClient = $this->getSoapClientObject($request);
+
         try
         {
-            $soapClientOptions = [
-                'trace'               => true,
-                'exceptions'          => true,
-                'connection_timeout'  => $timeout,
-            ];
-
-            $request = [
-                'wsdl' => $this->wsdlDetails['wsdl_file'],
-                'options' => $soapClientOptions
-            ];
-
-            $soapClient = $this->getSoapClientObject($request);
-
             $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
 
             $this->logSoapRequestAndResponse($response, $soapClient, $command);
-
         }
         catch (SoapFault $sf)
         {
             if (Utility::checkSoapTimeout($sf))
             {
-                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+                $this->logSoapRequestOnTimeout($soapClient, $command);
+
+                $response = new \stdClass();
+
+                $response->CallPaySecureResult = '<?xml version="1.0" encoding="utf-16"?>
+                            <paysecure xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                              <status>failure</status>
+                              <errorcode>0</errorcode>
+                              <errormsg />
+                              <qualified_internetpin>TRUE</qualified_internetpin>
+                              <Implements_Redirect>TRUE</Implements_Redirect>
+                            </paysecure>';
+//                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
             }
             else
             {
@@ -400,6 +413,25 @@ trait RequestHandlerTrait
             [
                 'request'    => $request,
                 'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input['payment']['id'],
+                'command'    => $command,
+            ]);
+    }
+
+    protected function logSoapRequestOnTimeout($soapClient, $command)
+    {
+        $xml = $soapClient->__getLastRequest();
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml);
+        $request = $dom->saveXML();
+
+        $this->trace->error(
+            TraceCode::GATEWAY_REQUEST_TIMEOUT,
+            [
+                'request'    => $request,
                 'gateway'    => $this->gateway,
                 'payment_id' => $this->input['payment']['id'],
                 'command'    => $command,
