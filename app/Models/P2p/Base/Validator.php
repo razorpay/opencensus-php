@@ -3,10 +3,15 @@
 namespace RZP\Models\P2p\Base;
 
 use RZP\Base;
+use RZP\Models\P2p\Base\Upi;
 use RZP\Models\P2p\Base\Libraries\Rules;
 
 class Validator extends Base\Validator
 {
+    /**
+     * @var \RZP\Models\P2p\Base\Entity
+     */
+    protected $entity;
     /**
      * Overriding this method allows us to register rules for defined action
      *
@@ -68,5 +73,23 @@ class Validator extends Base\Validator
         }
 
         return $prepended;
+    }
+
+    public function makePublicIdRules()
+    {
+        return $this->makeRules([
+            Entity::ID => 'required|string|custom',
+        ]);
+    }
+
+    protected function validateId($attribute, $value)
+    {
+        // A work around to validate the public id
+        $this->entity->verifyIdAndStripSign($value);
+    }
+
+    protected function validateTxn()
+    {
+
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Libraries;
 
+use RZP\Exception\LogicException;
 use Razorpay\Api\ArrayableInterface;
 
 class Rules implements ArrayableInterface

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base;
 
+use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
@@ -42,6 +43,8 @@ class Processor
     {
         $this->initializeApplicationTrait($action, $input);
 
+        $this->entity = $this->getNewEntity();
+
         $this->validator = $this->getNewValidator();
 
         $this->core = $this->getNewCore();
@@ -56,11 +59,18 @@ class Processor
         $this->gatewayResponse  = new ArrayBag();
     }
 
+    protected function getNewEntity(): Entity
+    {
+        $className = str_replace('\Processor', '\Entity', static::class);
+
+        return new $className;
+    }
+
     protected function getNewValidator(): Validator
     {
         $className = str_replace('\Processor', '\Validator', static::class);
 
-        return new $className;
+        return new $className($this->entity);
     }
 
     protected function getNewCore()
@@ -88,6 +98,9 @@ class Processor
         $action      = $this->getGatewayAction();
         $mode        = $this->mode();
 
+        // Before passing input to gateway we will run basic check
+        $this->modifyGatewayInput($this->gatewayInput);
+
         // We are using context directly to pass to gateway. This is experimental and may change in future.
         // We might need to reverse the logic where context will be put inside gateway input.
         $this->context()->setGatewayData($gateway, $this->action, $this->gatewayInput);
@@ -105,7 +118,9 @@ class Processor
 
     protected function getGatewayAction()
     {
-        return str_replace('p2p_', '', $this->entity);
+        $action = strtr(static::class, ['RZP\Models\P2p\\' => '', '\Processor' => '']);
+
+        return snake_case($action);
     }
 
     protected function processGatewayResponse()
@@ -124,5 +139,32 @@ class Processor
             'action'    => $this->action,
             'suffix'    => $suffix,
         ]);
+    }
+
+    /**
+     * Modifies the gateway input to gateway compatible objects
+     *
+     * @param ArrayBag $input
+     */
+    protected function modifyGatewayInput(ArrayBag $input)
+    {
+        $input->transform(function($item){
+
+            if (is_object($item) === true)
+            {
+                if ($item instanceof Entity)
+                {
+                    return $item->toArrayBag();
+                }
+                else if (($item instanceof ArrayBag) === false)
+                {
+                    throw new LogicException('Could not handle class in gateway input', null, [
+                        'class' => get_class($item)
+                    ]);
+                }
+            }
+
+            return $item;
+        });
     }
 }

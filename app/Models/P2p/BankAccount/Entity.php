@@ -3,9 +3,18 @@
 namespace RZP\Models\P2p\BankAccount;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
+/**
+ * @property Bank\Entity $parentBank
+ *
+ * @package RZP\Models\P2p\BankAccount
+ */
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasHandle;
+    use Base\Traits\HasDevice;
+
     const DEVICE_ID                = 'device_id';
     const HANDLE                   = 'handle';
     const GATEWAY_DATA             = 'gateway_data';
@@ -16,12 +25,30 @@ class Entity extends Base\Entity
     const BENEFICIARY_NAME         = 'beneficiary_name';
     const CREDS                    = 'creds';
 
+    /****************** Input Keys ***************/
+    const BANK_ACCOUNT             = 'bank_account';
+    const BANK_ACCOUNTS            = 'bank_accounts';
+    const BANK_NAME                = 'bank_name';
+    const CL                       = 'cl';
+    const REGISTRATION_FORMAT      = 'registration_format';
+    const BALANCE                  = 'balance';
+    const CURRENCY                 = 'currency';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_bank_account';
-    protected static $sign        = 'bank_account';
-    protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+    protected static $sign        = 'ba';
+    protected $generateIdOnCreate = true;
+    protected static $generators  = [
+        Entity::REFRESHED_AT,
+    ];
+
+    protected $publicSetters      = [
+        Entity::ID,
+        Entity::BANK_NAME,
+        Entity::ENTITY,
+        Entity::CL,
+    ];
 
     protected $dates = [
         Entity::REFRESHED_AT,
@@ -31,8 +58,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::BANK,
         Entity::IFSC,
@@ -59,29 +84,22 @@ class Entity extends Base\Entity
 
     protected $public = [
         Entity::ID,
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
-        Entity::GATEWAY_DATA,
-        Entity::BANK,
+        Entity::ENTITY,
+        Entity::BANK_NAME,
         Entity::IFSC,
-        Entity::ACCOUNT_NUMBER,
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
+        Entity::CL,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
 
     protected $defaults = [
-        Entity::DEVICE_ID                => null,
-        Entity::HANDLE                   => null,
-        Entity::GATEWAY_DATA             => null,
-        Entity::BANK                     => null,
-        Entity::IFSC                     => null,
+        Entity::GATEWAY_DATA             => [],
         Entity::ACCOUNT_NUMBER           => null,
-        Entity::MASKED_ACCOUNT_NUMBER    => null,
         Entity::BENEFICIARY_NAME         => null,
-        Entity::CREDS                    => null,
+        Entity::CREDS                    => [],
     ];
 
     protected $casts = [
@@ -247,5 +265,35 @@ class Entity extends Base\Entity
     public function getCreds()
     {
         return $this->getAttribute(self::CREDS);
+    }
+
+    /***************** RELATIONS *****************/
+
+    public function parentBank()
+    {
+        return $this->belongsTo(Bank\Entity::class, self::BANK);
+    }
+
+    /***************** MUTATORS *****************/
+
+    public function setPublicClAttribute(array & $array)
+    {
+        $array[self::CL] = [
+            self::REGISTRATION_FORMAT => $this->parentBank->getUpiFormat(),
+        ];
+    }
+
+    public function setPublicBankNameAttribute(array & $array)
+    {
+        $array[self::BANK_NAME] = $this->parentBank->getName();
+    }
+
+    /***************** Accessors *****************/
+
+    public function getCredsAttribute($json)
+    {
+        $creds = new Credentials(json_decode($json, true));
+
+        return $creds->toArray();
     }
 }

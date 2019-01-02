@@ -18,22 +18,22 @@ class Gateway extends Base\Gateway
 
     public function bankAccount(Context $context)
     {
-        $response = Factory::response($context, 'bank_account');
+        $gateway = Factory::make($context, Contracts\BankAccountGateway::class);
 
-        return $response;
+        return $gateway->response();
     }
 
     public function vpa(Context $context)
     {
-        $response = Factory::response($context, 'vpa');
+        $gateway = Factory::make($context, Contracts\VpaGateway::class);
 
-        return $response;
+        return $gateway->response();
     }
 
     public function transaction(Context $context)
     {
-        $response = Factory::response($context, 'transaction');
+        $gateway = Factory::make($context, Contracts\TransactionGateway::class);
 
-        return $response;
+        return $gateway->response();
     }
 }

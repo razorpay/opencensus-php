@@ -3,6 +3,7 @@
 use Faker\Generator as Faker;
 use RZP\Models\Merchant\Account;
 use RZP\Models\P2p\BankAccount\Entity;
+use RZP\Models\P2p\BankAccount\Credentials;
 
 $factory->define(Entity::class, function (Faker $faker) {
     return [
@@ -15,7 +16,15 @@ $factory->define(Entity::class, function (Faker $faker) {
         Entity::ACCOUNT_NUMBER          => $faker->numerify('###########5555'),
         Entity::MASKED_ACCOUNT_NUMBER   => $faker->numerify('*********#5555'),
         Entity::BENEFICIARY_NAME        => $faker->name,
-        Entity::CREDS                   => ['otp' => [], 'pin' => []],
+        Entity::CREDS                   => [
+            [
+                Credentials::TYPE           => 'pin',
+                Credentials::SUB_TYPE       => 'upipin',
+                Credentials::SET            => true,
+                Credentials::FORMAT         => $faker->randomElement(['NUM', 'ALPHANUM']),
+                Credentials::LENGTH         => $faker->randomElement([4, 6])
+            ],
+        ],
         Entity::REFRESHED_AT            => $faker->numerify('154222####'),
     ];
 });

@@ -5,12 +5,20 @@ namespace RZP\Models\P2p\BankAccount\Bank;
 use RZP\Exception;
 use RZP\Models\P2p\Base;
 
+/**
+ * @property Core $core
+ * @property Validator $validator
+ *
+ * Class Processor
+ */
 class Processor extends Base\Processor
 {
     public function fetchAll(array $input): array
     {
-        $this->initialize(Action::FETCH_ALL, $input);
+        $this->initialize(Action::FETCH_ALL, $input, true);
 
-        return [];
+        $banks = $this->core->fetchAll($input);
+
+        return $banks->toArrayPublic();
     }
 }

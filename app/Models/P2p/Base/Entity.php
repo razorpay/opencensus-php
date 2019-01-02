@@ -9,10 +9,12 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
 class Entity extends Base\PublicEntity
 {
     // Common constants across Entities
+    const REQUEST       = 'request';
     const RESPONSE      = 'response';
     const SUCCESS       = 'success';
     const DEVICE_ID     = 'device_id';
     const REFRESHED_AT  = 'refreshed_at';
+    const UPI           = 'upi';
 
     /**
      * Generator for refreshed at
@@ -49,5 +51,17 @@ class Entity extends Base\PublicEntity
     public function toArrayBag()
     {
         return (new ArrayBag($this->toArray()));
+    }
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $entity = $this->entity;
+
+        if (starts_with($this->entity, 'p2p_'))
+        {
+            $entity = substr($this->entity, 4);
+        }
+
+        $array[self::ENTITY] = $entity;
     }
 }
