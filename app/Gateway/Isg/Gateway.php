@@ -95,8 +95,6 @@ class Gateway extends Base\Gateway
 
         $refundAttributesToSave = $this->getRefundAttributes($responseContent, $gatewayEntity);
 
-        $refundAttributesToSave[Entity::RECEIVED] = true;
-
         $this->updateGatewayPaymentEntity($gatewayPayment, $refundAttributesToSave, false);
 
         $this->assertRefundId($input['refund']['id'], $responseContent[Field::RFD_TXN_ID]);
@@ -136,7 +134,6 @@ class Gateway extends Base\Gateway
             Entity::BANK_REFERENCE_NUMBER       => $response[Field::RFD_TXN_ID],
             Entity::AUTH_CODE                   => $gatewayEntity[Entity::AUTH_CODE],
             Entity::STATUS_CODE                 => $response[Field::STATUS_CODE],
-            Entity::RECEIVED                    => true,
         ];
 
         return $attributes;
