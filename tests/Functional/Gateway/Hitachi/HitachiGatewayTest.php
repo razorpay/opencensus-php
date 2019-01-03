@@ -547,6 +547,8 @@ class HitachiGatewayTest extends TestCase
         $hitachi = $this->getLastEntity('hitachi', true);
 
         $this->assertEquals(explode('_', $refund['id'])[1], $hitachi['refund_id']);
+
+        $this->assertNull($hitachi[Hitachi\Entity::RESPONSE_CODE]);
     }
 
     public function testPaymentReverse()
