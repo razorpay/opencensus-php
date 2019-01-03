@@ -233,7 +233,11 @@ export default class NewSubscriptionLink extends Component {
         );
       case 3:
         return (
-          <Review fields={this.state.fields} internals={this.state.internals} />
+          <Review
+            fields={this.state.fields}
+            internals={this.state.internals}
+            plans={this.props.plans.items}
+          />
         );
     }
   }
