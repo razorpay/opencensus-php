@@ -81,8 +81,6 @@ class Gateway extends Base\Gateway
 
     const VERIFY_TIMEOUT = 60;
 
-    const CONNECT_TIMEOUT = 10;
-
     protected $secondDebitRecurringFlag = null;
 
     /**
