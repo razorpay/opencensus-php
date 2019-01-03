@@ -9,8 +9,9 @@ use RZP\Mail\Base\Constants;
 class Otp extends Mailable
 {
     /**
-     * Holds addtiaionl input parameters per action.
+     * Holds additional input parameters per action.
      * E.g. account_number for create_payout action, gets used in blade file.
+     *
      * @var array
      */
     public $input;
@@ -34,12 +35,12 @@ class Otp extends Mailable
     {
         parent::__construct();
 
-        $this->input  = $input;
-        $this->user   = $user->toArrayPublic();
-        $this->otp    = $otp;
+        $this->input = $input;
+        $this->user  = $user->toArrayPublic();
+        $this->otp   = $otp;
 
-        // E.g. 'verify contact', 'create payout' etc, used in blade file.
-        $this->formattedAction = str_replace('_', ' ', $input['action']);
+        // E.g. 'Verify Contact', 'Create Payout' etc, used in blade file.
+        $this->formattedAction = ucwords(str_replace('_', ' ', $input['action']));
     }
 
     protected function addRecipients()
