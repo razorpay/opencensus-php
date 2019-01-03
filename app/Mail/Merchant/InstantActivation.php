@@ -39,21 +39,18 @@ class InstantActivation extends Mailable
      */
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.instant_activation_heimdall');
-
-        // Commenting the below code till x goes live.
-        //        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
-        //        {
-        //            $this->view('emails.merchant.instant_activation_heimdall');
-        //        }
-        //        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
-        //        {
-        //            $this->view('emails.merchant.instant_activation_banking');
-        //        }
-        //        else
-        //        {
-        //            $this->view('emails.merchant.instant_activation');
-        //        }
+        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $this->view('emails.merchant.instant_activation_heimdall');
+        }
+        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
+        {
+            $this->view('emails.merchant.instant_activation_banking');
+        }
+        else
+        {
+            $this->view('emails.merchant.instant_activation');
+        }
 
         return $this;
     }

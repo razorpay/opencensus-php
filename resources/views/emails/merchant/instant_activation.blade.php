@@ -32,15 +32,15 @@
     </dl>
 
     <dl>
-        <dt>Alternately, you can start accepting payments in <a href = "{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" >your Razorpay X account </a> by two methods -</dt>
+        <dt>Alternately, you can start accepting payments in <a href = "{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" >your RazorpayX account </a> by two methods -</dt>
 
         <dd>a) NEFT/RTGS transfers from other banks - Click to know your account details for bank transfers</dd><br>
         <dd> OR </dd><br>
-        <dd>b) Routing your Razorpay payment gateway settlements directly to your Razorpay X account - <a href ="https://razorpay.com/docs/razorpayx/" target="_blank" >Click to learn about this feature</a></dd>
+        <dd>b) Routing your Razorpay payment gateway settlements directly to your RazorpayX account - <a href ="https://razorpay.com/docs/razorpayx/" target="_blank" >Click to learn about this feature</a></dd>
     </dl>
 
     <dd><b>Please note:</b><i> You will only be able to receive settlements for payments collected using the
-            Razorpay payment gateway to your linked bank account or create payouts via Razorpay X after
+            Razorpay payment gateway to your linked bank account or create payouts via RazorpayX after
             completing the KYC verification successfully.</i> </dd>
 
     <dd>For any further queries or clarifications, feel free to reach out to us by visiting - </dd>
