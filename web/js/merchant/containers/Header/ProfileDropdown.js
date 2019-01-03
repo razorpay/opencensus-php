@@ -10,6 +10,8 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import Image from 'rzp/ui/Image';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import debounce from 'rzp/utils/debounce';
 
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SwitchMerchant, {
@@ -28,6 +30,23 @@ import SwitchMerchant, {
   { logout, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
+  state = {
+    showRazorpayxToolTip: false,
+  };
+
+  handleHide = () => {
+    // hide profile drop down when in hash mode
+    if (location.hash.indexOf('#profile_dropdown') > -1) {
+      this.props.history.replace(this.props.location.pathname);
+    }
+  };
+
+  handleShow = () => {
+    setTimeout(() => {
+      this.setState({ showRazorpayxToolTip: true });
+    }, 500);
+  };
+
   logout = () => {
     this.props.analytics && this.props.analytics('Log Out');
     return this.props
@@ -90,8 +109,14 @@ export default class ProfileDropdown extends Component {
       analytics = () => {},
     } = this.props;
     let merchant = user.merchants[user.current];
+    const { showRazorpayxToolTip } = this.state;
+
     return (
-      <Dropdown closeOnClick={false}>
+      <Dropdown
+        closeOnClick={false}
+        onShow={this.handleShow}
+        onHide={this.handleHide}
+      >
         <DropdownTrigger class="dropdown-toggle">
           {isMobileResolution ? (
             <span className="merchant-logo-preview">
@@ -165,20 +190,40 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            {mode === 'live' &&
-              !showMobileNav && (
-                <div
-                  class="media media-action"
-                  onClick={() => this.showOrHideTour(true)}
-                >
+            {user.isRazorxAnnouncementEnabled && (
+              <>
+                <div class="media media-action">
                   <div class="media-left">
                     <div class="media-object">
-                      <i class="i i-tour" />
+                      <img
+                        src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
+                        alt=""
+                        height="24"
+                      />
                     </div>
                   </div>
-                  <div class="media-body">Show Dashboard Home Tour</div>
+                  <div class="media-body">
+                    <a href="https://x.razorpay.com" target="_blank">
+                      Go to RazorpayX
+                    </a>
+                  </div>
                 </div>
-              )}
+                {!showMobileNav &&
+                  showRazorpayxToolTip &&
+                  user.isRazorxAnnouncementEnabled && (
+                    <Popover
+                      persistent={true}
+                      theme="dark"
+                      align="left"
+                      class="razorpayx-popover"
+                    >
+                      <PopoverBody>
+                        You can switch to RazorpayX Dashboard from here
+                      </PopoverBody>
+                    </Popover>
+                  )}
+              </>
+            )}
 
             <div class="media loggedin-as">
               <div class="media-body">

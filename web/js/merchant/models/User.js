@@ -115,9 +115,9 @@ export default class User {
   }
 
   /*
-  * isAllowedMultiple is for grouped tabs, example: Settings in side bar.
-  * If any route is present in moduleNames, it will be treated for view only mode and will make parent group(hood) visible.
-  * */
+   * isAllowedMultiple is for grouped tabs, example: Settings in side bar.
+   * If any route is present in moduleNames, it will be treated for view only mode and will make parent group(hood) visible.
+   * */
   isAllowedMultiple(moduleNames) {
     let isHoodAllowed = false;
     moduleNames = moduleNames.split(' ');
@@ -199,6 +199,10 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
+  get isRazorxAnnouncementEnabled() {
+    return this.findTag('announcement_razorpayx');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
@@ -219,7 +223,9 @@ export default class User {
 
   /* Check case-insensitive tag check existence */
   findTag(tag) {
-    return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
+    return !!(
+      this.tags && this.tags.find(t => t.toLowerCase() === tag.toLowerCase())
+    );
   }
 
   /**

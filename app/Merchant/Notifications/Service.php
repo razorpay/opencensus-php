@@ -88,7 +88,13 @@ class Service extends Base\Service
 
                     if (isset($user[$actualKey]) === true)
                     {
-                        $isUserEligible = (empty(array_intersect($user[$actualKey], $value)) === true);
+                        $userFilterValue = $user[$actualKey];
+
+                        $userFilterValue = array_map('strtolower', $userFilterValue);
+
+                        $value = array_map('strtolower', $value);
+
+                        $isUserEligible = (empty(array_intersect($userFilterValue, $value)) === true);
                     }
 
                     break;

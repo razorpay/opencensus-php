@@ -13,6 +13,7 @@ import {
   getSearchParams,
   intersect,
 } from 'common/util';
+import { notifyError } from 'common/modal';
 
 export default class Refunds extends Component {
   constructor(props) {
@@ -38,9 +39,11 @@ export default class Refunds extends Component {
     ];
 
     this.params = this.getQueryParams();
+
     this.multiSelectInitialValues = {
       status: statuses,
     };
+
     this.defaultValues = {};
 
     this.state = {
@@ -117,6 +120,7 @@ export default class Refunds extends Component {
         });
       });
 
+    this.onRefundModeChange = this.onRefundModeChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.resetForm = this.resetForm.bind(this);
   }
@@ -135,20 +139,43 @@ export default class Refunds extends Component {
     this.collection.extraFields.mode = this.mode = e.target.value;
   };
 
-  onSubmit = filters => {
+  setCollectionData = filters => {
     filters = parseFilters(filters);
 
     if (filters !== null) {
       this.collection.data.url = `${filters.mode}/scrooge/refunds`;
       delete filters['mode'];
-      this.collection.data.data.query = filters;
+
+      this.collection.data.data.query = this.collection.extraFields.query = filters;
     }
+  };
+
+  onSubmit = filters => {
+    this.setCollectionData(filters);
 
     return this.collection.fetch();
   };
 
   resetForm = () => {
     window.location = window.location.pathname;
+  };
+
+  onDownloadAllClick = filters => {
+    this.setCollectionData(filters);
+
+    adminPost({
+      url: `${this.collection.extraFields.mode ||
+        'live'}/scrooge/refunds/download`,
+      data: {
+        query: this.collection.extraFields.query,
+      },
+    }).then(d => {
+      if (d.link !== '') {
+        window.open(d.link);
+      } else {
+        notifyError('Unable to download data');
+      }
+    });
   };
 
   render() {
@@ -308,12 +335,12 @@ export default class Refunds extends Component {
                     onClick={this.resetForm}
                     text="Clear"
                   />
-                  {/*<div
+                  <AsyncButton
+                    text="Download All"
                     class="link"
-                    onClick={this.downloadEntityCsv}
-                  >
-                    Download
-                  </div>*/}
+                    pendingClass="small spinner"
+                    onSubmit={this.onDownloadAllClick}
+                  />
                 </div>
               </Form>
             </div>

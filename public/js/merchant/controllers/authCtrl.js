@@ -300,11 +300,15 @@ app
 
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
-              if (data.user.confirmed) {
-                var signinSuccessCb = authCallbacks.getSigninCallback();
+              var signinSuccessCb = authCallbacks.getSigninCallback();
 
+              if (signinSuccessCb) {
+                signinSuccessCb(data);
+              }
+
+              if (data.user.confirmed) {
                 if (signinSuccessCb) {
-                  signinSuccessCb(data.user);
+                  signinSuccessCb(data);
                 } else {
                   $scope.goToDashboard();
                 }
@@ -815,6 +819,12 @@ app
           if (data.success) {
             // check questions have been answered or not
             user.identity(true).then(function(userDetails) {
+              var signinSuccessCb = authCallbacks.getSigninCallback();
+
+              if (signinSuccessCb) {
+                signinSuccessCb(userDetails);
+              }
+
               if (user.isVerified() && user.isPreSignupDone()) {
                 // parse query parameters to object
                 // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
@@ -840,11 +850,7 @@ app
                   }
                 }
 
-                var signinSuccessCb = authCallbacks.getSigninCallback();
-
-                if (signinSuccessCb) {
-                  signinSuccessCb(userDetails);
-                } else {
+                if (!signinSuccessCb) {
                   $scope.goToDashboard();
                 }
               } else {

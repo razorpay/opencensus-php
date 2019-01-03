@@ -290,3 +290,16 @@ export function dotStringToObj(path, value, obj) {
   obj[last] = value;
   var parts, part;
 }
+/**
+ * @param {String}
+ * Find experiment value if it exists
+ */
+export function getExperiment(name) {
+  if (window.rzp_user) {
+    let experiment = (window.rzp_user.experiments || {})[name] || {};
+
+    return experiment.result;
+  }
+
+  return null;
+}

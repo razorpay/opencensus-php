@@ -1,23 +1,24 @@
 import { Component } from 'react';
 
+import { classList } from 'common/util';
+
 export default class SupportHeader extends Component {
   render() {
-    const { notifyCount, isOpened, onToggle } = this.props;
+    const { notifyCount = 0, isOpened, onToggle } = this.props;
 
     return (
-      <button class="btn-primary btn-block support-header" onClick={onToggle}>
-        <span class="pull-left">
-          <i class="i i-headset m-r" />
-          Help and Support
-          {notifyCount > 0 &&
-            !isOpened && <span class="support-notify m-l">{notifyCount}</span>}
-        </span>
-        <i
-          class={`support-toggle pull-right i ${
-            isOpened ? 'i-close' : 'i-chevron-up'
-          }`}
-        />
-      </button>
+      <div
+        class={classList('support-launcher', isOpened && 'active')}
+        onClick={onToggle}
+      >
+        {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
+        <div class="open-icon">
+          <i class="i i-headset" />
+        </div>
+        <div class="close-icon">
+          <i class="i i-close " />
+        </div>
+      </div>
     );
   }
 }
