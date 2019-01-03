@@ -85,6 +85,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()
@@ -216,20 +217,23 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function getIdsByMerchantIdsAndGateway($mids, $gateway)
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->enabled();
+
+        $this->addMerchantWhereCondition($query, $mids);
+
+        return $query->pluck(Entity::ID)->all();
+    }
+
+
     public function getSharedTerminalForGateway($gateway)
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
-                    ->enabled()
-                    ->get();
-    }
-
-    // TODO: needs to be removed. temporarily added for payout route
-    public function getAllTerminalsForGateway($gateway)
-    {
-        return $this->newQuery()
-                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->enabled()
                     ->get();
     }

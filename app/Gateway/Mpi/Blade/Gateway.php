@@ -112,6 +112,22 @@ class Gateway extends Base\Gateway
         switch ($enrolled)
         {
             case Base\Enrolled::Y:
+                if ($this->isIvrPayment($input) === true)
+                {
+                    if (empty($response[VERes::MESSAGE][VERes::VERES][VERes::EXTENSION][VERes::IVR_AUTH_DATA]) === true)
+                    {
+                        throw new Exception\GatewayErrorException(
+                            ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                            null,
+                            null,
+                            [],
+                            null,
+                            BaseGateway\Action::AUTHENTICATE);
+                    }
+
+                    return $this->getOtpSubmitRequest($input, $response);
+                }
+
                 return $this->getPayerAuthenticationRequest($input, $response);
 
             case Base\Enrolled::N:
@@ -153,8 +169,13 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+        $this->model = $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
+
+        if ($input['payment']['auth_type'] === 'otp')
+        {
+            $input['gateway'] = $this->submitOtp($input);
+        }
 
         $PARes = $this->validateAndGetPayerAuthenticationResponse($input);
 
@@ -320,6 +341,33 @@ class Gateway extends Base\Gateway
         }
 
         return $paresXml;
+    }
+
+    protected function submitOtp(array $input)
+    {
+        $pareq = $this->getPayerAuthenticationContent($input);
+
+        $request = [
+            'url'       => $this->cache->get('acs_url_' . $input['payment']['id']),
+            'method'    => 'post',
+            'content'   => [
+                PAReq::PAREQ     => $pareq,
+                PAReq::MD        => $input['payment']['id'],
+                PAReq::TERMURL   => '',
+            ]
+        ];
+
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::PAYER_AUTHENTICATION_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response->body, $input, TraceCode::PAYER_AUTHENTICATION_RESPONSE);
+
+        $decoded = [];
+
+        parse_str($response->body, $decoded);
+
+        return $decoded;
     }
 
     /**
@@ -491,32 +539,20 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getOtpSubmitRequest(array $input): array
+    {
+        $response = func_get_arg(1);
+
+        $this->cache->put('acs_url_' . $input['payment']['id'], $response[VERes::MESSAGE][VERes::VERES][VERes::URL], 20);
+
+        return parent::getOtpSubmitRequest($input);
+    }
+
     protected function sendEnrollmentRequest(array $input)
     {
         $request = $this->getEnrollmentRequestArray($input);
 
-        try
-        {
-            $response = $this->sendGatewayRequest($request);
-        }
-        catch (Exception\GatewayRequestException $e)
-        {
-            $this->traceCurlErrorIfApplicable();
-
-            throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
-        }
+        $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
@@ -654,7 +690,7 @@ class Gateway extends Base\Gateway
         return strtolower($network);
     }
 
-    protected function getPayerAuthenticationContent(array $input, array $response)
+    protected function getPayerAuthenticationContent(array $input, array $response = [])
     {
         // Format YYYYMMDD HH:MM:SS
         $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)->format('Ymd H:m:s');
@@ -681,17 +717,41 @@ class Gateway extends Base\Gateway
                         PAReq::AMOUNT      => $this->getFormattedAmount($input['payment']),
                         PAReq::PURCHAMOUNT => $input['payment']['amount'],
                         PAReq::CURRENCY    => Currency::getIsoCode($input['payment']['currency']),
-                        PAReq::EXPONENT    => self::EXPONENT,
+                        PAReq::EXPONENT    => Currency::getExponent($input['payment']['currency']),
                     ],
                     PAReq::CH => [
-                        PAReq::ACCID       => $response[VERes::MESSAGE][VERes::VERES][VERes::CH][VERes::ACCID],
+                        PAReq::ACCID       => $response[VERes::MESSAGE][VERes::VERES][VERes::CH][VERes::ACCID] ?? null,
                         PAReq::EXPIRY      => $this->getFormattedCardExpiry($input['card']),
                     ]
                 ]
             ]
         ];
 
+        if ($this->isIvrPayment($input) === true)
+        {
+            $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::CH][PAReq::ACCID] = $this->model->getAccId();
+
+            $content[PAReq::MESSAGE][PAReq::MSG_PAREQ][PAReq::EXTENSION] = [
+                PAReq::ATTRIBUTES => [
+                    PAReq::ID       => 'visa.3ds.india_ivr',
+                    PAReq::CRITICAL => 'false',
+                ],
+                PAReq::IVR_AUTH_USER_DATA => [
+                    PAReq::ATTRIBUTE => [
+                        PAReq::ATTRIBUTES => [
+                            PAReq::NAME      => 'OTP2',
+                            PAReq::VALUE     => $input['gateway']['otp'],
+                            PAReq::STATUS    => 'Y',
+                            PAReq::ENCRYPTED => 'false',
+                        ],
+                    ]
+                ]
+            ];
+        }
+
         $xml = Xml::create('ThreeDSecure', $content);
+
+        $this->traceGatewayPaymentRequest(['content' => $content, 'xml' => $xml], $input, TraceCode::PAYER_AUTHENTICATION_REQUEST);
 
         $xml = zlib_encode($xml, 15);
         $xml = base64_encode($xml);
@@ -738,10 +798,26 @@ class Gateway extends Base\Gateway
                         VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
                         VEReq::DEVICE_ACCEPT   => $accept,
                         VEReq::DEVICE_UA       => $userAgent,
-                    ]
+                    ],
                 ]
             ]
         ];
+
+        if ($this->isIvrPayment($input) === true)
+        {
+            $content[VEReq::MESSAGE][VEReq::VEREQ][VEReq::EXTENSION] = [
+                VEReq::ATTRIBUTES => [
+                    VEReq::ID       => 'visa.3ds.india_ivr',
+                    VEReq::CRITICAL => 'false',
+                ],
+                VEReq::IVR_CH_PHONE_FORMAT    => 'D',
+                VEReq::IVR_CH_PHONE           => '',
+                VEReq::IVR_PAREQ_CHANNEL      => 'DIRECT',
+                VEReq::IVR_SHOP_CHANNEL       => 'IVR',
+                VEReq::IVR_AVAIL_AUTH_CHANNEL => 'SMS',
+                VEReq::IVR_ITP_CREDENTIAL     => '',
+            ];
+        }
 
         $traceContent = $content;
 
@@ -925,18 +1001,16 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
-
-        $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
-
-        $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-        curl_setopt($curl, CURLOPT_VERBOSE, true);
-
-        curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
     }
 
     protected function getGatewayCertDirName()
     {
         return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
+    }
+
+    protected function isIvrPayment($input)
+    {
+        return ((isset($input['authenticate']['auth_type']) === true) and
+                ($input['authenticate']['auth_type'] === 'otp'));
     }
 }

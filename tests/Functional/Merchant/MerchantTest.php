@@ -258,6 +258,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditMerchantWithHighRiskThreshold()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
+    }
+
     public function testEditBulkMerchantAttributes()
     {
         $this->createMerchant([

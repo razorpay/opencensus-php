@@ -3,9 +3,11 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 
@@ -94,6 +96,8 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        $this->processAccountNumber($input);
+
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
         return $payouts->toArrayPublic();
@@ -120,6 +124,25 @@ class Service extends Base\Service
         $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
 
         return $purposeObj->getAll($this->merchant);
+    }
+
+    public function fetchReversalOfPayout(string $id): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input = [
+            Reversal\Entity::ENTITY_ID      => Entity::verifyIdAndStripSign($id),
+            Reversal\Entity::ENTITY_TYPE    => Constants\Entity::PAYOUT
+        ];
+
+        $reversals = $this->repo->reversal->fetch($input, $merchantId);
+
+        if ($reversals->count() > 0)
+        {
+            return $reversals->first()->toArrayPublic();
+        }
+
+        return $reversals->toArrayPublic();
     }
 
     /**

@@ -88,4 +88,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getPayoutReversal(string $payoutId)
+    {
+        $data = $this->service()->fetchReversalOfPayout($payoutId);
+
+        return ApiResponse::json($data);
+    }
 }
