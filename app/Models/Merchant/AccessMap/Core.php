@@ -27,7 +27,7 @@ class Core extends Base\Core
         $merchantMapping->merchant()->associate($merchant);
         if(empty($partnerMerchant) === false)
         {
-            $merchantMapping->partnerMerchant()->associate($partnerMerchant);
+            $merchantMapping->entityOwner()->associate($partnerMerchant);
         }
 
         if (empty($entity) === false)
@@ -134,25 +134,34 @@ class Core extends Base\Core
             $count = $mappings->count();
             $skip  += $count;
 
-            $applicationIds = [];
             foreach ($mappings as $row)
             {
                 $applicationId = $row->{Entity::ENTITY_ID};
                 if(array_key_exists($applicationId, $applications) === false)
                 {
-                    $applications[$applicationId] = $oauthRepo->find($applicationId);
+                    $applications[$applicationId] = $oauthRepo->findOrFail($applicationId);
                 }
+                
+                $partnerId     = $applications[$applicationId]->getMerchantId();
+                $merchantId    = $row->{Entity::MERCHANT_ID};
+
+                $traceData = [
+                    Entity::APPLICATION_ID => $applicationId,
+                    Entity::MERCHANT_ID    => $merchantId,
+                    Entity::ENTITY_OWNER_ID     => $partnerId
+                ];
+                
                 try
                 {
-                    $succeeded++;
-                    $row->{Entity::PARTNER_ID} = $applications[$applicationId]->getAttribute(OAuthApp\Entity::MERCHANT_ID);
+                    $row->{Entity::ENTITY_OWNER_ID} = $partnerId;
+                    $this->repo->merchant_access_map->saveOrFail($row);
 
-                    $oauthRepo->saveOrFail($row);
+                    $succeeded++;
                 }
                 catch(\Exception $e)
                 {
                     $this->trace->traceException(
-                        $ex,
+                        $e,
                         Trace::ERROR,
                         TraceCode::ACCESS_MAP_UPDATE_ERROR,
                         $traceData
@@ -160,7 +169,7 @@ class Core extends Base\Core
 
                     $failed++;
 
-                    $failedIds[] = $merchantId . '.' . $appId;
+                    $failedIds[] = $merchantId . '.' . $applicationId;
                 }
                 $processed++;
             }
@@ -223,7 +232,7 @@ class Core extends Base\Core
                 $traceData = [
                     Entity::APPLICATION_ID => $appId,
                     Entity::MERCHANT_ID    => $merchantId,
-                    Entity::PARTNER_ID     => $partnerId
+                    Entity::ENTITY_OWNER_ID     => $partnerId
                 ];
 
                 $this->trace->info(TraceCode::ACCESS_MAP_UPDATE_REQUEST, $traceData);
@@ -279,7 +288,7 @@ class Core extends Base\Core
                     Entity::ENTITY_TYPE => Entity::APPLICATION,
                     Entity::ENTITY_ID   => $appId,
                     Entity::MERCHANT_ID => $merchantId,
-                    Entity::PARTNER_ID  => $partnerId,
+                    Entity::ENTITY_OWNER_ID  => $partnerId,
                     Entity::CREATED_AT  => $createdAt,
                     Entity::UPDATED_AT  => $createdAt
                 ]

@@ -79,7 +79,7 @@ class Repository extends Base\Repository
     public function fetchApplicationRowsWithEmptyPartnerId(int $limit, int $skip)
     {
         return $this->newQuery()
-                    ->whereNull(Entity::PARTNER_ID)
+                    ->whereNull(Entity::ENTITY_OWNER_ID)
                     ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
                     ->take($limit)
                     ->skip($skip)
