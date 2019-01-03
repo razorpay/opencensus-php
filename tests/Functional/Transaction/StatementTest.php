@@ -123,12 +123,15 @@ class StatementTest extends TestCase
 
     public function testFetchByContactName()
     {
-        // Todo: Write assertions for ES queries.
-        $this->markTestSkipped();
-
         $this->createPayout();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_name=' . $this->contact['name'];
+
+        // Sets ES fetch expected retunr values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $esMock = $this->createEsMock(['search']);
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->ba->privateAuth();
         $response = $this->startTest();
@@ -144,12 +147,14 @@ class StatementTest extends TestCase
 
     public function testFetchByContactEmail()
     {
-        // Todo: Write assertions for ES queries.
-        $this->markTestSkipped();
-
         $this->createPayout();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_email=' . $this->contact['email'];
+
+        // Sets ES fetch expected retunr values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $esMock = $this->createEsMock(['search']);
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->ba->privateAuth();
         $response = $this->startTest();

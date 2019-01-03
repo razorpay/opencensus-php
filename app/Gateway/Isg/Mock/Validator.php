@@ -15,4 +15,16 @@ class Validator extends Base\Validator
         Field::TRANSACTION_DATE            => 'required|string|date_format:Ymd',
         Field::TRANSACTION_AMOUNT          => 'required|string',
     ];
+
+    protected static $refundRules = [
+        Field::RFD_TXN_ID        => 'required|string|size:14',
+        Field::TXN_ID            => 'required|string',
+        Field::MERCHANT_PAN      => 'required|string|size:16',
+        Field::TXN_DATE          => 'required',
+        Field::TXN_AMOUNT        => 'required',
+        Field::RFD_TXN_DATE_TIME => 'required',
+        Field::RFD_TXN_AMOUNT    => 'required',
+        Field::AUTH_CODE         => 'required',
+        Field::RRN               => 'required',
+    ];
 }

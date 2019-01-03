@@ -16,6 +16,8 @@ class RazorxController extends Controller
 
     const CONTENT_TYPE_JSON = 'application/json';
 
+    const ACTION_ADMIN_EMAIL_PARAM_NAME = 'action_admin_email';
+
     /**
      * @var string
      */
@@ -54,6 +56,8 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
+        $this->addActionAdminEmail();
+
         $path           = $this->validateAndGetServicePathParam();
         $method         = null;
         $requestParams  = $this->getRequestParams();
@@ -213,5 +217,19 @@ class RazorxController extends Controller
         }
 
         return $path;
+    }
+
+    protected function addActionAdminEmail()
+    {
+        $admin = app()['basicauth']->getAdmin();
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestValidationFailureException('admin auth not present.');
+        }
+
+        $adminEmail = $admin->getEmail();
+
+        Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
     }
 }

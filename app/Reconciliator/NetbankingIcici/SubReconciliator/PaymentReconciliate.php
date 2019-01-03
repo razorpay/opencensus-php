@@ -95,20 +95,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize($payment);
-
         //
-        // Calling parent function here because for this gateway allowing force authorize is conditional.
-        // If payment is not around midnight but payment is given for force_authorize in API call,
-        // we force authorize the payment. And if payment is around midnight, we don't check force_authorize input.
+        // Enabling force Auth for all payments because verify API of NB-icici
+        // gives wrong status in case of payment retries (i.e. multiple payments are created at
+        // gateway/bank side and verify api return the status of failed payment, even though we
+        // have received the payment in MIS file, which means payment got success at bank's side)
         //
-        if ($this->allowForceAuthorization === false)
-        {
-            parent::setAllowForceAuthorization($payment);
-        }
+        $this->allowForceAuthorization = true;
     }
 
     /**
+     * Note :  This method is not in use now, because we have enabled force auth for
+     * all payments (see the method 'setAllowForceAuthorization()'). Still keeping
+     * it here ,just for reference purpose.
+     *
      * This methods checks if payment is made from 11:50 pm to midnight.
      * Only payments made during this time will be force authorized.
      * This is done because tracking api of netbanking ICICI takes payment date into consideration

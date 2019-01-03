@@ -24,16 +24,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        'merchid'       => 'required|alpha_num|size:9',
-        'merchchanid'   => 'required|alpha_num|size:12',
+        'merchid'       => 'required|alpha_num',
+        'merchchanid'   => 'required|alpha_num',
         'tranid'        => 'required|string|max:255',
         'mobilenumber'  => 'required|string|max:12',
         'checksum'      => 'required|string|max:10000',
     ];
 
     protected static $refundRules = [
-        'merchId'           => 'required|alpha_num|size:9',
-        'merchChanId'       => 'required|alpha_num|size:12',
+        'merchId'           => 'required|alpha_num',
+        'merchChanId'       => 'required|alpha_num',
         'txnRefundId'       => 'required|alpha_num|max:255',
         'mobNo'             => 'required|string|max:12',
         'txnRefundAmount'   => ['required', 'regex:/^\d*(\.\d{2})$/'],

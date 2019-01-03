@@ -115,6 +115,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Exception\Handler($app);
         });
 
+        $this->app->singleton('razorx', function($app)
+        {
+            return new RazorXClient($app);
+        });
+
         $this->app->singleton('card.tokenex', function($app)
         {
             $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
@@ -124,7 +129,20 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\TokenEx($app);
             }
 
-            return new TokenEx($app);
+            $requestId = $app['request']->getId();
+
+            $mode = $app['rzp.mode'] ?? 'test';
+
+            $cardVault = $app->razorx->getTreatment($requestId, 'api_card_vault', $mode);
+
+            if (($this->app->environment('testing') === true) or
+                ($cardVault === 'off') or
+                ($cardVault === 'control'))
+            {
+                return new TokenEx($app);
+            }
+
+            return new CardVault($app);
         });
 
         $this->app->singleton('card.otpelf', function($app)
@@ -188,11 +206,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
-        });
-
-        $this->app->singleton('razorx', function($app)
-        {
-            return new RazorXClient($app);
         });
 
         $this->registerShieldClient();
@@ -260,6 +273,7 @@ class ApiServiceProvider extends BaseServiceProvider
         return [
             'api.mutex',
             'bitly',
+            'razorx',
             'card.tokenex',
             'es',
             'exception.handler',
@@ -281,7 +295,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'authservice',
             'sns',
             'pincodesearch',
-            'razorx',
             'shield.service',
             'beam',
         ];

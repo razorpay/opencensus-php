@@ -473,7 +473,10 @@ return [
             Permission::DOWNLOAD_NON_MERCHANT_REPORT => [
                 'description' => 'download non-merchant reports',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::ES_WRITE_OPERATION           => [
+                'description' => 'Perform write operations on Elasticsearch',
+            ],
         ],
 
         // Permissions

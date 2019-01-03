@@ -924,4 +924,68 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testVajraAlertUPIWebHook' => [
+        'request' => [
+            'content' => [
+                'evalMatches' =>
+                [
+                    [
+                        'value'  => 58.45,
+                        'metric' => 'Total Success Rate',
+                        'tags'   => [],
+                    ],
+                ],
+                'message'  => null,
+                'ruleId'   => 242,
+                'ruleName' => 'Total Success  Rate is less then 80',
+                'ruleUrl'  => 'https://vajra.razorpay.com/d/XmyC-WYmz/prod-payments-success-rate?fullscreen=true&edit=true&tab=alert&panelId=2&orgId=1',
+                'state'    => 'alerting',
+                'title'    => '[Alerting] Total Success  Rate is less then 80',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/vajra'
+        ],
+        'downtimeResponse' => [
+            'content' => [
+                [
+                    'scheduled'   => false,
+                    'partial'     => false,
+                    'source'      => 'VAJRA',
+                    'reason_code' => 'LOW_SUCCESS_RATE',
+                    'method'      => 'upi',
+                    'gateway'     => 'upi_mindgate',
+                    'network'     => 'NA',
+                    'card_type'   => 'NA',
+                    'issuer'      => 'UNKNOWN',
+                    'terminal_id' => '100UPIMindgate',
+                    'admin'       => true,
+                    'entity'      => 'gateway_downtime',
+                ],
+                [
+                    'scheduled'   => false,
+                    'partial'     => false,
+                    'source'      => 'VAJRA',
+                    'reason_code' => 'LOW_SUCCESS_RATE',
+                    'method'      => 'upi',
+                    'gateway'     => 'upi_mindgate',
+                    'network'     => 'NA',
+                    'card_type'   => 'NA',
+                    'issuer'      => 'UNKNOWN',
+                    'terminal_id' => '100UPIMindtml2',
+                    'admin'       => true,
+                    'entity'      => 'gateway_downtime',
+                ]
+            ]
+        ],
+        'duplicateRequestResponse' => [
+            'content' => [],
+        ],
+        'messageFor' => [
+            'merchant_ids' => '{"method":  "upi", "gateway":  "upi_mindgate", "merchant_ids":  ["100000Razorpay"]}',
+            'merchant_id'  => '{"method":  "upi", "gateway":  "upi_mindgate", "merchant_id":  "100000Razorpay"}',
+            'terminal_ids' => '{"method":  "upi", "gateway":  "upi_mindgate", "terminal_ids":  ["100UPIMindgate", "100UPIMindtml2"]}',
+            'terminal_id'  => '{"method":  "upi", "gateway":  "upi_mindgate", "terminal_id":  "100UPIMindgate"}',
+        ],
+    ],
 ];

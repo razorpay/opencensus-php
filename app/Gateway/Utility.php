@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway;
 
+use RZP\Exception;
 use Requests_Exception;
 
 class Utility

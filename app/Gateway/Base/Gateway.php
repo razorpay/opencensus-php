@@ -36,7 +36,7 @@ class Gateway
      * Default request connect timeout duration in seconds.
      * @var  integer
      */
-    const CONNECT_TIMEOUT = 5;
+    const CONNECT_TIMEOUT = 10;
 
     /**
      * Default payment timeout duration in mins.
@@ -933,6 +933,28 @@ class Gateway
     protected function getLiveSecret()
     {
         return $this->input['terminal']['gateway_secure_secret'];
+    }
+
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestTerminalPassword();
+        }
+
+        return $this->getLiveTerminalPassword();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword()
+    {
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     protected function isTestMode() : bool

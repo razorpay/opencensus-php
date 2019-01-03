@@ -263,6 +263,8 @@ class FirstDataS2sGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $this->markTestSkipped('reverse has been disabled due to issue on first data');
+
         $features = $this->fixtures->merchant->addFeatures(['reverse']);
 
         $payment = $this->doAuthPayment($this->payment);

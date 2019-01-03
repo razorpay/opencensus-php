@@ -296,7 +296,7 @@ class Transfer extends Base
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,
             self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
+            self::MODE                  => Mode::UPI,
             self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }

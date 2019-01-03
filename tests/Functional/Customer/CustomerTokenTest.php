@@ -397,6 +397,16 @@ class CustomerTokenTest extends TestCase
         $this->assertNull($token[Token\Entity::MRN]);
     }
 
+
+    public function testAddCustomerTokenCardCardVault()
+    {
+        $this->mockCardVault();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     protected function mockSession()
     {
         $data = array(

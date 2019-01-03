@@ -15,7 +15,7 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = [
-        Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|unsigned_id|size:14',
     ];
 
     public function findOrFail($id, $columns = array('*'))

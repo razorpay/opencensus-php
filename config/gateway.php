@@ -310,12 +310,14 @@ return [
     ],
 
     'upi_axis' => [
-        'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
-        'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
-        'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
-        'test_merchant_id'      => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2'     => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
-        'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
+        'public_key'                        => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
+        'mobile_no'                         => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
+        'aes_encryption_key'                => env('UPI_AXIS_GATEWAY_AES_KEY'),
+        'test_merchant_id'                  => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'                 => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
+        'test_vpa'                          => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
+        'live_razorpay_merchant_id'         => env('UPI_LIVE_RAZORPAY_MERCHANT_ID'),
+        'live_razorpay_merchant_channel_id' => env('UPI_LIVE_RAZORPAY_MERCHANT_CHANNEL_ID')
     ],
 
     'upi_yesbank' => [
@@ -485,6 +487,7 @@ return [
     'netbanking_allahabad' => [
         'test_merchant_id'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id2'      => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'netbanking_canara' => [

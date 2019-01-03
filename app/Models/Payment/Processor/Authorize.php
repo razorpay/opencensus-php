@@ -956,6 +956,21 @@ trait Authorize
             return;
         }
 
+        $oAuthApplicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+        //refer testAppBlacklistedFeatureEnabledOnApp
+        if ($oAuthApplicationId !== null)
+        {
+            $feature = $this->repo
+                            ->feature
+                            ->findByEntityTypeEntityIdAndName(Feature\Constants::APPLICATION, $oAuthApplicationId, Feature\Constants::S2S);
+
+            if ($feature !== null)
+            {
+                return;
+            }
+        }
+
         if ($payment->isOpenWalletPayment() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::OPENWALLET);
@@ -1492,7 +1507,9 @@ trait Authorize
                                 $authGateway = Payment\Gateway::MPI_ENSTAGE;
                             }
 
-                            $gatewayInput['authenticate']['gateway'] = $authGateway;
+                            $gatewayInput['authenticate'] = [
+                                'gateway' => $authGateway,
+                            ];
                         }
                     }
 
@@ -1983,7 +2000,7 @@ trait Authorize
 
             $cacheKey = sprintf('emi_plans_%s', $cacheKey);
 
-            $emiPlans = (array)$this->app['cache']->get($cacheKey, null);
+            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 
             $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
 

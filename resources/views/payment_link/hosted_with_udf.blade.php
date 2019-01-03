@@ -65,7 +65,9 @@
                 }
             </script>
 
+
             <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+            <script src="https://cdn.razorpay.com/static/assets/color.js"></script>
             <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
             <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
         @else
