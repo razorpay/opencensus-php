@@ -4,7 +4,6 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use Carbon\Carbon;
 
-use function GuzzleHttp\Psr7\try_fopen;
 use Monolog\Logger;
 use RZP\Constants;
 use RZP\Models\Base;

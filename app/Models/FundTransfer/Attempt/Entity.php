@@ -233,6 +233,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CMS_REF_NO);
     }
 
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
@@ -241,11 +246,6 @@ class Entity extends Base\PublicEntity
     public function isSettlement()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
-    }
-
-    public function getDateTime()
-    {
-        return $this->getAttribute(self::DATE_TIME);
     }
 
     public function hasBankAccount()
@@ -424,7 +424,8 @@ class Entity extends Base\PublicEntity
     public function isBeneRegistrationRequired(): bool
     {
         if (($this->isRefund() === true) or
-            ($this->hasVpa() === true))
+            ($this->hasVpa() === true) or
+            ($this->isPennyTesting() === true))
         {
             return false;
         }

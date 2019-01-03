@@ -7,7 +7,6 @@ use Config;
 use Carbon\Carbon;
 
 
-use RZP\Models\Base\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
@@ -16,8 +15,6 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\FundTransfer\Attempt\Lock;
-use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
@@ -155,12 +152,12 @@ class NodalAccount extends NodalBase\NodalAccount
             $response['fta_id']    = $attempt->getId();
             $response['source_id'] = $attempt->source->getId();
 
-            if (method_exists($sourceCore, 'postFTAProcess') === false)
+            if (method_exists($sourceCore, 'postFundTransfer') === false)
             {
                 return;
             }
 
-            $sourceCore->postFTAProcess($response);
+            $sourceCore->postFundTransfer($response);
         }
         catch (\Throwable $e)
         {
