@@ -34,17 +34,13 @@ class EditWebsiteDetails extends Component {
         const newUser = new User({
           ...user,
           business_website: response.data.business_website,
+          has_key_access: response.data.has_key_access,
         });
 
         this.props.updateSession({
           user: newUser,
           mode: this.props.mode,
         });
-
-        //refresh to fetch `has_key_access` prop of user
-        if (newUser.activation_status === 'instantly_activated') {
-          return location.reload();
-        }
 
         this.props.onClose();
       }
