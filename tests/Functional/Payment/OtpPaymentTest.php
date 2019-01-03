@@ -71,6 +71,54 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
+    public function testIvrAuthenticationPaymentWHeadless()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['ivr', 'headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElf(function (array $input)
+        {
+            self::assertTrue(false);
+        });
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'otp'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
     public function testHeadlessOtpAuthenticationPayment()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [

@@ -203,7 +203,7 @@ trait Authorize
 
                 $retry = false;
 
-                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
                 {
                     $request = $this->openHeadlessBrowser($payment, $request);
                 }
