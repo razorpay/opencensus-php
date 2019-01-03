@@ -15,7 +15,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 class Core extends Base\Core
 {
     public function create(
-        Merchant\Entity $partnerMerchant,
+        $partnerMerchant,
         Merchant\Entity $merchant,
         array $input = null,
         Base\PublicEntity $entity = null)
@@ -25,7 +25,10 @@ class Core extends Base\Core
         $merchantMapping->generateId();
 
         $merchantMapping->merchant()->associate($merchant);
-        $merchantMapping->partnerMerchant()->associate($partnerMerchant);
+        if(empty($partnerMerchant) === false)
+        {
+            $merchantMapping->partnerMerchant()->associate($partnerMerchant);
+        }
 
         if (empty($entity) === false)
         {
@@ -43,12 +46,13 @@ class Core extends Base\Core
      * on this relation. This can be otherwise fetched from auth-service but
      * since it is read-heavy, we maintain it in the access_map table too.
      *
+     * @param Merchant/Entity $aggregateMerchant can be null
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
      * @return Entity
      */
-    public function addMappingForOAuthApp(Merchant\Entity $aggregateMerchant, Merchant\Entity $merchant, array $input): Entity
+    public function addMappingForOAuthApp($aggregateMerchant, Merchant\Entity $merchant, array $input): Entity
     {
         $merchantId = $merchant->getId();
 

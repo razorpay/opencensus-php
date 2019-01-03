@@ -24,16 +24,25 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(self::ADD_APP, $input);
 
-        $merchants = $this->repo->merchant->findOrFailPublic([$merchantId, $input['partner_id']]);
-        foreach ($merchants as $row)
+        // remove if condition later since partnerId will always be sent
+        if(empty($input['partner_id']) === true)
         {
-            if($row->getId() === $merchantId)
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $aggregateMerchant = null;
+        }
+        else
+        {
+            $merchants = $this->repo->merchant->findOrFailPublic([$merchantId, $input['partner_id']]);
+            foreach ($merchants as $row)
             {
-                $merchant = $row;
-            }
-            else
-            {
-                $aggregateMerchant = $row;
+                if($row->getId() === $merchantId)
+                {
+                    $merchant = $row;
+                }
+                else
+                {
+                    $aggregateMerchant = $row;
+                }
             }
         }
 
