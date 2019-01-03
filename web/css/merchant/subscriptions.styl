@@ -40,11 +40,31 @@
         opacity: 0.8
         text-transform: initial
 
-.Item
+.Subscription
   &--New
-    &-in-modal
-      z-index: 100001
+    &-addons
+      .list
+        li
+          padding: 20px 0 20px 30px
+          &.no-counter
+            list-style-type: none
+          &:not(:last-child)
+            border-bottom: 1px solid #D8D8D8
 
+          &:before
+            content: ''
+            display: block
+            height: 0
+            width: 0
+    &-quant-select
+      .Input
+        .Input-label
+          width: auto
+          &:after
+            content: ''
+        .Input-content
+          margin-left: 10px
+          display: inline-block
 
 .SubscriptionsBatch
     &--upload-modal

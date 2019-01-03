@@ -12,30 +12,35 @@ export default function NewSubscriptionLinkAddOnDetails({
   ...props
 }) {
   return (
-    <>
+    <div class="Subscription--New-addons">
       <Input.Check
         data-name="_addOnPresent"
         fieldLabel="I want to add an upfront amount"
         class="Input--noMarginLeft"
         checked={internals._addOnPresent}
       />
-      {addons.map((addon, index) => (
-        <AddOnItem
-          key={index}
-          name={`addons.${index}`}
-          items={items.items}
-          itemsLoading={items.loading}
-          onSelectItem={props.onSelectItem(index)}
-          selectedItem={addon}
-        />
-      ))}
-
-      {isPresent(addons) &&
-        isPresent(addons[addons.length - 1]) && (
-          <button class="btn btn-link" onClick={props.onAddAddon}>
-            Add New Item
-          </button>
-        )}
-    </>
+      <ol class="list">
+        {addons.map((addon, index) => (
+          <li key={index}>
+            <AddOnItem
+              key={index}
+              name={`addons.${index}`}
+              items={items.items}
+              itemsLoading={items.loading}
+              onSelectItem={props.onSelectItem(index)}
+              selectedItem={addon}
+            />
+          </li>
+        ))}
+        {isPresent(addons) &&
+          isPresent(addons[addons.length - 1]) && (
+            <li class="no-counter">
+              <button class="btn btn-link" onClick={props.onAddAddon}>
+                Add New Item
+              </button>
+            </li>
+          )}
+      </ol>
+    </div>
   );
 }

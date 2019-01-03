@@ -4,12 +4,12 @@ import Amount from 'rzp/ui/Amount';
 
 export default function QuantitySelector(props) {
   return (
-    <div class="quantity-selector">
+    <div class="Subscription--New-quant-select">
       <Input
         label={
           <>
             <Amount value={props.rate} currency={props.currency} />
-            &nbsp;x&nbsp;
+            <span className="m-l">x</span>
           </>
         }
         name={props.name || 'quantity'}
@@ -18,7 +18,9 @@ export default function QuantitySelector(props) {
         value={props.quantity}
         min={1}
       />
-      {props.informativeMessage(props.rate * props.quantity, props.currency)}
+      <div className="m-t">
+        {props.informativeMessage(props.rate * props.quantity, props.currency)}
+      </div>
     </div>
   );
 }

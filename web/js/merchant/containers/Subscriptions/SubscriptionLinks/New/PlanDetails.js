@@ -44,16 +44,15 @@ export default function NewSubscriptionLinkPlanDetails({
               selected={selectedPlan}
             />
           </div>
+          {fields.plan_id && (
+            <QuantitySelector
+              rate={selectedPlan.amount}
+              quantity={fields.quantity}
+              informativeMessage={getInformativeMessage(selectedPlan)}
+            />
+          )}
         </div>
       </div>
-      {fields.plan_id && (
-        <QuantitySelector
-          rate={selectedPlan.amount}
-          quantity={fields.quantity}
-          informativeMessage={getInformativeMessage(selectedPlan)}
-          readOnly
-        />
-      )}
 
       <Input.Check
         label="Start Date"
