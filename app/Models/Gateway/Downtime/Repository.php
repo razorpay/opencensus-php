@@ -33,11 +33,12 @@ class Repository extends Base\Repository
     );
 
     const KEY_OPERATOR_MAP = [
-        Entity::GATEWAY => '=',
-        Entity::ISSUER  => '=',
-        Entity::METHOD  => '=',
-        Entity::SOURCE  => '=',
-        Entity::BEGIN   => '<='
+        Entity::GATEWAY     => '=',
+        Entity::ISSUER      => '=',
+        Entity::METHOD      => '=',
+        Entity::SOURCE      => '=',
+        Entity::BEGIN       => '<=',
+        Entity::TERMINAL_ID => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -52,11 +53,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchUnique($input)
+    public function fetchUnique($input, array $uniqueRecordIdentifiers = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = $uniqueRecordIdentifiers ?? self::UNIQUE_KEYS;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -73,11 +76,13 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchMostRecentActive(array $input)
+    public function fetchMostRecentActive(array $input, array $fetchByKeys = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = $fetchByKeys ?? self::UNIQUE_KEYS;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -87,7 +92,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
 
         return $query->whereNull(Entity::END)
                      ->where(Entity::SCHEDULED, '=', false)
@@ -103,7 +108,7 @@ class Repository extends Base\Repository
      *
      */
 
-    public function fetchCurrentAndFutureDowntimesWithoutTerminal(): PublicCollection
+    public function fetchCurrentAndFutureDowntimes(bool $withoutTerminal = false): PublicCollection
     {
         $query = $this->newQuery();
 
@@ -113,10 +118,13 @@ class Repository extends Base\Repository
                 ->orWhere(Entity::END, '>=', Carbon::now()->getTimestamp());
         });
 
-        return $query->whereNull(Entity::TERMINAL_ID)
-            ->get();
-    }
+        if ($withoutTerminal === true)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
 
+        return $query->get();
+    }
 
     public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection
     {

@@ -101,7 +101,7 @@ abstract class Processor extends Base\Core
         return $summary;
     }
 
-    protected function startReconciliation($data): array
+    public function startReconciliation($data): array
     {
         $summary = $this->repo->transaction(function() use ($data)
         {

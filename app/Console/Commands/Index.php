@@ -146,8 +146,7 @@ class Index extends Command
                             $documents,
                             function (& $doc)
                             {
-                                return $this->repo
-                                            ->isEsSyncNeeded(EsRepository::CREATE, $doc);
+                                return $this->repo->isEsSyncNeeded(EsRepository::CREATE, $doc);
                             });
 
             $filteredCount = count($documents);

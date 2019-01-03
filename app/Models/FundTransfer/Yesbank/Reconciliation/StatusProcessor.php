@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
@@ -49,14 +50,48 @@ class StatusProcessor extends BaseRowProcessor
 
         $banking = $this->row->isOfBanking();
 
-        $response = (new StatusRequest($banking))->init()
-                                                 ->setEntity($this->row)
-                                                 ->makeRequest($gateway);
+        $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
+
+        $statusRequestProcessor = (new StatusRequest($banking))->init()
+                                                               ->setEntity($this->row);
+
+        if ($makeRequest === true)
+        {
+            $response = $statusRequestProcessor->makeRequest($gateway);
+        }
+        else
+        {
+            $response = $statusRequestProcessor->getResponseDataFromFta($gateway);
+        }
 
         if (empty($response) === false)
         {
             $this->setParsedData($response);
         }
+    }
+
+    protected function shouldMakeStatusRequestCall(bool $gateway): bool
+    {
+        //
+        // We should not make status call only for VPA payouts since
+        // Yesbank's Status API call does not work correctly.
+        //
+        if ($gateway === false)
+        {
+            return true;
+        }
+
+        $fta = $this->row;
+
+        $bankCode = $fta->getBankStatusCode();
+
+        $successStatuses = GatewayStatus::getSuccessfulStatus();
+        $failureStatuses = GatewayStatus::getFailureStatus();
+
+        // TODO: Fix this later properly. Use status_code
+        // to figure out whether to retry or not.
+
+        return true;
     }
 
     /**
@@ -104,6 +139,8 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
+        $currentStatus = $this->reconEntity->getBankStatusCode();
+
         $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
@@ -111,6 +148,11 @@ class StatusProcessor extends BaseRowProcessor
         $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
 
         $this->reconEntity->setMode($this->parsedData[self::MODE]);
+
+        if ($this->parsedData[self::BANK_STATUS_CODE] !== $currentStatus)
+        {
+            $this->reconEntity->setStatus(AttemptStatus::INITIATED);
+        }
 
         //
         // Reference number is only available in transfer request's response.

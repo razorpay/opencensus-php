@@ -16,8 +16,40 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 4,
                 'items'  => [
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 1590,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'reversal',
+                            'amount'         => 1590,
+                            'currency'       => 'INR',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'balance'        => 103410,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'payout',
+                        ],
+                        // 'created_at'     => ,
+                    ],
                     [
                         // 'id'             => '',
                         'entity'         => 'transaction',

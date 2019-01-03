@@ -229,7 +229,7 @@ class Activate extends Base\Core
 
         $methodCore = new Methods\Core;
 
-        $methodCore->checkMccAndEnableEmi($merchant, $methods);
+        $methodCore->checkCategorySubcategoryAndEnableEmi($merchant, $methods);
 
         $methodCore->checkPricing($merchant, $methods, true);
     }

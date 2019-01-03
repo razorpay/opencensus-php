@@ -1239,7 +1239,9 @@ class Core extends Base\Core
         {
             $paymentTxn = $payment->transaction;
 
-            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
         return null;

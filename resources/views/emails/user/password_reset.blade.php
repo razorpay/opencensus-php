@@ -7,7 +7,7 @@
 <h2>Password Reset</h2>
 
 <div>
-    @if ($product = 'banking')
+    @if ($product === 'banking')
         To reset your password, <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
             .'/forgot-password?token='. $token . '&email=' . $email}}" target="_blank">click here</a>. <br/>
 
@@ -17,12 +17,12 @@
             .'/forgot-password?token='. $token . '&email=' . $email}}
         </a>
     @else
-        To reset your password, <a href=" {{'https://' . $org['product_hostname'] . '/#/access/resetpwd/'.$token.'?email='
+        To reset your password, <a href=" {{'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='
         .$email }}" target="_blank">click here</a>. <br/>
 
         Or you may open the following link in your browser: <br/>
-        <a href="{{ 'https://' . $org['product_hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank">
-            {{ 'https://' . $org['product_hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}
+        <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank">
+            {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}
         </a>
     @endif
 

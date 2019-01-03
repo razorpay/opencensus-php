@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use Config;
+use Illuminate\Support\Facades\Artisan;
+
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
@@ -66,7 +69,7 @@ class PayoutTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
@@ -197,7 +200,7 @@ class PayoutTest extends TestCase
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
 
         $this->retryPayout((array) $payout['id']);
 
@@ -284,6 +287,8 @@ class PayoutTest extends TestCase
 
     public function testGetPayouts()
     {
+        $this->createEsIndex();
+        
         $payout = $this->testCreatePayout();
 
         $payout = $this->testCreatePayout();
@@ -299,11 +304,24 @@ class PayoutTest extends TestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testGetPayoutsWithoutAccountNumber()
+    {
+        $this->testCreatePayout();
+
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPayout()
     {
         $this->testCreatePayout();
 
-        $payout = $this->getLastEntity('payout', false);
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->privateAuth();
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
@@ -311,7 +329,7 @@ class PayoutTest extends TestCase
 
         $payout2 = $this->startTest();
 
-        $this->assertEquals($payout, $payout2);
+        $this->assertArraySelectiveEquals($payout2, $payout);
     }
 
     public function testCreatePaymentPayout(): array
@@ -497,8 +515,7 @@ class PayoutTest extends TestCase
         $payout = $this->testCreatePayout();
 
         $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/payouts?transaction_id=txn_' . $payout['transaction_id'];
+        $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -526,7 +543,7 @@ class PayoutTest extends TestCase
                 'status' => 'processed'
             ]);
 
-        $request['url'] = '/payouts?status=processed';
+        $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -562,7 +579,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_type=customer';
+        $request['url'] = '/payouts?contact_type=customer&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -590,7 +607,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?utr=1234567890';
+        $request['url'] = '/payouts?utr=1234567890&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -619,7 +636,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_id=cont_1000010contact';
+        $request['url'] = '/payouts?contact_id=cont_1000010contact&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -636,7 +653,7 @@ class PayoutTest extends TestCase
 
     public function testSearchPayoutByContactName()
     {
-        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test user']);
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'name' => 'test']);
 
         $this->fixtures->edit(
             'fund_account',
@@ -646,12 +663,11 @@ class PayoutTest extends TestCase
                 'source_type' => 'contact',
             ]);
 
-
         $payout = $this->testCreatePayout();
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_name=test user';
+        $request['url'] = '/payouts?contact_name=test&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -683,7 +699,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_phone=8888888888';
+        $request['url'] = '/payouts?contact_phone=8888888888&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -715,7 +731,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?contact_email=test@payout.com';
+        $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -747,7 +763,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'];
+        $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
 
@@ -760,5 +776,36 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['id'], $responsePayout['id']);
         $this->assertEquals($payout['mode'], $responsePayout['mode']);
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function createEsIndex()
+    {
+        $esMock = Config::get('database.es_mock');
+
+        if ($esMock === false)
+        {
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'test',
+                    'entity'       => 'payout',
+                    'index_prefix' => env('ES_ENTITY_INDEX_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
+                    '--reindex'    => true,
+                ]);
+
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'live',
+                    'entity'       => 'payout',
+                    'index_prefix' => env('ES_ENTITY_INDEX_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
+                    '--reindex'    => true,
+                ]);
+
+            Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'payout']);
+            Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'payout']);
+        }
     }
 }

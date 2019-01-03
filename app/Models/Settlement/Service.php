@@ -176,6 +176,8 @@ class Service extends Base\Service
                 ]);
         }
 
+        (new Validator)->validateInput('status_reconcile_for_api', $input);
+
         $reconNamespace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
 
         return (new $reconNamespace)->process($input);

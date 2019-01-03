@@ -36,7 +36,7 @@ class Gateway
      * Default request connect timeout duration in seconds.
      * @var  integer
      */
-    const CONNECT_TIMEOUT = 5;
+    const CONNECT_TIMEOUT = 10;
 
     /**
      * Default payment timeout duration in mins.
@@ -194,10 +194,6 @@ class Gateway
     protected $externalMockDomain;
 
     protected $paymentId;
-
-    protected $curlLogPath;
-
-    protected $curlLog;
 
     public function __construct()
     {
@@ -939,6 +935,28 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestTerminalPassword();
+        }
+
+        return $this->getLiveTerminalPassword();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword()
+    {
+        return $this->input['terminal']['gateway_terminal_password'];
+    }
+
     protected function isTestMode() : bool
     {
         return ($this->mode === Mode::TEST);
@@ -1350,33 +1368,6 @@ class Gateway
     //
     // This is a temporary function for debugging the curl issue
     //
-    protected function traceCurlErrorIfApplicable()
-    {
-        try
-        {
-            if ((isset($this->exception) === true) and
-                ($this->exception instanceof \Requests_Exception) and
-                ($this->exception->getType() === 'curlerror'))
-            {
-                $curlData = file_get_contents($this->curlLogPath);
-
-                $dataToTrace = [
-                    'gateway'   => $this->gateway,
-                    'curl_data' => $curlData,
-                ];
-
-                $message = 'Curl error @vv @vivek @viv @kranti';
-
-                // #tech_curl_error
-                $this->app['slack']->queue(
-                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-        }
-    }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {
