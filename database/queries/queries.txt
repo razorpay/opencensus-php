@@ -4602,5 +4602,4 @@ ALTER TABLE orders
     ADD COLUMN first_payment_min_amount BIGINT UNSIGNED DEFAULT NULL AFTER partial_payment;
 
 ALTER TABLE merchant_access_map
-    ADD COLUMN partner_id CHAR(14) AFTER merchant_id,
-    ADD FOREIGN KEY merchant_access_map_partner_id_foreign(partner_id) REFERENCES merchants(id);
+    ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER merchant_id;
