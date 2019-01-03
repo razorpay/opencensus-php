@@ -7,6 +7,8 @@ app.controller('ConfirmCtrl', [
   '$timeout',
   'alertsFactory',
   'organization',
+  'isHostedInBB',
+  'appHost',
   function(
     $scope,
     $http,
@@ -14,7 +16,9 @@ app.controller('ConfirmCtrl', [
     $stateParams,
     $timeout,
     alertsFactory,
-    organization
+    organization,
+    isHostedInBB,
+    appHost
   ) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
@@ -46,11 +50,18 @@ app.controller('ConfirmCtrl', [
       data: data,
     });
 
+    $scope.requestDone = false;
+
     request
       .success(function(data) {
+        $scope.requestDone = true;
         $scope.alerts.resetAlerts();
         if (data.success) {
           $scope.success = true;
+
+          if (isHostedInBB) {
+            return $scope.successCb() && $scope.successCb();
+          }
 
           var dripPayload = {
             email: data.data.email,
@@ -73,6 +84,10 @@ app.controller('ConfirmCtrl', [
             });
           }, 3000);
         } else {
+          if (isHostedInBB) {
+            return $scope.failCb && $scope.failCb();
+          }
+
           $scope.alerts.addAlert(
             'danger',
             'Invalid confirmation token or the merchant is already confirmed.'
@@ -80,11 +95,45 @@ app.controller('ConfirmCtrl', [
         }
       })
       .error(function() {
+        $scope.requestDone = true;
         $scope.alerts.addAlert('danger', null, true);
       });
 
     organization.fetchCurrentOrg().then(function(data) {
       $scope.confirm_logo = data.login_logo_url || 'img/logo_black.png';
     });
+
+    if (isHostedInBB) {
+      window.RZP &&
+        window.RZP.rpcServer &&
+        window.RZP.rpcServer(
+          appHost,
+          [
+            {
+              name: 'notifyConfirmationSuccess',
+              hasReply: true,
+              callback: function(reply) {
+                if ($scope.requestDone && $scope.success) {
+                  return reply();
+                }
+
+                $scope.successCb = reply;
+              },
+            },
+            {
+              name: 'notifyConfirmationFail',
+              hasReply: true,
+              callback: function(reply) {
+                if ($scope.requestDone && !$scope.success) {
+                  return reply();
+                }
+
+                $scope.failCb = reply;
+              },
+            },
+          ],
+          'confirmation'
+        );
+    }
   },
 ]);

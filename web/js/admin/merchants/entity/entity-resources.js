@@ -73,6 +73,7 @@ function _getSubmerchantFields() {
 
 function _getPricingPlansFields() {
   return [
+    ['Product', item => item.product || 'primary'],
     ['Feature', item => item.feature || 'payment'],
     ['Payment Method', item => item.payment_method || 'Any'],
     ['Payment Method Type', item => item.payment_method_type || 'Any'],

@@ -9,20 +9,25 @@ import { snakeToTitleCase } from 'common/util';
 import { pluralize } from 'rzp/utils/rzp-utils';
 
 function refundLink(item, when) {
-  let count = item.aging[when].count;
+  let count = 0;
+  let query = {};
 
-  let query = {
-    status: ['file_init'],
-    attempts: {
-      gte: 1,
-    },
-    gateway: [item.gateway],
-    method: [item.method],
-    created_at: {
-      gte: item.aging[when].from,
-      lt: item.aging[when].to,
-    },
-  };
+  if (typeof item.aging[when] !== 'undefined') {
+    count = item.aging[when].count;
+
+    query = {
+      status: ['file_init'],
+      attempts: {
+        gte: 1,
+      },
+      gateway: [item.gateway],
+      method: [item.method],
+      created_at: {
+        gte: item.aging[when].from,
+        lt: item.aging[when].to,
+      },
+    };
+  }
 
   let queryString = Object.keys(query)
     .map(key => key + '=' + JSON.stringify(query[key]))

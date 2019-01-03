@@ -39,3 +39,6 @@ tmp/
 # IDE config
 /jsconfig.json
 .idea
+
+.phpstorm.meta.php
+_ide_helper.php

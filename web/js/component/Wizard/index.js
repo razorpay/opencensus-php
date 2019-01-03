@@ -63,6 +63,7 @@ export const ModalAsideNav = _ => {
                   t;
                 }
               }}
+              {i === activeTab && <i class={'i i-chevron-right'} />}
             </li>
           );
         })}

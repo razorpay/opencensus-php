@@ -196,7 +196,7 @@ export default class InvoiceDetailContainer extends Component {
           if (d.hasOwnProperty('first_payment_min_amount')) {
             d = { ...data };
 
-            d[MIN_AMOUNT_TEXT.emi.split(' ').join('_')] =
+            d[MIN_AMOUNT_TEXT.split(' ').join('_')] =
               d.first_payment_min_amount;
             delete d.first_payment_min_amount;
           }
@@ -208,7 +208,7 @@ export default class InvoiceDetailContainer extends Component {
 
           return resp;
         } else {
-          throw 'Some network issue occured';
+          throw 'Some Network error occured';
         }
       })
       .catch(({ errors }) => {
