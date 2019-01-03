@@ -525,7 +525,7 @@ trait Authorize
 
             $data['eci'] = $this->getEci($input);
 
-            $data['type'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_TYPE;
+            $data['type'] = Hdfc\Constants::PRE_AUTH_TYPE;
 
             $this->authSecondRecurringRequest['url'] = Hdfc\Urls::PRE_AUTH_URL;
         }
