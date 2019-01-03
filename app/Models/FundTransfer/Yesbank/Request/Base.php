@@ -150,7 +150,7 @@ abstract class Base extends ApiProcessor
 
         $options = [
             'hooks'     => $hooks,
-            'timeout'   => self::TIMEOUT,
+            'timeout'   => $this->config['timeout'] ?? self::TIMEOUT,
             'auth'      => [
                 $this->config['username'],
                 $this->config['password'],

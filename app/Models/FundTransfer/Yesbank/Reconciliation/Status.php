@@ -407,7 +407,8 @@ class Status extends BaseStatus
 
     public static function getPublicFailureReason($bankSubStatus)
     {
-        if (in_array($bankSubStatus, self::getSuccessfulStatus(), true) === true)
+        // sub status code will be empty if the request was complete
+        if (empty($bankSubStatus) === true)
         {
             return null;
         }

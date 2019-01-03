@@ -29,7 +29,7 @@ return [
     'yesbank' => [
         'primary' => [
             'mock'                        => env('MOCK_NODAL_REQUEST', false),
-            'url'                         => env('YESBANK_NODAL_URL'),
+            'url'                         => env('YESBANK_BASE_URL'),
             'app_id'                      => env('YESBANK_NODAL_APP_ID'),
             'username'                    => env('YESBANK_NODAL_USERNAME'),
             'password'                    => env('YESBANK_NODAL_PASSWORD'),
@@ -48,7 +48,7 @@ return [
         ],
         'banking' => [
             'mock'                        => env('MOCK_NODAL_REQUEST', false),
-            'url'                         => env('YESBANK_NODAL_URL'),
+            'url'                         => env('YESBANK_BASE_URL'),
             'app_id'                      => env('YESBANK_NODAL_APP_ID'),
             'username'                    => env('YESBANK_NODAL_USERNAME'),
             'password'                    => env('YESBANK_NODAL_PASSWORD'),
@@ -68,8 +68,9 @@ return [
 
         'sync' => [
             'mock'                        => env('MOCK_NODAL_REQUEST', false),
-            'url'                         => env('YESBANK_SYNC_URL'),
+            'url'                         => env('YESBANK_BASE_URL'),
             'app_id'                      => env('YESBANK_SYNC_APP_ID'),
+            'timeout'                     => env('YESBANK_SYNC_TIMEOUT'),
             'username'                    => env('YESBANK_SYNC_USERNAME'),
             'password'                    => env('YESBANK_SYNC_PASSWORD'),
             'client_id'                   => env('YESBANK_SYNC_CLIENT_ID'),

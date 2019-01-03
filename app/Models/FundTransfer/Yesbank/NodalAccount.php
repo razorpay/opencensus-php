@@ -146,17 +146,21 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function initiatePostProcessing(Attempt\Entity $attempt, array $response)
     {
-        if ($attempt->isPennyTesting() === false)
-        {
-            return;
-        }
-
         try
         {
-            $response['fta_id'] = $attempt->getId();
+            $sourceCoreClass = substr(get_class($attempt->source), 0, -6) . 'Core';
 
-            // TODO: This should be called only for penny testing for now
-//            $attempt->source->updateBeneData($response);
+            $sourceCore = new $sourceCoreClass();
+
+            $response['fta_id']    = $attempt->getId();
+            $response['source_id'] = $attempt->source->getId();
+
+            if (method_exists($sourceCore, 'postFTAProcess') === false)
+            {
+                return;
+            }
+
+            $sourceCore->postFTAProcess($response);
         }
         catch (\Throwable $e)
         {
