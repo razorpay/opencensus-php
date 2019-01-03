@@ -753,6 +753,21 @@ class Server extends Base\Mock\Server
         return $error;
     }
 
+    public function debitPinAuth()
+    {
+        $this->processInput('debitPinAuthentication');
+
+        $this->setAction('authorize');
+
+        $res = $this->getDebitPinAuthResponse();
+
+        $this->content($res,$this->action);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
+    }
+
     protected function getCardNetwork($number)
     {
         $iin = substr($number, 0, 6);
