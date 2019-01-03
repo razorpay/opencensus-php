@@ -142,10 +142,10 @@ export default [
     },
   ],
   {
-    label: 'Proprietor PAN',
+    label: 'Owner/Director/Propreitor PAN',
     name: 'promoter_pan',
     placeholder: 'PAN Number',
-    className: 'Input--capitalize',
+    className: 'Input--capitalize Input--vTop',
     validator: validatePANCard,
     _when: excludeFor_Indiv,
   },
