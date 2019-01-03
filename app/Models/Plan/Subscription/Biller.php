@@ -36,8 +36,14 @@ class Biller extends Base\Core
     {
         // Subscription may have been queued and charged by a different process
         if (($subscription->isChargeable() === false) and
-            ($options['queue'] === true))
+            ($options['queue'] !== false))
         {
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_ALREADY_CHARGED,
+                [
+                    'subscription_id' => $subscription->getId(),
+                ]);
+
             return;
         }
 

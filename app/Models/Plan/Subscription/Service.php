@@ -212,6 +212,8 @@ class Service extends Base\Service
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
+        \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE', [$subscription->getChargeAt()]);
+
         $this->core->testCharge($subscription, $input);
 
         return $subscription->toArrayPublic();
