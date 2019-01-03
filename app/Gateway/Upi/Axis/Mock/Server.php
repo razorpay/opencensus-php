@@ -194,6 +194,8 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
+        $this->request($input, 'refund');
+
         $input = $this->parseInput($input, Action::REFUND);
 
         $this->validateActionInput($input, Action::REFUND);
