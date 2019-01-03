@@ -700,6 +700,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                  = 'Multiple refunds found at gateway';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
+    const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 

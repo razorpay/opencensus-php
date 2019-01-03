@@ -493,6 +493,9 @@ class Gateway
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
         ],
+        Payment\Gateway::UPI_ICICI   => [
+            self::GO_LIVE_TIMESTAMP => 1546529400
+        ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
         ],
