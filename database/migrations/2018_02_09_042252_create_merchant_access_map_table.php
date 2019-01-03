@@ -25,7 +25,7 @@ class CreateMerchantAccessMapTable extends Migration
 
                 $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
-                $table->char(Entity::PARTNER_ID, Merchant::ID_LENGTH)
+                $table->char(Entity::ENTITY_OWNER_ID, Merchant::ID_LENGTH)
                     ->nullable();
 
                 $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
@@ -43,7 +43,7 @@ class CreateMerchantAccessMapTable extends Migration
                     ->references(Merchant::ID)
                     ->on(Table::MERCHANT);
 
-                $table->foreign(Entity::PARTNER_ID)
+                $table->foreign(Entity::ENTITY_OWNER_ID)
                     ->references(Merchant::ID)
                     ->on(Table::MERCHANT);
 
@@ -66,7 +66,7 @@ class CreateMerchantAccessMapTable extends Migration
         Schema::table(
             Table::MERCHANT_ACCESS_MAP, function ($table) {
                 $table->dropForeign(Table::MERCHANT_ACCESS_MAP.'_'.Entity::MERCHANT_ID.'_foreign');
-                $table->dropForeign(Table::MERCHANT_ACCESS_MAP.'_'.Entity::PARTNER_ID.'_foreign');
+                $table->dropForeign(Table::MERCHANT_ACCESS_MAP.'_'.Entity::ENTITY_OWNER_ID.'_foreign');
             }
         );
 
