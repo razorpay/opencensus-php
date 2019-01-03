@@ -1645,7 +1645,7 @@ trait Refund
     {
         if ($this->refund->getAmount() === 0)
         {
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             return [Payment\Gateway::SUCCESS => true];
         }

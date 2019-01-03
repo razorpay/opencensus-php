@@ -524,6 +524,19 @@ return [
         ]
     ],
 
+    'testGetMultiplePaymentsForOrder' => [
+        'request' => [
+            'url' => '/orders/:id/payments',
+            'method' => 'get',
+            'content' => [
+                'skip' => 1
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testStatusAfterPayment' => [
         'response' => [
             'content' => [
