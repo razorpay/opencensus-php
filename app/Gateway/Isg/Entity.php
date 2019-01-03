@@ -32,6 +32,7 @@ class Entity extends Base\Entity
         self::STATUS_CODE,
         self::AMOUNT,
         self::MERCHANT_PAN,
+        self::RECEIVED,
     ];
 
     public function setAmount($amount)

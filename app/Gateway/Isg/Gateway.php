@@ -95,6 +95,8 @@ class Gateway extends Base\Gateway
 
         $refundAttributesToSave = $this->getRefundAttributes($responseContent, $gatewayEntity);
 
+        $refundAttributesToSave[Entity::RECEIVED] = true;
+
         $this->updateGatewayPaymentEntity($gatewayPayment, $refundAttributesToSave, false);
 
         $this->assertRefundId($input['refund']['id'], $responseContent[Field::RFD_TXN_ID]);
@@ -488,6 +490,8 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntityForQr($input)
     {
         $attributes = $this->getAttributesFromQrResponse($input);
+
+        $attributes[Entity::RECEIVED] = true;
 
         $payment = $this->createGatewayPaymentEntity($input, $attributes);
 
