@@ -1,60 +1,45 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-
-import ProductsModal from 'merchant/components/ProducsModal';
-import TransactionsModal from 'merchant/components/TransactionsHelperModal';
 
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
+
+import {
+  showAcceptPaymentsModal,
+  hideAcceptPaymentsModal,
+} from 'merchant/modules/home';
+
 import {
   trackTestModeCard,
   trackLiveModeCard,
   trackActivationCard,
   trackDotClick,
-  trackTransactionsHelper,
-  trackProductsModal,
   trackClose,
 } from './ga';
 
-let showProductsModalOnLoad = window.location.href.indexOf('products') > 0;
-
-@withRouter
-@connect(state => ({
-  ...state.session,
-  config: state.config.config,
-  windowWidth: state.app.windowWidth,
-}))
+@connect(
+  state => ({
+    ...state.session,
+    config: state.config.config,
+    windowWidth: state.app.windowWidth,
+  }),
+  {
+    showAcceptPaymentsModal,
+    hideAcceptPaymentsModal,
+  }
+)
 export default class OnboardingCardInstant extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      showProducts: showProductsModalOnLoad,
-      showTransactionsHelper: false,
       contentWidth: null,
       activeStep: 0,
     };
 
-    this.onCloseProductsModal = null;
-    this.showProductsModal = this.showProductsModal.bind(this);
-    this.showTransactionsModal = this.showTransactionsModal.bind(this);
-    this.hideTransactionsModal = this.hideTransactionsModal.bind(this);
-    this.handleProductsModalBack = this.handleProductsModalBack.bind(this);
-    const hideProductsModal = (this.hideProductsModal = this.hideProductsModal.bind(
-      this
-    ));
-    this.onClose = this.onClose.bind(this);
-
-    if (showProductsModalOnLoad) {
-      this.hideProductsModal = () => {
-        hideProductsModal(() => {
-          this.props.history.replace('/dashboard');
-          this.hideProductsModal = hideProductsModal;
-        });
-      };
-    }
+    this.showAcceptPaymentsModal = this.showAcceptPaymentsModal.bind(this);
+    this.hideAcceptPaymentsModal = this.hideAcceptPaymentsModal.bind(this);
   }
 
   setActiveStep(activeStep = 0) {
@@ -81,52 +66,12 @@ export default class OnboardingCardInstant extends Component {
     }
   }
 
-  showProductsModal(onCloseCb) {
-    if (typeof onCloseCb === 'function') {
-      this.onCloseProductsModal = onCloseCb;
-    }
-
-    this.setState({
-      showProducts: true,
-    });
+  showAcceptPaymentsModal() {
+    this.props.showAcceptPaymentsModal();
   }
 
-  hideProductsModal(onHide) {
-    trackProductsModal.trackClose();
-
-    this.setState(
-      {
-        showProducts: false,
-      },
-      typeof onHide === 'function' ? onHide : void 0
-    );
-  }
-
-  handleProductsModalBack() {
-    trackProductsModal.trackProductsBack();
-
-    this.hideProductsModal(
-      () => (
-        this.onCloseProductsModal && this.onCloseProductsModal(),
-        (this.onCloseProductsModal = null)
-      )
-    );
-  }
-
-  showTransactionsModal(isKLA) {
-    this.setState({
-      showTransactionsHelper: true,
-      isKLA,
-    });
-  }
-
-  hideTransactionsModal() {
-    trackTransactionsHelper.trackClose();
-
-    this.setState({
-      showTransactionsHelper: false,
-      isKLA: false,
-    });
+  hideAcceptPaymentsModal() {
+    this.props.hideAcceptPaymentsModal();
   }
 
   onClose(e) {
@@ -147,13 +92,7 @@ export default class OnboardingCardInstant extends Component {
         isAccepted,
         needsClarification,
       } = user,
-      {
-        showProducts,
-        showTransactionsHelper,
-        isKLA,
-        contentWidth,
-        activeStep,
-      } = this.state,
+      { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
         mode,
         integration,
@@ -174,22 +113,6 @@ export default class OnboardingCardInstant extends Component {
 
     return (
       <div className="onboarding-card-instant">
-        {showProducts && (
-          <ProductsModal
-            onClose={this.hideProductsModal}
-            onBack={this.handleProductsModalBack}
-            track={trackProductsModal}
-          />
-        )}
-        {showTransactionsHelper && (
-          <TransactionsModal
-            onClose={this.hideTransactionsModal}
-            isKLA={isKLA}
-            showProductsModal={this.showProductsModal}
-            showTransactionsModal={this.showTransactionsModal}
-            track={trackTransactionsHelper}
-          />
-        )}
         <div
           className="onboarding-card-instant-content"
           ref={node => (this.content = node)}
@@ -210,7 +133,7 @@ export default class OnboardingCardInstant extends Component {
               isRejected={user.isRejected}
               isActivated={user.isActivated}
               isSubmitted={user.isSubmitted}
-              showTransactionsModal={this.showTransactionsModal}
+              showTransactionsModal={this.showAcceptPaymentsModal}
               onActive={() => this.setActiveStep(2)}
               {...commonModeCardProps}
               track={trackLiveModeCard}

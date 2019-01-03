@@ -84,20 +84,17 @@ export default class ActivationWizard extends React.Component {
     super(props);
     this.prepareTabs(props);
 
-    if (window.RZP && window.RZP.appName === 'businessbanking') {
-      this.rpc = window.RZP.rpcServer(
-        window.RZP.appHost,
-        [
-          {
-            name: 'activationSuccess',
-            hasReply: true,
-            callback: reply => {
-              this.onActivationSuccess = reply;
-            },
-          },
-        ],
-        'activation'
-      );
+    if (props.rpc) {
+      const { submitForm, notifyFormValidity, notifyWindowResize } = props.rpc;
+
+      submitForm(reply => {
+        this.onActivationSuccess = reply;
+        this.submitForm();
+      });
+
+      notifyFormValidity(reply => {
+        this.onFormValidityChange = reply;
+      });
     }
   }
 
@@ -237,6 +234,10 @@ export default class ActivationWizard extends React.Component {
 
         trackL1FormError();
 
+        if (this.onActivationSuccess) {
+          this.onActivationSuccess({ success: false });
+        }
+
         return err;
       });
   };
@@ -316,6 +317,18 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  handleUIUpdate() {
+    return this.props.handleUIUpdate && this.props.handleUIUpdate();
+  }
+
+  componentDidMount() {
+    this.handleUIUpdate();
+  }
+
+  componentDidUpdate() {
+    this.handleUIUpdate();
+  }
+
   render() {
     const isFormLocked = !!this.props.data.locked;
 
@@ -377,15 +390,20 @@ export default class ActivationWizard extends React.Component {
   tabValidity() {
     const data = this.formData;
 
-    return (
+    const isValid =
       data !== void 0 &&
       FORM_TABS.every(
         c =>
           Array.isArray(c)
             ? c.every(d => isFieldValid(d, this, data))
             : isFieldValid(c, this, data)
-      )
-    );
+      );
+
+    if (this.onFormValidityChange) {
+      this.onFormValidityChange(isValid);
+    }
+
+    return isValid;
   }
 }
 

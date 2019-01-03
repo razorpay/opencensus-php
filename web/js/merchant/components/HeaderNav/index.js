@@ -16,6 +16,11 @@ const analytics = action => {
   });
 };
 
+function toggleDropdown() {
+  document.querySelector('#profile-dropdown .dropdown-toggle').click();
+}
+
+@withRouter
 @connect(
   state => ({
     activePageName: state.app.activePageName,
@@ -27,6 +32,21 @@ export default class HeaderNav extends Component {
     super(props);
 
     this.onToggleAppMenu = this.onToggleAppMenu.bind(this);
+  }
+
+  componentDidMount() {
+    const hash = this.props.history.location.hash;
+    if (hash === '#profile_dropdown') {
+      toggleDropdown();
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.location.hash !== this.props.location.hash) {
+      if (nextProps.location.hash === '#profile_dropdown') {
+        toggleDropdown();
+      }
+    }
   }
 
   onToggleAppMenu() {

@@ -247,7 +247,8 @@ function _getOverviewFields(details) {
     {
       label: 'Activation Form Status',
       value: () =>
-        details.merchant_details.allowed_next_activation_statuses.length ? (
+        details.merchant_details.allowed_next_activation_statuses.length &&
+        details.merchant_details.submitted ? (
           <ActivationDetails
             status={details.merchant_details.activation_status}
             allowedStatuses={toJS(

@@ -32,6 +32,7 @@ export default ({ onClose, onBack, track }) => {
                 to="/paymentlinks"
                 onClick={() => {
                   track.trackProductClick('Payment Links');
+                  onClose();
                 }}
               >
                 <img src="/dist/css/assets/symbols/pl.svg" />
@@ -45,6 +46,7 @@ export default ({ onClose, onBack, track }) => {
                 to="/invoices"
                 onClick={() => {
                   track.trackProductClick('Invoices');
+                  onClose();
                 }}
               >
                 <img src="/dist/css/assets/symbols/inv.svg" />

@@ -224,17 +224,28 @@ class SearchableSelect extends Component {
     options: [],
   };
 
-  constructor({ options, trackBy, defaultValue }) {
+  constructor(props) {
     super();
     this.state = {
-      selectedOption:
-        options.find(option => option[trackBy] === defaultValue) || {},
+      selectedOption: this.getDefaultOption(props),
     };
   }
+
+  getDefaultOption = ({ options, trackBy, defaultValue }) => {
+    return options.find(option => option[trackBy] === defaultValue) || {};
+  };
 
   handleChange = ({ option }) => {
     this.setState({ selectedOption: option });
   };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.defaultValue !== this.state.selectedOption.value) {
+      this.setState({
+        selectedOption: this.getDefaultOption(nextProps),
+      });
+    }
+  }
 
   render() {
     const {

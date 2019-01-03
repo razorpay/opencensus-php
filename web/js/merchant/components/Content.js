@@ -398,7 +398,7 @@ export default class Content extends Component {
         {BaseView}
         {DetailView}
         {ModalFormView}
-        {location.hostname === 'dashboard.razorpay.com' && <Support />}
+        <Support />
       </main>
     );
   }

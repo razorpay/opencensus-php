@@ -1775,25 +1775,37 @@ $stepIndicatorSize = 36px;
 
   width: 90%;
   max-width: 375px;
+
+  span.Modal-close {
+    color: #fff;
+    top: 6px;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
 }
 
 
 .product-suite {
-
-  padding-top: 18px;
-
   > h1, > p, > ul > li > a {
 
     padding-left: 64px;
   }
 
-  > h1 {
+  > p {
+    padding: 0 18px;
+  }
 
+  > h1 {
     position: relative;
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 18px;
     line-height: 22px;
+    background: -webkit-linear-gradient(left, #528ff0, #2371ec)
+    color: #fff;
+    padding: 16px 64px
 
     > i {
 
