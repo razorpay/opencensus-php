@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
@@ -174,6 +175,13 @@ abstract class EntityProcessor extends Base\Core
         if ($this->source->getEntity() === Entity::PAYOUT)
         {
             (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+            return;
+        }
+
+        if ($this->source->getEntity() === Entity::REFUND)
+        {
+            (new Refund\Service)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
 
             return;
         }

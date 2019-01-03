@@ -1382,9 +1382,8 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::EMAIL_STATUS, NotifyStatus::PENDING);
 
-        // Should not use `empty` because the value can be 0
         if ((isset($input[self::EMAIL_NOTIFY]) === true) and
-            ($input[self::EMAIL_NOTIFY] === '0'))
+            (boolval($input[self::EMAIL_NOTIFY]) === false))
         {
             $this->setAttribute(self::EMAIL_STATUS, null);
         }
@@ -1394,9 +1393,8 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::SMS_STATUS, NotifyStatus::PENDING);
 
-        // Should not use `empty` because the value can be 0
         if ((isset($input[self::SMS_NOTIFY]) === true) and
-            ($input[self::SMS_NOTIFY] === '0'))
+            (boolval($input[self::SMS_NOTIFY]) === false))
         {
             $this->setAttribute(self::SMS_STATUS, null);
         }
@@ -1443,7 +1441,7 @@ class Entity extends Base\PublicEntity
      */
     public function generateStatus(array $input)
     {
-        if (isset($input[self::DRAFT]) and ($input[self::DRAFT] === '1'))
+        if (isset($input[self::DRAFT]) and (boolval($input[self::DRAFT]) === true))
         {
             $this->setStatus(Status::DRAFT);
         }

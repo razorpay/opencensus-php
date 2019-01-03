@@ -233,6 +233,22 @@ return [
         ],
     ],
 
+    'testValidateVpaStrUpper' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'razorpay@Airtel',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'razorpay@Airtel',
+                'success'   => true,
+            ],
+        ],
+    ],
+
     'testValidateVpaForForbiddenMerchant' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',

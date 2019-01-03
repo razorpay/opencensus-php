@@ -289,16 +289,17 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $mode = Mode::NEFT;
 
-        if ($amount < self::MAX_IMPS_AMOUNT)
-        {
-            $mode = Mode::IMPS;
-        }
-
-        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
-            ($amount >= self::MIN_RTGS_AMOUNT))
-        {
-            $mode = Mode::RTGS;
-        }
+       // TODO:: IMPS and RTGS issue with Power Access system
+       // if ($amount < self::MAX_IMPS_AMOUNT)
+       // {
+       //     $mode = Mode::IMPS;
+       // }
+  
+       // if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
+       //     ($amount >= self::MIN_RTGS_AMOUNT))
+       // {
+       //     $mode = Mode::RTGS;
+       // }
 
         return $mode;
     }

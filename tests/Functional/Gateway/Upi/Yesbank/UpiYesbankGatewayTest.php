@@ -38,6 +38,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutRouteWithAccess()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
@@ -60,6 +62,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutToVpa()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
@@ -97,6 +101,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutToVpaFailed()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],
@@ -142,6 +148,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutVpaVerify()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $response = $this->testPayoutToVpa();
 
         $upi = $this->getDbLastEntity('upi');
@@ -176,6 +184,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutVpaVerifyForFailedPayout()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $this->testPayoutToVpaFailed();
 
         $gatewayEntity = $this->getLastEntity('upi', true);
@@ -212,6 +222,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutVpaVerifyForTimedOutPayout()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $this->testPayoutToVpaFailed();
 
         $gatewayEntity = $this->getLastEntity('upi', true);
@@ -248,9 +260,11 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutVpaVerifyFailed()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $this->testPayoutToVpaFailed();
 
-            $gatewayEntity = $this->getLastEntity('upi', true);
+        $gatewayEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals('F', $gatewayEntity['status_code']);
 
@@ -286,6 +300,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testPayoutVpaVerifyWithAmountTampering()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $response = $this->testPayoutToVpa();
 
         $upi = $this->getDbLastEntity('upi');
@@ -321,6 +337,8 @@ class UpiYesbankGatewayTest extends TestCase
 
     public function testDuplicatePayoutRequest()
     {
+        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
+
         $attributes = [
             'terminal'  => ['gateway_merchant_id' => '123456'],
             'merchant'  => ['category' => '1520'],

@@ -202,6 +202,59 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
     }
 
+    public function testWalletPostFormWithDummyEmailForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        $payment['contact'] = '+919999999998';
+        unset($payment['email']);
+
+        $payment = $this->doAuthPayment($payment, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+        $this->getLastEntity('payment', true);
+    }
+
+    public function testWalletPostFormWithDummyEmailAndPhoneForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        unset($payment['contact'], $payment['email'], $payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
+    public function testWalletPostFormEmailNotOptionalForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        $payment['contact'] = '+919999999998';
+
+        unset($payment['email'], $payment['notes']);
+
+        $data = $this->testData['testWalletPostFormEmailNotOptionalForAmazonPay'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+        });
+    }
+
     public function testCoprotoForMissingBankAccountDetailsForFirstRecurring()
     {
         $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
