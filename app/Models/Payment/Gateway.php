@@ -206,6 +206,9 @@ class Gateway
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
+        self::NETBANKING_AXIS,
+        self::NETBANKING_AIRTEL,
+        self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
 
