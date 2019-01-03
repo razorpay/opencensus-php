@@ -47,7 +47,8 @@ trait HeadlessOtp
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
                 ($payment->card->iinRelation !== null) and
-                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
+                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
+                ($payment->card->iinRelation->supports(IIN\Flow::OTP) === false))
             {
                 return true;
             }
