@@ -64,11 +64,6 @@ class AuthTypeSorter extends Terminal\Sorter
      */
     protected function filterOtpAuthType($payment, $terminal, $authType)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UNIVERSAL_OTP_AUTH) === true)
-        {
-            return true;
-        }
-
         if (($authType === Payment\AuthType::OTP) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true))
