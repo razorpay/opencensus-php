@@ -38,7 +38,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->fixtures->merchant->addFeatures(['ivr']);
         $this->mockTokenEx();
 
         $this->fixtures->iin->create([

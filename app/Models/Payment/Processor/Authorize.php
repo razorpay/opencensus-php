@@ -1511,12 +1511,14 @@ trait Authorize
 
                             if ($this->canRunIvrFlow($payment) === true)
                             {
-                                $authType = 'otp';
-                                $gateway = Payment\Gateway::MPI_BLADE;
-
                                 if ($this->canRunAxisExpressPay($payment) === true)
                                 {
                                     $gateway = Payment\Gateway::MPI_ENSTAGE;
+                                }
+                                elseif ($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true)
+                                {
+                                    $authType = 'otp';
+                                    $gateway = Payment\Gateway::MPI_BLADE;
                                 }
                             }
 
@@ -4097,7 +4099,11 @@ trait Authorize
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
                     ($this->canRunIvrFlow($payment) === true))
                 {
-                    return true;
+                    if (($this->canRunAxisExpressPay($payment) === true) or
+                        ($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true))
+                    {
+                        return true;
+                    }
                 }
 
                 if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)

@@ -15,4 +15,7 @@ class VERes
     const ERROR_MSG         = 'errorMessage';
     const ERROR_DETAILS     = 'errorDetail';
     const URL               = 'url';
+
+    const EXTENSION         = 'Extension';
+    const IVR_AUTH_DATA     = 'npc356authdata';
 }

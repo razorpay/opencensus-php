@@ -125,9 +125,6 @@ class Gateway extends Base\Gateway
                             BaseGateway\Action::AUTHENTICATE);
                     }
 
-                if (($input['payment']['auth_type'] === 'otp') and
-                    (empty($response[VERes::MESSAGE][VERes::VERES]['Extension']['npc356authdata']) === false))
-                {
                     return $this->getOtpSubmitRequest($input, $response);
                 }
 
