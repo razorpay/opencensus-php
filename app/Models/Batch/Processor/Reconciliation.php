@@ -384,6 +384,11 @@ class Reconciliation extends Base
     protected function increaseAllowedSystemLimits()
     {
         //
+        // Processing of file having size around 30M, consuming memory more than 910M.
+        //
+        RuntimeManager::setMemoryLimit('1024M');
+
+        //
         // The reconciliation can run for a long time.
         // Hence, changing the script's execution time limit to 1 hour.
         //

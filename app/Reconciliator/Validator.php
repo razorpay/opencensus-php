@@ -147,8 +147,8 @@ class Validator extends Base\Core
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
-    // Max allowed file size - 25M (25*1024*1024).
-    const MAX_FILE_SIZE = 26214400;
+    // Max allowed file size - 30M (30*1024*1024).
+    const MAX_FILE_SIZE = 31457280;
 
     const FORCE_UPDATE_ALLOWED = [
         RequestProcessor\Base::REFUND_ARN,
