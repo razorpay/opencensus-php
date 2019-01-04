@@ -406,6 +406,7 @@ return [
             'content' => [
                 'merchant_id' => '10000000000009',
                 'entity_type' => 'application',
+                'entity_owner_id' => '10000000000000',
             ],
         ],
     ],
@@ -1025,6 +1026,18 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
+    ],
+
+    'testAccessMapEmptyPartnerMigration' => [
+        'request' => [
+            'url' => '/oauth/update_partner_map',
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
     ],
 
 ];

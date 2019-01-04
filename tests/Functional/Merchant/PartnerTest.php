@@ -499,6 +499,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->ba->adminAuth();
@@ -533,6 +534,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $submerchant->retag(['Ref-' . self::DEFAULT_MERCHANT_ID]);
@@ -719,6 +721,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -759,6 +762,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
@@ -774,6 +778,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         // Creating 3rd app for the same merchant so that the above-mentioned assertion for connected apps can be made.
@@ -864,6 +869,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->createPartnerAndAddMultipleSubmerchants();
@@ -900,6 +906,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
@@ -915,6 +922,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -951,6 +959,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
@@ -966,6 +975,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -999,6 +1009,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
                 'deleted_at'  => 1504620540,
             ]);
 
@@ -1051,6 +1062,7 @@ class PartnerTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
 
@@ -1067,7 +1079,7 @@ class PartnerTest extends OAuthTestCase
     {
         $partnerUser = $this->createPartnerAndUser();
 
-        $this->createSubmerchantAndUser();
+        $subMerchantUser = $this->createSubmerchantAndUser();
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId());
 
@@ -1119,6 +1131,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         // Add the partner user to access a linked account. Verifies later the mapping should not be deleted
@@ -1201,6 +1214,38 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testAccessMapEmptyPartnerMigration()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+        $app = $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminAuth();
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+        s($accessMap->toArrayPublic());
+        $this->assertNull($accessMap->getAttribute('entity_owner_id'));
+
+        $response = $this->startTest();
+        s($response);
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+        $this->assertEquals($accessMap->getAttribute('entity_owner_id'), self::DEFAULT_MERCHANT_ID);
+        
     }
 
     protected function createMerchantRequest(
@@ -1314,6 +1359,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
 
         $this->fixtures->create(
@@ -1322,6 +1368,7 @@ class PartnerTest extends OAuthTestCase
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => $submerchantId,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
             ]);
     }
 
