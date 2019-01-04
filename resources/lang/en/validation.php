@@ -122,7 +122,11 @@ return array(
         'emails.*' => [
             'email' => 'Value must be a valid email address',
         ],
+        'captcha'  => [
+            'required_without' => 'The :attribute field is required'
+        ]
     ],
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes

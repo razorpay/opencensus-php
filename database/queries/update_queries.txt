@@ -2276,3 +2276,6 @@ WHERE id IN ('BbmXWhXSCu2p1d',
              'BcWxs18qCNNyp3',
              'BcfKV9nUCdBvYe',
              'Bcgsr5Q28Eg2oA');
+
+#Settled at value changes in refund for report fixes
+UPDATE transactions set settled_at = created_at WHERE  type='refund' and settled_at=1

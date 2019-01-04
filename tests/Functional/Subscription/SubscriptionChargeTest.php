@@ -967,6 +967,7 @@ class SubscriptionChargeTest extends TestCase
     public function testSubscriptionManualTestCharge()
     {
         $this->doAuthTxnForNewSubscription();
+
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('authenticated', $subscription['status']);
 
@@ -977,7 +978,9 @@ class SubscriptionChargeTest extends TestCase
 
         // First test charge marks the subscription as active
         // Billing period has been updated, paid count increased
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
+        $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($oldSubscription['charge_at'], $subscription['current_start']);
@@ -998,6 +1001,8 @@ class SubscriptionChargeTest extends TestCase
         // Paid count remains the same, billing period is updated
         // Charge_at increments by only one day
         $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(1, $subscription['auth_attempts']);
@@ -1020,6 +1025,8 @@ class SubscriptionChargeTest extends TestCase
 
         // Another charge acts as a retry, makes no real difference.
         $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(2, $subscription['auth_attempts']);
@@ -1047,6 +1054,8 @@ class SubscriptionChargeTest extends TestCase
         // Another test charge leaves the subscriptions status unchanged
         // But since subscription is halted anyway, billing period is updated
         $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(4, $subscription['auth_attempts']);
@@ -1078,6 +1087,8 @@ class SubscriptionChargeTest extends TestCase
 
         // Subsequent successful charges update billing period and paid count
         $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(4, $subscription['paid_count']);
         $this->assertEquals($oldSubscription['charge_at'], $subscription['current_start']);

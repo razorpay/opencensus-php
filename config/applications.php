@@ -264,4 +264,8 @@ return [
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
+
+    'vajra' => [
+        'secret'   => env('APP_VAJRA_SECRET'),
+    ],
 ];

@@ -164,6 +164,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function isDisableOnFailure(): bool
+    {
+        return $this->getAttribute(self::DISABLE_ON_FAILURE);
+    }
+
     public function getFailureCount()
     {
         return $this->getAttribute(self::FAILURE_COUNT);

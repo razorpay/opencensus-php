@@ -110,28 +110,32 @@
       </header>
       <main>
         Please enter your wallet details to proceed.
-        <label for='email'><b>Email</b></label>
-        <input
-          name='email'
-          autofocus
-          type='email'
-          required
-          placeholder='Enter Email'
-          pattern="^[^@\s]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"
-          value={{ $data['request']['content']['email'] ?? "" }}>
-        <label for='contact'>
-          <b>Contact</b>
-          (10 digit Indian number)
-        </label>
-        <span>+91 &ndash;</span>
-        <input
-          name='contact'
-          type='tel'
-          pattern='^\d{10}$'
-          required
-          placeholder='Enter Phone Number'
-          value={{ $data['request']['content']['contact'] ?? "" }}>
-        <button>Submit</button>
+        @if ((empty($data['missing']) === true) or (in_array('email' , $data['missing']) === true))
+              <label for='email'><b>Email</b></label>
+              <input
+                  name='email'
+                  autofocus
+                  type='email'
+                  required
+                  placeholder='Enter Email'
+                  pattern="^[^@\s]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"
+                  value={{ $data['request']['content']['email'] ?? "" }}>
+        @endif
+        @if ((empty($data['missing']) === true) or (in_array('contact' , $data['missing']) === true))
+            <label for='contact'>
+              <b>Contact</b>
+              (10 digit Indian number)
+            </label>
+            <span>+91 &ndash;</span>
+            <input
+              name='contact'
+              type='tel'
+              pattern='^\d{10}$'
+              required
+              placeholder='Enter Phone Number'
+              value={{ $data['request']['content']['contact'] ?? "" }}>
+          @endif
+          <button>Submit</button>
       </main>
     </form>
     @if (isset($data['request']['content']['callback_url']))

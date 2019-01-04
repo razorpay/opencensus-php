@@ -123,6 +123,50 @@ class UpiIciciGatewayReconTest extends TestCase
         }
     }
 
+    public function testReconRefundStatusFailure()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiIciciRefundsSince($createdAt);
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'col_icici_recon')
+                {
+                    // Setting random column value
+                    $content['Status'] = 'Initiated';
+                }
+            },
+            $this->gateway,
+            [
+                'type' => 'refund'
+            ]);
+
+        $fileContents = $this->generateReconFile(['type' => 'refund']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        // We do not reconcile refunds that fail the amount assertion step
+        foreach ($refunds['items'] as $refund)
+        {
+            $transactionId = $refund['transaction_id'];
+
+            $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+            $this->assertNull($transaction['reconciled_at']);
+
+            // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
+            $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
+        }
+    }
+
     public function testReconRefundNotFoundInDb()
     {
         $this->markTestSkipped();

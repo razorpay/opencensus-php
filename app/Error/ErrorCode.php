@@ -1083,6 +1083,7 @@ class ErrorCode
     const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                            = 'GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED';
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                                   = 'BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                         = 'GATEWAY_CHARGEBACK_REFUND_FAILURE';
+    const GATEWAY_ERROR_REFUND_DEEMED                                               = 'GATEWAY_ERROR_REFUND_DEEMED';
 
     // cardless emi error codes
     const GATEWAY_ERROR_CARDLESS_EMI_INVALID_TOKEN                                  = 'GATEWAY_ERROR_CARDLESS_EMI_INVALID_TOKEN';

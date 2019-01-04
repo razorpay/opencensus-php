@@ -140,12 +140,20 @@ class Core extends Base\Core
         Entity $merchantDetails,
         Merchant\Entity $merchant)
     {
-        $category    = $merchantDetails->getBusinessCategory();
-        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $businessCategory    = $merchantDetails->getBusinessCategory();
+        $businessSubcategory = $merchantDetails->getBusinessSubcategory();
 
-        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        $category  = $merchant->getCategory();
+        $category2 = $merchant->getCategory2();
+
+        // for older merchants(non instant activation) where category or category 2 is not set , set details
+        $populateCategoryAndCategory2 = ((empty($businessCategory) === false) and
+                                         (!(empty($category) === false AND empty($category2) === false)));
+
+        if (($populateCategoryAndCategory2 === true) or
+            ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory);
         }
     }
 

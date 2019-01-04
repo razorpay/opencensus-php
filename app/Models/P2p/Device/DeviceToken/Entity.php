@@ -9,10 +9,8 @@ class Entity extends Base\Entity
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
+    const CL               = 'cl';
     const STATUS           = 'status';
-    const CL_CAPABILITY    = 'cl_capability';
-    const CL_TOKEN         = 'cl_token';
-    const CL_PAYLOAD       = 'cl_payload';
 
     /************** Entity Properties ************/
 
@@ -33,9 +31,7 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL_CAPABILITY,
-        Entity::CL_TOKEN,
-        Entity::CL_PAYLOAD,
+        Entity::CL,
     ];
 
     protected $visible = [
@@ -44,9 +40,7 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL_CAPABILITY,
-        Entity::CL_TOKEN,
-        Entity::CL_PAYLOAD,
+        Entity::CL,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -57,9 +51,7 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL_CAPABILITY,
-        Entity::CL_TOKEN,
-        Entity::CL_PAYLOAD,
+        Entity::CL,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -69,9 +61,7 @@ class Entity extends Base\Entity
         Entity::HANDLE           => null,
         Entity::GATEWAY_DATA     => null,
         Entity::STATUS           => null,
-        Entity::CL_CAPABILITY    => null,
-        Entity::CL_TOKEN         => null,
-        Entity::CL_PAYLOAD       => null,
+        Entity::CL               => [],
     ];
 
     protected $casts = [
@@ -80,9 +70,7 @@ class Entity extends Base\Entity
         Entity::HANDLE           => 'string',
         Entity::GATEWAY_DATA     => 'array',
         Entity::STATUS           => 'string',
-        Entity::CL_CAPABILITY    => 'string',
-        Entity::CL_TOKEN         => 'string',
-        Entity::CL_PAYLOAD       => 'string',
+        Entity::CL               => 'array',
         Entity::REFRESHED_AT     => 'int',
         Entity::DELETED_AT       => 'int',
         Entity::CREATED_AT       => 'int',
@@ -126,25 +114,9 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
-    public function setClCapability(string $clCapability)
+    public function setCl(array $cl)
     {
-        return $this->setAttribute(self::CL_CAPABILITY, $clCapability);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setClToken(string $clToken)
-    {
-        return $this->setAttribute(self::CL_TOKEN, $clToken);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setClPayload(string $clPayload)
-    {
-        return $this->setAttribute(self::CL_PAYLOAD, $clPayload);
+        return $this->setAttribute(self::CL, $cl);
     }
 
     /***************** GETTERS *****************/
@@ -182,26 +154,10 @@ class Entity extends Base\Entity
     }
 
     /**
-     * @return string self::CL_CAPABILITY
+     * @return string self::CL
      */
-    public function getClCapability()
+    public function getCl()
     {
-        return $this->getAttribute(self::CL_CAPABILITY);
-    }
-
-    /**
-     * @return string self::CL_TOKEN
-     */
-    public function getClToken()
-    {
-        return $this->getAttribute(self::CL_TOKEN);
-    }
-
-    /**
-     * @return string self::CL_PAYLOAD
-     */
-    public function getClPayload()
-    {
-        return $this->getAttribute(self::CL_PAYLOAD);
+        return $this->getAttribute(self::CL);
     }
 }

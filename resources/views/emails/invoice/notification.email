@@ -90,7 +90,7 @@
                 ">
                     <div>
                         <label>{{ $invoice['type_label'] }} SUMMARY</label>
-                        <div>{{$invoice['description']}}</div>
+                        <div style="white-space: pre-wrap;word-wrap: break-word;">{{$invoice['description']}}</div>
                     </div>
                 </td>
 

@@ -188,6 +188,7 @@ class Name
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';
+    const ES_WRITE_OPERATION                  = 'es_write_operation';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
     const EDIT_PARTNERS                       = 'edit_partners';
