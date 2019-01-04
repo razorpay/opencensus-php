@@ -151,9 +151,9 @@ trait TestsBusinessBanking
                     'account_type' => "bank_account",
                     'contact_id'   => $this->contact->getPublicId(),
                     'details'      => [
-                        'beneficiary_name' => "test",
-                        'ifsc_code'        => 'SBIN0007105',
-                        'account_number'   => '111000',
+                        'name'           => "test",
+                        'ifsc'           => 'SBIN0007105',
+                        'account_number' => '111000',
                     ],
                 ],
             ],
