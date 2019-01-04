@@ -2,8 +2,9 @@
 
 namespace RZP\Services\Aws;
 
-use Config;
 use Aws;
+
+use RZP\Services\Aws\Credentials;
 
 class Sns
 {
@@ -19,11 +20,17 @@ class Sns
 
     public function __construct($app)
     {
-        $this->awsConfig = Config::get('aws');
+        $this->awsConfig = $app->config->get('aws');
 
-        $awsClient = new Aws\Sdk($this->awsConfig);
+        $sdk = new Aws\Sdk($this->awsConfig);
 
-        $this->client = $awsClient->createClient('sns');
+        // See queue.php file for details.
+        $args = [
+            'credentials' => new Credentials\FileCache,
+            'timeout'     => 3.0,
+        ];
+
+        $this->client = $sdk->createClient('sns', $args);
     }
 
     public function publish($message, $messageTarget = 'sms')
