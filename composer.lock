@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -5873,12 +5873,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "df464f4cb7c0b5333ca0b4a47c2e26a45f9ea43f"
+                "reference": "809156f8d0cbb9efcf039d26b0ba23c72f4955b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/df464f4cb7c0b5333ca0b4a47c2e26a45f9ea43f",
-                "reference": "df464f4cb7c0b5333ca0b4a47c2e26a45f9ea43f",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/809156f8d0cbb9efcf039d26b0ba23c72f4955b9",
+                "reference": "809156f8d0cbb9efcf039d26b0ba23c72f4955b9",
                 "shasum": ""
             },
             "require": {
