@@ -15,11 +15,11 @@ class Response
 
     private $content;
 
-    public function __construct()
+    public function __construct(bool $mocked = false, bool $success = true)
     {
         $this->content = [
-            self::MOCKED    => false,
-            self::SUCCESS   => true,
+            self::MOCKED    => $mocked,
+            self::SUCCESS   => $success,
             self::DATA      => new ArrayBag(),
             self::ERROR     => new ArrayBag(),
         ];

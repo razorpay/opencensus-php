@@ -10,25 +10,15 @@ class Gateway extends Upi\Gateway
     const RZPSHARP      = 'rzpsharp';
     const NORZPSHARP    = 'norzpsharp';
 
-    protected function makeMockedResponse()
+    protected function shouldMockResponse(): bool
     {
-        $response = $this->makeResponse();
-
-        $response->setMock(true);
-
-        if ($this->context->handleId() === self::NORZPSHARP)
-        {
-            $response->setError(...$this->getMockedError());
-        }
-
-        return $response;
+        //All request for Sharp Gateway will have mocked response
+        return true;
     }
 
-    protected function getMockedError()
+    protected function shouldMockSuccessResponse(): bool
     {
-        return [
-            'BAD_REQUEST_ERROR',
-            'Bad request error',
-        ];
+        // All handles except of self::NORZPSHARP will result in success response
+        return in_array($this->context->handleId(), [self::RAZORSHARP, self::RZPSHARP], true);
     }
 }

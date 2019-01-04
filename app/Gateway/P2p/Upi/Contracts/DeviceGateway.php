@@ -7,11 +7,11 @@ use RZP\Gateway\P2p\Base\GatewayInterface;
 
 interface DeviceGateway extends GatewayInterface
 {
-    public function startVerification(): Response;
+    public function startVerification(Response $response);
 
-    public function getVerificationStatus(): Response;
+    public function getVerificationStatus(Response $response);
 
-    public function refreshClToken(): Response;
+    public function refreshClToken(Response $response);
 
-    public function deregister(): Response;
+    public function deregister(Response $response);
 }

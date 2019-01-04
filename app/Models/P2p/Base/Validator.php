@@ -51,9 +51,9 @@ class Validator extends Base\Validator
      *
      * @return Rules
      */
-    protected function makeRules(array $with)
+    protected function makeRules(array $with = [])
     {
-        return (new Rules($this->rules(), $with));
+        return (new Rules($this->rules()))->with($with);
     }
 
     protected function arrayRules(string $prepend, array $rules)

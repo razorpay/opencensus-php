@@ -83,7 +83,7 @@ class Processor extends Base\Processor
         // Since this is success response, first, we will check for device status
         $deviceInput = array_except($deviceData, [
             DeviceToken\Entity::GATEWAY_DATA,
-            DeviceToken\ClientLibrary::CL,
+            Base\Upi\ClientLibrary::CL,
         ]);
         $device = $this->core->createOrUpdate($deviceInput);
 
@@ -93,7 +93,7 @@ class Processor extends Base\Processor
         // Now we will create the deviceToken, which will have gateway and CL data
         $deviceTokenInput = array_only($deviceData, [
             DeviceToken\Entity::GATEWAY_DATA,
-            DeviceToken\ClientLibrary::CL,
+            Base\Upi\ClientLibrary::CL,
         ]);
 
         (new DeviceToken\Core)->create($deviceTokenInput);

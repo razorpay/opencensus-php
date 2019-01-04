@@ -8,8 +8,6 @@ use RZP\Models\P2p\Device\RegisterToken;
 
 class Validator extends Base\Validator
 {
-    const RESPONSE  = 'response';
-
     protected static $startVerificationRules;
     protected static $startVerificationSuccessRules;
     protected static $getVerificationStatusRules;
@@ -35,10 +33,6 @@ class Validator extends Base\Validator
             Entity::GEOCODE             => 'string',
             Entity::AUTH_TOKEN          => 'string',
             Entity::RESPONSE            => 'array',
-
-            // Register Token Rules
-            RegisterToken\Entity::TOKEN         => 'string',
-            RegisterToken\Entity::DEVICE_DATA   => 'array',
         ];
 
         return $rules;
@@ -76,27 +70,25 @@ class Validator extends Base\Validator
             Entity::GEOCODE        => 'required',
         ]);
 
-        $rules->merge((new DeviceToken\Validator)->makeClRules()->toArray());
+        $rules->merge((new DeviceToken\Validator)->makeClRules());
 
         return $rules;
     }
 
     public function makeStartVerificationSuccessRules()
     {
-        $rules = $this->makeRules([
-            RegisterToken\Entity::TOKEN         => 'required',
-            RegisterToken\Entity::RESPONSE      => 'required',
-            RegisterToken\Entity::DEVICE_DATA   => 'sometimes',
-        ]);
+        $rules = $this->makeRules();
+
+        $rules->merge((new RegisterToken\Validator)->makeVerificationSuccessRules());
 
         return $rules;
     }
 
     public function makeGetVerificationStatusRules()
     {
-        $rules = $this->makeRules([
-            RegisterToken\Entity::TOKEN  => 'required',
-        ]);
+        $rules = $this->makeRules();
+
+        $rules->merge((new RegisterToken\Validator)->makeVerificationStatusRules());
 
         return $rules;
     }
@@ -104,7 +96,7 @@ class Validator extends Base\Validator
     public function makeGetVerificationStatusSuccessRules()
     {
         $rules = $this->makeRules([
-            RegisterToken\Entity::TOKEN  => 'required',
+            RegisterToken\Entity::TOKEN         => 'required',
             RegisterToken\Entity::DEVICE_DATA   => 'sometimes',
         ]);
 
@@ -115,23 +107,23 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([]);
 
-        $rules->merge((new DeviceToken\Validator)->makeClRules()->toArray());
+        $rules->merge((new DeviceToken\Validator)->makeClRules());
 
         return $rules;
     }
 
     public function makeRefreshClTokenSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
 
-        $rules->merge((new DeviceToken\Validator)->makeClSuccessRules()->toArray());
+        $rules->merge((new DeviceToken\Validator)->makeClSuccessRules());
 
         return $rules;
     }
 
     public function makeDeregisterRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
 
         return $rules;
     }
@@ -143,5 +135,10 @@ class Validator extends Base\Validator
         ]);
 
         return $rules;
+    }
+
+    public function validateDeviceData()
+    {
+        (new RegisterToken\Validator)->validateDeviceData();
     }
 }

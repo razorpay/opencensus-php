@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device\DeviceToken;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
 class Validator extends Base\Validator
 {
@@ -26,24 +27,28 @@ class Validator extends Base\Validator
 
     public function makeClRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
 
-        $rules->arrayRules(ClientLibrary::CL, [
-            ClientLibrary::CAPABILITY   => 'required|string',
-            ClientLibrary::CHALLENGE    => 'required|string',
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::CAPABILITY   => 'required',
+            ClientLibrary::CHALLENGE    => 'required',
         ]);
+
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
 
         return $rules;
     }
 
     public function makeClSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
 
-        $rules->arrayRules(ClientLibrary::CL, [
-            ClientLibrary::TOKEN        => 'required|string',
-            ClientLibrary::PAYLOAD      => 'required|string',
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::TOKEN        => 'required',
+            ClientLibrary::PAYLOAD      => 'required',
         ]);
+
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
 
         return $rules;
     }
@@ -54,28 +59,7 @@ class Validator extends Base\Validator
             Entity::GATEWAY_DATA     => 'sometimes',
         ]);
 
-        $rules->merge($this->makeClRules()->toArray());
-
-        return $rules;
-    }
-
-    public function makeAddRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeRefreshClTokenRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeDeregisterRules()
-    {
-        $rules = $this->makeRules([]);
+        $rules->merge($this->makeClRules());
 
         return $rules;
     }

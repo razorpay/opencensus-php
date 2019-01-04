@@ -37,14 +37,29 @@ class Gateway extends Base\Gateway
 
     protected function makeResponse(): Response
     {
-        return (new Response());
+        $mock       = $this->shouldMockResponse();
+        $success    = $mock ? $this->shouldMockSuccessResponse() : true;
+
+        return (new Response($mock, $success));
     }
 
-    protected function response()
+    protected function shouldMockResponse(): bool
+    {
+        return false;
+    }
+
+    protected function shouldMockSuccessResponse(): bool
+    {
+        return true;
+    }
+
+    protected function response(): Response
     {
         $action = $this->action;
 
-        $response = $this->$action();
+        $response = $this->makeResponse();
+
+        $this->$action($response);
 
         // Here we can add logic to check for synchronisation
 
