@@ -2,7 +2,7 @@ import React from 'react';
 import Form from 'ui/Form';
 import { TextAreaField } from 'ui/Field';
 
-import { adminPost } from 'common/fetch';
+import { adminPut } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
 import {
     closeModal,
@@ -11,7 +11,6 @@ import {
     openModal,
 } from 'common/modal';
 import { ModalContent } from 'component/Modal';
-import {adminPut} from "../../../common/fetch";
 
 export default function EditGatewayUnprocessedRefundsConfig() {
     function onSubmit(body) {
@@ -44,11 +43,11 @@ export default function EditGatewayUnprocessedRefundsConfig() {
 return (
     <Form class="full-span edit-gateway-unprocessed-refunds-config-action" onSubmit={onSubmit}>
     <TextAreaField
-label="Refund Ids"
-type="text"
-name="refund_ids"
-required
-placeholder="Enter comma separated refund ids"
+        label="Refund Ids"
+        type="text"
+        name="refund_ids"
+        required
+        placeholder="Enter comma separated refund ids"
     />
     <div class="form-actions text-right">
     <button class="btn" type="submit">
@@ -60,3 +59,4 @@ placeholder="Enter comma separated refund ids"
 }
 
 EditGatewayUnprocessedRefundsConfig.title = 'Edit Gateway Unprocessed Refunds Config';
+EditGatewayUnprocessedRefundsConfig.permission = 'retry_refund';

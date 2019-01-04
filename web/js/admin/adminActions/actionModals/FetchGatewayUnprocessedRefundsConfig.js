@@ -1,9 +1,8 @@
 import React from 'react';
 import Form from 'ui/Form';
-import { TextAreaField } from 'ui/Field';
 
-import { adminPost } from 'common/fetch';
-import { splitAndFilter } from 'common/util';
+import { adminFetch } from 'common/fetch';
+
 import {
     closeModal,
     notifyError,
@@ -11,7 +10,6 @@ import {
     openModal,
 } from 'common/modal';
 import { ModalContent } from 'component/Modal';
-import {adminFetch, adminPut} from "../../../common/fetch";
 
 export default function FetchGatewayUnprocessedRefundsConfig() {
     function onSubmit(body) {
@@ -43,7 +41,7 @@ return (
     </div>
     </Form>
 );
-
 }
 
 FetchGatewayUnprocessedRefundsConfig.title = 'Fetch Gateway Unprocessed Refunds Config';
+FetchGatewayUnprocessedRefundsConfig.permission = 'retry_refund';
