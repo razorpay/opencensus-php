@@ -2,21 +2,21 @@
 
 namespace App\Exceptions;
 
-use App\Http\AppResponse;
+use Response;
+use Exception;
 use App\Trace\Trace;
 use App\Trace\TraceCode;
-use Exception;
-use Response;
+use App\Http\AppResponse;
 use UnexpectedValueException;
+use Razorpay\Api\Errors\BadRequestError;
 use App\Exceptions\EntityNotFoundException;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Session\TokenMismatchException;
-use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Razorpay\Api\Errors\BadRequestError;
 
 class Handler extends ExceptionHandler
 {
@@ -110,8 +110,6 @@ class Handler extends ExceptionHandler
 
         $response = null;
 
-        $routeName = $request->route()->getName();
-
         if ($e instanceof ModelNotFoundException)
         {
             $e = new NotFoundHttpException($e->getMessage(), $e);
@@ -131,6 +129,8 @@ class Handler extends ExceptionHandler
         else if (($e instanceof TokenMismatchException) or
                  ($e instanceof DecryptException))
         {
+            $routeName = $request->route()->getName();
+
             return AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
         }
         else if ($e instanceof EntityNotFoundException)
