@@ -2,23 +2,13 @@
 
 namespace RZP\Models\P2p\Base\Upi;
 
-use RZP\Models\P2p\Base\Libraries\Rules;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
-class ClientLibrary
+class ClientLibrary extends ArrayBag
 {
     const CL                = 'cl';
     const CAPABILITY        = 'capability';
     const CHALLENGE         = 'challenge';
     const TOKEN             = 'token';
     const PAYLOAD           = 'payload';
-
-    public static function rules(): Rules
-    {
-        return new Rules([
-            ClientLibrary::CAPABILITY   => 'string',
-            ClientLibrary::CHALLENGE    => 'string',
-            ClientLibrary::TOKEN        => 'string',
-            ClientLibrary::PAYLOAD      => 'string',
-        ]);
-    }
 }
