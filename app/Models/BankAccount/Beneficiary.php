@@ -46,19 +46,15 @@ class Beneficiary extends Base\Core
      */
     public function enqueueForBeneficiaryRegistration(Entity $bankAccount)
     {
-        $isValidType = (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === true);
+        $isValidType = Type::isValidBeneficiaryRegistrationType($bankAccount->getType());
 
-        //
         // We don't have to register beneficiary for the bank account created in test mode.
-        //
         if (($this->mode === Mode::TEST) or ($isValidType === false))
         {
             return;
         }
 
-        //
         // We enqueue bank account with all the available channels which provide API based bene registration.
-        //
         $channels = Channel::getChannelsWithOnlineBeneficiaryRegistration();
 
         foreach ($channels as $channel)
