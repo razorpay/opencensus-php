@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     protected static $refreshClTokenRules;
     protected static $deregisterRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID        => 'string',
@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_ID        => 'sometimes',
@@ -41,21 +41,21 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getAddRules()
+    public function makeAddRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getRefreshClTokenRules()
+    public function makeRefreshClTokenRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getDeregisterRules()
+    public function makeDeregisterRules()
     {
         $rules = $this->makeRules([]);
 
