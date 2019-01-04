@@ -83,15 +83,15 @@ class Core extends Base\Core
      */
     public function createBankAccountForBankingSource(array $input, Base\PublicEntity $source): Entity
     {
-        $bankAccount = $this->buildBankAccount($input, $source->merchant, $this->mode);
+        (new Validator)->validateIfscCode($input, $this->mode);
 
-        $bankAccount->source()->associate($source);
+        $ba = $this->createBankAccountForSource(
+                        $input,
+                        $source->merchant,
+                        $source,
+                        'add_fund_account_bank_account');
 
-        $this->repo->saveOrFail($bankAccount);
-
-        (new Beneficiary)->enqueueForBeneficiaryRegistration($bankAccount);
-
-        return $bankAccount;
+        return $ba;
     }
 
     public function editBankAccount(Entity $bankAccount, array $input)
