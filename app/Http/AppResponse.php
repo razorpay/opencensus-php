@@ -9,7 +9,7 @@ use SplTempFileObject;
 
 class AppResponse
 {
-    const JSON_ROUTES = [
+    const NON_JSON_ROUTES = [
         'admin_catchall',
         'dashboard',
         'admin_merchant_stats',
@@ -51,7 +51,7 @@ class AppResponse
 
     public static function unauthorizedResponse($error, $routeName, $url = '/')
     {
-        if (in_array($routeName, self::JSON_ROUTES, true) === true)
+        if (in_array($routeName, self::NON_JSON_ROUTES, true) === true)
         {
             return redirect($url);
         }
