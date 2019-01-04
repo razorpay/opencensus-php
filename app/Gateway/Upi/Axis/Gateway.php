@@ -143,6 +143,10 @@ class Gateway extends Base\Gateway
             ]);
     }
 
+    /*
+     * This method will only be used for collect payments, to generate a token that will be passed
+     * in collect request.
+     */
     protected function fetchToken($input, string $action)
     {
         parent::action($input, Action::FETCH_TOKEN);
@@ -300,16 +304,68 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /*
+     * This method is responsible to generate token request array for fetching the token
+     * to be passed in collect payments.
+     * The end point and request body are different for tpv and non tpv token requests.
+     */
     protected function getTokenRequestArray($input)
     {
         $payment = $input['payment'];
 
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $request = $this->getTokenRequestForTpv($input, $payment);
+        }
+        else
+        {
+            $data = [
+                Fields::MERCH_ID        => $this->getMerchantId(),
+                Fields::MERCH_CHAN_ID   => $this->getMerchantId2(),
+                Fields::UNQ_TXN_ID      => $payment['id'],
+                Fields::UNQ_CUST_ID     => $payment['id'],
+                Fields::AMOUNT          => $this->formatAmount($payment['amount']),
+                Fields::TXN_DTL         => $this->getPaymentRemark($input),
+                Fields::CURRENCY        => Currency::INR,
+                Fields::ORDER_ID        => $payment['id'],
+                Fields::CUSTOMER_VPA    => $payment['vpa'],
+                Fields::EXPIRY          => (string) $input['upi']['expiry_time'],
+                Fields::S_ID            => '',
+            ];
+
+            $dataStr = implode('', $data);
+
+            $checksum = $this->encrypt($dataStr);
+
+            $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+            $content = json_encode($data);
+
+            $request = $this->getStandardRequestArray($content);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_REQUEST,
+                [
+                    'content'           => $data,
+                    'gateway'           => $this->gateway,
+                    'payment_id'        => $payment['id'],
+                    'terminal_id'       => $input['terminal']['id'],
+                ]);
+        }
+
+        return $request;
+    }
+
+    protected function getTokenRequestForTpv($input, $payment)
+    {
         $data = [
             Fields::MERCH_ID        => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID   => $this->getMerchantId2(),
             Fields::UNQ_TXN_ID      => $payment['id'],
             Fields::UNQ_CUST_ID     => $payment['id'],
             Fields::AMOUNT          => $this->formatAmount($payment['amount']),
+            Fields::ACCOUNT_NUM     => $input['order']['account_number'],
+            Fields::IFSC_CODE_TPV   => $input['order']['bank'],
             Fields::TXN_DTL         => $this->getPaymentRemark($input),
             Fields::CURRENCY        => Currency::INR,
             Fields::ORDER_ID        => $payment['id'],
@@ -318,27 +374,19 @@ class Gateway extends Base\Gateway
             Fields::S_ID            => '',
         ];
 
-        if ($input['merchant']->isTPVRequired() === true)
-        {
-            $accNumber = bin2hex($this->encrypt($input['order']['account_number']));
-
-            $data[Fields::ACCOUNT_NUM] = $accNumber;
-
-            $data[Fields::IFSC_CODE] = $input['order']['bank'];
-        }
-
         $dataStr = implode('', $data);
 
         $checksum = $this->encrypt($dataStr);
 
         $data[Fields::CHECKSUM] = bin2hex($checksum);
 
+        $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($input['order']['account_number']));
+
         $content = json_encode($data);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', 'FETCH_TOKEN_TPV');
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'content'           => $data,
                 'gateway'           => $this->gateway,
@@ -847,13 +895,6 @@ class Gateway extends Base\Gateway
             Fields::ORDER_ID      => $payment['id'],
             Fields::CREDIT_VPA    => $this->getMerchantVpa(),
         ];
-
-        if ($input['merchant']->isTPVRequired() === true)
-        {
-            $data[Fields::ACCOUNT_NUM] = bin2hex($this->encrypt($input['order']['account_number']));
-
-            $data[Fields::IFSC_CODE] = $input['order']['bank'];
-        }
 
         $dataStr = implode('', $data);
 

@@ -37,6 +37,7 @@ class Fields
     const TXN_AMOUNT                   = 'txnAmount';
     const ACCOUNT_NUM                  = 'accountNo';
     const IFSC_CODE                    = 'Ifsc';
+    const IFSC_CODE_TPV                = 'ifsc';
     const TOKEN                        = 'Token';
 
     const CHECK_STATUS_MERCH_ID        = 'merchid';
