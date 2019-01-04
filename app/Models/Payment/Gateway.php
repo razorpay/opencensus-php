@@ -973,6 +973,7 @@ class Gateway
         self::HITACHI,
         self::SHARP,
         self::UPI_HULK,
+        self::UPI_MINDGATE,
         self::ISG,
     ];
 
