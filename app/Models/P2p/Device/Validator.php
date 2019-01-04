@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device\DeviceToken\ClientLibrary;
 
 class Validator extends Base\Validator
 {
@@ -12,7 +13,7 @@ class Validator extends Base\Validator
     protected static $refreshClTokenRules;
     protected static $deregisterRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::CUSTOMER_ID         => 'string|min:14|max:19',
@@ -32,7 +33,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::CUSTOMER_ID,
@@ -51,7 +52,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getStartVerificationRules()
+    public function makeStartVerificationRules()
     {
         $rules = $this->makeRules([
             Entity::CUSTOMER_ID    => 'required|min:19',
@@ -73,7 +74,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getGetVerificationStatusRules()
+    public function makeGetVerificationStatusRules()
     {
         $rules = $this->makeRules([
             Entity::AUTH_TOKEN  => 'required',
@@ -82,14 +83,14 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getRefreshClTokenRules()
+    public function makeRefreshClTokenRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getDeregisterRules()
+    public function makeDeregisterRules()
     {
         $rules = $this->makeRules([]);
 

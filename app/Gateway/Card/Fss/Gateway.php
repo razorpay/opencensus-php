@@ -594,19 +594,18 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new Base\ScroogeResponse();
 
+        $scroogeResponse->setGatewayVerifyResponse($verifyResponse)
+                        ->setGatewayKeys($this->getGatewayData($verifyResponse));
+
         if ((empty($verifyResponse[Fields::RESULT]) === false) and
             ($verifyResponse[Fields::RESULT] === Status::SUCCESS))
         {
             return $scroogeResponse->setSuccess(true)
-                                   ->setGatewayResponse($verifyResponse)
-                                   ->setGatewayKeys($this->getGatewayData($verifyResponse))
                                    ->toArray();
         }
 
         return $scroogeResponse->setSuccess(false)
                                ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayResponse($verifyResponse)
-                               ->setGatewayKeys($this->getGatewayData($verifyResponse))
                                ->toArray();
     }
 

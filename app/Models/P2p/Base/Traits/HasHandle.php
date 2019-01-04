@@ -7,9 +7,9 @@ use RZP\Models\P2p\Vpa\Handle;
 
 trait HasHandle
 {
-    protected static function bootHasHandle()
+    public function hasHandle(): bool
     {
-        self::$doesEntityHasHandle = true;
+        return true;
     }
 
     public function handleRelation()

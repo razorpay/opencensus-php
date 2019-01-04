@@ -529,6 +529,28 @@ class HitachiGatewayTest extends TestCase
         $this->refundReverseFailureTestHelper($payment);
     }
 
+    public function testRefundTimeoutFailure()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $hitachi = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals(explode('_', $refund['id'])[1], $hitachi['refund_id']);
+
+        $this->assertNull($hitachi[Hitachi\Entity::RESPONSE_CODE]);
+    }
+
     public function testPaymentReverse()
     {
         $this->doAuthPayment($this->payment);
@@ -967,7 +989,7 @@ class HitachiGatewayTest extends TestCase
                 'expiry_year'  => '21',
                 'cvv'          => 123,
                 'name'         => 'Test Card',
-                'international'=> true
+                'international' => true
             ]
         ]);
         $txn = $this->getEntities('transaction', [], true);
