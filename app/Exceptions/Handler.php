@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Http\AppResponse;
 use App\Trace\Trace;
 use App\Trace\TraceCode;
 use Exception;
@@ -109,6 +110,8 @@ class Handler extends ExceptionHandler
 
         $response = null;
 
+        $routeName = $request->route()->getName();
+
         if ($e instanceof ModelNotFoundException)
         {
             $e = new NotFoundHttpException($e->getMessage(), $e);
@@ -128,7 +131,7 @@ class Handler extends ExceptionHandler
         else if (($e instanceof TokenMismatchException) or
                  ($e instanceof DecryptException))
         {
-            return redirect('/');
+            return AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
         }
         else if ($e instanceof EntityNotFoundException)
         {

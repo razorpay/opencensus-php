@@ -9,6 +9,12 @@ use SplTempFileObject;
 
 class AppResponse
 {
+    const JSON_ROUTES = [
+        'admin_catchall',
+        'dashboard',
+        'admin_merchant_stats',
+    ];
+
     /**
      * [security] sensitive
      * https://github.com/razorpay/dashboard/issues/103
@@ -43,13 +49,14 @@ class AppResponse
         return Response::json($response, 404);
     }
 
-    public static function unauthorizedResponse($error)
+    public static function unauthorizedResponse($error, $routeName, $url = '/')
     {
-        $response = [
-            'success'   => false,
-            'data'      => $error
-        ];
-        return Response::json($response, 401);
+        if (in_array($routeName, self::JSON_ROUTES, true) === true)
+        {
+            return redirect($url);
+        }
+
+        return response($error, 401);
     }
 
     public static function validationErrorResponse($error)
