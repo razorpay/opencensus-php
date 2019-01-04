@@ -71,6 +71,8 @@ class HdfcGatewayTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['recurring' => 2]);
 
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $payment = [
             'card' => [
                 'number'       => '5567630000002004',
@@ -82,7 +84,6 @@ class HdfcGatewayTest extends TestCase
         ];
 
         $payment = $this->defaultAuthPayment($payment);
-        // $payment['card']['number'] = '5567630000002004';
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
@@ -108,6 +109,12 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment['verify_at']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
     }
 
     public function testTamperedPayment()
