@@ -6,9 +6,11 @@ import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
-import Field from 'ui/Field';
+import Field, { SelectField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import { adminFetch } from 'common/fetch';
+import { isBlank } from 'common/util';
+import { isOrgRazorpay } from 'admin/user';
 
 let sharedNetworks = observable.shallowBox();
 
@@ -33,7 +35,9 @@ export default class PlanEntity extends Component {
   };
 
   render() {
-    let { props, items, updateName, pending } = this.collection;
+    let { props, items, updateName, updateOrg, pending } = this.collection;
+    let { orgs } = this.props;
+
     pending = pending.fetch;
 
     let isLoading = !sharedNetworks.get();
@@ -60,6 +64,20 @@ export default class PlanEntity extends Component {
                 defaultValue={props.name}
                 required
               />
+              {isOrgRazorpay() &&
+                !isBlank(orgs) && (
+                  <SelectField
+                    label="Organisation"
+                    name="org_id"
+                    onChange={this.handleOrgChange}
+                  >
+                    {Object.keys(orgs).map(orgId => (
+                      <option key={orgId} value={orgId}>
+                        {orgs[orgId]}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
               {items.length > 1 && (
                 <AsyncButton
                   class="btn"
@@ -174,11 +192,11 @@ const fields = [
   ],
 ];
 
-export function openPricingEntity() {
-  openModal(<PlanEntity plan={this} />);
+export function openPricingEntity(orgs = {}) {
+  openModal(<PlanEntity plan={this} orgs={orgs} />);
 }
 
-export function copyPricingEntity(rules) {
+export function copyPricingEntity(rules, orgs = {}) {
   let copiedPlan = {
     collection: this.collection,
     id: null,
@@ -217,5 +235,7 @@ export function copyPricingEntity(rules) {
   });
 
   closeModal();
-  openModal(<PlanEntity key={plan_id || 'new_plan'} plan={copiedPlan} />);
+  openModal(
+    <PlanEntity key={plan_id || 'new_plan'} plan={copiedPlan} orgs={orgs} />
+  );
 }

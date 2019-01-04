@@ -5,6 +5,7 @@ import { SelectField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
 import { openPricingEntity, copyPricingEntity } from './Entity';
+import { isBlank } from 'common/util';
 import { isOrgRazorpay } from 'admin/user';
 
 function fetchFn() {
@@ -15,12 +16,14 @@ function fetchFn() {
         id: p.plan_id,
         name: p.plan_name,
         rules_count: p.rules_count,
+        org_id: `org_${p.org_id}`,
       }))
   );
 }
 
 export default class PlanList extends Component {
   state = {
+    selectedOrg: null,
     orgs: [], //default as we fetch all orgs
   };
 
@@ -32,17 +35,21 @@ export default class PlanList extends Component {
     fetchFn,
   });
 
-  newPricingEntity = e =>
-    openPricingEntity.call({
-      collection: this.collection,
-    });
+  newPricingEntity = () =>
+    openPricingEntity.call(
+      {
+        collection: this.collection,
+      },
+      this.state.orgs
+    );
 
   copyPricing = rules => {
     copyPricingEntity.call(
       {
         collection: this.collection,
       },
-      rules
+      rules,
+      this.state.orgs
     );
   };
 
@@ -50,8 +57,10 @@ export default class PlanList extends Component {
     if (isOrgRazorpay()) {
       adminFetch('live/orgs').then(response => {
         if (response) {
+          const orgMap = {};
+          response.items.forEach(item => (orgMap[item.id] = item.display_name));
           this.setState({
-            orgs: response.items,
+            orgs: orgMap,
           });
         }
       });
@@ -59,7 +68,36 @@ export default class PlanList extends Component {
   }
 
   handleOrgChange = e => {
-    console.log(e.target.value);
+    const orgId = e.target.value;
+
+    fetchFn({
+      data: {
+        count: 20,
+        skip: 0,
+      },
+      url: 'live/pricing/merchants',
+      ...(orgId && {
+        headers: {
+          'x-cross-org-id': orgId,
+        },
+      }),
+    }).then(response => {
+      this.setState({
+        selectedOrg: orgId,
+      });
+      this.collection.replace(response);
+    });
+  };
+
+  getFields = () => {
+    const { orgs } = this.state;
+
+    return [
+      ['Plan ID', item => item.id],
+      ['Plan Name', item => item.name],
+      ['Number of Rules', item => item.rules_count || item.count],
+      ['Org Name', item => orgs[item.org_id]],
+    ];
   };
 
   render() {
@@ -74,16 +112,16 @@ export default class PlanList extends Component {
             </div>
           </header>
           {isOrgRazorpay() &&
-            orgs.length > -1 && (
+            !isBlank(orgs) && (
               <SelectField
                 label="Organisation"
                 name="org_id"
                 onChange={this.handleOrgChange}
               >
                 <option value="">All</option>
-                {orgs.map(org => (
-                  <option key={org.id} value={org.id.replace('org_', '')}>
-                    {org.display_name}
+                {Object.keys(orgs).map(orgId => (
+                  <option key={orgId} value={orgId}>
+                    {orgs[orgId]}
                   </option>
                 ))}
               </SelectField>
@@ -91,16 +129,11 @@ export default class PlanList extends Component {
         </div>
         <PageTable
           model={this.collection}
-          fields={pricingFields}
+          fields={this.getFields()}
           onClick={openPricingEntity}
+          animateRow={false}
         />
       </div>
     );
   }
 }
-
-const pricingFields = [
-  ['Plan ID', item => item.id],
-  ['Plan Name', item => item.name],
-  ['Number of Rules', item => item.rules_count || item.count],
-];

@@ -13,6 +13,7 @@ import { deepClone } from 'common/util';
 import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
 import { isWorkflow } from 'common/util';
+import { isOrgRazorpay } from 'admin/user';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -24,7 +25,12 @@ export default class Plan extends Collection {
       },
       model: Rule,
     });
-    this.props = props;
+    this.props = {
+      ...props,
+      ...(isOrgRazorpay() && {
+        orgId: 'org_100000razorpay',
+      }),
+    };
 
     if (!props.id) {
       if (props.items && props.items.length > 0) {
@@ -37,8 +43,7 @@ export default class Plan extends Collection {
         this.items.push(new Rule(this));
       }
     }
-
-    this.bind(['save', 'updateName']);
+    this.bind(['save', 'updateName', 'updateOrg']);
   }
 
   fetch() {
@@ -62,7 +67,9 @@ export default class Plan extends Collection {
   }
 
   save() {
-    let name = this.props.name;
+    let name = this.props.name,
+      orgId = this.props.orgId || null;
+
     if (!name) {
       notifyError('Name the pricing plan first.');
       return Promise.resolve();
@@ -71,6 +78,11 @@ export default class Plan extends Collection {
       'save',
       adminPost({
         url: 'live/pricing',
+        ...(orgId && {
+          headers: {
+            'x-cross-org-id': orgId,
+          },
+        }),
         data: {
           plan_name: name,
           rules: this.items.slice(0, -1).map(p => p.serialize()),
@@ -87,6 +99,10 @@ export default class Plan extends Collection {
 
   updateName(e) {
     this.props.name = e.target.value;
+  }
+
+  updateOrg(e) {
+    this.props.orgId = e.target.value;
   }
 }
 
@@ -460,7 +476,10 @@ class Rule extends CollectionItem {
   }
 
   receiverTypeField() {
-    if (this.product === 'primary' && (this.payment_method === 'card' || this.payment_method === 'upi')) {
+    if (
+      this.product === 'primary' &&
+      (this.payment_method === 'card' || this.payment_method === 'upi')
+    ) {
       var field = this.selectField('receiver_type');
       if (field) {
         return <div>Receiver Type: {field}</div>;
@@ -506,4 +525,6 @@ class Rule extends CollectionItem {
       );
     }
   }
+
+  handleOrgChange = () => {};
 }
