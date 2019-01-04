@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\HashAlgo;
@@ -19,6 +20,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -709,5 +711,36 @@ class Gateway extends Base\Gateway
     protected function getLiveMerchantId2()
     {
         return $this->config['live_merchant_id'];
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        // Return true if already authorized on gateway
+        if (($gatewayPayment->getGatewayPaymentId() !== null) and
+            ($gatewayPayment->getStatusCode() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                        null,
+                        $input);
+        }
+
+        $contentToSave = [
+            WalletEntity::GATEWAY_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+            WalletEntity::STATUS_CODE        => Status::SUCCESS,
+        ];
+
+        $gatewayPayment->fill($contentToSave);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

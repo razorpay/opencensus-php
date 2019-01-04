@@ -26,10 +26,15 @@ class ResponseCode
         5008 => 'Invalid VPA',
         // Service unavailable. Please try later.
         5009 => 'No response from Bank',
+        5010 => 'Technical Error',
         5011 => 'Duplicate transaction',
         5012 => 'Duplicate transaction (offline)',
         5013 => 'Invalid VPA',
         5014 => 'Insufficient amount',
+        5017 => 'Sorry you can\'t initiate refund request',
+        5019 => 'Please try after sometime.',
+        5020 => 'No response from Beneficiary Bank. Please wait for recon before initiating the transaction again.',
+        5021 => 'Transaction Timed out. Please check transaction status before initiating again',
 
         8000 => 'Invalid Encrypted Request',
         8001 => 'JSON IS EMPTY',

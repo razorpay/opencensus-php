@@ -204,15 +204,19 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditDisableWebhookOnProxyAuth()
+    public function testEditDisableWebhookOnAdminProxyAuth()
     {
         $webhook = $this->createWebhook();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
 
-        $this->ba->proxyAuth();
+        $this->ba->addAdminProxyAuthHeaders('10000000000000');
 
         $this->startTest();
+
+        $webhook = $this->getDbEntityById('webhook', $webhook['id']);
+
+        $this->assertFalse($webhook->isDisableOnFailure());
     }
 
     public function testGetWebhooks()

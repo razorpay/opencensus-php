@@ -986,7 +986,36 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    protected function reconcile($gateway, $uploadedFile)
+    public function testNetbankingAxisForceAuthorizePayment()
+    {
+        $this->gateway = 'netbanking_axis';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('failed', $updatedPayment['status']);
+
+        $this->createNetbanking($payment['id'], 'AXIS', 'Y');
+
+        $fileContents = $this->generateFile('axis', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingAxis', $uploadedFile, ['pay_' . $payment['id']]);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    protected function reconcile($gateway, $uploadedFile, $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
 
@@ -995,6 +1024,14 @@ class NetbankingReconciliationTest extends TestCase
             'gateway'          => $gateway,
             'attachment-count' => 1,
         ];
+
+        if (empty($forceAuthorizePayments) === false)
+        {
+            foreach ($forceAuthorizePayments as $forceAuthorizePayment)
+            {
+                $input[Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
+            }
+        }
 
         $request = [
             'url'     => '/reconciliate',

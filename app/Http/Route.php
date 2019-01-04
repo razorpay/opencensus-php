@@ -2094,6 +2094,7 @@ final class Route
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',
         'merchant_fetch_webhooks'                  => '*',
+        'webhook_edit'                             => '*',
         'merchant_generate_test_bank_acnt'         => '*',
         'merchant_send_activation_mail'            => '*',
         'merchants_update_bank_account'            => '*',

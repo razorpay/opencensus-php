@@ -247,18 +247,19 @@ class HeartbeatLagChecker implements LagChecker
         // Using raw query here as we can not use model or eloquent builder here
         // as it also calls this flow to get the connection
         //
-        $result = $pdo->query('select ts from heartbeat.heartbeat limit 1')->fetch();
+        $query = 'select ts, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) as now_in_mili from heartbeat.heartbeat limit 1';
+
+        $result = $pdo->query($query)->fetch();
 
         $lastHeartbeatTimestamp = $result['ts'];
 
         $this->lag = $this->diffInMilliseconds($lastHeartbeatTimestamp);
 
-        if ($this->lag <= $threshold)
-        {
-            return false;
-        }
+        $status = ($this->lag <= $threshold)? false : true;
 
-        return true;
+        $this->traceConnectionSelection(TraceCode::HEARTBEAT_LAG_CHECK_DEBUG_TRACE, !$status, $result);
+
+        return $status;
     }
 
     /**
@@ -303,7 +304,7 @@ class HeartbeatLagChecker implements LagChecker
         return $absolute || !$diff->invert ? $value : -$value;
     }
 
-    protected function traceConnectionSelection(string $traceCode, bool $useSlave)
+    protected function traceConnectionSelection(string $traceCode, bool $useSlave, array $extra = [])
     {
         $connection = ($useSlave === true) ? Metric::SLAVE : Metric::MASTER;
 
@@ -312,6 +313,6 @@ class HeartbeatLagChecker implements LagChecker
             [
                 'connection' => $connection,
                 'lag'        => $this->lag,
-            ]);
+            ] + $extra);
     }
 }

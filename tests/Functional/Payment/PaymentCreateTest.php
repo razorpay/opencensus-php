@@ -595,7 +595,7 @@ class PaymentCreateTest extends TestCase
         // Get raw response
         $response = $this->sendRequest($request)->getContent();
 
-        $this->assertRegexp('/' . preg_quote('"acquirer_data":{"auth_code":null}') . '/', $response);
+        $this->assertRegexp('/' . preg_quote('"acquirer_data":{"auth_code":"') . '[0-9]{6}' . preg_quote('"}') . '/' , $response);
     }
 
     public function testPaymentWithAcquirerData()

@@ -55,7 +55,7 @@ return [
         ],
     ],
 
-    'testEditDisableWebhookOnProxyAuth' => [
+    'testEditDisableWebhookOnAdminProxyAuth' => [
         'request' => [
             'url' => '/webhooks',
             'content' => [
