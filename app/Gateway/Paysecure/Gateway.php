@@ -19,6 +19,8 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'paysecure';
 
+    protected $gatewayPayment = null;
+
     protected $map = [
         Fields::ERROR_CODE    => Entity::ERROR_CODE,
         Fields::ERROR_MESSAGE => Entity::ERROR_MESSAGE,
@@ -310,7 +312,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $response = $this->transactionStatus($verify);
+        $response = $this->transactionStatus($verify->payment);
 
         $verify->setVerifyResponseContent($response);
 

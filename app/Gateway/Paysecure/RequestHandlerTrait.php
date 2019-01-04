@@ -185,6 +185,8 @@ trait RequestHandlerTrait
     //-------------- Authorize request related functions ---------------------
     protected function authorizeTransaction($gatewayPayment)
     {
+        $this->gatewayPayment = $gatewayPayment;
+
         $requestArray = [
             Fields::TRAN_ID       => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
             Fields::AUTH_AMOUNT   => $this->input['payment']['amount'],
@@ -201,10 +203,8 @@ trait RequestHandlerTrait
     }
     //-------------- Authorize request end -----------------------------------
     //------------------Verify request ---------------------------------------
-    protected function transactionStatus($verify)
+    protected function transactionStatus($gatewayPayment)
     {
-        $gatewayPayment = $verify->payment;
-
         $requestArray = [Fields::TRAN_ID => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID]];
 
         $contents = $this->getRequestContents($requestArray);
@@ -281,6 +281,27 @@ trait RequestHandlerTrait
             {
                 $this->logSoapRequestOnTimeout($soapClient, $command);
 
+                if (($command === Command::AUTHORIZE) and
+                    ($this->gatewayPayment !== null))
+                {
+                    $response = $this->transactionStatus($this->gatewayPayment);
+
+                    if (($response[Fields::STATUS] === StatusCode::SUCCESS) and
+                        (isset($response[Fields::HISTORY][Fields::TRANSACTION]) === true) and
+                        ($response[Fields::HISTORY][Fields::TRANSACTION][Fields::STATUS] === StatusCode::TRANSACTION_STATUS_AUTHORIZED)
+                    )
+                    {
+                        $responseArray = $response;
+
+                        unset($responseArray[Fields::HISTORY]);
+
+                        $responseArray[Fields::APPRCODE] = $response[Fields::HISTORY][Fields::TRANSACTION][Fields::APPRCODE];
+
+                        return $responseArray;
+                    }
+                }
+
+                // Todo: Revert this after certification
                 $response = new \stdClass();
 
                 $response->CallPaySecureResult = '<?xml version="1.0" encoding="utf-16"?>
