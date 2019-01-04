@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Mailable extends BaseMailable
 {
@@ -244,5 +245,24 @@ class Mailable extends BaseMailable
         $default = config('queue.mail.default');
 
         return config("queue.mail.{$key}", $default);
+    }
+
+    protected function getView($newView, $oldView)
+    {
+        $app = App::getFacadeRoot();
+        $razorx = $app['razorx'];
+        $variant = $razorx->getTreatment(
+            $this->data['merchant']['id'],
+            Merchant\RazorxTreatment::NEW_DESIGN_MAILERS,
+            $this->mode
+        );
+
+        if(strtolower($variant) === 'on')
+        {
+            return $newView;
+        } else
+        {
+            return $oldView;
+        }
     }
 }
