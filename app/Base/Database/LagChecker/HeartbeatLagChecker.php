@@ -284,14 +284,45 @@ class HeartbeatLagChecker implements LagChecker
 
         $diff = $now->diff($hbTimestamp);
 
-        $value = (int) round(((((($diff->days * Carbon::HOURS_PER_DAY) +
-              $diff->h) * Carbon::MINUTES_PER_HOUR +
-              $diff->i) * Carbon::SECONDS_PER_MINUTE +
-              ($diff->f + $diff->s)) * $microsecondsPerSecond) / $microsecondsPerMillisecond);
+        $this->trace->info(
+            TraceCode::HEARTBEAT_CHECK_TIME_CONVERSION,
+            [
+                'message'             => 'pre_processing',
+                'heartbeat_timestamp' => $timestamp,
+                'current_timestamp'   => $now->getTimestamp(),
+                'current_micro'       => $now->micro,
+                'parsed_timestamp'    => $hbTimestamp->getTimestamp(),
+                'parsed_micro'        => $hbTimestamp->micro,
+                'time_difference'     => $diff->format('%H:%I:%S.%F'),
+                'diff'                => $diff,
+            ]);
+
+        try {
+            $value = (int)round(((((($diff->days * Carbon::HOURS_PER_DAY) +
+                        $diff->h) * Carbon::MINUTES_PER_HOUR +
+                        $diff->i) * Carbon::SECONDS_PER_MINUTE +
+                        ($diff->f + $diff->s)) * $microsecondsPerSecond) / $microsecondsPerMillisecond);
+        }
+        catch (\Throwable $e)
+        {
+            // tracing it as info to reduce the noise in case of exception
+            // will be removed once the issue is fixed
+            $this->trace->info(
+                TraceCode::HEARTBEAT_CHECK_TIME_CONVERSION,
+                [
+                    'message'             => 'exception',
+                    'error'               => $e->getMessage(),
+                    'diff'                => $diff,
+                ]);
+
+            // Setting this as 0. which will evaluate to no lag
+            $value = 0;
+        }
 
         $this->trace->info(
             TraceCode::HEARTBEAT_CHECK_TIME_CONVERSION,
             [
+                'message'             => 'post_processing',
                 'heartbeat_timestamp' => $timestamp,
                 'current_timestamp'   => $now->getTimestamp(),
                 'current_micro'       => $now->micro,
