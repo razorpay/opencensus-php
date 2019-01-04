@@ -36,14 +36,6 @@ trait RequestHandlerTrait
 
         $cardBin = substr($cardNumber, 0, 9);
 
-        // todo: Remove this after certification
-        if ((isset($this->input['payment']['notes']['test_name']) === true) and
-            ($this->input['payment']['notes']['test_name'] === 'AQPG_06')
-        )
-        {
-            $cardBin = '222222222';
-        }
-
         $body = [
             Fields::CARD_BIN => $cardBin,
         ];
