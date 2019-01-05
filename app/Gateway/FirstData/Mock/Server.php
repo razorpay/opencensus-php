@@ -199,6 +199,28 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         ];
 
+        $content2 = [
+            FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
+            FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
+            FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
+            FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
+            FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
+            FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::PAYMENT_TYPE                => "RANDOM_PAYMENT_TYPE",
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
+            FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
+            FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
+        ];
+
+        /*if (isset($body['Transaction']['recurringType']) && $body['Transaction']['recurringType'] === FirstData\Codes::STANDING_INSTRUCTION)
+            $content = $content2;*/
+
         $this->content($content);
 
         $captureResponse = $this->buildIpgApiOrderResponse($content);
@@ -394,6 +416,7 @@ class Server extends Base\Mock\Server
         $xml = simplexml_load_string($input);
 
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+        //$xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ns5', true)->children('ns2', true);
 
         return json_decode(json_encode($xmlBody), true);
     }

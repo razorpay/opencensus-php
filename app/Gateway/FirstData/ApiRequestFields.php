@@ -66,4 +66,5 @@ class ApiRequestFields
     const A1_ORDER_ID            = 'a1:OrderId';
     const A1_STORE_ID            = 'a1:StoreId';
     const A1_MERCHANT_TXN_ID     = 'a1:MerchantTransactionId';
+
 }
