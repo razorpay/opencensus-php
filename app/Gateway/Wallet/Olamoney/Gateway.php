@@ -66,20 +66,22 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if( $this->version != "v2") {
-
+        if ($this->version !== 'v2')
+        {
             $request = $this->getBillGeneratorRequest($input);
 
             return $request;
+        }
 
-        } else {
+        else
+        {
             $content = $this->getAuthorizeRequestDataV2($input);
 
             $authorizeAttributes = $this->getCreateWalletAttributesV2($input);
 
             $this->createGatewayPaymentEntity($authorizeAttributes, Action::AUTHORIZE);
 
-            $request = $this->getStandardRequestArray($content,"post","AUTHORIZE_V2");
+            $request = $this->getStandardRequestArray($content,'post','AUTHORIZE_V2');
 
             $this->traceGatewayPaymentRequest($request, $input);
 
@@ -93,12 +95,13 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if( $this->version != "v2") {
-
+        if ($this->version !== 'v2')
+        {
             return $this->callbackTopupFlow($input);
+        }
 
-        } else {
-
+        else
+        {
             return $this->callbackDebitFlow($input);
         }
     }
@@ -359,8 +362,8 @@ class Gateway extends Base\Gateway
 
     public function debit(array $input)
     {
-
-        if($this->version == "v2") {
+        if ($this->version === 'v2')
+        {
             return;
         }
 
@@ -556,13 +559,12 @@ class Gateway extends Base\Gateway
             ResponseFields::IS_CASHBACK_ATTEMPTED,
             ResponseFields::IS_CASHBACK_SUCCESSFUL,
             ResponseFields::TIMESTAMP,
-
         ];
 
-        if ($this->version == "v2") {
+        if ($this->version === 'v2')
+        {
             $fieldsInOrder[] = ResponseFields::SALT;
         }
-
 
         $actual = $content[ResponseFields::HASH];
 
@@ -575,7 +577,6 @@ class Gateway extends Base\Gateway
 
     protected function getBillGeneratorRequest(array $input)
     {
-
         $content = $this->getBillGeneratorAttributes($input);
 
         $requestContent = [
@@ -596,7 +597,6 @@ class Gateway extends Base\Gateway
                 'content' => $content
             ]);
 
-
         $query = http_build_query($requestContent);
 
         $request['url'] = $request['url'] . '?' . $query;
@@ -604,25 +604,24 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-
     protected function getAuthorizeRequestDataV2(array $input)
     {
-
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
         $content = [
-            RequestFields::ACCESS_TOKEN             => $this->getAccessToken($input['terminal']),
-            RequestFields::UNIQUE_ID                => $input[ConstantEntity::PAYMENT]['id'],
-            RequestFields::COMMENTS                 => 'Razorpay_payment',
-            RequestFields::UDF                      => $udf,
-            RequestFields::RETURN_URL               => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL         => '',
-            RequestFields::CURRENCY                 => $input['payment']['currency'],
-            RequestFields::AMOUNT                   => $this->getFormattedAmount($input[ConstantEntity::PAYMENT]['amount']),
-            RequestFields::COUPON_CODE              => 'NA',
-            RequestFields::BALANCE_PREFERENCE       =>'preferConfig',
+            RequestFields::ACCESS_TOKEN         => $this->getAccessToken($input['terminal']),
+            RequestFields::UNIQUE_ID            => $input[ConstantEntity::PAYMENT]['id'],
+            RequestFields::COMMENTS             => 'Razorpay_payment',
+            RequestFields::UDF                  => $udf,
+            RequestFields::RETURN_URL           => $input['callbackUrl'],
+            RequestFields::NOTIFICATION_URL     => '',
+            RequestFields::CURRENCY             => $input['payment']['currency'],
+            RequestFields::AMOUNT               => $this->getFormattedAmount($input[ConstantEntity::PAYMENT]['amount']),
+            RequestFields::COUPON_CODE          => 'NA',
+            RequestFields::BALANCE_PREFERENCE   => 'preferConfig',
         ];
+
         $content[RequestFields::HASH] = $this->getHashForDebit($content);
 
         $content[RequestFields::COMMAND]                  = Command::DEBIT;
@@ -633,8 +632,8 @@ class Gateway extends Base\Gateway
         $content[RequestFields::SIGNATURE]                = $this->getSignature($input[ConstantEntity::PAYMENT]['id']);
 
         return $content;
-
     }
+
     protected function getBillGeneratorAttributes(array $input)
     {
         $key = $this->getBalanceKeyForCache($input['payment']);
@@ -671,7 +670,6 @@ class Gateway extends Base\Gateway
 
     protected function getCreateWalletAttributesV2(array $input)
     {
-
         $attributes = [
             Base\Entity::AMOUNT         => $input[ConstantEntity::PAYMENT][Payment\Entity::AMOUNT],
             Base\Entity::EMAIL          => $input[ConstantEntity::PAYMENT][Payment\Entity::EMAIL],
@@ -694,8 +692,8 @@ class Gateway extends Base\Gateway
             ResponseFields::TRANSACTION_ID  => $content[ResponseFields::TRANSACTION_ID],
         ];
 
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $wallet = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
     }
 
@@ -1085,7 +1083,8 @@ class Gateway extends Base\Gateway
             RequestFields::COUPON_CODE,
         ];
 
-        if($this->version == "v2") {
+        if ($this->version === 'v2')
+        {
             $fieldsInOrder[] = RequestFields::BALANCE_PREFERENCE;
         }
 
@@ -1115,7 +1114,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfArray($content)
     {
-        $str = $this->getStringToHash($content, "|");
+        $str = $this->getStringToHash($content, '|');
 
         $str .= '|' . $this->getSecret();
 
@@ -1206,8 +1205,8 @@ class Gateway extends Base\Gateway
         return sprintf(self::BALANCE_CACHE_KEY, $payment['id']);
     }
 
-    public function getSignature($id) {
-
+    public function getSignature($id)
+    {
         $private_key = $this->getPrivateKey();
 
         $rsa = new RSA();
@@ -1219,10 +1218,10 @@ class Gateway extends Base\Gateway
         $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
 
         return base64_encode($rsa->sign(base64_decode($id)));
-
     }
 
-    public function validateSignature($plaintext, $signature) {
+    public function validateSignature($plaintext, $signature)
+    {
         //xtenantKey, xauthKey
         $ola_public_key = $this->getOlaPublicKey();
 
@@ -1235,19 +1234,18 @@ class Gateway extends Base\Gateway
         $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
 
         return $rsa->verify(base64_decode($plaintext),base64_decode($signature));
-
     }
 
     public function callbackDebitFlow(array $input)
     {
         $gatewayData = $input['gateway'];
 
-        if( isset($gatewayData['errorCode'] )) {
+        if (isset($gatewayData['errorCode']))
+        {
             $code = $gatewayData['errorCode'];
             $errorCode = ResponseCode::getApiErrorCode($code);
 
             throw new Exception\GatewayErrorException($errorCode);
-
         }
 
         $body = $gatewayData['body'];
@@ -1255,15 +1253,17 @@ class Gateway extends Base\Gateway
         $xauthKey = $gatewayData['xauthKey'];
 
         //Signature Verification
-        if($this->validateSignature($encryptedTenantKey,$xauthKey) === false) {
+        if ($this->validateSignature($encryptedTenantKey,$xauthKey) === false)
+        {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED);
         }
 
         $tenantKey = $this->decryptTenantKey($encryptedTenantKey);
-        list($uuid, $timestamp) = explode(":",$tenantKey);
+        list($uuid, $timestamp) = explode(':',$tenantKey);
 
         //Check for timestamp is less than current timestamp
-        if((intdiv($timestamp, 1000000)) > time() ) {
+        if ((intdiv($timestamp, 1000000)) > time())
+        {
             throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
         }
 
@@ -1323,8 +1323,8 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt(base64_decode($encryptedTenantKey));
     }
 
-    protected function decryptResponseBody($body, $uuid) {
-
+    protected function decryptResponseBody($body, $uuid)
+    {
         $getIvParamFromConfig = $this->getIV();
 
         $cipher = new AES();
@@ -1334,7 +1334,6 @@ class Gateway extends Base\Gateway
         $cipher->setIV($getIvParamFromConfig);
 
         return ($cipher->decrypt(base64_decode($body)));
-
     }
 
     protected function getFormattedAmount($amount)
