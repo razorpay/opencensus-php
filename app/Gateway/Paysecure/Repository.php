@@ -12,5 +12,6 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID             => 'sometimes|string|size:14',
         Entity::GATEWAY_TRANSACTION_ID => 'sometimes',
         Entity::RRN                    => 'sometimes',
+        Entity::APPRCODE               => 'sometimes',
     ];
 }

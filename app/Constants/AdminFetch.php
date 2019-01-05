@@ -262,12 +262,16 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
                 'flow' => [
-                    Fetch::LABEL => 'Bank reference number',
+                    Fetch::LABEL => 'Payment flow',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'redirect',
                         'iframe',
                     ],
+                ],
+                'rrm' => [
+                    Fetch::LABEL => 'RRN',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
 
                 'received' => [

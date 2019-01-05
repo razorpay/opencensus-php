@@ -134,10 +134,6 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                     <td colspan="2">TRANSACTION DETAILS</td>
                 </thead>
                 <tr>
-                    <td>Razorpay Reference number</td>
-                    <td>BgGxYEDcuCX2CM</td>
-                </tr>
-                <tr>
                     <td>RRN</td>
                     <td>Not generated</td>
                 </tr>
