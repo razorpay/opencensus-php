@@ -7,13 +7,13 @@
             padding: 10px;
         }
 
-        table {
+        #container table {
             margin: auto;
             width: 80%;
             padding: 10px;
         }
 
-        thead td {
+        #container thead td {
             margin: 0px auto;
             text-align: center;
             font-weight: bold;
@@ -25,7 +25,7 @@
             text-align: center;
         }
     </style>
-    <br>
+    <body>
         <div id="container">
             <table>
                 <thead>
@@ -56,6 +56,6 @@
             </table>
         </div>
         <br/>
-    <div class="footer"><b>You may safely close this tab.</b></div>
+        <div class="footer"><b>You may safely close this tab.</b></div>
     </body>
 </html>

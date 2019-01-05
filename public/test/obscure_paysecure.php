@@ -95,11 +95,72 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         [cardtype=rupay]::before, .networkicon.rupay {
             background-position: 80%;
         }
+
+        div#container {
+            margin: auto;
+            width: 50%;
+            border: 3px solid green;
+            padding: 10px;
+        }
+
+        #container table {
+            margin: auto;
+            width: 80%;
+            padding: 10px;
+        }
+
+        #container thead td {
+            margin: 0px auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .footer {
+            margin: 0px auto;
+            text-align: center;
+        }
     </style>
     <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
     <script>
         window.onload = function(e) {
             var getEl = document.getElementById.bind(document);
+
+            if (window.performance && window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD) {
+                body = document.getElementsByTagName('body')[0];
+                body.innerHTML = `<div id="container">
+            <table>
+                <thead>
+                    <td colspan="2">TRANSACTION DETAILS</td>
+                </thead>
+                <tr>
+                    <td>Razorpay Reference number</td>
+                    <td>BgGxYEDcuCX2CM</td>
+                </tr>
+                <tr>
+                    <td>RRN</td>
+                    <td>Not generated</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td id="date"></td>
+                </tr>
+                <tr>
+                    <td>Transaction Status</td>
+                    <td>
+                                                    Failed
+                                            </td>
+                </tr>
+            </table>
+        </div>
+        <br/>
+        <div class="footer"><b>You may safely close this tab.</b></div>`;
+                var today = new Date().toISOString().slice(0, 10);
+                var date = getEl('date');
+                date.innerHTML = today;
+            }
+
+
             window.formatter = Razorpay.setFormatter(getEl('paymentform'));
             var cvvField = getEl('card_cvv');
 
