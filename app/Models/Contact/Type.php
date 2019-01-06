@@ -15,10 +15,10 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 final class Type
 {
-    const CUSTOMER = 'customer';
-    const EMPLOYEE = 'employee';
-    const VENDOR   = 'vendor';
-    const SELF     = 'self';
+    const CUSTOMER = 'Customer';
+    const EMPLOYEE = 'Employee';
+    const VENDOR   = 'Vendor';
+    const SELF     = 'Self';
 
     // Settings module key
     const TYPES = 'types';
@@ -93,20 +93,20 @@ final class Type
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
 
+        $maxTypes = Validator::MAX_TYPES_ALLOWED;
+
+        if (count($allCustomKeys) >= $maxTypes)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit ($maxTypes) of custom contact types that can be created.",
+                Entity::TYPE);
+        }
+
         if ((self::isInDefaults(strtolower($type))) or
             (array_search_ci($type, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Type '$type' is already defined and cannot be added.",
-                Entity::TYPE);
-        }
-
-        if (count($allCustomKeys) >= Validator::MAX_TYPES_ALLOWED)
-        {
-            throw new BadRequestValidationFailureException(
-                "You have reached the maximum limit (" .
-                (Validator::MAX_TYPES_ALLOWED) .
-                ") of custom contact types that can be created.",
                 Entity::TYPE);
         }
 
