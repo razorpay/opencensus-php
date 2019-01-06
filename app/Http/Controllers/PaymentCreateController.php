@@ -103,8 +103,8 @@ class PaymentCreateController extends Controller
         $data = $this->service(E::PAYMENT)->process($input);
 
         $response = $this->processCoprotoData($data);
-        $this->logResponseIfApplicable($response);
 
+        $this->logResponseIfApplicable($response);
 
         return $response;
     }
@@ -317,7 +317,6 @@ class PaymentCreateController extends Controller
         $input = Request::all();
 
         $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
-
 
         return $this->returnCallbackResponse($data);
     }

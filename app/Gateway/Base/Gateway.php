@@ -345,7 +345,6 @@ class Gateway
         $this->setMode($mode);
 
         $this->setTerminal($terminal);
-
     }
 
     public function setTerminal($terminal)
