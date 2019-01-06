@@ -67,7 +67,7 @@ return [
         'request'  => [
             'content' => [
                 'name'         => 'Test Contact',
-                'type'         => 'Self',
+                'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
@@ -82,7 +82,7 @@ return [
             'content' => [
                 'entity'       => 'contact',
                 'name'         => 'Test Contact',
-                'type'         => 'Self',
+                'type'         => 'self',
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
@@ -96,7 +96,7 @@ return [
     'testCreateContactWithoutName' => [
         'request'   => [
             'content' => [
-                'type'  => 'Self',
+                'type'  => 'self',
                 'email' => 'asd@abc.com',
             ],
             'url'     => '/contacts',
@@ -120,7 +120,7 @@ return [
     'testCreateContactInvalidName' => [
         'request'   => [
             'content' => [
-                'type' => 'Self',
+                'type' => 'self',
                 'name' => 'Amit@M',
             ],
             'url'     => '/contacts',
@@ -192,7 +192,7 @@ return [
     'testUpdateContact' => [
         'request'  => [
             'content' => [
-                'type'         => 'Employee',
+                'type'         => 'employee',
                 'reference_id' => '213',
             ],
             'url'     => '/contacts/cont_1000000contact',
@@ -202,7 +202,7 @@ return [
             'content' => [
                 'id'           => 'cont_1000000contact',
                 'entity'       => 'contact',
-                'type'         => 'Employee',
+                'type'         => 'employee',
                 'reference_id' => '213',
             ]
         ]

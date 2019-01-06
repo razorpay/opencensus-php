@@ -15,10 +15,10 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 final class Type
 {
-    const CUSTOMER = 'Customer';
-    const EMPLOYEE = 'Employee';
-    const VENDOR   = 'Vendor';
-    const SELF     = 'Self';
+    const CUSTOMER = 'customer';
+    const EMPLOYEE = 'employee';
+    const VENDOR   = 'vendor';
+    const SELF     = 'self';
 
     // Settings module key
     const TYPES = 'types';
