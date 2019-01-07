@@ -80,6 +80,26 @@ class Processor
         return new $className;
     }
 
+    /******************************* COMMON ACTIONS *****************************/
+
+    public function fetchAll(array $input): array
+    {
+        $this->initialize(Action::FETCH_ALL, $input, true);
+
+        $entities = $this->core->fetchAll($input);
+
+        return $entities->toArrayPublic();
+    }
+
+    public function fetch(array $input): array
+    {
+        $this->initialize(Action::FETCH, $input, true);
+
+        $entity = $this->core->fetch($this->input->get(Entity::ID));
+
+        return $entity->toArrayPublic();
+    }
+
     /***************************** GATEWAY FUNCTIONS ****************************/
 
     protected function setGatewayInput(array $input)

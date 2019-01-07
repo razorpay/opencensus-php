@@ -36,24 +36,6 @@ class Processor extends Base\Processor
         return $bankAccounts->toArrayPublic();
     }
 
-    public function fetchAll(array $input): array
-    {
-        $this->initialize(Action::FETCH_ALL, $input, true);
-
-        $bankAccounts = $this->core->fetchAll($input);
-
-        return $bankAccounts->toArrayPublic();
-    }
-
-    public function fetch(array $input): array
-    {
-        $this->initialize(Action::FETCH, $input, true);
-
-        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
-
-        return $bankAccount->toArrayPublic();
-    }
-
     public function initiateSetUpiPin(array $input): array
     {
         $this->initialize(Action::INITIATE_SET_UPI_PIN, $input, true);

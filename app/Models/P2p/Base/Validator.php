@@ -8,6 +8,9 @@ use RZP\Models\P2p\Base\Libraries\Rules;
 
 class Validator extends Base\Validator
 {
+    protected static $fetchAllRules;
+    protected static $fetchRules;
+
     /**
      * @var \RZP\Models\P2p\Base\Entity
      */
@@ -75,11 +78,32 @@ class Validator extends Base\Validator
         return $prepended;
     }
 
+    public function makeEntityIdRules()
+    {
+        return $this->makeRules([
+            Entity::ID => 'required|string'
+        ]);
+    }
+
     public function makePublicIdRules()
     {
         return $this->makeRules([
             Entity::ID => 'required|string|custom',
         ]);
+    }
+
+    public function makeFetchAllRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeFetchRules()
+    {
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
     }
 
     protected function validateId($attribute, $value)
