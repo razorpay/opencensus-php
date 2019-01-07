@@ -98,7 +98,6 @@ class Core extends Base\Core
         $data = [
             'mode'       => $this->app['rzp.mode'],
             'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $event,
             'webhook_id' => $webhook->getId()
         ];
 

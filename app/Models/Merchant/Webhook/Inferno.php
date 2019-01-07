@@ -35,8 +35,6 @@ class Inferno
 
     protected $event;
 
-    protected $eventName;
-
     protected $client = null;
 
     const HASH_ALGO = 'sha256';
@@ -76,10 +74,6 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
-
-        $this->eventName = $data['event_name'];
-
-        $this->trace->count(Metric::WEBHOOK_EVENTS_CONSUMED_TOTAL, ['event' => $this->eventName]);
 
         $webhook = $this->getActiveWebhook($data);
 
@@ -153,7 +147,7 @@ class Inferno
 
     public static function generateHMAC($payload, $secret)
     {
-        // HMAC doesn't throw up an exception for NULL values.
+        // hmac doesn't throw up an exception for NULL values.
         if (($secret === null) or ($payload === null))
         {
             return null;
@@ -239,26 +233,26 @@ class Inferno
      */
     public function sendRequest(array $request, Entity $webhook)
     {
+        $clientError = true;
+
         $response = null;
 
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
             [
                 'webhook_id'  => $webhook->getId(),
-                'event_name'  => $this->eventName,
                 'merchant_id' => $webhook->merchant->getId(),
                 'request'     => $request,
                 'attempt'     => $this->job->attempts(),
             ]);
 
-        $clientError = $this->validateWebhookRequest($request, $webhook);
-
-        if ($clientError === true)
+        // Ensure that we are not hitting a private IP address
+        if ($this->validatePublicIpAddress($request, $webhook) === false)
         {
-            return true;
+            return $clientError;
         }
 
-        $requestStartTime = millitime();
+        $timeOfRequest = microtime(true);
 
         try
         {
@@ -266,13 +260,6 @@ class Inferno
         }
         catch (\Throwable $e)
         {
-            $this->trace->count(
-                Metric::WEBHOOK_REQUEST_FAILURES_TOTAL,
-                [
-                    'exception'   => str_replace('\\', '_', get_class($e)),
-                    'status_code' => optional($response)->getStatusCode(),
-                ]);
-
             switch(true)
             {
                 case ($e instanceof ClientErrorException):
@@ -319,21 +306,16 @@ class Inferno
 
         $statusCode = $response->getStatusCode();
 
-        $isSuccessStatusCode = $this->isSuccesssfulStatusCode($statusCode);
-
-        $requestDuration = millitime() - $requestStartTime;
-
-        if ($isSuccessStatusCode === true)
+        if ($this->isSuccesssfulStatusCode($statusCode) === true)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
                     'webhook_id'        => $webhook->getId(),
-                    'event_name'        => $this->eventName,
                     'merchant_id'       => $webhook->merchant->getId(),
                     'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders(),
-                    'response_time'     => $requestDuration,
+                    'response_time'     => (microtime(true) - $timeOfRequest),
                 ]);
 
             $clientError = false;
@@ -343,20 +325,7 @@ class Inferno
             $msgPrefix = '';
 
             $this->traceWebhookResponse($webhook, $msgPrefix, $response);
-
-            $clientError = true;
         }
-
-        $metricDimensions = [
-            'status_code'            => $statusCode,
-            'event'                  => $this->eventName,
-            // To check about attempts
-            // 'attempts'               => $this->job->attempts(),
-            'is_successs_tatus_code' => $isSuccessStatusCode,
-        ];
-
-        $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $metricDimensions);
-        $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $metricDimensions);
 
         return $clientError;
     }
@@ -438,41 +407,7 @@ class Inferno
         return $request;
     }
 
-    /**
-     * Validate the request before triggering
-     *
-     * @param array  $request
-     * @param Entity $webhook
-     *
-     * @return bool
-     */
-    protected function validateWebhookRequest(array $request, Entity $webhook): bool
-    {
-        $clientError = false;
-        $failureType = null;
-
-        // Ensure that we are not hitting a private IP address
-        if ($this->validatePublicIpAddress($request, $webhook) === false)
-        {
-            $clientError = true;
-            $failureType = 'public_ip';
-        }
-
-        // If an error occurred, push relevant metrics
-        if ($clientError === true)
-        {
-            $this->trace->count(
-                Metric::WEBHOOK_VALIDATION_FAILURES_TOTAL,
-                [
-                    'event'        => $this->eventName,
-                    'failure_type' => $failureType,
-                ]);
-        }
-
-        return $clientError;
-    }
-
-    protected function webhookSuccessfullyFired(Entity $webhook)
+    protected function webhookSuccessfullyFired($webhook)
     {
         $webhook->setLastSuccessfulAt();
 
@@ -490,9 +425,9 @@ class Inferno
      *
      * In every other case, we send a failure email.
      *
-     * @param Entity $webhook
+     * @param $webhook
      */
-    protected function webhookFailure(Entity $webhook)
+    protected function webhookFailure($webhook)
     {
         $deleteJobFlag = false;
 
@@ -519,8 +454,6 @@ class Inferno
                     'merchant_id' => $webhook->merchant->getId(),
                 ]
             );
-
-            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL);
 
             $this->disableWebhook($webhook);
 
