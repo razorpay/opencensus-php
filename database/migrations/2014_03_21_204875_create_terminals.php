@@ -114,6 +114,10 @@ class CreateTerminals extends Migration
             $table->string(Terminal::EMI_SUBVENTION)
                   ->nullable();
 
+            $table->tinyInteger(Terminal::RECURRING)
+                  ->unsigned()
+                  ->default(0);
+
             $table->tinyInteger(Terminal::CAPABILITY)
                   ->unsigned()
                   ->default(0);
