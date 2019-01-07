@@ -92,12 +92,17 @@ export default class PlanList extends Component {
   getFields = () => {
     const { orgs } = this.state;
 
-    return [
+    let fields = [
       ['Plan ID', item => item.id],
       ['Plan Name', item => item.name],
       ['Number of Rules', item => item.rules_count || item.count],
-      ['Org Name', item => orgs[item.org_id]],
     ];
+
+    if (isOrgRazorpay()) {
+      fields.push(['Org Name', item => orgs[item.org_id]]);
+    }
+
+    return fields;
   };
 
   render() {
