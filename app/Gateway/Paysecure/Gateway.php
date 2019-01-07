@@ -122,6 +122,8 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        assertTrue($input['payment']['id'] === $input['gateway'][Fields::SESSION]);
+
         // Check payment status
         if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
         {
