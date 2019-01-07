@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import Button from 'component/Button';
 
 import ajax from 'merchant/utils/ajax';
@@ -7,6 +8,7 @@ import Input from 'component/Input';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
+@withRouter
 export default class PasswordReLogin extends Component {
   state = {};
 
@@ -30,7 +32,7 @@ export default class PasswordReLogin extends Component {
         if (resp.success) {
           //redirect user if the account is suspended
           if (resp.data.merchantIds.indexOf(merchantId) < 0) {
-            return location.reload();
+            this.props.history.push('/profile');
           }
 
           this.props.removeLockScreen();
