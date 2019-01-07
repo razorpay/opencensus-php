@@ -113,7 +113,7 @@ class Repository extends Base\Repository
         $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
 
 
-        $selectedColumns = $this->fetchRequiredColumnsForSettlement();
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement($fetchAll);
 
         $query = $this->newQuery()
                       ->select($selectedColumns)
@@ -1198,7 +1198,7 @@ class Repository extends Base\Repository
     {
         $txnFetchStartTime = microtime(true);
 
-        $selectedColumns = $this->fetchRequiredColumnsForSettlement();
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement(true);
 
         $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionType        = $this->dbColumn(Entity::TYPE);
@@ -1237,28 +1237,33 @@ class Repository extends Base\Repository
         return $results;
     }
 
-    public function fetchRequiredColumnsForSettlement(): array
+    public function fetchRequiredColumnsForSettlement(bool $fetchAll = true): array
     {
         $selectedColumns = [];
 
-        $columns = [
-            Transaction\Entity::ID,
-            Transaction\Entity::TAX,
-            Transaction\Entity::FEE,
-            Transaction\Entity::TYPE,
-            Transaction\Entity::DEBIT,
-            Transaction\Entity::CREDIT,
-            Transaction\Entity::AMOUNT,
-            Transaction\Entity::SETTLED,
-            Transaction\Entity::CHANNEL,
-            Transaction\Entity::BALANCE,
-            Transaction\Entity::ENTITY_ID,
-            Transaction\Entity::CREATED_AT,
-            Transaction\Entity::SETTLED_AT,
-            Transaction\Entity::CREDITS,
-            Transaction\Entity::MERCHANT_ID,
-            Transaction\Entity::CREDIT_TYPE
-        ];
+        $columns = [ Transaction\Entity::MERCHANT_ID ];
+
+        if ($fetchAll === true)
+        {
+            $columns = array_merge([
+                Transaction\Entity::ID,
+                Transaction\Entity::TAX,
+                Transaction\Entity::FEE,
+                Transaction\Entity::TYPE,
+                Transaction\Entity::DEBIT,
+                Transaction\Entity::CREDIT,
+                Transaction\Entity::AMOUNT,
+                Transaction\Entity::SETTLED,
+                Transaction\Entity::CHANNEL,
+                Transaction\Entity::BALANCE,
+                Transaction\Entity::ENTITY_ID,
+                Transaction\Entity::CREATED_AT,
+                Transaction\Entity::SETTLED_AT,
+                Transaction\Entity::CREDITS,
+                Transaction\Entity::CREDIT_TYPE
+            ],$columns);
+
+        }
 
         foreach ($columns as $col)
         {

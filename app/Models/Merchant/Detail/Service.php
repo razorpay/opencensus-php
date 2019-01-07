@@ -445,9 +445,9 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->merchant->merchantDetail;
 
-        $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
+        $response = (new Core)->updateWebsiteDetails($merchantDetails, $input);
 
-        return $merchantDetails->toArrayPublic();
+        return $response;
     }
 
     /**

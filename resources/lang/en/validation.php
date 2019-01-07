@@ -94,6 +94,7 @@ return array(
     'mysql_signed_int'     => 'The :attribute must be valid integer between -2147483648 and 2147483647.',
     'int_percentage'       => 'The :attribute must be a valid integer between 0 and 10000',
     'pan'                  => 'The :attribute field is invalid',
+    'alpha_dash_space'     => 'The :attribute may only contain alphabets, digits, hyphens, underscores, and spaces.',
 
     /*
     |--------------------------------------------------------------------------

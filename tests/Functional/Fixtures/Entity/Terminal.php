@@ -149,8 +149,31 @@ class Terminal extends Base
         ];
 
         return $this->create($attributes);
-
     }
+
+    public function createBharatQrUpiMindgateTerminal()
+    {
+        $termId = Shared::UPI_MINDGATE_BQR_TERMINAL;
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'abcd_bharat_qr',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_acquirer'          => 'ratn',
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => true,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'rndm.razorpay@hdfcbank',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR => '1'
+            ],
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
 
     public function createMultipleNetbankingTerminals()
     {

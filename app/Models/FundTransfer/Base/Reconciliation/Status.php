@@ -80,10 +80,18 @@ abstract class Status
 
         $isCritical =  (in_array($bankStatusCode, $statusCodes, true) === true);
 
-        if ($isCritical === false)
+        try
         {
             // If the status code is not present in the constant list then consider it as critical
-            $isCritical = (defined('static::' . strtoupper($bankStatusCode)) === false);
+            if (($isCritical === false) and
+                (defined('static::' . strtoupper(preg_replace('/[^a-zA-Z0-9\']/', '_',$bankStatusCode))) === false))
+            {
+                $isCritical = true;
+            }
+        }
+        catch(\Throwable $exception)
+        {
+            $isCritical = true;
         }
 
         return $isCritical;

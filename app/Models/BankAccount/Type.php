@@ -36,4 +36,9 @@ class Type
             self::CONTACT,
         ];
     }
+
+    public static function isValidBeneficiaryRegistrationType(string $type): bool
+    {
+        return (in_array($type, self::getBeneficiaryRegistrationTypes(), true) === true);
+    }
 }

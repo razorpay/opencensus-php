@@ -450,6 +450,7 @@ class Gateway
         switch ($input['payment']['method'])
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
                 $acquirer['acquirer'] = [
                     Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
                 ];
