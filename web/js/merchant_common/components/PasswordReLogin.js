@@ -16,6 +16,8 @@ export default class PasswordReLogin extends Component {
   }
 
   onSubmit = formData => {
+    const { merchantId } = this.props;
+
     this.setState({ isPending: true });
 
     ajax({
@@ -26,6 +28,11 @@ export default class PasswordReLogin extends Component {
     })
       .then(resp => {
         if (resp.success) {
+          //redirect user if the account is suspended
+          if (resp.data.merchantIds.indexOf(merchantId) < 0) {
+            return location.reload();
+          }
+
           this.props.removeLockScreen();
           this.props.resumeLockActionCB();
         } else {
