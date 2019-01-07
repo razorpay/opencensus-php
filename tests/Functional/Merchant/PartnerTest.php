@@ -24,6 +24,7 @@ class PartnerTest extends OAuthTestCase
     const DUMMY_APP_ID_3         = '11111RandomApp';
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
+    const DUMMY_ACCESS_MAP_ID    = '10000000000044';
 
     public function setUp()
     {
@@ -1230,6 +1231,7 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create(
             'merchant_access_map',
             [
+                'id'          => self::DUMMY_ACCESS_MAP_ID,
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
@@ -1237,12 +1239,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $accessMap = $this->getDbLastEntity('merchant_access_map');
-        s($accessMap->toArrayPublic());
-        $this->assertNull($accessMap->getAttribute('entity_owner_id'));
-
         $response = $this->startTest();
-        s($response);
         $accessMap = $this->getDbLastEntity('merchant_access_map');
         $this->assertEquals($accessMap->getAttribute('entity_owner_id'), self::DEFAULT_MERCHANT_ID);
         

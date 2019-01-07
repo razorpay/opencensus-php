@@ -1036,6 +1036,10 @@ return [
         ],
         'response' => [
             'content' => [
+                'success' => 1,
+                'failure' => 0,
+                'total'   => 1,
+                'failed'  => [],
             ]
         ]
     ],
