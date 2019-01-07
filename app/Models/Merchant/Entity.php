@@ -1670,7 +1670,7 @@ class Entity extends Base\PublicEntity
         // it tries to look for account_id and crashes.
         //
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
-                    ->withPivot(User\Entity::ROLE)
+                    ->withPivot([User\Entity::ROLE, User\Entity::PRODUCT])
                     ->orderBy(self::NAME);
     }
 
