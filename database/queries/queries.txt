@@ -4602,4 +4602,5 @@ ALTER TABLE orders
     ADD COLUMN first_payment_min_amount BIGINT UNSIGNED DEFAULT NULL AFTER partial_payment;
 
 ALTER TABLE merchant_access_map
-    ADD COLUMN entity_owner_id CHAR(14) DEFAULT NULL AFTER entity_type;
+    ADD COLUMN entity_owner_id CHAR(14) DEFAULT NULL AFTER entity_type,
+    ADD INDEX merchant_access_map_entity_owner_id_index (entity_owner_id);
