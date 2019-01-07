@@ -114,13 +114,17 @@ class Gateway extends Base\Gateway
             case Base\Enrolled::Y:
                 if ($this->isIvrPayment($input) === true)
                 {
-                    if (empty($response[VERes::MESSAGE][VERes::VERES][VERes::EXTENSION][VERes::IVR_AUTH_DATA]) === true)
+                    if ((empty($response[VERes::MESSAGE][VERes::VERES][VERes::EXTENSION][VERes::IVR_AUTH_DATA]) === true) or
+                        (empty($response[VERes::MESSAGE][VERes::VERES][VERes::EXTENSION][VERes::IVR_AUTH_DATA_ENCRYPT_TYPE]) === false))
                     {
                         throw new Exception\GatewayErrorException(
                             ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
                             null,
                             null,
-                            [],
+                            [
+                                'iin'    => $input['card']['iin'],
+                                'issuer' => $input['card']['issuer']
+                            ],
                             null,
                             BaseGateway\Action::AUTHENTICATE);
                     }
