@@ -19,6 +19,6 @@ class Gateway extends Upi\Gateway
     protected function shouldMockSuccessResponse(): bool
     {
         // All handles except of self::NORZPSHARP will result in success response
-        return in_array($this->context->handleId(), [self::RAZORSHARP, self::RZPSHARP], true);
+        return in_array($this->context->handleCode(), [self::RAZORSHARP, self::RZPSHARP], true);
     }
 }

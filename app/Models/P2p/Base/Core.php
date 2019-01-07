@@ -36,6 +36,7 @@ class Core
     public function fetchAll(array $input): PublicCollection
     {
         $entities = $this->repo->newP2pQuery()
+                               ->where($input)
                                ->get();
 
         return $entities;

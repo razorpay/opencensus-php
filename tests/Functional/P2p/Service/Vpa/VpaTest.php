@@ -6,6 +6,17 @@ use RZP\Tests\P2p\Service\TestCase;
 
 class VpaTest extends TestCase
 {
+    public function testFetchHandles()
+    {
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $handles = $helper->fetchHandles();
+
+        $this->assertCollection($handles, 2);
+    }
+
     public function testCreateVpa()
     {
         $helper = $this->getVpaHelper();

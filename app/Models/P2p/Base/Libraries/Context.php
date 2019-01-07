@@ -290,13 +290,13 @@ class Context
     }
 
     /**
-     * Return handleId from the context
+     * Return Code in Handle from the context
      *
      * @return string
      */
-    public function handleId(): string
+    public function handleCode(): string
     {
-        return $this->handle->getHandle();
+        return $this->handle->getCode();
     }
 
     /**

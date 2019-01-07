@@ -126,8 +126,8 @@ class Processor extends Base\Processor
         $this->repo()->saveOrFail($deviceToken);
 
         return [
-            Entity::CONTACT                    => $this->context()->getDevice()->getContact(),
-            DeviceToken\Entity::HANDLE         => $this->context()->handleId(),
+            Entity::CONTACT                    => $deviceToken->device->getContact(),
+            DeviceToken\Entity::HANDLE         => $deviceToken->getHandle(),
             DeviceToken\Entity::CL             => $deviceToken->getCl(),
             DeviceToken\Entity::REFRESHED_AT   => $deviceToken->getRefreshedAt(),
         ];

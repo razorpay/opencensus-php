@@ -13,7 +13,7 @@ class VpaController extends Controller
     {
         $input = $this->request()->all();
 
-        $response = $this->service->fetchHandles($input);
+        $response = (new P2p\Vpa\Handle\Service)->fetchAll($input);
 
         return $this->response($response);
     }

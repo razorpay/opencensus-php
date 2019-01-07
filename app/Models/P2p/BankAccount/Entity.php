@@ -12,6 +12,7 @@ use RZP\Models\P2p\Base\Upi\ClientLibrary;
  */
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasBank;
     use Base\Traits\HasHandle;
     use Base\Traits\HasDevice;
 
@@ -267,13 +268,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CREDS);
     }
 
-    /***************** RELATIONS *****************/
-
-    public function parentBank()
-    {
-        return $this->belongsTo(Bank\Entity::class, self::BANK);
-    }
-
     /***************** MUTATORS *****************/
 
     public function setPublicClAttribute(array & $array)
@@ -281,11 +275,6 @@ class Entity extends Base\Entity
         $array[self::CL] = [
             self::REGISTRATION_FORMAT => $this->parentBank->getUpiFormat(),
         ];
-    }
-
-    public function setPublicBankNameAttribute(array & $array)
-    {
-        $array[self::BANK_NAME] = $this->parentBank->getName();
     }
 
     /***************** Accessors *****************/

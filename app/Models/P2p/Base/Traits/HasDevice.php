@@ -5,6 +5,12 @@ namespace RZP\Models\P2p\Base\Traits;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Device;
 
+/**
+ * @property Device\Entity $device
+ *
+ * Trait HasDevice
+ * @package RZP\Models\P2p\Base\Traits
+ */
 trait HasDevice
 {
     public function hasDevice(): bool

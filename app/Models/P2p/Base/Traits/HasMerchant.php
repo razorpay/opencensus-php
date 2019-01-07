@@ -5,6 +5,12 @@ namespace RZP\Models\P2p\Base\Traits;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
+/**
+ * @property Merchant\Entity $merchant
+ *
+ * Trait HasMerchant
+ * @package RZP\Models\P2p\Base\Traits
+ */
 trait HasMerchant
 {
     public function hasMerchant(): bool
