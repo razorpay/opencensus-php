@@ -295,11 +295,11 @@ class NodalAccount extends NodalBase\FileProcessor
        //     $mode = Mode::IMPS;
        // }
   
-       // if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
-       //     ($amount >= self::MIN_RTGS_AMOUNT))
-       // {
-       //     $mode = Mode::RTGS;
-       // }
+        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
+            ($amount >= self::MIN_RTGS_AMOUNT))
+        {
+            $mode = Mode::RTGS;
+        }
 
         return $mode;
     }
