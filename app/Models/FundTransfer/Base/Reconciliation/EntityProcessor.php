@@ -95,6 +95,54 @@ abstract class EntityProcessor extends Base\Core
         $this->updateMerchantEntity();
 
         $this->updateTransactionEntity();
+
+        $this->initiatePostProcessing();
+    }
+
+    // TODO: check if this re required for Penny testing.
+    protected function initiatePostProcessing()
+    {
+        $response = [];
+
+        try
+        {
+            $sourceCoreClass = substr(get_class($this->fta->source), 0, -6) . 'Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            $response = [
+                'fta_id'                => $this->fta->getId(),
+                'source_id'             => $this->fta->source->getId(),
+                'payment_ref_no'        => $this->fta->getId(),
+                'utr'                   => $this->fta->getUtr(),
+                'bank_status_code'      => $this->fta->getBankStatusCode(),
+                'remark'                => $this->fta->getRemarks(),
+                'sub_status_code'       => NULL,
+                'payment_date'          => $this->fta->getDateTime(),
+                'transfer_type'         => $this->fta->getMode(),
+                'reference_number'      => $this->fta->getCmsRefNo(),
+                'mode'                  => $this->fta->getMode(),
+                'public_failure_reason' => NULL,
+                'name_with_bene_bank'   => NULL,
+                'low_balance_alert'     => FALSE,
+        ];
+
+            if (method_exists($sourceCore, 'postFundTransfer') === false)
+            {
+                return;
+            }
+
+            $sourceCore->postFundTransfer($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SOURCE_PROCESSING_FAILED,
+                $response
+            );
+        }
     }
 
     protected function updateAttemptEntity()
