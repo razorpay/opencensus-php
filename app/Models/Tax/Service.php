@@ -24,7 +24,7 @@ class Service extends Base\Service
 
     public function getMetaGstTaxes(): array
     {
-        $taxIdMapV2 = Gst\GsttaxIdMap::get();
+        $taxIdMapV2 = Gst\GstTaxIdMap::get();
 
         // For backward compatibility, splits tax id map into 2 arrays for response
         foreach ($taxIdMapV2 as $k => $v)
