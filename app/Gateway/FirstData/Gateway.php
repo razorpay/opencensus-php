@@ -1093,7 +1093,6 @@ class Gateway extends Base\Gateway
         try
         {
             $response = $this->sendGatewayRequest($request);
-
         }
         catch (Exception\GatewayErrorException $e)
         {

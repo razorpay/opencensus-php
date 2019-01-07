@@ -196,9 +196,6 @@ class Server extends Base\Mock\Server
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
         ];
 
-        /*if (isset($body['Transaction']['recurringType']) && $body['Transaction']['recurringType'] === FirstData\Codes::STANDING_INSTRUCTION)
-            $content = $content2;*/
-
         $this->content($content);
 
         $captureResponse = $this->buildIpgApiOrderResponse($content);
@@ -394,7 +391,6 @@ class Server extends Base\Mock\Server
         $xml = simplexml_load_string($input);
 
         $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
-        //$xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ns5', true)->children('ns2', true);
 
         return json_decode(json_encode($xmlBody), true);
     }
