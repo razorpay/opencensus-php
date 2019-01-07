@@ -66,7 +66,8 @@ class AuthTypeSorter extends Terminal\Sorter
     {
         if (($authType === Payment\AuthType::OTP) and
             ($payment->card->iinRelation !== null) and
-            ($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true))
+            (($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) or
+             ($payment->card->iinRelation->supports(Card\IIN\Flow::IVR) === true)))
         {
             return ($terminal->getGateway() === Payment\Gateway::HITACHI);
         }

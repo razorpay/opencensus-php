@@ -625,7 +625,8 @@ class TransactionFilter extends Terminal\Filter
                         if ($payment->card->iinRelation !== null)
                         {
                             if (($terminal->isIvr() === true) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
+                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
@@ -637,7 +638,8 @@ class TransactionFilter extends Terminal\Filter
                             // Hence, it should be enabled only for all the IVR enabled iins.
                             //
                             if (($gateway === Payment\Gateway::HITACHI) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
+                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }

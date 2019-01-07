@@ -48,6 +48,7 @@ class OtpPaymentTest extends TestCase
             'network' => 'MasterCard',
             'flows'   => [
                 '3ds' => '1',
+                'ivr' => '1',
                 'otp' => '1',
             ]
         ]);
@@ -96,6 +97,7 @@ class OtpPaymentTest extends TestCase
             'flows'   => [
                 '3ds'          => '1',
                 'otp'          => '1',
+                'ivr'          => '1',
                 'headless_otp' => '1',
             ]
         ]);
@@ -426,7 +428,7 @@ class OtpPaymentTest extends TestCase
     public function testOtpPreferredAuthPaymentWithoutTerminal()
     {
         $this->otpFlow = false;
-        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 
@@ -470,7 +472,7 @@ class OtpPaymentTest extends TestCase
         ]);
 
         $this->otpFlow = false;
-        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 
