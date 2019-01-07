@@ -494,7 +494,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1542649738
         ],
         Payment\Gateway::UPI_ICICI   => [
-            self::GO_LIVE_TIMESTAMP => 1546529400
+            self::GO_LIVE_TIMESTAMP => 1546597864
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
@@ -973,6 +973,7 @@ class Gateway
         self::HITACHI,
         self::SHARP,
         self::UPI_HULK,
+        self::UPI_MINDGATE,
         self::ISG,
     ];
 

@@ -720,10 +720,10 @@ class Core extends Base\Core
      * @param Entity $merchantDetails
      * @param array  $input
      *
-     * @return Entity
-     * @throws \Exception
+     * @return array
+     * @throws \Throwable
      */
-    public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
+    public function updateWebsiteDetails(Entity $merchantDetails, array $input): array
     {
         $merchantDetails->getValidator()->validateInput('websiteDetails', $input);
 
@@ -733,7 +733,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
         {
             $this->repo->saveOrFail($merchantDetails);
 
@@ -744,9 +744,13 @@ class Core extends Base\Core
 
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
-        });
+            $response = $merchantDetails->toArrayPublic();
 
-        return $merchantDetails;
+            $response[Merchant\Entity::HAS_KEY_ACCESS] = $merchant->getHasKeyAccess();
+
+            return $response;
+
+        });
     }
 
     /**

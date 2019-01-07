@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base as GatewayBase;
@@ -84,6 +85,15 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isBharatQrPayment() === true)
+        {
+            $attributes = $this->getBharatqrGatewayAttributes($input);
+
+            $this->createGatewayPaymentEntity($attributes);
+
+            return null;
+        }
 
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
@@ -270,7 +280,7 @@ class Gateway extends Base\Gateway
      * @param  array $input Request Input arrau
      * @return array
      */
-    public function preProcessServerCallback($input): array
+    public function preProcessServerCallback($input, $isBharatQr = false): array
     {
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
@@ -280,7 +290,34 @@ class Gateway extends Base\Gateway
 
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
-        return array_merge($response, $bankDetails);
+        $response = array_merge($response, $bankDetails);
+
+        if ($isBharatQr === true)
+        {
+            $response = $this->getQrData($response);
+        }
+
+        return $response;
+    }
+
+    protected function getQrData(array $input)
+    {
+        $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $amount,
+            BharatQr\GatewayResponseParams::VPA                   => $input[ResponseFields::PAYER_VA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID],
+                                                                        3, 14),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+        ];
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 
     /**
@@ -1025,12 +1062,12 @@ class Gateway extends Base\Gateway
     public function getParsedDataFromUnexptectedCallback($callbackData)
     {
         $payment = [
-            "method"   => 'upi',
-            "amount"   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
-            "currency" => "INR",
-            "vpa"      => $callbackData[ResponseFields::PAYER_VA],
-            "contact"  => "+919999999999",
-            "email"    => "void@razorpay.com",
+            'method'   => 'upi',
+            'amount'   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+            'currency' => 'INR',
+            'vpa'      => $callbackData[ResponseFields::PAYER_VA],
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
         ];
 
         $terminal = [
@@ -1057,13 +1094,13 @@ class Gateway extends Base\Gateway
         list($paymentId , $callbackData) = $input;
 
         $gatewayInput = [
-            "payment" => [
-                "id"     => $paymentId,
-                "vpa"    => $callbackData[ResponseFields::PAYER_VA],
-                "amount" => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData[ResponseFields::PAYER_VA],
+                'amount' => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
             ],
-            "upi"     => [
-                "expiry_time" => 1, // dummy value
+            'upi'     => [
+                'expiry_time' => 1, // dummy value
             ]
         ];
 
@@ -1121,6 +1158,24 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+
+    protected function getBharatQrGatewayAttributes($input)
+    {
+        $attrs = [
+            Entity::TYPE                    => Base\Type::PAY,
+            Entity::RECEIVED                => true,
+            Entity::MERCHANT_REFERENCE      => $input['payment']['receiver_id'],
+            Entity::VPA                     => $input[ResponseFields::PAYER_VA],
+            ResponseFields::UPI_TXN_ID      => $input[ResponseFields::UPI_TXN_ID],
+            ResponseFields::NPCI_UPI_TXN_ID => $input[ResponseFields::NPCI_UPI_TXN_ID],
+            ResponseFields::ACCOUNT_NUMBER  => $input[ResponseFields::ACCOUNT_NUMBER],
+            ResponseFields::IFSC_CODE       => $input[ResponseFields::IFSC_CODE],
+            ResponseFields::RESPCODE        => $input[ResponseFields::RESPCODE],
+        ];
+
+        return $attrs;
     }
 
     protected function returnValidateVpaResponse($response)
