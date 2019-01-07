@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Paysecure;
 
+use RZP\Error\ErrorCode;
 use View;
 
 use RZP\Exception;
@@ -121,6 +122,22 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        $now = time();
+        // todo: Revert later
+        if ($now - $input['payment']['updated_at'] > 380)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+                null,
+                null,
+                [
+                    'response' => $input['gateway'],
+                    'payment' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                ]
+            );
+        }
 
         assertTrue($input['payment']['id'] === $input['gateway'][Fields::SESSION]);
 
