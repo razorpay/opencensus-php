@@ -25,12 +25,7 @@ export default class Plan extends Collection {
       },
       model: Rule,
     });
-    this.props = {
-      ...props,
-      ...(isOrgRazorpay() && {
-        orgId: 'org_100000razorpay',
-      }),
-    };
+    this.props = props;
 
     if (!props.id) {
       if (props.items && props.items.length > 0) {
@@ -525,6 +520,4 @@ class Rule extends CollectionItem {
       );
     }
   }
-
-  handleOrgChange = () => {};
 }

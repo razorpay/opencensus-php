@@ -85,7 +85,7 @@ export default class PlanList extends Component {
       this.setState({
         selectedOrg: orgId,
       });
-      this.collection.replace(response);
+      this.collection.items.replace(response);
     });
   };
 

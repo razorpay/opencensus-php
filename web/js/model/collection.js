@@ -167,10 +167,4 @@ export default class Collection extends BaseModel {
     }
     return item;
   }
-
-  replace(newItems) {
-    if (newItems.length > 0) {
-      this.items.replace(newItems);
-    }
-  }
 }

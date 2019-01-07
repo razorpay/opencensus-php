@@ -69,7 +69,8 @@ export default class PlanEntity extends Component {
                   <SelectField
                     label="Organisation"
                     name="org_id"
-                    onChange={this.handleOrgChange}
+                    defaultValue="org_100000razorpay"
+                    onChange={updateOrg}
                   >
                     {Object.keys(orgs).map(orgId => (
                       <option key={orgId} value={orgId}>
