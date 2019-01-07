@@ -627,7 +627,7 @@ class Gateway extends Base\Gateway
         $content[RequestFields::COMMAND]                  = Command::DEBIT;
         $content[RequestFields::USER_ACCESS_TOKEN]        = $input['token']['gateway_token'];
         $content[RequestFields::MOBILE]                   = $this->getFormattedContact($input['payment']['contact']);
-        $content[RequestFields::EMAIL]                    = $this->getFormattedContact($input['payment']['email']);
+        $content[RequestFields::EMAIL]                    = $input['payment']['email'];
         $content[RequestFields::LINK_NOTIFICATION_URL]    = $input['callbackUrl'];
         $content[RequestFields::SIGNATURE]                = $this->getSignature($input[ConstantEntity::PAYMENT]['id']);
 
@@ -1247,6 +1247,12 @@ class Gateway extends Base\Gateway
 
             throw new Exception\GatewayErrorException($errorCode);
         }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_ENCRYPTED_DEBIT_RESPONSE,
+            [
+                'response' => $gatewayData,
+            ]);
 
         $body = $gatewayData['body'];
         $encryptedTenantKey = $gatewayData['xtenantKey'];
