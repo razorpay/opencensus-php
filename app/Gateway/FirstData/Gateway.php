@@ -121,9 +121,7 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PURCHASE);
 
-        if($input)
-        $requestContent = $this->getPurchaseRequestArray($input);
-        //$requestContent = $this->getPurchaseRequestArrayWithCard($input);
+        $requestContent = $this->getPurchaseRequestArrayWithCard($input);
 
         $gatewayPayment = [
             'amount' => $input['payment'][Payment\Entity::AMOUNT],

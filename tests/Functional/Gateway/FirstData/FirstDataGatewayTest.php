@@ -66,16 +66,6 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
 
-        $this->mockServerRequestFunction(function ($body) use ($terminal1)
-        {
-            $hostedDataStoreId = $body['Transaction']['Payment']['HostedDataStoreID'];
-
-            $this->assertEquals(
-                $terminal1->getGatewayMerchantId(),
-                $hostedDataStoreId,
-                'wrong MID sent for recurring payment request');
-        });
-
         // Set payment for second recurring payment
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
