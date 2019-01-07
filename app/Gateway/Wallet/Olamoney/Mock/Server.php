@@ -90,6 +90,11 @@ class Server extends Base\Mock\Server
         ];
 
 
+        if ($content[ResponseFields::TRANSACTION_ID] == 'invalid_body')
+        {
+            $output[ResponseFields::BODY] = "Invalid Body";
+        }
+        
         $paymentId = $input['paymentId'];
 
         $publicId = $this->getSignedPaymentId($paymentId);

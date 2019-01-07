@@ -139,6 +139,24 @@ class OlamoneyGatewayTest extends TestCase
         });
     }
 
+    public function testInvalidBodyV2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['transactionId'] = 'invalid_body';
+        });
+
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testEmailCellMismatchOnOtpGenerate()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
