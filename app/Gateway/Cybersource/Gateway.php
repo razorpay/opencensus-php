@@ -354,7 +354,7 @@ class Gateway extends Base\Gateway
                 }
 
                 return $scroogeResponse->setSuccess(true)
-                                       ->setGatewayResponse($content)
+                                       ->setGatewayVerifyResponse($content)
                                        ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
                                        ->toArray();
             }
@@ -362,7 +362,7 @@ class Gateway extends Base\Gateway
 
         return $scroogeResponse->setSuccess(false)
                                ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayResponse($content)
+                               ->setGatewayVerifyResponse($content)
                                ->setGatewayKeys($this->getGatewayVerifyData($content))
                                ->toArray();
     }

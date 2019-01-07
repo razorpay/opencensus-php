@@ -207,10 +207,7 @@ class Validator extends Base\Validator
     {
         $app = App::getFacadeRoot();
 
-        //
-        // This can only be edited by an admin
-        //
-        if ($app['basicauth']->isProxyAuth() === false)
+        if ($app['basicauth']->isAppAuth() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'disable on failure is/are not required and should not be sent');

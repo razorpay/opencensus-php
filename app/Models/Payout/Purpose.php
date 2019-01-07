@@ -109,20 +109,20 @@ class Purpose
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
 
+        $maxPurposes = Validator::MAX_PURPOSES_ALLOWED;
+
+        if (count($allCustomKeys) >= $maxPurposes)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit ($maxPurposes) of custom payout purposes that can be created.",
+                Entity::PURPOSE_TYPE);
+        }
+
         if ((self::isInDefaults(strtolower($purpose))) or
             (array_search_ci($purpose, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Purpose '$purpose' is already defined and cannot be added.",
-                Entity::PURPOSE);
-        }
-
-        if (count($allCustomKeys) >= Validator::MAX_PURPOSES_ALLOWED)
-        {
-            throw new BadRequestValidationFailureException(
-                "You have reached the maximum limit (" .
-                (Validator::MAX_PURPOSES_ALLOWED) .
-                ") of custom payout purposes that can be created.",
                 Entity::PURPOSE);
         }
 

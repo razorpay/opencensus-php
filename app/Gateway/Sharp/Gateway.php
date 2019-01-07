@@ -329,6 +329,14 @@ class Gateway extends Base\Gateway
             ];
         }
 
+        if (($input['payment']['method'] === Payment\Method::CARD) or
+            ($input['payment']['method'] === Payment\Method::EMI))
+        {
+            $acquirer = [
+                'reference2' => (string) random_integer(6)
+            ];
+        }
+
         return [
             'acquirer' => $acquirer
         ];

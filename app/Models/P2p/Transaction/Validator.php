@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $authorizeRules;
     protected static $rejectRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::MERCHANT_ID          => 'string',
@@ -48,7 +48,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::MERCHANT_ID          => 'sometimes',
@@ -81,49 +81,49 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getInitiatePayRules()
+    public function makeInitiatePayRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getInitiateCollectRules()
+    public function makeInitiateCollectRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchRules()
+    public function makeFetchRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getInitiateAuthorizeRules()
+    public function makeInitiateAuthorizeRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getAuthorizeRules()
+    public function makeAuthorizeRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getRejectRules()
+    public function makeRejectRules()
     {
         $rules = $this->makeRules([]);
 

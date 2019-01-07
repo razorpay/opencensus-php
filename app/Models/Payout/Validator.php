@@ -73,7 +73,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPurposeRules = [
-        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash',
+        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash_space',
         Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
     ];
 

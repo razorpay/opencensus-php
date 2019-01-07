@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         'checkSum'      => 'required|string|max:10000',
         'accountNo'     => 'sometimes|alpha_num',
         'Ifsc'          => 'sometimes|string|size:4',
+        'ifsc'          => 'sometimes|string|size:4',
     ];
 
     protected static $verifyRules = [

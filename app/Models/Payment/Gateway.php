@@ -206,6 +206,9 @@ class Gateway
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
+        self::NETBANKING_AXIS,
+        self::NETBANKING_AIRTEL,
+        self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
 
@@ -489,6 +492,9 @@ class Gateway
         ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_ICICI   => [
+            self::GO_LIVE_TIMESTAMP => 1546529400
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
@@ -967,6 +973,7 @@ class Gateway
         self::HITACHI,
         self::SHARP,
         self::UPI_HULK,
+        self::UPI_MINDGATE,
         self::ISG,
     ];
 

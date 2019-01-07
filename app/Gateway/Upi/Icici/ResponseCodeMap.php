@@ -27,11 +27,16 @@ class ResponseCodeMap
         5008 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         // Service unavailable. Please try later.
         5009 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT,
+        5010 => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
         5011 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
         5012 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
 
         5013 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-        5014 => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE,
+        5014 => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+        5017 => ErrorCode::GATEWAY_ERROR_TERMINAL_NOT_ENABLED,
+        5019 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        5020 => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+        5021 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
 
         // 8000-8008 are all JSON parsing or encryption errors
         8000 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
